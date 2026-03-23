@@ -1,15 +1,8 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import {
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getFilteredRowModel,
-  createColumnHelper,
-  flexRender,
-} from '@tanstack/react-table';
-import { Plus, Search, Users, Pencil, Trash2 } from 'lucide-react';
+import { createColumnHelper } from '@tanstack/react-table';
+import { Plus, Users, Pencil, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,6 +20,10 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/core/ui/dialog';
+import { PageHeader } from '@/admin/shared/page-header';
+import { EmptyState } from '@/admin/shared/empty-state';
+import { DataTable } from '@/admin/shared/data-table';
+import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 
 export interface TeamMember {
   id: string;
@@ -77,18 +74,10 @@ const columnHelper = createColumnHelper<Team>();
 
 export default function TeamsPage() {
   const { t } = useTranslation(['admin']);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [deletingTeam, setDeletingTeam] = useState<Team | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => {
-    debounceRef.current = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(debounceRef.current);
-  }, [search]);
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
@@ -198,116 +187,29 @@ export default function TeamsPage() {
     [t],
   );
 
-  const table = useReactTable({
-    data: teams,
-    columns,
-    state: { globalFilter: debouncedSearch },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 10 } },
-  });
-
   const isEmpty = teams.length === 0;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-semibold">{t('admin:teams.title')}</h1>
+      <PageHeader title={t('admin:teams.title')}>
         <Button onClick={openCreate}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:teams.create')}
         </Button>
-      </div>
+      </PageHeader>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-16 dark:border-slate-600">
-          <Users className="mb-3 h-10 w-10 text-slate-400" />
-          <p className="text-sm text-slate-500">No teams yet &mdash; Create your first team</p>
-        </div>
+        <EmptyState
+          icon={Users}
+          message="No teams yet &mdash; Create your first team"
+        />
       ) : (
-        <>
-          {/* Search */}
-          <div className="relative max-w-sm">
-            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t('admin:teams.searchPlaceholder')}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-
-          {/* Table */}
-          <div className="overflow-hidden rounded-lg border">
-            <table className="w-full text-sm">
-              <thead className="border-b bg-muted/50">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        className="px-4 py-3 text-left font-medium text-muted-foreground"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="divide-y">
-                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="transition-colors hover:bg-muted/50">
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-3">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-                {table.getRowModel().rows.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={columns.length}
-                      className="px-4 py-8 text-center text-muted-foreground"
-                    >
-                      No matching teams found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Page {table.getState().pagination.pageIndex + 1} of{' '}
-              {table.getPageCount()}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </>
+        <DataTable
+          data={teams}
+          columns={columns}
+          searchPlaceholder={t('admin:teams.searchPlaceholder')}
+          noResultsMessage="No matching teams found."
+        />
       )}
 
       {/* Create / Edit dialog */}
@@ -347,23 +249,20 @@ export default function TeamsPage() {
       </Dialog>
 
       {/* Delete confirmation */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('admin:teams.deleteTitle')}</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete <strong>{deletingTeam?.name}</strong>? This action
-              cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={t('admin:teams.deleteTitle')}
+        description={
+          <>
+            Are you sure you want to delete <strong>{deletingTeam?.name}</strong>? This action
+            cannot be undone.
+          </>
+        }
+        onConfirm={handleDelete}
+        confirmLabel="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }

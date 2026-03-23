@@ -6,15 +6,7 @@ import { ArrowLeft, Pencil, Trash2, Mail, Shield, CircleDot } from 'lucide-react
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from '@/core/ui/dialog';
+import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { UserForm } from './user-form';
 import type { User } from './users-page';
 
@@ -120,23 +112,20 @@ export default function UserDetailPage() {
       />
 
       {/* Delete confirmation dialog */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete user</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete <strong>{user.displayName}</strong>? This action
-              cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete user"
+        description={
+          <>
+            Are you sure you want to delete <strong>{user.displayName}</strong>? This action
+            cannot be undone.
+          </>
+        }
+        onConfirm={handleDelete}
+        confirmLabel="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }
