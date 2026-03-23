@@ -17,6 +17,7 @@ const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
+const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
 
 function LazyLoad({ children }: { children: React.ReactNode }) {
   return (
@@ -141,12 +142,30 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'agent/*',
+        path: 'agent',
         element: (
           <LazyLoad>
             <AgentLayout />
           </LazyLoad>
         ),
+        children: [
+          {
+            index: true,
+            element: (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-sm text-slate-400">Select a conversation to begin.</p>
+              </div>
+            ),
+          },
+          {
+            path: 'conversation/:id',
+            element: (
+              <LazyLoad>
+                <ConversationView />
+              </LazyLoad>
+            ),
+          },
+        ],
       },
     ],
   },
