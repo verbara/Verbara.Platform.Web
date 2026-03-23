@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { onSseEvent } from '@/core/hooks/use-sse';
 
 export interface Conversation {
   id: string;
@@ -115,3 +116,63 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
       .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
   },
 }));
+
+let sseInitialized = false;
+
+export function initConversationSSE() {
+  if (sseInitialized) return;
+  sseInitialized = true;
+
+  const store = useConversationStore.getState();
+
+  onSseEvent('conversation.assigned', (data) => {
+    const event = data as {
+      conversationId: string;
+      contactName: string;
+      channel: string;
+      queueName: string;
+    };
+    store.upsertConversation({
+      id: event.conversationId,
+      contactId: '',
+      contactName: event.contactName,
+      channel: event.channel,
+      queueName: event.queueName,
+      state: 'offered',
+      lastMessage: '',
+      lastMessageAt: new Date().toISOString(),
+      unread: true,
+      assignedAt: new Date().toISOString(),
+    });
+  });
+
+  onSseEvent('conversation.message', (data) => {
+    const event = data as {
+      conversationId: string;
+      messageId: string;
+      sender: string;
+      text: string;
+      timestamp: string;
+    };
+    store.addMessage(event.conversationId, {
+      id: event.messageId,
+      conversationId: event.conversationId,
+      sender: event.sender === 'agent' ? 'agent' : 'customer',
+      senderName: event.sender,
+      text: event.text,
+      timestamp: event.timestamp,
+      type: 'text',
+    });
+  });
+
+  onSseEvent('conversation.state_changed', (data) => {
+    const event = data as { conversationId: string; newState: string };
+    const existing = store.conversations[event.conversationId];
+    if (existing) {
+      store.upsertConversation({
+        ...existing,
+        state: event.newState as Conversation['state'],
+      });
+    }
+  });
+}

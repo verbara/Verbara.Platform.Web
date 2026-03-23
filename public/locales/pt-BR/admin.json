@@ -58,5 +58,23 @@
     "bannerResume": "Continuar configura\u00e7\u00e3o",
     "bannerDismiss": "Dispensar"
   },
-  "system": { "title": "Sistema", "license_tier": "N\u00edvel de licen\u00e7a", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes m\u00e1x.", "expires": "Expira", "enabled": "Ativo", "disabled": "Bloqueado", "license_expired": "A licen\u00e7a expirou. Por favor renove.", "license_expiring_soon": "A licen\u00e7a expira em {{days}} dias.", "last_heartbeat": "\u00daltimo heartbeat", "settings": "Configura\u00e7\u00f5es", "platform_name": "Nome da plataforma", "default_timezone": "Fuso hor\u00e1rio padr\u00e3o", "default_language": "Idioma padr\u00e3o", "save": "Salvar configura\u00e7\u00f5es" }
+  "system": { "title": "Sistema", "license_tier": "Nível de licença", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Ativo", "disabled": "Bloqueado", "license_expired": "A licença expirou. Por favor renove.", "license_expiring_soon": "A licença expira em {{days}} dias.", "last_heartbeat": "Último heartbeat", "settings": "Configurações", "platform_name": "Nome da plataforma", "default_timezone": "Fuso horário padrão", "default_language": "Idioma padrão", "save": "Salvar configurações" },
+  "api": {
+    "userCreated": "Usuário criado",
+    "userUpdated": "Usuário atualizado",
+    "userDeleted": "Usuário excluído",
+    "agentCreated": "Agente criado",
+    "agentUpdated": "Agente atualizado",
+    "teamCreated": "Equipe criada",
+    "teamUpdated": "Equipe atualizada",
+    "teamDeleted": "Equipe excluída",
+    "queueCreated": "Fila criada",
+    "queueUpdated": "Fila atualizada",
+    "queueDeleted": "Fila excluída",
+    "flowCreated": "Fluxo criado",
+    "flowUpdated": "Fluxo atualizado",
+    "flowPublished": "Fluxo publicado",
+    "channelUpdated": "Canal atualizado",
+    "operationFailed": "Operação falhou"
+  }
 }
