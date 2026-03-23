@@ -64,7 +64,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
     setSpeedIndex((prev) => {
       const next = (prev + 1) % SPEED_OPTIONS.length;
       const audio = audioRef.current;
-      if (audio) audio.playbackRate = SPEED_OPTIONS[next];
+      if (audio) audio.playbackRate = SPEED_OPTIONS[next] ?? 1;
       return next;
     });
   }, []);

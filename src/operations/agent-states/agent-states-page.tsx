@@ -5,7 +5,6 @@ import { MoreHorizontal, UserX, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
-import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import {
   DropdownMenu,
