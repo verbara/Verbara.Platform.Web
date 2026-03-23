@@ -35,11 +35,21 @@ export function useContact(id: string | undefined) {
   });
 }
 
+export interface ContactConversation {
+  id: string;
+  channel: string;
+  queueName: string;
+  disposition?: string;
+  durationSeconds?: number;
+  closedAt?: string;
+  createdAt: string;
+}
+
 export function useContactConversations(contactId: string | undefined) {
   return useQuery({
     queryKey: ['contacts', contactId, 'conversations'],
     queryFn: async () => {
-      const result = await customFetch<PagedResult<{ id: string }>>({
+      const result = await customFetch<PagedResult<ContactConversation>>({
         url: `/api/contacts/${contactId}/conversations`,
         method: 'GET',
         params: { page: '1', pageSize: '20' },
