@@ -5,6 +5,8 @@ import { AuthGuard } from '@/core/auth/auth-guard';
 import { LoginPage } from '@/core/auth/login-page';
 
 const AdminLayout = lazy(() => import('@/pages/admin/admin-layout'));
+const UsersPage = lazy(() => import('@/admin/users/users-page'));
+const UserDetailPage = lazy(() => import('@/admin/users/user-detail'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
@@ -33,12 +35,31 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/admin" replace /> },
       {
-        path: 'admin/*',
+        path: 'admin',
         element: (
           <LazyLoad>
             <AdminLayout />
           </LazyLoad>
         ),
+        children: [
+          { index: true, element: <Navigate to="users" replace /> },
+          {
+            path: 'users',
+            element: (
+              <LazyLoad>
+                <UsersPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'users/:userId',
+            element: (
+              <LazyLoad>
+                <UserDetailPage />
+              </LazyLoad>
+            ),
+          },
+        ],
       },
       {
         path: 'operations/*',
