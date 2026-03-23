@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { InboxPanel } from '@/agent/inbox/inbox-panel';
 
 export default function AgentLayout() {
   const { t } = useTranslation(['agent']);
@@ -26,14 +27,7 @@ export default function AgentLayout() {
     <div className="flex h-full">
       {/* Inbox Panel */}
       <aside className="flex w-70 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-        <div className="flex h-12 items-center justify-between border-b border-slate-200 px-4 dark:border-slate-700">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {t('agent:inbox.title')}
-          </span>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {/* InboxPanel placeholder — Task 3 */}
-        </div>
+        <InboxPanel />
       </aside>
 
       {/* Conversation Panel */}
