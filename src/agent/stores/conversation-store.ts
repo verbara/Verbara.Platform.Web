@@ -20,6 +20,7 @@ export interface Conversation {
   lastMessageAt: string;
   unread: boolean;
   assignedAt: string;
+  metadata?: Record<string, string>;
 }
 
 export interface Message {

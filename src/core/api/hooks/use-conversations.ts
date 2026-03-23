@@ -192,7 +192,10 @@ export function useWrapUp() {
     }: {
       id: string;
       dispositionId?: string;
+      campaignDispositionId?: number;
       notes?: string;
+      callbackDate?: string;
+      callbackPhone?: string;
     }) =>
       customFetch<void>({
         url: `/api/conversations/${id}/wrapup`,
