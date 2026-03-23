@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState, type DragEvent } from 'react';
 import {
   ReactFlow,
   Background,
@@ -12,15 +12,23 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { nodeTypes } from './nodes';
+import NodePalette from './node-palette';
+import PropertyPanel from './property-panel';
 
 // ---------------------------------------------------------------------------
 // Flow Designer — full-width canvas with node palette + property panel
 // ---------------------------------------------------------------------------
 
+let nextId = 1;
+function generateId() {
+  return `node_${nextId++}`;
+}
+
 export default function FlowDesigner() {
-  const [nodes, , onNodesChange] = useNodesState<Node>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -34,20 +42,65 @@ export default function FlowDesigner() {
     [],
   );
 
+  // -----------------------------------------------------------------------
+  // Drag-and-drop from palette onto canvas
+  // -----------------------------------------------------------------------
+
+  const onDragOver = useCallback((event: DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: DragEvent) => {
+      event.preventDefault();
+
+      const nodeType = event.dataTransfer.getData('application/reactflow');
+      if (!nodeType) return;
+
+      // Calculate drop position relative to the React Flow pane
+      const wrapperBounds = reactFlowWrapper.current?.getBoundingClientRect();
+      if (!wrapperBounds) return;
+
+      const position = {
+        x: event.clientX - wrapperBounds.left,
+        y: event.clientY - wrapperBounds.top,
+      };
+
+      const newNode: Node = {
+        id: generateId(),
+        type: nodeType,
+        position,
+        data: {},
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+    },
+    [setNodes],
+  );
+
+  // -----------------------------------------------------------------------
+  // Property panel — update node data
+  // -----------------------------------------------------------------------
+
+  const handleNodeDataUpdate = useCallback(
+    (nodeId: string, data: Record<string, unknown>) => {
+      setNodes((nds) =>
+        nds.map((n) => (n.id === nodeId ? { ...n, data } : n)),
+      );
+    },
+    [setNodes],
+  );
+
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
+
   return (
     <div className="flex h-full w-full">
       {/* Left — Node palette */}
-      <aside className="flex w-[200px] shrink-0 flex-col border-r border-border bg-muted/30 p-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Nodes
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          Drag node types here (coming soon)
-        </p>
-      </aside>
+      <NodePalette />
 
       {/* Center — React Flow canvas */}
-      <div className="relative flex-1">
+      <div className="relative flex-1" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -56,6 +109,8 @@ export default function FlowDesigner() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onSelectionChange={handleSelectionChange}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
           snapToGrid
           snapGrid={[16, 16]}
           fitView
@@ -67,15 +122,8 @@ export default function FlowDesigner() {
       </div>
 
       {/* Right — Property panel */}
-      {selectedNodeId && (
-        <aside className="flex w-[300px] shrink-0 flex-col border-l border-border bg-muted/30 p-4">
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Properties
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Node: {selectedNodeId}
-          </p>
-        </aside>
+      {selectedNode && (
+        <PropertyPanel node={selectedNode} onUpdate={handleNodeDataUpdate} />
       )}
     </div>
   );
