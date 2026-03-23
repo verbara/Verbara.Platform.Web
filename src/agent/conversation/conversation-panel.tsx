@@ -73,7 +73,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
 
   function handleAccept() {
     // Mock API call
-    upsertConversation({ ...conversation, state: 'active' });
+    upsertConversation({ ...conversation!, state: 'active' });
     toast.success(t('conversation.accepted'));
   }
 

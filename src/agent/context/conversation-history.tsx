@@ -70,7 +70,7 @@ const MOCK_HISTORY: Record<string, PastConversation[]> = {
   ],
 };
 
-const dateLocales: Record<string, Locale> = {
+const dateLocales: Record<string, typeof enUS> = {
   'es-419': es,
   'en-US': enUS,
   'pt-BR': ptBR,

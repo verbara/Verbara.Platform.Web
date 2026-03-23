@@ -82,7 +82,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
 
       // Check for "/" trigger at start of input or after a newline
       const lines = value.split('\n');
-      const currentLine = lines[lines.length - 1];
+      const currentLine = lines[lines.length - 1] ?? '';
       if (currentLine === '/') {
         setCannedOpen(true);
       } else if (!currentLine.startsWith('/')) {
@@ -96,7 +96,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
     (responseText: string) => {
       // Replace the "/" trigger with the canned response text
       const lines = text.split('\n');
-      const lastLine = lines[lines.length - 1];
+      const lastLine = lines[lines.length - 1] ?? '';
       const prefix = lastLine.startsWith('/')
         ? lines.slice(0, -1).join('\n') + (lines.length > 1 ? '\n' : '')
         : text;
@@ -125,10 +125,10 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
       senderName: 'You',
       text: trimmed,
       timestamp: new Date().toISOString(),
-      type: attachments.length > 0 && attachments[0].file.type.startsWith('image/') ? 'image' : trimmed ? 'text' : 'file',
+      type: attachments.length > 0 && attachments[0]!.file.type.startsWith('image/') ? 'image' : trimmed ? 'text' : 'file',
       status: 'sending',
       metadata: attachments.length > 0
-        ? { fileName: attachments[0].file.name, fileSize: formatFileSize(attachments[0].file.size) }
+        ? { fileName: attachments[0]!.file.name, fileSize: formatFileSize(attachments[0]!.file.size) }
         : undefined,
     };
 
@@ -181,7 +181,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
   const removeAttachment = useCallback((index: number) => {
     setAttachments((prev) => {
       const removed = prev[index];
-      if (removed.preview) URL.revokeObjectURL(removed.preview);
+      if (removed?.preview) URL.revokeObjectURL(removed.preview);
       return prev.filter((_, i) => i !== index);
     });
   }, []);

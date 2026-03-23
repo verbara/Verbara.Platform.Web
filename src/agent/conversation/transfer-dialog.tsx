@@ -158,7 +158,7 @@ export function TransferDialog({
                           : 'text-amber-500'
                       }`}
                     >
-                      {item.state}
+                      {String(item.state)}
                     </span>
                   )}
                 </button>

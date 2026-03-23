@@ -61,7 +61,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
             : 'rounded-bl-none bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
         )}
       >
-        {message.type === 'image' && message.metadata?.url && (
+        {message.type === 'image' && typeof message.metadata?.url === 'string' && (
           <img
             src={message.metadata.url as string}
             alt={message.text || 'Image'}
