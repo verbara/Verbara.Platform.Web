@@ -1,0 +1,86 @@
+{
+  "inbox": {
+    "title": "Conversas",
+    "filter_active": "Ativas",
+    "filter_waiting": "Em espera",
+    "filter_wrapup": "Pós-atendimento",
+    "empty": "Sem conversas. Tudo em dia!",
+    "new_conversation": "Nova conversa atribuída"
+  },
+  "conversation": {
+    "reply_placeholder": "Escreva sua resposta...",
+    "send": "Enviar",
+    "accept": "Aceitar",
+    "reject": "Rejeitar",
+    "transfer": "Transferir",
+    "close": "Fechar",
+    "wrap_up": "Pós-atendimento",
+    "cancel": "Cancelar",
+    "complete_wrap_up": "Concluir pós-atendimento",
+    "accepted": "Conversa aceita",
+    "rejected": "Conversa rejeitada",
+    "closed": "Conversa fechada",
+    "reject_title": "Rejeitar conversa",
+    "reject_description": "Tem certeza de que deseja rejeitar esta conversa? Ela será devolvida à fila.",
+    "close_title": "Fechar conversa",
+    "close_description": "Tem certeza de que deseja fechar esta conversa sem pós-atendimento?"
+  },
+  "transfer": {
+    "title": "Transferir conversa",
+    "description": "Selecione uma fila ou agente para transferir esta conversa.",
+    "to_queue": "Para fila",
+    "to_agent": "Para agente",
+    "search_placeholder": "Buscar...",
+    "no_results": "Sem resultados",
+    "note_label": "Nota",
+    "note_placeholder": "Nota para o agente receptor...",
+    "cold": "Transferência direta",
+    "cold_description": "Transferir imediatamente sem consultar",
+    "warm": "Consultar antes",
+    "warm_description": "Falar com o destino antes de transferir",
+    "success": "Conversa transferida com sucesso"
+  },
+  "wrap_up": {
+    "title": "Pós-atendimento",
+    "description": "Conclua o pós-atendimento desta conversa.",
+    "disposition": "Disposição",
+    "select_disposition": "Selecionar disposição...",
+    "notes": "Notas",
+    "notes_placeholder": "Adicionar notas de pós-atendimento...",
+    "submit": "Concluir",
+    "success": "Pós-atendimento concluído",
+    "dispositions": {
+      "resolved": "Resolvido",
+      "escalated": "Escalado",
+      "no_response": "Sem resposta",
+      "spam": "Spam",
+      "follow_up": "Acompanhamento necessário"
+    }
+  },
+  "context": {
+    "contact_info": "Informações do cliente",
+    "history": "Histórico",
+    "notes": "Notas",
+    "ai_assist": "Assistente IA",
+    "ai_assist_placeholder": "Em breve",
+    "no_contact": "Selecione uma conversa para ver as informações do contato",
+    "no_history": "Sem histórico de conversas",
+    "no_notes": "Sem notas ainda",
+    "name": "Nome",
+    "phone": "Telefone",
+    "email": "E-mail",
+    "company": "Empresa",
+    "preferred_channel": "Canal preferido",
+    "language": "Idioma",
+    "addresses": "Endereços de canal",
+    "copy": "Copiar",
+    "copied": "Copiado para a área de transferência",
+    "notes_placeholder": "Adicionar uma nota...",
+    "save_note": "Salvar nota",
+    "delete_note": "Excluir nota"
+  },
+  "canned": {
+    "search_placeholder": "Buscar resposta rápida...",
+    "no_results": "Sem resultados"
+  }
+}

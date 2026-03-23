@@ -1,0 +1,86 @@
+{
+  "inbox": {
+    "title": "Conversations",
+    "filter_active": "Active",
+    "filter_waiting": "Waiting",
+    "filter_wrapup": "Wrap-up",
+    "empty": "No conversations. All caught up!",
+    "new_conversation": "New conversation assigned"
+  },
+  "conversation": {
+    "reply_placeholder": "Type your reply...",
+    "send": "Send",
+    "accept": "Accept",
+    "reject": "Reject",
+    "transfer": "Transfer",
+    "close": "Close",
+    "wrap_up": "Wrap-up",
+    "cancel": "Cancel",
+    "complete_wrap_up": "Complete Wrap-up",
+    "accepted": "Conversation accepted",
+    "rejected": "Conversation rejected",
+    "closed": "Conversation closed",
+    "reject_title": "Reject conversation",
+    "reject_description": "Are you sure you want to reject this conversation? It will be returned to the queue.",
+    "close_title": "Close conversation",
+    "close_description": "Are you sure you want to close this conversation without wrap-up?"
+  },
+  "transfer": {
+    "title": "Transfer conversation",
+    "description": "Select a queue or agent to transfer this conversation to.",
+    "to_queue": "To queue",
+    "to_agent": "To agent",
+    "search_placeholder": "Search...",
+    "no_results": "No results found",
+    "note_label": "Note",
+    "note_placeholder": "Note for the receiving agent...",
+    "cold": "Direct transfer",
+    "cold_description": "Transfer immediately without consulting",
+    "warm": "Consult first",
+    "warm_description": "Speak with the target before transferring",
+    "success": "Conversation transferred successfully"
+  },
+  "wrap_up": {
+    "title": "Wrap-up",
+    "description": "Complete the wrap-up for this conversation.",
+    "disposition": "Disposition",
+    "select_disposition": "Select disposition...",
+    "notes": "Notes",
+    "notes_placeholder": "Add wrap-up notes...",
+    "submit": "Complete",
+    "success": "Wrap-up completed",
+    "dispositions": {
+      "resolved": "Resolved",
+      "escalated": "Escalated",
+      "no_response": "No Response",
+      "spam": "Spam",
+      "follow_up": "Follow-up Required"
+    }
+  },
+  "context": {
+    "contact_info": "Contact information",
+    "history": "History",
+    "notes": "Notes",
+    "ai_assist": "AI Assist",
+    "ai_assist_placeholder": "Coming soon",
+    "no_contact": "Select a conversation to view contact info",
+    "no_history": "No conversation history",
+    "no_notes": "No notes yet",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "company": "Company",
+    "preferred_channel": "Preferred channel",
+    "language": "Language",
+    "addresses": "Channel addresses",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "notes_placeholder": "Add a note...",
+    "save_note": "Save note",
+    "delete_note": "Delete note"
+  },
+  "canned": {
+    "search_placeholder": "Search canned response...",
+    "no_results": "No results"
+  }
+}
