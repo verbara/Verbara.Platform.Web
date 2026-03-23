@@ -11,6 +11,7 @@ import {
   BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { nodeTypes } from './nodes';
 
 // ---------------------------------------------------------------------------
 // Flow Designer — full-width canvas with node palette + property panel
@@ -50,6 +51,7 @@ export default function FlowDesigner() {
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          nodeTypes={nodeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
