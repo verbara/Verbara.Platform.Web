@@ -1,11 +1,32 @@
-import { useMemo } from 'react';
-import { useQueueMetricsStore } from '@/operations/stores/queue-metrics-store';
+import { useMemo, useEffect } from 'react';
+import { useQueueMetricsStore, type QueueMetrics } from '@/operations/stores/queue-metrics-store';
+import { useQueues, type Queue } from '@/core/api/hooks/use-queues';
 import { GlobalKpis } from '@/operations/wallboard/global-kpis';
 import { QueueCard } from '@/operations/wallboard/queue-card';
 import { KioskWrapper } from '@/operations/wallboard/kiosk-wrapper';
 
+function toQueueMetrics(q: Queue): QueueMetrics {
+  return {
+    queueId: q.id,
+    queueName: q.name,
+    waiting: 0,
+    avgWaitSeconds: 0,
+    slaPercent: 0,
+    agentsAvailable: 0,
+    agentsBusy: 0,
+    agentsAway: 0,
+  };
+}
+
 export default function WallboardPage() {
-  const { queues, totalActive, totalAgents, globalSla } = useQueueMetricsStore();
+  const { queues, totalActive, totalAgents, globalSla, setQueues } = useQueueMetricsStore();
+  const { data: apiQueues } = useQueues();
+
+  useEffect(() => {
+    if (apiQueues) {
+      setQueues(apiQueues.map(toQueueMetrics));
+    }
+  }, [apiQueues, setQueues]);
 
   const sortedQueues = useMemo(() => {
     return [...queues].sort((a, b) => {

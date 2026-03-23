@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useNotificationStore } from '@/core/stores/notification-store';
+import { useCampaignMetricsStore, type CampaignStatus } from '@/operations/stores/campaign-metrics-store';
 
 type SseEventHandler = (data: unknown) => void;
 const handlers: Record<string, SseEventHandler[]> = {};
@@ -41,6 +42,18 @@ export function useSSE() {
     source.addEventListener('agent.state_changed', (e) => {
       const data = JSON.parse(e.data);
       handlers['agent.state_changed']?.forEach((h) => h(data));
+    });
+
+    source.addEventListener('campaign.status_changed', (e) => {
+      const data = JSON.parse(e.data) as { campaignId: string; newStatus: CampaignStatus };
+      useCampaignMetricsStore.getState().updateStatus(data.campaignId, data.newStatus);
+      handlers['campaign.status_changed']?.forEach((h) => h(data));
+    });
+
+    source.addEventListener('campaign.metrics_updated', (e) => {
+      const data: { campaignId: string } & Record<string, unknown> = JSON.parse(e.data);
+      useCampaignMetricsStore.getState().updateMetrics(data.campaignId, data);
+      handlers['campaign.metrics_updated']?.forEach((h) => h(data));
     });
 
     source.onerror = () => {

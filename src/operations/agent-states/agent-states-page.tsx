@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
 import { MoreHorizontal, UserX, MessageSquare } from 'lucide-react';
@@ -14,6 +14,18 @@ import {
 } from '@/core/ui/dropdown-menu';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { useAgentStateStore, type AgentState, type AgentPresence } from '@/operations/stores/agent-state-store';
+import { useAgents, type Agent } from '@/core/api/hooks/use-agents';
+
+function toAgentState(a: Agent): AgentState {
+  return {
+    agentId: a.id,
+    name: a.displayName,
+    team: a.teamName ?? '',
+    state: (a.state as AgentPresence) ?? 'offline',
+    stateChangedAt: a.createdAt,
+    conversationCount: 0,
+  };
+}
 
 const stateColors: Record<AgentPresence, string> = {
   available: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
@@ -31,7 +43,14 @@ const columnHelper = createColumnHelper<AgentState>();
 export default function AgentStatesPage() {
   const { t } = useTranslation('operations');
   const { formatRelative } = useFormatDate();
-  const agents = useAgentStateStore((s) => s.agents);
+  const { agents, setAgents } = useAgentStateStore();
+  const { data: apiAgents } = useAgents();
+
+  useEffect(() => {
+    if (apiAgents) {
+      setAgents(apiAgents.map(toAgentState));
+    }
+  }, [apiAgents, setAgents]);
 
   const columns = useMemo(
     () => [
@@ -90,7 +109,7 @@ export default function AgentStatesPage() {
   );
 }
 
-function AgentActions({ agent }: { agent: AgentState }) {
+function AgentActions({ agent }: { readonly agent: AgentState }) {
   const { t } = useTranslation('operations');
 
   return (
