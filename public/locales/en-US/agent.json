@@ -1,0 +1,43 @@
+{
+  "inbox": {
+    "title": "Conversations",
+    "filter_active": "Active",
+    "filter_waiting": "Waiting",
+    "filter_wrapup": "Wrap-up",
+    "empty": "No conversations. All caught up!",
+    "new_conversation": "New conversation assigned"
+  },
+  "conversation": {
+    "reply_placeholder": "Type your reply...",
+    "send": "Send",
+    "accept": "Accept",
+    "reject": "Reject",
+    "transfer": "Transfer",
+    "close": "Close",
+    "wrap_up": "Wrap-up"
+  },
+  "transfer": {
+    "title": "Transfer conversation",
+    "to_queue": "To queue",
+    "to_agent": "To agent",
+    "note_placeholder": "Note for the receiving agent...",
+    "cold": "Cold transfer",
+    "warm": "Warm transfer"
+  },
+  "wrap_up": {
+    "title": "Wrap-up",
+    "disposition": "Disposition",
+    "notes": "Notes",
+    "submit": "Complete"
+  },
+  "context": {
+    "contact_info": "Contact information",
+    "history": "History",
+    "notes": "Notes",
+    "ai_assist": "AI Assist"
+  },
+  "canned": {
+    "search_placeholder": "Search canned response...",
+    "no_results": "No results"
+  }
+}

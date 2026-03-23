@@ -6,7 +6,7 @@ i18n.use(HttpBackend).use(initReactI18next).init({
   lng: 'es-419',
   fallbackLng: 'es-419',
   supportedLngs: ['es-419', 'en-US', 'pt-BR'],
-  ns: ['common', 'admin'],
+  ns: ['common', 'admin', 'agent'],
   defaultNS: 'common',
   backend: { loadPath: '/locales/{{lng}}/{{ns}}.json' },
   interpolation: { escapeValue: false },

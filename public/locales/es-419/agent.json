@@ -1,0 +1,43 @@
+{
+  "inbox": {
+    "title": "Conversaciones",
+    "filter_active": "Activas",
+    "filter_waiting": "En espera",
+    "filter_wrapup": "Post-atención",
+    "empty": "Sin conversaciones. ¡Todo al día!",
+    "new_conversation": "Nueva conversación asignada"
+  },
+  "conversation": {
+    "reply_placeholder": "Escribe tu respuesta...",
+    "send": "Enviar",
+    "accept": "Aceptar",
+    "reject": "Rechazar",
+    "transfer": "Transferir",
+    "close": "Cerrar",
+    "wrap_up": "Post-atención"
+  },
+  "transfer": {
+    "title": "Transferir conversación",
+    "to_queue": "A cola",
+    "to_agent": "A agente",
+    "note_placeholder": "Nota para el agente receptor...",
+    "cold": "Transferencia directa",
+    "warm": "Consultar primero"
+  },
+  "wrap_up": {
+    "title": "Post-atención",
+    "disposition": "Disposición",
+    "notes": "Notas",
+    "submit": "Completar"
+  },
+  "context": {
+    "contact_info": "Información del cliente",
+    "history": "Historial",
+    "notes": "Notas",
+    "ai_assist": "Asistente IA"
+  },
+  "canned": {
+    "search_placeholder": "Buscar respuesta rápida...",
+    "no_results": "Sin resultados"
+  }
+}
