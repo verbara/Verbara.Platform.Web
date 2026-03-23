@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { MessageThread } from './message-thread';
+import { ReplyComposer } from './reply-composer';
 
 const channelIcons: Record<string, LucideIcon> = {
   whatsapp: MessageSquare,
@@ -76,12 +77,8 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
       {/* Message Thread */}
       <MessageThread conversationId={conversationId} />
 
-      {/* Reply Composer placeholder (Task 5) */}
-      <div className="shrink-0 border-t border-slate-200 px-4 py-3 dark:border-slate-700">
-        <div className="flex h-10 items-center justify-center rounded-lg border border-dashed border-slate-300 text-xs text-slate-400 dark:border-slate-600">
-          Reply composer — Task 5
-        </div>
-      </div>
+      {/* Reply Composer */}
+      <ReplyComposer conversationId={conversationId} contactName={conversation.contactName} />
     </div>
   );
 }
