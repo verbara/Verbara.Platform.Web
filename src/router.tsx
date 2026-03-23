@@ -19,6 +19,7 @@ const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page')
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
 const CampaignMonitorPage = lazy(() => import('@/operations/campaign-monitor/campaign-monitor-page'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
+const DashboardPage = lazy(() => import('@/analytics/dashboard/dashboard-page'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
 const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
 
@@ -164,12 +165,23 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        path: 'analytics/*',
+        path: 'analytics',
         element: (
           <LazyLoad>
             <AnalyticsLayout />
           </LazyLoad>
         ),
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          {
+            path: 'dashboard',
+            element: (
+              <LazyLoad>
+                <DashboardPage />
+              </LazyLoad>
+            ),
+          },
+        ],
       },
       {
         path: 'agent',
