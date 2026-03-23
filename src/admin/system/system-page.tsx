@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { formatDistanceToNow } from 'date-fns';
 import { Server, Save } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
@@ -17,36 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/core/ui/select';
-import { LicenseCard, type LicenseInfo } from './license-card';
+import { LicenseCard } from './license-card';
+import { useSystemLicense, useSystemCluster } from '@/core/api/hooks/use-system';
 
-/* ---------- Mock data ---------- */
-
-const MOCK_LICENSE: LicenseInfo = {
-  tier: 'Pro',
-  maxAgents: 50,
-  expiresAt: '2027-01-15T00:00:00Z',
-  features: {
-    'pro.cluster': true,
-    'pro.dialer': true,
-    'pro.analytics': true,
-    'pro.routing': true,
-    'pro.agentassist': true,
-    'pro.callanalytics': false,
-    'pro.multitenant': false,
-  },
-};
-
-interface ClusterNode {
-  id: string;
-  role: string;
-  health: 'healthy' | 'degraded' | 'unhealthy';
-  lastHeartbeat: string;
-}
-
-const MOCK_CLUSTER_NODES: ClusterNode[] = [
-  { id: 'node-01', role: 'primary', health: 'healthy', lastHeartbeat: '2026-03-22T14:55:00Z' },
-  { id: 'node-02', role: 'secondary', health: 'healthy', lastHeartbeat: '2026-03-22T14:54:30Z' },
-];
+/* ---------- Constants ---------- */
 
 const COMMON_TIMEZONES = [
   'America/New_York',
@@ -91,8 +63,10 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export default function SystemPage() {
   const { t } = useTranslation(['admin']);
-  const [license] = useState<LicenseInfo>(MOCK_LICENSE);
-  const [nodes] = useState<ClusterNode[]>(MOCK_CLUSTER_NODES);
+  const { data: license } = useSystemLicense();
+  const { data: cluster } = useSystemCluster();
+
+  const nodes = cluster?.nodes ?? [];
 
   const {
     register,
@@ -123,7 +97,18 @@ export default function SystemPage() {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           {t('admin:system.license_tier')}
         </h2>
-        <LicenseCard license={license} />
+        {license ? (
+          <LicenseCard
+            license={{
+              tier: license.tier,
+              maxAgents: license.maxAgents,
+              expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+              features: license.features,
+            }}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('admin:system.loading')}</p>
+        )}
       </section>
 
       <Separator />
@@ -133,34 +118,29 @@ export default function SystemPage() {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           {t('admin:system.cluster')}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {nodes.map((node) => {
-            const healthStyle = HEALTH_STYLES[node.health] ?? { variant: 'destructive' as const, label: 'Unhealthy' };
-            return (
-              <div
-                key={node.id}
-                className="flex items-center gap-4 rounded-lg border bg-card p-4 shadow-sm"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Server className="h-5 w-5" />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium">{node.id}</p>
-                    <Badge variant="outline" className="text-[10px]">
-                      {node.role}
-                    </Badge>
+        {nodes.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {nodes.map((node) => {
+              const healthStyle = HEALTH_STYLES[node.status] ?? { variant: 'destructive' as const, label: node.status };
+              return (
+                <div
+                  key={node.id}
+                  className="flex items-center gap-4 rounded-lg border bg-card p-4 shadow-sm"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Server className="h-5 w-5" />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {t('admin:system.last_heartbeat')}:{' '}
-                    {formatDistanceToNow(new Date(node.lastHeartbeat), { addSuffix: true })}
-                  </p>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium">{node.id}</p>
+                  </div>
+                  <Badge variant={healthStyle.variant}>{healthStyle.label}</Badge>
                 </div>
-                <Badge variant={healthStyle.variant}>{healthStyle.label}</Badge>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('admin:system.no_nodes')}</p>
+        )}
       </section>
 
       <Separator />

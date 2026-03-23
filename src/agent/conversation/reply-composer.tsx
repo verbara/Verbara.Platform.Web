@@ -3,6 +3,7 @@ import { Paperclip, Send, X, FileIcon } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
 import { useDraftStore } from '@/agent/stores/draft-store';
 import { useConversationStore, type Message } from '@/agent/stores/conversation-store';
+import { useSendMessage } from '@/core/api/hooks/use-conversations';
 import { CannedResponses } from './canned-responses';
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
@@ -35,6 +36,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
   const setDraft = useDraftStore((s) => s.setDraft);
   const clearDraft = useDraftStore((s) => s.clearDraft);
   const addMessage = useConversationStore((s) => s.addMessage);
+  const sendMessageMutation = useSendMessage();
 
   // Restore draft when conversation switches
   useEffect(() => {
@@ -132,6 +134,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
         : undefined,
     };
 
+    // Optimistically add to store
     addMessage(conversationId, message);
     setText('');
     clearDraft(conversationId);
@@ -142,7 +145,10 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-  }, [text, attachments, conversationId, addMessage, clearDraft]);
+
+    // Send to API
+    sendMessageMutation.mutate({ conversationId, text: trimmed });
+  }, [text, attachments, conversationId, addMessage, clearDraft, sendMessageMutation]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

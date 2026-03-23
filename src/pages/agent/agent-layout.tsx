@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { initConversationSSE } from '@/agent/stores/conversation-store';
 import { InboxPanel } from '@/agent/inbox/inbox-panel';
 import { ContextPanel } from '@/agent/context/context-panel';
 import { AgentTour } from '@/agent/tour/agent-tour';
@@ -10,6 +11,10 @@ export default function AgentLayout() {
 
   const toggleContext = useCallback(() => {
     setContextOpen((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    initConversationSSE();
   }, []);
 
   useEffect(() => {

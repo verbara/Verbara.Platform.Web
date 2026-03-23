@@ -3,72 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { es, enUS, ptBR } from 'date-fns/locale';
 import { Clock, MessageSquare } from 'lucide-react';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-
-interface PastConversation {
-  id: string;
-  date: string;
-  channel: string;
-  queueName: string;
-  disposition: string;
-  durationSeconds: number;
-}
-
-const MOCK_HISTORY: Record<string, PastConversation[]> = {
-  'c-101': [
-    {
-      id: 'h-1',
-      date: new Date(Date.now() - 3 * 86_400_000).toISOString(),
-      channel: 'whatsapp',
-      queueName: 'support',
-      disposition: 'resolved',
-      durationSeconds: 420,
-    },
-    {
-      id: 'h-2',
-      date: new Date(Date.now() - 14 * 86_400_000).toISOString(),
-      channel: 'email',
-      queueName: 'billing',
-      disposition: 'escalated',
-      durationSeconds: 1800,
-    },
-  ],
-  'c-102': [
-    {
-      id: 'h-3',
-      date: new Date(Date.now() - 7 * 86_400_000).toISOString(),
-      channel: 'email',
-      queueName: 'billing',
-      disposition: 'resolved',
-      durationSeconds: 900,
-    },
-  ],
-  'c-103': [
-    {
-      id: 'h-4',
-      date: new Date(Date.now() - 2 * 86_400_000).toISOString(),
-      channel: 'webchat',
-      queueName: 'sales',
-      disposition: 'follow_up',
-      durationSeconds: 600,
-    },
-    {
-      id: 'h-5',
-      date: new Date(Date.now() - 10 * 86_400_000).toISOString(),
-      channel: 'webchat',
-      queueName: 'sales',
-      disposition: 'resolved',
-      durationSeconds: 300,
-    },
-    {
-      id: 'h-6',
-      date: new Date(Date.now() - 30 * 86_400_000).toISOString(),
-      channel: 'email',
-      queueName: 'support',
-      disposition: 'no_response',
-      durationSeconds: 0,
-    },
-  ],
-};
+import { useContactConversations } from '@/core/api/hooks/use-contacts';
 
 const dateLocales: Record<string, typeof enUS> = {
   'es-419': es,
@@ -99,7 +34,7 @@ export function ConversationHistory() {
 
   const conversation = selectedId ? conversations[selectedId] : null;
   const contactId = conversation?.contactId;
-  const history = contactId ? MOCK_HISTORY[contactId] ?? [] : [];
+  const { data: history = [] } = useContactConversations(contactId);
 
   const locale = dateLocales[i18n.language] ?? es;
 
@@ -120,7 +55,7 @@ export function ConversationHistory() {
               {channelLabels[item.channel] ?? item.channel}
             </span>
             <span className="text-xs text-slate-400">
-              {formatDistanceToNow(new Date(item.date), { addSuffix: true, locale })}
+              {formatDistanceToNow(new Date(item.closedAt ?? item.createdAt), { addSuffix: true, locale })}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
@@ -130,12 +65,14 @@ export function ConversationHistory() {
             </span>
             <span className="flex items-center gap-1">
               <Clock size={12} />
-              {formatDuration(item.durationSeconds)}
+              {formatDuration(item.durationSeconds ?? 0)}
             </span>
           </div>
-          <span className="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-            {t(`agent:wrap_up.dispositions.${item.disposition}`, item.disposition)}
-          </span>
+          {item.disposition && (
+            <span className="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+              {t(`agent:wrap_up.dispositions.${item.disposition}`, item.disposition)}
+            </span>
+          )}
         </div>
       ))}
     </div>

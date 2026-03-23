@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Pencil,
@@ -19,8 +18,8 @@ import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { QueueForm } from './queue-form';
-import { MOCK_QUEUES } from './queues-page';
-import { MOCK_AGENTS } from '@/admin/agents/agents-page';
+import { useQueue, useQueues, useDeleteQueue, useUpdateQueue } from '@/core/api/hooks/use-queues';
+import { useAgents } from '@/core/api/hooks/use-agents';
 
 function InfoRow({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: React.ReactNode }) {
   return (
@@ -41,10 +40,11 @@ export default function QueueDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data: queue } = useQuery({
-    queryKey: ['queues', queueId],
-    queryFn: async () => MOCK_QUEUES.find((q) => q.id === queueId) ?? null,
-  });
+  const { data: queue } = useQueue(queueId);
+  const { data: allQueues = [] } = useQueues();
+  const { data: allAgents = [] } = useAgents();
+  const deleteQueue = useDeleteQueue();
+  const updateQueue = useUpdateQueue();
 
   if (!queue) {
     return (
@@ -55,12 +55,15 @@ export default function QueueDetailPage() {
   }
 
   const handleDelete = () => {
-    // TODO: call API to delete queue
-    setDeleteOpen(false);
-    navigate('/admin/queues');
+    deleteQueue.mutate(queue.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        navigate('/admin/queues');
+      },
+    });
   };
 
-  const assignedAgents = MOCK_AGENTS.filter((a) => queue.agentIds.includes(a.id));
+  const assignedAgents = allAgents.filter((a) => queue.agentIds.includes(a.id));
 
   const editDefaults = {
     name: queue.name,
@@ -80,7 +83,7 @@ export default function QueueDetailPage() {
   };
 
   const overflowTarget = queue.overflowRule
-    ? MOCK_QUEUES.find((q) => q.id === queue.overflowRule!.overflowQueueId)?.name ?? queue.overflowRule.overflowQueueId
+    ? allQueues.find((q) => q.id === queue.overflowRule!.overflowQueueId)?.name ?? queue.overflowRule.overflowQueueId
     : null;
 
   return (
@@ -257,6 +260,31 @@ export default function QueueDetailPage() {
         onOpenChange={setEditOpen}
         mode="edit"
         defaultValues={editDefaults}
+        onSubmit={(values) =>
+          updateQueue.mutate({
+            id: queue.id,
+            name: values.name,
+            isActive: values.isActive,
+            maxWaiting: values.maxWaiting ? Number(values.maxWaiting) : undefined,
+            timezone: values.timezone || undefined,
+            slaTargets: {
+              answerWithinSeconds: values.answerWithinSeconds ? Number(values.answerWithinSeconds) : undefined,
+              firstResponseWithinSeconds: values.firstResponseWithinSeconds ? Number(values.firstResponseWithinSeconds) : undefined,
+              resolutionWithinSeconds: values.resolutionWithinSeconds ? Number(values.resolutionWithinSeconds) : undefined,
+            },
+            overflowRule: values.overflowQueueId
+              ? { overflowQueueId: values.overflowQueueId, overflowAfterSeconds: Number(values.overflowAfterSeconds) || 120 }
+              : undefined,
+            wrapUp: {
+              defaultWrapUpSeconds: Number(values.defaultWrapUpSeconds) || 30,
+              forceWrapUp: values.forceWrapUp,
+            },
+            requiredSkills: values.requiredSkills.map((s) => s.name),
+            schedule: values.schedule,
+            dispositionCodes: values.dispositions.map((d) => d.code),
+            agentIds: queue.agentIds,
+          })
+        }
       />
 
       {/* Delete confirmation dialog */}

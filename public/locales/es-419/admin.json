@@ -58,5 +58,23 @@
     "bannerResume": "Continuar configuraci\u00f3n",
     "bannerDismiss": "Descartar"
   },
-  "system": { "title": "Sistema", "license_tier": "Nivel de licencia", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes m\u00e1x.", "expires": "Expira", "enabled": "Activo", "disabled": "Bloqueado", "license_expired": "La licencia ha expirado. Por favor renueve.", "license_expiring_soon": "La licencia expira en {{days}} d\u00edas.", "last_heartbeat": "\u00daltimo heartbeat", "settings": "Configuraci\u00f3n", "platform_name": "Nombre de plataforma", "default_timezone": "Zona horaria predeterminada", "default_language": "Idioma predeterminado", "save": "Guardar configuraci\u00f3n" }
+  "system": { "title": "Sistema", "license_tier": "Nivel de licencia", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Activo", "disabled": "Bloqueado", "license_expired": "La licencia ha expirado. Por favor renueve.", "license_expiring_soon": "La licencia expira en {{days}} días.", "last_heartbeat": "Último heartbeat", "settings": "Configuración", "platform_name": "Nombre de plataforma", "default_timezone": "Zona horaria predeterminada", "default_language": "Idioma predeterminado", "save": "Guardar configuración" },
+  "api": {
+    "userCreated": "Usuario creado",
+    "userUpdated": "Usuario actualizado",
+    "userDeleted": "Usuario eliminado",
+    "agentCreated": "Agente creado",
+    "agentUpdated": "Agente actualizado",
+    "teamCreated": "Equipo creado",
+    "teamUpdated": "Equipo actualizado",
+    "teamDeleted": "Equipo eliminado",
+    "queueCreated": "Cola creada",
+    "queueUpdated": "Cola actualizada",
+    "queueDeleted": "Cola eliminada",
+    "flowCreated": "Flujo creado",
+    "flowUpdated": "Flujo actualizado",
+    "flowPublished": "Flujo publicado",
+    "channelUpdated": "Canal actualizado",
+    "operationFailed": "Operación fallida"
+  }
 }

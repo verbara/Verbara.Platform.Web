@@ -58,5 +58,23 @@
     "bannerResume": "Resume setup",
     "bannerDismiss": "Dismiss"
   },
-  "system": { "title": "System", "license_tier": "License tier", "features": "Features", "cluster": "Cluster", "max_agents": "Max agents", "expires": "Expires", "enabled": "Enabled", "disabled": "Locked", "license_expired": "License has expired. Please renew.", "license_expiring_soon": "License expires in {{days}} days.", "last_heartbeat": "Last heartbeat", "settings": "Settings", "platform_name": "Platform name", "default_timezone": "Default timezone", "default_language": "Default language", "save": "Save settings" }
+  "system": { "title": "System", "license_tier": "License tier", "features": "Features", "cluster": "Cluster", "max_agents": "Max agents", "expires": "Expires", "enabled": "Enabled", "disabled": "Locked", "license_expired": "License has expired. Please renew.", "license_expiring_soon": "License expires in {{days}} days.", "last_heartbeat": "Last heartbeat", "settings": "Settings", "platform_name": "Platform name", "default_timezone": "Default timezone", "default_language": "Default language", "save": "Save settings" },
+  "api": {
+    "userCreated": "User created",
+    "userUpdated": "User updated",
+    "userDeleted": "User deleted",
+    "agentCreated": "Agent created",
+    "agentUpdated": "Agent updated",
+    "teamCreated": "Team created",
+    "teamUpdated": "Team updated",
+    "teamDeleted": "Team deleted",
+    "queueCreated": "Queue created",
+    "queueUpdated": "Queue updated",
+    "queueDeleted": "Queue deleted",
+    "flowCreated": "Flow created",
+    "flowUpdated": "Flow updated",
+    "flowPublished": "Flow published",
+    "channelUpdated": "Channel updated",
+    "operationFailed": "Operation failed"
+  }
 }

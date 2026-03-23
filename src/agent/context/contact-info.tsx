@@ -3,73 +3,7 @@ import { Copy, Check, User, Phone, Mail, Building2, Globe, MessageSquare } from 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-
-interface Contact {
-  name: string;
-  phone: string;
-  email: string;
-  company: string;
-  channel: string;
-  language: string;
-  addresses: Record<string, string>;
-}
-
-const MOCK_CONTACTS: Record<string, Contact> = {
-  'c-101': {
-    name: 'Ana Martinez',
-    phone: '+57 300 123 4567',
-    email: 'ana.martinez@example.com',
-    company: 'Acme Corp',
-    channel: 'whatsapp',
-    language: 'es',
-    addresses: { whatsapp: '+57 300 123 4567', email: 'ana.martinez@example.com' },
-  },
-  'c-102': {
-    name: 'Carlos Rivera',
-    phone: '+57 311 987 6543',
-    email: 'carlos.rivera@example.com',
-    company: 'TechStart SAS',
-    channel: 'email',
-    language: 'es',
-    addresses: { email: 'carlos.rivera@example.com' },
-  },
-  'c-103': {
-    name: 'Laura Chen',
-    phone: '+1 415 555 0198',
-    email: 'laura.chen@example.com',
-    company: 'GlobalTech Inc',
-    channel: 'webchat',
-    language: 'en',
-    addresses: { webchat: 'laura.chen', email: 'laura.chen@example.com' },
-  },
-  'c-104': {
-    name: 'Pedro Gomez',
-    phone: '+57 320 456 7890',
-    email: 'pedro.gomez@example.com',
-    company: 'Distribuciones del Valle',
-    channel: 'voice',
-    language: 'es',
-    addresses: { voice: '+57 320 456 7890', email: 'pedro.gomez@example.com' },
-  },
-  'c-105': {
-    name: 'Sofia Nguyen',
-    phone: '+1 212 555 0147',
-    email: 'sofia.nguyen@example.com',
-    company: 'Bright Solutions',
-    channel: 'sms',
-    language: 'en',
-    addresses: { sms: '+1 212 555 0147', email: 'sofia.nguyen@example.com' },
-  },
-  'c-106': {
-    name: 'Diego Fernandez',
-    phone: '+54 911 2345 6789',
-    email: 'diego.fernandez@example.com',
-    company: 'MediosPay AR',
-    channel: 'telegram',
-    language: 'es',
-    addresses: { telegram: '@diego_f', email: 'diego.fernandez@example.com' },
-  },
-};
+import { useContact } from '@/core/api/hooks/use-contacts';
 
 function CopyButton({ value }: { value: string }) {
   const { t } = useTranslation(['agent']);
@@ -120,13 +54,29 @@ function InfoRow({
   );
 }
 
+const channelLabels: Record<string, string> = {
+  whatsapp: 'WhatsApp',
+  email: 'Email',
+  webchat: 'Web Chat',
+  voice: 'Voice',
+  sms: 'SMS',
+  telegram: 'Telegram',
+};
+
+const languageLabels: Record<string, string> = {
+  es: 'Español',
+  en: 'English',
+  pt: 'Português',
+};
+
 export function ContactInfo() {
   const { t } = useTranslation(['agent']);
   const selectedId = useConversationStore((s) => s.selectedId);
   const conversations = useConversationStore((s) => s.conversations);
 
   const conversation = selectedId ? conversations[selectedId] : null;
-  const contact = conversation ? MOCK_CONTACTS[conversation.contactId] : null;
+  const contactId = conversation?.contactId;
+  const { data: contact } = useContact(contactId);
 
   if (!contact) {
     return (
@@ -136,47 +86,36 @@ export function ContactInfo() {
     );
   }
 
-  const channelLabels: Record<string, string> = {
-    whatsapp: 'WhatsApp',
-    email: 'Email',
-    webchat: 'Web Chat',
-    voice: 'Voice',
-    sms: 'SMS',
-    telegram: 'Telegram',
-  };
-
-  const languageLabels: Record<string, string> = {
-    es: 'Español',
-    en: 'English',
-    pt: 'Português',
-  };
+  const displayName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || '—';
+  const phone = contact.addresses.find((a) => a.channel === 'voice' || a.channel === 'sms')?.address ?? '—';
+  const email = contact.addresses.find((a) => a.channel === 'email')?.address ?? '—';
 
   return (
     <div className="space-y-1 p-4">
-      <InfoRow icon={User} label={t('agent:context.name')} value={contact.name} />
-      <InfoRow icon={Phone} label={t('agent:context.phone')} value={contact.phone} copyable />
-      <InfoRow icon={Mail} label={t('agent:context.email')} value={contact.email} copyable />
-      <InfoRow icon={Building2} label={t('agent:context.company')} value={contact.company} />
+      <InfoRow icon={User} label={t('agent:context.name')} value={displayName} />
+      <InfoRow icon={Phone} label={t('agent:context.phone')} value={phone} copyable={phone !== '—'} />
+      <InfoRow icon={Mail} label={t('agent:context.email')} value={email} copyable={email !== '—'} />
+      <InfoRow icon={Building2} label={t('agent:context.company')} value={contact.company ?? '—'} />
       <InfoRow
         icon={MessageSquare}
         label={t('agent:context.preferred_channel')}
-        value={channelLabels[contact.channel] ?? contact.channel}
+        value={channelLabels[contact.preferredChannel ?? ''] ?? contact.preferredChannel ?? '—'}
       />
       <InfoRow
         icon={Globe}
         label={t('agent:context.language')}
-        value={languageLabels[contact.language] ?? contact.language}
+        value={languageLabels[contact.preferredLanguage ?? ''] ?? contact.preferredLanguage ?? '—'}
       />
 
-      {Object.keys(contact.addresses).length > 0 && (
+      {contact.addresses.length > 0 && (
         <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-700">
           <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             {t('agent:context.addresses')}
           </p>
-          {Object.entries(contact.addresses).map(([ch, addr]) => (
-            <div key={ch} className="flex items-center justify-between py-1">
-              <span className="text-xs text-slate-500 capitalize">{channelLabels[ch] ?? ch}</span>
-              <span className="text-xs text-slate-700 dark:text-slate-300">{addr}</span>
+          {contact.addresses.map((addr) => (
+            <div key={`${addr.channel}-${addr.address}`} className="flex items-center justify-between py-1">
+              <span className="text-xs text-slate-500 capitalize">{channelLabels[addr.channel] ?? addr.channel}</span>
+              <span className="text-xs text-slate-700 dark:text-slate-300">{addr.address}</span>
             </div>
           ))}
         </div>

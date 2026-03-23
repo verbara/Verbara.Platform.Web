@@ -20,16 +20,8 @@ import {
   SheetFooter,
 } from '@/core/ui/sheet';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-
-const DISPOSITION_CODES = [
-  'resolved',
-  'escalated',
-  'no_response',
-  'spam',
-  'follow_up',
-] as const;
-
-type DispositionCode = (typeof DISPOSITION_CODES)[number];
+import { useDispositions } from '@/core/api/hooks/use-dispositions';
+import { useWrapUp } from '@/core/api/hooks/use-conversations';
 
 interface WrapUpDialogProps {
   open: boolean;
@@ -45,21 +37,25 @@ export function WrapUpDialog({
   const { t } = useTranslation('agent');
   const removeConversation = useConversationStore((s) => s.removeConversation);
 
-  const [disposition, setDisposition] = useState<DispositionCode | null>(null);
+  const { data: dispositions = [] } = useDispositions();
+  const wrapUpMutation = useWrapUp();
+
+  const [disposition, setDisposition] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   function handleSubmit() {
     if (!disposition) return;
-    setSubmitting(true);
 
-    // Mock API call
-    setTimeout(() => {
-      removeConversation(conversationId);
-      toast.success(t('wrap_up.success'));
-      setSubmitting(false);
-      resetAndClose();
-    }, 400);
+    wrapUpMutation.mutate(
+      { id: conversationId, dispositionId: disposition, notes },
+      {
+        onSuccess: () => {
+          removeConversation(conversationId);
+          toast.success(t('wrap_up.success'));
+          resetAndClose();
+        },
+      },
+    );
   }
 
   function resetAndClose() {
@@ -82,15 +78,15 @@ export function WrapUpDialog({
             <Label>{t('wrap_up.disposition')}</Label>
             <Select
               value={disposition ?? undefined}
-              onValueChange={(v) => setDisposition(v as DispositionCode)}
+              onValueChange={(v) => setDisposition(v)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('wrap_up.select_disposition')} />
               </SelectTrigger>
               <SelectContent>
-                {DISPOSITION_CODES.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {t(`wrap_up.dispositions.${code}`)}
+                {dispositions.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -114,7 +110,7 @@ export function WrapUpDialog({
           <Button variant="outline" onClick={resetAndClose}>
             {t('conversation.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={!disposition || submitting}>
+          <Button onClick={handleSubmit} disabled={!disposition || wrapUpMutation.isPending}>
             {t('wrap_up.submit')}
           </Button>
         </SheetFooter>

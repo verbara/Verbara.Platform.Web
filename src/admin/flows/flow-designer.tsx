@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState, type DragEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type DragEvent } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   ReactFlow,
   Background,
@@ -8,6 +9,7 @@ import {
   useEdgesState,
   type OnConnect,
   type Node,
+  type Edge,
   BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -15,6 +17,8 @@ import { nodeTypes } from './nodes';
 import NodePalette from './node-palette';
 import PropertyPanel from './property-panel';
 import FlowToolbar from './flow-toolbar';
+import { useFlow, useUpdateFlow, usePublishFlow } from '@/core/api/hooks/use-flows';
+import { toReactFlow, toDomain } from './flow-utils';
 
 // ---------------------------------------------------------------------------
 // Flow Designer — full-width canvas with node palette + property panel
@@ -26,11 +30,30 @@ function generateId() {
 }
 
 export default function FlowDesigner() {
+  const { flowId } = useParams<{ flowId: string }>();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([] as Edge[]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [flowName, setFlowName] = useState('Untitled Flow');
+  const [version, setVersion] = useState(1);
+  const [isPublished, setIsPublished] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+  const { data: flow } = useFlow(flowId);
+  const updateFlow = useUpdateFlow();
+  const publishFlow = usePublishFlow();
+
+  // Load flow data when it arrives from API
+  useEffect(() => {
+    if (flow) {
+      const { nodes: rfNodes, edges: rfEdges } = toReactFlow(flow);
+      setNodes(rfNodes);
+      setEdges(rfEdges);
+      setFlowName(flow.name);
+      setVersion(flow.version);
+      setIsPublished(flow.isPublished);
+    }
+  }, [flow, setNodes, setEdges]);
 
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -94,15 +117,49 @@ export default function FlowDesigner() {
     [setNodes],
   );
 
+  // -----------------------------------------------------------------------
+  // Save & Publish
+  // -----------------------------------------------------------------------
+
+  const handleSave = useCallback(() => {
+    if (!flowId) return;
+    const domainNodes = toDomain(nodes, edges);
+    updateFlow.mutate({
+      id: flowId,
+      name: flowName,
+      nodes: domainNodes,
+    });
+  }, [flowId, flowName, nodes, edges, updateFlow]);
+
+  const handlePublish = useCallback(() => {
+    if (!flowId) return;
+    // Save first, then publish
+    const domainNodes = toDomain(nodes, edges);
+    updateFlow.mutate(
+      { id: flowId, name: flowName, nodes: domainNodes },
+      {
+        onSuccess: () => {
+          publishFlow.mutate(flowId, {
+            onSuccess: () => setIsPublished(true),
+          });
+        },
+      },
+    );
+  }, [flowId, flowName, nodes, edges, updateFlow, publishFlow]);
+
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
 
   return (
     <div className="flex h-full w-full flex-col">
       <FlowToolbar
         flowName={flowName}
-        version={1}
-        isPublished={false}
+        version={version}
+        isPublished={isPublished}
         onNameChange={setFlowName}
+        onSave={handleSave}
+        onPublish={handlePublish}
+        isSaving={updateFlow.isPending}
+        isPublishing={publishFlow.isPending}
       />
       <div className="flex min-h-0 flex-1">
       {/* Left — Node palette */}

@@ -16,18 +16,9 @@ import {
   SheetFooter,
 } from '@/core/ui/sheet';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-
-const MOCK_QUEUES = [
-  { id: 'q1', name: 'Support' },
-  { id: 'q2', name: 'Sales' },
-  { id: 'q3', name: 'Billing' },
-];
-
-const MOCK_AGENTS = [
-  { id: 'a1', name: 'John Smith', state: 'available' as const },
-  { id: 'a2', name: 'Jane Doe', state: 'available' as const },
-  { id: 'a3', name: 'Maria Garcia', state: 'busy' as const },
-];
+import { useQueues } from '@/core/api/hooks/use-queues';
+import { useAgents } from '@/core/api/hooks/use-agents';
+import { useTransferConversation } from '@/core/api/hooks/use-conversations';
 
 interface TransferDialogProps {
   open: boolean;
@@ -43,33 +34,42 @@ export function TransferDialog({
   const { t } = useTranslation('agent');
   const removeConversation = useConversationStore((s) => s.removeConversation);
 
+  const { data: queues = [] } = useQueues();
+  const { data: agents = [] } = useAgents();
+  const transferMutation = useTransferConversation();
+
   const [targetType, setTargetType] = useState<'queue' | 'agent'>('queue');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [note, setNote] = useState('');
   const [warm, setWarm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   const items =
     targetType === 'queue'
-      ? MOCK_QUEUES.filter((q) =>
-          q.name.toLowerCase().includes(search.toLowerCase()),
-        )
-      : MOCK_AGENTS.filter((a) =>
-          a.name.toLowerCase().includes(search.toLowerCase()),
-        );
+      ? queues
+          .filter((q) => q.name.toLowerCase().includes(search.toLowerCase()))
+          .map((q) => ({ id: q.id, name: q.name }))
+      : agents
+          .filter((a) =>
+            a.displayName.toLowerCase().includes(search.toLowerCase()),
+          )
+          .map((a) => ({ id: a.id, name: a.displayName, state: a.state }));
 
   function handleSubmit() {
     if (!selectedId) return;
-    setSubmitting(true);
 
-    // Mock API call
-    setTimeout(() => {
-      removeConversation(conversationId);
-      toast.success(t('transfer.success'));
-      setSubmitting(false);
-      resetAndClose();
-    }, 400);
+    const payload =
+      targetType === 'queue'
+        ? { id: conversationId, targetQueueId: selectedId }
+        : { id: conversationId, targetAgentId: selectedId };
+
+    transferMutation.mutate(payload, {
+      onSuccess: () => {
+        removeConversation(conversationId);
+        toast.success(t('transfer.success'));
+        resetAndClose();
+      },
+    });
   }
 
   function resetAndClose() {
@@ -198,7 +198,7 @@ export function TransferDialog({
           <Button variant="outline" onClick={resetAndClose}>
             {t('conversation.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={!selectedId || submitting}>
+          <Button onClick={handleSubmit} disabled={!selectedId || transferMutation.isPending}>
             {t('conversation.transfer')}
           </Button>
         </SheetFooter>

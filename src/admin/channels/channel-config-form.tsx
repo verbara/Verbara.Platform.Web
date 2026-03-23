@@ -16,6 +16,7 @@ import {
   SheetFooter,
 } from '@/core/ui/sheet';
 import { ChannelTestButton } from './channel-test-button';
+import { useUpdateChannel } from '@/core/api/hooks/use-channels';
 
 export interface FieldDef {
   key: string;
@@ -96,6 +97,7 @@ interface ChannelConfigFormProps {
 
 export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConfigFormProps) {
   const { t } = useTranslation(['admin']);
+  const updateChannel = useUpdateChannel();
   const fields = channelId ? (channelFields[channelId] ?? []) : [];
   const schema = useMemo(() => buildSchema(fields), [fields]);
 
@@ -119,9 +121,17 @@ export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConf
 
   const isActive = watch('isActive') as boolean;
 
-  const handleFormSubmit = handleSubmit(() => {
-    // TODO: persist channel config via API
-    onOpenChange(false);
+  const handleFormSubmit = handleSubmit((values) => {
+    if (!channelId) return;
+    const { isActive, ...rest } = values;
+    const credentials: Record<string, string> = {};
+    for (const [key, val] of Object.entries(rest)) {
+      if (typeof val === 'string') credentials[key] = val;
+    }
+    updateChannel.mutate(
+      { channelId, isActive: isActive as boolean, credentials },
+      { onSuccess: () => onOpenChange(false) },
+    );
   });
 
   const channelName = channelId
@@ -171,7 +181,7 @@ export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConf
 
           <SheetFooter className="mt-auto flex-row gap-2 px-0">
             {channelId && <ChannelTestButton channelId={channelId} />}
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || updateChannel.isPending}>
               {t('admin:channels.save')}
             </Button>
           </SheetFooter>
