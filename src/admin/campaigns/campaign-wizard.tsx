@@ -5,46 +5,92 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { ArrowLeft, ArrowRight, Save, Rocket } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { PageHeader } from '@/admin/shared/page-header';
+import BasicStep from './steps/basic-step';
+import DialingStep from './steps/dialing-step';
+import ScheduleStep from './steps/schedule-step';
+import ComplianceStep from './steps/compliance-step';
+import ContactsStep from './steps/contacts-step';
 
 const STEP_KEYS = ['basic', 'dialing', 'schedule', 'compliance', 'contacts'] as const;
 type StepKey = (typeof STEP_KEYS)[number];
 
-export interface CampaignFormValues {
-  name: string;
-  queueName: string;
-  mode: string;
-  // Dialing step
-  maxChannels: number;
-  // Schedule step
-  startTime: string;
-  endTime: string;
-  // Compliance step
-  dncEnabled: boolean;
-  // Contacts step
-  contactListId: string;
+export type DialingMode = 'preview' | 'progressive' | 'predictive' | 'power' | 'agentless';
+export type PacingStrategy = 'fixed' | 'adaptive' | 'timeBased';
+
+export interface ScheduleDay {
+  day: string;
+  enabled: boolean;
+  start: string;
+  end: string;
 }
+
+export interface CampaignFormValues {
+  // Basic
+  name: string;
+  description: string;
+  queueId: string;
+  teamId: string;
+  // Dialing
+  mode: DialingMode;
+  pacingStrategy: PacingStrategy;
+  pacingRatio: number;
+  pacingTargetWait: number;
+  maxChannels: number;
+  // Schedule
+  schedule: ScheduleDay[];
+  timezone: string;
+  holidays: string[];
+  campaignStart: string;
+  campaignEnd: string;
+  // Compliance
+  dncEnabled: boolean;
+  maxAttempts: number;
+  retryIntervalMinutes: number;
+  timeBetweenAttempts: number;
+  complianceNotes: string;
+  // Contacts
+  contactFile: string;
+  columnMapping: Record<string, string>;
+}
+
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const DEFAULT_VALUES: CampaignFormValues = {
   name: '',
-  queueName: '',
+  description: '',
+  queueId: '',
+  teamId: '',
   mode: 'preview',
+  pacingStrategy: 'fixed',
+  pacingRatio: 2,
+  pacingTargetWait: 15,
   maxChannels: 10,
-  startTime: '09:00',
-  endTime: '18:00',
+  schedule: DAYS.map((day) => ({
+    day,
+    enabled: !['Saturday', 'Sunday'].includes(day),
+    start: '09:00',
+    end: '18:00',
+  })),
+  timezone: 'America/New_York',
+  holidays: [],
+  campaignStart: '',
+  campaignEnd: '',
   dncEnabled: true,
-  contactListId: '',
+  maxAttempts: 3,
+  retryIntervalMinutes: 60,
+  timeBetweenAttempts: 30,
+  complianceNotes: '',
+  contactFile: '',
+  columnMapping: {},
 };
 
-function StepPlaceholder({ stepKey }: { stepKey: StepKey }) {
-  const { t } = useTranslation(['admin']);
-  return (
-    <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-muted-foreground/25">
-      <p className="text-sm text-muted-foreground">
-        {t(`admin:campaigns.step_${stepKey}`)} — {t('admin:campaigns.comingSoon')}
-      </p>
-    </div>
-  );
-}
+const STEP_COMPONENTS: Record<StepKey, React.ComponentType> = {
+  basic: BasicStep,
+  dialing: DialingStep,
+  schedule: ScheduleStep,
+  compliance: ComplianceStep,
+  contacts: ContactsStep,
+};
 
 export default function CampaignWizard() {
   const { t } = useTranslation(['admin']);
@@ -56,6 +102,7 @@ export default function CampaignWizard() {
   });
 
   const currentStepKey = STEP_KEYS[step] as StepKey;
+  const StepComponent = STEP_COMPONENTS[currentStepKey];
   const isFirst = step === 0;
   const isLast = step === STEP_KEYS.length - 1;
 
@@ -96,7 +143,7 @@ export default function CampaignWizard() {
       {/* Step content */}
       <FormProvider {...methods}>
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-          <StepPlaceholder stepKey={currentStepKey} />
+          <StepComponent />
 
           {/* Navigation buttons */}
           <div className="flex items-center justify-between border-t pt-4">
