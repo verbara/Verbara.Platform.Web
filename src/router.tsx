@@ -16,6 +16,8 @@ const ChannelsPage = lazy(() => import('@/admin/channels/channels-page'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
+const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
+const CampaignMonitorPage = lazy(() => import('@/operations/campaign-monitor/campaign-monitor-page'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
 const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
@@ -140,6 +142,22 @@ export const router = createBrowserRouter([
             element: (
               <LazyLoad>
                 <WallboardPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'agents',
+            element: (
+              <LazyLoad>
+                <AgentStatesPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'campaigns',
+            element: (
+              <LazyLoad>
+                <CampaignMonitorPage />
               </LazyLoad>
             ),
           },
