@@ -14,6 +14,7 @@ import '@xyflow/react/dist/style.css';
 import { nodeTypes } from './nodes';
 import NodePalette from './node-palette';
 import PropertyPanel from './property-panel';
+import FlowToolbar from './flow-toolbar';
 
 // ---------------------------------------------------------------------------
 // Flow Designer — full-width canvas with node palette + property panel
@@ -28,6 +29,7 @@ export default function FlowDesigner() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [flowName, setFlowName] = useState('Untitled Flow');
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   const onConnect: OnConnect = useCallback(
@@ -95,7 +97,14 @@ export default function FlowDesigner() {
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full w-full flex-col">
+      <FlowToolbar
+        flowName={flowName}
+        version={1}
+        isPublished={false}
+        onNameChange={setFlowName}
+      />
+      <div className="flex min-h-0 flex-1">
       {/* Left — Node palette */}
       <NodePalette />
 
@@ -125,6 +134,7 @@ export default function FlowDesigner() {
       {selectedNode && (
         <PropertyPanel node={selectedNode} onUpdate={handleNodeDataUpdate} />
       )}
+      </div>
     </div>
   );
 }
