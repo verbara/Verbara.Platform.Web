@@ -12,6 +12,7 @@ const AgentDetailPage = lazy(() => import('@/admin/agents/agent-detail'));
 const TeamsPage = lazy(() => import('@/admin/agents/teams-page'));
 const QueuesPage = lazy(() => import('@/admin/queues/queues-page'));
 const QueueDetailPage = lazy(() => import('@/admin/queues/queue-detail'));
+const ChannelsPage = lazy(() => import('@/admin/channels/channels-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
@@ -101,6 +102,14 @@ export const router = createBrowserRouter([
             element: (
               <LazyLoad>
                 <QueueDetailPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'channels',
+            element: (
+              <LazyLoad>
+                <ChannelsPage />
               </LazyLoad>
             ),
           },
