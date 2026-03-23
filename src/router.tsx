@@ -7,6 +7,9 @@ import { LoginPage } from '@/core/auth/login-page';
 const AdminLayout = lazy(() => import('@/pages/admin/admin-layout'));
 const UsersPage = lazy(() => import('@/admin/users/users-page'));
 const UserDetailPage = lazy(() => import('@/admin/users/user-detail'));
+const AgentsPage = lazy(() => import('@/admin/agents/agents-page'));
+const AgentDetailPage = lazy(() => import('@/admin/agents/agent-detail'));
+const TeamsPage = lazy(() => import('@/admin/agents/teams-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
@@ -56,6 +59,30 @@ export const router = createBrowserRouter([
             element: (
               <LazyLoad>
                 <UserDetailPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'agents',
+            element: (
+              <LazyLoad>
+                <AgentsPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'agents/:agentId',
+            element: (
+              <LazyLoad>
+                <AgentDetailPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'teams',
+            element: (
+              <LazyLoad>
+                <TeamsPage />
               </LazyLoad>
             ),
           },
