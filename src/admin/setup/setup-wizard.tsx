@@ -7,6 +7,8 @@ import { Button } from '@/core/ui/button';
 import { PageHeader } from '@/admin/shared/page-header';
 import { useUiStore } from '@/core/stores/ui-store';
 import WelcomeStep from './steps/welcome-step';
+import QueueStep from './steps/queue-step';
+import AgentStep from './steps/agent-step';
 
 const STEP_KEYS = ['welcome', 'queue', 'agent', 'channel', 'test'] as const;
 type StepKey = (typeof STEP_KEYS)[number];
@@ -39,8 +41,8 @@ function StepPlaceholder({ name }: { name: string }) {
 
 const STEP_COMPONENTS: Record<StepKey, React.ComponentType> = {
   welcome: WelcomeStep,
-  queue: () => <StepPlaceholder name="Queue" />,
-  agent: () => <StepPlaceholder name="Agent" />,
+  queue: QueueStep,
+  agent: AgentStep,
   channel: () => <StepPlaceholder name="Channel" />,
   test: () => <StepPlaceholder name="Test" />,
 };
