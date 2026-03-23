@@ -1,0 +1,46 @@
+{
+  "sidebar": {
+    "wallboard": "Wallboard",
+    "agent_states": "Agent States",
+    "campaigns": "Campaigns"
+  },
+  "wallboard": {
+    "title": "Real-time Wallboard",
+    "total_active": "Active Conversations",
+    "total_agents": "Agents Online",
+    "global_sla": "Global SLA",
+    "waiting": "Waiting",
+    "avg_wait": "Avg Wait",
+    "sla": "SLA",
+    "available": "Available",
+    "busy": "Busy",
+    "away": "Away",
+    "kiosk_enter": "Kiosk Mode",
+    "kiosk_exit": "Exit (Esc)"
+  },
+  "agent_states": {
+    "title": "Agent States",
+    "name": "Name",
+    "team": "Team",
+    "state": "State",
+    "duration": "Duration",
+    "conversations": "Conversations",
+    "force_offline": "Force Offline",
+    "view_conversations": "View Conversations"
+  },
+  "campaigns": {
+    "title": "Campaign Monitor",
+    "remaining": "Remaining",
+    "dialed": "Dialed",
+    "connect_rate": "Connect Rate",
+    "abandon_rate": "Abandon Rate",
+    "active_calls": "Active Calls",
+    "pacing": "Pacing",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "active": "Active",
+    "paused": "Paused",
+    "all": "All"
+  }
+}

@@ -15,7 +15,13 @@ const QueueDetailPage = lazy(() => import('@/admin/queues/queue-detail'));
 const ChannelsPage = lazy(() => import('@/admin/channels/channels-page'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
+const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
+const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
+const CampaignMonitorPage = lazy(() => import('@/operations/campaign-monitor/campaign-monitor-page'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
+const DashboardPage = lazy(() => import('@/analytics/dashboard/dashboard-page'));
+const CdrPage = lazy(() => import('@/analytics/cdr/cdr-page'));
+const QaPage = lazy(() => import('@/analytics/qa/qa-page'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
 const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
 
@@ -126,20 +132,74 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        path: 'operations/*',
+        path: 'operations',
         element: (
           <LazyLoad>
             <OperationsLayout />
           </LazyLoad>
         ),
+        children: [
+          { index: true, element: <Navigate to="wallboard" replace /> },
+          {
+            path: 'wallboard',
+            element: (
+              <LazyLoad>
+                <WallboardPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'agents',
+            element: (
+              <LazyLoad>
+                <AgentStatesPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'campaigns',
+            element: (
+              <LazyLoad>
+                <CampaignMonitorPage />
+              </LazyLoad>
+            ),
+          },
+        ],
       },
       {
-        path: 'analytics/*',
+        path: 'analytics',
         element: (
           <LazyLoad>
             <AnalyticsLayout />
           </LazyLoad>
         ),
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          {
+            path: 'dashboard',
+            element: (
+              <LazyLoad>
+                <DashboardPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'cdr',
+            element: (
+              <LazyLoad>
+                <CdrPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'qa',
+            element: (
+              <LazyLoad>
+                <QaPage />
+              </LazyLoad>
+            ),
+          },
+        ],
       },
       {
         path: 'agent',

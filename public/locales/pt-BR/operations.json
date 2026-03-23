@@ -1,0 +1,46 @@
+{
+  "sidebar": {
+    "wallboard": "Painel",
+    "agent_states": "Estados dos agentes",
+    "campaigns": "Campanhas"
+  },
+  "wallboard": {
+    "title": "Painel em tempo real",
+    "total_active": "Conversas ativas",
+    "total_agents": "Agentes online",
+    "global_sla": "SLA Global",
+    "waiting": "Em espera",
+    "avg_wait": "Espera media",
+    "sla": "SLA",
+    "available": "Disponiveis",
+    "busy": "Ocupados",
+    "away": "Ausentes",
+    "kiosk_enter": "Modo quiosque",
+    "kiosk_exit": "Sair (Esc)"
+  },
+  "agent_states": {
+    "title": "Estados dos agentes",
+    "name": "Nome",
+    "team": "Equipe",
+    "state": "Estado",
+    "duration": "Duracao",
+    "conversations": "Conversas",
+    "force_offline": "Forcar desconexao",
+    "view_conversations": "Ver conversas"
+  },
+  "campaigns": {
+    "title": "Monitor de campanhas",
+    "remaining": "Restantes",
+    "dialed": "Discados",
+    "connect_rate": "Taxa de conexao",
+    "abandon_rate": "Taxa de abandono",
+    "active_calls": "Chamadas ativas",
+    "pacing": "Ritmo",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "stop": "Parar",
+    "active": "Ativas",
+    "paused": "Pausadas",
+    "all": "Todas"
+  }
+}

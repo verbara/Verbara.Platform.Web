@@ -1,0 +1,95 @@
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from 'recharts';
+
+interface TrendChartProps {
+  title: string;
+  type: 'area' | 'line' | 'pie';
+  data: Record<string, unknown>[];
+  dataKey: string;
+  nameKey?: string;
+  color?: string;
+  colors?: string[];
+}
+
+const DEFAULT_COLOR = '#6366f1';
+const PIE_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+export function TrendChart({
+  title,
+  type,
+  data,
+  dataKey,
+  nameKey = 'name',
+  color = DEFAULT_COLOR,
+  colors = PIE_COLORS,
+}: TrendChartProps) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
+      <p className="mb-4 text-sm font-medium text-slate-700 dark:text-slate-300">{title}</p>
+      <div className="h-56">
+        <ResponsiveContainer width="100%" height="100%">
+          {type === 'area' ? (
+            <AreaChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey={nameKey} tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <Tooltip />
+              <Area
+                type="monotone"
+                dataKey={dataKey}
+                stroke={color}
+                fill={color}
+                fillOpacity={0.15}
+                strokeWidth={2}
+              />
+            </AreaChart>
+          ) : type === 'line' ? (
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey={nameKey} tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" domain={[0, 100]} />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey={dataKey}
+                stroke={color}
+                strokeWidth={2}
+                dot={{ r: 3 }}
+              />
+            </LineChart>
+          ) : (
+            <PieChart>
+              <Tooltip />
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius={50}
+                outerRadius={80}
+                dataKey={dataKey}
+                nameKey={nameKey}
+                paddingAngle={2}
+              >
+                {data.map((_, i) => (
+                  <Cell key={i} fill={colors[i % colors.length]} />
+                ))}
+              </Pie>
+            </PieChart>
+          )}
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
