@@ -19,7 +19,6 @@ import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { QueueForm } from './queue-form';
-import type { Queue } from './queues-page';
 import { MOCK_QUEUES } from './queues-page';
 import { MOCK_AGENTS } from '@/admin/agents/agents-page';
 
@@ -66,16 +65,16 @@ export default function QueueDetailPage() {
   const editDefaults = {
     name: queue.name,
     isActive: queue.isActive,
-    maxWaiting: queue.maxWaiting,
+    maxWaiting: queue.maxWaiting?.toString() ?? '',
     timezone: queue.timezone ?? '',
-    answerWithinSeconds: queue.slaTargets?.answerWithinSeconds,
-    firstResponseWithinSeconds: queue.slaTargets?.firstResponseWithinSeconds,
-    resolutionWithinSeconds: queue.slaTargets?.resolutionWithinSeconds,
+    answerWithinSeconds: queue.slaTargets?.answerWithinSeconds?.toString() ?? '',
+    firstResponseWithinSeconds: queue.slaTargets?.firstResponseWithinSeconds?.toString() ?? '',
+    resolutionWithinSeconds: queue.slaTargets?.resolutionWithinSeconds?.toString() ?? '',
     overflowQueueId: queue.overflowRule?.overflowQueueId ?? '',
-    overflowAfterSeconds: queue.overflowRule?.overflowAfterSeconds,
+    overflowAfterSeconds: queue.overflowRule?.overflowAfterSeconds?.toString() ?? '',
     requiredSkills: queue.requiredSkills.map((s) => ({ name: s })),
     schedule: queue.schedule,
-    defaultWrapUpSeconds: queue.wrapUp?.defaultWrapUpSeconds ?? 30,
+    defaultWrapUpSeconds: (queue.wrapUp?.defaultWrapUpSeconds ?? 30).toString(),
     forceWrapUp: queue.wrapUp?.forceWrapUp ?? false,
     dispositions: queue.dispositionCodes.map((code) => ({ code })),
   };

@@ -27,7 +27,7 @@ import { MOCK_AGENTS } from './agents-page';
 
 const skillSchema = z.object({
   name: z.string().min(1, 'Skill name is required'),
-  proficiency: z.coerce.number().min(1).max(10),
+  proficiency: z.number().min(1).max(10),
 });
 
 const agentSchema = z.object({

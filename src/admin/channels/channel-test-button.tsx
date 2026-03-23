@@ -8,7 +8,7 @@ interface ChannelTestButtonProps {
   channelId: string;
 }
 
-export function ChannelTestButton({ channelId }: ChannelTestButtonProps) {
+export function ChannelTestButton({ channelId: _channelId }: ChannelTestButtonProps) {
   const { t } = useTranslation(['admin']);
   const [testing, setTesting] = useState(false);
 

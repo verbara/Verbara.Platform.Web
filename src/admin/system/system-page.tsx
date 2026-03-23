@@ -135,7 +135,7 @@ export default function SystemPage() {
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {nodes.map((node) => {
-            const healthStyle = HEALTH_STYLES[node.health] ?? HEALTH_STYLES.unhealthy;
+            const healthStyle = HEALTH_STYLES[node.health] ?? { variant: 'destructive' as const, label: 'Unhealthy' };
             return (
               <div
                 key={node.id}
@@ -187,7 +187,7 @@ export default function SystemPage() {
           {/* Default timezone */}
           <div className="space-y-1.5">
             <Label>{t('admin:system.default_timezone')}</Label>
-            <Select value={watch('defaultTimezone')} onValueChange={(v) => setValue('defaultTimezone', v, { shouldDirty: true })}>
+            <Select value={watch('defaultTimezone')} onValueChange={(v) => setValue('defaultTimezone', v as string, { shouldDirty: true })}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -204,7 +204,7 @@ export default function SystemPage() {
           {/* Default language */}
           <div className="space-y-1.5">
             <Label>{t('admin:system.default_language')}</Label>
-            <Select value={watch('defaultLanguage')} onValueChange={(v) => setValue('defaultLanguage', v, { shouldDirty: true })}>
+            <Select value={watch('defaultLanguage')} onValueChange={(v) => setValue('defaultLanguage', v as string, { shouldDirty: true })}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>

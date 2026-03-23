@@ -32,7 +32,7 @@ function featureLabel(key: string): string {
 
 export function LicenseCard({ license }: { license: LicenseInfo }) {
   const { t } = useTranslation(['admin']);
-  const style = TIER_STYLES[license.tier] ?? TIER_STYLES.Community;
+  const style = TIER_STYLES[license.tier] ?? { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-200', border: 'border-slate-200 dark:border-slate-700' };
   const expiresDate = new Date(license.expiresAt);
   const daysUntilExpiry = Math.ceil((expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   const isExpiringSoon = daysUntilExpiry > 0 && daysUntilExpiry <= 30;
