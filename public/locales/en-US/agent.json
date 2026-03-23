@@ -82,5 +82,16 @@
   "canned": {
     "search_placeholder": "Search canned response...",
     "no_results": "No results"
+  },
+  "tour": {
+    "inbox": "Your Inbox",
+    "inboxDesc": "Conversations appear here. New ones highlight at the top.",
+    "chat": "Chat Area",
+    "chatDesc": "Chat with customers here. Use canned responses with /.",
+    "context": "Customer Context",
+    "contextDesc": "Customer info, history, and your notes live here.",
+    "next": "Next",
+    "gotIt": "Got it!",
+    "skipTour": "Skip tour"
   }
 }

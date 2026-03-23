@@ -80,7 +80,18 @@
     "delete_note": "Excluir nota"
   },
   "canned": {
-    "search_placeholder": "Buscar resposta rápida...",
+    "search_placeholder": "Buscar resposta r\u00e1pida...",
     "no_results": "Sem resultados"
+  },
+  "tour": {
+    "inbox": "Sua caixa de entrada",
+    "inboxDesc": "As conversas aparecem aqui. As novas ficam destacadas no topo.",
+    "chat": "\u00c1rea de chat",
+    "chatDesc": "Converse com clientes aqui. Use respostas r\u00e1pidas com /.",
+    "context": "Contexto do cliente",
+    "contextDesc": "Informa\u00e7\u00f5es do cliente, hist\u00f3rico e suas notas ficam aqui.",
+    "next": "Pr\u00f3ximo",
+    "gotIt": "Entendi!",
+    "skipTour": "Pular tour"
   }
 }
