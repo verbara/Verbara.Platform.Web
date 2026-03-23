@@ -1,0 +1,104 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { customFetch } from '@/core/api/client';
+import { toast } from 'sonner';
+
+export interface FlowNodeDto {
+  nodeId: string;
+  type: string;
+  config: Record<string, string>;
+  edges: { condition: string; targetNodeId: string }[];
+}
+
+export interface FlowDefinition {
+  flowId: string;
+  name: string;
+  version: number;
+  isPublished: boolean;
+  updatedAt: string;
+  nodes: FlowNodeDto[];
+}
+
+export function useFlows() {
+  return useQuery({
+    queryKey: ['flows'],
+    queryFn: () =>
+      customFetch<FlowDefinition[]>({
+        url: '/api/admin/flows',
+        method: 'GET',
+      }),
+  });
+}
+
+export function useFlow(id: string | undefined) {
+  return useQuery({
+    queryKey: ['flows', id],
+    queryFn: () =>
+      customFetch<FlowDefinition>({
+        url: `/api/admin/flows/${id}`,
+        method: 'GET',
+      }),
+    enabled: !!id,
+  });
+}
+
+export function useCreateFlow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      entryNodeId: string;
+      nodes: FlowNodeDto[];
+    }) =>
+      customFetch<FlowDefinition>({
+        url: '/api/admin/flows',
+        method: 'POST',
+        data,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['flows'] });
+      toast.success('Flow created');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useUpdateFlow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      name?: string;
+      entryNodeId?: string;
+      nodes?: FlowNodeDto[];
+    }) =>
+      customFetch<FlowDefinition>({
+        url: `/api/admin/flows/${id}`,
+        method: 'PUT',
+        data,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['flows'] });
+      toast.success('Flow updated');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function usePublishFlow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      customFetch<void>({
+        url: `/api/admin/flows/${id}/publish`,
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['flows'] });
+      toast.success('Flow published');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
