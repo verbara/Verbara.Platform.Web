@@ -1,0 +1,8 @@
+{
+  "app": { "name": "Asterisk Platform" },
+  "nav": { "admin": "Administração", "operations": "Operações", "analytics": "Análise", "agent": "Agente" },
+  "actions": { "save": "Salvar", "cancel": "Cancelar", "delete": "Excluir", "create": "Criar", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Fechar", "back": "Voltar" },
+  "status": { "loading": "Carregando...", "error": "Erro", "success": "Sucesso", "no_results": "Sem resultados", "reconnecting": "Reconectando..." },
+  "auth": { "login": "Entrar", "logout": "Sair", "api_key_placeholder": "Digite sua API key", "session_expired": "Sua sessão expirou. Faça login novamente.", "invalid_key": "API key inválida" },
+  "theme": { "light": "Claro", "dark": "Escuro", "system": "Sistema" }
+}
