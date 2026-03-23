@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueries } from '@tanstack/react-query';
 import {
   MessageSquare,
   Smartphone,
@@ -17,6 +18,8 @@ import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { ChannelConfigForm } from './channel-config-form';
+import { customFetch } from '@/core/api/client';
+import type { ChannelConfig } from '@/core/api/hooks/use-channels';
 
 export interface ChannelInfo {
   id: string;
@@ -26,25 +29,46 @@ export interface ChannelInfo {
   group: 'core' | 'extended';
 }
 
-const MOCK_CHANNELS: ChannelInfo[] = [
-  { id: 'whatsapp', name: 'WhatsApp', icon: MessageSquare, isActive: true, group: 'core' },
-  { id: 'sms', name: 'SMS', icon: Smartphone, isActive: true, group: 'core' },
-  { id: 'email', name: 'Email', icon: Mail, isActive: true, group: 'core' },
-  { id: 'webchat', name: 'WebChat', icon: Globe, isActive: false, group: 'core' },
-  { id: 'voice', name: 'Voice', icon: Phone, isActive: true, group: 'core' },
-  { id: 'messenger', name: 'Messenger', icon: MessagesSquare, isActive: false, group: 'extended' },
-  { id: 'instagram', name: 'Instagram', icon: Camera, isActive: false, group: 'extended' },
-  { id: 'telegram', name: 'Telegram', icon: Send, isActive: false, group: 'extended' },
-  { id: 'twitter', name: 'Twitter', icon: Twitter, isActive: false, group: 'extended' },
-  { id: 'video', name: 'Video', icon: Video, isActive: false, group: 'extended' },
-  { id: 'rcs', name: 'RCS', icon: MessageCircle, isActive: false, group: 'extended' },
+const CHANNEL_LIST: Omit<ChannelInfo, 'isActive'>[] = [
+  { id: 'whatsapp', name: 'WhatsApp', icon: MessageSquare, group: 'core' },
+  { id: 'sms', name: 'SMS', icon: Smartphone, group: 'core' },
+  { id: 'email', name: 'Email', icon: Mail, group: 'core' },
+  { id: 'webchat', name: 'WebChat', icon: Globe, group: 'core' },
+  { id: 'voice', name: 'Voice', icon: Phone, group: 'core' },
+  { id: 'messenger', name: 'Messenger', icon: MessagesSquare, group: 'extended' },
+  { id: 'instagram', name: 'Instagram', icon: Camera, group: 'extended' },
+  { id: 'telegram', name: 'Telegram', icon: Send, group: 'extended' },
+  { id: 'twitter', name: 'Twitter', icon: Twitter, group: 'extended' },
+  { id: 'video', name: 'Video', icon: Video, group: 'extended' },
+  { id: 'rcs', name: 'RCS', icon: MessageCircle, group: 'extended' },
 ];
 
 export default function ChannelsPage() {
   const { t } = useTranslation(['admin']);
-  const [channels] = useState<ChannelInfo[]>(MOCK_CHANNELS);
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+
+  // Fetch config for each known channel to get isActive status
+  const channelQueries = useQueries({
+    queries: CHANNEL_LIST.map((ch) => ({
+      queryKey: ['channels', ch.id],
+      queryFn: () =>
+        customFetch<ChannelConfig>({
+          url: `/api/admin/channels/${ch.id}`,
+          method: 'GET' as const,
+        }).catch(() => null),
+      staleTime: 60_000,
+    })),
+  });
+
+  const channels: ChannelInfo[] = useMemo(
+    () =>
+      CHANNEL_LIST.map((ch, i) => ({
+        ...ch,
+        isActive: channelQueries[i]?.data?.isActive ?? false,
+      })),
+    [channelQueries],
+  );
 
   const coreChannels = channels.filter((c) => c.group === 'core');
   const extendedChannels = channels.filter((c) => c.group === 'extended');

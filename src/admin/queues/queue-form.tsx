@@ -25,7 +25,7 @@ import {
 } from '@/core/ui/sheet';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
 import { Separator } from '@/core/ui/separator';
-import { MOCK_QUEUES } from './queues-page';
+import { useQueues } from '@/core/api/hooks/use-queues';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
 
@@ -94,6 +94,7 @@ interface QueueFormProps {
 export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }: QueueFormProps) {
   const { t } = useTranslation(['admin']);
   const [skillInput, setSkillInput] = useState('');
+  const { data: allQueues = [] } = useQueues();
 
   const defaults: QueueFormValues = {
     name: '',
@@ -168,7 +169,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     }
   };
 
-  const otherQueues = MOCK_QUEUES.filter((q) => {
+  const otherQueues = allQueues.filter((q) => {
     if (mode === 'edit' && defaultValues?.name) {
       return q.name !== defaultValues.name;
     }

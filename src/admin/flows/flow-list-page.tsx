@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Plus, Workflow } from 'lucide-react';
 import { Button } from '@/core/ui/button';
@@ -9,31 +8,16 @@ import { Badge } from '@/core/ui/badge';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
+import { useFlows, useCreateFlow, type FlowDefinition } from '@/core/api/hooks/use-flows';
 
-export interface FlowSummary {
-  id: string;
-  name: string;
-  version: number;
-  isPublished: boolean;
-  updatedAt: string;
-}
-
-export const MOCK_FLOWS: FlowSummary[] = [
-  { id: 'f1', name: 'Support IVR', version: 3, isPublished: true, updatedAt: '2026-03-15T10:30:00Z' },
-  { id: 'f2', name: 'Sales Greeting', version: 1, isPublished: false, updatedAt: '2026-03-20T14:00:00Z' },
-  { id: 'f3', name: 'After Hours', version: 2, isPublished: true, updatedAt: '2026-03-18T09:00:00Z' },
-];
-
-const columnHelper = createColumnHelper<FlowSummary>();
+const columnHelper = createColumnHelper<FlowDefinition>();
 
 export default function FlowListPage() {
   const { t } = useTranslation(['admin']);
   const navigate = useNavigate();
 
-  const { data: flows = [] } = useQuery({
-    queryKey: ['flows'],
-    queryFn: async () => MOCK_FLOWS,
-  });
+  const { data: flows = [] } = useFlows();
+  const createFlow = useCreateFlow();
 
   const columns = useMemo(
     () => [
@@ -67,9 +51,14 @@ export default function FlowListPage() {
   );
 
   const handleCreate = () => {
-    // Mock: create a new flow and navigate to designer
-    const newId = `f${Date.now()}`;
-    navigate(`/admin/flows/${newId}`);
+    createFlow.mutate(
+      { name: 'Untitled Flow', entryNodeId: '', nodes: [] },
+      {
+        onSuccess: (newFlow) => {
+          navigate(`/admin/flows/${newFlow.flowId}`);
+        },
+      },
+    );
   };
 
   const isEmpty = flows.length === 0;
@@ -77,7 +66,7 @@ export default function FlowListPage() {
   return (
     <div className="space-y-6">
       <PageHeader title={t('admin:flows.title')}>
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} disabled={createFlow.isPending}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:flows.create')}
         </Button>
@@ -94,7 +83,7 @@ export default function FlowListPage() {
           columns={columns}
           searchPlaceholder={t('admin:flows.searchPlaceholder')}
           noResultsMessage={t('admin:flows.noResults')}
-          onRowClick={(flow) => navigate(`/admin/flows/${flow.id}`)}
+          onRowClick={(flow) => navigate(`/admin/flows/${flow.flowId}`)}
         />
       )}
     </div>
