@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,8 +22,9 @@ import {
   SheetDescription,
   SheetFooter,
 } from '@/core/ui/sheet';
-import { MOCK_TEAMS } from './teams-page';
-import { MOCK_AGENTS } from './agents-page';
+import { useUsers } from '@/core/api/hooks/use-users';
+import { useAgents } from '@/core/api/hooks/use-agents';
+import { useTeams } from '@/core/api/hooks/use-teams';
 
 const skillSchema = z.object({
   name: z.string().min(1, 'Skill name is required'),
@@ -39,12 +40,6 @@ const agentSchema = z.object({
 
 export type AgentFormValues = z.infer<typeof agentSchema>;
 
-/* Users not yet assigned as agents */
-const MOCK_AVAILABLE_USERS = [
-  { id: '5', email: 'viewer@example.com', displayName: 'Read Only User' },
-  { id: '7', email: 'new.agent@example.com', displayName: 'New Agent' },
-];
-
 interface AgentFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -55,6 +50,10 @@ interface AgentFormProps {
 
 export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }: AgentFormProps) {
   const { t } = useTranslation(['admin']);
+
+  const { data: allUsers = [] } = useUsers();
+  const { data: agents = [] } = useAgents();
+  const { data: teams = [] } = useTeams();
 
   const {
     register,
@@ -92,15 +91,14 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     onOpenChange(false);
   });
 
-  /* In edit mode, also show the currently assigned user */
-  const availableUsers = mode === 'create'
-    ? MOCK_AVAILABLE_USERS
-    : [
-        ...MOCK_AVAILABLE_USERS,
-        ...MOCK_AGENTS
-          .filter((a) => a.userId === defaultValues?.userId)
-          .map((a) => ({ id: a.userId, email: a.userEmail, displayName: a.displayName })),
-      ];
+  /* Users not yet assigned as agents, plus the currently-edited user */
+  const assignedUserIds = new Set(agents.map((a) => a.userId));
+  const availableUsers = useMemo(() => {
+    const available = allUsers.filter(
+      (u) => !assignedUserIds.has(u.id) || u.id === defaultValues?.userId,
+    );
+    return available.map((u) => ({ id: u.id, email: u.email, displayName: u.displayName }));
+  }, [allUsers, assignedUserIds, defaultValues?.userId]);
 
   const title = mode === 'create' ? t('admin:agents.create') : t('admin:agents.edit');
 
@@ -170,7 +168,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">{t('admin:agents.noTeam')}</SelectItem>
-                    {MOCK_TEAMS.map((team) => (
+                    {teams.map((team) => (
                       <SelectItem key={team.id} value={team.id}>
                         {team.name}
                       </SelectItem>

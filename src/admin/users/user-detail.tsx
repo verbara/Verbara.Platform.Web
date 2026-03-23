@@ -1,22 +1,13 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Pencil, Trash2, Mail, Shield, CircleDot } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { UserForm } from './user-form';
-import type { User } from './users-page';
-
-const MOCK_USERS: User[] = [
-  { id: '1', email: 'admin@example.com', displayName: 'System Admin', role: 'admin', status: 'active', createdAt: '2026-01-15T10:00:00Z' },
-  { id: '2', email: 'jane.doe@example.com', displayName: 'Jane Doe', role: 'supervisor', status: 'active', createdAt: '2026-02-01T14:30:00Z' },
-  { id: '3', email: 'john.smith@example.com', displayName: 'John Smith', role: 'agent', status: 'active', createdAt: '2026-02-10T09:15:00Z' },
-  { id: '4', email: 'maria.garcia@example.com', displayName: 'Maria Garcia', role: 'agent', status: 'inactive', createdAt: '2026-02-20T16:45:00Z' },
-  { id: '5', email: 'viewer@example.com', displayName: 'Read Only User', role: 'readonly', status: 'active', createdAt: '2026-03-01T11:00:00Z' },
-];
+import { useUser, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
 
 function InfoRow({ icon: Icon, label, children }: { icon: typeof Mail; label: string; children: React.ReactNode }) {
   return (
@@ -37,10 +28,9 @@ export default function UserDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const { data: user } = useQuery({
-    queryKey: ['users', userId],
-    queryFn: async () => MOCK_USERS.find((u) => u.id === userId) ?? null,
-  });
+  const { data: user } = useUser(userId);
+  const updateUser = useUpdateUser();
+  const deleteUser = useDeleteUser();
 
   if (!user) {
     return (
@@ -51,9 +41,12 @@ export default function UserDetailPage() {
   }
 
   const handleDelete = () => {
-    // TODO: call API to delete user
-    setDeleteOpen(false);
-    navigate('/admin/users');
+    deleteUser.mutate(user.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        navigate('/admin/users');
+      },
+    });
   };
 
   return (
@@ -106,9 +99,10 @@ export default function UserDetailPage() {
         defaultValues={{
           email: user.email,
           displayName: user.displayName,
-          role: user.role,
-          status: user.status,
+          role: user.role as 'admin' | 'supervisor' | 'agent' | 'readonly',
+          status: user.status as 'active' | 'inactive',
         }}
+        onSubmit={(v) => updateUser.mutate({ id: user.id, ...v })}
       />
 
       {/* Delete confirmation dialog */}

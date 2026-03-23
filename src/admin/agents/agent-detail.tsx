@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Pencil, Trash2, Mail, Users, Zap, CircleDot, Plus, X } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
@@ -9,10 +8,14 @@ import { Input } from '@/core/ui/input';
 import { Separator } from '@/core/ui/separator';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { AgentForm } from './agent-form';
-import { MOCK_AGENTS } from './agents-page';
-import type { Agent, AgentSkill } from './agents-page';
+import { useAgent, useUpdateAgent, useDeleteAgent } from '@/core/api/hooks/use-agents';
 
-const stateBadgeVariant: Record<Agent['state'], 'default' | 'secondary' | 'outline' | 'destructive'> = {
+interface AgentSkill {
+  name: string;
+  proficiency: number;
+}
+
+const stateBadgeVariant: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   available: 'default',
   busy: 'destructive',
   away: 'secondary',
@@ -31,12 +34,6 @@ function InfoRow({ icon: Icon, label, children }: { icon: typeof Mail; label: st
   );
 }
 
-const MOCK_QUEUE_MEMBERSHIPS = [
-  { id: 'q1', name: 'General Support' },
-  { id: 'q2', name: 'Billing' },
-  { id: 'q3', name: 'VIP' },
-];
-
 export default function AgentDetailPage() {
   const { t } = useTranslation(['admin']);
   const { agentId } = useParams<{ agentId: string }>();
@@ -48,10 +45,9 @@ export default function AgentDetailPage() {
   const [newSkillProf, setNewSkillProf] = useState('5');
   const [skillsInitialized, setSkillsInitialized] = useState(false);
 
-  const { data: agent } = useQuery({
-    queryKey: ['agents', agentId],
-    queryFn: async () => MOCK_AGENTS.find((a) => a.id === agentId) ?? null,
-  });
+  const { data: agent } = useAgent(agentId);
+  const updateAgent = useUpdateAgent();
+  const deleteAgent = useDeleteAgent();
 
   /* Initialize skills from agent data once loaded */
   if (agent && !skillsInitialized) {
@@ -68,9 +64,12 @@ export default function AgentDetailPage() {
   }
 
   const handleDelete = () => {
-    // TODO: call API to delete agent
-    setDeleteOpen(false);
-    navigate('/admin/agents');
+    deleteAgent.mutate(agent.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        navigate('/admin/agents');
+      },
+    });
   };
 
   const handleAddSkill = () => {
@@ -87,8 +86,8 @@ export default function AgentDetailPage() {
     setSkills(skills.filter((s) => s.name !== name));
   };
 
-  /* Queue memberships scoped to this agent (mock) */
-  const queues = MOCK_QUEUE_MEMBERSHIPS.slice(0, agent.queueCount);
+  /* Queue memberships from agent data */
+  const queueCount = agent.queueIds.length;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -128,7 +127,7 @@ export default function AgentDetailPage() {
           )}
         </InfoRow>
         <InfoRow icon={CircleDot} label={t('admin:agents.state')}>
-          <Badge variant={stateBadgeVariant[agent.state]}>
+          <Badge variant={stateBadgeVariant[agent.state] ?? 'outline'}>
             {agent.state}
           </Badge>
         </InfoRow>
@@ -192,16 +191,12 @@ export default function AgentDetailPage() {
         <h3 className="font-heading text-lg font-semibold">{t('admin:agents.queues')}</h3>
         <Separator className="my-3" />
 
-        {queues.length === 0 ? (
+        {queueCount === 0 ? (
           <p className="py-4 text-center text-sm text-muted-foreground">{t('admin:agents.noQueues')}</p>
         ) : (
-          <div className="space-y-1">
-            {queues.map((q) => (
-              <div key={q.id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
-                {q.name}
-              </div>
-            ))}
-          </div>
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            {queueCount} queue{queueCount !== 1 ? 's' : ''} assigned
+          </p>
         )}
         <p className="mt-2 text-xs text-muted-foreground">{t('admin:agents.queuesNote')}</p>
       </div>
@@ -217,6 +212,7 @@ export default function AgentDetailPage() {
           teamId: agent.teamId ?? '',
           skills: agent.skills,
         }}
+        onSubmit={(v) => updateAgent.mutate({ id: agent.id, ...v })}
       />
 
       {/* Delete confirmation dialog */}

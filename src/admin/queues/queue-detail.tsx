@@ -20,7 +20,7 @@ import { Separator } from '@/core/ui/separator';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { QueueForm } from './queue-form';
 import { MOCK_QUEUES } from './queues-page';
-import { MOCK_AGENTS } from '@/admin/agents/agents-page';
+import { useAgents } from '@/core/api/hooks/use-agents';
 
 function InfoRow({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: React.ReactNode }) {
   return (
@@ -46,6 +46,8 @@ export default function QueueDetailPage() {
     queryFn: async () => MOCK_QUEUES.find((q) => q.id === queueId) ?? null,
   });
 
+  const { data: allAgents = [] } = useAgents();
+
   if (!queue) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
@@ -60,7 +62,7 @@ export default function QueueDetailPage() {
     navigate('/admin/queues');
   };
 
-  const assignedAgents = MOCK_AGENTS.filter((a) => queue.agentIds.includes(a.id));
+  const assignedAgents = allAgents.filter((a) => queue.agentIds.includes(a.id));
 
   const editDefaults = {
     name: queue.name,
