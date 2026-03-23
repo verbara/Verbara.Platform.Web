@@ -9,6 +9,7 @@ import { useUiStore } from '@/core/stores/ui-store';
 import WelcomeStep from './steps/welcome-step';
 import QueueStep from './steps/queue-step';
 import AgentStep from './steps/agent-step';
+import ChannelStep from './steps/channel-step';
 
 const STEP_KEYS = ['welcome', 'queue', 'agent', 'channel', 'test'] as const;
 type StepKey = (typeof STEP_KEYS)[number];
@@ -43,7 +44,7 @@ const STEP_COMPONENTS: Record<StepKey, React.ComponentType> = {
   welcome: WelcomeStep,
   queue: QueueStep,
   agent: AgentStep,
-  channel: () => <StepPlaceholder name="Channel" />,
+  channel: ChannelStep,
   test: () => <StepPlaceholder name="Test" />,
 };
 

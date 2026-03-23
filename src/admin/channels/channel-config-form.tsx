@@ -17,13 +17,13 @@ import {
 } from '@/core/ui/sheet';
 import { ChannelTestButton } from './channel-test-button';
 
-interface FieldDef {
+export interface FieldDef {
   key: string;
   label: string;
   type: 'text' | 'password';
 }
 
-const channelFields: Record<string, FieldDef[]> = {
+export const channelFields: Record<string, FieldDef[]> = {
   whatsapp: [
     { key: 'ApiToken', label: 'Business API Token', type: 'password' },
     { key: 'PhoneNumber', label: 'Phone Number', type: 'text' },
@@ -80,7 +80,7 @@ const channelFields: Record<string, FieldDef[]> = {
   ],
 };
 
-function buildSchema(fields: FieldDef[]) {
+export function buildSchema(fields: FieldDef[]) {
   const shape: Record<string, z.ZodType> = { isActive: z.boolean() };
   for (const field of fields) {
     shape[field.key] = z.string().min(1, `${field.label} is required`);
@@ -181,7 +181,7 @@ export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConf
   );
 }
 
-function buildDefaults(fields: FieldDef[]): Record<string, string | boolean> {
+export function buildDefaults(fields: FieldDef[]): Record<string, string | boolean> {
   const defaults: Record<string, string | boolean> = { isActive: false };
   for (const field of fields) {
     defaults[field.key] = '';
