@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, FormProvider } from 'react-hook-form';
 import { ArrowLeft, ArrowRight, Check, Rocket } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
 import { PageHeader } from '@/admin/shared/page-header';
 import { useUiStore } from '@/core/stores/ui-store';
+import { customFetch } from '@/core/api/client';
 import WelcomeStep from './steps/welcome-step';
 import QueueStep from './steps/queue-step';
 import AgentStep from './steps/agent-step';
 import ChannelStep from './steps/channel-step';
+import TestStep from './steps/test-step';
 
 const STEP_KEYS = ['welcome', 'queue', 'agent', 'channel', 'test'] as const;
 type StepKey = (typeof STEP_KEYS)[number];
@@ -32,20 +35,12 @@ const DEFAULT_VALUES: SetupFormValues = {
   channelConfig: {},
 };
 
-function StepPlaceholder({ name }: { name: string }) {
-  return (
-    <div className="flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25">
-      <p className="text-sm text-muted-foreground">{name} step — coming soon</p>
-    </div>
-  );
-}
-
 const STEP_COMPONENTS: Record<StepKey, React.ComponentType> = {
   welcome: WelcomeStep,
   queue: QueueStep,
   agent: AgentStep,
   channel: ChannelStep,
-  test: () => <StepPlaceholder name="Test" />,
+  test: TestStep,
 };
 
 export default function SetupWizard() {
@@ -56,6 +51,7 @@ export default function SetupWizard() {
   const methods = useForm<SetupFormValues>({
     defaultValues: DEFAULT_VALUES,
   });
+  const [loading, setLoading] = useState(false);
 
   const currentStepKey = STEP_KEYS[step] as StepKey;
   const StepComponent = STEP_COMPONENTS[currentStepKey];
@@ -68,8 +64,75 @@ export default function SetupWizard() {
     navigate('/admin');
   };
 
+  const handleNext = async () => {
+    const values = methods.getValues();
+    setLoading(true);
+
+    try {
+      if (currentStepKey === 'queue') {
+        try {
+          await customFetch({
+            url: '/api/admin/queues',
+            method: 'POST',
+            data: { name: values.queueName, isActive: true },
+          });
+          toast.success('Queue created successfully');
+        } catch {
+          toast.error('Failed to create queue');
+          return;
+        }
+      }
+
+      if (currentStepKey === 'agent') {
+        try {
+          let userId = values.agentUserId;
+          if (!userId && values.agentEmail) {
+            const user = await customFetch<{ id: string }>({
+              url: '/api/admin/users',
+              method: 'POST',
+              data: {
+                email: values.agentEmail,
+                displayName: values.agentDisplayName,
+                role: 'agent',
+              },
+            });
+            userId = user.id;
+          }
+          await customFetch({
+            url: '/api/admin/agents',
+            method: 'POST',
+            data: { userId, displayName: values.agentDisplayName },
+          });
+          toast.success('Agent created successfully');
+        } catch {
+          toast.error('Failed to create agent');
+          return;
+        }
+      }
+
+      if (currentStepKey === 'channel') {
+        try {
+          await customFetch({
+            url: `/api/admin/channels/${values.channelId}`,
+            method: 'PUT',
+            data: { isActive: true, credentials: values.channelConfig },
+          });
+          toast.success('Channel enabled successfully');
+        } catch {
+          toast.error('Failed to enable channel');
+          return;
+        }
+      }
+
+      setStep((s) => s + 1);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFinish = () => {
-    useUiStore.getState().setSetupDismissed(true);
+    useUiStore.getState().setTestCompleted(true);
+    toast.success('Setup complete!');
     navigate('/admin');
   };
 
@@ -112,7 +175,7 @@ export default function SetupWizard() {
           <div className="flex items-center justify-between border-t pt-4">
             <div>
               {!isFirst && (
-                <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
+                <Button variant="outline" disabled={loading} onClick={() => setStep((s) => s - 1)}>
                   <ArrowLeft className="mr-1.5 h-4 w-4" />
                   {t('admin:setup.previous', 'Back')}
                 </Button>
@@ -134,12 +197,12 @@ export default function SetupWizard() {
                   {t('admin:setup.getStarted', "Let's get started")}
                 </Button>
               ) : isLast ? (
-                <Button onClick={handleFinish}>
+                <Button disabled={loading} onClick={handleFinish}>
                   <Check className="mr-1.5 h-4 w-4" />
                   {t('admin:setup.finish', 'Finish Setup')}
                 </Button>
               ) : (
-                <Button onClick={() => setStep((s) => s + 1)}>
+                <Button disabled={loading} onClick={handleNext}>
                   {t('admin:setup.next', 'Next')}
                   <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
