@@ -1,0 +1,18 @@
+{
+  "sidebar": {
+    "people": "Personas",
+    "users": "Usuarios",
+    "agents": "Agentes",
+    "teams": "Equipos",
+    "communication": "Comunicación",
+    "channels": "Canales",
+    "queues": "Colas",
+    "system": "Sistema",
+    "license": "Licencia"
+  },
+  "users": { "title": "Usuarios", "create": "Crear usuario", "email": "Correo", "name": "Nombre", "role": "Rol", "status": "Estado" },
+  "agents": { "title": "Agentes", "create": "Crear agente", "skills": "Habilidades", "team": "Equipo" },
+  "queues": { "title": "Colas", "create": "Crear cola", "sla": "SLA", "overflow": "Desbordamiento", "hours": "Horario", "wrap_up": "Post-atención", "skills": "Habilidades requeridas" },
+  "channels": { "title": "Canales", "test_connection": "Probar conexión", "enabled": "Activo", "disabled": "Inactivo" },
+  "system": { "title": "Sistema", "license_tier": "Nivel de licencia", "features": "Funcionalidades", "cluster": "Cluster" }
+}

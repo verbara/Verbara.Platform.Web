@@ -1,0 +1,18 @@
+{
+  "sidebar": {
+    "people": "People",
+    "users": "Users",
+    "agents": "Agents",
+    "teams": "Teams",
+    "communication": "Communication",
+    "channels": "Channels",
+    "queues": "Queues",
+    "system": "System",
+    "license": "License"
+  },
+  "users": { "title": "Users", "create": "Create user", "email": "Email", "name": "Name", "role": "Role", "status": "Status" },
+  "agents": { "title": "Agents", "create": "Create agent", "skills": "Skills", "team": "Team" },
+  "queues": { "title": "Queues", "create": "Create queue", "sla": "SLA", "overflow": "Overflow", "hours": "Schedule", "wrap_up": "Wrap-up", "skills": "Required skills" },
+  "channels": { "title": "Channels", "test_connection": "Test connection", "enabled": "Enabled", "disabled": "Disabled" },
+  "system": { "title": "System", "license_tier": "License tier", "features": "Features", "cluster": "Cluster" }
+}
