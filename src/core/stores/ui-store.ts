@@ -6,8 +6,14 @@ type Theme = 'light' | 'dark' | 'system';
 interface UiState {
   theme: Theme;
   sidebarCollapsed: boolean;
+  setupDismissed: boolean;
+  testCompleted: boolean;
+  tourDismissed: boolean;
   setTheme: (theme: Theme) => void;
   toggleSidebar: () => void;
+  setSetupDismissed: (v: boolean) => void;
+  setTestCompleted: (v: boolean) => void;
+  setTourDismissed: (v: boolean) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -15,11 +21,17 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       theme: 'system',
       sidebarCollapsed: false,
+      setupDismissed: false,
+      testCompleted: false,
+      tourDismissed: false,
       setTheme: (theme) => {
         set({ theme });
         applyTheme(theme);
       },
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      setSetupDismissed: (v) => set({ setupDismissed: v }),
+      setTestCompleted: (v) => set({ testCompleted: v }),
+      setTourDismissed: (v) => set({ tourDismissed: v }),
     }),
     { name: 'asterisk-ui' },
   ),

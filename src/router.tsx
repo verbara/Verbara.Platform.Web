@@ -18,6 +18,7 @@ const FlowDesigner = lazy(() => import('@/admin/flows/flow-designer'));
 const CampaignListPage = lazy(() => import('@/admin/campaigns/campaign-list-page'));
 const CampaignWizard = lazy(() => import('@/admin/campaigns/campaign-wizard'));
 const CampaignDetailPage = lazy(() => import('@/admin/campaigns/campaign-detail-page'));
+const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
@@ -61,6 +62,14 @@ export const router = createBrowserRouter([
           </LazyLoad>
         ),
         children: [
+          {
+            path: 'setup',
+            element: (
+              <LazyLoad>
+                <SetupWizard />
+              </LazyLoad>
+            ),
+          },
           { index: true, element: <Navigate to="users" replace /> },
           {
             path: 'users',

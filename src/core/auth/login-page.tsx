@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from './auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { useUiStore } from '@/core/stores/ui-store';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -34,7 +35,7 @@ export function LoginPage() {
         return;
       }
 
-      const info = (await infoRes.json()) as { tenantId?: string };
+      const info = (await infoRes.json()) as { tenantId?: string; setupComplete?: boolean };
 
       let user: UserProfile = {
         id: 'admin',
@@ -72,7 +73,12 @@ export function LoginPage() {
       useAuthStore.getState().setAuth(apiKey, user, tenantId, features);
       useTenantStore.getState().setActiveTenant(tenantId);
 
-      navigate(from, { replace: true });
+      const setupDismissed = useUiStore.getState().setupDismissed;
+      if (info.setupComplete === false && user.role === 'admin' && !setupDismissed) {
+        navigate('/admin/setup', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     } catch {
       setError(t('auth.invalid_key'));
     } finally {
