@@ -5,6 +5,8 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { ArrowLeft, ArrowRight, Save, Rocket } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { PageHeader } from '@/admin/shared/page-header';
+import { useCreateCampaign, useStartCampaign, useCreateContactList, useImportContacts } from '@/core/api/hooks/use-campaigns';
+import type { ContactImportRow, CampaignDetail } from '@/core/api/hooks/use-campaigns';
 import BasicStep from './steps/basic-step';
 import DialingStep from './steps/dialing-step';
 import ScheduleStep from './steps/schedule-step';
@@ -51,6 +53,8 @@ export interface CampaignFormValues {
   // Contacts
   contactFile: string;
   columnMapping: Record<string, string>;
+  // Parsed contact rows (populated by contacts step)
+  parsedContacts: ContactImportRow[];
 }
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -82,6 +86,7 @@ const DEFAULT_VALUES: CampaignFormValues = {
   complianceNotes: '',
   contactFile: '',
   columnMapping: {},
+  parsedContacts: [],
 };
 
 const STEP_COMPONENTS: Record<StepKey, React.ComponentType> = {
@@ -97,24 +102,92 @@ export default function CampaignWizard() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
 
+  const createCampaign = useCreateCampaign();
+  const startCampaign = useStartCampaign();
+  const createContactList = useCreateContactList();
+  const importContacts = useImportContacts();
+
   const methods = useForm<CampaignFormValues>({
     defaultValues: DEFAULT_VALUES,
   });
 
-  const currentStepKey = STEP_KEYS[step] as StepKey;
+  const currentStepKey = STEP_KEYS[step] ?? STEP_KEYS[0];
   const StepComponent = STEP_COMPONENTS[currentStepKey];
   const isFirst = step === 0;
   const isLast = step === STEP_KEYS.length - 1;
 
-  const handleSaveDraft = () => {
-    // TODO: persist draft
-    navigate('/admin/campaigns');
+  const isPending = createCampaign.isPending || startCampaign.isPending ||
+    createContactList.isPending || importContacts.isPending;
+
+  const buildApiPayload = (formData: CampaignFormValues, status: 'draft' | 'active'): Partial<Omit<CampaignDetail, 'id' | 'createdAt'>> => {
+    const payload: Record<string, unknown> = {
+      name: formData.name,
+      description: formData.description || undefined,
+      queueId: formData.queueId ? Number(formData.queueId) : undefined,
+      teamId: formData.teamId ? Number(formData.teamId) : undefined,
+      status,
+      mode: formData.mode,
+      maxConcurrentCalls: formData.maxChannels,
+      timezone: formData.timezone,
+      schedule: formData.schedule,
+      holidays: formData.holidays,
+      campaignStart: formData.campaignStart || undefined,
+      campaignEnd: formData.campaignEnd || undefined,
+      dncEnabled: formData.dncEnabled,
+      maxAttemptsPerContact: formData.maxAttempts,
+      retryIntervalMinutes: formData.retryIntervalMinutes,
+      timeBetweenAttemptsMinutes: formData.timeBetweenAttempts,
+      complianceNotes: formData.complianceNotes || undefined,
+    };
+
+    if (formData.mode === 'power') {
+      payload.powerRatio = formData.pacingRatio;
+    }
+    if (formData.mode === 'predictive') {
+      payload.targetAbandonRate = formData.pacingTargetWait;
+    }
+
+    return payload;
   };
 
-  const handleLaunch = () => {
-    // TODO: validate all steps + launch
-    navigate('/admin/campaigns');
+  const importContactsAfterCreate = (campaignId: number, formData: CampaignFormValues) => {
+    const contacts = formData.parsedContacts;
+    if (!contacts || contacts.length === 0) return;
+
+    const fileName = formData.contactFile || 'contacts.csv';
+    createContactList.mutate(
+      { campaignId, name: fileName, sourceFileName: fileName, totalContacts: contacts.length, pendingContacts: contacts.length, completedContacts: 0 },
+      {
+        onSuccess: (list) => {
+          importContacts.mutate({ campaignId, listId: list.id, contacts });
+        },
+      },
+    );
   };
+
+  const handleSaveDraft = methods.handleSubmit((formData) => {
+    const payload = buildApiPayload(formData, 'draft');
+    createCampaign.mutate(payload, {
+      onSuccess: (result) => {
+        importContactsAfterCreate(result.id, formData);
+        navigate(`/admin/campaigns/${result.id}`);
+      },
+    });
+  });
+
+  const handleLaunch = methods.handleSubmit((formData) => {
+    const payload = buildApiPayload(formData, 'draft');
+    createCampaign.mutate(payload, {
+      onSuccess: (result) => {
+        importContactsAfterCreate(result.id, formData);
+        startCampaign.mutate(result.id, {
+          onSuccess: () => {
+            navigate(`/admin/campaigns/${result.id}`);
+          },
+        });
+      },
+    });
+  });
 
   return (
     <div className="space-y-6">
@@ -157,15 +230,19 @@ export default function CampaignWizard() {
             </Button>
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleSaveDraft}>
+              <Button
+                variant="outline"
+                disabled={isPending}
+                onClick={handleSaveDraft}
+              >
                 <Save className="mr-1.5 h-4 w-4" />
-                {t('admin:campaigns.saveDraft')}
+                {createCampaign.isPending ? t('admin:campaigns.saving') : t('admin:campaigns.saveDraft')}
               </Button>
 
               {isLast ? (
-                <Button onClick={handleLaunch}>
+                <Button disabled={isPending} onClick={handleLaunch}>
                   <Rocket className="mr-1.5 h-4 w-4" />
-                  {t('admin:campaigns.launch')}
+                  {isPending ? t('admin:campaigns.launching') : t('admin:campaigns.launch')}
                 </Button>
               ) : (
                 <Button onClick={() => setStep((s) => s + 1)}>
