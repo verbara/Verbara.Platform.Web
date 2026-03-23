@@ -13,6 +13,11 @@ const TeamsPage = lazy(() => import('@/admin/agents/teams-page'));
 const QueuesPage = lazy(() => import('@/admin/queues/queues-page'));
 const QueueDetailPage = lazy(() => import('@/admin/queues/queue-detail'));
 const ChannelsPage = lazy(() => import('@/admin/channels/channels-page'));
+const FlowListPage = lazy(() => import('@/admin/flows/flow-list-page'));
+const FlowDesigner = lazy(() => import('@/admin/flows/flow-designer'));
+const CampaignListPage = lazy(() => import('@/admin/campaigns/campaign-list-page'));
+const CampaignWizard = lazy(() => import('@/admin/campaigns/campaign-wizard'));
+const CampaignDetailPage = lazy(() => import('@/admin/campaigns/campaign-detail-page'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
@@ -110,6 +115,46 @@ export const router = createBrowserRouter([
             element: (
               <LazyLoad>
                 <QueueDetailPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'flows',
+            element: (
+              <LazyLoad>
+                <FlowListPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'flows/:flowId',
+            element: (
+              <LazyLoad>
+                <FlowDesigner />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'campaigns',
+            element: (
+              <LazyLoad>
+                <CampaignListPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'campaigns/new',
+            element: (
+              <LazyLoad>
+                <CampaignWizard />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'campaigns/:campaignId',
+            element: (
+              <LazyLoad>
+                <CampaignDetailPage />
               </LazyLoad>
             ),
           },

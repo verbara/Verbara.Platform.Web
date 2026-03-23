@@ -7,6 +7,8 @@ import {
   Headset,
   Radio,
   ListChecks,
+  Workflow,
+  Megaphone,
   Server,
   KeyRound,
   ChevronDown,
@@ -43,6 +45,8 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'channels', labelKey: 'admin:sidebar.channels', to: '/admin/channels', icon: Radio },
       { key: 'queues', labelKey: 'admin:sidebar.queues', to: '/admin/queues', icon: ListChecks },
+      { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow },
+      { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone },
     ],
   },
   {
