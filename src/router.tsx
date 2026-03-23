@@ -1,0 +1,69 @@
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { AppShell } from '@/shell/app-shell';
+import { AuthGuard } from '@/core/auth/auth-guard';
+import { LoginPage } from '@/core/auth/login-page';
+
+const AdminLayout = lazy(() => import('@/pages/admin/admin-layout'));
+const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
+const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
+const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
+
+function LazyLoad({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center text-slate-400">Loading...</div>
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
+
+export const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
+  {
+    path: '/',
+    element: (
+      <AuthGuard>
+        <AppShell />
+      </AuthGuard>
+    ),
+    children: [
+      { index: true, element: <Navigate to="/admin" replace /> },
+      {
+        path: 'admin/*',
+        element: (
+          <LazyLoad>
+            <AdminLayout />
+          </LazyLoad>
+        ),
+      },
+      {
+        path: 'operations/*',
+        element: (
+          <LazyLoad>
+            <OperationsLayout />
+          </LazyLoad>
+        ),
+      },
+      {
+        path: 'analytics/*',
+        element: (
+          <LazyLoad>
+            <AnalyticsLayout />
+          </LazyLoad>
+        ),
+      },
+      {
+        path: 'agent/*',
+        element: (
+          <LazyLoad>
+            <AgentLayout />
+          </LazyLoad>
+        ),
+      },
+    ],
+  },
+]);

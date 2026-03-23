@@ -1,0 +1,13 @@
+import { Outlet } from 'react-router-dom';
+import { Rail } from './rail';
+
+export function AppShell() {
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <Rail />
+      <main className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
