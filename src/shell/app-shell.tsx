@@ -1,8 +1,10 @@
 import { Outlet } from 'react-router-dom';
 import { Rail } from './rail';
 import { CommandPalette } from './command-palette';
+import { useSSE } from '@/core/hooks/use-sse';
 
 export function AppShell() {
+  useSSE();
   return (
     <div className="flex h-screen overflow-hidden">
       <Rail />

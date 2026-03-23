@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { RailIcon } from './rail-icon';
+import { NotificationBell } from './notification-bell';
 import { UserMenu } from './user-menu';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
@@ -45,6 +46,7 @@ export function Rail() {
             <TooltipContent side="right">{t('actions.search')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <NotificationBell />
         <UserMenu />
       </div>
     </nav>

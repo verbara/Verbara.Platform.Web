@@ -1,7 +1,7 @@
 {
   "app": { "name": "Asterisk Platform" },
-  "nav": { "admin": "Admin", "operations": "Operations", "analytics": "Analytics", "agent": "Agent" },
-  "actions": { "save": "Save", "cancel": "Cancel", "delete": "Delete", "create": "Create", "edit": "Edit", "search": "Search", "confirm": "Confirm", "close": "Close", "back": "Back" },
+  "nav": { "admin": "Admin", "operations": "Operations", "analytics": "Analytics", "agent": "Agent", "notifications": "Notifications" },
+  "actions": { "save": "Save", "cancel": "Cancel", "delete": "Delete", "create": "Create", "edit": "Edit", "search": "Search", "confirm": "Confirm", "close": "Close", "back": "Back", "clear_all": "Clear all" },
   "status": { "loading": "Loading...", "error": "Error", "success": "Success", "no_results": "No results", "reconnecting": "Reconnecting..." },
   "auth": { "login": "Sign in", "logout": "Sign out", "api_key_placeholder": "Enter your API key", "session_expired": "Your session has expired. Please sign in again.", "invalid_key": "Invalid API key" },
   "theme": { "light": "Light", "dark": "Dark", "system": "System" }
