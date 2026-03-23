@@ -14,21 +14,48 @@
     "reject": "Rejeitar",
     "transfer": "Transferir",
     "close": "Fechar",
-    "wrap_up": "Pós-atendimento"
+    "wrap_up": "Pós-atendimento",
+    "cancel": "Cancelar",
+    "complete_wrap_up": "Concluir pós-atendimento",
+    "accepted": "Conversa aceita",
+    "rejected": "Conversa rejeitada",
+    "closed": "Conversa fechada",
+    "reject_title": "Rejeitar conversa",
+    "reject_description": "Tem certeza de que deseja rejeitar esta conversa? Ela será devolvida à fila.",
+    "close_title": "Fechar conversa",
+    "close_description": "Tem certeza de que deseja fechar esta conversa sem pós-atendimento?"
   },
   "transfer": {
     "title": "Transferir conversa",
+    "description": "Selecione uma fila ou agente para transferir esta conversa.",
     "to_queue": "Para fila",
     "to_agent": "Para agente",
+    "search_placeholder": "Buscar...",
+    "no_results": "Sem resultados",
+    "note_label": "Nota",
     "note_placeholder": "Nota para o agente receptor...",
     "cold": "Transferência direta",
-    "warm": "Consultar antes"
+    "cold_description": "Transferir imediatamente sem consultar",
+    "warm": "Consultar antes",
+    "warm_description": "Falar com o destino antes de transferir",
+    "success": "Conversa transferida com sucesso"
   },
   "wrap_up": {
     "title": "Pós-atendimento",
+    "description": "Conclua o pós-atendimento desta conversa.",
     "disposition": "Disposição",
+    "select_disposition": "Selecionar disposição...",
     "notes": "Notas",
-    "submit": "Concluir"
+    "notes_placeholder": "Adicionar notas de pós-atendimento...",
+    "submit": "Concluir",
+    "success": "Pós-atendimento concluído",
+    "dispositions": {
+      "resolved": "Resolvido",
+      "escalated": "Escalado",
+      "no_response": "Sem resposta",
+      "spam": "Spam",
+      "follow_up": "Acompanhamento necessário"
+    }
   },
   "context": {
     "contact_info": "Informações do cliente",

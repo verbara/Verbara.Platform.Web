@@ -14,21 +14,48 @@
     "reject": "Rechazar",
     "transfer": "Transferir",
     "close": "Cerrar",
-    "wrap_up": "Post-atención"
+    "wrap_up": "Post-atención",
+    "cancel": "Cancelar",
+    "complete_wrap_up": "Completar post-atención",
+    "accepted": "Conversación aceptada",
+    "rejected": "Conversación rechazada",
+    "closed": "Conversación cerrada",
+    "reject_title": "Rechazar conversación",
+    "reject_description": "¿Estás seguro de que deseas rechazar esta conversación? Se devolverá a la cola.",
+    "close_title": "Cerrar conversación",
+    "close_description": "¿Estás seguro de que deseas cerrar esta conversación sin post-atención?"
   },
   "transfer": {
     "title": "Transferir conversación",
+    "description": "Selecciona una cola o agente para transferir esta conversación.",
     "to_queue": "A cola",
     "to_agent": "A agente",
+    "search_placeholder": "Buscar...",
+    "no_results": "Sin resultados",
+    "note_label": "Nota",
     "note_placeholder": "Nota para el agente receptor...",
     "cold": "Transferencia directa",
-    "warm": "Consultar primero"
+    "cold_description": "Transferir inmediatamente sin consultar",
+    "warm": "Consultar primero",
+    "warm_description": "Hablar con el destino antes de transferir",
+    "success": "Conversación transferida exitosamente"
   },
   "wrap_up": {
     "title": "Post-atención",
+    "description": "Completa la post-atención de esta conversación.",
     "disposition": "Disposición",
+    "select_disposition": "Seleccionar disposición...",
     "notes": "Notas",
-    "submit": "Completar"
+    "notes_placeholder": "Agregar notas de post-atención...",
+    "submit": "Completar",
+    "success": "Post-atención completada",
+    "dispositions": {
+      "resolved": "Resuelto",
+      "escalated": "Escalado",
+      "no_response": "Sin respuesta",
+      "spam": "Spam",
+      "follow_up": "Seguimiento requerido"
+    }
   },
   "context": {
     "contact_info": "Información del cliente",

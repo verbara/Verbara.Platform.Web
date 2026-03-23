@@ -14,21 +14,48 @@
     "reject": "Reject",
     "transfer": "Transfer",
     "close": "Close",
-    "wrap_up": "Wrap-up"
+    "wrap_up": "Wrap-up",
+    "cancel": "Cancel",
+    "complete_wrap_up": "Complete Wrap-up",
+    "accepted": "Conversation accepted",
+    "rejected": "Conversation rejected",
+    "closed": "Conversation closed",
+    "reject_title": "Reject conversation",
+    "reject_description": "Are you sure you want to reject this conversation? It will be returned to the queue.",
+    "close_title": "Close conversation",
+    "close_description": "Are you sure you want to close this conversation without wrap-up?"
   },
   "transfer": {
     "title": "Transfer conversation",
+    "description": "Select a queue or agent to transfer this conversation to.",
     "to_queue": "To queue",
     "to_agent": "To agent",
+    "search_placeholder": "Search...",
+    "no_results": "No results found",
+    "note_label": "Note",
     "note_placeholder": "Note for the receiving agent...",
-    "cold": "Cold transfer",
-    "warm": "Warm transfer"
+    "cold": "Direct transfer",
+    "cold_description": "Transfer immediately without consulting",
+    "warm": "Consult first",
+    "warm_description": "Speak with the target before transferring",
+    "success": "Conversation transferred successfully"
   },
   "wrap_up": {
     "title": "Wrap-up",
+    "description": "Complete the wrap-up for this conversation.",
     "disposition": "Disposition",
+    "select_disposition": "Select disposition...",
     "notes": "Notes",
-    "submit": "Complete"
+    "notes_placeholder": "Add wrap-up notes...",
+    "submit": "Complete",
+    "success": "Wrap-up completed",
+    "dispositions": {
+      "resolved": "Resolved",
+      "escalated": "Escalated",
+      "no_response": "No Response",
+      "spam": "Spam",
+      "follow_up": "Follow-up Required"
+    }
   },
   "context": {
     "contact_info": "Contact information",
