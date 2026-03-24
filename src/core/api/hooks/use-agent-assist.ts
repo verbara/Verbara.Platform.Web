@@ -68,3 +68,39 @@ export function useUpdateKeywordRules() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export interface ComplianceRule {
+  ruleId: string;
+  pattern: string;
+  severity: 'Info' | 'Warning' | 'Critical';
+  action: 'Alert' | 'Block' | 'Log';
+  description?: string;
+}
+
+export function useComplianceRules() {
+  return useQuery({
+    queryKey: ['agent-assist', 'compliance-rules'],
+    queryFn: () =>
+      customFetch<ComplianceRule[]>({
+        url: '/api/admin/agent-assist/compliance-rules',
+        method: 'GET',
+      }),
+  });
+}
+
+export function useUpdateComplianceRules() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ComplianceRule[]) =>
+      customFetch<ComplianceRule[]>({
+        url: '/api/admin/agent-assist/compliance-rules',
+        method: 'PUT',
+        data,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['agent-assist', 'compliance-rules'] });
+      toast.success('Compliance rules updated');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

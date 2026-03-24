@@ -19,8 +19,11 @@ import {
   useUpdateAgentAssistConfig,
   useKeywordRules,
   useUpdateKeywordRules,
+  useComplianceRules,
+  useUpdateComplianceRules,
   type AgentAssistConfig,
   type KeywordRule,
+  type ComplianceRule,
 } from '@/core/api/hooks/use-agent-assist';
 import { useQueues } from '@/core/api/hooks/use-queues';
 import { useAgents } from '@/core/api/hooks/use-agents';
@@ -28,6 +31,11 @@ import { useAgents } from '@/core/api/hooks/use-agents';
 const PRIORITY_OPTIONS = ['Informational', 'Important', 'Urgent', 'Critical'] as const;
 type Priority = (typeof PRIORITY_OPTIONS)[number];
 
+const SEVERITY_OPTIONS = ['Info', 'Warning', 'Critical'] as const;
+type Severity = (typeof SEVERITY_OPTIONS)[number];
+
+const ACTION_OPTIONS = ['Alert', 'Block', 'Log'] as const;
+type Action = (typeof ACTION_OPTIONS)[number];
 
 function SectionCard({
   title,
@@ -447,6 +455,390 @@ function KeywordRulesSection() {
   );
 }
 
+interface ComplianceRowEdit {
+  pattern: string;
+  severity: Severity;
+  action: Action;
+  description: string;
+}
+
+function ComplianceRulesSection() {
+  const { t } = useTranslation(['admin']);
+  const { data: rules = [], isLoading } = useComplianceRules();
+  const updateRules = useUpdateComplianceRules();
+
+  const [localRules, setLocalRules] = useState<ComplianceRule[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<ComplianceRowEdit>({
+    pattern: '',
+    severity: 'Warning',
+    action: 'Alert',
+    description: '',
+  });
+  const [addingNew, setAddingNew] = useState(false);
+  const [newDraft, setNewDraft] = useState<ComplianceRowEdit>({
+    pattern: '',
+    severity: 'Warning',
+    action: 'Alert',
+    description: '',
+  });
+
+  useEffect(() => {
+    setLocalRules(rules);
+  }, [rules]);
+
+  const startEdit = (rule: ComplianceRule) => {
+    setEditingId(rule.ruleId);
+    setEditDraft({
+      pattern: rule.pattern,
+      severity: rule.severity,
+      action: rule.action,
+      description: rule.description ?? '',
+    });
+    setAddingNew(false);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  const saveEdit = () => {
+    if (!editingId) return;
+    setLocalRules((prev) =>
+      prev.map((r) =>
+        r.ruleId === editingId
+          ? {
+              ...r,
+              pattern: editDraft.pattern,
+              severity: editDraft.severity,
+              action: editDraft.action,
+              description: editDraft.description || undefined,
+            }
+          : r,
+      ),
+    );
+    setEditingId(null);
+  };
+
+  const deleteRule = (ruleId: string) => {
+    if (!window.confirm(t('admin:agentAssist.complianceRules.deleteConfirm'))) return;
+    setLocalRules((prev) => prev.filter((r) => r.ruleId !== ruleId));
+  };
+
+  const startAddNew = () => {
+    setAddingNew(true);
+    setNewDraft({ pattern: '', severity: 'Warning', action: 'Alert', description: '' });
+    setEditingId(null);
+  };
+
+  const cancelAddNew = () => {
+    setAddingNew(false);
+  };
+
+  const confirmAddNew = () => {
+    if (!newDraft.pattern.trim()) return;
+    const newRule: ComplianceRule = {
+      ruleId: `cr-${Date.now()}`,
+      pattern: newDraft.pattern.trim(),
+      severity: newDraft.severity,
+      action: newDraft.action,
+      description: newDraft.description.trim() || undefined,
+    };
+    setLocalRules((prev) => [...prev, newRule]);
+    setAddingNew(false);
+  };
+
+  const handleSaveRules = () => {
+    updateRules.mutate(localRules);
+  };
+
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading…</p>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="overflow-x-auto rounded-md border">
+        <table className="w-full text-sm">
+          <thead className="border-b bg-muted/50">
+            <tr>
+              <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                {t('admin:agentAssist.complianceRules.pattern')}
+              </th>
+              <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                {t('admin:agentAssist.complianceRules.severity')}
+              </th>
+              <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                {t('admin:agentAssist.complianceRules.action')}
+              </th>
+              <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                {t('admin:agentAssist.complianceRules.description')}
+              </th>
+              <th className="w-24 px-3 py-2" />
+            </tr>
+          </thead>
+          <tbody>
+            {localRules.length === 0 && !addingNew && (
+              <tr>
+                <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                  {t('admin:agentAssist.complianceRules.empty')}
+                </td>
+              </tr>
+            )}
+            {localRules.map((rule) =>
+              editingId === rule.ruleId ? (
+                <tr key={rule.ruleId} className="border-b bg-muted/30">
+                  <td className="px-3 py-2">
+                    <Input
+                      value={editDraft.pattern}
+                      onChange={(e) =>
+                        setEditDraft((d) => ({ ...d, pattern: e.target.value }))
+                      }
+                      className="h-7 text-sm"
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <Select
+                      value={editDraft.severity}
+                      onValueChange={(v) =>
+                        setEditDraft((d) => ({ ...d, severity: v as Severity }))
+                      }
+                    >
+                      <SelectTrigger size="sm" className="w-28">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SEVERITY_OPTIONS.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Select
+                      value={editDraft.action}
+                      onValueChange={(v) =>
+                        setEditDraft((d) => ({ ...d, action: v as Action }))
+                      }
+                    >
+                      <SelectTrigger size="sm" className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ACTION_OPTIONS.map((a) => (
+                          <SelectItem key={a} value={a}>
+                            {a}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Input
+                      value={editDraft.description}
+                      onChange={(e) =>
+                        setEditDraft((d) => ({ ...d, description: e.target.value }))
+                      }
+                      className="h-7 text-sm"
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={saveEdit}
+                        className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                        aria-label="Confirm edit"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={cancelEdit}
+                        className="h-7 w-7 p-0"
+                        aria-label="Cancel edit"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                <tr key={rule.ruleId} className="border-b last:border-0 hover:bg-muted/30">
+                  <td className="px-3 py-2 font-medium text-foreground">{rule.pattern}</td>
+                  <td className="px-3 py-2">
+                    <Badge
+                      variant={
+                        rule.severity === 'Critical'
+                          ? 'destructive'
+                          : rule.severity === 'Warning'
+                            ? 'default'
+                            : 'secondary'
+                      }
+                    >
+                      {rule.severity}
+                    </Badge>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Badge variant="outline">{rule.action}</Badge>
+                  </td>
+                  <td className="px-3 py-2 text-muted-foreground">
+                    {rule.description ?? '—'}
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEdit(rule)}
+                        className="h-7 w-7 p-0"
+                        aria-label="Edit rule"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteRule(rule.ruleId)}
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        aria-label="Delete rule"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ),
+            )}
+
+            {/* New row */}
+            {addingNew && (
+              <tr className="border-b bg-muted/30">
+                <td className="px-3 py-2">
+                  <Input
+                    value={newDraft.pattern}
+                    onChange={(e) =>
+                      setNewDraft((d) => ({ ...d, pattern: e.target.value }))
+                    }
+                    placeholder={t('admin:agentAssist.complianceRules.patternPlaceholder')}
+                    className="h-7 text-sm"
+                    autoFocus
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <Select
+                    value={newDraft.severity}
+                    onValueChange={(v) =>
+                      setNewDraft((d) => ({ ...d, severity: v as Severity }))
+                    }
+                  >
+                    <SelectTrigger size="sm" className="w-28">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SEVERITY_OPTIONS.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </td>
+                <td className="px-3 py-2">
+                  <Select
+                    value={newDraft.action}
+                    onValueChange={(v) =>
+                      setNewDraft((d) => ({ ...d, action: v as Action }))
+                    }
+                  >
+                    <SelectTrigger size="sm" className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACTION_OPTIONS.map((a) => (
+                        <SelectItem key={a} value={a}>
+                          {a}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </td>
+                <td className="px-3 py-2">
+                  <Input
+                    value={newDraft.description}
+                    onChange={(e) =>
+                      setNewDraft((d) => ({ ...d, description: e.target.value }))
+                    }
+                    placeholder={t('admin:agentAssist.complianceRules.descriptionPlaceholder')}
+                    className="h-7 text-sm"
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={confirmAddNew}
+                      className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                      aria-label="Add rule"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={cancelAddNew}
+                      className="h-7 w-7 p-0"
+                      aria-label="Cancel"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={startAddNew}
+          disabled={addingNew}
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          {t('admin:agentAssist.complianceRules.addRule')}
+        </Button>
+
+        <Button
+          type="button"
+          size="sm"
+          onClick={handleSaveRules}
+          disabled={updateRules.isPending}
+        >
+          <Save className="mr-1.5 h-4 w-4" />
+          {updateRules.isPending
+            ? t('admin:agentAssist.saving')
+            : t('admin:agentAssist.complianceRules.saveRules')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 interface ConfigFormState {
   enabled: boolean;
   suggestionTimeoutMs: number;
@@ -769,6 +1161,14 @@ export default function AgentAssistConfigPage() {
         description={t('admin:agentAssist.rules.description')}
       >
         <KeywordRulesSection />
+      </SectionCard>
+
+      {/* Section 6 — Compliance Rules */}
+      <SectionCard
+        title={t('admin:agentAssist.complianceRules.title')}
+        description={t('admin:agentAssist.complianceRules.description')}
+      >
+        <ComplianceRulesSection />
       </SectionCard>
     </div>
   );

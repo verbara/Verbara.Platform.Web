@@ -124,6 +124,20 @@
       "deleteConfirm": "Delete this keyword rule?",
       "keywordPlaceholder": "e.g. cancel",
       "suggestionPlaceholder": "e.g. Offer a retention discount"
+    },
+    "complianceRules": {
+      "title": "Compliance Rules",
+      "description": "Define patterns that trigger compliance alerts when detected in the conversation.",
+      "pattern": "Pattern",
+      "severity": "Severity",
+      "action": "Action",
+      "description": "Description",
+      "addRule": "Add Rule",
+      "saveRules": "Save Rules",
+      "empty": "No compliance rules defined yet.",
+      "deleteConfirm": "Delete this compliance rule?",
+      "patternPlaceholder": "e.g. credit card",
+      "descriptionPlaceholder": "e.g. Agent mentioned payment details"
     }
   },
   "system": { "title": "System", "license_tier": "License tier", "features": "Features", "cluster": "Cluster", "max_agents": "Max agents", "expires": "Expires", "enabled": "Enabled", "disabled": "Locked", "license_expired": "License has expired. Please renew.", "license_expiring_soon": "License expires in {{days}} days.", "last_heartbeat": "Last heartbeat", "settings": "Settings", "platform_name": "Platform name", "default_timezone": "Default timezone", "default_language": "Default language", "save": "Save settings" },

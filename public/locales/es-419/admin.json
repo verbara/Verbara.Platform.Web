@@ -124,6 +124,20 @@
       "deleteConfirm": "¿Eliminar esta regla de palabra clave?",
       "keywordPlaceholder": "ej. cancelar",
       "suggestionPlaceholder": "ej. Ofrezca un descuento de retención"
+    },
+    "complianceRules": {
+      "title": "Reglas de cumplimiento",
+      "description": "Defina patrones que activen alertas de cumplimiento cuando se detecten en la conversación.",
+      "pattern": "Patrón",
+      "severity": "Severidad",
+      "action": "Acción",
+      "description": "Descripción",
+      "addRule": "Agregar regla",
+      "saveRules": "Guardar reglas",
+      "empty": "No hay reglas de cumplimiento definidas.",
+      "deleteConfirm": "¿Eliminar esta regla de cumplimiento?",
+      "patternPlaceholder": "ej. tarjeta de crédito",
+      "descriptionPlaceholder": "ej. El agente mencionó datos de pago"
     }
   },
   "system": { "title": "Sistema", "license_tier": "Nivel de licencia", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Activo", "disabled": "Bloqueado", "license_expired": "La licencia ha expirado. Por favor renueve.", "license_expiring_soon": "La licencia expira en {{days}} días.", "last_heartbeat": "Último heartbeat", "settings": "Configuración", "platform_name": "Nombre de plataforma", "default_timezone": "Zona horaria predeterminada", "default_language": "Idioma predeterminado", "save": "Guardar configuración" },
