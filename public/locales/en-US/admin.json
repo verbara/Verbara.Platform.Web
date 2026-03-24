@@ -66,6 +66,8 @@
     "bannerResume": "Resume setup",
     "bannerDismiss": "Dismiss"
   },
+  "trunks": { "title": "Trunks", "create": "Add Trunk", "edit": "Edit Trunk", "name": "Name", "displayName": "Display Name", "type": "Type", "maxChannels": "Max Channels", "status": "Status", "searchPlaceholder": "Search trunks...", "save": "Save Changes" },
+  "routes": { "title": "Outbound Routes", "create": "Add Route", "edit": "Edit Route", "priority": "Priority", "pattern": "Pattern", "patternType": "Type", "trunk": "Trunk", "dialPrefix": "Dial Prefix", "searchPlaceholder": "Search routes...", "save": "Save Changes" },
   "system": { "title": "System", "license_tier": "License tier", "features": "Features", "cluster": "Cluster", "max_agents": "Max agents", "expires": "Expires", "enabled": "Enabled", "disabled": "Locked", "license_expired": "License has expired. Please renew.", "license_expiring_soon": "License expires in {{days}} days.", "last_heartbeat": "Last heartbeat", "settings": "Settings", "platform_name": "Platform name", "default_timezone": "Default timezone", "default_language": "Default language", "save": "Save settings" },
   "api": {
     "userCreated": "User created",

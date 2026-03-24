@@ -20,6 +20,13 @@ const CampaignWizard = lazy(() => import('@/admin/campaigns/campaign-wizard'));
 const CampaignDetailPage = lazy(() => import('@/admin/campaigns/campaign-detail-page'));
 const DncListsPage = lazy(() => import('@/admin/dnc-lists/dnc-lists-page'));
 const DncListDetail = lazy(() => import('@/admin/dnc-lists/dnc-list-detail'));
+const CallerIdPoolsPage = lazy(() => import('@/admin/caller-id-pools/caller-id-pools-page'));
+const CallerIdPoolDetailPage = lazy(() => import('@/admin/caller-id-pools/caller-id-pool-detail'));
+const HolidayCalendarsPage = lazy(() => import('@/admin/holiday-calendars/holiday-calendars-page'));
+const HolidayCalendarDetailPage = lazy(() => import('@/admin/holiday-calendars/holiday-calendar-detail'));
+const TrunksPage = lazy(() => import('@/admin/trunks/trunks-page'));
+const RoutesPage = lazy(() => import('@/admin/routes/routes-page'));
+const DialerSettingsPage = lazy(() => import('@/admin/dialer-settings/dialer-settings-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
@@ -182,6 +189,62 @@ export const router = createBrowserRouter([
             element: (
               <LazyLoad>
                 <DncListDetail />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'caller-id-pools',
+            element: (
+              <LazyLoad>
+                <CallerIdPoolsPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'caller-id-pools/:poolId',
+            element: (
+              <LazyLoad>
+                <CallerIdPoolDetailPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'holiday-calendars',
+            element: (
+              <LazyLoad>
+                <HolidayCalendarsPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'holiday-calendars/:calendarId',
+            element: (
+              <LazyLoad>
+                <HolidayCalendarDetailPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'dialer-settings',
+            element: (
+              <LazyLoad>
+                <DialerSettingsPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'trunks',
+            element: (
+              <LazyLoad>
+                <TrunksPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'routes',
+            element: (
+              <LazyLoad>
+                <RoutesPage />
               </LazyLoad>
             ),
           },
