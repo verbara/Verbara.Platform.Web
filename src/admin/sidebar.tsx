@@ -26,6 +26,8 @@ interface SidebarItem {
   labelKey: string;
   to: string;
   icon: LucideIcon;
+  /** Roles that can see this item. Undefined = all roles. */
+  allowedRoles?: string[];
 }
 
 interface SidebarGroup {
@@ -41,35 +43,35 @@ const groups: SidebarGroup[] = [
     key: 'people',
     labelKey: 'admin:sidebar.people',
     items: [
-      { key: 'users', labelKey: 'admin:sidebar.users', to: '/admin/users', icon: Users },
-      { key: 'agents', labelKey: 'admin:sidebar.agents', to: '/admin/agents', icon: Headset },
+      { key: 'users', labelKey: 'admin:sidebar.users', to: '/admin/users', icon: Users, allowedRoles: ['admin'] },
+      { key: 'agents', labelKey: 'admin:sidebar.agents', to: '/admin/agents', icon: Headset, allowedRoles: ['admin', 'supervisor'] },
     ],
   },
   {
     key: 'communication',
     labelKey: 'admin:sidebar.communication',
     items: [
-      { key: 'channels', labelKey: 'admin:sidebar.channels', to: '/admin/channels', icon: Radio },
-      { key: 'queues', labelKey: 'admin:sidebar.queues', to: '/admin/queues', icon: ListChecks },
-      { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow },
-      { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone },
+      { key: 'channels', labelKey: 'admin:sidebar.channels', to: '/admin/channels', icon: Radio, allowedRoles: ['admin'] },
+      { key: 'queues', labelKey: 'admin:sidebar.queues', to: '/admin/queues', icon: ListChecks, allowedRoles: ['admin', 'supervisor'] },
+      { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow, allowedRoles: ['admin'] },
+      { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone, allowedRoles: ['admin'] },
     ],
   },
   {
     key: 'telephony',
     labelKey: 'admin:sidebar.telephony',
     items: [
-      { key: 'trunks', labelKey: 'admin:sidebar.trunks', to: '/admin/trunks', icon: Cable },
-      { key: 'routes', labelKey: 'admin:sidebar.routes', to: '/admin/routes', icon: Route },
-      { key: 'caller-id-pools', labelKey: 'admin:sidebar.callerIdPools', to: '/admin/caller-id-pools', icon: Phone },
+      { key: 'trunks', labelKey: 'admin:sidebar.trunks', to: '/admin/trunks', icon: Cable, allowedRoles: ['admin'] },
+      { key: 'routes', labelKey: 'admin:sidebar.routes', to: '/admin/routes', icon: Route, allowedRoles: ['admin'] },
+      { key: 'caller-id-pools', labelKey: 'admin:sidebar.callerIdPools', to: '/admin/caller-id-pools', icon: Phone, allowedRoles: ['admin'] },
     ],
   },
   {
     key: 'compliance',
     labelKey: 'admin:sidebar.compliance',
     items: [
-      { key: 'dnc-lists', labelKey: 'admin:sidebar.dncLists', to: '/admin/dnc-lists', icon: ShieldBan },
-      { key: 'holiday-calendars', labelKey: 'admin:sidebar.holidayCalendars', to: '/admin/holiday-calendars', icon: CalendarOff },
+      { key: 'dnc-lists', labelKey: 'admin:sidebar.dncLists', to: '/admin/dnc-lists', icon: ShieldBan, allowedRoles: ['admin'] },
+      { key: 'holiday-calendars', labelKey: 'admin:sidebar.holidayCalendars', to: '/admin/holiday-calendars', icon: CalendarOff, allowedRoles: ['admin'] },
     ],
   },
   {
@@ -77,9 +79,9 @@ const groups: SidebarGroup[] = [
     labelKey: 'admin:sidebar.system',
     allowedRoles: ['admin'],
     items: [
-      { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server },
-      { key: 'license', labelKey: 'admin:sidebar.license', to: '/admin/license', icon: KeyRound },
-      { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal },
+      { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, allowedRoles: ['admin'] },
+      { key: 'license', labelKey: 'admin:sidebar.license', to: '/admin/license', icon: KeyRound, allowedRoles: ['admin'] },
+      { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, allowedRoles: ['admin'] },
     ],
   },
 ];
@@ -140,10 +142,18 @@ export function AdminSidebar() {
   const role = useAuthStore((s) => s.user?.role);
   const location = useLocation();
 
-  const visibleGroups = groups.filter((group) => {
-    if (!group.allowedRoles) return true;
-    return role !== undefined && group.allowedRoles.includes(role);
-  });
+  const visibleGroups = groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !item.allowedRoles || (role !== undefined && item.allowedRoles.includes(role)),
+      ),
+    }))
+    .filter((group) => {
+      if (group.items.length === 0) return false;
+      if (!group.allowedRoles) return true;
+      return role !== undefined && group.allowedRoles.includes(role);
+    });
 
   return (
     <nav className="flex h-full flex-col gap-2 py-3">
