@@ -18,6 +18,8 @@ import {
   KeyRound,
   SlidersHorizontal,
   ChevronDown,
+  Bot,
+  BookOpen,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -72,6 +74,15 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'dnc-lists', labelKey: 'admin:sidebar.dncLists', to: '/admin/dnc-lists', icon: ShieldBan, allowedRoles: ['admin'] },
       { key: 'holiday-calendars', labelKey: 'admin:sidebar.holidayCalendars', to: '/admin/holiday-calendars', icon: CalendarOff, allowedRoles: ['admin'] },
+    ],
+  },
+  {
+    key: 'ai-automation',
+    labelKey: 'admin:sidebar.aiAutomation',
+    allowedRoles: ['admin'],
+    items: [
+      { key: 'bots', labelKey: 'admin:sidebar.bots', to: '/admin/bots', icon: Bot, allowedRoles: ['admin'] },
+      { key: 'knowledge-base', labelKey: 'admin:sidebar.knowledgeBase', to: '/admin/knowledge-base', icon: BookOpen, allowedRoles: ['admin'] },
     ],
   },
   {

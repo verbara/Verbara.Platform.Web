@@ -18,7 +18,9 @@
     "holidayCalendars": "Calendários de Feriados",
     "system": "Sistema",
     "license": "Licença",
-    "dialerSettings": "Configurações do Discador"
+    "dialerSettings": "Configurações do Discador",
+    "aiAutomation": "IA e Automação",
+    "bots": "Bots"
   },
   "users": { "title": "Usuários", "create": "Criar usuário", "email": "E-mail", "name": "Nome", "role": "Função", "status": "Status" },
   "agents": { "title": "Agentes", "create": "Criar agente", "edit": "Editar agente", "skills": "Habilidades", "team": "Equipe", "displayName": "Nome", "user": "Usu\u00e1rio", "state": "Estado", "queueCount": "Filas", "searchPlaceholder": "Buscar agentes...", "selectUser": "Selecionar usu\u00e1rio", "noTeam": "Sem equipe", "addSkill": "Adicionar habilidade", "skillName": "Nome da habilidade", "noSkills": "Nenhuma habilidade atribu\u00edda.", "save": "Salvar altera\u00e7\u00f5es", "createDescription": "Criar um novo agente a partir de um usu\u00e1rio existente.", "editDescription": "Atualizar dados do agente.", "deleteTitle": "Excluir agente", "queues": "Filas atribu\u00eddas", "noQueues": "N\u00e3o atribu\u00eddo a nenhuma fila.", "queuesNote": "A atribui\u00e7\u00e3o de filas \u00e9 gerenciada na configura\u00e7\u00e3o de filas." },
@@ -68,6 +70,7 @@
   },
   "trunks": { "title": "Troncos", "create": "Adicionar tronco", "edit": "Editar tronco", "name": "Nome", "displayName": "Nome de exibição", "type": "Tipo", "maxChannels": "Canais máx.", "status": "Status", "searchPlaceholder": "Buscar troncos...", "save": "Salvar alterações" },
   "routes": { "title": "Rotas de saída", "create": "Adicionar rota", "edit": "Editar rota", "priority": "Prioridade", "pattern": "Padrão", "patternType": "Tipo", "trunk": "Tronco", "dialPrefix": "Prefixo de discagem", "searchPlaceholder": "Buscar rotas...", "save": "Salvar alterações" },
+  "bots": { "title": "Bots", "create": "Adicionar bot", "edit": "Editar bot", "name": "Nome", "defaultFlow": "Fluxo padrão", "fallbackQueue": "Fila de fallback", "confidenceThreshold": "Limiar de confiança", "maxTurns": "Turnos máximos", "active": "Ativo", "status": "Status", "activeLabel": "Ativo", "inactiveLabel": "Inativo", "selectFlow": "Selecionar fluxo", "noFlow": "Sem fluxo", "selectQueue": "Selecionar fila", "noQueue": "Sem fila", "searchPlaceholder": "Buscar bots...", "noResults": "Nenhum bot encontrado.", "empty": "Sem bots ainda — Adicione seu primeiro bot", "save": "Salvar alterações", "createDescription": "Configurar um novo bot conversacional.", "editDescription": "Atualizar configuração do bot." },
   "system": { "title": "Sistema", "license_tier": "Nível de licença", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Ativo", "disabled": "Bloqueado", "license_expired": "A licença expirou. Por favor renove.", "license_expiring_soon": "A licença expira em {{days}} dias.", "last_heartbeat": "Último heartbeat", "settings": "Configurações", "platform_name": "Nome da plataforma", "default_timezone": "Fuso horário padrão", "default_language": "Idioma padrão", "save": "Salvar configurações" },
   "api": {
     "userCreated": "Usuário criado",

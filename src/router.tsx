@@ -29,6 +29,8 @@ const HolidayCalendarDetailPage = lazy(() => import('@/admin/holiday-calendars/h
 const TrunksPage = lazy(() => import('@/admin/trunks/trunks-page'));
 const RoutesPage = lazy(() => import('@/admin/routes/routes-page'));
 const DialerSettingsPage = lazy(() => import('@/admin/dialer-settings/dialer-settings-page'));
+const BotListPage = lazy(() => import('@/admin/bots/bot-list-page'));
+const KbListPage = lazy(() => import('@/admin/knowledge-base/kb-list-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
@@ -273,6 +275,26 @@ export const router = createBrowserRouter([
               <RoleGuard allowedRoles={['admin']}>
                 <LazyLoad>
                   <ChannelsPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'knowledge-base',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <KbListPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'bots',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <BotListPage />
                 </LazyLoad>
               </RoleGuard>
             ),

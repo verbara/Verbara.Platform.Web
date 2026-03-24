@@ -3,6 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
 import { ContactInfo } from './contact-info';
 import { ConversationHistory } from './conversation-history';
 import { AgentNotes } from './agent-notes';
+import { KnowledgeTab } from './knowledge-tab';
 
 export function ContextPanel() {
   const { t } = useTranslation(['agent']);
@@ -13,8 +14,8 @@ export function ContextPanel() {
         <TabsTrigger value="contact">{t('agent:context.contact_info')}</TabsTrigger>
         <TabsTrigger value="history">{t('agent:context.history')}</TabsTrigger>
         <TabsTrigger value="notes">{t('agent:context.notes')}</TabsTrigger>
-        <TabsTrigger value="ai" disabled>
-          {t('agent:context.ai_assist')}
+        <TabsTrigger value="knowledge">
+          {t('agent:context.knowledge')}
         </TabsTrigger>
       </TabsList>
 
@@ -30,10 +31,8 @@ export function ContextPanel() {
         <AgentNotes />
       </TabsContent>
 
-      <TabsContent value="ai">
-        <div className="flex items-center justify-center p-6 text-sm text-slate-400">
-          {t('agent:context.ai_assist_placeholder')}
-        </div>
+      <TabsContent value="knowledge" className="overflow-y-auto">
+        <KnowledgeTab />
       </TabsContent>
     </Tabs>
   );
