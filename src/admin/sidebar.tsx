@@ -15,7 +15,6 @@ import {
   ShieldBan,
   CalendarOff,
   Server,
-  KeyRound,
   SlidersHorizontal,
   ChevronDown,
   Bot,
@@ -93,7 +92,6 @@ const groups: SidebarGroup[] = [
     allowedRoles: ['admin'],
     items: [
       { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, allowedRoles: ['admin'] },
-      { key: 'license', labelKey: 'admin:sidebar.license', to: '/admin/license', icon: KeyRound, allowedRoles: ['admin'] },
       { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, allowedRoles: ['admin'] },
     ],
   },
