@@ -18,6 +18,8 @@ const FlowDesigner = lazy(() => import('@/admin/flows/flow-designer'));
 const CampaignListPage = lazy(() => import('@/admin/campaigns/campaign-list-page'));
 const CampaignWizard = lazy(() => import('@/admin/campaigns/campaign-wizard'));
 const CampaignDetailPage = lazy(() => import('@/admin/campaigns/campaign-detail-page'));
+const DncListsPage = lazy(() => import('@/admin/dnc-lists/dnc-lists-page'));
+const DncListDetail = lazy(() => import('@/admin/dnc-lists/dnc-list-detail'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
@@ -164,6 +166,22 @@ export const router = createBrowserRouter([
             element: (
               <LazyLoad>
                 <CampaignDetailPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'dnc-lists',
+            element: (
+              <LazyLoad>
+                <DncListsPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'dnc-lists/:listId',
+            element: (
+              <LazyLoad>
+                <DncListDetail />
               </LazyLoad>
             ),
           },
