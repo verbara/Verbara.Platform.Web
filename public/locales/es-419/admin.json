@@ -20,7 +20,8 @@
     "license": "Licencia",
     "dialerSettings": "Configuración de Marcador",
     "aiAutomation": "IA y Automatización",
-    "bots": "Bots"
+    "bots": "Bots",
+    "agent_assist": "Asistente de Agente"
   },
   "users": { "title": "Usuarios", "create": "Crear usuario", "email": "Correo", "name": "Nombre", "role": "Rol", "status": "Estado" },
   "agents": { "title": "Agentes", "create": "Crear agente", "edit": "Editar agente", "skills": "Habilidades", "team": "Equipo", "displayName": "Nombre", "user": "Usuario", "state": "Estado", "queueCount": "Colas", "searchPlaceholder": "Buscar agentes...", "selectUser": "Seleccionar usuario", "noTeam": "Sin equipo", "addSkill": "Agregar habilidad", "skillName": "Nombre de habilidad", "noSkills": "Sin habilidades asignadas.", "save": "Guardar cambios", "createDescription": "Crear un nuevo agente a partir de un usuario existente.", "editDescription": "Actualizar datos del agente.", "deleteTitle": "Eliminar agente", "queues": "Colas asignadas", "noQueues": "No asignado a ninguna cola.", "queuesNote": "La asignaci\u00f3n de colas se gestiona desde la configuraci\u00f3n de colas." },
@@ -71,6 +72,59 @@
   "trunks": { "title": "Troncales", "create": "Agregar troncal", "edit": "Editar troncal", "name": "Nombre", "displayName": "Nombre visible", "type": "Tipo", "maxChannels": "Canales máx.", "status": "Estado", "searchPlaceholder": "Buscar troncales...", "save": "Guardar cambios" },
   "routes": { "title": "Rutas salientes", "create": "Agregar ruta", "edit": "Editar ruta", "priority": "Prioridad", "pattern": "Patrón", "patternType": "Tipo", "trunk": "Troncal", "dialPrefix": "Prefijo de marcación", "searchPlaceholder": "Buscar rutas...", "save": "Guardar cambios" },
   "bots": { "title": "Bots", "create": "Agregar bot", "edit": "Editar bot", "name": "Nombre", "defaultFlow": "Flujo predeterminado", "fallbackQueue": "Cola de respaldo", "confidenceThreshold": "Umbral de confianza", "maxTurns": "Turnos máximos", "active": "Activo", "status": "Estado", "activeLabel": "Activo", "inactiveLabel": "Inactivo", "selectFlow": "Seleccionar flujo", "noFlow": "Sin flujo", "selectQueue": "Seleccionar cola", "noQueue": "Sin cola", "searchPlaceholder": "Buscar bots...", "noResults": "No se encontraron bots.", "empty": "Sin bots aún — Agregue su primer bot", "save": "Guardar cambios", "createDescription": "Configurar un nuevo bot conversacional.", "editDescription": "Actualizar configuración del bot." },
+  "agentAssist": {
+    "title": "Asistente de Agente",
+    "description": "Configure la asistencia de IA en tiempo real para agentes durante llamadas en vivo.",
+    "saveConfig": "Guardar configuración",
+    "saving": "Guardando…",
+    "status": {
+      "title": "Estado del motor",
+      "description": "Habilite o deshabilite el motor de asistencia.",
+      "enableLabel": "Motor habilitado",
+      "enableHint": "Cuando está habilitado, el motor monitorea las llamadas y entrega sugerencias en tiempo real.",
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "filters": {
+      "title": "Filtros",
+      "description": "Restrinja el monitoreo a colas o agentes específicos. Deje vacío para monitorear todas las llamadas.",
+      "queues": "Colas",
+      "agents": "Agentes",
+      "allCalls": "Todas las colas",
+      "allAgents": "Todos los agentes",
+      "emptyNote": "Vacío = todas las llamadas monitoreadas"
+    },
+    "timeouts": {
+      "title": "Tiempos de espera",
+      "description": "Tiempo máximo permitido para que cada proveedor de IA responda antes de descartar el resultado.",
+      "suggestion": "Timeout de sugerencia",
+      "sentiment": "Timeout de sentimiento",
+      "compliance": "Timeout de cumplimiento"
+    },
+    "whisper": {
+      "title": "Entrega por susurro",
+      "description": "Configure cómo se susurran las sugerencias de IA a los agentes por audio.",
+      "enableLabel": "Habilitar entrega por susurro",
+      "enableHint": "Sintetiza sugerencias como audio y las reproduce en el canal del agente.",
+      "priorityThreshold": "Umbral de prioridad",
+      "priorityHint": "Solo se susurrarán sugerencias con esta prioridad o superior.",
+      "queueCapacity": "Capacidad de cola",
+      "capacityHint": "Número máximo de mensajes de susurro pendientes antes de descartar los más antiguos."
+    },
+    "rules": {
+      "title": "Reglas de palabras clave",
+      "description": "Defina palabras clave que desencadenen sugerencias cuando se detecten en la conversación.",
+      "keyword": "Palabra clave",
+      "suggestionText": "Texto de sugerencia",
+      "priority": "Prioridad",
+      "addRule": "Agregar regla",
+      "saveRules": "Guardar reglas",
+      "empty": "No hay reglas de palabras clave definidas.",
+      "deleteConfirm": "¿Eliminar esta regla de palabra clave?",
+      "keywordPlaceholder": "ej. cancelar",
+      "suggestionPlaceholder": "ej. Ofrezca un descuento de retención"
+    }
+  },
   "system": { "title": "Sistema", "license_tier": "Nivel de licencia", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Activo", "disabled": "Bloqueado", "license_expired": "La licencia ha expirado. Por favor renueve.", "license_expiring_soon": "La licencia expira en {{days}} días.", "last_heartbeat": "Último heartbeat", "settings": "Configuración", "platform_name": "Nombre de plataforma", "default_timezone": "Zona horaria predeterminada", "default_language": "Idioma predeterminado", "save": "Guardar configuración" },
   "api": {
     "userCreated": "Usuario creado",

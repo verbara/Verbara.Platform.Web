@@ -28,6 +28,9 @@ import { MessageThread } from './message-thread';
 import { ReplyComposer } from './reply-composer';
 import { TransferDialog } from './transfer-dialog';
 import { WrapUpDialog } from './wrap-up-dialog';
+import { SuggestionBanner } from './suggestion-banner';
+import { SentimentGauge } from './sentiment-gauge';
+import { ComplianceAlert } from './compliance-alert';
 
 const channelIcons: Record<string, LucideIcon> = {
   whatsapp: MessageSquare,
@@ -115,6 +118,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
           <span className="text-xs text-slate-400 dark:text-slate-500">
             {conversation.queueName}
           </span>
+          <SentimentGauge />
         </div>
 
         {/* Action buttons */}
@@ -173,6 +177,10 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
           )}
         </div>
       </div>
+
+      {/* AI Banners */}
+      <SuggestionBanner />
+      <ComplianceAlert />
 
       {/* Message Thread */}
       <MessageThread conversationId={conversationId} />

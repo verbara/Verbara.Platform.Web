@@ -20,7 +20,8 @@
     "license": "License",
     "dialerSettings": "Dialer Settings",
     "aiAutomation": "AI & Automation",
-    "bots": "Bots"
+    "bots": "Bots",
+    "agent_assist": "Agent Assist"
   },
   "users": { "title": "Users", "create": "Create user", "email": "Email", "name": "Name", "role": "Role", "status": "Status" },
   "agents": { "title": "Agents", "create": "Create agent", "edit": "Edit agent", "skills": "Skills", "team": "Team", "displayName": "Display Name", "user": "User", "state": "State", "queueCount": "Queues", "searchPlaceholder": "Search agents...", "selectUser": "Select a user", "noTeam": "No team", "addSkill": "Add skill", "skillName": "Skill name", "noSkills": "No skills assigned yet.", "save": "Save changes", "createDescription": "Create a new agent from an existing user.", "editDescription": "Update agent details.", "deleteTitle": "Delete agent", "queues": "Queue Memberships", "noQueues": "Not assigned to any queues.", "queuesNote": "Queue assignment is managed from queue configuration." },
@@ -71,6 +72,59 @@
   "trunks": { "title": "Trunks", "create": "Add Trunk", "edit": "Edit Trunk", "name": "Name", "displayName": "Display Name", "type": "Type", "maxChannels": "Max Channels", "status": "Status", "searchPlaceholder": "Search trunks...", "save": "Save Changes" },
   "routes": { "title": "Outbound Routes", "create": "Add Route", "edit": "Edit Route", "priority": "Priority", "pattern": "Pattern", "patternType": "Type", "trunk": "Trunk", "dialPrefix": "Dial Prefix", "searchPlaceholder": "Search routes...", "save": "Save Changes" },
   "bots": { "title": "Bots", "create": "Add Bot", "edit": "Edit Bot", "name": "Name", "defaultFlow": "Default Flow", "fallbackQueue": "Fallback Queue", "confidenceThreshold": "Confidence Threshold", "maxTurns": "Max Turns", "active": "Active", "status": "Status", "activeLabel": "Active", "inactiveLabel": "Inactive", "selectFlow": "Select flow", "noFlow": "No flow", "selectQueue": "Select queue", "noQueue": "No queue", "searchPlaceholder": "Search bots...", "noResults": "No matching bots found.", "empty": "No bots yet — Add your first bot", "save": "Save Changes", "createDescription": "Configure a new conversational bot.", "editDescription": "Update bot configuration." },
+  "agentAssist": {
+    "title": "Agent Assist",
+    "description": "Configure real-time AI assistance for agents during live calls.",
+    "saveConfig": "Save Configuration",
+    "saving": "Saving…",
+    "status": {
+      "title": "Engine Status",
+      "description": "Enable or disable the Agent Assist engine.",
+      "enableLabel": "Engine enabled",
+      "enableHint": "When enabled, the engine monitors calls and delivers real-time suggestions.",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "filters": {
+      "title": "Filters",
+      "description": "Restrict monitoring to specific queues or agents. Leave empty to monitor all calls.",
+      "queues": "Queues",
+      "agents": "Agents",
+      "allCalls": "All queues",
+      "allAgents": "All agents",
+      "emptyNote": "Empty = all calls monitored"
+    },
+    "timeouts": {
+      "title": "Timeouts",
+      "description": "Maximum time allowed for each AI provider to respond before the result is discarded.",
+      "suggestion": "Suggestion timeout",
+      "sentiment": "Sentiment timeout",
+      "compliance": "Compliance timeout"
+    },
+    "whisper": {
+      "title": "Whisper Delivery",
+      "description": "Configure how AI suggestions are whispered to agents via audio.",
+      "enableLabel": "Enable whisper delivery",
+      "enableHint": "Synthesizes suggestions as audio and plays them to the agent channel.",
+      "priorityThreshold": "Priority threshold",
+      "priorityHint": "Only suggestions at or above this priority will be whispered.",
+      "queueCapacity": "Queue capacity",
+      "capacityHint": "Maximum number of pending whisper messages before older ones are dropped."
+    },
+    "rules": {
+      "title": "Keyword Rules",
+      "description": "Define keywords that trigger suggestions when detected in the conversation.",
+      "keyword": "Keyword",
+      "suggestionText": "Suggestion Text",
+      "priority": "Priority",
+      "addRule": "Add Rule",
+      "saveRules": "Save Rules",
+      "empty": "No keyword rules defined yet.",
+      "deleteConfirm": "Delete this keyword rule?",
+      "keywordPlaceholder": "e.g. cancel",
+      "suggestionPlaceholder": "e.g. Offer a retention discount"
+    }
+  },
   "system": { "title": "System", "license_tier": "License tier", "features": "Features", "cluster": "Cluster", "max_agents": "Max agents", "expires": "Expires", "enabled": "Enabled", "disabled": "Locked", "license_expired": "License has expired. Please renew.", "license_expiring_soon": "License expires in {{days}} days.", "last_heartbeat": "Last heartbeat", "settings": "Settings", "platform_name": "Platform name", "default_timezone": "Default timezone", "default_language": "Default language", "save": "Save settings" },
   "api": {
     "userCreated": "User created",

@@ -61,6 +61,7 @@
     "contact_info": "Contact information",
     "history": "History",
     "notes": "Notes",
+    "transcript": "Transcript",
     "ai_assist": "AI Assist",
     "ai_assist_placeholder": "Coming soon",
     "no_contact": "Select a conversation to view contact info",
@@ -78,6 +79,13 @@
     "notes_placeholder": "Add a note...",
     "save_note": "Save note",
     "delete_note": "Delete note"
+  },
+  "ai": {
+    "suggestion": "Suggestion",
+    "dismiss": "Dismiss",
+    "acknowledge": "Acknowledge",
+    "waiting_transcript": "Waiting for transcript...",
+    "copy_copied": "Copied!"
   },
   "canned": {
     "search_placeholder": "Search canned response...",

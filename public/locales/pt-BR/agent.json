@@ -61,6 +61,7 @@
     "contact_info": "Informações do cliente",
     "history": "Histórico",
     "notes": "Notas",
+    "transcript": "Transcrição",
     "ai_assist": "Assistente IA",
     "ai_assist_placeholder": "Em breve",
     "no_contact": "Selecione uma conversa para ver as informações do contato",
@@ -78,6 +79,13 @@
     "notes_placeholder": "Adicionar uma nota...",
     "save_note": "Salvar nota",
     "delete_note": "Excluir nota"
+  },
+  "ai": {
+    "suggestion": "Sugestão",
+    "dismiss": "Descartar",
+    "acknowledge": "Reconhecer",
+    "waiting_transcript": "Aguardando transcrição...",
+    "copy_copied": "Copiado!"
   },
   "canned": {
     "search_placeholder": "Buscar resposta r\u00e1pida...",

@@ -1,12 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
+import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
 import { ContactInfo } from './contact-info';
 import { ConversationHistory } from './conversation-history';
 import { AgentNotes } from './agent-notes';
 import { KnowledgeTab } from './knowledge-tab';
+import { TranscriptTab } from './transcript-tab';
 
 export function ContextPanel() {
   const { t } = useTranslation(['agent']);
+  const isActive = useAgentAiStore((s) => s.isActive);
 
   return (
     <Tabs defaultValue="contact" className="flex h-full flex-col gap-0">
@@ -17,6 +20,9 @@ export function ContextPanel() {
         <TabsTrigger value="knowledge">
           {t('agent:context.knowledge')}
         </TabsTrigger>
+        {isActive && (
+          <TabsTrigger value="transcript">{t('agent:context.transcript')}</TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="contact" className="overflow-y-auto">
@@ -34,6 +40,12 @@ export function ContextPanel() {
       <TabsContent value="knowledge" className="overflow-y-auto">
         <KnowledgeTab />
       </TabsContent>
+
+      {isActive && (
+        <TabsContent value="transcript" className="overflow-y-auto">
+          <TranscriptTab />
+        </TabsContent>
+      )}
     </Tabs>
   );
 }
