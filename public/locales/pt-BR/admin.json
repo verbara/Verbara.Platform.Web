@@ -21,7 +21,8 @@
     "dialerSettings": "Configurações do Discador",
     "aiAutomation": "IA e Automação",
     "bots": "Bots",
-    "agent_assist": "Assistente de Agente"
+    "agent_assist": "Assistente de Agente",
+    "skills": "Habilidades"
   },
   "users": { "title": "Usuários", "create": "Criar usuário", "email": "E-mail", "name": "Nome", "role": "Função", "status": "Status" },
   "agents": { "title": "Agentes", "create": "Criar agente", "edit": "Editar agente", "skills": "Habilidades", "team": "Equipe", "displayName": "Nome", "user": "Usu\u00e1rio", "state": "Estado", "queueCount": "Filas", "searchPlaceholder": "Buscar agentes...", "selectUser": "Selecionar usu\u00e1rio", "noTeam": "Sem equipe", "addSkill": "Adicionar habilidade", "skillName": "Nome da habilidade", "noSkills": "Nenhuma habilidade atribu\u00edda.", "save": "Salvar altera\u00e7\u00f5es", "createDescription": "Criar um novo agente a partir de um usu\u00e1rio existente.", "editDescription": "Atualizar dados do agente.", "deleteTitle": "Excluir agente", "queues": "Filas atribu\u00eddas", "noQueues": "N\u00e3o atribu\u00eddo a nenhuma fila.", "queuesNote": "A atribui\u00e7\u00e3o de filas \u00e9 gerenciada na configura\u00e7\u00e3o de filas." },
@@ -126,6 +127,32 @@
     }
   },
   "system": { "title": "Sistema", "license_tier": "Nível de licença", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Ativo", "disabled": "Bloqueado", "license_expired": "A licença expirou. Por favor renove.", "license_expiring_soon": "A licença expira em {{days}} dias.", "last_heartbeat": "Último heartbeat", "settings": "Configurações", "platform_name": "Nome da plataforma", "default_timezone": "Fuso horário padrão", "default_language": "Idioma padrão", "save": "Salvar configurações" },
+  "skills": {
+    "title": "Habilidades",
+    "createSkill": "Criar Habilidade",
+    "editSkill": "Editar Habilidade",
+    "createDescription": "Adicionar uma nova definição de habilidade.",
+    "editDescription": "Atualizar detalhes da habilidade.",
+    "name": "Nome",
+    "namePlaceholder": "ex. suporte-técnico",
+    "nameReadOnly": "O nome da habilidade não pode ser alterado após a criação.",
+    "category": "Categoria",
+    "categoryPlaceholder": "ex. Técnico",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descreva o que esta habilidade cobre…",
+    "save": "Salvar alterações",
+    "deleteConfirm": "Excluir esta habilidade?",
+    "searchPlaceholder": "Buscar habilidades…",
+    "noResults": "Nenhuma habilidade encontrada.",
+    "empty": "Sem habilidades — Crie sua primeira habilidade",
+    "agentsTitle": "Agentes — {{skill}}",
+    "agentsDescription": "Atribuir agentes e definir seu nível de proficiência para esta habilidade.",
+    "addAgent": "Adicionar Agente",
+    "selectAgent": "Selecionar um agente",
+    "assignedAgents": "Agentes Atribuídos",
+    "noAgents": "Nenhum agente atribuído a esta habilidade ainda.",
+    "proficiency": "Proficiência"
+  },
   "api": {
     "userCreated": "Usuário criado",
     "userUpdated": "Usuário atualizado",

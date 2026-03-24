@@ -31,6 +31,7 @@ const RoutesPage = lazy(() => import('@/admin/routes/routes-page'));
 const DialerSettingsPage = lazy(() => import('@/admin/dialer-settings/dialer-settings-page'));
 const BotListPage = lazy(() => import('@/admin/bots/bot-list-page'));
 const KbListPage = lazy(() => import('@/admin/knowledge-base/kb-list-page'));
+const SkillsPage = lazy(() => import('@/admin/skills/skills-page'));
 const AgentAssistConfigPage = lazy(() => import('@/admin/agent-assist/agent-assist-config-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
@@ -38,6 +39,7 @@ const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
 const CampaignMonitorPage = lazy(() => import('@/operations/campaign-monitor/campaign-monitor-page'));
+const MonitorPage = lazy(() => import('@/operations/monitor/monitor-page'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const DashboardPage = lazy(() => import('@/analytics/dashboard/dashboard-page'));
 const CdrPage = lazy(() => import('@/analytics/cdr/cdr-page'));
@@ -291,6 +293,16 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: 'skills',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <SkillsPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
             path: 'bots',
             element: (
               <RoleGuard allowedRoles={['admin']}>
@@ -337,6 +349,16 @@ export const router = createBrowserRouter([
               <LazyLoad>
                 <WallboardPage />
               </LazyLoad>
+            ),
+          },
+          {
+            path: 'monitor',
+            element: (
+              <RoleGuard allowedRoles={['admin', 'supervisor']}>
+                <LazyLoad>
+                  <MonitorPage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {

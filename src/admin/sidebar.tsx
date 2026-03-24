@@ -20,6 +20,7 @@ import {
   Bot,
   BookOpen,
   Sparkles,
+  Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -55,6 +56,7 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'channels', labelKey: 'admin:sidebar.channels', to: '/admin/channels', icon: Radio, allowedRoles: ['admin'] },
       { key: 'queues', labelKey: 'admin:sidebar.queues', to: '/admin/queues', icon: ListChecks, allowedRoles: ['admin', 'supervisor'] },
+      { key: 'skills', labelKey: 'admin:sidebar.skills', to: '/admin/skills', icon: Zap, allowedRoles: ['admin'] },
       { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow, allowedRoles: ['admin'] },
       { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone, allowedRoles: ['admin'] },
     ],

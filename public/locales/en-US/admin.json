@@ -21,7 +21,8 @@
     "dialerSettings": "Dialer Settings",
     "aiAutomation": "AI & Automation",
     "bots": "Bots",
-    "agent_assist": "Agent Assist"
+    "agent_assist": "Agent Assist",
+    "skills": "Skills"
   },
   "users": { "title": "Users", "create": "Create user", "email": "Email", "name": "Name", "role": "Role", "status": "Status" },
   "agents": { "title": "Agents", "create": "Create agent", "edit": "Edit agent", "skills": "Skills", "team": "Team", "displayName": "Display Name", "user": "User", "state": "State", "queueCount": "Queues", "searchPlaceholder": "Search agents...", "selectUser": "Select a user", "noTeam": "No team", "addSkill": "Add skill", "skillName": "Skill name", "noSkills": "No skills assigned yet.", "save": "Save changes", "createDescription": "Create a new agent from an existing user.", "editDescription": "Update agent details.", "deleteTitle": "Delete agent", "queues": "Queue Memberships", "noQueues": "Not assigned to any queues.", "queuesNote": "Queue assignment is managed from queue configuration." },
@@ -126,6 +127,32 @@
     }
   },
   "system": { "title": "System", "license_tier": "License tier", "features": "Features", "cluster": "Cluster", "max_agents": "Max agents", "expires": "Expires", "enabled": "Enabled", "disabled": "Locked", "license_expired": "License has expired. Please renew.", "license_expiring_soon": "License expires in {{days}} days.", "last_heartbeat": "Last heartbeat", "settings": "Settings", "platform_name": "Platform name", "default_timezone": "Default timezone", "default_language": "Default language", "save": "Save settings" },
+  "skills": {
+    "title": "Skills",
+    "createSkill": "Create Skill",
+    "editSkill": "Edit Skill",
+    "createDescription": "Add a new skill definition.",
+    "editDescription": "Update skill details.",
+    "name": "Name",
+    "namePlaceholder": "e.g. technical-support",
+    "nameReadOnly": "Skill name cannot be changed after creation.",
+    "category": "Category",
+    "categoryPlaceholder": "e.g. Technical",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe what this skill covers…",
+    "save": "Save Changes",
+    "deleteConfirm": "Delete this skill?",
+    "searchPlaceholder": "Search skills…",
+    "noResults": "No matching skills found.",
+    "empty": "No skills yet — Create your first skill",
+    "agentsTitle": "Agents — {{skill}}",
+    "agentsDescription": "Assign agents and set their proficiency level for this skill.",
+    "addAgent": "Add Agent",
+    "selectAgent": "Select an agent",
+    "assignedAgents": "Assigned Agents",
+    "noAgents": "No agents assigned to this skill yet.",
+    "proficiency": "Proficiency"
+  },
   "api": {
     "userCreated": "User created",
     "userUpdated": "User updated",

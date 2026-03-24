@@ -21,7 +21,8 @@
     "dialerSettings": "Configuración de Marcador",
     "aiAutomation": "IA y Automatización",
     "bots": "Bots",
-    "agent_assist": "Asistente de Agente"
+    "agent_assist": "Asistente de Agente",
+    "skills": "Habilidades"
   },
   "users": { "title": "Usuarios", "create": "Crear usuario", "email": "Correo", "name": "Nombre", "role": "Rol", "status": "Estado" },
   "agents": { "title": "Agentes", "create": "Crear agente", "edit": "Editar agente", "skills": "Habilidades", "team": "Equipo", "displayName": "Nombre", "user": "Usuario", "state": "Estado", "queueCount": "Colas", "searchPlaceholder": "Buscar agentes...", "selectUser": "Seleccionar usuario", "noTeam": "Sin equipo", "addSkill": "Agregar habilidad", "skillName": "Nombre de habilidad", "noSkills": "Sin habilidades asignadas.", "save": "Guardar cambios", "createDescription": "Crear un nuevo agente a partir de un usuario existente.", "editDescription": "Actualizar datos del agente.", "deleteTitle": "Eliminar agente", "queues": "Colas asignadas", "noQueues": "No asignado a ninguna cola.", "queuesNote": "La asignaci\u00f3n de colas se gestiona desde la configuraci\u00f3n de colas." },
@@ -126,6 +127,32 @@
     }
   },
   "system": { "title": "Sistema", "license_tier": "Nivel de licencia", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Activo", "disabled": "Bloqueado", "license_expired": "La licencia ha expirado. Por favor renueve.", "license_expiring_soon": "La licencia expira en {{days}} días.", "last_heartbeat": "Último heartbeat", "settings": "Configuración", "platform_name": "Nombre de plataforma", "default_timezone": "Zona horaria predeterminada", "default_language": "Idioma predeterminado", "save": "Guardar configuración" },
+  "skills": {
+    "title": "Habilidades",
+    "createSkill": "Crear Habilidad",
+    "editSkill": "Editar Habilidad",
+    "createDescription": "Agregar una nueva definición de habilidad.",
+    "editDescription": "Actualizar detalles de la habilidad.",
+    "name": "Nombre",
+    "namePlaceholder": "ej. soporte-técnico",
+    "nameReadOnly": "El nombre de la habilidad no se puede cambiar después de la creación.",
+    "category": "Categoría",
+    "categoryPlaceholder": "ej. Técnico",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Describa qué cubre esta habilidad…",
+    "save": "Guardar cambios",
+    "deleteConfirm": "¿Eliminar esta habilidad?",
+    "searchPlaceholder": "Buscar habilidades…",
+    "noResults": "No se encontraron habilidades.",
+    "empty": "Sin habilidades — Crea tu primera habilidad",
+    "agentsTitle": "Agentes — {{skill}}",
+    "agentsDescription": "Asignar agentes y establecer su nivel de competencia para esta habilidad.",
+    "addAgent": "Agregar Agente",
+    "selectAgent": "Seleccionar un agente",
+    "assignedAgents": "Agentes Asignados",
+    "noAgents": "Ningún agente asignado a esta habilidad todavía.",
+    "proficiency": "Competencia"
+  },
   "api": {
     "userCreated": "Usuario creado",
     "userUpdated": "Usuario actualizado",

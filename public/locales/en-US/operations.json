@@ -1,6 +1,7 @@
 {
   "sidebar": {
     "wallboard": "Wallboard",
+    "monitor": "Monitor",
     "agent_states": "Agent States",
     "campaigns": "Campaigns"
   },
@@ -27,6 +28,13 @@
     "conversations": "Conversations",
     "force_offline": "Force Offline",
     "view_conversations": "View Conversations"
+  },
+  "monitor": {
+    "title": "Live Monitor",
+    "noSessions": "No active AI-assisted calls",
+    "whisperPlaceholder": "Type whisper message...",
+    "send": "Send Whisper",
+    "listening": "Listening"
   },
   "campaigns": {
     "title": "Campaign Monitor",

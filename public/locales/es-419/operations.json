@@ -1,6 +1,7 @@
 {
   "sidebar": {
     "wallboard": "Tablero",
+    "monitor": "Monitor",
     "agent_states": "Estados de agentes",
     "campaigns": "Campanas"
   },
@@ -27,6 +28,13 @@
     "conversations": "Conversaciones",
     "force_offline": "Forzar desconexion",
     "view_conversations": "Ver conversaciones"
+  },
+  "monitor": {
+    "title": "Monitor en vivo",
+    "noSessions": "No hay llamadas activas con asistencia de IA",
+    "whisperPlaceholder": "Escribe un mensaje de susurro...",
+    "send": "Enviar susurro",
+    "listening": "Escuchando"
   },
   "campaigns": {
     "title": "Monitor de campanas",
