@@ -13,6 +13,13 @@ import { AudioPlayer } from './audio-player';
 import type { CdrRow } from './cdr-page';
 import { useCdrDetail } from '@/core/api/hooks/use-analytics';
 
+function formatMs(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+}
+
 interface CdrDetailDrawerProps {
   sessionId: string | null;
   row: CdrRow | null;
@@ -89,13 +96,13 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
   const channel = apiCdr?.channel ?? row.channel;
   const queue = apiCdr?.queueName ?? row.queue;
   const agent = apiCdr?.agentName ?? row.agent;
-  const disposition = apiCdr?.disposition ?? row.disposition;
+  const disposition = apiCdr?.dispositionName ?? apiCdr?.disposition ?? row.disposition;
   const slaMet = apiCdr != null ? apiCdr.slaMet : row.slaMet;
   const durationMs = apiCdr?.durationMs;
   const duration = durationMs != null
     ? `${Math.floor(durationMs / 60000)}m ${Math.floor((durationMs % 60000) / 1000)}s`
     : row.duration;
-  const recordingUrl: string | null = null; // v0.4.0: recording not yet exposed
+  const recordingUrl: string | null = detail?.recordingStreamUrl ?? null;
 
   const timeline: TimelineEvent[] =
     detail?.timeline && detail.timeline.length > 0
@@ -132,6 +139,64 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
               </Badge>
             </div>
           </div>
+
+          {/* Timing */}
+          {(apiCdr?.ringDurationMs != null || apiCdr?.wrapUpDurationMs != null || (apiCdr?.holdCount ?? 0) > 0) && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Timing</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {apiCdr?.ringDurationMs != null && (
+                    <Field label="Ring time" value={formatMs(apiCdr.ringDurationMs)} />
+                  )}
+                  {apiCdr?.wrapUpDurationMs != null && (
+                    <Field label="Wrap-up time" value={formatMs(apiCdr.wrapUpDurationMs)} />
+                  )}
+                  {(apiCdr?.holdCount ?? 0) > 0 && (
+                    <Field label="Hold count" value={String(apiCdr!.holdCount)} />
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Transfer */}
+          {(apiCdr?.transferredTo || (detail?.transferCount ?? 0) > 0) && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Transfer</h3>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  {apiCdr?.transferType != null && (
+                    <Badge variant="outline">
+                      {apiCdr.transferType === 1 ? 'Blind' : apiCdr.transferType === 2 ? 'Attended' : `Type ${apiCdr.transferType}`}
+                    </Badge>
+                  )}
+                  {apiCdr?.transferredTo && (
+                    <span className="text-muted-foreground">→ <span className="font-medium text-foreground">{apiCdr.transferredTo}</span></span>
+                  )}
+                  {(detail?.transferCount ?? 0) > 1 && (
+                    <span className="text-muted-foreground text-xs">({detail!.transferCount} transfers)</span>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Campaign */}
+          {apiCdr?.campaignName && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Campaign</h3>
+                <p className="text-sm font-medium">{apiCdr.campaignName}</p>
+                {apiCdr.dispositionName && (
+                  <p className="text-sm text-muted-foreground">Disposition: {apiCdr.dispositionName}</p>
+                )}
+              </div>
+            </>
+          )}
 
           <Separator />
 
@@ -190,7 +255,7 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
             </>
           )}
 
-          {/* Recording — hidden until v0.4.0 exposes recordingUrl */}
+          {/* Recording */}
           {recordingUrl && (
             <>
               <Separator />

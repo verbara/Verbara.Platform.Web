@@ -13,6 +13,7 @@ import {
   XCircle,
   ChevronLeft,
   ChevronRight,
+  Play,
 } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
@@ -36,6 +37,8 @@ export interface CdrRow {
   slaMet: boolean;
   recordingUrl: string | null;
   transferTo: string | null;
+  hasRecording: boolean;
+  campaignName: string | null;
 }
 
 // Channel icon cell renderer
@@ -69,8 +72,15 @@ function SlaCellRenderer({ value }: ICellRendererParams<CdrRow, boolean>) {
 
 // Disposition badge cell renderer
 function DispositionCellRenderer({ value }: ICellRendererParams<CdrRow, string>) {
-  const variant = value === 'ANSWERED' ? 'default' : value === 'NO ANSWER' ? 'destructive' : 'secondary';
+  const upper = (value ?? '').toUpperCase();
+  const variant = upper === 'ANSWERED' ? 'default' : upper === 'NO ANSWER' ? 'destructive' : 'secondary';
   return <Badge variant={variant}>{value}</Badge>;
+}
+
+// Recording icon cell renderer
+function RecordingCellRenderer({ data }: ICellRendererParams<CdrRow>) {
+  if (!data?.hasRecording) return null;
+  return <Play className="h-3.5 w-3.5 text-blue-500" aria-label="Has recording" />;
 }
 
 function formatDurationMs(ms: number): string {
@@ -95,14 +105,16 @@ function mapApiRowToGridRow(r: ApiCdrRow): CdrRow {
     endTime: formatDateTime(r.endTime),
     answerTime: r.answerTime ? formatDateTime(r.answerTime) : null,
     contact: r.contact ?? '',
-    channel: r.channel,
+    channel: r.channelType ?? r.channel,
     queue: r.queueName ?? '',
     agent: r.agentName ?? '',
     duration: formatDurationMs(r.durationMs),
-    disposition: r.disposition,
+    disposition: r.dispositionName ?? r.disposition,
     slaMet: r.slaMet,
     recordingUrl: null,
-    transferTo: null,
+    transferTo: r.transferredTo ?? null,
+    hasRecording: r.hasRecording,
+    campaignName: r.campaignName ?? null,
   };
 }
 
@@ -146,6 +158,15 @@ export default function CdrPage() {
         sortable: true,
         minWidth: 90,
         cellRenderer: SlaCellRenderer,
+      },
+      {
+        field: 'hasRecording',
+        headerName: '',
+        sortable: false,
+        minWidth: 44,
+        maxWidth: 44,
+        cellRenderer: RecordingCellRenderer,
+        cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
       },
     ],
     [t],

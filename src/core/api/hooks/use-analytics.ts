@@ -27,6 +27,7 @@ export interface CdrRow {
   endTime: string;
   contact?: string;
   channel: string;
+  channelType?: string;
   queueName?: string;
   agentName?: string;
   durationMs: number;
@@ -36,11 +37,26 @@ export interface CdrRow {
   slaMet: boolean;
   hasQaScore: boolean;
   qaScore?: number;
+  hasRecording: boolean;
+  transferredTo?: string;
+  transferType?: number;
+  hangupSource?: number;
+  wrapUpDurationMs?: number;
+  holdCount: number;
+  ringDurationMs?: number;
+  campaignName?: string;
+  dispositionName?: string;
 }
 export interface CdrDetail {
   cdr: CdrRow;
   timeline: CdrTimelineEvent[];
   qaSummary?: CdrQaSummary;
+  calledNumber?: string;
+  linkedSessionId?: string;
+  transferCount: number;
+  recordingName?: string;
+  recordingStreamUrl?: string;
+  hasTranscript: boolean;
 }
 export interface CdrTimelineEvent { event: string; timestamp: string; detail?: string; }
 export interface CdrQaSummary { reason?: string; outcome?: string; narrative?: string; qaScore?: number; sentimentLabel?: string; }
