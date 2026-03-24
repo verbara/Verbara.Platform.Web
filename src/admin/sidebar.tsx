@@ -21,6 +21,8 @@ import {
   BookOpen,
   Sparkles,
   Zap,
+  FileSearch,
+  ClipboardList,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -59,6 +61,7 @@ const groups: SidebarGroup[] = [
       { key: 'skills', labelKey: 'admin:sidebar.skills', to: '/admin/skills', icon: Zap, allowedRoles: ['admin'] },
       { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow, allowedRoles: ['admin'] },
       { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone, allowedRoles: ['admin'] },
+      { key: 'surveys', labelKey: 'admin:sidebar.surveys', to: '/admin/surveys', icon: ClipboardList, allowedRoles: ['admin'] },
     ],
   },
   {
@@ -95,6 +98,7 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, allowedRoles: ['admin'] },
       { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, allowedRoles: ['admin'] },
+      { key: 'audit', labelKey: 'admin:sidebar.auditLog', to: '/admin/audit', icon: FileSearch, allowedRoles: ['admin'] },
     ],
   },
 ];

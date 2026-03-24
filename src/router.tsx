@@ -33,8 +33,10 @@ const BotListPage = lazy(() => import('@/admin/bots/bot-list-page'));
 const KbListPage = lazy(() => import('@/admin/knowledge-base/kb-list-page'));
 const SkillsPage = lazy(() => import('@/admin/skills/skills-page'));
 const AgentAssistConfigPage = lazy(() => import('@/admin/agent-assist/agent-assist-config-page'));
+const SurveyListPage = lazy(() => import('@/admin/surveys/survey-list-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
+const AuditPage = lazy(() => import('@/admin/audit/audit-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
@@ -44,6 +46,7 @@ const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'))
 const DashboardPage = lazy(() => import('@/analytics/dashboard/dashboard-page'));
 const CdrPage = lazy(() => import('@/analytics/cdr/cdr-page'));
 const QaPage = lazy(() => import('@/analytics/qa/qa-page'));
+const SurveyResultsPage = lazy(() => import('@/analytics/surveys/survey-results-page'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
 const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
 
@@ -330,6 +333,26 @@ export const router = createBrowserRouter([
               </LazyLoad>
             ),
           },
+          {
+            path: 'audit',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <AuditPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'surveys',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <SurveyListPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
         ],
       },
       {
@@ -412,6 +435,16 @@ export const router = createBrowserRouter([
               <LazyLoad>
                 <QaPage />
               </LazyLoad>
+            ),
+          },
+          {
+            path: 'surveys',
+            element: (
+              <RoleGuard allowedRoles={['admin', 'supervisor']}>
+                <LazyLoad>
+                  <SurveyResultsPage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
         ],

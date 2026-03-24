@@ -1,8 +1,21 @@
 {
-  "sidebar": { "dashboard": "Dashboard", "cdr": "Call Records", "qa": "Quality (QA)" },
+  "sidebar": { "dashboard": "Dashboard", "cdr": "Call Records", "qa": "Quality (QA)", "surveys": "Surveys" },
   "filters": { "date_range": "Date Range", "queue": "Queue", "channel": "Channel", "agent": "Agent", "today": "Today", "last_7d": "Last 7 days", "last_30d": "Last 30 days", "custom": "Custom", "apply": "Apply" },
   "dashboard": { "title": "Analytics Dashboard", "conversations_handled": "Conversations Handled", "avg_wait": "Avg Wait Time", "avg_handle": "Avg Handle Time", "sla_percent": "SLA %", "channel_distribution": "Channel Distribution", "volume_trend": "Volume Trend", "sla_trend": "SLA Trend" },
-  "cdr": { "title": "Detail Records", "search_placeholder": "Search by number, agent, queue...", "no_results": "No results", "duration": "Duration", "disposition": "Disposition", "recording": "Recording", "contact": "Contact", "channel": "Channel", "queue": "Queue", "agent": "Agent", "date": "Date", "sla_met": "SLA Met", "view_full_qa": "View Full QA" },
+  "cdr": { "title": "Detail Records", "search_placeholder": "Search by number, agent, queue...", "no_results": "No results", "duration": "Duration", "disposition": "Disposition", "recording": "Recording", "contact": "Contact", "channel": "Channel", "queue": "Queue", "agent": "Agent", "date": "Date", "sla_met": "SLA Met", "view_full_qa": "View Full QA", "qa_score": "QA Score", "sentiment": "Sentiment", "ring_duration": "Ring Duration", "hold_count": "Holds", "acw_duration": "ACW" },
   "qa": { "title": "Quality Evaluations", "score": "Score", "summary": "Summary", "compliance": "Compliance", "sentiment": "Sentiment", "topics": "Topics", "scorecard": "Scorecard", "violations": "Violations", "no_violations": "No violations" },
+  "surveys": {
+    "title": "Survey Results",
+    "selectSurvey": "Select a survey",
+    "selectSurveyHint": "Choose a survey from the dropdown above to view results.",
+    "totalResponses": "Total Responses",
+    "avgScore": "Avg Score",
+    "surveysLabel": "Survey",
+    "responsesTitle": "Responses",
+    "score": "Score",
+    "answerPreview": "Answer Preview",
+    "noResponses": "No responses recorded for this survey.",
+    "searchResponses": "Search responses..."
+  },
   "export": { "csv": "Export CSV" }
 }

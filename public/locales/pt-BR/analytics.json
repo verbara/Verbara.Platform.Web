@@ -1,8 +1,21 @@
 {
-  "sidebar": { "dashboard": "Painel", "cdr": "Registros de chamadas", "qa": "Qualidade (QA)" },
+  "sidebar": { "dashboard": "Painel", "cdr": "Registros de chamadas", "qa": "Qualidade (QA)", "surveys": "Pesquisas" },
   "filters": { "date_range": "Periodo", "queue": "Fila", "channel": "Canal", "agent": "Agente", "today": "Hoje", "last_7d": "Ultimos 7 dias", "last_30d": "Ultimos 30 dias", "custom": "Personalizado", "apply": "Aplicar" },
   "dashboard": { "title": "Painel analitico", "conversations_handled": "Conversas atendidas", "avg_wait": "Tempo medio de espera", "avg_handle": "Tempo medio de atendimento", "sla_percent": "SLA %", "channel_distribution": "Distribuicao por canal", "volume_trend": "Tendencia de volume", "sla_trend": "Tendencia SLA" },
-  "cdr": { "title": "Registros de detalhe", "search_placeholder": "Buscar por numero, agente, fila...", "no_results": "Sem resultados", "duration": "Duracao", "disposition": "Disposicao", "recording": "Gravacao", "contact": "Contato", "channel": "Canal", "queue": "Fila", "agent": "Agente", "date": "Data", "sla_met": "SLA cumprido", "view_full_qa": "Ver QA Completo" },
+  "cdr": { "title": "Registros de detalhe", "search_placeholder": "Buscar por numero, agente, fila...", "no_results": "Sem resultados", "duration": "Duracao", "disposition": "Disposicao", "recording": "Gravacao", "contact": "Contato", "channel": "Canal", "queue": "Fila", "agent": "Agente", "date": "Data", "sla_met": "SLA cumprido", "view_full_qa": "Ver QA Completo", "qa_score": "Pontuacao QA", "sentiment": "Sentimento", "ring_duration": "Duracao do toque", "hold_count": "Esperas", "acw_duration": "ACW" },
   "qa": { "title": "Avaliacoes de qualidade", "score": "Pontuacao", "summary": "Resumo", "compliance": "Conformidade", "sentiment": "Sentimento", "topics": "Topicos", "scorecard": "Cartao de avaliacao", "violations": "Violacoes", "no_violations": "Sem violacoes" },
+  "surveys": {
+    "title": "Resultados de pesquisas",
+    "selectSurvey": "Selecionar pesquisa",
+    "selectSurveyHint": "Escolha uma pesquisa no menu acima para ver os resultados.",
+    "totalResponses": "Total de respostas",
+    "avgScore": "Pontuação média",
+    "surveysLabel": "Pesquisa",
+    "responsesTitle": "Respostas",
+    "score": "Pontuação",
+    "answerPreview": "Prévia da resposta",
+    "noResponses": "Sem respostas para esta pesquisa.",
+    "searchResponses": "Buscar respostas..."
+  },
   "export": { "csv": "Exportar CSV" }
 }

@@ -22,7 +22,9 @@
     "aiAutomation": "AI & Automation",
     "bots": "Bots",
     "agent_assist": "Agent Assist",
-    "skills": "Skills"
+    "skills": "Skills",
+    "auditLog": "Audit Log",
+    "surveys": "Surveys"
   },
   "users": { "title": "Users", "create": "Create user", "email": "Email", "name": "Name", "role": "Role", "status": "Status" },
   "agents": { "title": "Agents", "create": "Create agent", "edit": "Edit agent", "skills": "Skills", "team": "Team", "displayName": "Display Name", "user": "User", "state": "State", "queueCount": "Queues", "searchPlaceholder": "Search agents...", "selectUser": "Select a user", "noTeam": "No team", "addSkill": "Add skill", "skillName": "Skill name", "noSkills": "No skills assigned yet.", "save": "Save changes", "createDescription": "Create a new agent from an existing user.", "editDescription": "Update agent details.", "deleteTitle": "Delete agent", "queues": "Queue Memberships", "noQueues": "Not assigned to any queues.", "queuesNote": "Queue assignment is managed from queue configuration." },
@@ -184,5 +186,66 @@
     "flowPublished": "Flow published",
     "channelUpdated": "Channel updated",
     "operationFailed": "Operation failed"
+  },
+  "audit": {
+    "title": "Audit Log",
+    "description": "Search and review all administrative actions performed in the system.",
+    "search": "Search",
+    "loading": "Loading…",
+    "empty": "No audit entries found — try adjusting your filters.",
+    "expand": "more",
+    "collapse": "less",
+    "filter": {
+      "action": "Action",
+      "actionPlaceholder": "e.g. create",
+      "entityType": "Entity Type",
+      "entityTypePlaceholder": "e.g. user",
+      "performedBy": "Performed By",
+      "performedByPlaceholder": "e.g. admin@example.com",
+      "from": "From",
+      "to": "To"
+    },
+    "col": {
+      "timestamp": "Timestamp",
+      "action": "Action",
+      "entityType": "Entity Type",
+      "entityId": "Entity ID",
+      "performedBy": "Performed By",
+      "details": "Details"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "summary": "Page {{page}} of {{total}} ({{count}} results)"
+    }
+  },
+  "surveys": {
+    "title": "Surveys",
+    "create": "Add Survey",
+    "edit": "Edit Survey",
+    "save": "Save Changes",
+    "name": "Name",
+    "namePlaceholder": "e.g. Post-Call CSAT",
+    "type": "Type",
+    "active": "Active",
+    "activeLabel": "Active",
+    "responses": "Responses",
+    "questions": "Questions",
+    "questionsTitle": "Questions",
+    "addQuestion": "Add Question",
+    "noQuestions": "No questions added yet.",
+    "questionN": "Question {{n}}",
+    "questionTextPlaceholder": "Enter question text…",
+    "questionType_Scale": "Scale (1–10)",
+    "questionType_FreeText": "Free Text",
+    "questionType_Choice": "Multiple Choice",
+    "optionsLabel": "Options",
+    "optionsPlaceholder": "e.g. Yes, No, Maybe",
+    "optionsHint": "Comma-separated list of choices.",
+    "searchPlaceholder": "Search surveys...",
+    "noResults": "No matching surveys found.",
+    "empty": "No surveys yet — Add your first survey",
+    "createDescription": "Build a new customer feedback survey.",
+    "editDescription": "Update survey configuration and questions."
   }
 }
