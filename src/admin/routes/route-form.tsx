@@ -55,7 +55,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<RouteFormValues>({
-    resolver: zodResolver(routeSchema),
+    resolver: zodResolver(routeSchema) as any,
     defaultValues: {
       priority: 10,
       pattern: '',

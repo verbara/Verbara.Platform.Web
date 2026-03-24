@@ -8,7 +8,9 @@ import { Settings, Activity, BarChart3, MessageSquare, Hexagon, Command } from '
 
 export function Rail() {
   const { t } = useTranslation();
-  const hasFeature = useAuthStore((s) => s.hasFeature);
+  const role = useAuthStore((s) => s.user?.role);
+
+  const isAdminOrSupervisor = role === 'admin' || role === 'supervisor';
 
   function openCommandPalette() {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
@@ -21,9 +23,13 @@ export function Rail() {
       </div>
 
       <div className="flex flex-1 flex-col items-center gap-1">
-        <RailIcon to="/admin" icon={Settings} label={t('nav.admin')} />
-        <RailIcon to="/operations" icon={Activity} label={t('nav.operations')} />
-        {hasFeature('analytics') && (
+        {isAdminOrSupervisor && (
+          <RailIcon to="/admin" icon={Settings} label={t('nav.admin')} />
+        )}
+        {isAdminOrSupervisor && (
+          <RailIcon to="/operations" icon={Activity} label={t('nav.operations')} />
+        )}
+        {isAdminOrSupervisor && (
           <RailIcon to="/analytics" icon={BarChart3} label={t('nav.analytics')} />
         )}
         <RailIcon to="/agent" icon={MessageSquare} label={t('nav.agent')} />

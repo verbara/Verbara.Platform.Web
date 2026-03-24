@@ -53,7 +53,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<TrunkFormValues>({
-    resolver: zodResolver(trunkSchema),
+    resolver: zodResolver(trunkSchema) as any,
     defaultValues: {
       name: '',
       displayName: '',

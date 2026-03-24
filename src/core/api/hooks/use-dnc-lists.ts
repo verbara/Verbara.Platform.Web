@@ -161,7 +161,6 @@ export function useImportDncEntries() {
 }
 
 export function useCheckDncNumber() {
-  const qc = useQueryClient();
   return useMutation({
     mutationFn: (phoneNumber: string) =>
       customFetch<DncCheckResult>({

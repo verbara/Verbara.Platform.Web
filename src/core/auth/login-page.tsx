@@ -17,7 +17,7 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/admin';
+  const roleDefaultRoute: Record<string, string> = { admin: '/admin', supervisor: '/operations', agent: '/agent' };
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -38,33 +38,38 @@ export function LoginPage() {
       const info = (await infoRes.json()) as { tenantId?: string; setupComplete?: boolean };
 
       let user: UserProfile = {
-        id: 'admin',
+        id: 'user',
         email: '',
-        displayName: 'Admin',
-        role: 'admin',
+        displayName: 'User',
+        role: 'agent',
       };
 
       try {
-        const meRes = await fetch('/api/agents/me', {
+        const meRes = await fetch('/api/users/me', {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
 
         if (meRes.ok) {
-          const agentData = (await meRes.json()) as {
+          const meData = (await meRes.json()) as {
             id?: string;
             email?: string;
             displayName?: string;
-            role?: string;
+            role?: number | string;
           };
+          const roleMap: Record<number, string> = { 0: 'agent', 1: 'supervisor', 2: 'admin' };
+          const resolvedRole =
+            typeof meData.role === 'number'
+              ? (roleMap[meData.role] ?? 'agent')
+              : (meData.role ?? 'agent');
           user = {
-            id: agentData.id ?? 'admin',
-            email: agentData.email ?? '',
-            displayName: agentData.displayName ?? 'Admin',
-            role: agentData.role ?? 'admin',
+            id: meData.id ?? 'user',
+            email: meData.email ?? '',
+            displayName: meData.displayName ?? 'User',
+            role: resolvedRole,
           };
         }
       } catch {
-        // Agent endpoint not available — keep default admin profile
+        // /api/users/me not available — keep default agent profile
       }
 
       const tenantId = info.tenantId ?? 'default';
@@ -74,6 +79,7 @@ export function LoginPage() {
       useTenantStore.getState().setActiveTenant(tenantId);
 
       const setupDismissed = useUiStore.getState().setupDismissed;
+      const from = (location.state as any)?.from?.pathname ?? roleDefaultRoute[user.role] ?? '/agent';
       if (info.setupComplete === false && user.role === 'admin' && !setupDismissed) {
         navigate('/admin/setup', { replace: true });
       } else {

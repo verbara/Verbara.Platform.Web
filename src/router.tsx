@@ -3,6 +3,8 @@ import { lazy, Suspense } from 'react';
 import { AppShell } from '@/shell/app-shell';
 import { AuthGuard } from '@/core/auth/auth-guard';
 import { LoginPage } from '@/core/auth/login-page';
+import { RoleGuard } from '@/core/auth/role-guard';
+import UnauthorizedPage from '@/pages/unauthorized';
 
 const AdminLayout = lazy(() => import('@/pages/admin/admin-layout'));
 const UsersPage = lazy(() => import('@/admin/users/users-page'));
@@ -54,6 +56,7 @@ function LazyLoad({ children }: { children: React.ReactNode }) {
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  { path: '/unauthorized', element: <UnauthorizedPage /> },
   {
     path: '/',
     element: (
@@ -66,9 +69,11 @@ export const router = createBrowserRouter([
       {
         path: 'admin',
         element: (
-          <LazyLoad>
-            <AdminLayout />
-          </LazyLoad>
+          <RoleGuard allowedRoles={['admin', 'supervisor']}>
+            <LazyLoad>
+              <AdminLayout />
+            </LazyLoad>
+          </RoleGuard>
         ),
         children: [
           {
@@ -83,17 +88,21 @@ export const router = createBrowserRouter([
           {
             path: 'users',
             element: (
-              <LazyLoad>
-                <UsersPage />
-              </LazyLoad>
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <UsersPage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {
             path: 'users/:userId',
             element: (
-              <LazyLoad>
-                <UserDetailPage />
-              </LazyLoad>
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <UserDetailPage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {
@@ -139,41 +148,51 @@ export const router = createBrowserRouter([
           {
             path: 'flows',
             element: (
-              <LazyLoad>
-                <FlowListPage />
-              </LazyLoad>
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <FlowListPage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {
             path: 'flows/:flowId',
             element: (
-              <LazyLoad>
-                <FlowDesigner />
-              </LazyLoad>
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <FlowDesigner />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {
             path: 'campaigns',
             element: (
-              <LazyLoad>
-                <CampaignListPage />
-              </LazyLoad>
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <CampaignListPage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {
             path: 'campaigns/new',
             element: (
-              <LazyLoad>
-                <CampaignWizard />
-              </LazyLoad>
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <CampaignWizard />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {
             path: 'campaigns/:campaignId',
             element: (
-              <LazyLoad>
-                <CampaignDetailPage />
-              </LazyLoad>
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <CampaignDetailPage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {
@@ -251,9 +270,11 @@ export const router = createBrowserRouter([
           {
             path: 'channels',
             element: (
-              <LazyLoad>
-                <ChannelsPage />
-              </LazyLoad>
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <ChannelsPage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {
@@ -269,9 +290,11 @@ export const router = createBrowserRouter([
       {
         path: 'operations',
         element: (
-          <LazyLoad>
-            <OperationsLayout />
-          </LazyLoad>
+          <RoleGuard allowedRoles={['admin', 'supervisor']}>
+            <LazyLoad>
+              <OperationsLayout />
+            </LazyLoad>
+          </RoleGuard>
         ),
         children: [
           { index: true, element: <Navigate to="wallboard" replace /> },
@@ -304,9 +327,11 @@ export const router = createBrowserRouter([
       {
         path: 'analytics',
         element: (
-          <LazyLoad>
-            <AnalyticsLayout />
-          </LazyLoad>
+          <RoleGuard allowedRoles={['admin', 'supervisor']}>
+            <LazyLoad>
+              <AnalyticsLayout />
+            </LazyLoad>
+          </RoleGuard>
         ),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
@@ -339,9 +364,11 @@ export const router = createBrowserRouter([
       {
         path: 'agent',
         element: (
-          <LazyLoad>
-            <AgentLayout />
-          </LazyLoad>
+          <RoleGuard allowedRoles={['agent', 'admin', 'supervisor']}>
+            <LazyLoad>
+              <AgentLayout />
+            </LazyLoad>
+          </RoleGuard>
         ),
         children: [
           {
