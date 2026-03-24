@@ -20,6 +20,7 @@ import {
   ChevronDown,
   Bot,
   BookOpen,
+  Sparkles,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -83,6 +84,7 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'bots', labelKey: 'admin:sidebar.bots', to: '/admin/bots', icon: Bot, allowedRoles: ['admin'] },
       { key: 'knowledge-base', labelKey: 'admin:sidebar.knowledgeBase', to: '/admin/knowledge-base', icon: BookOpen, allowedRoles: ['admin'] },
+      { key: 'agent-assist', labelKey: 'admin:sidebar.agent_assist', to: '/admin/agent-assist', icon: Sparkles, allowedRoles: ['admin'] },
     ],
   },
   {
