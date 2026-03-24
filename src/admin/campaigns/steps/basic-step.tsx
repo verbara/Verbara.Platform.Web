@@ -2,21 +2,14 @@ import { useFormContext } from 'react-hook-form';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Textarea } from '@/core/ui/textarea';
+import { useQueues } from '@/core/api/hooks/use-queues';
+import { useTeams } from '@/core/api/hooks/use-teams';
 import type { CampaignFormValues } from '../campaign-wizard';
-
-const MOCK_QUEUES = [
-  { id: 'q1', name: 'Support' },
-  { id: 'q2', name: 'Sales' },
-  { id: 'q3', name: 'Retention' },
-];
-
-const MOCK_TEAMS = [
-  { id: 't1', name: 'Team Alpha' },
-  { id: 't2', name: 'Team Beta' },
-];
 
 export default function BasicStep() {
   const { register } = useFormContext<CampaignFormValues>();
+  const { data: queues } = useQueues();
+  const { data: teams } = useTeams();
 
   return (
     <div className="space-y-5">
@@ -44,7 +37,7 @@ export default function BasicStep() {
             {...register('queueId')}
           >
             <option value="">Select a queue...</option>
-            {MOCK_QUEUES.map((q) => (
+            {queues?.map((q) => (
               <option key={q.id} value={q.id}>
                 {q.name}
               </option>
@@ -60,7 +53,7 @@ export default function BasicStep() {
             {...register('teamId')}
           >
             <option value="">Select a team...</option>
-            {MOCK_TEAMS.map((t) => (
+            {teams?.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
