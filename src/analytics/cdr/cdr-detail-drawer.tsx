@@ -11,8 +11,10 @@ import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
 import { AudioPlayer } from './audio-player';
 import type { CdrRow } from './cdr-page';
+import { useCdrDetail } from '@/core/api/hooks/use-analytics';
 
 interface CdrDetailDrawerProps {
+  sessionId: string | null;
   row: CdrRow | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -24,7 +26,7 @@ interface TimelineEvent {
   icon: React.ReactNode;
 }
 
-function buildTimeline(row: CdrRow): TimelineEvent[] {
+function buildTimelineFromRow(row: CdrRow): TimelineEvent[] {
   return [
     {
       time: row.startTime,
@@ -53,12 +55,54 @@ function buildTimeline(row: CdrRow): TimelineEvent[] {
   ];
 }
 
-export function CdrDetailDrawer({ row, open, onOpenChange }: CdrDetailDrawerProps) {
+function buildTimelineFromEvents(
+  events: { event: string; timestamp: string; detail?: string }[],
+): TimelineEvent[] {
+  const iconFor = (event: string): React.ReactNode => {
+    const lower = event.toLowerCase();
+    if (lower.includes('start') || lower.includes('creat')) return <Phone className="h-3.5 w-3.5 text-green-500" />;
+    if (lower.includes('answer') || lower.includes('agent')) return <UserCheck className="h-3.5 w-3.5 text-blue-500" />;
+    if (lower.includes('transfer')) return <ArrowRightLeft className="h-3.5 w-3.5 text-amber-500" />;
+    if (lower.includes('end') || lower.includes('hung') || lower.includes('abandon')) return <PhoneOff className="h-3.5 w-3.5 text-red-500" />;
+    return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
+  };
+  return events.map((e) => ({
+    time: e.timestamp,
+    label: e.detail ? `${e.event}: ${e.detail}` : e.event,
+    icon: iconFor(e.event),
+  }));
+}
+
+export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetailDrawerProps) {
   const { t } = useTranslation('analytics');
+
+  const { data: detail, isLoading } = useCdrDetail(sessionId ?? '');
 
   if (!row) return null;
 
-  const timeline = buildTimeline(row);
+  const apiCdr = detail?.cdr;
+
+  // Prefer API-sourced fields when available, fall back to grid row
+  const startTime = apiCdr?.startTime ? new Date(apiCdr.startTime).toLocaleString() : row.startTime;
+  const endTime = apiCdr?.endTime ? new Date(apiCdr.endTime).toLocaleString() : row.endTime;
+  const answerTime = apiCdr?.answerTime ? new Date(apiCdr.answerTime).toLocaleString() : row.answerTime;
+  const channel = apiCdr?.channel ?? row.channel;
+  const queue = apiCdr?.queueName ?? row.queue;
+  const agent = apiCdr?.agentName ?? row.agent;
+  const disposition = apiCdr?.disposition ?? row.disposition;
+  const slaMet = apiCdr != null ? apiCdr.slaMet : row.slaMet;
+  const durationMs = apiCdr?.durationMs;
+  const duration = durationMs != null
+    ? `${Math.floor(durationMs / 60000)}m ${Math.floor((durationMs % 60000) / 1000)}s`
+    : row.duration;
+  const recordingUrl: string | null = null; // v0.4.0: recording not yet exposed
+
+  const timeline: TimelineEvent[] =
+    detail?.timeline && detail.timeline.length > 0
+      ? buildTimelineFromEvents(detail.timeline)
+      : buildTimelineFromRow({ ...row, startTime, endTime, answerTime, channel, queue, agent, duration, disposition, slaMet });
+
+  const qaSummary = detail?.qaSummary;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -69,18 +113,22 @@ export function CdrDetailDrawer({ row, open, onOpenChange }: CdrDetailDrawerProp
         </SheetHeader>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
+          {isLoading && (
+            <p className="text-sm text-muted-foreground py-2">Loading detail…</p>
+          )}
+
           {/* Fields */}
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <Field label={t('cdr.date')} value={row.startTime} />
-            <Field label={t('cdr.duration')} value={row.duration} />
-            <Field label={t('cdr.channel')} value={row.channel} />
-            <Field label={t('cdr.queue')} value={row.queue} />
-            <Field label={t('cdr.agent')} value={row.agent} />
-            <Field label={t('cdr.disposition')} value={row.disposition} />
+            <Field label={t('cdr.date')} value={startTime} />
+            <Field label={t('cdr.duration')} value={duration} />
+            <Field label={t('cdr.channel')} value={channel} />
+            <Field label={t('cdr.queue')} value={queue} />
+            <Field label={t('cdr.agent')} value={agent} />
+            <Field label={t('cdr.disposition')} value={disposition} />
             <div className="col-span-2 flex items-center gap-2">
               <span className="text-muted-foreground">{t('cdr.sla_met')}:</span>
-              <Badge variant={row.slaMet ? 'default' : 'destructive'}>
-                {row.slaMet ? 'Yes' : 'No'}
+              <Badge variant={slaMet ? 'default' : 'destructive'}>
+                {slaMet ? 'Yes' : 'No'}
               </Badge>
             </div>
           </div>
@@ -109,13 +157,46 @@ export function CdrDetailDrawer({ row, open, onOpenChange }: CdrDetailDrawerProp
             </div>
           </div>
 
-          {/* Recording */}
-          {row.recordingUrl && (
+          {/* QA Summary */}
+          {qaSummary && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">QA Summary</h3>
+                {qaSummary.reason && (
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Reason: </span>
+                    {qaSummary.reason}
+                  </div>
+                )}
+                {qaSummary.outcome && (
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Outcome: </span>
+                    {qaSummary.outcome}
+                  </div>
+                )}
+                {qaSummary.narrative && (
+                  <p className="text-sm text-muted-foreground">{qaSummary.narrative}</p>
+                )}
+                <div className="flex items-center gap-3 pt-1">
+                  {qaSummary.qaScore != null && (
+                    <Badge variant="secondary">Score: {qaSummary.qaScore}</Badge>
+                  )}
+                  {qaSummary.sentimentLabel && (
+                    <Badge variant="outline">{qaSummary.sentimentLabel}</Badge>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Recording — hidden until v0.4.0 exposes recordingUrl */}
+          {recordingUrl && (
             <>
               <Separator />
               <div>
                 <h3 className="mb-2 text-sm font-medium">{t('cdr.recording')}</h3>
-                <AudioPlayer src={row.recordingUrl} />
+                <AudioPlayer src={recordingUrl} />
               </div>
             </>
           )}

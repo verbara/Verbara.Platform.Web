@@ -11,10 +11,14 @@ import {
   Mail,
   CheckCircle2,
   XCircle,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
+import { Button } from '@/core/ui/button';
 import { ExportButton } from '@/analytics/shared/export-button';
 import { CdrDetailDrawer } from './cdr-detail-drawer';
+import { useCdrList, type CdrRow as ApiCdrRow } from '@/core/api/hooks/use-analytics';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -24,7 +28,7 @@ export interface CdrRow {
   endTime: string;
   answerTime: string | null;
   contact: string;
-  channel: 'voice' | 'whatsapp' | 'webchat' | 'email';
+  channel: string;
   queue: string;
   agent: string;
   duration: string;
@@ -69,36 +73,51 @@ function DispositionCellRenderer({ value }: ICellRendererParams<CdrRow, string>)
   return <Badge variant={variant}>{value}</Badge>;
 }
 
-// --- Mock data ---
-const MOCK_CDR: CdrRow[] = [
-  { id: 'cdr-01', startTime: '2026-03-23 08:12:34', endTime: '2026-03-23 08:17:12', answerTime: '2026-03-23 08:12:55', contact: '+1 555-0101', channel: 'voice', queue: 'support', agent: 'Ana Garcia', duration: '4m 38s', disposition: 'ANSWERED', slaMet: true, recordingUrl: '/mock/rec-01.wav', transferTo: null },
-  { id: 'cdr-02', startTime: '2026-03-23 08:15:01', endTime: '2026-03-23 08:15:45', answerTime: null, contact: '+1 555-0102', channel: 'voice', queue: 'sales', agent: '', duration: '0m 44s', disposition: 'NO ANSWER', slaMet: false, recordingUrl: null, transferTo: null },
-  { id: 'cdr-03', startTime: '2026-03-23 08:22:10', endTime: '2026-03-23 08:30:05', answerTime: '2026-03-23 08:22:28', contact: 'user@chat.com', channel: 'webchat', queue: 'support', agent: 'Carlos Mendez', duration: '7m 55s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: null },
-  { id: 'cdr-04', startTime: '2026-03-23 08:30:22', endTime: '2026-03-23 08:35:11', answerTime: '2026-03-23 08:30:40', contact: '+52 55-1234-5678', channel: 'whatsapp', queue: 'billing', agent: 'Maria Lopez', duration: '4m 49s', disposition: 'ANSWERED', slaMet: true, recordingUrl: '/mock/rec-04.wav', transferTo: null },
-  { id: 'cdr-05', startTime: '2026-03-23 08:42:05', endTime: '2026-03-23 08:42:35', answerTime: null, contact: '+1 555-0105', channel: 'voice', queue: 'support', agent: '', duration: '0m 30s', disposition: 'BUSY', slaMet: false, recordingUrl: null, transferTo: null },
-  { id: 'cdr-06', startTime: '2026-03-23 09:01:44', endTime: '2026-03-23 09:12:30', answerTime: '2026-03-23 09:02:10', contact: 'contact@corp.com', channel: 'email', queue: 'support', agent: 'Ana Garcia', duration: '10m 46s', disposition: 'ANSWERED', slaMet: false, recordingUrl: null, transferTo: null },
-  { id: 'cdr-07', startTime: '2026-03-23 09:05:18', endTime: '2026-03-23 09:09:55', answerTime: '2026-03-23 09:05:30', contact: '+1 555-0107', channel: 'voice', queue: 'sales', agent: 'Pedro Ruiz', duration: '4m 37s', disposition: 'ANSWERED', slaMet: true, recordingUrl: '/mock/rec-07.wav', transferTo: 'Maria Lopez' },
-  { id: 'cdr-08', startTime: '2026-03-23 09:10:33', endTime: '2026-03-23 09:18:20', answerTime: '2026-03-23 09:11:05', contact: '+52 55-9876-5432', channel: 'whatsapp', queue: 'support', agent: 'Carlos Mendez', duration: '7m 47s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: null },
-  { id: 'cdr-09', startTime: '2026-03-23 09:22:00', endTime: '2026-03-23 09:22:45', answerTime: null, contact: '+1 555-0109', channel: 'voice', queue: 'billing', agent: '', duration: '0m 45s', disposition: 'NO ANSWER', slaMet: false, recordingUrl: null, transferTo: null },
-  { id: 'cdr-10', startTime: '2026-03-23 09:30:12', endTime: '2026-03-23 09:36:48', answerTime: '2026-03-23 09:30:28', contact: 'visitor@web.io', channel: 'webchat', queue: 'sales', agent: 'Pedro Ruiz', duration: '6m 36s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: null },
-  { id: 'cdr-11', startTime: '2026-03-23 09:45:05', endTime: '2026-03-23 09:52:10', answerTime: '2026-03-23 09:45:22', contact: '+1 555-0111', channel: 'voice', queue: 'support', agent: 'Ana Garcia', duration: '7m 05s', disposition: 'ANSWERED', slaMet: true, recordingUrl: '/mock/rec-11.wav', transferTo: null },
-  { id: 'cdr-12', startTime: '2026-03-23 10:00:30', endTime: '2026-03-23 10:03:15', answerTime: '2026-03-23 10:00:48', contact: '+52 55-5555-0012', channel: 'whatsapp', queue: 'billing', agent: 'Maria Lopez', duration: '2m 45s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: null },
-  { id: 'cdr-13', startTime: '2026-03-23 10:08:11', endTime: '2026-03-23 10:08:41', answerTime: null, contact: '+1 555-0113', channel: 'voice', queue: 'support', agent: '', duration: '0m 30s', disposition: 'NO ANSWER', slaMet: false, recordingUrl: null, transferTo: null },
-  { id: 'cdr-14', startTime: '2026-03-23 10:15:22', endTime: '2026-03-23 10:22:50', answerTime: '2026-03-23 10:15:40', contact: 'help@client.org', channel: 'email', queue: 'support', agent: 'Carlos Mendez', duration: '7m 28s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: null },
-  { id: 'cdr-15', startTime: '2026-03-23 10:30:00', endTime: '2026-03-23 10:38:25', answerTime: '2026-03-23 10:30:15', contact: '+1 555-0115', channel: 'voice', queue: 'sales', agent: 'Pedro Ruiz', duration: '8m 25s', disposition: 'ANSWERED', slaMet: false, recordingUrl: '/mock/rec-15.wav', transferTo: null },
-  { id: 'cdr-16', startTime: '2026-03-23 10:42:18', endTime: '2026-03-23 10:47:55', answerTime: '2026-03-23 10:42:35', contact: '+52 55-1111-2222', channel: 'whatsapp', queue: 'support', agent: 'Ana Garcia', duration: '5m 37s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: null },
-  { id: 'cdr-17', startTime: '2026-03-23 11:00:05', endTime: '2026-03-23 11:05:30', answerTime: '2026-03-23 11:00:20', contact: 'chat-user@live.com', channel: 'webchat', queue: 'billing', agent: 'Maria Lopez', duration: '5m 25s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: null },
-  { id: 'cdr-18', startTime: '2026-03-23 11:10:45', endTime: '2026-03-23 11:11:15', answerTime: null, contact: '+1 555-0118', channel: 'voice', queue: 'sales', agent: '', duration: '0m 30s', disposition: 'BUSY', slaMet: false, recordingUrl: null, transferTo: null },
-  { id: 'cdr-19', startTime: '2026-03-23 11:20:33', endTime: '2026-03-23 11:28:10', answerTime: '2026-03-23 11:20:50', contact: '+1 555-0119', channel: 'voice', queue: 'support', agent: 'Carlos Mendez', duration: '7m 37s', disposition: 'ANSWERED', slaMet: true, recordingUrl: '/mock/rec-19.wav', transferTo: null },
-  { id: 'cdr-20', startTime: '2026-03-23 11:35:00', endTime: '2026-03-23 11:42:18', answerTime: '2026-03-23 11:35:12', contact: '+52 55-3333-4444', channel: 'whatsapp', queue: 'support', agent: 'Ana Garcia', duration: '7m 18s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: 'Pedro Ruiz' },
-  { id: 'cdr-21', startTime: '2026-03-23 11:50:22', endTime: '2026-03-23 11:55:40', answerTime: '2026-03-23 11:50:38', contact: 'info@company.com', channel: 'email', queue: 'billing', agent: 'Maria Lopez', duration: '5m 18s', disposition: 'ANSWERED', slaMet: true, recordingUrl: null, transferTo: null },
-  { id: 'cdr-22', startTime: '2026-03-23 12:05:10', endTime: '2026-03-23 12:13:45', answerTime: '2026-03-23 12:05:25', contact: '+1 555-0122', channel: 'voice', queue: 'support', agent: 'Pedro Ruiz', duration: '8m 35s', disposition: 'ANSWERED', slaMet: false, recordingUrl: '/mock/rec-22.wav', transferTo: null },
-];
+function formatDurationMs(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}m ${seconds}s`;
+}
+
+function formatDateTime(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString();
+  } catch {
+    return iso;
+  }
+}
+
+function mapApiRowToGridRow(r: ApiCdrRow): CdrRow {
+  return {
+    id: r.sessionId,
+    startTime: formatDateTime(r.startTime),
+    endTime: formatDateTime(r.endTime),
+    answerTime: r.answerTime ? formatDateTime(r.answerTime) : null,
+    contact: r.contact ?? '',
+    channel: r.channel,
+    queue: r.queueName ?? '',
+    agent: r.agentName ?? '',
+    duration: formatDurationMs(r.durationMs),
+    disposition: r.disposition,
+    slaMet: r.slaMet,
+    recordingUrl: null,
+    transferTo: null,
+  };
+}
 
 export default function CdrPage() {
   const { t } = useTranslation('analytics');
   const [selectedRow, setSelectedRow] = useState<CdrRow | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading } = useCdrList(undefined, undefined, {}, page);
+
+  const rowData = useMemo<CdrRow[]>(
+    () => (data?.items ?? []).map(mapApiRowToGridRow),
+    [data],
+  );
 
   const columnDefs = useMemo<ColDef<CdrRow>[]>(
     () => [
@@ -148,7 +167,7 @@ export default function CdrPage() {
     const headers = ['Date', 'Contact', 'Channel', 'Queue', 'Agent', 'Duration', 'Disposition', 'SLA Met'];
     const csvRows = [
       headers.join(','),
-      ...MOCK_CDR.map((r) =>
+      ...rowData.map((r) =>
         [r.startTime, r.contact, r.channel, r.queue, r.agent, r.duration, r.disposition, r.slaMet ? 'Yes' : 'No'].join(','),
       ),
     ];
@@ -159,7 +178,7 @@ export default function CdrPage() {
     a.download = 'cdr-export.csv';
     a.click();
     URL.revokeObjectURL(url);
-  }, []);
+  }, [rowData]);
 
   return (
     <div className="space-y-4">
@@ -170,20 +189,50 @@ export default function CdrPage() {
         <ExportButton onClick={handleExport} />
       </div>
 
-      <div className="ag-theme-alpine h-[600px] w-full rounded-lg border dark:ag-theme-alpine-dark">
-        <AgGridReact<CdrRow>
-          rowData={MOCK_CDR}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          pagination={true}
-          paginationPageSize={50}
-          onRowClicked={handleRowClicked}
-          rowClass="cursor-pointer"
-          animateRows={true}
-        />
+      {isLoading && (
+        <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+          Loading…
+        </div>
+      )}
+
+      {!isLoading && (
+        <div className="ag-theme-alpine h-[600px] w-full rounded-lg border dark:ag-theme-alpine-dark">
+          <AgGridReact<CdrRow>
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            onRowClicked={handleRowClicked}
+            rowClass="cursor-pointer"
+            animateRows={true}
+          />
+        </div>
+      )}
+
+      {/* Pagination */}
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Prev
+        </Button>
+        <span className="text-sm text-muted-foreground">Page {page}</span>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!data?.hasNextPage}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Next
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
 
       <CdrDetailDrawer
+        sessionId={selectedRow?.id ?? null}
         row={selectedRow}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
