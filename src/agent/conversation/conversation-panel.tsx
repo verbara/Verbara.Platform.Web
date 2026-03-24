@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import {
   MessageSquare,
   Mail,
@@ -20,6 +19,11 @@ import {
 import { Button } from '@/core/ui/button';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { useConversationStore } from '@/agent/stores/conversation-store';
+import {
+  useAcceptConversation,
+  useRejectConversation,
+  useCloseConversation,
+} from '@/core/api/hooks/use-conversations';
 import { MessageThread } from './message-thread';
 import { ReplyComposer } from './reply-composer';
 import { TransferDialog } from './transfer-dialog';
@@ -50,8 +54,10 @@ const channelColors: Record<string, string> = {
 export function ConversationPanel({ conversationId }: { conversationId: string }) {
   const { t } = useTranslation('agent');
   const conversation = useConversationStore((s) => s.conversations[conversationId]);
-  const upsertConversation = useConversationStore((s) => s.upsertConversation);
-  const removeConversation = useConversationStore((s) => s.removeConversation);
+
+  const acceptMutation = useAcceptConversation();
+  const rejectMutation = useRejectConversation();
+  const closeMutation = useCloseConversation();
 
   const [transferOpen, setTransferOpen] = useState(false);
   const [wrapUpOpen, setWrapUpOpen] = useState(false);
@@ -72,22 +78,16 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
     'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300';
 
   function handleAccept() {
-    // Mock API call
-    upsertConversation({ ...conversation!, state: 'active' });
-    toast.success(t('conversation.accepted'));
+    acceptMutation.mutate(conversation!.id);
   }
 
   function handleReject() {
-    // Mock API call
-    removeConversation(conversationId);
-    toast.success(t('conversation.rejected'));
+    rejectMutation.mutate(conversation!.id);
     setRejectOpen(false);
   }
 
   function handleClose() {
-    // Mock API call
-    removeConversation(conversationId);
-    toast.success(t('conversation.closed'));
+    closeMutation.mutate(conversation!.id);
     setCloseOpen(false);
   }
 
