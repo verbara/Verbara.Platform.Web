@@ -9,8 +9,14 @@ import {
   ListChecks,
   Workflow,
   Megaphone,
+  Cable,
+  Route,
+  Phone,
+  ShieldBan,
+  CalendarOff,
   Server,
   KeyRound,
+  SlidersHorizontal,
   ChevronDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -50,12 +56,30 @@ const groups: SidebarGroup[] = [
     ],
   },
   {
+    key: 'telephony',
+    labelKey: 'admin:sidebar.telephony',
+    items: [
+      { key: 'trunks', labelKey: 'admin:sidebar.trunks', to: '/admin/trunks', icon: Cable },
+      { key: 'routes', labelKey: 'admin:sidebar.routes', to: '/admin/routes', icon: Route },
+      { key: 'caller-id-pools', labelKey: 'admin:sidebar.callerIdPools', to: '/admin/caller-id-pools', icon: Phone },
+    ],
+  },
+  {
+    key: 'compliance',
+    labelKey: 'admin:sidebar.compliance',
+    items: [
+      { key: 'dnc-lists', labelKey: 'admin:sidebar.dncLists', to: '/admin/dnc-lists', icon: ShieldBan },
+      { key: 'holiday-calendars', labelKey: 'admin:sidebar.holidayCalendars', to: '/admin/holiday-calendars', icon: CalendarOff },
+    ],
+  },
+  {
     key: 'system',
     labelKey: 'admin:sidebar.system',
     allowedRoles: ['admin'],
     items: [
       { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server },
       { key: 'license', labelKey: 'admin:sidebar.license', to: '/admin/license', icon: KeyRound },
+      { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal },
     ],
   },
 ];
