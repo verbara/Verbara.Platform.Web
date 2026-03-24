@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Phone, PhoneOff, UserCheck, Clock, ArrowRightLeft } from 'lucide-react';
@@ -13,6 +13,8 @@ import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { Separator } from '@/core/ui/separator';
 import { AudioPlayer } from './audio-player';
+
+const WaveformPlayer = lazy(() => import('./waveform-player'));
 import { SyncedTranscript } from './synced-transcript';
 import type { CdrRow } from './cdr-page';
 import { useCdrDetail, useTranscript } from '@/core/api/hooks/use-analytics';
@@ -279,11 +281,9 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
               <Separator />
               <div className="space-y-3">
                 <h3 className="mb-2 text-sm font-medium">{t('cdr.recording')}</h3>
-                <AudioPlayer
-                  src={recordingUrl}
-                  onTimeUpdate={setCurrentTime}
-                  seekRef={seekRef}
-                />
+                <Suspense fallback={<AudioPlayer src={recordingUrl} onTimeUpdate={setCurrentTime} seekRef={seekRef} />}>
+                  <WaveformPlayer src={recordingUrl} onTimeUpdate={setCurrentTime} seekRef={seekRef} />
+                </Suspense>
                 {hasTranscript && transcriptSegments && transcriptSegments.length > 0 && (
                   <SyncedTranscript
                     segments={transcriptSegments}
