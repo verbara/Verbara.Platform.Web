@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useNotificationStore } from '@/core/stores/notification-store';
 import { useCampaignMetricsStore, type CampaignStatus } from '@/operations/stores/campaign-metrics-store';
+import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
 
 type SseEventHandler = (data: unknown) => void;
 const handlers: Record<string, SseEventHandler[]> = {};
@@ -54,6 +55,42 @@ export function useSSE() {
       const data: { campaignId: string } & Record<string, unknown> = JSON.parse(e.data);
       useCampaignMetricsStore.getState().updateMetrics(data.campaignId, data);
       handlers['campaign.metrics_updated']?.forEach((h) => h(data));
+    });
+
+    source.addEventListener('agentassist.suggestion', (e: MessageEvent) => {
+      const data = JSON.parse(e.data);
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (data.agentId === currentUserId) {
+        useAgentAiStore.getState().addSuggestion(data.suggestion ?? data);
+      }
+      handlers['agentassist.suggestion']?.forEach((h) => h(data));
+    });
+
+    source.addEventListener('agentassist.sentiment', (e: MessageEvent) => {
+      const data = JSON.parse(e.data);
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (data.agentId === currentUserId) {
+        useAgentAiStore.getState().updateSentiment(data.sentiment ?? data);
+      }
+      handlers['agentassist.sentiment']?.forEach((h) => h(data));
+    });
+
+    source.addEventListener('agentassist.compliance_alert', (e: MessageEvent) => {
+      const data = JSON.parse(e.data);
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (data.agentId === currentUserId) {
+        useAgentAiStore.getState().addComplianceAlert(data.alert ?? data);
+      }
+      handlers['agentassist.compliance_alert']?.forEach((h) => h(data));
+    });
+
+    source.addEventListener('agentassist.transcript', (e: MessageEvent) => {
+      const data = JSON.parse(e.data);
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (data.agentId === currentUserId) {
+        useAgentAiStore.getState().addTranscript(data.segment ?? data);
+      }
+      handlers['agentassist.transcript']?.forEach((h) => h(data));
     });
 
     source.onerror = () => {
