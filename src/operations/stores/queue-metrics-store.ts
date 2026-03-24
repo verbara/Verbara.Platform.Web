@@ -17,6 +17,7 @@ interface QueueMetricsState {
   totalAgents: number;
   globalSla: number;
   setQueues: (queues: QueueMetrics[]) => void;
+  updateQueue: (queueId: string, metrics: Partial<QueueMetrics>) => void;
 }
 
 function computeGlobals(queues: QueueMetrics[]) {
@@ -39,4 +40,12 @@ export const useQueueMetricsStore = create<QueueMetricsState>()((set) => ({
   globalSla: 0,
 
   setQueues: (queues) => set({ queues, ...computeGlobals(queues) }),
+
+  updateQueue: (queueId, metrics) =>
+    set((state) => {
+      const queues = state.queues.map((q) =>
+        q.queueId === queueId ? { ...q, ...metrics } : q,
+      );
+      return { queues, ...computeGlobals(queues) };
+    }),
 }));
