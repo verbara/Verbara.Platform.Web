@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Users, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Users, Megaphone, Radio } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface SidebarItem {
@@ -11,6 +11,7 @@ interface SidebarItem {
 
 const items: SidebarItem[] = [
   { labelKey: 'operations:sidebar.wallboard', to: '/operations/wallboard', icon: LayoutDashboard },
+  { labelKey: 'operations:sidebar.monitor', to: '/operations/monitor', icon: Radio },
   { labelKey: 'operations:sidebar.agent_states', to: '/operations/agents', icon: Users },
   { labelKey: 'operations:sidebar.campaigns', to: '/operations/campaigns', icon: Megaphone },
 ];
