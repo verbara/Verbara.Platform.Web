@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Phone, PhoneOff, UserCheck, Clock, ArrowRightLeft } from 'lucide-react';
 import {
@@ -9,6 +10,7 @@ import {
   SheetDescription,
 } from '@/core/ui/sheet';
 import { Badge } from '@/core/ui/badge';
+import { Button } from '@/core/ui/button';
 import { Separator } from '@/core/ui/separator';
 import { AudioPlayer } from './audio-player';
 import { SyncedTranscript } from './synced-transcript';
@@ -257,6 +259,16 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
                     <Badge variant="outline">{qaSummary.sentimentLabel}</Badge>
                   )}
                 </div>
+                {sessionId && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0"
+                    render={<Link to={`/analytics/qa?sessionId=${sessionId}`} />}
+                  >
+                    {t('cdr.view_full_qa')}
+                  </Button>
+                )}
               </div>
             </>
           )}

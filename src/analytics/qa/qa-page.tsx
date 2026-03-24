@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { type ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/core/ui/badge';
@@ -9,9 +10,19 @@ import { useQaList, type QaRow } from '@/core/api/hooks/use-analytics';
 
 export default function QaPage() {
   const { t } = useTranslation('analytics');
+  const [searchParams] = useSearchParams();
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [page] = useState(1);
+
+  const autoSessionId = searchParams.get('sessionId');
+
+  useEffect(() => {
+    if (autoSessionId) {
+      setSelectedSessionId(autoSessionId);
+      setDrawerOpen(true);
+    }
+  }, [autoSessionId]);
 
   const { data, isLoading } = useQaList(undefined, undefined, {}, page);
 

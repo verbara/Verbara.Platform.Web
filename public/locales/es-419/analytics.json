@@ -2,7 +2,7 @@
   "sidebar": { "dashboard": "Panel", "cdr": "Registros de llamadas", "qa": "Calidad (QA)" },
   "filters": { "date_range": "Rango de fechas", "queue": "Cola", "channel": "Canal", "agent": "Agente", "today": "Hoy", "last_7d": "Últimos 7 días", "last_30d": "Últimos 30 días", "custom": "Personalizado", "apply": "Aplicar" },
   "dashboard": { "title": "Panel analítico", "conversations_handled": "Conversaciones atendidas", "avg_wait": "Tiempo promedio de espera", "avg_handle": "Tiempo promedio de atención", "sla_percent": "SLA %", "channel_distribution": "Distribución por canal", "volume_trend": "Tendencia de volumen", "sla_trend": "Tendencia SLA" },
-  "cdr": { "title": "Registros de detalle", "search_placeholder": "Buscar por número, agente, cola...", "no_results": "Sin resultados", "duration": "Duración", "disposition": "Disposición", "recording": "Grabación", "contact": "Contacto", "channel": "Canal", "queue": "Cola", "agent": "Agente", "date": "Fecha", "sla_met": "SLA cumplido" },
+  "cdr": { "title": "Registros de detalle", "search_placeholder": "Buscar por número, agente, cola...", "no_results": "Sin resultados", "duration": "Duración", "disposition": "Disposición", "recording": "Grabación", "contact": "Contacto", "channel": "Canal", "queue": "Cola", "agent": "Agente", "date": "Fecha", "sla_met": "SLA cumplido", "view_full_qa": "Ver QA Completo" },
   "qa": { "title": "Evaluaciones de calidad", "score": "Puntuación", "summary": "Resumen", "compliance": "Cumplimiento", "sentiment": "Sentimiento", "topics": "Temas", "scorecard": "Tarjeta de evaluación", "violations": "Violaciones", "no_violations": "Sin violaciones" },
   "export": { "csv": "Exportar CSV" }
 }
