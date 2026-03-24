@@ -39,6 +39,12 @@ export interface CdrRow {
   transferTo: string | null;
   hasRecording: boolean;
   campaignName: string | null;
+  // Premium columns
+  qaScore: number | null;
+  sentimentLabel: string | null;
+  ringDurationMs: number | null;
+  holdCount: number | null;
+  wrapUpDurationMs: number | null;
 }
 
 // Channel icon cell renderer
@@ -83,11 +89,64 @@ function RecordingCellRenderer({ data }: ICellRendererParams<CdrRow>) {
   return <Play className="h-3.5 w-3.5 text-blue-500" aria-label="Has recording" />;
 }
 
+// QA score badge cell renderer
+function QaScoreCellRenderer({ data }: ICellRendererParams<CdrRow>) {
+  const score = data?.qaScore;
+  if (score == null) return <span className="text-muted-foreground">—</span>;
+  const color =
+    score >= 80
+      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      : score >= 60
+        ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${color}`}>
+      {Math.round(score)}/100
+    </span>
+  );
+}
+
+// Sentiment badge cell renderer
+function SentimentCellRenderer({ data }: ICellRendererParams<CdrRow>) {
+  const label = data?.sentimentLabel;
+  if (!label) return <span className="text-muted-foreground">—</span>;
+  const upper = label.toUpperCase();
+  const color =
+    upper === 'POSITIVE'
+      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+      : upper === 'NEGATIVE'
+        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${color}`}>
+      {label}
+    </span>
+  );
+}
+
+// Hold count badge cell renderer
+function HoldCountCellRenderer({ data }: ICellRendererParams<CdrRow>) {
+  const count = data?.holdCount;
+  if (!count) return <span className="text-muted-foreground">—</span>;
+  return (
+    <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+      {count} {count === 1 ? 'hold' : 'holds'}
+    </span>
+  );
+}
+
 function formatDurationMs(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${minutes}m ${seconds}s`;
+}
+
+function formatMinSec(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
 function formatDateTime(iso: string): string {
@@ -115,6 +174,11 @@ function mapApiRowToGridRow(r: ApiCdrRow): CdrRow {
     transferTo: r.transferredTo ?? null,
     hasRecording: r.hasRecording,
     campaignName: r.campaignName ?? null,
+    qaScore: r.qaScore ?? null,
+    sentimentLabel: r.sentimentLabel ?? null,
+    ringDurationMs: r.ringDurationMs ?? null,
+    holdCount: r.holdCount ?? null,
+    wrapUpDurationMs: r.wrapUpDurationMs ?? null,
   };
 }
 
@@ -167,6 +231,43 @@ export default function CdrPage() {
         maxWidth: 44,
         cellRenderer: RecordingCellRenderer,
         cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+      },
+      {
+        field: 'qaScore',
+        headerName: t('cdr.qa_score'),
+        sortable: true,
+        minWidth: 100,
+        cellRenderer: QaScoreCellRenderer,
+      },
+      {
+        field: 'sentimentLabel',
+        headerName: t('cdr.sentiment'),
+        sortable: true,
+        minWidth: 110,
+        cellRenderer: SentimentCellRenderer,
+      },
+      {
+        field: 'ringDurationMs',
+        headerName: t('cdr.ring_duration'),
+        sortable: true,
+        minWidth: 110,
+        valueFormatter: ({ value }: { value: number | null }) =>
+          value != null ? formatMinSec(value) : '—',
+      },
+      {
+        field: 'holdCount',
+        headerName: t('cdr.hold_count'),
+        sortable: true,
+        minWidth: 100,
+        cellRenderer: HoldCountCellRenderer,
+      },
+      {
+        field: 'wrapUpDurationMs',
+        headerName: t('cdr.acw_duration'),
+        sortable: true,
+        minWidth: 110,
+        valueFormatter: ({ value }: { value: number | null }) =>
+          value != null ? formatMinSec(value) : '—',
       },
     ],
     [t],

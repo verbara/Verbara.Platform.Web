@@ -37,6 +37,7 @@ export interface CdrRow {
   slaMet: boolean;
   hasQaScore: boolean;
   qaScore?: number;
+  sentimentLabel?: string;
   hasRecording: boolean;
   transferredTo?: string;
   transferType?: number;
