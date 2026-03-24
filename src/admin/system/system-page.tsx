@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/core/ui/select';
 import { LicenseCard } from './license-card';
-import { useSystemLicense, useSystemCluster } from '@/core/api/hooks/use-system';
+import { useSystemLicense, useSystemCluster, useUpdateSystemSettings } from '@/core/api/hooks/use-system';
 
 /* ---------- Constants ---------- */
 
@@ -65,6 +65,7 @@ export default function SystemPage() {
   const { t } = useTranslation(['admin']);
   const { data: license } = useSystemLicense();
   const { data: cluster } = useSystemCluster();
+  const updateSettings = useUpdateSystemSettings();
 
   const nodes = cluster?.nodes ?? [];
 
@@ -83,8 +84,8 @@ export default function SystemPage() {
     },
   });
 
-  const onSubmit = handleSubmit((_values) => {
-    // TODO: POST /api/admin/system/settings
+  const onSubmit = handleSubmit((values) => {
+    updateSettings.mutate(values);
   });
 
   return (
@@ -198,7 +199,7 @@ export default function SystemPage() {
             </Select>
           </div>
 
-          <Button type="submit" disabled={!isDirty}>
+          <Button type="submit" disabled={!isDirty || updateSettings.isPending}>
             <Save className="mr-2 h-4 w-4" />
             {t('admin:system.save')}
           </Button>
