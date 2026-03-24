@@ -3,22 +3,23 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, Plug } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
+import { customFetch } from '@/core/api/client';
 
 interface ChannelTestButtonProps {
   channelId: string;
 }
 
-export function ChannelTestButton({ channelId: _channelId }: ChannelTestButtonProps) {
+export function ChannelTestButton({ channelId }: ChannelTestButtonProps) {
   const { t } = useTranslation(['admin']);
   const [testing, setTesting] = useState(false);
 
   const handleTest = async () => {
     setTesting(true);
     try {
-      // TODO: call real API — POST /api/channels/{channelId}/test
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Simulate success for now
+      await customFetch<{ success: boolean; message: string }>({
+        url: `/api/admin/channels/${channelId}/test`,
+        method: 'POST',
+      });
       toast.success(t('admin:channels.test_success'));
     } catch {
       toast.error(t('admin:channels.test_failure'));
