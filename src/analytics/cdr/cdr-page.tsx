@@ -111,7 +111,7 @@ function mapApiRowToGridRow(r: ApiCdrRow): CdrRow {
     duration: formatDurationMs(r.durationMs),
     disposition: r.dispositionName ?? r.disposition,
     slaMet: r.slaMet,
-    recordingUrl: null,
+    recordingUrl: r.recordingStreamUrl ?? null,
     transferTo: r.transferredTo ?? null,
     hasRecording: r.hasRecording,
     campaignName: r.campaignName ?? null,

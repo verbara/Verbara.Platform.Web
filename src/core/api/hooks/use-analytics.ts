@@ -46,6 +46,7 @@ export interface CdrRow {
   ringDurationMs?: number;
   campaignName?: string;
   dispositionName?: string;
+  recordingStreamUrl?: string;
 }
 export interface CdrDetail {
   cdr: CdrRow;
