@@ -100,6 +100,14 @@ export interface QaCriterion { category: string; score: number; weight: number; 
 export interface ComplianceViolationInfo { ruleName: string; severity: string; description: string; evidence?: string; }
 export interface TopicInfo { name: string; confidence: number; }
 
+// Transcript
+export interface TranscriptSegment {
+  startTime: number;
+  endTime: number;
+  speaker: 'agent' | 'caller';
+  text: string;
+}
+
 // Intervals
 export interface IntervalData {
   queueName: string;
@@ -178,6 +186,14 @@ export function useQaDetail(sessionId: string) {
     queryKey: ['analytics-qa-detail', sessionId],
     queryFn: () => customFetch<QaDetail>({ url: `/api/analytics/qa/${sessionId}`, method: 'GET' }),
     enabled: !!sessionId,
+  });
+}
+
+export function useTranscript(sessionId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['analytics-transcript', sessionId],
+    queryFn: () => customFetch<TranscriptSegment[]>({ url: `/api/analytics/cdr/${sessionId}/transcript`, method: 'GET' }),
+    enabled: !!sessionId && enabled,
   });
 }
 

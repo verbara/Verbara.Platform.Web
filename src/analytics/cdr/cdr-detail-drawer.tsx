@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Phone, PhoneOff, UserCheck, Clock, ArrowRightLeft } from 'lucide-react';
 import {
@@ -10,8 +11,9 @@ import {
 import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
 import { AudioPlayer } from './audio-player';
+import { SyncedTranscript } from './synced-transcript';
 import type { CdrRow } from './cdr-page';
-import { useCdrDetail } from '@/core/api/hooks/use-analytics';
+import { useCdrDetail, useTranscript } from '@/core/api/hooks/use-analytics';
 
 function formatMs(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
@@ -82,8 +84,12 @@ function buildTimelineFromEvents(
 
 export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetailDrawerProps) {
   const { t } = useTranslation('analytics');
+  const [currentTime, setCurrentTime] = useState(0);
+  const seekRef = useRef<((time: number) => void) | null>(null);
 
   const { data: detail, isLoading } = useCdrDetail(sessionId ?? '');
+  const hasTranscript = detail?.hasTranscript ?? false;
+  const { data: transcriptSegments } = useTranscript(sessionId ?? '', hasTranscript);
 
   if (!row) return null;
 
@@ -259,9 +265,20 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
           {recordingUrl && (
             <>
               <Separator />
-              <div>
+              <div className="space-y-3">
                 <h3 className="mb-2 text-sm font-medium">{t('cdr.recording')}</h3>
-                <AudioPlayer src={recordingUrl} />
+                <AudioPlayer
+                  src={recordingUrl}
+                  onTimeUpdate={setCurrentTime}
+                  seekRef={seekRef}
+                />
+                {hasTranscript && transcriptSegments && transcriptSegments.length > 0 && (
+                  <SyncedTranscript
+                    segments={transcriptSegments}
+                    currentTime={currentTime}
+                    onSeek={(time) => seekRef.current?.(time)}
+                  />
+                )}
               </div>
             </>
           )}

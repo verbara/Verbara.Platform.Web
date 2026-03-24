@@ -4,6 +4,8 @@ import { Button } from '@/core/ui/button';
 
 interface AudioPlayerProps {
   src: string;
+  onTimeUpdate?: (currentTime: number) => void;
+  seekRef?: React.MutableRefObject<((time: number) => void) | null>;
 }
 
 const SPEED_OPTIONS = [1, 1.5, 2] as const;
@@ -15,7 +17,7 @@ function formatTime(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export function AudioPlayer({ src }: AudioPlayerProps) {
+export function AudioPlayer({ src, onTimeUpdate: onTimeUpdateProp, seekRef }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -23,10 +25,24 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
   const [speedIndex, setSpeedIndex] = useState(0);
 
   useEffect(() => {
+    if (seekRef) {
+      seekRef.current = (time: number) => {
+        const audio = audioRef.current;
+        if (!audio) return;
+        audio.currentTime = time;
+        setCurrentTime(time);
+      };
+    }
+  }, [seekRef]);
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+      onTimeUpdateProp?.(audio.currentTime);
+    };
     const onLoadedMetadata = () => setDuration(audio.duration);
     const onEnded = () => setPlaying(false);
 
@@ -39,7 +55,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
       audio.removeEventListener('loadedmetadata', onLoadedMetadata);
       audio.removeEventListener('ended', onEnded);
     };
-  }, []);
+  }, [onTimeUpdateProp]);
 
   const togglePlay = useCallback(() => {
     const audio = audioRef.current;
