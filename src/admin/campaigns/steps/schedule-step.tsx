@@ -3,6 +3,14 @@ import { Plus, X } from 'lucide-react';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Button } from '@/core/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/core/ui/select';
+import { useHolidayCalendars } from '@/core/api/hooks/use-holiday-calendars';
 import type { CampaignFormValues } from '../campaign-wizard';
 
 const TIMEZONES = [
@@ -21,6 +29,8 @@ const TIMEZONES = [
 export default function ScheduleStep() {
   const { register, control, watch, setValue } = useFormContext<CampaignFormValues>();
   const holidays = watch('holidays') ?? [];
+  const holidayCalendarId = watch('holidayCalendarId');
+  const { data: calendars = [] } = useHolidayCalendars();
 
   const { fields: scheduleFields } = useFieldArray({ control, name: 'schedule' as never });
   const schedule = watch('schedule');
@@ -101,9 +111,35 @@ export default function ScheduleStep() {
         </div>
       </div>
 
+      {/* Holiday Calendar */}
+      <div className="space-y-1.5">
+        <Label>Holiday Calendar</Label>
+        <p className="text-xs text-muted-foreground">
+          Dialing will be paused on dates defined in the selected calendar. Select "None" to use manual exclusions only.
+        </p>
+        <Select
+          value={holidayCalendarId !== null ? String(holidayCalendarId) : 'none'}
+          onValueChange={(val) =>
+            setValue('holidayCalendarId', val === 'none' ? null : Number(val))
+          }
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a holiday calendar..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">None</SelectItem>
+            {calendars.map((cal) => (
+              <SelectItem key={cal.id} value={String(cal.id)}>
+                {cal.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Holiday Exclusions */}
       <div className="space-y-3">
-        <Label>Holiday Exclusions</Label>
+        <Label>Manual Holiday Exclusions</Label>
         <div className="flex gap-2">
           <Input id="holiday-input" type="date" className="w-48" />
           <Button type="button" variant="outline" size="sm" onClick={addHoliday}>

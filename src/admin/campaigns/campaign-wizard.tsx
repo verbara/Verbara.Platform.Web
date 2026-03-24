@@ -38,14 +38,17 @@ export interface CampaignFormValues {
   pacingRatio: number;
   pacingTargetWait: number;
   maxChannels: number;
+  callerIdPoolId: number | null;
+  useGlobalDefaults: boolean;
   // Schedule
   schedule: ScheduleDay[];
   timezone: string;
   holidays: string[];
+  holidayCalendarId: number | null;
   campaignStart: string;
   campaignEnd: string;
   // Compliance
-  dncEnabled: boolean;
+  dncListId: number | null;
   maxAttempts: number;
   retryIntervalMinutes: number;
   timeBetweenAttempts: number;
@@ -69,6 +72,8 @@ const DEFAULT_VALUES: CampaignFormValues = {
   pacingRatio: 2,
   pacingTargetWait: 15,
   maxChannels: 10,
+  callerIdPoolId: null,
+  useGlobalDefaults: true,
   schedule: DAYS.map((day) => ({
     day,
     enabled: !['Saturday', 'Sunday'].includes(day),
@@ -77,9 +82,10 @@ const DEFAULT_VALUES: CampaignFormValues = {
   })),
   timezone: 'America/New_York',
   holidays: [],
+  holidayCalendarId: null,
   campaignStart: '',
   campaignEnd: '',
-  dncEnabled: true,
+  dncListId: null,
   maxAttempts: 3,
   retryIntervalMinutes: 60,
   timeBetweenAttempts: 30,
@@ -133,7 +139,9 @@ export default function CampaignWizard() {
       holidays: formData.holidays,
       campaignStart: formData.campaignStart || undefined,
       campaignEnd: formData.campaignEnd || undefined,
-      dncEnabled: formData.dncEnabled,
+      holidayCalendarId: formData.holidayCalendarId ?? undefined,
+      callerIdPoolId: formData.callerIdPoolId ?? undefined,
+      dncListId: formData.dncListId ?? undefined,
       maxAttemptsPerContact: formData.maxAttempts,
       retryIntervalMinutes: formData.retryIntervalMinutes,
       timeBetweenAttemptsMinutes: formData.timeBetweenAttempts,

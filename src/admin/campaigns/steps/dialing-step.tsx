@@ -1,6 +1,16 @@
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { Switch } from '@/core/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/core/ui/select';
+import { useCallerIdPools } from '@/core/api/hooks/use-caller-id-pools';
+import { useDialerSettings } from '@/core/api/hooks/use-dialer-settings';
 import type { CampaignFormValues, DialingMode, PacingStrategy } from '../campaign-wizard';
 
 const DIALING_MODES: { value: DialingMode; label: string; description: string }[] = [
@@ -18,9 +28,14 @@ const PACING_STRATEGIES: { value: PacingStrategy; label: string; description: st
 ];
 
 export default function DialingStep() {
-  const { register, watch } = useFormContext<CampaignFormValues>();
+  const { register, watch, setValue } = useFormContext<CampaignFormValues>();
   const selectedMode = watch('mode');
   const selectedPacing = watch('pacingStrategy');
+  const callerIdPoolId = watch('callerIdPoolId');
+  const useGlobalDefaults = watch('useGlobalDefaults');
+
+  const { data: pools = [] } = useCallerIdPools();
+  const { data: globalSettings } = useDialerSettings();
 
   return (
     <div className="space-y-6">
@@ -76,44 +91,103 @@ export default function DialingStep() {
         </div>
       </fieldset>
 
-      {/* Pacing Parameters */}
-      <div className="grid gap-5 sm:grid-cols-3">
-        {selectedPacing === 'fixed' && (
-          <div className="space-y-1.5">
-            <Label htmlFor="pacingRatio">Lines per Agent</Label>
-            <Input
-              id="pacingRatio"
-              type="number"
-              min={1}
-              max={10}
-              {...register('pacingRatio', { valueAsNumber: true })}
-            />
-          </div>
-        )}
-
-        {selectedPacing === 'adaptive' && (
-          <div className="space-y-1.5">
-            <Label htmlFor="pacingTargetWait">Target Wait (seconds)</Label>
-            <Input
-              id="pacingTargetWait"
-              type="number"
-              min={1}
-              max={120}
-              {...register('pacingTargetWait', { valueAsNumber: true })}
-            />
-          </div>
-        )}
-
-        <div className="space-y-1.5">
-          <Label htmlFor="maxChannels">Max Channels</Label>
-          <Input
-            id="maxChannels"
-            type="number"
-            min={1}
-            max={500}
-            {...register('maxChannels', { valueAsNumber: true })}
-          />
+      {/* Global Defaults Toggle */}
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div>
+          <p className="text-sm font-medium">Use Global Dialer Defaults</p>
+          <p className="text-xs text-muted-foreground">
+            Inherit pacing parameters from the global dialer configuration instead of setting custom values.
+          </p>
         </div>
+        <Switch
+          checked={useGlobalDefaults}
+          onCheckedChange={(checked) => setValue('useGlobalDefaults', checked)}
+        />
+      </div>
+
+      {/* Pacing Parameters */}
+      {useGlobalDefaults ? (
+        globalSettings && (
+          <div className="grid gap-5 sm:grid-cols-3 rounded-lg border border-dashed p-4 opacity-70">
+            <div className="space-y-1.5">
+              <Label>Max Global Channels</Label>
+              <p className="text-sm font-medium text-muted-foreground">{globalSettings.maxGlobalChannels}</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Ring Timeout (seconds)</Label>
+              <p className="text-sm font-medium text-muted-foreground">{globalSettings.defaultRingTimeoutSeconds}</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Max Concurrent Campaigns</Label>
+              <p className="text-sm font-medium text-muted-foreground">{globalSettings.maxConcurrentCampaigns}</p>
+            </div>
+          </div>
+        )
+      ) : (
+        <div className="grid gap-5 sm:grid-cols-3">
+          {selectedPacing === 'fixed' && (
+            <div className="space-y-1.5">
+              <Label htmlFor="pacingRatio">Lines per Agent</Label>
+              <Input
+                id="pacingRatio"
+                type="number"
+                min={1}
+                max={10}
+                {...register('pacingRatio', { valueAsNumber: true })}
+              />
+            </div>
+          )}
+
+          {selectedPacing === 'adaptive' && (
+            <div className="space-y-1.5">
+              <Label htmlFor="pacingTargetWait">Target Wait (seconds)</Label>
+              <Input
+                id="pacingTargetWait"
+                type="number"
+                min={1}
+                max={120}
+                {...register('pacingTargetWait', { valueAsNumber: true })}
+              />
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="maxChannels">Max Channels</Label>
+            <Input
+              id="maxChannels"
+              type="number"
+              min={1}
+              max={500}
+              {...register('maxChannels', { valueAsNumber: true })}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Caller ID Pool */}
+      <div className="space-y-1.5">
+        <Label>Caller ID Pool</Label>
+        <p className="text-xs text-muted-foreground">
+          Outbound calls will rotate through numbers in the selected pool. Select "None" to use the trunk default.
+        </p>
+        <Select
+          value={callerIdPoolId !== null ? String(callerIdPoolId) : 'none'}
+          onValueChange={(val) =>
+            setValue('callerIdPoolId', val === 'none' ? null : Number(val))
+          }
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a caller ID pool..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">None (use trunk default)</SelectItem>
+            {pools.map((pool) => (
+              <SelectItem key={pool.id} value={String(pool.id)}>
+                {pool.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
