@@ -23,6 +23,7 @@ import {
   Zap,
   FileSearch,
   ClipboardList,
+  Calendar,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -99,6 +100,7 @@ const groups: SidebarGroup[] = [
       { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, allowedRoles: ['admin'] },
       { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, allowedRoles: ['admin'] },
       { key: 'audit', labelKey: 'admin:sidebar.auditLog', to: '/admin/audit', icon: FileSearch, allowedRoles: ['admin'] },
+      { key: 'reports', labelKey: 'admin:sidebar.reports', to: '/admin/reports', icon: Calendar, allowedRoles: ['admin'] },
     ],
   },
 ];
