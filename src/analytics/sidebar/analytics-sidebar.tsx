@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BarChart3, FileText, ClipboardCheck, ClipboardList } from 'lucide-react';
+import { BarChart3, FileText, ClipboardCheck, ClipboardList, Table } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface SidebarItem {
@@ -14,6 +14,7 @@ const items: SidebarItem[] = [
   { labelKey: 'sidebar.cdr', to: '/analytics/cdr', icon: FileText },
   { labelKey: 'sidebar.qa', to: '/analytics/qa', icon: ClipboardCheck },
   { labelKey: 'sidebar.surveys', to: '/analytics/surveys', icon: ClipboardList },
+  { labelKey: 'sidebar.intervals', to: '/analytics/intervals', icon: Table },
 ];
 
 export function AnalyticsSidebar() {
