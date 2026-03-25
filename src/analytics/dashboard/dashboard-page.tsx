@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KpiCard } from './kpi-card';
 import { TrendChart } from './trend-chart';
+import { OverlayChart, type OverlayChartPoint } from './overlay-chart';
+import { Heatmap, type HeatmapCell } from './heatmap';
 import { FilterBar, type FilterState } from '@/analytics/shared/filter-bar';
-import { useDashboard, type DashboardKpis } from '@/core/api/hooks/use-analytics';
+import { useDashboard, useIntervals, type DashboardKpis } from '@/core/api/hooks/use-analytics';
 
 function daysAgo(n: number): string {
   const d = new Date();
@@ -43,6 +45,7 @@ export default function DashboardPage() {
   });
 
   const { data, isLoading } = useDashboard(filters.from, filters.to, filters.queue || undefined);
+  const { data: intervalsData } = useIntervals(filters.from, filters.to, filters.queue || undefined);
 
   const kpis = data?.kpis;
   const prev = data?.previousPeriodKpis;
@@ -62,6 +65,22 @@ export default function DashboardPage() {
   const volumeData = (data?.volumeTrend ?? []).map((p) => ({ name: p.label, value: p.value }));
   const slaTrendData = (data?.slaTrend ?? []).map((p) => ({ name: p.label, value: p.value }));
   const channelData = (data?.channelDistribution ?? []).map((d) => ({ name: d.channel, value: d.count }));
+
+  // Overlay chart: zip volumeTrend + slaTrend by index (same labels expected)
+  const overlayData: OverlayChartPoint[] = (data?.volumeTrend ?? []).map((p, i) => ({
+    label: p.label,
+    volume: p.value,
+    slaPercent: data?.slaTrend?.[i]?.value ?? 0,
+  }));
+
+  // Heatmap: derive hour×day distribution from interval snapshots when available
+  const heatmapData: HeatmapCell[] = (intervalsData ?? []).map((row) => {
+    const d = new Date(row.intervalStart);
+    // getDay() → 0=Sun … 6=Sat; remap to 0=Mon … 6=Sun
+    const rawDay = d.getDay();
+    const dayOfWeek = rawDay === 0 ? 6 : rawDay - 1;
+    return { dayOfWeek, hour: d.getHours(), value: row.callsAnswered };
+  });
 
   return (
     <div className="space-y-6">
@@ -152,6 +171,39 @@ export default function DashboardPage() {
               dataKey="value"
             />
           </div>
+        )}
+
+        {/* Volume vs SLA overlay chart */}
+        {isLoading ? (
+          <div className="h-[348px] animate-pulse rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-700" />
+        ) : (
+          <OverlayChart
+            title={t('dashboard.volume_vs_sla')}
+            data={overlayData}
+            volumeLabel={t('dashboard.volume_label')}
+            slaLabel={t('dashboard.sla_label')}
+            emptyLabel={t('dashboard.no_data')}
+          />
+        )}
+
+        {/* Call volume heatmap */}
+        {isLoading ? (
+          <div className="h-64 animate-pulse rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-700" />
+        ) : (
+          <Heatmap
+            title={t('dashboard.heatmap_title')}
+            data={heatmapData}
+            dayLabels={[
+              t('dashboard.day_mon'),
+              t('dashboard.day_tue'),
+              t('dashboard.day_wed'),
+              t('dashboard.day_thu'),
+              t('dashboard.day_fri'),
+              t('dashboard.day_sat'),
+              t('dashboard.day_sun'),
+            ]}
+            emptyLabel={t('dashboard.no_data')}
+          />
         )}
       </div>
     </div>

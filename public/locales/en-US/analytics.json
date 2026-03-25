@@ -1,7 +1,7 @@
 {
-  "sidebar": { "dashboard": "Dashboard", "cdr": "Call Records", "qa": "Quality (QA)", "surveys": "Surveys" },
+  "sidebar": { "dashboard": "Dashboard", "cdr": "Call Records", "qa": "Quality (QA)", "surveys": "Surveys", "intervals": "Intervals" },
   "filters": { "date_range": "Date Range", "queue": "Queue", "channel": "Channel", "agent": "Agent", "today": "Today", "last_7d": "Last 7 days", "last_30d": "Last 30 days", "custom": "Custom", "apply": "Apply" },
-  "dashboard": { "title": "Analytics Dashboard", "conversations_handled": "Conversations Handled", "avg_wait": "Avg Wait Time", "avg_handle": "Avg Handle Time", "sla_percent": "SLA %", "channel_distribution": "Channel Distribution", "volume_trend": "Volume Trend", "sla_trend": "SLA Trend" },
+  "dashboard": { "title": "Analytics Dashboard", "conversations_handled": "Conversations Handled", "avg_wait": "Avg Wait Time", "avg_handle": "Avg Handle Time", "sla_percent": "SLA %", "channel_distribution": "Channel Distribution", "volume_trend": "Volume Trend", "sla_trend": "SLA Trend", "volume_vs_sla": "Volume vs SLA", "volume_label": "Call Volume", "sla_label": "SLA %", "heatmap_title": "Call Volume Heatmap", "no_data": "No data available", "day_mon": "Mon", "day_tue": "Tue", "day_wed": "Wed", "day_thu": "Thu", "day_fri": "Fri", "day_sat": "Sat", "day_sun": "Sun" },
   "cdr": { "title": "Detail Records", "search_placeholder": "Search by number, agent, queue...", "no_results": "No results", "duration": "Duration", "disposition": "Disposition", "recording": "Recording", "contact": "Contact", "channel": "Channel", "queue": "Queue", "agent": "Agent", "date": "Date", "sla_met": "SLA Met", "view_full_qa": "View Full QA", "qa_score": "QA Score", "sentiment": "Sentiment", "ring_duration": "Ring Duration", "hold_count": "Holds", "acw_duration": "ACW" },
   "qa": { "title": "Quality Evaluations", "score": "Score", "summary": "Summary", "compliance": "Compliance", "sentiment": "Sentiment", "topics": "Topics", "scorecard": "Scorecard", "violations": "Violations", "no_violations": "No violations" },
   "surveys": {
@@ -16,6 +16,23 @@
     "answerPreview": "Answer Preview",
     "noResponses": "No responses recorded for this survey.",
     "searchResponses": "Search responses..."
+  },
+  "intervals": {
+    "title": "Interval Table",
+    "col_time_slot": "Time Slot",
+    "col_queue": "Queue",
+    "col_offered": "Offered",
+    "col_answered": "Answered",
+    "col_abandoned": "Abandoned",
+    "col_sla": "SLA %",
+    "col_asa": "ASA",
+    "col_aht": "AHT",
+    "loading": "Loading…",
+    "empty": "No interval data for the selected period.",
+    "showing": "Showing {{from}}–{{to}} of {{total}}",
+    "page": "Page {{page}} of {{total}}",
+    "prev": "Prev",
+    "next": "Next"
   },
   "export": { "csv": "Export CSV" }
 }
