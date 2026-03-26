@@ -67,3 +67,18 @@ export function useDeleteTrunk() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useActiveTrunks() {
+  return useQuery({
+    queryKey: ['trunks', 'active'],
+    queryFn: () => customFetch<TrunkSummary[]>({ url: '/api/admin/trunks/active', method: 'GET' }),
+  });
+}
+
+export function useTrunkByName(name: string) {
+  return useQuery({
+    queryKey: ['trunks', 'by-name', name],
+    queryFn: () => customFetch<TrunkSummary>({ url: `/api/admin/trunks/by-name/${encodeURIComponent(name)}`, method: 'GET' }),
+    enabled: !!name,
+  });
+}

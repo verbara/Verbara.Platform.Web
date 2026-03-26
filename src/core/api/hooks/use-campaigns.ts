@@ -356,3 +356,34 @@ export function useDeleteDispositionCode() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useCallbacks(campaignId: number) {
+  return useQuery({
+    queryKey: ['callbacks', campaignId],
+    queryFn: () =>
+      customFetch<Array<{ campaignId: number; contactId: number; scheduledAt: string; agentId?: string }>>({
+        url: `/api/admin/campaigns/${campaignId}/callbacks`,
+        method: 'GET',
+      }),
+    enabled: !!campaignId,
+  });
+}
+
+export function useCreateCallback() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ campaignId, contactId, phone, agentId, scheduledAt }: {
+      campaignId: number; contactId: number; phone: string; agentId?: string; scheduledAt: string;
+    }) =>
+      customFetch<void>({
+        url: `/api/admin/campaigns/${campaignId}/callbacks`,
+        method: 'POST',
+        data: { contactId, phone, agentId, scheduledAt },
+      }),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['callbacks', vars.campaignId] });
+      toast.success('Callback scheduled');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
