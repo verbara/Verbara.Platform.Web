@@ -6,6 +6,7 @@ import { OverlayChart, type OverlayChartPoint } from './overlay-chart';
 import { Heatmap, type HeatmapCell } from './heatmap';
 import { FilterBar, type FilterState } from '@/analytics/shared/filter-bar';
 import { useDashboard, useIntervals, type DashboardKpis } from '@/core/api/hooks/use-analytics';
+import { CurrentIntervalCard } from './current-interval-card';
 
 function daysAgo(n: number): string {
   const d = new Date();
@@ -129,6 +130,9 @@ export default function DashboardPage() {
             />
           </div>
         )}
+
+        {/* Current Interval */}
+        <CurrentIntervalCard />
 
         {/* Charts */}
         {isLoading ? (
