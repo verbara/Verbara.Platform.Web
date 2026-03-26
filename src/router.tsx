@@ -37,6 +37,7 @@ const SurveyListPage = lazy(() => import('@/admin/surveys/survey-list-page'));
 const ReportsPage = lazy(() => import('@/admin/reports/reports-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
+const RealtimePage = lazy(() => import('@/admin/realtime/realtime-page'));
 const AuditPage = lazy(() => import('@/admin/audit/audit-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
@@ -334,6 +335,16 @@ export const router = createBrowserRouter([
               <LazyLoad>
                 <SystemPage />
               </LazyLoad>
+            ),
+          },
+          {
+            path: 'realtime',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <RealtimePage />
+                </LazyLoad>
+              </RoleGuard>
             ),
           },
           {

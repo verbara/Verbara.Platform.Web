@@ -25,7 +25,8 @@
     "skills": "Habilidades",
     "auditLog": "Registro de Auditoria",
     "surveys": "Pesquisas",
-    "reports": "Relatórios Agendados"
+    "reports": "Relatórios Agendados",
+    "realtime": "Perfis de Endpoint"
   },
   "users": { "title": "Usuários", "create": "Criar usuário", "email": "E-mail", "name": "Nome", "role": "Função", "status": "Status" },
   "agents": { "title": "Agentes", "create": "Criar agente", "edit": "Editar agente", "skills": "Habilidades", "team": "Equipe", "displayName": "Nome", "user": "Usu\u00e1rio", "state": "Estado", "queueCount": "Filas", "searchPlaceholder": "Buscar agentes...", "selectUser": "Selecionar usu\u00e1rio", "noTeam": "Sem equipe", "addSkill": "Adicionar habilidade", "skillName": "Nome da habilidade", "noSkills": "Nenhuma habilidade atribu\u00edda.", "save": "Salvar altera\u00e7\u00f5es", "createDescription": "Criar um novo agente a partir de um usu\u00e1rio existente.", "editDescription": "Atualizar dados do agente.", "deleteTitle": "Excluir agente", "queues": "Filas atribu\u00eddas", "noQueues": "N\u00e3o atribu\u00eddo a nenhuma fila.", "queuesNote": "A atribui\u00e7\u00e3o de filas \u00e9 gerenciada na configura\u00e7\u00e3o de filas." },
