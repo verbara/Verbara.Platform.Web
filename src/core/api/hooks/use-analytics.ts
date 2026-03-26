@@ -209,3 +209,76 @@ export function useIntervals(from?: string, to?: string, queue?: string) {
     }),
   });
 }
+
+// ─── Live State ─────────────────────────────────────────
+export interface LiveState {
+  queueName: string;
+  callsWaiting: number;
+  longestWaitMs: number;
+  agentsAvailable: number;
+  agentsOnCall: number;
+  agentsPaused: number;
+  agentsInWrapUp: number;
+}
+
+export function useAllLiveStates() {
+  return useQuery({
+    queryKey: ['analytics', 'live'],
+    queryFn: () => customFetch<LiveState[]>({ url: '/api/analytics/live', method: 'GET' }),
+    refetchInterval: 15_000,
+  });
+}
+
+export function useLiveState(queueName: string) {
+  return useQuery({
+    queryKey: ['analytics', 'live', queueName],
+    queryFn: () => customFetch<LiveState>({ url: `/api/analytics/live/${encodeURIComponent(queueName)}`, method: 'GET' }),
+    enabled: !!queueName,
+    refetchInterval: 15_000,
+  });
+}
+
+// ─── Current Interval ───────────────────────────────────
+export interface CurrentInterval {
+  intervalStart: string;
+  intervalEnd: string;
+  callsOffered: number;
+  callsAnswered: number;
+  callsAbandoned: number;
+  ahtMs: number;
+  asaMs: number;
+  slaPercent: number;
+  abandonRatePercent: number;
+}
+
+export function useCurrentInterval(queueName?: string) {
+  const params = queueName ? `?queueName=${encodeURIComponent(queueName)}` : '?queueName=default';
+  return useQuery({
+    queryKey: ['analytics', 'current-interval', queueName],
+    queryFn: () => customFetch<CurrentInterval>({ url: `/api/analytics/current-interval${params}`, method: 'GET' }),
+    refetchInterval: 30_000,
+  });
+}
+
+// ─── Agent Intervals ────────────────────────────────────
+export interface AgentInterval {
+  agentId: string;
+  intervalStart: string;
+  intervalSeconds: number;
+  callsHandled: number;
+  ahtMs: number;
+  occupancyPercent: number;
+  rnaCount: number;
+  transfers: number;
+  totalPauseMs: number;
+  loginDurationMs: number;
+}
+
+export function useAgentIntervals(filters: { from: string; to: string; agentId?: string }) {
+  const params = new URLSearchParams({ from: filters.from, to: filters.to });
+  if (filters.agentId) params.set('agentId', filters.agentId);
+  return useQuery({
+    queryKey: ['analytics', 'agent-intervals', filters],
+    queryFn: () => customFetch<AgentInterval[]>({ url: `/api/analytics/intervals/agents?${params}`, method: 'GET' }),
+  });
+}
