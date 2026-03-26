@@ -55,6 +55,7 @@ import {
 } from '@/core/api/hooks/use-campaigns';
 import type { DispositionCode } from '@/core/api/hooks/use-campaigns';
 import type { CampaignStatus } from './campaign-list-page';
+import { CallbacksTab } from './callbacks-tab';
 
 interface DispositionFormState {
   code: string;
@@ -550,6 +551,14 @@ export default function CampaignDetailPage() {
             </table>
           </div>
         )}
+      </div>
+
+      {/* Pending Callbacks */}
+      <div className="rounded-lg border bg-card p-6">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Pending Callbacks
+        </p>
+        <CallbacksTab campaignId={campaignIdNum} />
       </div>
 
       {/* Stop confirmation dialog */}
