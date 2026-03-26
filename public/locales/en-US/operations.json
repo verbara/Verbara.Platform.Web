@@ -16,6 +16,8 @@
     "available": "Available",
     "busy": "Busy",
     "away": "Away",
+    "longest_wait": "Longest Wait",
+    "wrap_up": "Wrap-up",
     "kiosk_enter": "Kiosk Mode",
     "kiosk_exit": "Exit (Esc)"
   },

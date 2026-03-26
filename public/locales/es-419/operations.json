@@ -16,6 +16,8 @@
     "available": "Disponibles",
     "busy": "Ocupados",
     "away": "Ausentes",
+    "longest_wait": "Mayor espera",
+    "wrap_up": "Post-llamada",
     "kiosk_enter": "Modo kiosco",
     "kiosk_exit": "Salir (Esc)"
   },
