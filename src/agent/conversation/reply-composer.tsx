@@ -4,6 +4,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core
 import { useDraftStore } from '@/agent/stores/draft-store';
 import { useConversationStore, type Message } from '@/agent/stores/conversation-store';
 import { useSendMessage } from '@/core/api/hooks/use-conversations';
+import { useUploadMedia } from '@/core/api/hooks/use-media';
 import { CannedResponses } from './canned-responses';
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
@@ -37,6 +38,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
   const clearDraft = useDraftStore((s) => s.clearDraft);
   const addMessage = useConversationStore((s) => s.addMessage);
   const sendMessageMutation = useSendMessage();
+  const uploadMedia = useUploadMedia();
 
   // Restore draft when conversation switches
   useEffect(() => {
@@ -116,9 +118,21 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
     textareaRef.current?.focus();
   }, []);
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const trimmed = text.trim();
     if (!trimmed && attachments.length === 0) return;
+
+    let mediaId: string | undefined;
+
+    if (attachments.length > 0 && attachments[0]) {
+      try {
+        const result = await uploadMedia.mutateAsync(attachments[0].file);
+        mediaId = result.id;
+      } catch {
+        // toast already shown by onError in useUploadMedia
+        return;
+      }
+    }
 
     const message: Message = {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -130,7 +144,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
       type: attachments.length > 0 && attachments[0]!.file.type.startsWith('image/') ? 'image' : trimmed ? 'text' : 'file',
       status: 'sending',
       metadata: attachments.length > 0
-        ? { fileName: attachments[0]!.file.name, fileSize: formatFileSize(attachments[0]!.file.size) }
+        ? { fileName: attachments[0]!.file.name, fileSize: formatFileSize(attachments[0]!.file.size), mediaId }
         : undefined,
     };
 
@@ -148,7 +162,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
 
     // Send to API
     sendMessageMutation.mutate({ conversationId, text: trimmed });
-  }, [text, attachments, conversationId, addMessage, clearDraft, sendMessageMutation]);
+  }, [text, attachments, conversationId, addMessage, clearDraft, sendMessageMutation, uploadMedia]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -192,7 +206,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
     });
   }, []);
 
-  const canSend = text.trim().length > 0 || attachments.length > 0;
+  const canSend = (text.trim().length > 0 || attachments.length > 0) && !uploadMedia.isPending;
 
   return (
     <div className="shrink-0 border-t border-slate-200 px-4 py-3 dark:border-slate-700">
