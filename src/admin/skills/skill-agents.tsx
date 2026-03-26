@@ -21,6 +21,7 @@ import { useAgents } from '@/core/api/hooks/use-agents';
 import {
   useAssignSkill,
   useRemoveAgentSkill,
+  useAgentsWithSkill,
 } from '@/core/api/hooks/use-skills';
 import type { Skill } from '@/core/api/hooks/use-skills';
 
@@ -35,10 +36,22 @@ export function SkillAgents({ skill, onClose }: SkillAgentsProps) {
   const [localProficiencies, setLocalProficiencies] = useState<Record<string, number>>({});
 
   const { data: allAgents = [] } = useAgents();
+  const { data: serverAssignments } = useAgentsWithSkill(skill?.name);
 
-  // For skill-based view we derive agent assignments from each agent's skills array
+  // Prefer server data; fall back to client-side derivation from agents list
   const agentsWithSkill = useMemo(() => {
     if (!skill) return [];
+    if (serverAssignments) {
+      return serverAssignments.map((assignment) => {
+        const agent = allAgents.find((a) => a.id === assignment.agentId);
+        return {
+          agentId: assignment.agentId,
+          displayName: agent?.displayName ?? assignment.agentId,
+          proficiency: localProficiencies[assignment.agentId] ?? assignment.proficiency,
+        };
+      });
+    }
+    // Fallback: derive from full agents list
     return allAgents
       .filter((a) => a.skills.some((s) => s.name === skill.name))
       .map((a) => {
@@ -49,7 +62,7 @@ export function SkillAgents({ skill, onClose }: SkillAgentsProps) {
           proficiency: localProficiencies[a.id] ?? assignment?.proficiency ?? 5,
         };
       });
-  }, [allAgents, skill, localProficiencies]);
+  }, [allAgents, serverAssignments, skill, localProficiencies]);
 
   const assignedAgentIds = useMemo(
     () => new Set(agentsWithSkill.map((a) => a.agentId)),

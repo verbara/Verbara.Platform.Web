@@ -93,6 +93,7 @@ export function useAssignSkill() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['agent-skills', variables.agentId] });
       qc.invalidateQueries({ queryKey: ['agents'] });
+      qc.invalidateQueries({ queryKey: ['skill-agents'] });
       toast.success('Skill assigned');
     },
     onError: (err: Error) => toast.error(err.message),
@@ -116,8 +117,21 @@ export function useRemoveAgentSkill() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['agent-skills', variables.agentId] });
       qc.invalidateQueries({ queryKey: ['agents'] });
+      qc.invalidateQueries({ queryKey: ['skill-agents'] });
       toast.success('Skill removed');
     },
     onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useAgentsWithSkill(skillName: string | undefined) {
+  return useQuery({
+    queryKey: ['skill-agents', skillName],
+    queryFn: () =>
+      customFetch<AgentSkillAssignment[]>({
+        url: `/api/admin/skills/${skillName}/agents`,
+        method: 'GET',
+      }),
+    enabled: !!skillName,
   });
 }
