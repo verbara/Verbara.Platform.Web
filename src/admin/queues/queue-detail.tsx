@@ -12,14 +12,24 @@ import {
   Tags,
   Users,
   Zap,
+  X,
+  UserPlus,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/core/ui/select';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { QueueForm } from './queue-form';
 import { useQueue, useQueues, useDeleteQueue, useUpdateQueue } from '@/core/api/hooks/use-queues';
 import { useAgents } from '@/core/api/hooks/use-agents';
+import { useAddQueueMember, useRemoveQueueMember } from '@/core/api/hooks/use-queue-members';
 
 function InfoRow({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: React.ReactNode }) {
   return (
@@ -40,11 +50,15 @@ export default function QueueDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const [addAgentId, setAddAgentId] = useState('');
+
   const { data: queue } = useQueue(queueId);
   const { data: allQueues = [] } = useQueues();
   const { data: allAgents = [] } = useAgents();
   const deleteQueue = useDeleteQueue();
   const updateQueue = useUpdateQueue();
+  const addMember = useAddQueueMember();
+  const removeMember = useRemoveQueueMember();
 
   if (!queue) {
     return (
@@ -64,6 +78,17 @@ export default function QueueDetailPage() {
   };
 
   const assignedAgents = allAgents.filter((a) => queue.agentIds.includes(a.id));
+  const availableAgents = allAgents.filter((a) => !queue.agentIds.includes(a.id));
+
+  const handleAddMember = () => {
+    if (!addAgentId || !queueId) return;
+    addMember.mutate({ queueId, agentId: addAgentId }, { onSuccess: () => setAddAgentId('') });
+  };
+
+  const handleRemoveMember = (agentId: string) => {
+    if (!queueId) return;
+    removeMember.mutate({ queueId, agentId });
+  };
 
   const editDefaults = {
     name: queue.name,
@@ -245,12 +270,48 @@ export default function QueueDetailPage() {
                 className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
               >
                 <span className="font-medium">{agent.displayName}</span>
-                <Badge variant="outline">{agent.state}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">{agent.state}</Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                    onClick={() => handleRemoveMember(agent.id)}
+                    disabled={removeMember.isPending}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">{t('admin:queues.noAgents')}</p>
+        )}
+
+        {/* Add agent */}
+        {availableAgents.length > 0 && (
+          <div className="mt-4 flex gap-2">
+            <Select value={addAgentId} onValueChange={(v) => setAddAgentId(v ?? '')}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Select agent to add..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableAgents.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.displayName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              onClick={handleAddMember}
+              disabled={!addAgentId || addMember.isPending}
+            >
+              <UserPlus className="h-4 w-4" />
+            </Button>
+          </div>
         )}
       </div>
 
