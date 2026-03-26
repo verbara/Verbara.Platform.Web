@@ -49,6 +49,7 @@ const CdrPage = lazy(() => import('@/analytics/cdr/cdr-page'));
 const QaPage = lazy(() => import('@/analytics/qa/qa-page'));
 const SurveyResultsPage = lazy(() => import('@/analytics/surveys/survey-results-page'));
 const IntervalPage = lazy(() => import('@/analytics/intervals/interval-page'));
+const AgentIntervalsPage = lazy(() => import('@/analytics/agents/agent-intervals-page'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
 const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
 
@@ -465,6 +466,16 @@ export const router = createBrowserRouter([
               <RoleGuard allowedRoles={['admin', 'supervisor']}>
                 <LazyLoad>
                   <IntervalPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'agent-intervals',
+            element: (
+              <RoleGuard allowedRoles={['admin', 'supervisor']}>
+                <LazyLoad>
+                  <AgentIntervalsPage />
                 </LazyLoad>
               </RoleGuard>
             ),
