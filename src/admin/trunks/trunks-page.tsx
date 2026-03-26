@@ -8,7 +8,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { TrunkForm } from './trunk-form';
-import { useTrunks, type TrunkSummary } from '@/core/api/hooks/use-trunks';
+import { useTrunks, useActiveTrunks, type TrunkSummary } from '@/core/api/hooks/use-trunks';
 
 const columnHelper = createColumnHelper<TrunkSummary>();
 
@@ -16,8 +16,12 @@ export default function TrunksPage() {
   const { t } = useTranslation(['admin']);
   const [createOpen, setCreateOpen] = useState(false);
   const [editTrunk, setEditTrunk] = useState<TrunkSummary | null>(null);
+  const [activeOnly, setActiveOnly] = useState(false);
 
-  const { data: trunks = [], isLoading } = useTrunks();
+  const { data: allTrunks = [], isLoading } = useTrunks();
+  const { data: activeTrunks = [] } = useActiveTrunks();
+
+  const trunks = activeOnly ? activeTrunks : allTrunks;
 
   const columns = useMemo(
     () => [
@@ -78,6 +82,11 @@ export default function TrunksPage() {
           {t('admin:trunks.create')}
         </Button>
       </PageHeader>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
+        Active only
+      </label>
 
       {isEmpty ? (
         <EmptyState
