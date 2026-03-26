@@ -3,11 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import type { SetupFormValues } from '../setup-wizard';
-
-const MOCK_AVAILABLE_USERS = [
-  { id: '5', email: 'viewer@example.com', displayName: 'Read Only User' },
-  { id: '7', email: 'new.agent@example.com', displayName: 'New Agent' },
-];
+import { useUsers } from '@/core/api/hooks/use-users';
 
 export default function AgentStep() {
   const { t } = useTranslation(['admin']);
@@ -16,7 +12,8 @@ export default function AgentStep() {
     formState: { errors },
   } = useFormContext<SetupFormValues>();
 
-  const hasUsers = MOCK_AVAILABLE_USERS.length > 0;
+  const { data: users = [] } = useUsers();
+  const hasUsers = users.length > 0;
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-4">
@@ -38,7 +35,7 @@ export default function AgentStep() {
               <option value="">
                 {t('admin:setup.agentSelectUser', '-- Select a user --')}
               </option>
-              {MOCK_AVAILABLE_USERS.map((user) => (
+              {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.displayName} ({user.email})
                 </option>
