@@ -24,6 +24,7 @@ import {
   FileSearch,
   ClipboardList,
   Calendar,
+  Building2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -98,6 +99,7 @@ const groups: SidebarGroup[] = [
     allowedRoles: ['admin'],
     items: [
       { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, allowedRoles: ['admin'] },
+      { key: 'tenants', labelKey: 'admin:sidebar.tenants', to: '/admin/tenants', icon: Building2, allowedRoles: ['admin'] },
       { key: 'realtime', labelKey: 'admin:sidebar.realtime', to: '/admin/realtime', icon: Radio, allowedRoles: ['admin'] },
       { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, allowedRoles: ['admin'] },
       { key: 'audit', labelKey: 'admin:sidebar.auditLog', to: '/admin/audit', icon: FileSearch, allowedRoles: ['admin'] },

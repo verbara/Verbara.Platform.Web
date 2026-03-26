@@ -26,6 +26,7 @@
     "auditLog": "Audit Log",
     "surveys": "Surveys",
     "reports": "Scheduled Reports",
+    "tenants": "Tenants",
     "realtime": "Endpoint Profiles"
   },
   "users": { "title": "Users", "create": "Create user", "email": "Email", "name": "Name", "role": "Role", "status": "Status" },

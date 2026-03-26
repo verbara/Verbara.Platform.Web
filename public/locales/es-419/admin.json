@@ -26,6 +26,7 @@
     "auditLog": "Registro de Auditoría",
     "surveys": "Encuestas",
     "reports": "Informes Programados",
+    "tenants": "Tenants",
     "realtime": "Perfiles de Endpoint"
   },
   "users": { "title": "Usuarios", "create": "Crear usuario", "email": "Correo", "name": "Nombre", "role": "Rol", "status": "Estado" },
