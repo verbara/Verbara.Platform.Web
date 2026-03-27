@@ -11,7 +11,7 @@ export interface MediaUploadResult {
 }
 
 async function uploadFile(file: File): Promise<MediaUploadResult> {
-  const { apiKey, tenantId: authTenantId } = useAuthStore.getState();
+  const { accessToken, tenantId: authTenantId } = useAuthStore.getState();
   const { activeTenantId } = useTenantStore.getState();
   const tenantId = activeTenantId ?? authTenantId;
 
@@ -19,7 +19,7 @@ async function uploadFile(file: File): Promise<MediaUploadResult> {
   formData.append('file', file);
 
   const headers: Record<string, string> = {};
-  if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
   if (tenantId) headers['X-Tenant-Id'] = tenantId;
 
   const response = await fetch('/api/media/upload', {

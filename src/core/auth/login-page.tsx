@@ -13,7 +13,7 @@ export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [apiKey, setApiKey] = useState('');
+  const [apiKeyInput, setApiKeyInput] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +26,7 @@ export function LoginPage() {
 
     try {
       const infoRes = await fetch('/api/admin/system/info', {
-        headers: { Authorization: `Bearer ${apiKey}` },
+        headers: { Authorization: `Bearer ${apiKeyInput}` },
       });
 
       if (!infoRes.ok) {
@@ -46,7 +46,7 @@ export function LoginPage() {
 
       try {
         const meRes = await fetch('/api/users/me', {
-          headers: { Authorization: `Bearer ${apiKey}` },
+          headers: { Authorization: `Bearer ${apiKeyInput}` },
         });
 
         if (meRes.ok) {
@@ -75,7 +75,8 @@ export function LoginPage() {
       const tenantId = info.tenantId ?? 'default';
       const features: Features = {};
 
-      useAuthStore.getState().setAuth(apiKey, user, tenantId, features);
+      // Temporary: use apiKey as accessToken with 1-hour expiry until login page redesign (Task 6)
+      useAuthStore.getState().setAuth(apiKeyInput, Date.now() + 3600_000, user, tenantId, [], features);
       useTenantStore.getState().setActiveTenant(tenantId);
 
       const setupDismissed = useUiStore.getState().setupDismissed;
@@ -112,8 +113,8 @@ export function LoginPage() {
               id="api-key"
               type="password"
               placeholder={t('auth.api_key_placeholder')}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              value={apiKeyInput}
+              onChange={(e) => setApiKeyInput(e.target.value)}
               required
               autoFocus
             />
@@ -126,7 +127,7 @@ export function LoginPage() {
           <Button
             type="submit"
             className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
-            disabled={loading || !apiKey.trim()}
+            disabled={loading || !apiKeyInput.trim()}
           >
             {loading ? t('status.loading') : t('auth.login')}
           </Button>

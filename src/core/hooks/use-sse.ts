@@ -8,14 +8,14 @@ type SseEventHandler = (data: unknown) => void;
 const handlers: Record<string, SseEventHandler[]> = {};
 
 export function useSSE() {
-  const apiKey = useAuthStore((s) => s.apiKey);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const addNotification = useNotificationStore((s) => s.addNotification);
   const sourceRef = useRef<EventSource | null>(null);
 
   const connect = useCallback(() => {
-    if (!apiKey || sourceRef.current) return;
+    if (!accessToken || sourceRef.current) return;
 
-    const url = `/api/events/stream?token=${encodeURIComponent(apiKey)}`;
+    const url = `/api/events/stream?token=${encodeURIComponent(accessToken)}`;
     const source = new EventSource(url);
     sourceRef.current = source;
 
@@ -98,7 +98,7 @@ export function useSSE() {
       sourceRef.current = null;
       setTimeout(connect, 2000);
     };
-  }, [apiKey, addNotification]);
+  }, [accessToken, addNotification]);
 
   useEffect(() => {
     connect();
