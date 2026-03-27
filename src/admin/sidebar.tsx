@@ -108,6 +108,7 @@ const groups: SidebarGroup[] = [
     requiredAnyPermission: ['system:tenant:configure', 'system:auth:configure', 'system:audit:view', 'system:integration:manage'],
     items: [
       { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, requiredPermission: 'system:integration:manage' },
+      { key: 'diagnostics', labelKey: 'admin:sidebar.diagnostics', to: '/admin/system/diagnostics', icon: Activity, requiredPermission: 'system:integration:manage' },
       { key: 'tenants', labelKey: 'admin:sidebar.tenants', to: '/admin/tenants', icon: Building2, requiredPermission: 'system:tenant:configure' },
       { key: 'realtime', labelKey: 'admin:sidebar.realtime', to: '/admin/realtime', icon: Radio, requiredPermission: 'system:integration:manage' },
       { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, requiredPermission: 'campaigns:dialer:configure' },
