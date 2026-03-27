@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Building2, Trash2 } from 'lucide-react';
+import { Plus, Building2, Trash2, Pencil } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -21,8 +21,24 @@ import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/core/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/core/ui/select';
+import { PermissionGuard } from '@/core/auth/permission-guard';
+import {
   useTenants,
   useCreateTenant,
+  useUpdateTenant,
   useDeleteTenant,
   type Tenant,
 } from '@/core/api/hooks/use-tenants';
@@ -55,9 +71,12 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
 export default function TenantsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
+  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', status: 'active', maxConcurrentChannels: 0, maxActiveCampaigns: 0 });
 
   const { data: tenants = [], isLoading } = useTenants();
   const createTenant = useCreateTenant();
+  const updateTenant = useUpdateTenant();
   const deleteTenant = useDeleteTenant();
 
   const {
@@ -134,7 +153,27 @@ export default function TenantsPage() {
         id: 'actions',
         header: () => '',
         cell: ({ row }) => (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-1">
+            <PermissionGuard requires="system:tenant:configure">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const t = row.original;
+                  setEditingTenant(t);
+                  setEditForm({
+                    name: t.name,
+                    status: t.status,
+                    maxConcurrentChannels: t.maxConcurrentChannels,
+                    maxActiveCampaigns: t.maxActiveCampaigns,
+                  });
+                }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            </PermissionGuard>
             <Button
               variant="ghost"
               size="sm"
@@ -278,6 +317,70 @@ export default function TenantsPage() {
         confirmLabel="Delete"
         onConfirm={handleDeleteConfirm}
       />
+
+      {/* Edit tenant dialog */}
+      <Dialog open={editingTenant !== null} onOpenChange={(open) => { if (!open) setEditingTenant(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Tenant</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-tenant-name">Name</Label>
+              <Input
+                id="edit-tenant-name"
+                value={editForm.name}
+                onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-tenant-status">Status</Label>
+              <Select value={editForm.status} onValueChange={(v) => setEditForm((f) => ({ ...f, status: v ?? f.status }))}>
+                <SelectTrigger id="edit-tenant-status"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                  <SelectItem value="disabled">Disabled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-tenant-channels">Max Concurrent Channels</Label>
+              <Input
+                id="edit-tenant-channels"
+                type="number"
+                min={1}
+                value={editForm.maxConcurrentChannels}
+                onChange={(e) => setEditForm((f) => ({ ...f, maxConcurrentChannels: Number(e.target.value) }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-tenant-campaigns">Max Active Campaigns</Label>
+              <Input
+                id="edit-tenant-campaigns"
+                type="number"
+                min={1}
+                value={editForm.maxActiveCampaigns}
+                onChange={(e) => setEditForm((f) => ({ ...f, maxActiveCampaigns: Number(e.target.value) }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingTenant(null)}>Cancel</Button>
+            <Button
+              disabled={!editForm.name.trim() || updateTenant.isPending}
+              onClick={() => {
+                if (!editingTenant) return;
+                updateTenant.mutate({ id: editingTenant.tenantId, ...editForm }, {
+                  onSuccess: () => setEditingTenant(null),
+                });
+              }}
+            >
+              {updateTenant.isPending ? 'Saving...' : 'Update'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

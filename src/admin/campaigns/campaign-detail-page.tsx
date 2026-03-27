@@ -19,6 +19,7 @@ import {
   FileText,
   Plus,
   Trash2,
+  Pencil,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
@@ -51,6 +52,7 @@ import {
   useResumeCampaign,
   useStopCampaign,
   useDeleteCampaign,
+  useUpdateCampaign,
   useCampaignDispositions,
   useCreateDispositionCode,
   useUpdateDispositionCode,
@@ -246,6 +248,9 @@ export default function CampaignDetailPage() {
   const navigate = useNavigate();
   const [stopOpen, setStopOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
   const [dispoDialogOpen, setDispoDialogOpen] = useState(false);
   const [editingDispo, setEditingDispo] = useState<DispositionCode | null>(null);
   const [deletingDispoId, setDeletingDispoId] = useState<number | null>(null);
@@ -253,6 +258,7 @@ export default function CampaignDetailPage() {
   const campaignIdNum = Number(campaignId);
   const { data: campaign, isLoading } = useCampaign(campaignIdNum);
   const { data: dispositions = [] } = useCampaignDispositions(campaignIdNum);
+  const updateCampaign = useUpdateCampaign();
   const deleteDispositionCode = useDeleteDispositionCode();
   const deleteCampaign = useDeleteCampaign();
 
@@ -362,15 +368,55 @@ export default function CampaignDetailPage() {
 
       {/* Header card */}
       <div className="rounded-lg border bg-card p-6">
-        <div className="flex items-center gap-3">
-          <h2 className="font-heading text-xl font-semibold">{campaign.name}</h2>
-          <Badge variant={STATUS_VARIANT[status]}>
-            {t(`admin:campaigns.status_${status}`)}
-          </Badge>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {isEditing ? (
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="font-heading text-xl font-semibold"
+              />
+            ) : (
+              <h2 className="font-heading text-xl font-semibold">{campaign.name}</h2>
+            )}
+            <Badge variant={STATUS_VARIANT[status]}>
+              {t(`admin:campaigns.status_${status}`)}
+            </Badge>
+          </div>
+          <PermissionGuard requires="campaigns:campaign:edit">
+            {isEditing ? (
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                <Button size="sm" disabled={updateCampaign.isPending} onClick={() => {
+                  updateCampaign.mutate({ id: campaignIdNum, name: editName, description: editDescription }, {
+                    onSuccess: () => setIsEditing(false),
+                  });
+                }}>
+                  {updateCampaign.isPending ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            ) : (
+              <Button size="sm" variant="ghost" onClick={() => {
+                setEditName(campaign.name);
+                setEditDescription(campaign.description ?? '');
+                setIsEditing(true);
+              }}>
+                <Pencil className="mr-1.5 h-4 w-4" />
+                Edit
+              </Button>
+            )}
+          </PermissionGuard>
         </div>
-        {campaign.description && (
+        {isEditing ? (
+          <Input
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            placeholder="Description (optional)"
+            className="mt-2"
+          />
+        ) : campaign.description ? (
           <p className="mt-2 text-sm text-muted-foreground">{campaign.description}</p>
-        )}
+        ) : null}
 
         {/* Progress */}
         <div className="mt-4 flex items-center gap-3">

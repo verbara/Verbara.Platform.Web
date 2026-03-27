@@ -1,9 +1,20 @@
 import { useTranslation } from 'react-i18next';
-import { Copy, Check, User, Phone, Mail, Building2, Globe, MessageSquare } from 'lucide-react';
+import { Copy, Check, User, Phone, Mail, Building2, Globe, MessageSquare, Pencil } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/core/ui/button';
+import { Input } from '@/core/ui/input';
+import { Label } from '@/core/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/core/ui/dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-import { useContact } from '@/core/api/hooks/use-contacts';
+import { useContact, useUpdateContact } from '@/core/api/hooks/use-contacts';
 
 function CopyButton({ value }: { value: string }) {
   const { t } = useTranslation(['agent']);
@@ -69,14 +80,44 @@ const languageLabels: Record<string, string> = {
   pt: 'Português',
 };
 
+interface ContactEditForm {
+  firstName: string;
+  lastName: string;
+  company: string;
+  segment: string;
+  preferredChannel: string;
+  preferredLanguage: string;
+  timezone: string;
+}
+
 export function ContactInfo() {
   const { t } = useTranslation(['agent']);
   const selectedId = useConversationStore((s) => s.selectedId);
   const conversations = useConversationStore((s) => s.conversations);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState<ContactEditForm>({
+    firstName: '', lastName: '', company: '', segment: '',
+    preferredChannel: '', preferredLanguage: '', timezone: '',
+  });
+  const updateContact = useUpdateContact();
 
   const conversation = selectedId ? conversations[selectedId] : null;
   const contactId = conversation?.contactId;
   const { data: contact } = useContact(contactId);
+
+  const openEditDialog = () => {
+    if (!contact) return;
+    setEditForm({
+      firstName: contact.firstName ?? '',
+      lastName: contact.lastName ?? '',
+      company: contact.company ?? '',
+      segment: contact.segment ?? '',
+      preferredChannel: contact.preferredChannel ?? '',
+      preferredLanguage: contact.preferredLanguage ?? '',
+      timezone: contact.timezone ?? '',
+    });
+    setEditOpen(true);
+  };
 
   if (!contact) {
     return (
@@ -92,6 +133,15 @@ export function ContactInfo() {
 
   return (
     <div className="space-y-1 p-4">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Contact</span>
+        <PermissionGuard requires="contacts:contact:edit">
+          <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={openEditDialog}>
+            <Pencil className="mr-1 h-3 w-3" />
+            Edit
+          </Button>
+        </PermissionGuard>
+      </div>
       <InfoRow icon={User} label={t('agent:context.name')} value={displayName} />
       <InfoRow icon={Phone} label={t('agent:context.phone')} value={phone} copyable={phone !== '—'} />
       <InfoRow icon={Mail} label={t('agent:context.email')} value={email} copyable={email !== '—'} />
@@ -120,6 +170,69 @@ export function ContactInfo() {
           ))}
         </div>
       )}
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Contact</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-firstName">First Name</Label>
+                <Input id="edit-firstName" value={editForm.firstName} onChange={(e) => setEditForm((f) => ({ ...f, firstName: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-lastName">Last Name</Label>
+                <Input id="edit-lastName" value={editForm.lastName} onChange={(e) => setEditForm((f) => ({ ...f, lastName: e.target.value }))} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-company">Company</Label>
+              <Input id="edit-company" value={editForm.company} onChange={(e) => setEditForm((f) => ({ ...f, company: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-segment">Segment</Label>
+              <Input id="edit-segment" value={editForm.segment} onChange={(e) => setEditForm((f) => ({ ...f, segment: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-prefChannel">Preferred Channel</Label>
+              <Input id="edit-prefChannel" value={editForm.preferredChannel} onChange={(e) => setEditForm((f) => ({ ...f, preferredChannel: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-prefLang">Preferred Language</Label>
+              <Input id="edit-prefLang" value={editForm.preferredLanguage} onChange={(e) => setEditForm((f) => ({ ...f, preferredLanguage: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-tz">Timezone</Label>
+              <Input id="edit-tz" value={editForm.timezone} onChange={(e) => setEditForm((f) => ({ ...f, timezone: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button
+              disabled={updateContact.isPending}
+              onClick={() => {
+                if (!contact) return;
+                updateContact.mutate({
+                  id: contact.id,
+                  firstName: editForm.firstName || undefined,
+                  lastName: editForm.lastName || undefined,
+                  company: editForm.company || undefined,
+                  segment: editForm.segment || undefined,
+                  preferredChannel: editForm.preferredChannel || undefined,
+                  preferredLanguage: editForm.preferredLanguage || undefined,
+                  timezone: editForm.timezone || undefined,
+                }, {
+                  onSuccess: () => setEditOpen(false),
+                });
+              }}
+            >
+              {updateContact.isPending ? 'Saving...' : 'Update'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
