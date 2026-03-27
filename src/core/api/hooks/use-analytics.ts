@@ -48,6 +48,7 @@ export interface CdrRow {
   campaignName?: string;
   dispositionName?: string;
   recordingStreamUrl?: string;
+  metadata?: Record<string, string>;
 }
 export interface CdrDetail {
   cdr: CdrRow;

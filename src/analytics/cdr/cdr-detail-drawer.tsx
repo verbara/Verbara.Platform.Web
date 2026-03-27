@@ -208,6 +208,24 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
             </>
           )}
 
+          {/* Metadata */}
+          {apiCdr?.metadata && Object.keys(apiCdr.metadata).length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Metadata</h3>
+                <div className="space-y-1">
+                  {Object.entries(apiCdr.metadata).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{key}</span>
+                      <span className="font-mono text-xs">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
           <Separator />
 
           {/* Timeline */}
