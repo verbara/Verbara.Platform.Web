@@ -1,7 +1,24 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Route, Trash2 } from 'lucide-react';
+import { Plus, Route, Trash2, GripVertical, Save } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { PageHeader } from '@/admin/shared/page-header';
@@ -9,8 +26,9 @@ import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
+import { useHasPermission } from '@/core/auth/use-has-permission';
 import { RouteForm } from './route-form';
-import { useRoutes, useDeleteRoute, type OutboundRouteSummary } from '@/core/api/hooks/use-routes';
+import { useRoutes, useDeleteRoute, useReorderRoutes, type OutboundRouteSummary } from '@/core/api/hooks/use-routes';
 import { useTrunks } from '@/core/api/hooks/use-trunks';
 
 const columnHelper = createColumnHelper<OutboundRouteSummary>();
@@ -21,12 +39,50 @@ const PATTERN_TYPE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> 
   regex: 'outline',
 };
 
+function SortableRow({ route, trunkMap }: { route: OutboundRouteSummary; trunkMap: Map<number, string> }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: route.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const trunkName = trunkMap.get(route.trunkId);
+
+  return (
+    <tr ref={setNodeRef} style={style} className="border-t hover:bg-muted/30">
+      <td className="px-3 py-2">
+        <button
+          className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      </td>
+      <td className="px-3 py-2 font-mono text-xs font-medium text-foreground">{route.pattern}</td>
+      <td className="px-3 py-2">
+        <Badge variant={PATTERN_TYPE_VARIANT[route.patternType] ?? 'outline'}>
+          {route.patternType}
+        </Badge>
+      </td>
+      <td className="px-3 py-2 font-mono text-muted-foreground">#{route.priority}</td>
+      <td className="px-3 py-2">{trunkName ?? route.trunkId}</td>
+      <td className="px-3 py-2 font-mono">{route.dialPrefix ?? <span className="text-muted-foreground">&mdash;</span>}</td>
+    </tr>
+  );
+}
+
 export default function RoutesPage() {
   const { t } = useTranslation(['admin']);
   const [createOpen, setCreateOpen] = useState(false);
   const [editRoute, setEditRoute] = useState<OutboundRouteSummary | null>(null);
   const [deletingRoute, setDeletingRoute] = useState<OutboundRouteSummary | null>(null);
   const deleteRoute = useDeleteRoute();
+  const reorderRoutes = useReorderRoutes();
+  const canManage = useHasPermission('campaigns:route:manage');
 
   const { data: routes = [], isLoading } = useRoutes();
   const { data: trunks = [] } = useTrunks();
@@ -40,6 +96,33 @@ export default function RoutesPage() {
     () => [...routes].sort((a, b) => a.priority - b.priority),
     [routes],
   );
+
+  const [orderedRoutes, setOrderedRoutes] = useState<OutboundRouteSummary[]>([]);
+  const [hasReordered, setHasReordered] = useState(false);
+
+  useEffect(() => {
+    setOrderedRoutes(sortedRoutes);
+    setHasReordered(false);
+  }, [sortedRoutes]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setOrderedRoutes((items) => {
+      const oldIndex = items.findIndex((i) => i.id === active.id);
+      const newIndex = items.findIndex((i) => i.id === over.id);
+      return arrayMove(items, oldIndex, newIndex);
+    });
+    setHasReordered(true);
+  };
 
   const columns = useMemo(
     () => [
@@ -136,6 +219,48 @@ export default function RoutesPage() {
           icon={Route}
           message="No outbound routes yet — Add your first route"
         />
+      ) : canManage ? (
+        <div className="space-y-3">
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={orderedRoutes.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+              <div className="overflow-x-auto rounded-lg border">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="w-10 px-3 py-2" />
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Pattern</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Type</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Priority</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Trunk</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Prefix</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orderedRoutes.map((route) => (
+                      <SortableRow key={route.id} route={route} trunkMap={trunkMap} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </SortableContext>
+          </DndContext>
+
+          {hasReordered && (
+            <div className="flex justify-end">
+              <Button
+                onClick={() => {
+                  reorderRoutes.mutate(orderedRoutes.map((r) => r.id), {
+                    onSuccess: () => setHasReordered(false),
+                  });
+                }}
+                disabled={reorderRoutes.isPending}
+              >
+                <Save className="mr-1.5 h-4 w-4" />
+                {reorderRoutes.isPending ? 'Saving...' : 'Save Order'}
+              </Button>
+            </div>
+          )}
+        </div>
       ) : (
         <DataTable
           data={sortedRoutes}
