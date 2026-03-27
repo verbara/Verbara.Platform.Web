@@ -1,22 +1,49 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
-import { ShieldBan, Trash2 } from 'lucide-react';
+import { ShieldBan, Trash2, Plus, Pencil } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
+import { Input } from '@/core/ui/input';
+import { Label } from '@/core/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/core/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/core/ui/select';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
-import { useDncLists, useDeleteDncList, type DncListSummary } from '@/core/api/hooks/use-dnc-lists';
+import {
+  useDncLists,
+  useCreateDncList,
+  useUpdateDncList,
+  useDeleteDncList,
+  type DncListSummary,
+} from '@/core/api/hooks/use-dnc-lists';
 
 const columnHelper = createColumnHelper<DncListSummary>();
 
 export default function DncListsPage() {
   const navigate = useNavigate();
   const [deletingList, setDeletingList] = useState<DncListSummary | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingList, setEditingList] = useState<DncListSummary | null>(null);
+  const [formData, setFormData] = useState({ name: '', scope: 'global' });
   const deleteDncList = useDeleteDncList();
+  const createDnc = useCreateDncList();
+  const updateDnc = useUpdateDncList();
 
   const { data, isLoading } = useDncLists();
   const lists: DncListSummary[] = data ?? [];
@@ -50,17 +77,33 @@ export default function DncListsPage() {
         header: () => '',
         cell: (info) => (
           <PermissionGuard requires="campaigns:dnc:manage">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeletingList(info.row.original);
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const list = info.row.original;
+                  setEditingList(list);
+                  setFormData({ name: list.name, scope: list.scope });
+                  setFormOpen(true);
+                }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeletingList(info.row.original);
+                }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </PermissionGuard>
         ),
       }),
@@ -83,7 +126,14 @@ export default function DncListsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="DNC Lists" />
+      <PageHeader title="DNC Lists">
+        <PermissionGuard requires="campaigns:dnc:manage">
+          <Button size="sm" onClick={() => { setEditingList(null); setFormData({ name: '', scope: 'global' }); setFormOpen(true); }}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            Create DNC List
+          </Button>
+        </PermissionGuard>
+      </PageHeader>
 
       {isEmpty ? (
         <EmptyState icon={ShieldBan} message="No DNC lists yet." />
@@ -110,6 +160,49 @@ export default function DncListsPage() {
         entityType="DNC List"
         isPending={deleteDncList.isPending}
       />
+
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingList ? 'Edit DNC List' : 'Create DNC List'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="dnc-name">Name</Label>
+              <Input
+                id="dnc-name"
+                value={formData.name}
+                onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="dnc-scope">Scope</Label>
+              <Select value={formData.scope} onValueChange={(v) => setFormData((f) => ({ ...f, scope: v ?? f.scope }))}>
+                <SelectTrigger id="dnc-scope"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="global">Global</SelectItem>
+                  <SelectItem value="campaign">Campaign</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
+            <Button
+              disabled={!formData.name.trim() || createDnc.isPending || updateDnc.isPending}
+              onClick={() => {
+                if (editingList) {
+                  updateDnc.mutate({ id: editingList.id, ...formData }, { onSuccess: () => setFormOpen(false) });
+                } else {
+                  createDnc.mutate(formData, { onSuccess: () => setFormOpen(false) });
+                }
+              }}
+            >
+              {createDnc.isPending || updateDnc.isPending ? 'Saving...' : editingList ? 'Update' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
