@@ -8,9 +8,21 @@ import { Settings, Activity, BarChart3, MessageSquare, Hexagon, Command } from '
 
 export function Rail() {
   const { t } = useTranslation();
-  const role = useAuthStore((s) => s.user?.role);
+  const permissions = useAuthStore((s) => s.permissions);
 
-  const isAdminOrSupervisor = role === 'admin' || role === 'supervisor';
+  function hasAny(...perms: string[]) {
+    return perms.some((p) => permissions.includes(p));
+  }
+
+  const showAdmin = hasAny(
+    'users:user:view',
+    'queues:queue:view',
+    'campaigns:campaign:view',
+    'system:tenant:configure',
+    'routing:flow:view',
+  );
+  const showOperations = hasAny('reporting:realtime:view', 'contacts:conversation:monitor');
+  const showAnalytics = hasAny('analytics:cdr:view', 'reporting:historical:view');
 
   function openCommandPalette() {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
@@ -23,13 +35,13 @@ export function Rail() {
       </div>
 
       <div className="flex flex-1 flex-col items-center gap-1">
-        {isAdminOrSupervisor && (
+        {showAdmin && (
           <RailIcon to="/admin" icon={Settings} label={t('nav.admin')} />
         )}
-        {isAdminOrSupervisor && (
+        {showOperations && (
           <RailIcon to="/operations" icon={Activity} label={t('nav.operations')} />
         )}
-        {isAdminOrSupervisor && (
+        {showAnalytics && (
           <RailIcon to="/analytics" icon={BarChart3} label={t('nav.analytics')} />
         )}
         <RailIcon to="/agent" icon={MessageSquare} label={t('nav.agent')} />

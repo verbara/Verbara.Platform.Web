@@ -37,16 +37,20 @@ interface SidebarItem {
   labelKey: string;
   to: string;
   icon: LucideIcon;
-  /** Roles that can see this item. Undefined = all roles. */
-  allowedRoles?: string[];
+  /** Permission required to see this item */
+  requiredPermission?: string;
+  /** Any of these permissions required */
+  requiredAnyPermission?: string[];
 }
 
 interface SidebarGroup {
   key: string;
   labelKey: string;
   items: SidebarItem[];
-  /** Roles that can see this group. Undefined = all roles. */
-  allowedRoles?: string[];
+  /** Permission required to see this entire group */
+  requiredPermission?: string;
+  /** Any of these permissions required */
+  requiredAnyPermission?: string[];
 }
 
 const groups: SidebarGroup[] = [
@@ -54,65 +58,65 @@ const groups: SidebarGroup[] = [
     key: 'people',
     labelKey: 'admin:sidebar.people',
     items: [
-      { key: 'users', labelKey: 'admin:sidebar.users', to: '/admin/users', icon: Users, allowedRoles: ['admin'] },
-      { key: 'agents', labelKey: 'admin:sidebar.agents', to: '/admin/agents', icon: Headset, allowedRoles: ['admin', 'supervisor'] },
-      { key: 'roles', labelKey: 'admin:sidebar.roles', to: '/admin/roles', icon: Shield, allowedRoles: ['admin'] },
+      { key: 'users', labelKey: 'admin:sidebar.users', to: '/admin/users', icon: Users, requiredPermission: 'users:user:view' },
+      { key: 'agents', labelKey: 'admin:sidebar.agents', to: '/admin/agents', icon: Headset, requiredAnyPermission: ['users:user:view', 'queues:member:assign'] },
+      { key: 'roles', labelKey: 'admin:sidebar.roles', to: '/admin/roles', icon: Shield, requiredPermission: 'users:role:assign' },
     ],
   },
   {
     key: 'communication',
     labelKey: 'admin:sidebar.communication',
     items: [
-      { key: 'channels', labelKey: 'admin:sidebar.channels', to: '/admin/channels', icon: Radio, allowedRoles: ['admin'] },
-      { key: 'queues', labelKey: 'admin:sidebar.queues', to: '/admin/queues', icon: ListChecks, allowedRoles: ['admin', 'supervisor'] },
-      { key: 'skills', labelKey: 'admin:sidebar.skills', to: '/admin/skills', icon: Zap, allowedRoles: ['admin'] },
-      { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow, allowedRoles: ['admin'] },
-      { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone, allowedRoles: ['admin'] },
-      { key: 'surveys', labelKey: 'admin:sidebar.surveys', to: '/admin/surveys', icon: ClipboardList, allowedRoles: ['admin'] },
+      { key: 'channels', labelKey: 'admin:sidebar.channels', to: '/admin/channels', icon: Radio, requiredPermission: 'system:integration:manage' },
+      { key: 'queues', labelKey: 'admin:sidebar.queues', to: '/admin/queues', icon: ListChecks, requiredPermission: 'queues:queue:view' },
+      { key: 'skills', labelKey: 'admin:sidebar.skills', to: '/admin/skills', icon: Zap, requiredPermission: 'routing:skill:view' },
+      { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow, requiredPermission: 'routing:flow:view' },
+      { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone, requiredPermission: 'campaigns:campaign:view' },
+      { key: 'surveys', labelKey: 'admin:sidebar.surveys', to: '/admin/surveys', icon: ClipboardList, requiredPermission: 'system:integration:manage' },
     ],
   },
   {
     key: 'telephony',
     labelKey: 'admin:sidebar.telephony',
     items: [
-      { key: 'trunks', labelKey: 'admin:sidebar.trunks', to: '/admin/trunks', icon: Cable, allowedRoles: ['admin'] },
-      { key: 'routes', labelKey: 'admin:sidebar.routes', to: '/admin/routes', icon: Route, allowedRoles: ['admin'] },
-      { key: 'caller-id-pools', labelKey: 'admin:sidebar.callerIdPools', to: '/admin/caller-id-pools', icon: Phone, allowedRoles: ['admin'] },
+      { key: 'trunks', labelKey: 'admin:sidebar.trunks', to: '/admin/trunks', icon: Cable, requiredPermission: 'system:integration:manage' },
+      { key: 'routes', labelKey: 'admin:sidebar.routes', to: '/admin/routes', icon: Route, requiredPermission: 'system:integration:manage' },
+      { key: 'caller-id-pools', labelKey: 'admin:sidebar.callerIdPools', to: '/admin/caller-id-pools', icon: Phone, requiredPermission: 'campaigns:campaign:view' },
     ],
   },
   {
     key: 'compliance',
     labelKey: 'admin:sidebar.compliance',
     items: [
-      { key: 'dnc-lists', labelKey: 'admin:sidebar.dncLists', to: '/admin/dnc-lists', icon: ShieldBan, allowedRoles: ['admin'] },
-      { key: 'holiday-calendars', labelKey: 'admin:sidebar.holidayCalendars', to: '/admin/holiday-calendars', icon: CalendarOff, allowedRoles: ['admin'] },
+      { key: 'dnc-lists', labelKey: 'admin:sidebar.dncLists', to: '/admin/dnc-lists', icon: ShieldBan, requiredPermission: 'campaigns:campaign:view' },
+      { key: 'holiday-calendars', labelKey: 'admin:sidebar.holidayCalendars', to: '/admin/holiday-calendars', icon: CalendarOff, requiredPermission: 'campaigns:campaign:view' },
     ],
   },
   {
     key: 'ai-automation',
     labelKey: 'admin:sidebar.aiAutomation',
-    allowedRoles: ['admin'],
+    requiredPermission: 'system:integration:manage',
     items: [
-      { key: 'bots', labelKey: 'admin:sidebar.bots', to: '/admin/bots', icon: Bot, allowedRoles: ['admin'] },
-      { key: 'knowledge-base', labelKey: 'admin:sidebar.knowledgeBase', to: '/admin/knowledge-base', icon: BookOpen, allowedRoles: ['admin'] },
-      { key: 'agent-assist', labelKey: 'admin:sidebar.agent_assist', to: '/admin/agent-assist', icon: Sparkles, allowedRoles: ['admin'] },
+      { key: 'bots', labelKey: 'admin:sidebar.bots', to: '/admin/bots', icon: Bot, requiredPermission: 'system:integration:manage' },
+      { key: 'knowledge-base', labelKey: 'admin:sidebar.knowledgeBase', to: '/admin/knowledge-base', icon: BookOpen, requiredPermission: 'system:integration:manage' },
+      { key: 'agent-assist', labelKey: 'admin:sidebar.agent_assist', to: '/admin/agent-assist', icon: Sparkles, requiredPermission: 'agentassist:config:manage' },
     ],
   },
   {
     key: 'system',
     labelKey: 'admin:sidebar.system',
-    allowedRoles: ['admin'],
+    requiredAnyPermission: ['system:tenant:configure', 'system:auth:configure', 'system:audit:view', 'system:integration:manage'],
     items: [
-      { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, allowedRoles: ['admin'] },
-      { key: 'tenants', labelKey: 'admin:sidebar.tenants', to: '/admin/tenants', icon: Building2, allowedRoles: ['admin'] },
-      { key: 'realtime', labelKey: 'admin:sidebar.realtime', to: '/admin/realtime', icon: Radio, allowedRoles: ['admin'] },
-      { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, allowedRoles: ['admin'] },
-      { key: 'auth-config', labelKey: 'admin:sidebar.authConfig', to: '/admin/auth-config', icon: KeyRound, allowedRoles: ['admin'] },
-      { key: 'auth-events', labelKey: 'admin:sidebar.authEvents', to: '/admin/auth-events', icon: Activity, allowedRoles: ['admin'] },
-      { key: 'auth-sessions', labelKey: 'admin:sidebar.authSessions', to: '/admin/auth-sessions', icon: Monitor, allowedRoles: ['admin'] },
+      { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, requiredPermission: 'system:integration:manage' },
+      { key: 'tenants', labelKey: 'admin:sidebar.tenants', to: '/admin/tenants', icon: Building2, requiredPermission: 'system:tenant:configure' },
+      { key: 'realtime', labelKey: 'admin:sidebar.realtime', to: '/admin/realtime', icon: Radio, requiredPermission: 'system:integration:manage' },
+      { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, requiredPermission: 'campaigns:dialer:configure' },
+      { key: 'auth-config', labelKey: 'admin:sidebar.authConfig', to: '/admin/auth-config', icon: KeyRound, requiredPermission: 'system:auth:configure' },
+      { key: 'auth-events', labelKey: 'admin:sidebar.authEvents', to: '/admin/auth-events', icon: Activity, requiredPermission: 'system:audit:view' },
+      { key: 'auth-sessions', labelKey: 'admin:sidebar.authSessions', to: '/admin/auth-sessions', icon: Monitor, requiredPermission: 'system:auth:configure' },
       { key: 'security', labelKey: 'admin:sidebar.security', to: '/admin/security', icon: Shield },
-      { key: 'audit', labelKey: 'admin:sidebar.auditLog', to: '/admin/audit', icon: FileSearch, allowedRoles: ['admin'] },
-      { key: 'reports', labelKey: 'admin:sidebar.reports', to: '/admin/reports', icon: Calendar, allowedRoles: ['admin'] },
+      { key: 'audit', labelKey: 'admin:sidebar.auditLog', to: '/admin/audit', icon: FileSearch, requiredPermission: 'system:audit:view' },
+      { key: 'reports', labelKey: 'admin:sidebar.reports', to: '/admin/reports', icon: Calendar, requiredPermission: 'reporting:dashboard:edit' },
     ],
   },
 ];
@@ -170,20 +174,31 @@ function SidebarLink({ item }: { item: SidebarItem }) {
 
 export function AdminSidebar() {
   const { t } = useTranslation(['common', 'admin']);
-  const role = useAuthStore((s) => s.user?.role);
+  const permissions = useAuthStore((s) => s.permissions);
   const location = useLocation();
+
+  function hasPermission(p: string) {
+    return permissions.includes(p);
+  }
+
+  function hasAny(ps: string[]) {
+    return ps.some((p) => permissions.includes(p));
+  }
 
   const visibleGroups = groups
     .map((group) => ({
       ...group,
-      items: group.items.filter(
-        (item) => !item.allowedRoles || (role !== undefined && item.allowedRoles.includes(role)),
-      ),
+      items: group.items.filter((item) => {
+        if (item.requiredPermission) return hasPermission(item.requiredPermission);
+        if (item.requiredAnyPermission) return hasAny(item.requiredAnyPermission);
+        return true; // No permission required = visible
+      }),
     }))
     .filter((group) => {
       if (group.items.length === 0) return false;
-      if (!group.allowedRoles) return true;
-      return role !== undefined && group.allowedRoles.includes(role);
+      if (group.requiredPermission) return hasPermission(group.requiredPermission);
+      if (group.requiredAnyPermission) return hasAny(group.requiredAnyPermission);
+      return true;
     });
 
   return (

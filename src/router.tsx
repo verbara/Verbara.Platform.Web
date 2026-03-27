@@ -5,7 +5,7 @@ import { AuthGuard } from '@/core/auth/auth-guard';
 import { LoginPage } from '@/core/auth/login-page';
 import { ForgotPasswordPage } from '@/core/auth/forgot-password-page';
 import { ResetPasswordPage } from '@/core/auth/reset-password-page';
-import { RoleGuard } from '@/core/auth/role-guard';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import UnauthorizedPage from '@/pages/unauthorized';
 
 const AdminLayout = lazy(() => import('@/pages/admin/admin-layout'));
@@ -92,11 +92,20 @@ export const router = createBrowserRouter([
       {
         path: 'admin',
         element: (
-          <RoleGuard allowedRoles={['admin', 'supervisor']}>
+          <PermissionGuard
+            requiresAny={[
+              'users:user:view',
+              'queues:queue:view',
+              'campaigns:campaign:view',
+              'routing:flow:view',
+              'system:tenant:configure',
+            ]}
+            redirect
+          >
             <LazyLoad>
               <AdminLayout />
             </LazyLoad>
-          </RoleGuard>
+          </PermissionGuard>
         ),
         children: [
           {
@@ -111,311 +120,341 @@ export const router = createBrowserRouter([
           {
             path: 'users',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="users:user:view" redirect>
                 <LazyLoad>
                   <UsersPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'users/:userId',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="users:user:view" redirect>
                 <LazyLoad>
                   <UserDetailPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'agents',
             element: (
-              <LazyLoad>
-                <AgentsPage />
-              </LazyLoad>
+              <PermissionGuard requiresAny={['users:user:view', 'queues:member:assign']} redirect>
+                <LazyLoad>
+                  <AgentsPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'agents/:agentId',
             element: (
-              <LazyLoad>
-                <AgentDetailPage />
-              </LazyLoad>
+              <PermissionGuard requiresAny={['users:user:view', 'queues:member:assign']} redirect>
+                <LazyLoad>
+                  <AgentDetailPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'teams',
             element: (
-              <LazyLoad>
-                <TeamsPage />
-              </LazyLoad>
+              <PermissionGuard requiresAny={['users:user:view', 'queues:member:assign']} redirect>
+                <LazyLoad>
+                  <TeamsPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'queues',
             element: (
-              <LazyLoad>
-                <QueuesPage />
-              </LazyLoad>
+              <PermissionGuard requires="queues:queue:view" redirect>
+                <LazyLoad>
+                  <QueuesPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'queues/:queueId',
             element: (
-              <LazyLoad>
-                <QueueDetailPage />
-              </LazyLoad>
+              <PermissionGuard requires="queues:queue:view" redirect>
+                <LazyLoad>
+                  <QueueDetailPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'flows',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="routing:flow:view" redirect>
                 <LazyLoad>
                   <FlowListPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'flows/:flowId',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="routing:flow:view" redirect>
                 <LazyLoad>
                   <FlowDesigner />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'campaigns',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
                 <LazyLoad>
                   <CampaignListPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'campaigns/new',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
                 <LazyLoad>
                   <CampaignWizard />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'campaigns/:campaignId',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
                 <LazyLoad>
                   <CampaignDetailPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'dnc-lists',
             element: (
-              <LazyLoad>
-                <DncListsPage />
-              </LazyLoad>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
+                <LazyLoad>
+                  <DncListsPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'dnc-lists/:listId',
             element: (
-              <LazyLoad>
-                <DncListDetail />
-              </LazyLoad>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
+                <LazyLoad>
+                  <DncListDetail />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'caller-id-pools',
             element: (
-              <LazyLoad>
-                <CallerIdPoolsPage />
-              </LazyLoad>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
+                <LazyLoad>
+                  <CallerIdPoolsPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'caller-id-pools/:poolId',
             element: (
-              <LazyLoad>
-                <CallerIdPoolDetailPage />
-              </LazyLoad>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
+                <LazyLoad>
+                  <CallerIdPoolDetailPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'holiday-calendars',
             element: (
-              <LazyLoad>
-                <HolidayCalendarsPage />
-              </LazyLoad>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
+                <LazyLoad>
+                  <HolidayCalendarsPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'holiday-calendars/:calendarId',
             element: (
-              <LazyLoad>
-                <HolidayCalendarDetailPage />
-              </LazyLoad>
+              <PermissionGuard requires="campaigns:campaign:view" redirect>
+                <LazyLoad>
+                  <HolidayCalendarDetailPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'dialer-settings',
             element: (
-              <LazyLoad>
-                <DialerSettingsPage />
-              </LazyLoad>
+              <PermissionGuard requires="campaigns:dialer:configure" redirect>
+                <LazyLoad>
+                  <DialerSettingsPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'trunks',
             element: (
-              <LazyLoad>
-                <TrunksPage />
-              </LazyLoad>
+              <PermissionGuard requires="system:integration:manage" redirect>
+                <LazyLoad>
+                  <TrunksPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'routes',
             element: (
-              <LazyLoad>
-                <RoutesPage />
-              </LazyLoad>
+              <PermissionGuard requires="system:integration:manage" redirect>
+                <LazyLoad>
+                  <RoutesPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'channels',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <ChannelsPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'knowledge-base',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <KbListPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'skills',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="routing:skill:view" redirect>
                 <LazyLoad>
                   <SkillsPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'bots',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <BotListPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'agent-assist',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="agentassist:config:manage" redirect>
                 <LazyLoad>
                   <AgentAssistConfigPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'system',
             element: (
-              <LazyLoad>
-                <SystemPage />
-              </LazyLoad>
+              <PermissionGuard requires="system:integration:manage" redirect>
+                <LazyLoad>
+                  <SystemPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
           {
             path: 'tenants',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:tenant:configure" redirect>
                 <LazyLoad>
                   <TenantsPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'realtime',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <RealtimePage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'audit',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:audit:view" redirect>
                 <LazyLoad>
                   <AuditPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'surveys',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <SurveyListPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'reports',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="reporting:dashboard:edit" redirect>
                 <LazyLoad>
                   <ReportsPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'roles',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="users:role:assign" redirect>
                 <LazyLoad>
                   <RolesPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'roles/:id',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="users:role:assign" redirect>
                 <LazyLoad>
                   <RoleDetailPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
@@ -429,31 +468,31 @@ export const router = createBrowserRouter([
           {
             path: 'auth-config',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:auth:configure" redirect>
                 <LazyLoad>
                   <AuthConfigPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'auth-events',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:audit:view" redirect>
                 <LazyLoad>
                   <AuthEventsPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'auth-sessions',
             element: (
-              <RoleGuard allowedRoles={['admin']}>
+              <PermissionGuard requires="system:auth:configure" redirect>
                 <LazyLoad>
                   <AuthSessionsPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
         ],
@@ -461,11 +500,14 @@ export const router = createBrowserRouter([
       {
         path: 'operations',
         element: (
-          <RoleGuard allowedRoles={['admin', 'supervisor']}>
+          <PermissionGuard
+            requiresAny={['reporting:realtime:view', 'contacts:conversation:monitor']}
+            redirect
+          >
             <LazyLoad>
               <OperationsLayout />
             </LazyLoad>
-          </RoleGuard>
+          </PermissionGuard>
         ),
         children: [
           { index: true, element: <Navigate to="wallboard" replace /> },
@@ -480,11 +522,11 @@ export const router = createBrowserRouter([
           {
             path: 'monitor',
             element: (
-              <RoleGuard allowedRoles={['admin', 'supervisor']}>
+              <PermissionGuard requires="contacts:conversation:monitor" redirect>
                 <LazyLoad>
                   <MonitorPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
@@ -508,11 +550,14 @@ export const router = createBrowserRouter([
       {
         path: 'analytics',
         element: (
-          <RoleGuard allowedRoles={['admin', 'supervisor']}>
+          <PermissionGuard
+            requiresAny={['analytics:cdr:view', 'reporting:historical:view']}
+            redirect
+          >
             <LazyLoad>
               <AnalyticsLayout />
             </LazyLoad>
-          </RoleGuard>
+          </PermissionGuard>
         ),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
@@ -543,31 +588,31 @@ export const router = createBrowserRouter([
           {
             path: 'surveys',
             element: (
-              <RoleGuard allowedRoles={['admin', 'supervisor']}>
+              <PermissionGuard requires="reporting:historical:view" redirect>
                 <LazyLoad>
                   <SurveyResultsPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'intervals',
             element: (
-              <RoleGuard allowedRoles={['admin', 'supervisor']}>
+              <PermissionGuard requires="reporting:historical:view" redirect>
                 <LazyLoad>
                   <IntervalPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
           {
             path: 'agent-intervals',
             element: (
-              <RoleGuard allowedRoles={['admin', 'supervisor']}>
+              <PermissionGuard requires="reporting:historical:view" redirect>
                 <LazyLoad>
                   <AgentIntervalsPage />
                 </LazyLoad>
-              </RoleGuard>
+              </PermissionGuard>
             ),
           },
         ],
@@ -575,11 +620,11 @@ export const router = createBrowserRouter([
       {
         path: 'agent',
         element: (
-          <RoleGuard allowedRoles={['agent', 'admin', 'supervisor']}>
+          <PermissionGuard requires="contacts:conversation:handle" redirect>
             <LazyLoad>
               <AgentLayout />
             </LazyLoad>
-          </RoleGuard>
+          </PermissionGuard>
         ),
         children: [
           {
