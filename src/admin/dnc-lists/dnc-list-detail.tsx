@@ -5,6 +5,8 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
+import { DncImportWizard } from './dnc-import-wizard';
 import {
   useDncList,
   useDncEntries,
@@ -57,6 +59,7 @@ export default function DncListDetail() {
   const [addReason, setAddReason] = useState('');
   const [checkPhone, setCheckPhone] = useState('');
   const [deletingEntryId, setDeletingEntryId] = useState<number | null>(null);
+  const [importWizardOpen, setImportWizardOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -134,11 +137,19 @@ export default function DncListDetail() {
         </Button>
       </div>
 
-      <div>
-        <h2 className="font-heading text-xl font-semibold">{list.name}</h2>
-        <p className="mt-0.5 text-sm text-muted-foreground capitalize">
-          Scope: {list.scope} &middot; {list.entryCount.toLocaleString()} entries
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-heading text-xl font-semibold">{list.name}</h2>
+          <p className="mt-0.5 text-sm text-muted-foreground capitalize">
+            Scope: {list.scope} &middot; {list.entryCount.toLocaleString()} entries
+          </p>
+        </div>
+        <PermissionGuard requires="campaigns:dnc:manage">
+          <Button size="sm" variant="outline" onClick={() => setImportWizardOpen(true)}>
+            <Upload className="mr-1.5 h-4 w-4" />
+            Import Numbers
+          </Button>
+        </PermissionGuard>
       </div>
 
       {/* Add Number */}
@@ -338,6 +349,8 @@ export default function DncListDetail() {
         confirmLabel="Remove"
         variant="destructive"
       />
+
+      <DncImportWizard listId={listIdNum} open={importWizardOpen} onOpenChange={setImportWizardOpen} />
     </div>
   );
 }
