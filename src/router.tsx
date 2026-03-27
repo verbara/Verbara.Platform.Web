@@ -3,6 +3,8 @@ import { lazy, Suspense } from 'react';
 import { AppShell } from '@/shell/app-shell';
 import { AuthGuard } from '@/core/auth/auth-guard';
 import { LoginPage } from '@/core/auth/login-page';
+import { ForgotPasswordPage } from '@/core/auth/forgot-password-page';
+import { ResetPasswordPage } from '@/core/auth/reset-password-page';
 import { RoleGuard } from '@/core/auth/role-guard';
 import UnauthorizedPage from '@/pages/unauthorized';
 
@@ -69,6 +71,8 @@ function LazyLoad({ children }: { children: React.ReactNode }) {
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/reset-password', element: <ResetPasswordPage /> },
   { path: '/unauthorized', element: <UnauthorizedPage /> },
   {
     path: '/',
