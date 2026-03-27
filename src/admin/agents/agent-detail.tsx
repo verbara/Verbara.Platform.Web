@@ -7,8 +7,10 @@ import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Separator } from '@/core/ui/separator';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { AgentForm } from './agent-form';
 import { useAgent, useUpdateAgent, useDeleteAgent } from '@/core/api/hooks/use-agents';
+import { useAgentSkills } from '@/core/api/hooks/use-skills';
 
 interface AgentSkill {
   name: string;
@@ -46,6 +48,7 @@ export default function AgentDetailPage() {
   const [skillsInitialized, setSkillsInitialized] = useState(false);
 
   const { data: agent } = useAgent(agentId);
+  const { data: agentSkills = [] } = useAgentSkills(agentId);
   const updateAgent = useUpdateAgent();
   const deleteAgent = useDeleteAgent();
 
@@ -200,6 +203,35 @@ export default function AgentDetailPage() {
         )}
         <p className="mt-2 text-xs text-muted-foreground">{t('admin:agents.queuesNote')}</p>
       </div>
+
+      {/* Skills & Proficiency (from routing system) */}
+      <PermissionGuard requires="routing:skill:view">
+        <div className="rounded-lg border bg-card p-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Skills &amp; Proficiency
+          </p>
+          {agentSkills.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No skills assigned via routing.</p>
+          ) : (
+            <div className="space-y-3">
+              {agentSkills.map((skill) => (
+                <div key={skill.skillName} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{skill.skillName}</span>
+                    <span className="text-xs text-muted-foreground">{skill.proficiency}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all"
+                      style={{ width: `${skill.proficiency}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </PermissionGuard>
 
       {/* Edit sheet */}
       <AgentForm

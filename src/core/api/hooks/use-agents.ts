@@ -120,3 +120,20 @@ export function useUpdateAgentState() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useUpdateAgentStateAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ agentId, state }: { agentId: string; state: string }) =>
+      customFetch<void>({
+        url: `/api/admin/agents/${agentId}/state`,
+        method: 'PUT',
+        data: { state },
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['agents'] });
+      toast.success('Agent state updated');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

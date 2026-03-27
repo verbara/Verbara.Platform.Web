@@ -7,14 +7,22 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/core/ui/select';
+import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/core/ui/dropdown-menu';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { useAgentStateStore, type AgentState, type AgentPresence } from '@/operations/stores/agent-state-store';
-import { useAgents, type Agent } from '@/core/api/hooks/use-agents';
+import { useAgents, useUpdateAgentStateAdmin, type Agent } from '@/core/api/hooks/use-agents';
 
 function toAgentState(a: Agent): AgentState {
   return {
@@ -39,6 +47,31 @@ const stateColors: Record<AgentPresence, string> = {
 };
 
 const columnHelper = createColumnHelper<AgentState>();
+
+function StateChangeCell({ agent }: { readonly agent: AgentState }) {
+  const updateState = useUpdateAgentStateAdmin();
+
+  return (
+    <PermissionGuard requires="contacts:conversation:monitor">
+      <Select
+        value={agent.state}
+        onValueChange={(newState) => {
+          if (newState) updateState.mutate({ agentId: agent.agentId, state: newState });
+        }}
+      >
+        <SelectTrigger className="h-7 w-28 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="available">Available</SelectItem>
+          <SelectItem value="away">Away</SelectItem>
+          <SelectItem value="on_break">Break</SelectItem>
+          <SelectItem value="offline">Offline</SelectItem>
+        </SelectContent>
+      </Select>
+    </PermissionGuard>
+  );
+}
 
 export default function AgentStatesPage() {
   const { t } = useTranslation('operations');
@@ -86,6 +119,11 @@ export default function AgentStatesPage() {
       columnHelper.accessor('conversationCount', {
         header: () => t('agent_states.conversations'),
         cell: (info) => info.getValue(),
+      }),
+      columnHelper.display({
+        id: 'changeState',
+        header: () => '',
+        cell: ({ row }) => <StateChangeCell agent={row.original} />,
       }),
       columnHelper.display({
         id: 'actions',
