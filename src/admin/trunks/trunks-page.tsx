@@ -1,16 +1,17 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Cable, Trash2 } from 'lucide-react';
+import { Plus, Cable, Trash2, Search } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
+import { Input } from '@/core/ui/input';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { TrunkForm } from './trunk-form';
-import { useTrunks, useActiveTrunks, useDeleteTrunk, type TrunkSummary } from '@/core/api/hooks/use-trunks';
+import { useTrunks, useActiveTrunks, useDeleteTrunk, useTrunkByName, type TrunkSummary } from '@/core/api/hooks/use-trunks';
 
 const columnHelper = createColumnHelper<TrunkSummary>();
 
@@ -20,12 +21,21 @@ export default function TrunksPage() {
   const [editTrunk, setEditTrunk] = useState<TrunkSummary | null>(null);
   const [deletingTrunk, setDeletingTrunk] = useState<TrunkSummary | null>(null);
   const [activeOnly, setActiveOnly] = useState(false);
+  const [searchName, setSearchName] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const deleteTrunk = useDeleteTrunk();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchName), 300);
+    return () => clearTimeout(timer);
+  }, [searchName]);
 
   const { data: allTrunks = [], isLoading } = useTrunks();
   const { data: activeTrunks = [] } = useActiveTrunks();
+  const { data: searchResult } = useTrunkByName(debouncedSearch);
 
-  const trunks = activeOnly ? activeTrunks : allTrunks;
+  const baseTrunks = activeOnly ? activeTrunks : allTrunks;
+  const trunks = debouncedSearch && searchResult ? [searchResult] : baseTrunks;
 
   const columns = useMemo(
     () => [
@@ -106,10 +116,21 @@ export default function TrunksPage() {
         </Button>
       </PageHeader>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
-        Active only
-      </label>
+      <div className="flex items-center gap-4">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search trunk by name..."
+            className="pl-9"
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+          />
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
+          Active only
+        </label>
+      </div>
 
       {isEmpty ? (
         <EmptyState

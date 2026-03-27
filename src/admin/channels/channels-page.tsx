@@ -17,8 +17,17 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
+import { Label } from '@/core/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/core/ui/dialog';
 import { ChannelConfigForm } from './channel-config-form';
 import { customFetch } from '@/core/api/client';
+import { useChannel } from '@/core/api/hooks/use-channels';
 import type { ChannelConfig } from '@/core/api/hooks/use-channels';
 
 export interface ChannelInfo {
@@ -47,6 +56,8 @@ export default function ChannelsPage() {
   const { t } = useTranslation(['admin']);
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [detailChannel, setDetailChannel] = useState<string | null>(null);
+  const { data: channelDetail } = useChannel(detailChannel ?? undefined);
 
   // Fetch config for each known channel to get isActive status
   const channelQueries = useQueries({
@@ -94,6 +105,7 @@ export default function ChannelsPage() {
               key={channel.id}
               channel={channel}
               onConfigure={handleConfigure}
+              onDetail={setDetailChannel}
               t={t}
             />
           ))}
@@ -111,6 +123,7 @@ export default function ChannelsPage() {
               key={channel.id}
               channel={channel}
               onConfigure={handleConfigure}
+              onDetail={setDetailChannel}
               t={t}
             />
           ))}
@@ -123,6 +136,44 @@ export default function ChannelsPage() {
         onOpenChange={setFormOpen}
         channelId={selectedChannel}
       />
+
+      {/* Channel detail dialog */}
+      <Dialog open={detailChannel !== null} onOpenChange={(o) => { if (!o) setDetailChannel(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Channel: {channelDetail?.channel ?? detailChannel}</DialogTitle>
+          </DialogHeader>
+          {channelDetail && (
+            <div className="space-y-4 py-2">
+              <div className="flex items-center justify-between">
+                <Label>Status</Label>
+                <Badge variant={channelDetail.isActive ? 'default' : 'destructive'}>
+                  {channelDetail.isActive ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
+              {channelDetail.credentials && Object.keys(channelDetail.credentials).length > 0 && (
+                <div>
+                  <Label className="mb-2 block">Configuration</Label>
+                  <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-sm">
+                    {Object.entries(channelDetail.credentials).map(([k, v]) => (
+                      <div key={k} className="flex justify-between">
+                        <span className="text-muted-foreground">{k}</span>
+                        <span className="font-mono text-xs">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDetailChannel(null)}>Close</Button>
+            <Button onClick={() => { setDetailChannel(null); handleConfigure(detailChannel!); }}>
+              Configure
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -130,16 +181,21 @@ export default function ChannelsPage() {
 function ChannelCard({
   channel,
   onConfigure,
+  onDetail,
   t,
 }: {
   channel: ChannelInfo;
   onConfigure: (id: string) => void;
+  onDetail: (id: string) => void;
   t: (key: string) => string;
 }) {
   const Icon = channel.icon;
 
   return (
-    <div className="flex items-center gap-4 rounded-lg border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30">
+    <div
+      className="flex items-center gap-4 rounded-lg border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
+      onClick={() => onDetail(channel.id)}
+    >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
         <Icon className="h-5 w-5" />
       </div>
@@ -149,7 +205,7 @@ function ChannelCard({
           {channel.isActive ? t('admin:channels.enabled') : t('admin:channels.disabled')}
         </Badge>
       </div>
-      <Button variant="outline" size="sm" onClick={() => onConfigure(channel.id)}>
+      <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onConfigure(channel.id); }}>
         {t('admin:channels.configure')}
       </Button>
     </div>
