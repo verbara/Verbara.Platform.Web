@@ -14,10 +14,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Play,
+  Users,
 } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { ExportButton } from '@/analytics/shared/export-button';
+import { ContactSearchPanel } from '@/admin/shared/contact-search-panel';
 import { CdrDetailDrawer } from './cdr-detail-drawer';
 import { useCdrList, type CdrRow as ApiCdrRow } from '@/core/api/hooks/use-analytics';
 
@@ -187,6 +189,7 @@ export default function CdrPage() {
   const [selectedRow, setSelectedRow] = useState<CdrRow | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [contactSearchOpen, setContactSearchOpen] = useState(false);
 
   const { data, isLoading } = useCdrList(undefined, undefined, {}, page);
 
@@ -308,8 +311,24 @@ export default function CdrPage() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           {t('cdr.title')}
         </h1>
-        <ExportButton onClick={handleExport} />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setContactSearchOpen((o) => !o)}
+          >
+            <Users className="mr-1.5 h-4 w-4" />
+            Contact Search
+          </Button>
+          <ExportButton onClick={handleExport} />
+        </div>
       </div>
+
+      {contactSearchOpen && (
+        <div className="rounded-lg border bg-card p-4">
+          <ContactSearchPanel />
+        </div>
+      )}
 
       {isLoading && (
         <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
