@@ -1,14 +1,16 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Route } from 'lucide-react';
+import { Plus, Route, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { RouteForm } from './route-form';
-import { useRoutes, type OutboundRouteSummary } from '@/core/api/hooks/use-routes';
+import { useRoutes, useDeleteRoute, type OutboundRouteSummary } from '@/core/api/hooks/use-routes';
 import { useTrunks } from '@/core/api/hooks/use-trunks';
 
 const columnHelper = createColumnHelper<OutboundRouteSummary>();
@@ -23,6 +25,8 @@ export default function RoutesPage() {
   const { t } = useTranslation(['admin']);
   const [createOpen, setCreateOpen] = useState(false);
   const [editRoute, setEditRoute] = useState<OutboundRouteSummary | null>(null);
+  const [deletingRoute, setDeletingRoute] = useState<OutboundRouteSummary | null>(null);
+  const deleteRoute = useDeleteRoute();
 
   const { data: routes = [], isLoading } = useRoutes();
   const { data: trunks = [] } = useTrunks();
@@ -76,6 +80,25 @@ export default function RoutesPage() {
             <span className="text-muted-foreground">&mdash;</span>
           );
         },
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: () => '',
+        cell: (info) => (
+          <PermissionGuard requires="campaigns:route:manage">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingRoute(info.row.original);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </PermissionGuard>
+        ),
       }),
     ],
     [t, trunkMap],
@@ -136,6 +159,20 @@ export default function RoutesPage() {
         onOpenChange={(open) => { if (!open) setEditRoute(null); }}
         mode="edit"
         route={editRoute ?? undefined}
+      />
+
+      <ConfirmDeleteDialog
+        open={deletingRoute !== null}
+        onOpenChange={(open) => { if (!open) setDeletingRoute(null); }}
+        onConfirm={() => {
+          if (!deletingRoute) return;
+          deleteRoute.mutate(deletingRoute.id, {
+            onSuccess: () => setDeletingRoute(null),
+          });
+        }}
+        entityName={deletingRoute?.pattern ?? ''}
+        entityType="Route"
+        isPending={deleteRoute.isPending}
       />
     </div>
   );

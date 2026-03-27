@@ -1,14 +1,16 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Cable } from 'lucide-react';
+import { Plus, Cable, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { TrunkForm } from './trunk-form';
-import { useTrunks, useActiveTrunks, type TrunkSummary } from '@/core/api/hooks/use-trunks';
+import { useTrunks, useActiveTrunks, useDeleteTrunk, type TrunkSummary } from '@/core/api/hooks/use-trunks';
 
 const columnHelper = createColumnHelper<TrunkSummary>();
 
@@ -16,7 +18,9 @@ export default function TrunksPage() {
   const { t } = useTranslation(['admin']);
   const [createOpen, setCreateOpen] = useState(false);
   const [editTrunk, setEditTrunk] = useState<TrunkSummary | null>(null);
+  const [deletingTrunk, setDeletingTrunk] = useState<TrunkSummary | null>(null);
   const [activeOnly, setActiveOnly] = useState(false);
+  const deleteTrunk = useDeleteTrunk();
 
   const { data: allTrunks = [], isLoading } = useTrunks();
   const { data: activeTrunks = [] } = useActiveTrunks();
@@ -50,6 +54,25 @@ export default function TrunksPage() {
           <Badge variant={info.row.original.isActive ? 'default' : 'destructive'}>
             {info.row.original.isActive ? 'active' : 'inactive'}
           </Badge>
+        ),
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: () => '',
+        cell: (info) => (
+          <PermissionGuard requires="campaigns:trunk:manage">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingTrunk(info.row.original);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </PermissionGuard>
         ),
       }),
     ],
@@ -116,6 +139,20 @@ export default function TrunksPage() {
         onOpenChange={(open) => { if (!open) setEditTrunk(null); }}
         mode="edit"
         trunk={editTrunk ?? undefined}
+      />
+
+      <ConfirmDeleteDialog
+        open={deletingTrunk !== null}
+        onOpenChange={(open) => { if (!open) setDeletingTrunk(null); }}
+        onConfirm={() => {
+          if (!deletingTrunk) return;
+          deleteTrunk.mutate(deletingTrunk.id, {
+            onSuccess: () => setDeletingTrunk(null),
+          });
+        }}
+        entityName={deletingTrunk?.name ?? ''}
+        entityType="Trunk"
+        isPending={deleteTrunk.isPending}
       />
     </div>
   );

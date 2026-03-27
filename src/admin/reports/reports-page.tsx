@@ -1,17 +1,20 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Switch } from '@/core/ui/switch';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { ReportForm } from './report-form';
 import {
   useReports,
   useToggleReportActive,
+  useDeleteReport,
   type ScheduledReport,
   type ReportType,
   type ReportFormat,
@@ -55,6 +58,8 @@ export default function ReportsPage() {
   const { t } = useTranslation(['admin']);
   const [createOpen, setCreateOpen] = useState(false);
   const [editReport, setEditReport] = useState<ScheduledReport | null>(null);
+  const [deletingReport, setDeletingReport] = useState<ScheduledReport | null>(null);
+  const deleteReport = useDeleteReport();
 
   const { data: reports = [], isLoading } = useReports();
 
@@ -93,6 +98,25 @@ export default function ReportsPage() {
         id: 'isActive',
         header: () => t('admin:reports.active'),
         cell: (info) => <ActiveToggle report={info.row.original} />,
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: () => '',
+        cell: (info) => (
+          <PermissionGuard requires="reporting:dashboard:edit">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingReport(info.row.original);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </PermissionGuard>
+        ),
       }),
     ],
     [t],
@@ -151,6 +175,20 @@ export default function ReportsPage() {
         onOpenChange={(open) => { if (!open) setEditReport(null); }}
         mode="edit"
         report={editReport ?? undefined}
+      />
+
+      <ConfirmDeleteDialog
+        open={deletingReport !== null}
+        onOpenChange={(open) => { if (!open) setDeletingReport(null); }}
+        onConfirm={() => {
+          if (!deletingReport) return;
+          deleteReport.mutate(deletingReport.id, {
+            onSuccess: () => setDeletingReport(null),
+          });
+        }}
+        entityName={deletingReport?.name ?? ''}
+        entityType="Report"
+        isPending={deleteReport.isPending}
       />
     </div>
   );

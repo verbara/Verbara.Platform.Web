@@ -1,15 +1,17 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, ClipboardList } from 'lucide-react';
+import { Plus, ClipboardList, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Switch } from '@/core/ui/switch';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { SurveyForm } from './survey-form';
-import { useSurveys, useToggleSurveyActive, type Survey, type SurveyType } from '@/core/api/hooks/use-surveys';
+import { useSurveys, useToggleSurveyActive, useDeleteSurvey, type Survey, type SurveyType } from '@/core/api/hooks/use-surveys';
 
 const columnHelper = createColumnHelper<Survey>();
 
@@ -38,6 +40,8 @@ export default function SurveyListPage() {
   const { t } = useTranslation(['admin']);
   const [createOpen, setCreateOpen] = useState(false);
   const [editSurvey, setEditSurvey] = useState<Survey | null>(null);
+  const [deletingSurvey, setDeletingSurvey] = useState<Survey | null>(null);
+  const deleteSurvey = useDeleteSurvey();
 
   const { data: surveys = [], isLoading } = useSurveys();
 
@@ -73,6 +77,25 @@ export default function SurveyListPage() {
         header: () => t('admin:surveys.questions'),
         cell: (info) => (
           <span className="tabular-nums">{info.getValue().length}</span>
+        ),
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: () => '',
+        cell: (info) => (
+          <PermissionGuard requires="system:integration:manage">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingSurvey(info.row.original);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </PermissionGuard>
         ),
       }),
     ],
@@ -132,6 +155,20 @@ export default function SurveyListPage() {
         onOpenChange={(open) => { if (!open) setEditSurvey(null); }}
         mode="edit"
         survey={editSurvey ?? undefined}
+      />
+
+      <ConfirmDeleteDialog
+        open={deletingSurvey !== null}
+        onOpenChange={(open) => { if (!open) setDeletingSurvey(null); }}
+        onConfirm={() => {
+          if (!deletingSurvey) return;
+          deleteSurvey.mutate(deletingSurvey.id, {
+            onSuccess: () => setDeletingSurvey(null),
+          });
+        }}
+        entityName={deletingSurvey?.name ?? ''}
+        entityType="Survey"
+        isPending={deleteSurvey.isPending}
       />
     </div>
   );

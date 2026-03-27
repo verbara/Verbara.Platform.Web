@@ -1,14 +1,16 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Bot } from 'lucide-react';
+import { Plus, Bot, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { BotForm } from './bot-form';
-import { useBots, type Bot as BotType } from '@/core/api/hooks/use-bots';
+import { useBots, useDeleteBot, type Bot as BotType } from '@/core/api/hooks/use-bots';
 import { useFlows } from '@/core/api/hooks/use-flows';
 import { useQueues } from '@/core/api/hooks/use-queues';
 
@@ -18,6 +20,8 @@ export default function BotListPage() {
   const { t } = useTranslation(['admin']);
   const [createOpen, setCreateOpen] = useState(false);
   const [editBot, setEditBot] = useState<BotType | null>(null);
+  const [deletingBot, setDeletingBot] = useState<BotType | null>(null);
+  const deleteBot = useDeleteBot();
 
   const { data: bots = [], isLoading } = useBots();
   const { data: flows = [] } = useFlows();
@@ -68,6 +72,25 @@ export default function BotListPage() {
       }),
       columnHelper.accessor('maxTurns', {
         header: () => t('admin:bots.maxTurns'),
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: () => '',
+        cell: (info) => (
+          <PermissionGuard requires="system:integration:manage">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingBot(info.row.original);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </PermissionGuard>
+        ),
       }),
     ],
     [t, flowMap, queueMap],
@@ -126,6 +149,20 @@ export default function BotListPage() {
         onOpenChange={(open) => { if (!open) setEditBot(null); }}
         mode="edit"
         bot={editBot ?? undefined}
+      />
+
+      <ConfirmDeleteDialog
+        open={deletingBot !== null}
+        onOpenChange={(open) => { if (!open) setDeletingBot(null); }}
+        onConfirm={() => {
+          if (!deletingBot) return;
+          deleteBot.mutate(deletingBot.id, {
+            onSuccess: () => setDeletingBot(null),
+          });
+        }}
+        entityName={deletingBot?.name ?? ''}
+        entityType="Bot"
+        isPending={deleteBot.isPending}
       />
     </div>
   );

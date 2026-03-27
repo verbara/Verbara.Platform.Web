@@ -42,12 +42,15 @@ import {
   DialogFooter,
 } from '@/core/ui/dialog';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import {
   useCampaign,
   useStartCampaign,
   usePauseCampaign,
   useResumeCampaign,
   useStopCampaign,
+  useDeleteCampaign,
   useCampaignDispositions,
   useCreateDispositionCode,
   useUpdateDispositionCode,
@@ -242,6 +245,7 @@ export default function CampaignDetailPage() {
   const { t } = useTranslation(['admin']);
   const navigate = useNavigate();
   const [stopOpen, setStopOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [dispoDialogOpen, setDispoDialogOpen] = useState(false);
   const [editingDispo, setEditingDispo] = useState<DispositionCode | null>(null);
   const [deletingDispoId, setDeletingDispoId] = useState<number | null>(null);
@@ -250,6 +254,7 @@ export default function CampaignDetailPage() {
   const { data: campaign, isLoading } = useCampaign(campaignIdNum);
   const { data: dispositions = [] } = useCampaignDispositions(campaignIdNum);
   const deleteDispositionCode = useDeleteDispositionCode();
+  const deleteCampaign = useDeleteCampaign();
 
   const startCampaign = useStartCampaign();
   const pauseCampaign = usePauseCampaign();
@@ -273,6 +278,15 @@ export default function CampaignDetailPage() {
   }
 
   const status = campaign.status;
+
+  const handleDeleteCampaign = () => {
+    deleteCampaign.mutate(campaignIdNum, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        navigate('/admin/campaigns');
+      },
+    });
+  };
 
   const handleStart = () => startCampaign.mutate(campaign.id);
   const handlePause = () => pauseCampaign.mutate(campaign.id);
@@ -337,6 +351,12 @@ export default function CampaignDetailPage() {
               {t('admin:campaigns.stop')}
             </Button>
           )}
+          <PermissionGuard requires="campaigns:campaign:delete">
+            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              Delete
+            </Button>
+          </PermissionGuard>
         </div>
       </div>
 
@@ -594,6 +614,16 @@ export default function CampaignDetailPage() {
         onConfirm={handleConfirmDelete}
         confirmLabel="Delete"
         variant="destructive"
+      />
+
+      {/* Campaign delete confirmation */}
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={handleDeleteCampaign}
+        entityName={campaign.name}
+        entityType="Campaign"
+        isPending={deleteCampaign.isPending}
       />
     </div>
   );
