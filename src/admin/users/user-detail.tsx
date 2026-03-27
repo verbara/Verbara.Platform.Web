@@ -1,15 +1,45 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Pencil, Trash2, Mail, Shield, CircleDot } from 'lucide-react';
+import {
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Mail,
+  Shield,
+  CircleDot,
+  Clock,
+  KeyRound,
+  LogOut,
+  X,
+  Plus,
+} from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/core/ui/select';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { PermissionGuard } from '@/core/auth/permission-guard';
 import { UserForm } from './user-form';
 import { useUser, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
+import { useUserRoles, useAssignRole, useRemoveRole, useRoles } from '@/core/api/hooks/use-rbac';
+import { useForceLogoutUser } from '@/core/api/hooks/use-auth-admin';
 
-function InfoRow({ icon: Icon, label, children }: { icon: typeof Mail; label: string; children: React.ReactNode }) {
+function InfoRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Mail;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start gap-3 py-3">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -27,10 +57,17 @@ export default function UserDetailPage() {
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [selectedRoleId, setSelectedRoleId] = useState('');
 
   const { data: user } = useUser(userId);
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
+  const { data: userRoles = [] } = useUserRoles(userId);
+  const { data: allRoles = [] } = useRoles();
+  const assignRole = useAssignRole();
+  const removeRole = useRemoveRole();
+  const forceLogoutUser = useForceLogoutUser();
 
   if (!user) {
     return (
@@ -49,6 +86,28 @@ export default function UserDetailPage() {
     });
   };
 
+  const handleForceLogout = () => {
+    forceLogoutUser.mutate(user.id, {
+      onSuccess: () => setLogoutOpen(false),
+    });
+  };
+
+  const handleAssignRole = () => {
+    if (!selectedRoleId) return;
+    assignRole.mutate(
+      { userId: user.id, roleId: selectedRoleId },
+      { onSuccess: () => setSelectedRoleId('') },
+    );
+  };
+
+  const availableRoles = allRoles.filter(
+    (r) => !userRoles.some((ur) => ur.roleId === r.roleId),
+  );
+
+  const mfaEnabled = (user as Record<string, unknown>).mfaEnabled === true;
+  const lastLogin = (user as Record<string, unknown>).lastLoginAt as string | undefined;
+  const authProvider = ((user as Record<string, unknown>).authProvider as string) || 'local';
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       {/* Back + Actions */}
@@ -62,6 +121,12 @@ export default function UserDetailPage() {
             <Pencil className="mr-1.5 h-4 w-4" />
             Edit
           </Button>
+          <PermissionGuard requires="system:auth:configure">
+            <Button variant="outline" size="sm" onClick={() => setLogoutOpen(true)}>
+              <LogOut className="mr-1.5 h-4 w-4" />
+              {t('admin:users.force_logout', 'Force Logout')}
+            </Button>
+          </PermissionGuard>
           <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="mr-1.5 h-4 w-4" />
             Delete
@@ -89,7 +154,79 @@ export default function UserDetailPage() {
             {user.status}
           </Badge>
         </InfoRow>
+        <InfoRow icon={KeyRound} label={t('admin:users.mfa_status', 'MFA')}>
+          <Badge variant={mfaEnabled ? 'default' : 'secondary'}>
+            {mfaEnabled
+              ? t('admin:users.mfa_enabled', 'Enabled')
+              : t('admin:users.mfa_disabled', 'Disabled')}
+          </Badge>
+        </InfoRow>
+        <InfoRow icon={Shield} label={t('admin:users.auth_provider', 'Auth Provider')}>
+          <Badge variant="secondary">{authProvider}</Badge>
+        </InfoRow>
+        {lastLogin && (
+          <InfoRow icon={Clock} label={t('admin:users.last_login', 'Last Login')}>
+            {new Date(lastLogin).toLocaleString()}
+          </InfoRow>
+        )}
       </div>
+
+      {/* Roles section */}
+      <PermissionGuard requires="users:role:assign">
+        <div className="rounded-lg border bg-card p-6 space-y-4">
+          <h3 className="font-heading text-base font-semibold">
+            {t('admin:users.roles', 'Roles')}
+          </h3>
+
+          <div className="flex flex-wrap gap-2">
+            {userRoles.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                {t('admin:users.no_roles', 'No roles assigned')}
+              </p>
+            )}
+            {userRoles.map((ur) => (
+              <Badge key={ur.roleId} variant="default" className="gap-1.5">
+                {ur.roleName}
+                <button
+                  type="button"
+                  onClick={() =>
+                    removeRole.mutate({ userId: user.id, roleId: ur.roleId })
+                  }
+                  className="ml-1 rounded-full p-0.5 hover:bg-destructive/20 hover:text-destructive"
+                  aria-label={`Remove ${ur.roleName}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+
+          {availableRoles.length > 0 && (
+            <div className="flex gap-2">
+              <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder={t('admin:users.select_role', 'Select role...')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableRoles.map((role) => (
+                    <SelectItem key={role.roleId} value={role.roleId}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                disabled={!selectedRoleId || assignRole.isPending}
+                onClick={handleAssignRole}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                {t('admin:users.assign_role', 'Assign')}
+              </Button>
+            </div>
+          )}
+        </div>
+      </PermissionGuard>
 
       {/* Edit sheet */}
       <UserForm
@@ -118,6 +255,25 @@ export default function UserDetailPage() {
         }
         onConfirm={handleDelete}
         confirmLabel="Delete"
+        variant="destructive"
+      />
+
+      {/* Force Logout confirmation dialog */}
+      <ConfirmDialog
+        open={logoutOpen}
+        onOpenChange={setLogoutOpen}
+        title={t('admin:users.force_logout', 'Force Logout')}
+        description={
+          <>
+            {t('admin:users.force_logout_confirm', {
+              defaultValue:
+                'Are you sure you want to force logout {{name}}? All active sessions will be immediately terminated.',
+              name: user.displayName,
+            })}
+          </>
+        }
+        onConfirm={handleForceLogout}
+        confirmLabel={t('admin:users.force_logout', 'Force Logout')}
         variant="destructive"
       />
     </div>

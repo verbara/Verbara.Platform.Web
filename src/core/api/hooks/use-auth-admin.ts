@@ -120,3 +120,19 @@ export function useForceLogout() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useForceLogoutUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      customFetch<void>({
+        url: `/api/admin/auth/sessions/user/${userId}`,
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['auth-sessions'] });
+      toast.success('All sessions revoked for user');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
