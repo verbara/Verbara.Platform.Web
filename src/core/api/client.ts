@@ -10,8 +10,58 @@ interface RequestConfig {
   signal?: AbortSignal;
 }
 
-export async function customFetch<T>(config: RequestConfig): Promise<T> {
-  const { apiKey } = useAuthStore.getState();
+class UnauthorizedError extends Error {
+  constructor() {
+    super('Unauthorized');
+    this.name = 'UnauthorizedError';
+  }
+}
+
+let _refreshPromise: Promise<boolean> | null = null;
+
+async function refreshAccessToken(): Promise<boolean> {
+  if (_refreshPromise) return _refreshPromise;
+
+  _refreshPromise = (async () => {
+    try {
+      const res = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) return false;
+
+      const data = (await res.json()) as {
+        accessToken: string;
+        expiresAt: string;
+        permissions?: string[];
+      };
+
+      const store = useAuthStore.getState();
+      if (store.user && store.tenantId) {
+        store.setAuth(
+          data.accessToken,
+          new Date(data.expiresAt).getTime(),
+          store.user,
+          store.tenantId,
+          data.permissions ?? store.permissions,
+          store.features,
+        );
+      }
+      return true;
+    } catch {
+      return false;
+    } finally {
+      _refreshPromise = null;
+    }
+  })();
+
+  return _refreshPromise;
+}
+
+async function executeRequest<T>(config: RequestConfig): Promise<T> {
+  const { accessToken } = useAuthStore.getState();
   const { activeTenantId } = useTenantStore.getState();
   const tenantId = activeTenantId ?? useAuthStore.getState().tenantId;
 
@@ -24,25 +74,54 @@ export async function customFetch<T>(config: RequestConfig): Promise<T> {
     method: config.method,
     body: config.data ? JSON.stringify(config.data) : undefined,
     signal: config.signal,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...config.headers,
-      ...(apiKey && { Authorization: `Bearer ${apiKey}` }),
+      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
       ...(tenantId && { 'X-Tenant-Id': tenantId }),
     },
   });
 
   if (response.status === 401) {
-    useAuthStore.getState().logout();
-    window.location.href = '/login';
-    throw new Error('Unauthorized');
+    throw new UnauthorizedError();
   }
+
+  if (response.status === 204) return undefined as T;
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(error.detail ?? `API error: ${response.status}`);
   }
 
-  if (response.status === 204) return undefined as T;
   return response.json();
+}
+
+export async function customFetch<T>(config: RequestConfig): Promise<T> {
+  // Pre-flight: refresh if token expired
+  if (useAuthStore.getState().isTokenExpired() && useAuthStore.getState().accessToken) {
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) {
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
+  }
+
+  try {
+    return await executeRequest<T>(config);
+  } catch (err) {
+    // On 401: try refresh once
+    if (err instanceof UnauthorizedError) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        return executeRequest<T>(config);
+      }
+
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
+    }
+
+    throw err;
+  }
 }
