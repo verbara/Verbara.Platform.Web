@@ -26,6 +26,7 @@ import {
 } from '@/core/ui/select';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
+import { AuditTimeline } from '@/core/ui/audit-timeline';
 import { UserForm } from './user-form';
 import { useUser, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
 import { useUserRoles, useAssignRole, useRemoveRole, useRoles } from '@/core/api/hooks/use-rbac';
@@ -225,6 +226,16 @@ export default function UserDetailPage() {
               </Button>
             </div>
           )}
+        </div>
+      </PermissionGuard>
+
+      {/* History */}
+      <PermissionGuard requires="system:audit:view">
+        <div className="rounded-lg border bg-card p-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            History
+          </p>
+          <AuditTimeline entityType="user" entityId={userId!} />
         </div>
       </PermissionGuard>
 

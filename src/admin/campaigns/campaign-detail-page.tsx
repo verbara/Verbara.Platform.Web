@@ -45,6 +45,7 @@ import {
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
+import { AuditTimeline } from '@/core/ui/audit-timeline';
 import {
   useCampaign,
   useStartCampaign,
@@ -54,6 +55,7 @@ import {
   useDeleteCampaign,
   useUpdateCampaign,
   useCampaignDispositions,
+  useCampaignContactLists,
   useCreateDispositionCode,
   useUpdateDispositionCode,
   useDeleteDispositionCode,
@@ -258,6 +260,7 @@ export default function CampaignDetailPage() {
   const campaignIdNum = Number(campaignId);
   const { data: campaign, isLoading } = useCampaign(campaignIdNum);
   const { data: dispositions = [] } = useCampaignDispositions(campaignIdNum);
+  const { data: contactLists = [] } = useCampaignContactLists(campaignIdNum);
   const updateCampaign = useUpdateCampaign();
   const deleteDispositionCode = useDeleteDispositionCode();
   const deleteCampaign = useDeleteCampaign();
@@ -626,6 +629,46 @@ export default function CampaignDetailPage() {
         </p>
         <CallbacksTab campaignId={campaignIdNum} />
       </div>
+
+      {/* Contact Lists */}
+      <div className="rounded-lg border bg-card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Contact Lists
+          </p>
+        </div>
+        {contactLists.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No contact lists assigned.</p>
+        ) : (
+          <div className="space-y-2">
+            {contactLists.map((list) => (
+              <div key={list.id} className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <p className="text-sm font-medium">{list.name}</p>
+                  {list.sourceFileName && (
+                    <p className="text-xs text-muted-foreground">{list.sourceFileName}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span>{list.totalContacts.toLocaleString()} total</span>
+                  <span>{list.pendingContacts.toLocaleString()} pending</span>
+                  <span>{list.completedContacts.toLocaleString()} completed</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* History */}
+      <PermissionGuard requires="system:audit:view">
+        <div className="rounded-lg border bg-card p-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            History
+          </p>
+          <AuditTimeline entityType="campaign" entityId={String(campaignIdNum)} />
+        </div>
+      </PermissionGuard>
 
       {/* Stop confirmation dialog */}
       <ConfirmDialog
