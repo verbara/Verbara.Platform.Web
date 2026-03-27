@@ -42,6 +42,12 @@ const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const RealtimePage = lazy(() => import('@/admin/realtime/realtime-page'));
 const AuditPage = lazy(() => import('@/admin/audit/audit-page'));
 const TenantsPage = lazy(() => import('@/admin/tenants/tenants-page'));
+const RolesPage = lazy(() => import('@/admin/roles/roles-page'));
+const RoleDetailPage = lazy(() => import('@/admin/roles/role-detail-page'));
+const SecurityPage = lazy(() => import('@/admin/profile/security-page'));
+const AuthConfigPage = lazy(() => import('@/admin/system/auth-config-page'));
+const AuthEventsPage = lazy(() => import('@/admin/system/auth-events-page'));
+const AuthSessionsPage = lazy(() => import('@/admin/system/auth-sessions-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
@@ -388,6 +394,64 @@ export const router = createBrowserRouter([
               <RoleGuard allowedRoles={['admin']}>
                 <LazyLoad>
                   <ReportsPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'roles',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <RolesPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'roles/:id',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <RoleDetailPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'security',
+            element: (
+              <LazyLoad>
+                <SecurityPage />
+              </LazyLoad>
+            ),
+          },
+          {
+            path: 'auth-config',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <AuthConfigPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'auth-events',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <AuthEventsPage />
+                </LazyLoad>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'auth-sessions',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <LazyLoad>
+                  <AuthSessionsPage />
                 </LazyLoad>
               </RoleGuard>
             ),

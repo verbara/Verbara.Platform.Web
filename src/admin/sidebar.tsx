@@ -25,6 +25,10 @@ import {
   ClipboardList,
   Calendar,
   Building2,
+  Shield,
+  KeyRound,
+  Activity,
+  Monitor,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -52,6 +56,7 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'users', labelKey: 'admin:sidebar.users', to: '/admin/users', icon: Users, allowedRoles: ['admin'] },
       { key: 'agents', labelKey: 'admin:sidebar.agents', to: '/admin/agents', icon: Headset, allowedRoles: ['admin', 'supervisor'] },
+      { key: 'roles', labelKey: 'admin:sidebar.roles', to: '/admin/roles', icon: Shield, allowedRoles: ['admin'] },
     ],
   },
   {
@@ -102,6 +107,10 @@ const groups: SidebarGroup[] = [
       { key: 'tenants', labelKey: 'admin:sidebar.tenants', to: '/admin/tenants', icon: Building2, allowedRoles: ['admin'] },
       { key: 'realtime', labelKey: 'admin:sidebar.realtime', to: '/admin/realtime', icon: Radio, allowedRoles: ['admin'] },
       { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, allowedRoles: ['admin'] },
+      { key: 'auth-config', labelKey: 'admin:sidebar.authConfig', to: '/admin/auth-config', icon: KeyRound, allowedRoles: ['admin'] },
+      { key: 'auth-events', labelKey: 'admin:sidebar.authEvents', to: '/admin/auth-events', icon: Activity, allowedRoles: ['admin'] },
+      { key: 'auth-sessions', labelKey: 'admin:sidebar.authSessions', to: '/admin/auth-sessions', icon: Monitor, allowedRoles: ['admin'] },
+      { key: 'security', labelKey: 'admin:sidebar.security', to: '/admin/security', icon: Shield },
       { key: 'audit', labelKey: 'admin:sidebar.auditLog', to: '/admin/audit', icon: FileSearch, allowedRoles: ['admin'] },
       { key: 'reports', labelKey: 'admin:sidebar.reports', to: '/admin/reports', icon: Calendar, allowedRoles: ['admin'] },
     ],
