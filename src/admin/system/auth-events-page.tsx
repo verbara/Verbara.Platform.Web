@@ -89,7 +89,7 @@ export default function AuthEventsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <Select value={eventType} onValueChange={setEventType}>
+        <Select value={eventType} onValueChange={(v) => setEventType(v ?? '')}>
           <SelectTrigger>
             <SelectValue placeholder={t('admin:auth.all_events', 'All events')} />
           </SelectTrigger>

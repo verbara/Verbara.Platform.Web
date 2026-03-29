@@ -179,7 +179,7 @@ export default function RolesPage() {
             </div>
             <div className="space-y-2">
               <Label>{t('admin:roles.template', 'Template')}</Label>
-              <Select value={newRoleTemplate} onValueChange={setNewRoleTemplate}>
+              <Select value={newRoleTemplate} onValueChange={(v) => setNewRoleTemplate(v ?? '')}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={t('admin:roles.no_template', 'No template')} />
                 </SelectTrigger>
