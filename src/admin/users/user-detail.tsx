@@ -105,9 +105,9 @@ export default function UserDetailPage() {
     (r) => !userRoles.some((ur) => ur.roleId === r.roleId),
   );
 
-  const mfaEnabled = (user as Record<string, unknown>).mfaEnabled === true;
-  const lastLogin = (user as Record<string, unknown>).lastLoginAt as string | undefined;
-  const authProvider = ((user as Record<string, unknown>).authProvider as string) || 'local';
+  const mfaEnabled = (user as unknown as Record<string, unknown>).mfaEnabled === true;
+  const lastLogin = (user as unknown as Record<string, unknown>).lastLoginAt as string | undefined;
+  const authProvider = ((user as unknown as Record<string, unknown>).authProvider as string) || 'local';
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -204,7 +204,7 @@ export default function UserDetailPage() {
 
           {availableRoles.length > 0 && (
             <div className="flex gap-2">
-              <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+              <Select value={selectedRoleId} onValueChange={(v) => setSelectedRoleId(v ?? '')}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder={t('admin:users.select_role', 'Select role...')} />
                 </SelectTrigger>
