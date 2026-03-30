@@ -3,6 +3,7 @@ import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from './auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { resolveDefaultTenant } from '../tenant/resolve-tenant';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -98,11 +99,15 @@ export function LoginPage() {
     setLoading(true);
 
     try {
+      const tenant = resolveDefaultTenant();
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(tenant && { 'X-Tenant-Id': tenant }),
+        },
+        body: JSON.stringify({ tenantId: tenant, email, password }),
       });
 
       if (!res.ok) {
