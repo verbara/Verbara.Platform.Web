@@ -24,3 +24,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright auth state
+tests/e2e/.auth-*.json
