@@ -81,7 +81,7 @@ export default function AuthEventsPage() {
           <h1 className="font-heading text-xl font-semibold">{t('admin:auth.events_title', 'Authentication Events')}</h1>
           <p className="text-sm text-muted-foreground">{t('admin:auth.events_description', 'View login attempts, password changes, and security events')}</p>
         </div>
-        <Button variant="outline" onClick={exportCsv}>
+        <Button data-testid="auth-events-export" variant="outline" onClick={exportCsv}>
           <Download className="mr-1.5 h-4 w-4" />
           {t('actions.export', 'Export CSV')}
         </Button>
@@ -90,7 +90,7 @@ export default function AuthEventsPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <Select value={eventType} onValueChange={(v) => setEventType(v ?? '')}>
-          <SelectTrigger>
+          <SelectTrigger data-testid="auth-events-filter-type">
             <SelectValue placeholder={t('admin:auth.all_events', 'All events')} />
           </SelectTrigger>
           <SelectContent>
@@ -101,6 +101,7 @@ export default function AuthEventsPage() {
           </SelectContent>
         </Select>
         <Input
+          data-testid="auth-events-filter-user"
           className="w-48"
           placeholder={t('admin:auth.search_user', 'Search by user...')}
           value={userSearch}
@@ -108,12 +109,14 @@ export default function AuthEventsPage() {
         />
         <Input
           type="date"
+          data-testid="auth-events-filter-start"
           className="w-40"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
         />
         <Input
           type="date"
+          data-testid="auth-events-filter-end"
           className="w-40"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
@@ -122,7 +125,7 @@ export default function AuthEventsPage() {
 
       {/* Events table */}
       <div className="rounded-lg border">
-        <table className="w-full text-sm">
+        <table data-testid="auth-events-table" className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50 text-left">
               <th className="px-4 py-2 font-medium">{t('admin:auth.timestamp', 'Timestamp')}</th>
@@ -169,6 +172,7 @@ export default function AuthEventsPage() {
           </p>
           <div className="flex gap-2">
             <Button
+              data-testid="auth-events-prev"
               variant="outline"
               size="sm"
               disabled={page <= 1}
@@ -177,6 +181,7 @@ export default function AuthEventsPage() {
               {t('actions.previous', 'Previous')}
             </Button>
             <Button
+              data-testid="auth-events-next"
               variant="outline"
               size="sm"
               disabled={page * 50 >= data.totalCount}

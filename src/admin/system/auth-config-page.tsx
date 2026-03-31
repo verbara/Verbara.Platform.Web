@@ -51,7 +51,7 @@ export default function AuthConfigPage() {
           <h1 className="font-heading text-xl font-semibold">{t('admin:auth.config_title', 'Authentication Settings')}</h1>
           <p className="text-sm text-muted-foreground">{t('admin:auth.config_description', 'Configure authentication policies and security settings')}</p>
         </div>
-        <Button onClick={handleSave} disabled={!dirty || updateConfig.isPending}>
+        <Button data-testid="auth-config-save" onClick={handleSave} disabled={!dirty || updateConfig.isPending}>
           <Save className="mr-1.5 h-4 w-4" />
           {t('actions.save', 'Save')}
         </Button>
@@ -66,6 +66,7 @@ export default function AuthConfigPage() {
               <input
                 type="radio"
                 name="mfa-policy"
+                data-testid={`auth-config-mfa-${policy}`}
                 checked={form.mfaPolicy === policy}
                 onChange={() => update('mfaPolicy', policy)}
                 className="accent-brand"
@@ -107,6 +108,7 @@ export default function AuthConfigPage() {
               type="number"
               min={8}
               max={128}
+              data-testid="auth-config-passwordMinLength"
               value={form.passwordMinLength ?? 12}
               onChange={(e) => update('passwordMinLength', Number(e.target.value))}
             />
@@ -116,6 +118,7 @@ export default function AuthConfigPage() {
           <div className="flex items-center justify-between">
             <Label>{t('admin:auth.require_uppercase', 'Require Uppercase')}</Label>
             <Switch
+              data-testid="auth-config-passwordUppercase"
               checked={form.passwordRequireUppercase ?? true}
               onCheckedChange={(checked) => update('passwordRequireUppercase', checked)}
             />
@@ -123,6 +126,7 @@ export default function AuthConfigPage() {
           <div className="flex items-center justify-between">
             <Label>{t('admin:auth.require_number', 'Require Number')}</Label>
             <Switch
+              data-testid="auth-config-passwordNumber"
               checked={form.passwordRequireNumber ?? true}
               onCheckedChange={(checked) => update('passwordRequireNumber', checked)}
             />
@@ -130,6 +134,7 @@ export default function AuthConfigPage() {
           <div className="flex items-center justify-between">
             <Label>{t('admin:auth.require_special', 'Require Special Character')}</Label>
             <Switch
+              data-testid="auth-config-passwordSpecial"
               checked={form.passwordRequireSpecial ?? false}
               onCheckedChange={(checked) => update('passwordRequireSpecial', checked)}
             />
@@ -147,6 +152,7 @@ export default function AuthConfigPage() {
               type="number"
               min={1}
               max={20}
+              data-testid="auth-config-lockoutThreshold"
               value={form.lockoutThreshold ?? 5}
               onChange={(e) => update('lockoutThreshold', Number(e.target.value))}
             />
@@ -157,6 +163,7 @@ export default function AuthConfigPage() {
               type="number"
               min={1}
               max={1440}
+              data-testid="auth-config-lockoutDuration"
               value={form.lockoutDurationMinutes ?? 15}
               onChange={(e) => update('lockoutDurationMinutes', Number(e.target.value))}
             />
@@ -174,6 +181,7 @@ export default function AuthConfigPage() {
               type="number"
               min={5}
               max={480}
+              data-testid="auth-config-sessionIdle"
               value={form.sessionIdleTimeoutMinutes ?? 30}
               onChange={(e) => update('sessionIdleTimeoutMinutes', Number(e.target.value))}
             />
@@ -185,6 +193,7 @@ export default function AuthConfigPage() {
               type="number"
               min={1}
               max={72}
+              data-testid="auth-config-sessionAbsolute"
               value={form.sessionAbsoluteTimeoutHours ?? 12}
               onChange={(e) => update('sessionAbsoluteTimeoutHours', Number(e.target.value))}
             />
@@ -200,6 +209,7 @@ export default function AuthConfigPage() {
         <div className="flex items-center justify-between">
           <h3 className="font-medium">{t('admin:auth.oidc_config', 'OpenID Connect (SSO)')}</h3>
           <Switch
+            data-testid="auth-config-oidcEnabled"
             checked={form.oidcEnabled ?? false}
             onCheckedChange={(checked) => update('oidcEnabled', checked)}
           />
@@ -210,6 +220,7 @@ export default function AuthConfigPage() {
             <div className="space-y-2">
               <Label>{t('admin:auth.oidc_authority', 'Authority URL')}</Label>
               <Input
+                data-testid="auth-config-oidcAuthority"
                 value={form.oidcAuthority ?? ''}
                 onChange={(e) => update('oidcAuthority', e.target.value)}
                 placeholder="https://login.microsoftonline.com/{tenant}/v2.0"
@@ -218,6 +229,7 @@ export default function AuthConfigPage() {
             <div className="space-y-2">
               <Label>{t('admin:auth.oidc_client_id', 'Client ID')}</Label>
               <Input
+                data-testid="auth-config-oidcClientId"
                 value={form.oidcClientId ?? ''}
                 onChange={(e) => update('oidcClientId', e.target.value)}
               />
@@ -226,6 +238,7 @@ export default function AuthConfigPage() {
               <Label>{t('admin:auth.oidc_client_secret', 'Client Secret')}</Label>
               <Input
                 type="password"
+                data-testid="auth-config-oidcClientSecret"
                 value={form.oidcClientSecret ?? ''}
                 onChange={(e) => update('oidcClientSecret', e.target.value)}
               />

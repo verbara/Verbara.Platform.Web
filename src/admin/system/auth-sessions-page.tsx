@@ -47,7 +47,7 @@ export default function AuthSessionsPage() {
 
       {/* Sessions table */}
       <div className="rounded-lg border">
-        <table className="w-full text-sm">
+        <table data-testid="auth-sessions-table" className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50 text-left">
               <th className="px-4 py-2 font-medium">{t('admin:auth.user', 'User')}</th>
@@ -81,6 +81,7 @@ export default function AuthSessionsPage() {
                 </td>
                 <td className="px-4 py-2.5">
                   <Button
+                    data-testid={`session-logout-${session.sessionId}`}
                     variant="ghost"
                     size="sm"
                     onClick={() =>
@@ -102,6 +103,7 @@ export default function AuthSessionsPage() {
 
       {/* Force Logout Confirmation */}
       <ConfirmDialog
+        data-testid="session-logout-confirm"
         open={!!logoutTarget}
         onOpenChange={() => setLogoutTarget(null)}
         title={t('admin:auth.force_logout', 'Force Logout')}

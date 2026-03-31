@@ -153,19 +153,19 @@ export default function SecurityPage() {
               <p className="text-sm text-muted-foreground">{t('admin:security.mfa_description', 'Add an extra layer of security to your account')}</p>
             </div>
           </div>
-          <Badge variant={mfaEnabled ? 'default' : 'secondary'}>
+          <Badge data-testid="security-mfa-status" variant={mfaEnabled ? 'default' : 'secondary'}>
             {mfaEnabled ? t('status.enabled', 'Enabled') : t('status.disabled', 'Disabled')}
           </Badge>
         </div>
 
         {setupStep === 'idle' && !mfaEnabled && (
-          <Button onClick={() => void handleSetupMfa()} disabled={loading}>
+          <Button data-testid="security-mfa-enable" onClick={() => void handleSetupMfa()} disabled={loading}>
             {t('admin:security.enable_mfa', 'Enable MFA')}
           </Button>
         )}
 
         {setupStep === 'idle' && mfaEnabled && (
-          <Button variant="destructive" onClick={() => setDisableOpen(true)}>
+          <Button data-testid="security-mfa-disable" variant="destructive" onClick={() => setDisableOpen(true)}>
             {t('admin:security.disable_mfa', 'Disable MFA')}
           </Button>
         )}
@@ -175,7 +175,7 @@ export default function SecurityPage() {
           <div className="space-y-4 border-t pt-4">
             <p className="text-sm">{t('admin:security.scan_qr', 'Scan this QR code with your authenticator app')}</p>
             <div className="flex justify-center">
-              <div className="rounded-lg border bg-white p-4">
+              <div data-testid="security-mfa-qrcode" className="rounded-lg border bg-white p-4">
                 <QRCodeSVG value={setupData.qrUri} size={192} />
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function SecurityPage() {
                 {setupData.secret}
               </code>
             </div>
-            <Button onClick={() => setSetupStep('verify')}>
+            <Button data-testid="security-mfa-next-verify" onClick={() => setSetupStep('verify')}>
               {t('actions.next', 'Next')}
             </Button>
           </div>
@@ -197,6 +197,7 @@ export default function SecurityPage() {
             <p className="text-sm">{t('admin:security.enter_code', 'Enter the 6-digit code from your authenticator app')}</p>
             <div className="flex gap-2">
               <Input
+                data-testid="security-mfa-code"
                 value={verifyCode}
                 onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="000000"
@@ -204,6 +205,7 @@ export default function SecurityPage() {
                 className="w-32 font-mono text-center"
               />
               <Button
+                data-testid="security-mfa-confirm"
                 onClick={() => void handleConfirmMfa()}
                 disabled={verifyCode.length !== 6 || loading}
               >
@@ -219,22 +221,22 @@ export default function SecurityPage() {
             <p className="text-sm font-medium text-amber-600">
               {t('admin:security.save_recovery_codes', 'Save these recovery codes in a safe place. You will not be able to see them again.')}
             </p>
-            <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-4">
+            <div data-testid="security-mfa-recovery-codes" className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-4">
               {setupData.recoveryCodes.map((code, i) => (
                 <code key={i} className="text-sm font-mono">{code}</code>
               ))}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={copyRecoveryCodes}>
+              <Button data-testid="security-mfa-copy" variant="outline" size="sm" onClick={copyRecoveryCodes}>
                 <Copy className="mr-1.5 h-3.5 w-3.5" />
                 {t('actions.copy', 'Copy')}
               </Button>
-              <Button variant="outline" size="sm" onClick={downloadRecoveryCodes}>
+              <Button data-testid="security-mfa-download" variant="outline" size="sm" onClick={downloadRecoveryCodes}>
                 <Download className="mr-1.5 h-3.5 w-3.5" />
                 {t('actions.download', 'Download')}
               </Button>
             </div>
-            <Button onClick={() => setSetupStep('idle')}>
+            <Button data-testid="security-mfa-done" onClick={() => setSetupStep('idle')}>
               {t('actions.done', 'Done')}
             </Button>
           </div>
@@ -253,6 +255,7 @@ export default function SecurityPage() {
             <Label>{t('auth.current_password', 'Current Password')}</Label>
             <Input
               type="password"
+              data-testid="security-password-old"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
             />
@@ -261,6 +264,7 @@ export default function SecurityPage() {
             <Label>{t('auth.new_password', 'New Password')}</Label>
             <Input
               type="password"
+              data-testid="security-password-new"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
@@ -269,11 +273,13 @@ export default function SecurityPage() {
             <Label>{t('auth.confirm_password', 'Confirm Password')}</Label>
             <Input
               type="password"
+              data-testid="security-password-confirm"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
           <Button
+            data-testid="security-password-submit"
             onClick={() => void handleChangePassword()}
             disabled={passwordLoading || !oldPassword || !newPassword || !confirmPassword}
           >
@@ -292,6 +298,7 @@ export default function SecurityPage() {
             <Label>{t('auth.password', 'Password')}</Label>
             <Input
               type="password"
+              data-testid="security-mfa-disable-password"
               value={disablePassword}
               onChange={(e) => setDisablePassword(e.target.value)}
               placeholder={t('admin:security.confirm_password_to_disable', 'Enter your password to confirm')}
@@ -302,6 +309,7 @@ export default function SecurityPage() {
               {t('actions.cancel', 'Cancel')}
             </DialogClose>
             <Button
+              data-testid="security-mfa-disable-confirm"
               variant="destructive"
               onClick={() => void handleDisableMfa()}
               disabled={!disablePassword || loading}
