@@ -58,12 +58,13 @@ export function DataTable<T>({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-8"
+          data-testid="data-table-search"
         />
       </div>
 
       {/* Table */}
       <div className="overflow-hidden rounded-lg border">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" data-testid="data-table">
           <thead className="border-b bg-muted/50">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
@@ -110,7 +111,7 @@ export function DataTable<T>({
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground" data-testid="data-table-page-info">
           Page {table.getState().pagination.pageIndex + 1} of{' '}
           {table.getPageCount()}
         </p>
@@ -120,6 +121,7 @@ export function DataTable<T>({
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            data-testid="data-table-prev"
           >
             Previous
           </Button>
@@ -128,6 +130,7 @@ export function DataTable<T>({
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            data-testid="data-table-next"
           >
             Next
           </Button>

@@ -18,6 +18,7 @@ export interface ConfirmDialogProps {
   onConfirm: () => void;
   confirmLabel?: string;
   variant?: 'destructive' | 'default';
+  'data-testid'?: string;
 }
 
 export function ConfirmDialog({
@@ -28,17 +29,18 @@ export function ConfirmDialog({
   onConfirm,
   confirmLabel = 'Confirm',
   variant = 'destructive',
+  'data-testid': dataTestId = 'confirm-dialog',
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent data-testid={dataTestId}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-          <Button variant={variant} onClick={onConfirm}>
+          <DialogClose render={<Button variant="outline" data-testid="confirm-dialog-cancel" />}>Cancel</DialogClose>
+          <Button variant={variant} onClick={onConfirm} data-testid="confirm-dialog-confirm">
             {confirmLabel}
           </Button>
         </DialogFooter>

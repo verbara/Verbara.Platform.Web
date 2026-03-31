@@ -166,7 +166,7 @@ export function LoginPage() {
   if (mfaPending) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm" data-testid="login-mfa-section">
           <MfaVerify
             mfaToken={mfaPending.mfaToken}
             email={mfaPending.email}
@@ -207,6 +207,7 @@ export function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
+              data-testid="login-email"
             />
           </div>
 
@@ -217,6 +218,7 @@ export function LoginPage() {
                 type="button"
                 onClick={() => navigate('/forgot-password')}
                 className="text-xs text-brand hover:underline"
+                data-testid="login-forgot-password"
               >
                 {t('auth.forgot_password')}
               </button>
@@ -228,6 +230,7 @@ export function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              data-testid="login-password"
             />
           </div>
 
@@ -245,13 +248,14 @@ export function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400" data-testid="login-error">{error}</p>
           )}
 
           <Button
             type="submit"
             className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
             disabled={loading || !email.trim() || !password.trim()}
+            data-testid="login-submit"
           >
             {loading ? t('status.loading') : t('auth.sign_in')}
           </Button>
@@ -273,6 +277,7 @@ export function LoginPage() {
             variant="outline"
             className="w-full"
             onClick={handleSsoLogin}
+            data-testid="login-sso-button"
           >
             {t('auth.sign_in_sso')}
           </Button>
@@ -284,6 +289,7 @@ export function LoginPage() {
             type="button"
             onClick={() => setShowApiKey((v) => !v)}
             className="flex w-full items-center justify-between px-6 py-3 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+            data-testid="login-apikey-toggle"
           >
             {t('auth.use_api_key')}
             <ChevronDown
@@ -304,6 +310,7 @@ export function LoginPage() {
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   required
+                  data-testid="login-apikey-input"
                 />
               </div>
               <Button
@@ -311,6 +318,7 @@ export function LoginPage() {
                 variant="outline"
                 className="w-full"
                 disabled={loading || !apiKey.trim()}
+                data-testid="login-apikey-submit"
               >
                 {loading ? t('status.loading') : t('auth.sign_in')}
               </Button>
