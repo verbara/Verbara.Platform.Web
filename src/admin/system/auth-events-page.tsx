@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download } from 'lucide-react';
 import { Button } from '@/core/ui/button';
@@ -18,6 +18,8 @@ const EVENT_TYPES = [
   'login_failure',
   'logout',
   'password_change',
+  'password_reset',
+  'password_reset_request',
   'mfa_enroll',
   'mfa_disable',
   'lockout',
@@ -40,19 +42,29 @@ export default function AuthEventsPage() {
   const [page, setPage] = useState(1);
   const [eventType, setEventType] = useState('');
   const [userSearch, setUserSearch] = useState('');
+  const [debouncedUserSearch, setDebouncedUserSearch] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedUserSearch(userSearch), 300);
+    return () => clearTimeout(timer);
+  }, [userSearch]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [eventType, debouncedUserSearch, startDate, endDate]);
 
   const params = useMemo(() => {
     const p: Record<string, string> = { page: String(page), pageSize: '50' };
     if (eventType) p.eventType = eventType;
-    if (userSearch) p.userId = userSearch;
+    if (debouncedUserSearch) p.userId = debouncedUserSearch;
     if (startDate) p.startDate = startDate;
     if (endDate) p.endDate = endDate;
     return p;
-  }, [page, eventType, userSearch, startDate, endDate]);
+  }, [page, eventType, debouncedUserSearch, startDate, endDate]);
 
-  const { data } = useAuthEvents(params);
+  const { data, isFetching } = useAuthEvents(params);
 
   function exportCsv() {
     if (!data?.items) return;
@@ -88,7 +100,7 @@ export default function AuthEventsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Select value={eventType} onValueChange={(v) => setEventType(v ?? '')}>
           <SelectTrigger data-testid="auth-events-filter-type">
             <SelectValue placeholder={t('admin:auth.all_events', 'All events')} />
@@ -121,6 +133,9 @@ export default function AuthEventsPage() {
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
         />
+        {isFetching && (
+          <span className="text-sm text-muted-foreground animate-pulse">Loading...</span>
+        )}
       </div>
 
       {/* Events table */}

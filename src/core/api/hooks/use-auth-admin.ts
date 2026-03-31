@@ -91,6 +91,7 @@ export function useAuthEvents(params?: Record<string, string>) {
         method: 'GET',
         params,
       }),
+    placeholderData: (prev) => prev,
   });
 }
 
