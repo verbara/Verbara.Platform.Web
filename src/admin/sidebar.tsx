@@ -124,10 +124,12 @@ const groups: SidebarGroup[] = [
 
 function CollapsibleGroup({
   label,
+  groupKey,
   children,
   defaultOpen,
 }: {
   label: string;
+  groupKey: string;
   children: React.ReactNode;
   defaultOpen: boolean;
 }) {
@@ -137,6 +139,7 @@ function CollapsibleGroup({
     <div>
       <button
         type="button"
+        data-testid={`sidebar-group-${groupKey}`}
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
       >
@@ -158,6 +161,7 @@ function SidebarLink({ item }: { item: SidebarItem }) {
     <li>
       <NavLink
         to={item.to}
+        data-testid={`sidebar-link-${item.key}`}
         className={({ isActive }) =>
           `flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors ${
             isActive
@@ -210,6 +214,7 @@ export function AdminSidebar() {
       {visibleGroups.map((group) => (
         <CollapsibleGroup
           key={group.key}
+          groupKey={group.key}
           label={t(group.labelKey)}
           defaultOpen={group.items.some((item) => location.pathname.startsWith(item.to))}
         >

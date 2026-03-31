@@ -138,6 +138,7 @@ export default function AuditPage() {
             <Label htmlFor="audit-action">{t('admin:audit.filter.action')}</Label>
             <Input
               id="audit-action"
+              data-testid="audit-filter-action"
               placeholder={t('admin:audit.filter.actionPlaceholder')}
               value={draft.action}
               onChange={(e) => setDraft((d) => ({ ...d, action: e.target.value }))}
@@ -150,6 +151,7 @@ export default function AuditPage() {
             <Label htmlFor="audit-entity-type">{t('admin:audit.filter.entityType')}</Label>
             <Input
               id="audit-entity-type"
+              data-testid="audit-filter-entityType"
               placeholder={t('admin:audit.filter.entityTypePlaceholder')}
               value={draft.entityType}
               onChange={(e) => setDraft((d) => ({ ...d, entityType: e.target.value }))}
@@ -162,6 +164,7 @@ export default function AuditPage() {
             <Label htmlFor="audit-performed-by">{t('admin:audit.filter.performedBy')}</Label>
             <Input
               id="audit-performed-by"
+              data-testid="audit-filter-performedBy"
               placeholder={t('admin:audit.filter.performedByPlaceholder')}
               value={draft.performedBy}
               onChange={(e) => setDraft((d) => ({ ...d, performedBy: e.target.value }))}
@@ -174,6 +177,7 @@ export default function AuditPage() {
             <Label htmlFor="audit-from">{t('admin:audit.filter.from')}</Label>
             <Input
               id="audit-from"
+              data-testid="audit-filter-from"
               type="date"
               value={draft.from}
               onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))}
@@ -185,6 +189,7 @@ export default function AuditPage() {
             <Label htmlFor="audit-to">{t('admin:audit.filter.to')}</Label>
             <Input
               id="audit-to"
+              data-testid="audit-filter-to"
               type="date"
               value={draft.to}
               onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))}
@@ -193,7 +198,7 @@ export default function AuditPage() {
         </div>
 
         <div className="mt-3 flex items-center gap-2">
-          <Button onClick={handleSearch} disabled={isFetching}>
+          <Button data-testid="audit-search-button" onClick={handleSearch} disabled={isFetching}>
             <Search className="mr-1.5 h-4 w-4" />
             {t('admin:audit.search')}
           </Button>
@@ -213,7 +218,7 @@ export default function AuditPage() {
         <div className="space-y-3">
           {/* Table */}
           <div className="overflow-hidden rounded-lg border">
-            <table className="w-full text-sm">
+            <table data-testid="audit-table" className="w-full text-sm">
               <thead className="border-b bg-muted/50">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">
@@ -281,6 +286,7 @@ export default function AuditPage() {
               <Button
                 variant="outline"
                 size="sm"
+                data-testid="audit-prev"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1 || isFetching}
               >
@@ -290,6 +296,7 @@ export default function AuditPage() {
               <Button
                 variant="outline"
                 size="sm"
+                data-testid="audit-next"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages || isFetching}
               >

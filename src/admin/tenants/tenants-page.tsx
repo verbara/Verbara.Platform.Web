@@ -137,7 +137,7 @@ export default function TenantsPage() {
         cell: (info) => {
           const s = info.getValue().toLowerCase();
           return (
-            <Badge variant={STATUS_VARIANT[s] ?? 'outline'}>
+            <Badge data-testid={`tenant-status-${info.row.original.tenantId}`} variant={STATUS_VARIANT[s] ?? 'outline'}>
               {info.getValue()}
             </Badge>
           );
@@ -159,6 +159,7 @@ export default function TenantsPage() {
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0"
+                data-testid={`tenant-edit-${row.original.tenantId}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   const t = row.original;
@@ -177,6 +178,7 @@ export default function TenantsPage() {
             <Button
               variant="ghost"
               size="sm"
+              data-testid={`tenant-delete-${row.original.tenantId}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setDeleteTarget(row.original);
@@ -196,7 +198,7 @@ export default function TenantsPage() {
     return (
       <div className="space-y-6">
         <PageHeader title="Tenants">
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button data-testid="tenants-create-button" onClick={() => setCreateOpen(true)}>
             <Plus className="mr-1.5 h-4 w-4" />
             New Tenant
           </Button>
@@ -211,7 +213,7 @@ export default function TenantsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Tenants">
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="tenants-create-button" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           New Tenant
         </Button>
@@ -239,7 +241,7 @@ export default function TenantsPage() {
           if (!open) reset();
         }}
       >
-        <SheetContent>
+        <SheetContent data-testid="tenants-create-sheet">
           <SheetHeader>
             <SheetTitle>New Tenant</SheetTitle>
             <SheetDescription>
@@ -252,6 +254,7 @@ export default function TenantsPage() {
               <Label htmlFor="tenantId">Tenant ID</Label>
               <Input
                 id="tenantId"
+                data-testid="tenants-form-tenantId"
                 placeholder="acme-corp"
                 aria-invalid={!!errors.tenantId}
                 {...register('tenantId')}
@@ -265,6 +268,7 @@ export default function TenantsPage() {
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
+                data-testid="tenants-form-name"
                 placeholder="Acme Corporation"
                 aria-invalid={!!errors.name}
                 {...register('name')}
@@ -278,6 +282,7 @@ export default function TenantsPage() {
               <Label htmlFor="maxConcurrentChannels">Max Concurrent Channels</Label>
               <Input
                 id="maxConcurrentChannels"
+                data-testid="tenants-form-maxChannels"
                 type="number"
                 min={1}
                 {...register('maxConcurrentChannels')}
@@ -288,6 +293,7 @@ export default function TenantsPage() {
               <Label htmlFor="maxActiveCampaigns">Max Active Campaigns</Label>
               <Input
                 id="maxActiveCampaigns"
+                data-testid="tenants-form-maxCampaigns"
                 type="number"
                 min={1}
                 {...register('maxActiveCampaigns')}
@@ -295,7 +301,7 @@ export default function TenantsPage() {
             </div>
 
             <SheetFooter className="pt-2">
-              <Button type="submit" disabled={isSubmitting || createTenant.isPending} className="w-full">
+              <Button type="submit" data-testid="tenants-form-submit" disabled={isSubmitting || createTenant.isPending} className="w-full">
                 Create Tenant
               </Button>
             </SheetFooter>
@@ -320,7 +326,7 @@ export default function TenantsPage() {
 
       {/* Edit tenant dialog */}
       <Dialog open={editingTenant !== null} onOpenChange={(open) => { if (!open) setEditingTenant(null); }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" data-testid="tenants-edit-dialog">
           <DialogHeader>
             <DialogTitle>Edit Tenant</DialogTitle>
           </DialogHeader>
@@ -329,6 +335,7 @@ export default function TenantsPage() {
               <Label htmlFor="edit-tenant-name">Name</Label>
               <Input
                 id="edit-tenant-name"
+                data-testid="tenants-edit-name"
                 value={editForm.name}
                 onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
               />
@@ -336,7 +343,7 @@ export default function TenantsPage() {
             <div className="space-y-1.5">
               <Label htmlFor="edit-tenant-status">Status</Label>
               <Select value={editForm.status} onValueChange={(v) => setEditForm((f) => ({ ...f, status: v ?? f.status }))}>
-                <SelectTrigger id="edit-tenant-status"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="edit-tenant-status" data-testid="tenants-edit-status"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="suspended">Suspended</SelectItem>
@@ -348,6 +355,7 @@ export default function TenantsPage() {
               <Label htmlFor="edit-tenant-channels">Max Concurrent Channels</Label>
               <Input
                 id="edit-tenant-channels"
+                data-testid="tenants-edit-channels"
                 type="number"
                 min={1}
                 value={editForm.maxConcurrentChannels}
@@ -358,6 +366,7 @@ export default function TenantsPage() {
               <Label htmlFor="edit-tenant-campaigns">Max Active Campaigns</Label>
               <Input
                 id="edit-tenant-campaigns"
+                data-testid="tenants-edit-campaigns"
                 type="number"
                 min={1}
                 value={editForm.maxActiveCampaigns}
@@ -366,8 +375,9 @@ export default function TenantsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingTenant(null)}>Cancel</Button>
+            <Button variant="outline" data-testid="tenants-edit-cancel" onClick={() => setEditingTenant(null)}>Cancel</Button>
             <Button
+              data-testid="tenants-edit-submit"
               disabled={!editForm.name.trim() || updateTenant.isPending}
               onClick={() => {
                 if (!editingTenant) return;
