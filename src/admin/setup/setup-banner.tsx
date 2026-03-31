@@ -69,7 +69,7 @@ export function SetupBanner() {
   if (completedCount === 4) return null;
 
   return (
-    <div className="flex items-center justify-between border-b border-amber-200 bg-amber-50 px-6 py-3 dark:border-amber-800 dark:bg-amber-950/30">
+    <div data-testid="setup-banner" className="flex items-center justify-between border-b border-amber-200 bg-amber-50 px-6 py-3 dark:border-amber-800 dark:bg-amber-950/30">
       <div className="flex items-center gap-3">
         <div className="flex w-24 gap-0.5">
           {steps.map((step) => (
@@ -88,10 +88,10 @@ export function SetupBanner() {
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => navigate('/admin/setup')}>
+        <Button data-testid="setup-banner-resume" variant="outline" size="sm" onClick={() => navigate('/admin/setup')}>
           {t('setup.resumeSetup', 'Resume setup')}
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => setSetupDismissed(true)}>
+        <Button data-testid="setup-banner-dismiss" variant="ghost" size="sm" onClick={() => setSetupDismissed(true)}>
           <X className="h-4 w-4" />
         </Button>
       </div>

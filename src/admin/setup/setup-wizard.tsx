@@ -175,7 +175,7 @@ export default function SetupWizard() {
           <div className="flex items-center justify-between border-t pt-4">
             <div>
               {!isFirst && (
-                <Button variant="outline" disabled={loading} onClick={() => setStep((s) => s - 1)}>
+                <Button data-testid="setup-back" variant="outline" disabled={loading} onClick={() => setStep((s) => s - 1)}>
                   <ArrowLeft className="mr-1.5 h-4 w-4" />
                   {t('admin:setup.previous', 'Back')}
                 </Button>
@@ -185,6 +185,7 @@ export default function SetupWizard() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
+                data-testid="setup-skip"
                 onClick={handleSkip}
                 className="text-sm text-muted-foreground underline-offset-4 hover:underline"
               >
@@ -192,17 +193,17 @@ export default function SetupWizard() {
               </button>
 
               {isWelcome ? (
-                <Button onClick={() => setStep(1)}>
+                <Button data-testid="setup-getstarted" onClick={() => setStep(1)}>
                   <Rocket className="mr-1.5 h-4 w-4" />
                   {t('admin:setup.getStarted', "Let's get started")}
                 </Button>
               ) : isLast ? (
-                <Button disabled={loading} onClick={handleFinish}>
+                <Button data-testid="setup-finish" disabled={loading} onClick={handleFinish}>
                   <Check className="mr-1.5 h-4 w-4" />
                   {t('admin:setup.finish', 'Finish Setup')}
                 </Button>
               ) : (
-                <Button disabled={loading} onClick={handleNext}>
+                <Button data-testid="setup-next" disabled={loading} onClick={handleNext}>
                   {t('admin:setup.next', 'Next')}
                   <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>

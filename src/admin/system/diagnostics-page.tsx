@@ -9,9 +9,10 @@ interface StatusCardProps {
   icon: typeof Server;
   status: 'connected' | 'error' | 'warning' | 'unknown';
   children: React.ReactNode;
+  testId?: string;
 }
 
-function StatusCard({ title, icon: Icon, status, children }: StatusCardProps) {
+function StatusCard({ title, icon: Icon, status, children, testId }: StatusCardProps) {
   const statusColors = {
     connected: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     error: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -20,7 +21,7 @@ function StatusCard({ title, icon: Icon, status, children }: StatusCardProps) {
   };
 
   return (
-    <div className="rounded-lg border bg-card p-5">
+    <div data-testid={testId} className="rounded-lg border bg-card p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-muted-foreground" />
@@ -65,6 +66,7 @@ export default function DiagnosticsPage() {
           title="Platform"
           icon={Server}
           status={systemInfo ? 'connected' : 'error'}
+          testId="diag-platform-card"
         >
           <div className="flex justify-between">
             <span className="text-muted-foreground">Version</span>
@@ -87,6 +89,7 @@ export default function DiagnosticsPage() {
           title="License"
           icon={Shield}
           status={license ? 'connected' : 'warning'}
+          testId="diag-license-card"
         >
           <div className="flex justify-between">
             <span className="text-muted-foreground">Tier</span>
@@ -115,6 +118,7 @@ export default function DiagnosticsPage() {
           title="Cluster"
           icon={Cpu}
           status={cluster && cluster.nodes.length > 0 ? 'connected' : 'warning'}
+          testId="diag-cluster-card"
         >
           <div className="flex justify-between">
             <span className="text-muted-foreground">Nodes</span>
@@ -142,7 +146,7 @@ export default function DiagnosticsPage() {
             Cluster Nodes
           </h3>
           <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full text-sm">
+            <table data-testid="diag-nodes-table" className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Node ID</th>
@@ -180,7 +184,7 @@ export default function DiagnosticsPage() {
 
       {/* Active Drains */}
       {clusterStatus && clusterStatus.activeDrains.length > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-900/20">
+        <div data-testid="diag-active-drains" className="rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-900/20">
           <h3 className="mb-3 text-sm font-semibold text-amber-700 dark:text-amber-400">
             Active Drains
           </h3>

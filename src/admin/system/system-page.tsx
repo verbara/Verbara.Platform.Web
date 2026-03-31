@@ -103,6 +103,7 @@ export default function SystemPage() {
           {t('admin:system.license_tier')}
         </h2>
         {license ? (
+          <div data-testid="system-license-card">
           <LicenseCard
             license={{
               tier: license.tier,
@@ -111,6 +112,7 @@ export default function SystemPage() {
               features: license.features,
             }}
           />
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground">{t('admin:system.loading')}</p>
         )}
@@ -131,13 +133,14 @@ export default function SystemPage() {
           </div>
         )}
         {nodes.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div data-testid="system-nodes-grid" className="grid gap-4 sm:grid-cols-2">
             {nodes.map((node) => {
               const stateStyle = NODE_STATE_STYLES[node.state] ?? { variant: 'outline' as const, label: node.state };
               const isDraining = node.state === 'draining';
               return (
                 <div
                   key={node.nodeId}
+                  data-testid={`system-node-${node.nodeId}`}
                   className="flex items-center gap-4 rounded-lg border bg-card p-4 shadow-sm"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -159,6 +162,7 @@ export default function SystemPage() {
                         variant="outline"
                         size="sm"
                         className="h-6 px-2 text-xs"
+                        data-testid={`system-node-drain-${node.nodeId}`}
                         disabled={isDraining || drainNode.isPending}
                         onClick={() => drainNode.mutate({ nodeId: node.nodeId })}
                       >
@@ -189,6 +193,7 @@ export default function SystemPage() {
             <Label htmlFor="platformName">{t('admin:system.platform_name')}</Label>
             <Input
               id="platformName"
+              data-testid="system-settings-platformName"
               aria-invalid={!!errors.platformName}
               {...register('platformName')}
             />
@@ -201,7 +206,7 @@ export default function SystemPage() {
           <div className="space-y-1.5">
             <Label>{t('admin:system.default_timezone')}</Label>
             <Select value={watch('defaultTimezone')} onValueChange={(v) => setValue('defaultTimezone', v as string, { shouldDirty: true })}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger data-testid="system-settings-timezone" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -218,7 +223,7 @@ export default function SystemPage() {
           <div className="space-y-1.5">
             <Label>{t('admin:system.default_language')}</Label>
             <Select value={watch('defaultLanguage')} onValueChange={(v) => setValue('defaultLanguage', v as string, { shouldDirty: true })}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger data-testid="system-settings-language" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -231,7 +236,7 @@ export default function SystemPage() {
             </Select>
           </div>
 
-          <Button type="submit" disabled={!isDirty || updateSettings.isPending}>
+          <Button type="submit" data-testid="system-settings-save" disabled={!isDirty || updateSettings.isPending}>
             <Save className="mr-2 h-4 w-4" />
             {t('admin:system.save')}
           </Button>
