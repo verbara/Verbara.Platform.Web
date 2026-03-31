@@ -21,7 +21,9 @@ test.describe('Auth Events', () => {
   });
 
   test('should filter by event type', async ({ platformAdminPage: page }) => {
-    await page.getByTestId('auth-events-filter-type').selectOption('login_success');
+    // base-ui Select does not support selectOption(); use click-based interaction
+    await page.getByTestId('auth-events-filter-type').click();
+    await page.getByText('login_success').click();
     // Filtering is reactive — wait for table to update
     await page.waitForTimeout(500);
     const table = page.getByTestId('auth-events-table');
