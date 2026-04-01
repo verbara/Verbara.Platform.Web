@@ -198,6 +198,23 @@ Three pillars delivered:
 
 All under `/admin/billing/*`, guarded by `system:tenant:configure` permission. Sidebar group "Billing" with 4 items.
 
+## v1.2.1 Operations Frontend — COMPLETE (2026-03-31)
+
+Two deliverables:
+
+1. **Plan 29D: Impersonation UI** — useImpersonate/useEndImpersonate hooks in `use-impersonation.ts`, auth store with impersonation state (save/restore original token), ImpersonationBanner component with countdown timer
+2. **Plan 29E: Cluster UI** — Dedicated `/admin/cluster` page (cluster-page.tsx) with DataTable, summary cards, CRUD sheets (add/edit node), drain dialog, ConfirmDeleteDialog for remove/force, active drains section (amber), platform instances section. Rewrote `use-cluster.ts` fixing path mismatch (`/api/admin/` → `/api/management/`). Sidebar entry with Network icon. Consolidated cluster info from diagnostics-page and system-page.
+
+New files:
+- `src/admin/cluster/cluster-page.tsx` — Cluster management page
+- `src/core/api/hooks/use-impersonation.ts` — Impersonation hooks
+- `src/shell/impersonation-banner.tsx` — Impersonation banner component
+
+Modified files:
+- `src/core/api/hooks/use-cluster.ts` — Rewritten with correct API paths
+- `src/core/auth/auth-store.ts` — Impersonation state management
+- `src/admin/sidebar.tsx` — Cluster sidebar entry
+
 ## Plan Execution
 
 **Always use Subagent-Driven Development** with risk-weighted batching (FCM pattern):
