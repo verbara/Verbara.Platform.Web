@@ -30,6 +30,7 @@ import {
   type Invoice,
 } from '@/core/api/hooks/use-billing';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { useAuthStore } from '@/core/auth/auth-store';
 
 const col = createColumnHelper<Invoice>();
 
@@ -45,7 +46,9 @@ function formatCurrency(amount: number, currency: string) {
 }
 
 export default function InvoicesPage() {
-  const tenantId = useTenantStore((s) => s.activeTenantId);
+  const activeTenantId = useTenantStore((s) => s.activeTenantId);
+  const authTenantId = useAuthStore((s) => s.tenantId);
+  const tenantId = activeTenantId ?? authTenantId;
   const [page] = useState(1);
   const { data: invoices = [] } = useInvoices(page, 20);
   const generateInvoice = useGenerateInvoice();

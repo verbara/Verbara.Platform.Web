@@ -30,6 +30,7 @@ import {
   type UpdateQuotaInput,
 } from '@/core/api/hooks/use-billing';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { useAuthStore } from '@/core/auth/auth-store';
 
 const quotaSchema = z.object({
   maxConcurrentChannels: z.coerce.number().int().min(1),
@@ -100,7 +101,9 @@ function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
 }
 
 export default function QuotasPage() {
-  const tenantId = useTenantStore((s) => s.activeTenantId);
+  const activeTenantId = useTenantStore((s) => s.activeTenantId);
+  const authTenantId = useAuthStore((s) => s.tenantId);
+  const tenantId = activeTenantId ?? authTenantId;
   const { data: status } = useQuotaStatus();
   const updateQuota = useUpdateQuota();
   const [editOpen, setEditOpen] = useState(false);

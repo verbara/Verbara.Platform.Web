@@ -14,11 +14,14 @@ import {
   type RateCard,
 } from '@/core/api/hooks/use-billing';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { useAuthStore } from '@/core/auth/auth-store';
 
 const col = createColumnHelper<RateCard>();
 
 export default function RateCardsPage() {
-  const tenantId = useTenantStore((s) => s.activeTenantId);
+  const activeTenantId = useTenantStore((s) => s.activeTenantId);
+  const authTenantId = useAuthStore((s) => s.tenantId);
+  const tenantId = activeTenantId ?? authTenantId;
   const { data: rateCards = [] } = useRateCards();
   const deleteRateCard = useDeleteRateCard();
 

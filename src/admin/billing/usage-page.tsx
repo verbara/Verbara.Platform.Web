@@ -20,11 +20,14 @@ import {
   type UsageRecord,
 } from '@/core/api/hooks/use-billing';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { useAuthStore } from '@/core/auth/auth-store';
 
 const col = createColumnHelper<UsageRecord>();
 
 export default function UsagePage() {
-  const tenantId = useTenantStore((s) => s.activeTenantId);
+  const activeTenantId = useTenantStore((s) => s.activeTenantId);
+  const authTenantId = useAuthStore((s) => s.tenantId);
+  const tenantId = activeTenantId ?? authTenantId;
 
   const now = new Date();
   const [from, setFrom] = useState(format(startOfMonth(now), "yyyy-MM-dd'T'HH:mm"));
