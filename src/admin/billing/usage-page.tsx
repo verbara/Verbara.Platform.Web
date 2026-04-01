@@ -36,7 +36,7 @@ export default function UsagePage() {
   const untilISO = until ? new Date(until).toISOString() : undefined;
 
   const { data: summaries = [] } = useUsageSummary(fromISO, untilISO);
-  const { data: records = [], isFetching } = useUsageDetails({
+  const { data: records = [] } = useUsageDetails({
     from: fromISO,
     until: untilISO,
     type: typeFilter !== 'all' ? typeFilter : undefined,

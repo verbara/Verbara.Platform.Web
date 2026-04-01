@@ -46,8 +46,8 @@ function formatCurrency(amount: number, currency: string) {
 
 export default function InvoicesPage() {
   const tenantId = useTenantStore((s) => s.activeTenantId);
-  const [page, setPage] = useState(1);
-  const { data: invoices = [], isFetching } = useInvoices(page, 20);
+  const [page] = useState(1);
+  const { data: invoices = [] } = useInvoices(page, 20);
   const generateInvoice = useGenerateInvoice();
   const issueInvoice = useIssueInvoice();
 
