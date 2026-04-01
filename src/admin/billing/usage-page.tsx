@@ -130,7 +130,7 @@ export default function UsagePage() {
         </div>
         <div className="space-y-1.5">
           <Label>Type</Label>
-          <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setDetailPage(1); }}>
+          <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v ?? 'all'); setDetailPage(1); }}>
             <SelectTrigger className="w-48" data-testid="usage-type-filter">
               <SelectValue />
             </SelectTrigger>

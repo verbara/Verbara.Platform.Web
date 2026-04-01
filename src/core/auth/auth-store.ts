@@ -12,6 +12,15 @@ export interface Features {
   [key: string]: boolean;
 }
 
+export interface ImpersonationState {
+  active: boolean;
+  targetTenantId: string;
+  targetTenantName: string;
+  originalToken: string;
+  originalTenantId: string;
+  expiresAt: number;
+}
+
 interface AuthState {
   accessToken: string | null;
   tokenExpiry: number | null;
@@ -21,6 +30,7 @@ interface AuthState {
   features: Features;
   rememberMe: boolean;
   mfaPending: { mfaToken: string; email: string } | null;
+  impersonation: ImpersonationState | null;
 
   setAuth: (
     accessToken: string,
@@ -38,6 +48,17 @@ interface AuthState {
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (...permissions: string[]) => boolean;
   isTokenExpired: () => boolean;
+  startImpersonation: (
+    response: {
+      accessToken: string;
+      expiresAt: string;
+      targetTenantId: string;
+      targetTenantName: string;
+    },
+    originalToken: string,
+    originalTenantId: string,
+  ) => void;
+  endImpersonation: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -51,6 +72,7 @@ export const useAuthStore = create<AuthState>()(
       features: {},
       rememberMe: false,
       mfaPending: null,
+      impersonation: null,
 
       setAuth: (accessToken, tokenExpiry, user, tenantId, permissions, features) =>
         set({ accessToken, tokenExpiry, user, tenantId, permissions, features, mfaPending: null }),
@@ -67,6 +89,7 @@ export const useAuthStore = create<AuthState>()(
           permissions: [],
           features: {},
           mfaPending: null,
+          impersonation: null,
         }),
       hasFeature: (feature) => get().features[feature] === true,
       hasPermission: (permission) => get().permissions.includes(permission),
@@ -76,6 +99,30 @@ export const useAuthStore = create<AuthState>()(
         const expiry = get().tokenExpiry;
         if (!expiry) return true;
         return Date.now() >= expiry - 30_000; // 30s buffer
+      },
+      startImpersonation: (response, originalToken, originalTenantId) =>
+        set({
+          accessToken: response.accessToken,
+          tokenExpiry: new Date(response.expiresAt).getTime(),
+          tenantId: response.targetTenantId,
+          impersonation: {
+            active: true,
+            targetTenantId: response.targetTenantId,
+            targetTenantName: response.targetTenantName,
+            originalToken,
+            originalTenantId,
+            expiresAt: new Date(response.expiresAt).getTime(),
+          },
+        }),
+      endImpersonation: () => {
+        const imp = get().impersonation;
+        if (imp) {
+          set({
+            accessToken: imp.originalToken,
+            tenantId: imp.originalTenantId,
+            impersonation: null,
+          });
+        }
       },
     }),
     {
