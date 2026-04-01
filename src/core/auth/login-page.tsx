@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from './auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
@@ -27,7 +27,6 @@ export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
@@ -46,13 +45,33 @@ export function LoginPage() {
     agent: '/agent',
   };
 
-  // Handle OIDC callback token
+  // Handle OIDC callback via URL fragment (#oidc_callback&access_token=...&...)
   useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      void handleOidcCallback(token);
+    const hash = window.location.hash;
+    if (!hash.startsWith('#oidc_callback')) return;
+
+    const params = new URLSearchParams(hash.replace('#oidc_callback&', ''));
+    const accessToken = params.get('access_token');
+    const expiresAt = params.get('expires_at');
+    const tenantId = params.get('tenant_id');
+    const userId = params.get('user_id');
+    const email = params.get('email');
+    const displayName = params.get('display_name');
+    const role = params.get('role');
+
+    if (accessToken && tenantId && userId && email && role) {
+      // Clear the hash to prevent re-processing
+      window.history.replaceState(null, '', window.location.pathname);
+      completeLogin({
+        accessToken,
+        expiresAt: expiresAt ?? undefined,
+        tenantId,
+        user: { id: userId, email, displayName: displayName ?? email, role },
+        permissions: [],
+        features: {},
+      });
     }
-  }, [searchParams]);
+  }, []);
 
   function completeLogin(data: LoginResponse) {
     if (!data.accessToken || !data.user || !data.tenantId) return;
@@ -74,23 +93,6 @@ export function LoginPage() {
       '/agent';
 
     navigate(from, { replace: true });
-  }
-
-  async function handleOidcCallback(token: string) {
-    try {
-      const res = await fetch('/api/auth/oidc/complete', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as LoginResponse;
-        completeLogin(data);
-      }
-    } catch {
-      setError(t('auth.sso_error'));
-    }
   }
 
   async function handleEmailLogin(e: React.FormEvent) {
@@ -159,7 +161,13 @@ export function LoginPage() {
   }
 
   function handleSsoLogin() {
-    window.location.href = '/api/auth/oidc/login';
+    const tenant = resolveDefaultTenant();
+    if (!tenant) {
+      setError(t('auth.sso_no_tenant', 'Cannot determine tenant for SSO login'));
+      return;
+    }
+    const returnUrl = encodeURIComponent(window.location.origin + '/login');
+    window.location.href = `/api/auth/oidc/login?tenant_id=${encodeURIComponent(tenant)}&return_url=${returnUrl}`;
   }
 
   // MFA verification modal

@@ -4,7 +4,7 @@
 
 Asterisk.Platform.Web is the React 19 UI for the omnichannel contact center platform. It provides admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**253 TS/TSX files, 48 pages, 35 API hooks, 20 UI components, 14 E2E spec files (90 tests)**
+**263 TS/TSX files, 52 pages, 38 API hooks, 20 UI components, 14 E2E spec files (90 tests)**
 
 ## Stack
 
@@ -111,8 +111,8 @@ Custom `customFetch<T>()` in `src/core/api/client.ts`:
 - On 401: attempts single refresh, then redirects to `/login`
 - Dev proxy: Vite forwards `/api` to `http://localhost:5000`
 
-**35 TanStack Query hooks** in `src/core/api/hooks/`:
-- `use-agents`, `use-analytics`, `use-audit`, `use-auth-admin`, `use-billing`, `use-bots`, `use-caller-id-pools`, `use-campaigns`, `use-channels`, `use-cluster`, `use-contacts`, `use-conversations`, `use-dialer-settings`, `use-dispositions`, `use-dnc-lists`, `use-endpoint-profiles`, `use-flows`, `use-holiday-calendars`, `use-knowledge`, `use-media`, `use-queue-members`, `use-queue-metrics`, `use-queues`, `use-rbac`, `use-reports`, `use-routes`, `use-skills`, `use-supervisor`, `use-surveys`, `use-system`, `use-teams`, `use-tenants`, `use-trunks`, `use-users`, `use-agent-assist`
+**38 TanStack Query hooks** in `src/core/api/hooks/`:
+- `use-agents`, `use-analytics`, `use-audit`, `use-auth-admin`, `use-billing`, `use-bots`, `use-caller-id-pools`, `use-campaigns`, `use-channels`, `use-cluster`, `use-contacts`, `use-conversations`, `use-dialer-settings`, `use-dispositions`, `use-dnc-lists`, `use-endpoint-profiles`, `use-flows`, `use-gdpr`, `use-holiday-calendars`, `use-knowledge`, `use-media`, `use-queue-members`, `use-queue-metrics`, `use-queues`, `use-rbac`, `use-reports`, `use-routes`, `use-skills`, `use-supervisor`, `use-surveys`, `use-system`, `use-teams`, `use-tenants`, `use-trunks`, `use-users`, `use-agent-assist`, `use-webhooks`, `use-impersonation`
 
 ## State Management
 
@@ -214,6 +214,40 @@ Modified files:
 - `src/core/api/hooks/use-cluster.ts` — Rewritten with correct API paths
 - `src/core/auth/auth-store.ts` — Impersonation state management
 - `src/admin/sidebar.tsx` — Cluster sidebar entry
+
+## v1.3.0 "Integration & Compliance" Frontend — COMPLETE (2026-04-01)
+
+Syncs Platform.Web with backend v1.3.0 (4 sub-projects: license enforcement, OIDC SSO, GDPR, webhooks).
+
+### Sub-project 30E-A: OIDC Callback + License Fix (CRITICAL)
+- **OIDC callback rewrite** — Backend now redirects to `#oidc_callback&access_token=...` URL fragment instead of `?token=` query param. Rewrote login-page.tsx to parse hash fragment, removed dead `POST /api/auth/oidc/complete` call
+- **SSO button fix** — Added `tenant_id` and `return_url` params to OIDC login redirect
+- **License DTO alignment** — Updated LicenseInfo type from `{tier,features,maxAgents}` to `{isValid,licenseId,licensee,status,expiresAt,licensedFeatures[],maxNodes,lastValidatedAt}`. Rewrote license-card.tsx with status-based styling
+- **API path migration** — `/api/admin/system/*` → `/api/management/system/*` (info, license, settings)
+- **Diagnostics fix** — Updated field references (tenantId→hostTenantId, tier→status, maxAgents→maxNodes)
+
+### Sub-project 30E-B: Webhook Subscriptions
+- **use-webhooks.ts** — 11 hooks (subscription CRUD, test, rotate secret, deliveries, event types, DLQ)
+- **webhooks-page.tsx** — DataTable with CRUD, status badges, event type count
+- **webhook-form.tsx** — Sheet form with Zod validation, HTTPS-only URL, event type multi-select, one-time secret display
+- **webhook-detail-sheet.tsx** — Detail view with delivery log, rotate secret, send test
+
+### Sub-project 30E-C: GDPR Compliance
+- **use-gdpr.ts** — 5 hooks (export, purge, purge-log, retention CRUD)
+- **gdpr-page.tsx** — Data export (JSON download) + data purge (3s confirmation) for tenant admins
+- **purge-log-page.tsx** — Purge history DataTable with tenant/date filters
+- **retention-policy-section.tsx** — Sheet form for per-tenant retention policies (conversations, auth events, audit, usage records)
+
+### Sub-project 30E-D: Dead Letter Queue
+- **dead-letter-page.tsx** — DLQ management with retry per delivery, tenant-scoped pagination
+
+### Integration
+- **sidebar.tsx** — Added "Integrations" group (Webhooks, Dead Letter) + GDPR/Purge Log to "Compliance" group
+- **router.tsx** — 4 new routes (`/admin/webhooks`, `/admin/webhooks/dead-letter`, `/admin/gdpr`, `/admin/purge-log`)
+- **tenants-page.tsx** — Added "Retention Policy" action button per tenant row
+
+New files: 10 (3 hooks, 7 pages/components)
+Modified files: 9 (login-page, license-card, system-page, diagnostics, use-system, sidebar, router, tenants-page, package.json)
 
 ## Plan Execution
 

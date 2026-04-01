@@ -1,0 +1,210 @@
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Save, Clock } from 'lucide-react';
+import { Button } from '@/core/ui/button';
+import { Input } from '@/core/ui/input';
+import { Label } from '@/core/ui/label';
+import { Switch } from '@/core/ui/switch';
+import { Separator } from '@/core/ui/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from '@/core/ui/sheet';
+import {
+  useRetentionPolicy,
+  useUpdateRetentionPolicy,
+} from '@/core/api/hooks/use-gdpr';
+
+const retentionSchema = z.object({
+  conversationRetentionDays: z.number().min(1).max(3650).nullable(),
+  authEventRetentionDays: z.number().min(1).max(3650).nullable(),
+  auditRetentionDays: z.number().min(1).max(3650).nullable(),
+  usageRecordRetentionDays: z.number().min(1).max(3650).nullable(),
+});
+
+type RetentionFormValues = z.infer<typeof retentionSchema>;
+
+interface RetentionFieldConfig {
+  name: keyof RetentionFormValues;
+  label: string;
+  description: string;
+}
+
+const RETENTION_FIELDS: RetentionFieldConfig[] = [
+  {
+    name: 'conversationRetentionDays',
+    label: 'Conversation Retention',
+    description: 'Automatically purge conversations older than this many days.',
+  },
+  {
+    name: 'authEventRetentionDays',
+    label: 'Auth Event Retention',
+    description: 'Automatically purge authentication events older than this many days.',
+  },
+  {
+    name: 'auditRetentionDays',
+    label: 'Audit Record Retention',
+    description: 'Automatically purge audit records older than this many days.',
+  },
+  {
+    name: 'usageRecordRetentionDays',
+    label: 'Usage Record Retention',
+    description: 'Automatically purge usage records older than this many days.',
+  },
+];
+
+export interface RetentionPolicySectionProps {
+  tenantId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function RetentionPolicySection({
+  tenantId,
+  open,
+  onOpenChange,
+}: RetentionPolicySectionProps) {
+  const { data: policy } = useRetentionPolicy(tenantId);
+  const updatePolicy = useUpdateRetentionPolicy(tenantId);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm<RetentionFormValues>({
+    resolver: zodResolver(retentionSchema) as any,
+    defaultValues: {
+      conversationRetentionDays: null,
+      authEventRetentionDays: null,
+      auditRetentionDays: null,
+      usageRecordRetentionDays: null,
+    },
+  });
+
+  useEffect(() => {
+    if (open && policy) {
+      reset({
+        conversationRetentionDays: policy.conversationRetentionDays,
+        authEventRetentionDays: policy.authEventRetentionDays,
+        auditRetentionDays: policy.auditRetentionDays,
+        usageRecordRetentionDays: policy.usageRecordRetentionDays,
+      });
+    }
+  }, [open, policy, reset]);
+
+  const onSubmit = handleSubmit((values) => {
+    updatePolicy.mutate(values, {
+      onSuccess: () => onOpenChange(false),
+    });
+  });
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="sm:max-w-md" data-testid="retention-sheet">
+        <SheetHeader>
+          <div className="flex items-center gap-2">
+            <Clock className="h-5 w-5 text-brand" />
+            <SheetTitle>Retention Policy</SheetTitle>
+          </div>
+          <SheetDescription>
+            Configure automatic data retention limits for tenant{' '}
+            <span className="font-mono text-xs">{tenantId}</span>.
+          </SheetDescription>
+        </SheetHeader>
+
+        <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+          {RETENTION_FIELDS.map((field) => (
+            <RetentionFieldRow
+              key={field.name}
+              config={field}
+              control={control}
+              watch={watch}
+              setValue={setValue}
+            />
+          ))}
+
+          <SheetFooter className="mt-auto px-0">
+            <Button
+              type="submit"
+              disabled={isSubmitting || updatePolicy.isPending}
+              data-testid="retention-save"
+            >
+              <Save className="mr-1.5 h-4 w-4" />
+              {updatePolicy.isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </SheetFooter>
+        </form>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+interface RetentionFieldRowProps {
+  config: RetentionFieldConfig;
+  control: any;
+  watch: any;
+  setValue: any;
+}
+
+function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldRowProps) {
+  const value = watch(config.name);
+  const enabled = value !== null;
+
+  function handleToggle(checked: boolean) {
+    setValue(config.name, checked ? 365 : null, { shouldValidate: true });
+  }
+
+  return (
+    <div className="space-y-3 rounded-md border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <Label className="text-sm font-medium">{config.label}</Label>
+          <p className="text-xs text-muted-foreground">{config.description}</p>
+        </div>
+        <Switch checked={enabled} onCheckedChange={handleToggle} />
+      </div>
+
+      {enabled && (
+        <>
+          <Separator />
+          <div className="flex items-center gap-2">
+            <Controller
+              name={config.name}
+              control={control}
+              render={({ field, fieldState }) => (
+                <div className="flex-1 space-y-1">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={3650}
+                    value={field.value ?? ''}
+                    onChange={(e) => {
+                      const num = e.target.value === '' ? null : Number(e.target.value);
+                      field.onChange(num);
+                    }}
+                    placeholder="Days"
+                  />
+                  {fieldState.error && (
+                    <p className="text-xs text-destructive">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+            <span className="text-sm text-muted-foreground">days</span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

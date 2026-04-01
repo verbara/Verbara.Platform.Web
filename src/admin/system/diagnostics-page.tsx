@@ -74,12 +74,12 @@ export default function DiagnosticsPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Tenant</span>
-            <span>{systemInfo?.tenantId ?? 'N/A'}</span>
+            <span>{systemInfo?.hostTenantId ?? 'N/A'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Setup</span>
-            <Badge variant={systemInfo?.setupComplete ? 'default' : 'secondary'}>
-              {systemInfo?.setupComplete ? 'Complete' : 'Pending'}
+            <Badge variant={systemInfo?.hostTenantId ? 'default' : 'secondary'}>
+              {systemInfo?.hostTenantId ? 'Complete' : 'Pending'}
             </Badge>
           </div>
         </StatusCard>
@@ -92,21 +92,19 @@ export default function DiagnosticsPage() {
           testId="diag-license-card"
         >
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Tier</span>
-            <Badge variant="outline">{license?.tier ?? 'N/A'}</Badge>
+            <span className="text-muted-foreground">Status</span>
+            <Badge variant="outline">{license?.status ?? 'N/A'}</Badge>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Max Agents</span>
-            <span>{license?.maxAgents ?? 'N/A'}</span>
+            <span className="text-muted-foreground">Max Nodes</span>
+            <span>{license?.maxNodes ?? 'N/A'}</span>
           </div>
-          {license?.features && (
+          {license?.licensedFeatures && license.licensedFeatures.length > 0 && (
             <div className="mt-1">
               <span className="text-xs text-muted-foreground">Features:</span>
               <div className="mt-1 flex flex-wrap gap-1">
-                {Object.entries(license.features)
-                  .filter(([, v]) => v)
-                  .map(([k]) => (
-                    <Badge key={k} variant="secondary" className="text-xs">{k}</Badge>
+                {license.licensedFeatures.map((f) => (
+                    <Badge key={f} variant="secondary" className="text-xs">{f}</Badge>
                   ))}
               </div>
             </div>

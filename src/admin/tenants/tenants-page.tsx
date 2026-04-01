@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Building2, Trash2, Pencil } from 'lucide-react';
+import { Plus, Building2, Trash2, Pencil, Clock } from 'lucide-react';
+import { RetentionPolicySection } from '@/admin/gdpr/retention-policy-section';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -73,6 +74,7 @@ export default function TenantsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
   const [editForm, setEditForm] = useState({ name: '', status: 'active', maxConcurrentChannels: 0, maxActiveCampaigns: 0 });
+  const [retentionTenantId, setRetentionTenantId] = useState<string | null>(null);
 
   const { data: tenants = [], isLoading } = useTenants();
   const createTenant = useCreateTenant();
@@ -173,6 +175,19 @@ export default function TenantsPage() {
                 }}
               >
                 <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                title="Retention Policy"
+                data-testid={`tenant-retention-${row.original.tenantId}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRetentionTenantId(row.original.tenantId);
+                }}
+              >
+                <Clock className="h-3.5 w-3.5" />
               </Button>
             </PermissionGuard>
             <Button
@@ -323,6 +338,15 @@ export default function TenantsPage() {
         confirmLabel="Delete"
         onConfirm={handleDeleteConfirm}
       />
+
+      {/* Retention policy sheet */}
+      {retentionTenantId && (
+        <RetentionPolicySection
+          tenantId={retentionTenantId}
+          open={retentionTenantId !== null}
+          onOpenChange={(open) => { if (!open) setRetentionTenantId(null); }}
+        />
+      )}
 
       {/* Edit tenant dialog */}
       <Dialog open={editingTenant !== null} onOpenChange={(open) => { if (!open) setEditingTenant(null); }}>

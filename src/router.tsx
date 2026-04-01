@@ -50,6 +50,10 @@ const SecurityPage = lazy(() => import('@/admin/profile/security-page'));
 const AuthConfigPage = lazy(() => import('@/admin/system/auth-config-page'));
 const AuthEventsPage = lazy(() => import('@/admin/system/auth-events-page'));
 const AuthSessionsPage = lazy(() => import('@/admin/system/auth-sessions-page'));
+const WebhooksPage = lazy(() => import('@/admin/webhooks/webhooks-page'));
+const DeadLetterPage = lazy(() => import('@/admin/webhooks/dead-letter-page'));
+const GdprPage = lazy(() => import('@/admin/gdpr/gdpr-page'));
+const PurgeLogPage = lazy(() => import('@/admin/gdpr/purge-log-page'));
 const RateCardsPage = lazy(() => import('@/admin/billing/rate-cards-page'));
 const InvoicesPage = lazy(() => import('@/admin/billing/invoices-page'));
 const UsagePage = lazy(() => import('@/admin/billing/usage-page'));
@@ -557,6 +561,46 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:tenant:configure" redirect>
                 <LazyLoad>
                   <QuotasPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'webhooks',
+            element: (
+              <PermissionGuard requires="system:integration:manage" redirect>
+                <LazyLoad>
+                  <WebhooksPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'webhooks/dead-letter',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <DeadLetterPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'gdpr',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <GdprPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'purge-log',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <PurgeLogPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

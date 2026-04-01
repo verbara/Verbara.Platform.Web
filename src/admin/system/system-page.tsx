@@ -90,14 +90,7 @@ export default function SystemPage() {
         </h2>
         {license ? (
           <div data-testid="system-license-card">
-          <LicenseCard
-            license={{
-              tier: license.tier,
-              maxAgents: license.maxAgents,
-              expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-              features: license.features,
-            }}
-          />
+          <LicenseCard license={license} />
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">{t('admin:system.loading')}</p>

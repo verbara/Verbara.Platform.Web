@@ -13,8 +13,11 @@ import {
   Route,
   Phone,
   ShieldBan,
+  ShieldCheck,
   CalendarOff,
   Server,
+  Webhook,
+  AlertTriangle,
   SlidersHorizontal,
   ChevronDown,
   Bot,
@@ -95,6 +98,17 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'dnc-lists', labelKey: 'admin:sidebar.dncLists', to: '/admin/dnc-lists', icon: ShieldBan, requiredPermission: 'campaigns:campaign:view' },
       { key: 'holiday-calendars', labelKey: 'admin:sidebar.holidayCalendars', to: '/admin/holiday-calendars', icon: CalendarOff, requiredPermission: 'campaigns:campaign:view' },
+      { key: 'gdpr', labelKey: 'admin:sidebar.gdpr', to: '/admin/gdpr', icon: ShieldCheck, requiredPermission: 'system:tenant:configure' },
+      { key: 'purge-log', labelKey: 'admin:sidebar.purgeLog', to: '/admin/purge-log', icon: FileSearch, requiredPermission: 'system:tenant:configure' },
+    ],
+  },
+  {
+    key: 'integrations',
+    labelKey: 'admin:sidebar.integrations',
+    requiredPermission: 'system:integration:manage',
+    items: [
+      { key: 'webhooks', labelKey: 'admin:sidebar.webhooks', to: '/admin/webhooks', icon: Webhook, requiredPermission: 'system:integration:manage' },
+      { key: 'dead-letter', labelKey: 'admin:sidebar.deadLetter', to: '/admin/webhooks/dead-letter', icon: AlertTriangle, requiredPermission: 'system:tenant:configure' },
     ],
   },
   {

@@ -4,15 +4,20 @@ import { toast } from 'sonner';
 
 export interface SystemInfo {
   version: string;
-  tenantId: string;
+  hostTenantId: string | null;
+  platformName: string | null;
   features: Record<string, boolean>;
-  setupComplete?: boolean;
 }
 
 export interface LicenseInfo {
-  tier: string;
-  features: Record<string, boolean>;
-  maxAgents: number;
+  isValid: boolean;
+  licenseId: string | null;
+  licensee: string | null;
+  status: string;
+  expiresAt: string | null;
+  licensedFeatures: string[];
+  maxNodes: number;
+  lastValidatedAt: string;
 }
 
 export interface ClusterInfo {
@@ -30,7 +35,7 @@ export function useSystemInfo() {
     queryKey: ['system', 'info'],
     queryFn: () =>
       customFetch<SystemInfo>({
-        url: '/api/admin/system/info',
+        url: '/api/management/system/info',
         method: 'GET',
       }),
   });
@@ -41,7 +46,7 @@ export function useSystemLicense() {
     queryKey: ['system', 'license'],
     queryFn: () =>
       customFetch<LicenseInfo>({
-        url: '/api/admin/system/license',
+        url: '/api/management/system/license',
         method: 'GET',
       }),
   });
@@ -63,8 +68,8 @@ export function useUpdateSystemSettings() {
   return useMutation({
     mutationFn: (data: SystemSettings) =>
       customFetch<SystemSettings>({
-        url: '/api/admin/system/settings',
-        method: 'POST',
+        url: '/api/management/system/settings',
+        method: 'PUT',
         data,
       }),
     onSuccess: () => {
