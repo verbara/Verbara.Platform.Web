@@ -67,7 +67,7 @@ export default function GdprPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-testid="gdpr-page" className="space-y-6">
       <PageHeader
         title="GDPR Data Management"
         description="Export or purge personal data for GDPR compliance."

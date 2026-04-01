@@ -4,7 +4,7 @@
 
 Asterisk.Platform.Web is the React 19 UI for the omnichannel contact center platform. It provides admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**263 TS/TSX files, 52 pages, 38 API hooks, 20 UI components, 14 E2E spec files (90 tests)**
+**263 TS/TSX files, 52 pages, 38 API hooks, 20 UI components, 19 E2E spec files (116 tests)**
 
 ## Stack
 
@@ -248,6 +248,28 @@ Syncs Platform.Web with backend v1.3.0 (4 sub-projects: license enforcement, OID
 
 New files: 10 (3 hooks, 7 pages/components)
 Modified files: 9 (login-page, license-card, system-page, diagnostics, use-system, sidebar, router, tenants-page, package.json)
+
+## E2E Sprint 1.5: v1.3.0 Coverage — COMPLETE (2026-04-01)
+
+Fixed 6 broken E2E tests + added 29 new tests across 5 new spec files for v1.3.0 pages:
+
+### Broken Test Fixes
+- **system-settings.spec.ts** — Fixed license card assertion (`/tier/i` → `/status|valid|expired|license/i`), removed 3 cluster tests (moved to /admin/cluster)
+- **diagnostics.spec.ts** — Fixed license assertion, rewrote cluster nodes test to use StatusCard (`diag-cluster-card`)
+- **billing-rate-cards.spec.ts** — Fixed ConfirmDeleteDialog testid (`confirm-dialog-confirm` → `confirm-delete-btn`)
+- **confirm-delete-dialog.tsx** — Added `data-testid="confirm-delete-btn"` to destructive Button
+
+### New Spec Files (5 files, 29 tests)
+- **webhooks.spec.ts** (10 tests) — CRUD, detail sheet, test/rotate, one-time secret dialog, sidebar nav
+- **dead-letter.spec.ts** (4 tests) — Page display, empty state, tenant search, sidebar nav
+- **gdpr.spec.ts** (6 tests) — Export/purge sections, button state validation, reason validation, sidebar nav
+- **purge-log.spec.ts** (4 tests) — Page display, filter controls, tenant filter, sidebar nav
+- **retention-policy.spec.ts** (5 tests) — Sheet open via tenants, toggle fields, save + API verify, sidebar nav
+
+### ApiHelper Extensions
+- 5 new methods: `createWebhookSubscription`, `listWebhookSubscriptions`, `deleteWebhookSubscription`, `getRetentionPolicy`, `updateRetentionPolicy`
+
+Result: 90 → 116 tests, 14 → 19 spec files
 
 ## Plan Execution
 

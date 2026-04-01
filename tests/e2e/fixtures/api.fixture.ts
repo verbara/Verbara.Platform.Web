@@ -123,4 +123,42 @@ export class ApiHelper {
     );
     return response.json();
   }
+
+  // --- Webhooks ---
+
+  async createWebhookSubscription(data: {
+    name: string;
+    endpointUrl: string;
+    eventTypes: string[];
+  }) {
+    const response = await this.request.post(`${API_BASE}/api/webhooks/subscriptions`, {
+      data,
+    });
+    return response;
+  }
+
+  async listWebhookSubscriptions() {
+    const response = await this.request.get(`${API_BASE}/api/webhooks/subscriptions`);
+    return response.json();
+  }
+
+  async deleteWebhookSubscription(id: string) {
+    return this.request.delete(`${API_BASE}/api/webhooks/subscriptions/${id}`);
+  }
+
+  // --- Retention Policy ---
+
+  async getRetentionPolicy(tenantId: string) {
+    const response = await this.request.get(
+      `${API_BASE}/api/management/tenants/${tenantId}/retention`,
+    );
+    return response.json();
+  }
+
+  async updateRetentionPolicy(tenantId: string, data: Record<string, unknown>) {
+    return this.request.put(
+      `${API_BASE}/api/management/tenants/${tenantId}/retention`,
+      { data },
+    );
+  }
 }

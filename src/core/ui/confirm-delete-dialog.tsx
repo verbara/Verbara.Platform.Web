@@ -71,6 +71,7 @@ export function ConfirmDeleteDialog({
           <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
           <Button
             variant="destructive"
+            data-testid="confirm-delete-btn"
             onClick={handleConfirm}
             disabled={deleteDisabled}
           >

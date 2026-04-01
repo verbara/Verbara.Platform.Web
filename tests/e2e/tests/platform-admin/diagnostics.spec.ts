@@ -14,14 +14,14 @@ test.describe('Diagnostics', () => {
   test('should display license card', async ({ platformAdminPage: page }) => {
     const card = page.getByTestId('diag-license-card');
     await expect(card).toBeVisible();
-    await expect(card).toContainText(/tier/i);
+    await expect(card).toContainText(/status|valid|nodes/i);
   });
 
-  test('should display cluster nodes table', async ({ platformAdminPage: page }) => {
-    const table = page.getByTestId('diag-nodes-table');
-    await expect(table).toBeVisible();
-    const rows = table.locator('tbody tr');
-    await expect(rows.first()).toBeVisible();
+  test('should display cluster info card', async ({ platformAdminPage: page }) => {
+    const card = page.getByTestId('diag-cluster-card');
+    await expect(card).toBeVisible();
+    await expect(card).toContainText(/nodes/i);
+    await expect(page.getByTestId('diag-manage-cluster-link')).toBeVisible();
   });
 
   test('should auto-refresh data', async ({ platformAdminPage: page }) => {

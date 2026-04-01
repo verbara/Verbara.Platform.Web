@@ -83,7 +83,7 @@ test.describe('Billing — Rate Cards', () => {
     const card = cards.find((c: any) => c.name === name);
     await page.getByTestId(`delete-rate-card-${card.rateCardId}`).click();
 
-    const confirmBtn = page.getByTestId('confirm-dialog-confirm');
+    const confirmBtn = page.getByTestId('confirm-delete-btn');
     await expect(confirmBtn).toBeDisabled();
     await page.waitForTimeout(3500);
     await expect(confirmBtn).toBeEnabled();

@@ -6,20 +6,7 @@ test.describe('System Settings', () => {
     await page.goto('/admin/system');
     const licenseCard = page.getByTestId('system-license-card');
     await expect(licenseCard).toBeVisible();
-    await expect(licenseCard).toContainText(/community|enterprise|tier/i);
-  });
-
-  test('should display cluster status', async ({ platformAdminPage: page }) => {
-    await page.goto('/admin/system');
-    await expect(page.getByText(/instance/i)).toBeVisible();
-  });
-
-  test('should display at least one cluster node', async ({ platformAdminPage: page }) => {
-    await page.goto('/admin/system');
-    const nodesGrid = page.getByTestId('system-nodes-grid');
-    await expect(nodesGrid).toBeVisible();
-    const nodeCards = nodesGrid.locator('[data-testid^="system-node-"]');
-    await expect(nodeCards.first()).toBeVisible();
+    await expect(licenseCard).toContainText(/status|valid|expired|license/i);
   });
 
   test('should display global settings form', async ({ platformAdminPage: page }) => {
@@ -50,12 +37,4 @@ test.describe('System Settings', () => {
     await expect(page.getByTestId('system-settings-save')).toBeDisabled();
   });
 
-  test('should show drain button state on node', async ({ platformAdminPage: page }) => {
-    await page.goto('/admin/system');
-    const drainButtons = page.locator('[data-testid^="system-node-drain-"]');
-    const count = await drainButtons.count();
-    if (count > 0) {
-      await expect(drainButtons.first()).toBeVisible();
-    }
-  });
 });
