@@ -1,15 +1,16 @@
-import { Server, Shield, Cpu } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Server, Shield, Cpu, ArrowRight } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { PageHeader } from '@/admin/shared/page-header';
 import { useSystemInfo, useSystemLicense, useSystemCluster } from '@/core/api/hooks/use-system';
-import { useClusterNodes, useClusterStatus } from '@/core/api/hooks/use-cluster';
+import { useClusterStatus } from '@/core/api/hooks/use-cluster';
 
 interface StatusCardProps {
-  title: string;
-  icon: typeof Server;
-  status: 'connected' | 'error' | 'warning' | 'unknown';
-  children: React.ReactNode;
-  testId?: string;
+  readonly title: string;
+  readonly icon: typeof Server;
+  readonly status: 'connected' | 'error' | 'warning' | 'unknown';
+  readonly children: React.ReactNode;
+  readonly testId?: string;
 }
 
 function StatusCard({ title, icon: Icon, status, children, testId }: StatusCardProps) {
@@ -40,7 +41,6 @@ export default function DiagnosticsPage() {
   const { data: systemInfo, isLoading: loadingInfo } = useSystemInfo();
   const { data: license, isLoading: loadingLicense } = useSystemLicense();
   const { data: cluster, isLoading: loadingCluster } = useSystemCluster();
-  const { data: nodes = [] } = useClusterNodes();
   const { data: clusterStatus } = useClusterStatus();
 
   const isLoading = loadingInfo || loadingLicense || loadingCluster;
@@ -136,70 +136,21 @@ export default function DiagnosticsPage() {
               </div>
             </>
           )}
+          <div className="mt-2">
+            <Link
+              to="/admin/cluster"
+              className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+              data-testid="diag-manage-cluster-link"
+            >
+              Manage cluster
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
         </StatusCard>
       </div>
 
-      {/* Cluster Nodes Detail */}
-      {nodes.length > 0 && (
-        <div className="rounded-lg border bg-card p-5">
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Cluster Nodes
-          </h3>
-          <div className="overflow-x-auto rounded-lg border">
-            <table data-testid="diag-nodes-table" className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Node ID</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">State</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Weight</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Priority</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Max Capacity</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Asterisk</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Started</th>
-                </tr>
-              </thead>
-              <tbody>
-                {nodes.map((node) => (
-                  <tr key={node.nodeId} className="border-t hover:bg-muted/30">
-                    <td className="px-3 py-2 font-mono text-xs">{node.nodeId}</td>
-                    <td className="px-3 py-2">
-                      <Badge variant={node.state === 'active' ? 'default' : 'secondary'}>
-                        {node.state}
-                      </Badge>
-                    </td>
-                    <td className="px-3 py-2">{node.weight}</td>
-                    <td className="px-3 py-2">{node.priorityTier}</td>
-                    <td className="px-3 py-2">{node.maxCapacity}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{node.asteriskVersion ?? 'N/A'}</td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">
-                      {node.startupTime ? new Date(node.startupTime).toLocaleString() : 'N/A'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Active Drains */}
-      {clusterStatus && clusterStatus.activeDrains.length > 0 && (
-        <div data-testid="diag-active-drains" className="rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-900/20">
-          <h3 className="mb-3 text-sm font-semibold text-amber-700 dark:text-amber-400">
-            Active Drains
-          </h3>
-          {clusterStatus.activeDrains.map((drain) => (
-            <div key={drain.nodeId} className="flex items-center justify-between py-2 text-sm">
-              <span className="font-mono">{drain.nodeId}</span>
-              <span>{drain.remainingCallCount} calls remaining</span>
-              <Badge variant="outline">{drain.state}</Badge>
-            </div>
-          ))}
-        </div>
-      )}
-
       <p className="text-xs text-muted-foreground text-center">
-        Auto-refreshes every 15 seconds
+        Auto-refreshes every 10 seconds
       </p>
     </div>
   );

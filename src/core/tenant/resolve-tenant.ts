@@ -11,8 +11,8 @@ export function resolveDefaultTenant(): string | null {
   const host = window.location.hostname;
   const parts = host.split('.');
   if (parts.length >= 3) {
-    const subdomain = parts[0];
-    if (!['www', 'api', 'localhost'].includes(subdomain)) {
+    const subdomain = parts[0] ?? '';
+    if (subdomain && !['www', 'api', 'localhost'].includes(subdomain)) {
       return subdomain;
     }
   }
