@@ -115,6 +115,7 @@ export default function KbListPage() {
             <Button
               variant="ghost"
               size="sm"
+              data-testid={`delete-article-${row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setDeleteId(row.original.id);
@@ -135,9 +136,9 @@ export default function KbListPage() {
   const isEmpty = articles.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="kb-page">
       <PageHeader title={t('admin:knowledge.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="kb-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:knowledge.createArticle')}
         </Button>

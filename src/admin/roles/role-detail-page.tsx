@@ -107,14 +107,14 @@ export default function RoleDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6" data-testid="role-detail-page">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin/roles')}>
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t('actions.back', 'Back')}
         </Button>
-        <Button onClick={handleSave} disabled={!dirty || updateRole.isPending}>
+        <Button onClick={handleSave} disabled={!dirty || updateRole.isPending} data-testid="role-save-btn">
           <Save className="mr-1.5 h-4 w-4" />
           {t('actions.save', 'Save')}
         </Button>

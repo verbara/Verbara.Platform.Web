@@ -64,9 +64,9 @@ export default function UsersPage() {
   const isEmpty = users.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div data-testid="users-page" className="space-y-6">
       <PageHeader title={t('admin:users.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="users-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:users.create')}
         </Button>

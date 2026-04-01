@@ -107,7 +107,7 @@ export default function RealtimePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="realtime-page">
       <PageHeader
         title="Endpoint Profiles"
         description="Reusable PJSIP endpoint profile templates for agent and trunk provisioning."
@@ -119,7 +119,7 @@ export default function RealtimePage() {
         >
           Seed Defaults
         </Button>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button onClick={() => setCreateOpen(true)} data-testid="realtime-create-btn">
           <Plus className="mr-1.5 h-4 w-4" />
           Create Profile
         </Button>

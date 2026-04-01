@@ -75,6 +75,7 @@ export default function TrunksPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              data-testid={`delete-trunk-${info.row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setDeletingTrunk(info.row.original);
@@ -108,9 +109,9 @@ export default function TrunksPage() {
   const isEmpty = trunks.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="trunks-page">
       <PageHeader title={t('admin:trunks.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="trunks-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:trunks.create')}
         </Button>
@@ -123,11 +124,12 @@ export default function TrunksPage() {
             placeholder="Search trunk by name..."
             className="pl-9"
             value={searchName}
+            data-testid="trunks-search"
             onChange={(e) => setSearchName(e.target.value)}
           />
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
+          <input type="checkbox" checked={activeOnly} data-testid="trunks-active-only" onChange={(e) => setActiveOnly(e.target.checked)} />
           Active only
         </label>
       </div>

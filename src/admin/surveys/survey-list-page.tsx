@@ -88,6 +88,7 @@ export default function SurveyListPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              data-testid={`delete-survey-${info.row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setDeletingSurvey(info.row.original);
@@ -121,9 +122,9 @@ export default function SurveyListPage() {
   const isEmpty = surveys.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="surveys-page">
       <PageHeader title={t('admin:surveys.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="surveys-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:surveys.create')}
         </Button>

@@ -161,9 +161,9 @@ export default function CampaignListPage() {
   const isEmpty = campaigns.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="campaigns-page">
       <PageHeader title={t('admin:campaigns.title')}>
-        <Button onClick={() => navigate('/admin/campaigns/new')}>
+        <Button data-testid="campaigns-create-btn" onClick={() => navigate('/admin/campaigns/new')}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:campaigns.create')}
         </Button>

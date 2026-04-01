@@ -122,6 +122,7 @@ export default function TeamsPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0"
+              data-testid={`edit-team-${info.row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
                 openEdit(info.row.original);
@@ -133,6 +134,7 @@ export default function TeamsPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              data-testid={`delete-team-${info.row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
                 openDelete(info.row.original);
@@ -150,9 +152,9 @@ export default function TeamsPage() {
   const isEmpty = teams.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="teams-page">
       <PageHeader title={t('admin:teams.title')}>
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} data-testid="teams-create-btn">
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:teams.create')}
         </Button>
@@ -190,6 +192,7 @@ export default function TeamsPage() {
               <Label htmlFor="teamName">{t('admin:teams.name')}</Label>
               <Input
                 id="teamName"
+                data-testid="team-form-name"
                 placeholder="e.g. Support"
                 aria-invalid={!!errors.name}
                 {...register('name')}
@@ -200,7 +203,7 @@ export default function TeamsPage() {
             </div>
             <DialogFooter>
               <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} data-testid="team-form-submit">
                 {editingTeam ? t('admin:teams.save') : t('admin:teams.create')}
               </Button>
             </DialogFooter>

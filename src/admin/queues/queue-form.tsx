@@ -207,6 +207,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                 <Label htmlFor="name">{t('admin:queues.name')}</Label>
                 <Input
                   id="name"
+                  data-testid="queue-form-name"
                   placeholder="Support"
                   aria-invalid={!!errors.name}
                   {...register('name')}
@@ -496,7 +497,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
           </Tabs>
 
           <SheetFooter className="mt-auto px-0">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" data-testid="queue-form-submit" disabled={isSubmitting}>
               {mode === 'create' ? t('admin:queues.create') : t('admin:queues.save')}
             </Button>
           </SheetFooter>

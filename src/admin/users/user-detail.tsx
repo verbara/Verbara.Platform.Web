@@ -110,7 +110,7 @@ export default function UserDetailPage() {
   const authProvider = ((user as unknown as Record<string, unknown>).authProvider as string) || 'local';
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div data-testid="user-detail-page" className="mx-auto max-w-2xl space-y-6">
       {/* Back + Actions */}
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin/users')}>
@@ -118,7 +118,7 @@ export default function UserDetailPage() {
           Back
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+          <Button data-testid="user-edit-btn" variant="outline" size="sm" onClick={() => setEditOpen(true)}>
             <Pencil className="mr-1.5 h-4 w-4" />
             Edit
           </Button>
@@ -128,7 +128,7 @@ export default function UserDetailPage() {
               {t('admin:users.force_logout', 'Force Logout')}
             </Button>
           </PermissionGuard>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+          <Button data-testid="user-delete-btn" variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="mr-1.5 h-4 w-4" />
             Delete
           </Button>

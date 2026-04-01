@@ -161,4 +161,243 @@ export class ApiHelper {
       { data },
     );
   }
+
+  // --- Users ---
+
+  async createUser(data: { email: string; displayName: string; role: string }) {
+    return this.request.post(`${API_BASE}/api/admin/users`, { data });
+  }
+
+  async listUsers() {
+    const response = await this.request.get(`${API_BASE}/api/admin/users`);
+    return response.json();
+  }
+
+  async deleteUser(userId: string) {
+    return this.request.delete(`${API_BASE}/api/admin/users/${userId}`);
+  }
+
+  // --- Teams ---
+
+  async createTeam(data: { name: string }) {
+    return this.request.post(`${API_BASE}/api/admin/teams`, { data });
+  }
+
+  async listTeams() {
+    const response = await this.request.get(`${API_BASE}/api/admin/teams`);
+    return response.json();
+  }
+
+  async deleteTeam(teamId: string) {
+    return this.request.delete(`${API_BASE}/api/admin/teams/${teamId}`);
+  }
+
+  // --- Roles ---
+
+  async createRole(data: { name: string; description?: string; sourceTemplateId?: string }) {
+    return this.request.post(`${API_BASE}/api/admin/roles`, { data });
+  }
+
+  async listRoles() {
+    const response = await this.request.get(`${API_BASE}/api/admin/roles`);
+    return response.json();
+  }
+
+  async deleteRole(roleId: string) {
+    return this.request.delete(`${API_BASE}/api/admin/roles/${roleId}`);
+  }
+
+  async cloneRole(roleId: string, newName: string) {
+    return this.request.post(`${API_BASE}/api/admin/roles/${roleId}/clone`, {
+      data: { name: newName },
+    });
+  }
+
+  // --- Queues ---
+
+  async createQueue(data: { name: string; isActive?: boolean }) {
+    return this.request.post(`${API_BASE}/api/admin/queues`, { data });
+  }
+
+  async listQueues() {
+    const response = await this.request.get(`${API_BASE}/api/admin/queues`);
+    return response.json();
+  }
+
+  async deleteQueue(queueId: string) {
+    return this.request.delete(`${API_BASE}/api/admin/queues/${queueId}`);
+  }
+
+  // --- Skills ---
+
+  async createSkill(data: { name: string; category?: string; description?: string }) {
+    return this.request.post(`${API_BASE}/api/admin/skills`, { data });
+  }
+
+  async listSkills() {
+    const response = await this.request.get(`${API_BASE}/api/admin/skills`);
+    return response.json();
+  }
+
+  async deleteSkill(skillName: string) {
+    return this.request.delete(`${API_BASE}/api/admin/skills/${skillName}`);
+  }
+
+  // --- Flows ---
+
+  async createFlow(data: { name: string; entryNodeId?: string; nodes?: unknown[] }) {
+    return this.request.post(`${API_BASE}/api/admin/flows`, { data });
+  }
+
+  async listFlows() {
+    const response = await this.request.get(`${API_BASE}/api/admin/flows`);
+    return response.json();
+  }
+
+  // --- Surveys ---
+
+  async createSurvey(data: { name: string; type: string; questions?: unknown[]; isActive?: boolean }) {
+    return this.request.post(`${API_BASE}/api/admin/surveys`, { data });
+  }
+
+  async listSurveys() {
+    const response = await this.request.get(`${API_BASE}/api/admin/surveys`);
+    return response.json();
+  }
+
+  async deleteSurvey(surveyId: string) {
+    return this.request.delete(`${API_BASE}/api/admin/surveys/${surveyId}`);
+  }
+
+  // --- Trunks ---
+
+  async createTrunk(data: {
+    name: string;
+    displayName: string;
+    type: string;
+    maxChannels: number;
+    isActive?: boolean;
+  }) {
+    return this.request.post(`${API_BASE}/api/admin/trunks`, { data });
+  }
+
+  async listTrunks() {
+    const response = await this.request.get(`${API_BASE}/api/admin/trunks`);
+    return response.json();
+  }
+
+  async deleteTrunk(trunkId: number) {
+    return this.request.delete(`${API_BASE}/api/admin/trunks/${trunkId}`);
+  }
+
+  // --- Routes ---
+
+  async createRoute(data: {
+    pattern: string;
+    patternType: string;
+    trunkId: number;
+    priority: number;
+    dialPrefix?: string;
+  }) {
+    return this.request.post(`${API_BASE}/api/admin/routes`, { data });
+  }
+
+  async listRoutes() {
+    const response = await this.request.get(`${API_BASE}/api/admin/routes`);
+    return response.json();
+  }
+
+  async deleteRoute(routeId: number) {
+    return this.request.delete(`${API_BASE}/api/admin/routes/${routeId}`);
+  }
+
+  // --- Caller ID Pools ---
+
+  async createCallerIdPool(data: { name: string }) {
+    return this.request.post(`${API_BASE}/api/admin/caller-id-pools`, { data });
+  }
+
+  async listCallerIdPools() {
+    const response = await this.request.get(`${API_BASE}/api/admin/caller-id-pools`);
+    return response.json();
+  }
+
+  async deleteCallerIdPool(poolId: number) {
+    return this.request.delete(`${API_BASE}/api/admin/caller-id-pools/${poolId}`);
+  }
+
+  // --- DNC Lists ---
+
+  async createDncList(data: { name: string; scope?: string }) {
+    return this.request.post(`${API_BASE}/api/admin/dnc-lists`, { data });
+  }
+
+  async listDncLists() {
+    const response = await this.request.get(`${API_BASE}/api/admin/dnc-lists`);
+    return response.json();
+  }
+
+  async deleteDncList(listId: number) {
+    return this.request.delete(`${API_BASE}/api/admin/dnc-lists/${listId}`);
+  }
+
+  // --- Holiday Calendars ---
+
+  async createHolidayCalendar(data: { name: string }) {
+    return this.request.post(`${API_BASE}/api/admin/holiday-calendars`, { data });
+  }
+
+  async listHolidayCalendars() {
+    const response = await this.request.get(`${API_BASE}/api/admin/holiday-calendars`);
+    return response.json();
+  }
+
+  async deleteHolidayCalendar(calendarId: number) {
+    return this.request.delete(`${API_BASE}/api/admin/holiday-calendars/${calendarId}`);
+  }
+
+  // --- Bots ---
+
+  async createBot(data: { name: string; maxTurns?: number; isActive?: boolean }) {
+    return this.request.post(`${API_BASE}/api/admin/bots`, { data });
+  }
+
+  async listBots() {
+    const response = await this.request.get(`${API_BASE}/api/admin/bots`);
+    return response.json();
+  }
+
+  async deleteBot(botId: string) {
+    return this.request.delete(`${API_BASE}/api/admin/bots/${botId}`);
+  }
+
+  // --- Knowledge Base ---
+
+  async createArticle(data: {
+    title: string;
+    content: string;
+    tags?: string[];
+    isPublished?: boolean;
+  }) {
+    return this.request.post(`${API_BASE}/api/admin/articles`, { data });
+  }
+
+  async listArticles() {
+    const response = await this.request.get(`${API_BASE}/api/admin/articles`);
+    return response.json();
+  }
+
+  async deleteArticle(articleId: string) {
+    return this.request.delete(`${API_BASE}/api/admin/articles/${articleId}`);
+  }
+
+  // --- Reports ---
+
+  async createReport(data: { name: string; type: string; schedule: string; format: string }) {
+    return this.request.post(`${API_BASE}/api/admin/reports`, { data });
+  }
+
+  async deleteReport(reportId: number) {
+    return this.request.delete(`${API_BASE}/api/admin/reports/${reportId}`);
+  }
 }

@@ -116,6 +116,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               id="trunk-name"
               placeholder="my-trunk"
               aria-invalid={!!errors.name}
+              data-testid="trunk-form-name"
               {...register('name')}
             />
             {errors.name && (
@@ -130,6 +131,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               id="trunk-displayName"
               placeholder="My Primary Trunk"
               aria-invalid={!!errors.displayName}
+              data-testid="trunk-form-displayName"
               {...register('displayName')}
             />
             {errors.displayName && (
@@ -145,7 +147,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full" data-testid="trunk-form-type">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -169,6 +171,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               min={1}
               placeholder="10"
               aria-invalid={!!errors.maxChannels}
+              data-testid="trunk-form-maxChannels"
               {...register('maxChannels')}
             />
             {errors.maxChannels && (
@@ -186,6 +189,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   id="trunk-isActive"
+                  data-testid="trunk-form-isActive"
                 />
               )}
             />
@@ -193,7 +197,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
           </div>
 
           <SheetFooter className="mt-auto px-0">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} data-testid="trunk-form-submit">
               {mode === 'create' ? 'Add Trunk' : 'Save Changes'}
             </Button>
           </SheetFooter>

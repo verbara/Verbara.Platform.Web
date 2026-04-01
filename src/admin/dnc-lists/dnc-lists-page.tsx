@@ -96,6 +96,7 @@ export default function DncListsPage() {
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                data-testid={`delete-dnc-${info.row.original.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeletingList(info.row.original);
@@ -125,10 +126,10 @@ export default function DncListsPage() {
   const isEmpty = lists.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="dnc-lists-page">
       <PageHeader title="DNC Lists">
         <PermissionGuard requires="campaigns:dnc:manage">
-          <Button size="sm" onClick={() => { setEditingList(null); setFormData({ name: '', scope: 'global' }); setFormOpen(true); }}>
+          <Button data-testid="dnc-lists-create-btn" size="sm" onClick={() => { setEditingList(null); setFormData({ name: '', scope: 'global' }); setFormOpen(true); }}>
             <Plus className="mr-1.5 h-4 w-4" />
             Create DNC List
           </Button>
@@ -170,6 +171,7 @@ export default function DncListsPage() {
             <div className="space-y-1.5">
               <Label htmlFor="dnc-name">Name</Label>
               <Input
+                data-testid="dnc-form-name"
                 id="dnc-name"
                 value={formData.name}
                 onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
@@ -189,6 +191,7 @@ export default function DncListsPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
             <Button
+              data-testid="dnc-form-submit"
               disabled={!formData.name.trim() || createDnc.isPending || updateDnc.isPending}
               onClick={() => {
                 if (editingList) {

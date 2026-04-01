@@ -102,6 +102,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
               type="email"
               placeholder="user@example.com"
               aria-invalid={!!errors.email}
+              data-testid="user-form-email"
               {...register('email')}
             />
             {errors.email && (
@@ -116,6 +117,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
               id="displayName"
               placeholder="Jane Doe"
               aria-invalid={!!errors.displayName}
+              data-testid="user-form-displayName"
               {...register('displayName')}
             />
             {errors.displayName && (
@@ -131,7 +133,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger data-testid="user-form-role" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -157,7 +159,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger data-testid="user-form-status" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -173,7 +175,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
           </div>
 
           <SheetFooter className="mt-auto px-0">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button data-testid="user-form-submit" type="submit" disabled={isSubmitting}>
               {mode === 'create' ? t('admin:users.create') : 'Save changes'}
             </Button>
           </SheetFooter>

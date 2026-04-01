@@ -79,13 +79,13 @@ export default function RolesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="roles-page">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-xl font-semibold">{t('admin:roles.title', 'Roles')}</h1>
           <p className="text-sm text-muted-foreground">{t('admin:roles.description', 'Manage roles and their permissions')}</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button onClick={() => setCreateOpen(true)} data-testid="roles-create-btn">
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:roles.create', 'Create Role')}
         </Button>
@@ -128,6 +128,7 @@ export default function RolesPage() {
                     <Button
                       variant="ghost"
                       size="icon-sm"
+                      data-testid={`clone-role-${role.roleId}`}
                       onClick={() => {
                         setCloneTarget({ id: role.roleId, name: role.name });
                         setCloneName(`${role.name} (copy)`);
@@ -139,6 +140,7 @@ export default function RolesPage() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
+                        data-testid={`delete-role-${role.roleId}`}
                         onClick={() =>
                           setDeleteTarget({ id: role.roleId, name: role.name })
                         }
@@ -167,6 +169,7 @@ export default function RolesPage() {
                 value={newRoleName}
                 onChange={(e) => setNewRoleName(e.target.value)}
                 placeholder={t('admin:roles.name_placeholder', 'e.g. Team Lead')}
+                data-testid="role-form-name"
               />
             </div>
             <div className="space-y-2">
@@ -175,12 +178,13 @@ export default function RolesPage() {
                 value={newRoleDesc}
                 onChange={(e) => setNewRoleDesc(e.target.value)}
                 placeholder={t('admin:roles.description_placeholder', 'Optional description')}
+                data-testid="role-form-description"
               />
             </div>
             <div className="space-y-2">
               <Label>{t('admin:roles.template', 'Template')}</Label>
               <Select value={newRoleTemplate} onValueChange={(v) => setNewRoleTemplate(v ?? '')}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" data-testid="role-form-template">
                   <SelectValue placeholder={t('admin:roles.no_template', 'No template')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -200,6 +204,7 @@ export default function RolesPage() {
             <Button
               onClick={handleCreate}
               disabled={!newRoleName.trim() || createRole.isPending}
+              data-testid="role-form-submit"
             >
               {t('admin:roles.create', 'Create Role')}
             </Button>
@@ -219,13 +224,14 @@ export default function RolesPage() {
               value={cloneName}
               onChange={(e) => setCloneName(e.target.value)}
               placeholder={t('admin:roles.name_placeholder', 'e.g. Team Lead')}
+              data-testid="role-clone-name"
             />
           </div>
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>
               {t('actions.cancel', 'Cancel')}
             </DialogClose>
-            <Button onClick={handleClone} disabled={!cloneName.trim() || cloneRole.isPending}>
+            <Button onClick={handleClone} disabled={!cloneName.trim() || cloneRole.isPending} data-testid="role-clone-submit">
               {t('admin:roles.clone', 'Clone Role')}
             </Button>
           </DialogFooter>

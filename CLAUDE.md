@@ -4,7 +4,7 @@
 
 Asterisk.Platform.Web is the React 19 UI for the omnichannel contact center platform. It provides admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**263 TS/TSX files, 52 pages, 38 API hooks, 20 UI components, 19 E2E spec files (116 tests)**
+**263 TS/TSX files, 52 pages, 38 API hooks, 20 UI components, 39 E2E spec files (202 tests)**
 
 ## Stack
 
@@ -270,6 +270,40 @@ Fixed 6 broken E2E tests + added 29 new tests across 5 new spec files for v1.3.0
 - 5 new methods: `createWebhookSubscription`, `listWebhookSubscriptions`, `deleteWebhookSubscription`, `getRetentionPolicy`, `updateRetentionPolicy`
 
 Result: 90 → 116 tests, 14 → 19 spec files
+
+## E2E Sprint 2: Tenant Administration — COMPLETE (2026-04-01)
+
+Added data-testid instrumentation to ~30 admin pages + 20 new spec files covering all tenant admin pages:
+
+### Data-testid Instrumentation (~30 files)
+Added `data-testid` attributes to: users-page, user-form, user-detail, agents-page, teams-page, roles-page, role-detail-page, channels-page, queues-page, queue-form, skills-page, skill-form, flows-page, campaigns-page, surveys-page, survey-form, trunks-page, trunk-form, routes-page, route-form, caller-id-pools-page, dnc-lists-page, holiday-calendars-page, bots-page, bot-form, kb-list-page, kb-form, dialer-settings-page, realtime-page, reports-page
+
+### ApiHelper Extensions (42 new methods)
+CRUD methods for: Users (3), Teams (3), Roles (4 incl clone), Queues (3), Skills (3), Flows (2), Surveys (3), Trunks (3), Routes (3), Caller ID Pools (3), DNC Lists (3), Holiday Calendars (3), Bots (3), Knowledge Base (3), Reports (2)
+
+### New Spec Files (20 files, 86 tests)
+- **users.spec.ts** (8 tests) — CRUD, validation, detail page, edit, sidebar
+- **agents.spec.ts** (5 tests) — Page display, data table, search, detail nav, sidebar
+- **teams.spec.ts** (6 tests) — CRUD with Dialog form, instant ConfirmDialog, search, sidebar
+- **roles.spec.ts** (5 tests) — Create, clone, delete (instant confirm), detail nav
+- **channels.spec.ts** (3 tests) — Page display, channel cards, sidebar
+- **queues.spec.ts** (6 tests) — CRUD, search, detail nav, sidebar
+- **skills.spec.ts** (5 tests) — CRUD, window.confirm() delete, search, sidebar
+- **flows.spec.ts** (4 tests) — Page display, data table, designer nav, sidebar
+- **campaigns.spec.ts** (3 tests) — Page display, wizard nav, sidebar
+- **surveys.spec.ts** (4 tests) — Create, delete 3s, sidebar
+- **trunks.spec.ts** (7 tests) — CRUD, custom search, active filter, delete 3s, sidebar
+- **routes.spec.ts** (5 tests) — Sortable table, CRUD (trunk dependency), delete 3s, sidebar
+- **caller-id-pools.spec.ts** (4 tests) — CRUD, delete 3s, sidebar
+- **dnc-lists.spec.ts** (4 tests) — CRUD, delete 3s, sidebar
+- **holiday-calendars.spec.ts** (4 tests) — CRUD, delete 3s, sidebar
+- **bots.spec.ts** (4 tests) — CRUD, delete 3s, sidebar
+- **knowledge-base.spec.ts** (4 tests) — CRUD, window.confirm() delete, sidebar
+- **dialer-settings.spec.ts** (2 tests) — Page display, sidebar
+- **realtime.spec.ts** (2 tests) — Page display, sidebar
+- **reports.spec.ts** (1 test) — Page display
+
+Result: 116 → 202 tests, 19 → 39 spec files
 
 ## Plan Execution
 

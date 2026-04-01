@@ -64,9 +64,9 @@ export default function FlowListPage() {
   const isEmpty = flows.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="flows-page">
       <PageHeader title={t('admin:flows.title')}>
-        <Button onClick={handleCreate} disabled={createFlow.isPending}>
+        <Button data-testid="flows-create-btn" onClick={handleCreate} disabled={createFlow.isPending}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:flows.create')}
         </Button>

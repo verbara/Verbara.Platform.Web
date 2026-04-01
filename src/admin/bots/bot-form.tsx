@@ -129,6 +129,7 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
             <Label htmlFor="bot-name">{t('admin:bots.name')}</Label>
             <Input
               id="bot-name"
+              data-testid="bot-form-name"
               placeholder="my-bot"
               aria-invalid={!!errors.name}
               {...register('name')}
@@ -226,6 +227,7 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
             <Label htmlFor="bot-maxTurns">{t('admin:bots.maxTurns')}</Label>
             <Input
               id="bot-maxTurns"
+              data-testid="bot-form-maxTurns"
               type="number"
               min={1}
               placeholder="20"
@@ -247,6 +249,7 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   id="bot-isActive"
+                  data-testid="bot-form-isActive"
                 />
               )}
             />
@@ -254,7 +257,7 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
           </div>
 
           <SheetFooter className="mt-auto px-0">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button data-testid="bot-form-submit" type="submit" disabled={isSubmitting}>
               {mode === 'create' ? t('admin:bots.create') : t('admin:bots.save')}
             </Button>
           </SheetFooter>

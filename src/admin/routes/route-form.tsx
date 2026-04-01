@@ -132,6 +132,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
               min={0}
               placeholder="10"
               aria-invalid={!!errors.priority}
+              data-testid="route-form-priority"
               {...register('priority')}
             />
             {errors.priority && (
@@ -146,6 +147,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
               id="route-pattern"
               placeholder="+1"
               aria-invalid={!!errors.pattern}
+              data-testid="route-form-pattern"
               {...register('pattern')}
             />
             {errors.pattern && (
@@ -161,7 +163,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full" data-testid="route-form-patternType">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -187,7 +189,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
                   value={field.value ? String(field.value) : ''}
                   onValueChange={(v) => field.onChange(Number(v))}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full" data-testid="route-form-trunkId">
                     <SelectValue placeholder="Select trunk" />
                   </SelectTrigger>
                   <SelectContent>
@@ -243,7 +245,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
           </div>
 
           <SheetFooter className="mt-auto px-0">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} data-testid="route-form-submit">
               {mode === 'create' ? 'Add Route' : 'Save Changes'}
             </Button>
           </SheetFooter>

@@ -86,6 +86,7 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
             <Label htmlFor="skill-name">{t('admin:skills.name')}</Label>
             <Input
               id="skill-name"
+              data-testid="skill-form-name"
               placeholder={t('admin:skills.namePlaceholder')}
               aria-invalid={!!errors.name}
               disabled={mode === 'edit'}
@@ -106,6 +107,7 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
             <Label htmlFor="skill-category">{t('admin:skills.category')}</Label>
             <Input
               id="skill-category"
+              data-testid="skill-form-category"
               placeholder={t('admin:skills.categoryPlaceholder')}
               {...register('category')}
             />
@@ -116,6 +118,7 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
             <Label htmlFor="skill-description">{t('admin:skills.description')}</Label>
             <textarea
               id="skill-description"
+              data-testid="skill-form-description"
               rows={4}
               placeholder={t('admin:skills.descriptionPlaceholder')}
               className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -124,7 +127,7 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
           </div>
 
           <SheetFooter className="mt-auto px-0">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" data-testid="skill-form-submit" disabled={isSubmitting}>
               {mode === 'create'
                 ? t('admin:skills.createSkill')
                 : t('admin:skills.save')}

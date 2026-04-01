@@ -173,6 +173,7 @@ export default function RoutesPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              data-testid={`delete-route-${info.row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setDeletingRoute(info.row.original);
@@ -206,9 +207,9 @@ export default function RoutesPage() {
   const isEmpty = sortedRoutes.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="routes-page">
       <PageHeader title={t('admin:routes.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="routes-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:routes.create')}
         </Button>

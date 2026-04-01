@@ -171,6 +171,7 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
               id="survey-name"
               placeholder={t('admin:surveys.namePlaceholder')}
               aria-invalid={!!errors.name}
+              data-testid="survey-form-name"
               {...register('name')}
             />
             {errors.name && (
@@ -186,7 +187,7 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full" data-testid="survey-form-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -302,7 +303,7 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
           </div>
 
           <SheetFooter className="mt-auto px-0">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} data-testid="survey-form-submit">
               {mode === 'create' ? t('admin:surveys.create') : t('admin:surveys.save')}
             </Button>
           </SheetFooter>

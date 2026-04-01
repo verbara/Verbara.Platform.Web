@@ -93,6 +93,7 @@ export default function SkillsPage() {
             <Button
               variant="ghost"
               size="sm"
+              data-testid={`delete-skill-${row.original.name}`}
               onClick={(e) => handleDelete(row.original.name, e)}
               className="text-destructive hover:text-destructive"
             >
@@ -125,9 +126,9 @@ export default function SkillsPage() {
   const isEmpty = skills.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="skills-page">
       <PageHeader title={t('admin:skills.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="skills-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:skills.createSkill')}
         </Button>

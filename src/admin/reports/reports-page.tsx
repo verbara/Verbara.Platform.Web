@@ -108,6 +108,7 @@ export default function ReportsPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              data-testid={`delete-report-${info.row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setDeletingReport(info.row.original);
@@ -141,9 +142,9 @@ export default function ReportsPage() {
   const isEmpty = reports.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="reports-page">
       <PageHeader title={t('admin:reports.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button onClick={() => setCreateOpen(true)} data-testid="reports-create-btn">
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:reports.create')}
         </Button>

@@ -120,6 +120,7 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
             <Label htmlFor="kb-title">{t('admin:knowledge.title')}</Label>
             <Input
               id="kb-title"
+              data-testid="article-form-title"
               placeholder={t('admin:knowledge.titlePlaceholder')}
               aria-invalid={!!errors.title}
               {...register('title')}
@@ -134,6 +135,7 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
             <Label htmlFor="kb-content">{t('admin:knowledge.content')}</Label>
             <textarea
               id="kb-content"
+              data-testid="article-form-content"
               rows={8}
               placeholder={t('admin:knowledge.contentPlaceholder')}
               aria-invalid={!!errors.content}
@@ -150,6 +152,7 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
             <Label htmlFor="kb-tags">{t('admin:knowledge.tags')}</Label>
             <Input
               id="kb-tags"
+              data-testid="article-form-tags"
               placeholder={t('admin:knowledge.tagsPlaceholder')}
               {...register('tags')}
             />
@@ -200,7 +203,7 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
           </div>
 
           <SheetFooter className="mt-auto px-0">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button data-testid="article-form-submit" type="submit" disabled={isSubmitting}>
               {mode === 'create' ? t('admin:knowledge.createArticle') : t('admin:knowledge.save')}
             </Button>
           </SheetFooter>

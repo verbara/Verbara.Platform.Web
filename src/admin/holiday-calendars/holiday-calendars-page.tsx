@@ -71,6 +71,7 @@ export default function HolidayCalendarsPage() {
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                data-testid={`delete-calendar-${info.row.original.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeletingCalendar(info.row.original);
@@ -98,13 +99,13 @@ export default function HolidayCalendarsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="holiday-calendars-page">
       <PageHeader
         title="Holiday Calendars"
         description="Define holiday dates to block outbound dialing."
       >
         <PermissionGuard requires="campaigns:calendar:manage">
-          <Button size="sm" onClick={() => { setEditingCalendar(null); setFormData({ name: '' }); setFormOpen(true); }}>
+          <Button data-testid="holiday-calendars-create-btn" size="sm" onClick={() => { setEditingCalendar(null); setFormData({ name: '' }); setFormOpen(true); }}>
             <Plus className="mr-1.5 h-4 w-4" />
             Create Calendar
           </Button>
@@ -146,6 +147,7 @@ export default function HolidayCalendarsPage() {
             <div className="space-y-1.5">
               <Label htmlFor="cal-name">Name</Label>
               <Input
+                data-testid="calendar-form-name"
                 id="cal-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ name: e.target.value })}
@@ -155,6 +157,7 @@ export default function HolidayCalendarsPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
             <Button
+              data-testid="calendar-form-submit"
               disabled={!formData.name.trim() || createCalendar.isPending || updateCalendar.isPending}
               onClick={() => {
                 if (editingCalendar) {

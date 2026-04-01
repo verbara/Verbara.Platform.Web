@@ -90,7 +90,7 @@ export default function ChannelsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="channels-page">
       {/* Header */}
       <h1 className="font-heading text-2xl font-semibold">{t('admin:channels.title')}</h1>
 

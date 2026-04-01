@@ -57,6 +57,7 @@ export default function CallerIdPoolsPage() {
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0"
+                data-testid={`edit-pool-${info.row.original.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   const pool = info.row.original;
@@ -71,6 +72,7 @@ export default function CallerIdPoolsPage() {
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                data-testid={`delete-pool-${info.row.original.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeletingPool(info.row.original);
@@ -98,10 +100,10 @@ export default function CallerIdPoolsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="caller-id-pools-page">
       <PageHeader title="Caller ID Pools" description="Manage outbound caller ID number pools.">
         <PermissionGuard requires="campaigns:callerid:manage">
-          <Button size="sm" onClick={() => { setEditingPool(null); setFormData({ name: '' }); setFormOpen(true); }}>
+          <Button size="sm" data-testid="caller-id-pools-create-btn" onClick={() => { setEditingPool(null); setFormData({ name: '' }); setFormOpen(true); }}>
             <Plus className="mr-1.5 h-4 w-4" />
             Create Pool
           </Button>
@@ -144,6 +146,7 @@ export default function CallerIdPoolsPage() {
               <Label htmlFor="pool-name">Name</Label>
               <Input
                 id="pool-name"
+                data-testid="pool-form-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ name: e.target.value })}
               />
@@ -152,6 +155,7 @@ export default function CallerIdPoolsPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
             <Button
+              data-testid="pool-form-submit"
               disabled={!formData.name.trim() || createPool.isPending || updatePool.isPending}
               onClick={() => {
                 if (editingPool) {

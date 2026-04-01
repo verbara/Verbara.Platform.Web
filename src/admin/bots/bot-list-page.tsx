@@ -82,6 +82,7 @@ export default function BotListPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              data-testid={`delete-bot-${info.row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setDeletingBot(info.row.original);
@@ -115,9 +116,9 @@ export default function BotListPage() {
   const isEmpty = bots.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="bots-page">
       <PageHeader title={t('admin:bots.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="bots-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:bots.create')}
         </Button>

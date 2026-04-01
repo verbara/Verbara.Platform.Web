@@ -79,7 +79,7 @@ export default function DialerSettingsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="dialer-settings-page">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -256,7 +256,7 @@ export default function DialerSettingsPage() {
           </div>
         </section>
 
-        <Button type="submit" disabled={!isDirty || updateSettings.isPending}>
+        <Button type="submit" disabled={!isDirty || updateSettings.isPending} data-testid="dialer-settings-save-btn">
           <Save className="mr-2 h-4 w-4" />
           {updateSettings.isPending ? 'Saving…' : 'Save Settings'}
         </Button>

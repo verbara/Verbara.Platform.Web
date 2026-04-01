@@ -64,9 +64,9 @@ export default function AgentsPage() {
   const isEmpty = agents.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div data-testid="agents-page" className="space-y-6">
       <PageHeader title={t('admin:agents.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="agents-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:agents.create')}
         </Button>

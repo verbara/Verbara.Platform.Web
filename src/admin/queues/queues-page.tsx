@@ -74,9 +74,9 @@ export default function QueuesPage() {
   const isEmpty = queues.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="queues-page">
       <PageHeader title={t('admin:queues.title')}>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button data-testid="queues-create-btn" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:queues.create')}
         </Button>
