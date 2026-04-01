@@ -49,6 +49,10 @@ const SecurityPage = lazy(() => import('@/admin/profile/security-page'));
 const AuthConfigPage = lazy(() => import('@/admin/system/auth-config-page'));
 const AuthEventsPage = lazy(() => import('@/admin/system/auth-events-page'));
 const AuthSessionsPage = lazy(() => import('@/admin/system/auth-sessions-page'));
+const RateCardsPage = lazy(() => import('@/admin/billing/rate-cards-page'));
+const InvoicesPage = lazy(() => import('@/admin/billing/invoices-page'));
+const UsagePage = lazy(() => import('@/admin/billing/usage-page'));
+const QuotasPage = lazy(() => import('@/admin/billing/quotas-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
@@ -502,6 +506,46 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:auth:configure" redirect>
                 <LazyLoad>
                   <AuthSessionsPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'billing/rate-cards',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <RateCardsPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'billing/invoices',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <InvoicesPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'billing/usage',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <UsagePage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'billing/quotas',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <QuotasPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

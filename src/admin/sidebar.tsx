@@ -29,6 +29,10 @@ import {
   KeyRound,
   Activity,
   Monitor,
+  CreditCard,
+  Receipt,
+  BarChart3,
+  Gauge,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -90,6 +94,17 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'dnc-lists', labelKey: 'admin:sidebar.dncLists', to: '/admin/dnc-lists', icon: ShieldBan, requiredPermission: 'campaigns:campaign:view' },
       { key: 'holiday-calendars', labelKey: 'admin:sidebar.holidayCalendars', to: '/admin/holiday-calendars', icon: CalendarOff, requiredPermission: 'campaigns:campaign:view' },
+    ],
+  },
+  {
+    key: 'billing',
+    labelKey: 'admin:sidebar.billing',
+    requiredPermission: 'system:tenant:configure',
+    items: [
+      { key: 'rate-cards', labelKey: 'admin:sidebar.rateCards', to: '/admin/billing/rate-cards', icon: CreditCard, requiredPermission: 'system:tenant:configure' },
+      { key: 'invoices', labelKey: 'admin:sidebar.invoices', to: '/admin/billing/invoices', icon: Receipt, requiredPermission: 'system:tenant:configure' },
+      { key: 'usage', labelKey: 'admin:sidebar.usage', to: '/admin/billing/usage', icon: BarChart3, requiredPermission: 'system:tenant:configure' },
+      { key: 'quotas', labelKey: 'admin:sidebar.quotas', to: '/admin/billing/quotas', icon: Gauge, requiredPermission: 'system:tenant:configure' },
     ],
   },
   {
