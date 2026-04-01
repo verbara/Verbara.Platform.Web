@@ -33,6 +33,7 @@ import {
   Receipt,
   BarChart3,
   Gauge,
+  Network,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -124,6 +125,7 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, requiredPermission: 'system:integration:manage' },
       { key: 'diagnostics', labelKey: 'admin:sidebar.diagnostics', to: '/admin/system/diagnostics', icon: Activity, requiredPermission: 'system:integration:manage' },
+      { key: 'cluster', labelKey: 'admin:sidebar.cluster', to: '/admin/cluster', icon: Network, requiredPermission: 'platform:cluster:manage' },
       { key: 'tenants', labelKey: 'admin:sidebar.tenants', to: '/admin/tenants', icon: Building2, requiredPermission: 'system:tenant:configure' },
       { key: 'realtime', labelKey: 'admin:sidebar.realtime', to: '/admin/realtime', icon: Radio, requiredPermission: 'system:integration:manage' },
       { key: 'dialer-settings', labelKey: 'admin:sidebar.dialerSettings', to: '/admin/dialer-settings', icon: SlidersHorizontal, requiredPermission: 'campaigns:dialer:configure' },
