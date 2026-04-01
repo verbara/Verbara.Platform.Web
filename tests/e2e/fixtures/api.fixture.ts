@@ -50,4 +50,77 @@ export class ApiHelper {
     });
     return response;
   }
+
+  // --- Billing: Rate Cards ---
+
+  async createRateCard(tenantId: string, data: {
+    name: string;
+    currency: string;
+    effectiveFrom: string;
+    effectiveTo?: string | null;
+    isDefault: boolean;
+    rates: Array<{ usageType: string; unitPrice: number; includedQuantity: number; tiers: null }>;
+  }) {
+    const response = await this.request.post(
+      `${API_BASE}/api/management/rate-cards?tenantId=${tenantId}`,
+      { data },
+    );
+    return response;
+  }
+
+  async listRateCards(tenantId: string) {
+    const response = await this.request.get(
+      `${API_BASE}/api/management/rate-cards?tenantId=${tenantId}`,
+    );
+    return response.json();
+  }
+
+  async deleteRateCard(tenantId: string, rateCardId: string) {
+    return this.request.delete(
+      `${API_BASE}/api/management/rate-cards/${rateCardId}?tenantId=${tenantId}`,
+    );
+  }
+
+  // --- Billing: Invoices ---
+
+  async generateInvoice(tenantId: string, periodStart: string, periodEnd: string) {
+    const response = await this.request.post(
+      `${API_BASE}/api/management/invoices/generate?tenantId=${tenantId}`,
+      { data: { periodStart, periodEnd } },
+    );
+    return response;
+  }
+
+  async listInvoices(tenantId: string) {
+    const response = await this.request.get(
+      `${API_BASE}/api/management/invoices?tenantId=${tenantId}`,
+    );
+    return response.json();
+  }
+
+  // --- Billing: Quotas ---
+
+  async updateQuota(tenantId: string, data: Record<string, unknown>) {
+    const response = await this.request.put(
+      `${API_BASE}/api/management/tenants/${tenantId}/quota`,
+      { data },
+    );
+    return response;
+  }
+
+  async getQuotaStatus(tenantId: string) {
+    const response = await this.request.get(
+      `${API_BASE}/api/management/tenants/${tenantId}/quota`,
+    );
+    return response.json();
+  }
+
+  // --- Billing: Usage ---
+
+  async getUsageSummary(tenantId: string) {
+    const response = await this.request.get(
+      `${API_BASE}/api/management/tenants/${tenantId}/usage`,
+    );
+    return response.json();
+  }
 }
