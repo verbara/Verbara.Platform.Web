@@ -7,6 +7,8 @@ test.describe('Login', () => {
   });
 
   test('should login successfully as platform admin', async ({ page }) => {
+    await page.getByTestId('login-tenant-toggle').click();
+    await page.getByTestId('login-tenant').fill(PLATFORM_ADMIN.tenantId);
     await page.getByTestId('login-email').fill(PLATFORM_ADMIN.email);
     await page.getByTestId('login-password').fill(PLATFORM_ADMIN.password);
     await page.getByTestId('login-submit').click();
@@ -24,7 +26,7 @@ test.describe('Login', () => {
   });
 
   test('should show error on wrong password', async ({ page }) => {
-    await page.getByTestId('login-email').fill(PLATFORM_ADMIN.email);
+    await page.getByTestId('login-email').fill(DEMO_ADMIN.email);
     await page.getByTestId('login-password').fill('WrongPassword123!');
     await page.getByTestId('login-submit').click();
 
@@ -47,8 +49,8 @@ test.describe('Login', () => {
   });
 
   test('should logout and redirect to login', async ({ page }) => {
-    await page.getByTestId('login-email').fill(PLATFORM_ADMIN.email);
-    await page.getByTestId('login-password').fill(PLATFORM_ADMIN.password);
+    await page.getByTestId('login-email').fill(DEMO_ADMIN.email);
+    await page.getByTestId('login-password').fill(DEMO_ADMIN.password);
     await page.getByTestId('login-submit').click();
     await expect(page).not.toHaveURL(/\/login/);
 
@@ -65,8 +67,8 @@ test.describe('Login', () => {
   });
 
   test('should persist session after page reload', async ({ page }) => {
-    await page.getByTestId('login-email').fill(PLATFORM_ADMIN.email);
-    await page.getByTestId('login-password').fill(PLATFORM_ADMIN.password);
+    await page.getByTestId('login-email').fill(DEMO_ADMIN.email);
+    await page.getByTestId('login-password').fill(DEMO_ADMIN.password);
     await page.getByTestId('login-submit').click();
     await expect(page).not.toHaveURL(/\/login/);
 

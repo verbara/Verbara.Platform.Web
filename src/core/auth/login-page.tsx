@@ -27,12 +27,14 @@ export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const [tenant, setTenant] = useState(resolveDefaultTenant() ?? '');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [showTenant, setShowTenant] = useState(!resolveDefaultTenant());
 
   const mfaPending = useAuthStore((s) => s.mfaPending);
   const rememberMe = useAuthStore((s) => s.rememberMe);
@@ -101,15 +103,15 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      const tenant = resolveDefaultTenant();
+      const effectiveTenant = tenant.trim() || null;
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...(tenant && { 'X-Tenant-Id': tenant }),
+          ...(effectiveTenant && { 'X-Tenant-Id': effectiveTenant }),
         },
-        body: JSON.stringify({ tenantId: tenant, email, password }),
+        body: JSON.stringify({ tenantId: effectiveTenant, email, password }),
       });
 
       if (!res.ok) {
@@ -161,13 +163,13 @@ export function LoginPage() {
   }
 
   function handleSsoLogin() {
-    const tenant = resolveDefaultTenant();
-    if (!tenant) {
+    const effectiveTenant = tenant.trim() || resolveDefaultTenant();
+    if (!effectiveTenant) {
       setError(t('auth.sso_no_tenant', 'Cannot determine tenant for SSO login'));
       return;
     }
     const returnUrl = encodeURIComponent(window.location.origin + '/login');
-    window.location.href = `/api/auth/oidc/login?tenant_id=${encodeURIComponent(tenant)}&return_url=${returnUrl}`;
+    window.location.href = `/api/auth/oidc/login?tenant_id=${encodeURIComponent(effectiveTenant)}&return_url=${returnUrl}`;
   }
 
   // MFA verification modal
@@ -205,6 +207,33 @@ export function LoginPage() {
           onSubmit={(e) => void handleEmailLogin(e)}
           className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4 dark:border-slate-800 dark:bg-slate-900"
         >
+          {/* Collapsible tenant field */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowTenant((v) => !v)}
+              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              data-testid="login-tenant-toggle"
+            >
+              <ChevronDown
+                className={`h-3 w-3 transition-transform ${showTenant ? '' : '-rotate-90'}`}
+              />
+              {t('auth.tenant', 'Tenant')}{tenant ? `: ${tenant}` : ''}
+            </button>
+            {showTenant && (
+              <div className="mt-2 space-y-1">
+                <Input
+                  id="tenant"
+                  type="text"
+                  placeholder={t('auth.tenant_placeholder', 'e.g. demo, platform')}
+                  value={tenant}
+                  onChange={(e) => setTenant(e.target.value)}
+                  data-testid="login-tenant"
+                />
+              </div>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email">{t('auth.email')}</Label>
             <Input

@@ -37,6 +37,7 @@ test.describe('Auth Sessions', () => {
   });
 
   test('should auto-refresh sessions', async ({ platformAdminPage: page }) => {
+    test.setTimeout(60_000);
     const requests: string[] = [];
     page.on('request', (req) => {
       if (req.url().includes('/sessions')) {

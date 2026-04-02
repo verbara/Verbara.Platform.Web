@@ -1,7 +1,5 @@
 import { test as base, type Page, type APIRequestContext } from '@playwright/test';
 import { API_BASE, PLATFORM_ADMIN, DEMO_ADMIN } from '../helpers/credentials';
-import * as fs from 'fs';
-import * as path from 'path';
 
 interface LoginResult {
   accessToken: string;
@@ -29,33 +27,37 @@ async function loginViaApi(
   return response.json();
 }
 
-function buildStorageState(loginResult: LoginResult, tenantId: string) {
-  return {
-    cookies: [],
-    origins: [
-      {
-        origin: 'http://localhost',
-        localStorage: [
-          {
-            name: 'asterisk-auth',
-            value: JSON.stringify({
-              state: {
-                accessToken: loginResult.accessToken,
-                tokenExpiry: new Date(loginResult.expiresAt).getTime(),
-                user: loginResult.user ?? null,
-                tenantId,
-                permissions: loginResult.permissions ?? [],
-                features: loginResult.features ?? {},
-                rememberMe: false,
-                mfaPending: null,
-              },
-              version: 0,
-            }),
-          },
-        ],
-      },
-    ],
-  };
+function buildAuthState(loginResult: LoginResult, tenantId: string) {
+  return JSON.stringify({
+    state: {
+      accessToken: loginResult.accessToken,
+      tokenExpiry: new Date(loginResult.expiresAt).getTime(),
+      user: loginResult.user ?? null,
+      tenantId,
+      permissions: loginResult.permissions ?? [],
+      features: loginResult.features ?? {},
+      rememberMe: false,
+      mfaPending: null,
+    },
+    version: 0,
+  });
+}
+
+async function createAuthenticatedPage(
+  browser: Parameters<Parameters<typeof base.extend>[0]['platformAdminPage']>[0]['browser'],
+  request: APIRequestContext,
+  creds: { tenantId: string; email: string; password: string },
+): Promise<Page> {
+  const loginResult = await loginViaApi(request, creds);
+  const authState = buildAuthState(loginResult, creds.tenantId);
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  // Navigate first to set origin, then inject into sessionStorage
+  await page.goto('/login');
+  await page.evaluate((state) => {
+    sessionStorage.setItem('asterisk-auth', state);
+  }, authState);
+  return page;
 }
 
 type AuthFixtures = {
@@ -66,27 +68,15 @@ type AuthFixtures = {
 
 export const test = base.extend<AuthFixtures>({
   platformAdminPage: async ({ browser, request }, use) => {
-    const loginResult = await loginViaApi(request, PLATFORM_ADMIN);
-    const storageState = buildStorageState(loginResult, PLATFORM_ADMIN.tenantId);
-    const storageFile = path.join(__dirname, '..', '.auth-platform-admin.json');
-    fs.writeFileSync(storageFile, JSON.stringify(storageState));
-    const context = await browser.newContext({ storageState: storageFile });
-    const page = await context.newPage();
+    const page = await createAuthenticatedPage(browser, request, PLATFORM_ADMIN);
     await use(page);
-    await context.close();
-    fs.unlinkSync(storageFile);
+    await page.context().close();
   },
 
   demoAdminPage: async ({ browser, request }, use) => {
-    const loginResult = await loginViaApi(request, DEMO_ADMIN);
-    const storageState = buildStorageState(loginResult, DEMO_ADMIN.tenantId);
-    const storageFile = path.join(__dirname, '..', '.auth-demo-admin.json');
-    fs.writeFileSync(storageFile, JSON.stringify(storageState));
-    const context = await browser.newContext({ storageState: storageFile });
-    const page = await context.newPage();
+    const page = await createAuthenticatedPage(browser, request, DEMO_ADMIN);
     await use(page);
-    await context.close();
-    fs.unlinkSync(storageFile);
+    await page.context().close();
   },
 
   authenticatedApiContext: async ({ playwright }, use) => {
