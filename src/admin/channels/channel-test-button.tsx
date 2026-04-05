@@ -17,7 +17,7 @@ export function ChannelTestButton({ channelId }: ChannelTestButtonProps) {
     setTesting(true);
     try {
       await customFetch<{ success: boolean; message: string }>({
-        url: `/api/admin/channels/${channelId}/test`,
+        url: `/api/v1/admin/channels/${channelId}/test`,
         method: 'POST',
       });
       toast.success(t('admin:channels.test_success'));

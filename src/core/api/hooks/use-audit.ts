@@ -35,7 +35,7 @@ export function useAuditSearch(params: AuditSearchParams) {
     queryKey: ['audit', 'search', action, entityType, performedBy, from, to, page, pageSize],
     queryFn: () =>
       customFetch<PagedResult<AuditEntry>>({
-        url: '/api/admin/audit',
+        url: '/api/v1/admin/audit',
         method: 'GET',
         params: {
           ...(action && { action }),
@@ -56,7 +56,7 @@ export function useEntityHistory(entityType: string | undefined, entityId: strin
     queryKey: ['audit', 'entity', entityType, entityId],
     queryFn: () =>
       customFetch<AuditEntry[]>({
-        url: `/api/admin/audit/${entityType}/${entityId}`,
+        url: `/api/v1/admin/audit/${entityType}/${entityId}`,
         method: 'GET',
       }),
     enabled: !!entityType && !!entityId,

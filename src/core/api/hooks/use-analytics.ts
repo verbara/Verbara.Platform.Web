@@ -136,7 +136,7 @@ export function useDashboard(from?: string, to?: string, queue?: string) {
   return useQuery({
     queryKey: ['analytics-dashboard', from, to, queue],
     queryFn: () => customFetch<DashboardData>({
-      url: '/api/analytics/dashboard',
+      url: '/api/v1/analytics/dashboard',
       method: 'GET',
       params: { ...(from && { from }), ...(to && { to }), ...(queue && { queue }) },
     }),
@@ -148,7 +148,7 @@ export function useCdrList(from?: string, to?: string, filters?: CdrFilters, pag
   return useQuery({
     queryKey: ['analytics-cdr', from, to, filters, page],
     queryFn: () => customFetch<PagedResult<CdrRow>>({
-      url: '/api/analytics/cdr',
+      url: '/api/v1/analytics/cdr',
       method: 'GET',
       params: {
         ...(from && { from }), ...(to && { to }),
@@ -164,7 +164,7 @@ export function useCdrList(from?: string, to?: string, filters?: CdrFilters, pag
 export function useCdrDetail(sessionId: string) {
   return useQuery({
     queryKey: ['analytics-cdr-detail', sessionId],
-    queryFn: () => customFetch<CdrDetail>({ url: `/api/analytics/cdr/${sessionId}`, method: 'GET' }),
+    queryFn: () => customFetch<CdrDetail>({ url: `/api/v1/analytics/cdr/${sessionId}`, method: 'GET' }),
     enabled: !!sessionId,
   });
 }
@@ -173,7 +173,7 @@ export function useQaList(from?: string, to?: string, filters?: QaFilters, page 
   return useQuery({
     queryKey: ['analytics-qa', from, to, filters, page],
     queryFn: () => customFetch<PagedResult<QaRow>>({
-      url: '/api/analytics/qa',
+      url: '/api/v1/analytics/qa',
       method: 'GET',
       params: {
         ...(from && { from }), ...(to && { to }),
@@ -187,7 +187,7 @@ export function useQaList(from?: string, to?: string, filters?: QaFilters, page 
 export function useQaDetail(sessionId: string) {
   return useQuery({
     queryKey: ['analytics-qa-detail', sessionId],
-    queryFn: () => customFetch<QaDetail>({ url: `/api/analytics/qa/${sessionId}`, method: 'GET' }),
+    queryFn: () => customFetch<QaDetail>({ url: `/api/v1/analytics/qa/${sessionId}`, method: 'GET' }),
     enabled: !!sessionId,
   });
 }
@@ -195,7 +195,7 @@ export function useQaDetail(sessionId: string) {
 export function useTranscript(sessionId: string, enabled: boolean) {
   return useQuery({
     queryKey: ['analytics-transcript', sessionId],
-    queryFn: () => customFetch<TranscriptSegment[]>({ url: `/api/analytics/cdr/${sessionId}/transcript`, method: 'GET' }),
+    queryFn: () => customFetch<TranscriptSegment[]>({ url: `/api/v1/analytics/cdr/${sessionId}/transcript`, method: 'GET' }),
     enabled: !!sessionId && enabled,
   });
 }
@@ -204,7 +204,7 @@ export function useIntervals(from?: string, to?: string, queue?: string) {
   return useQuery({
     queryKey: ['analytics-intervals', from, to, queue],
     queryFn: () => customFetch<IntervalData[]>({
-      url: '/api/analytics/intervals',
+      url: '/api/v1/analytics/intervals',
       method: 'GET',
       params: { ...(from && { from }), ...(to && { to }), ...(queue && { queue }) },
     }),
@@ -225,7 +225,7 @@ export interface LiveState {
 export function useAllLiveStates() {
   return useQuery({
     queryKey: ['analytics', 'live'],
-    queryFn: () => customFetch<LiveState[]>({ url: '/api/analytics/live', method: 'GET' }),
+    queryFn: () => customFetch<LiveState[]>({ url: '/api/v1/analytics/live', method: 'GET' }),
     refetchInterval: 15_000,
   });
 }
@@ -233,7 +233,7 @@ export function useAllLiveStates() {
 export function useLiveState(queueName: string) {
   return useQuery({
     queryKey: ['analytics', 'live', queueName],
-    queryFn: () => customFetch<LiveState>({ url: `/api/analytics/live/${encodeURIComponent(queueName)}`, method: 'GET' }),
+    queryFn: () => customFetch<LiveState>({ url: `/api/v1/analytics/live/${encodeURIComponent(queueName)}`, method: 'GET' }),
     enabled: !!queueName,
     refetchInterval: 15_000,
   });
@@ -256,7 +256,7 @@ export function useCurrentInterval(queueName?: string) {
   const params = queueName ? `?queueName=${encodeURIComponent(queueName)}` : '?queueName=default';
   return useQuery({
     queryKey: ['analytics', 'current-interval', queueName],
-    queryFn: () => customFetch<CurrentInterval>({ url: `/api/analytics/current-interval${params}`, method: 'GET' }),
+    queryFn: () => customFetch<CurrentInterval>({ url: `/api/v1/analytics/current-interval${params}`, method: 'GET' }),
     refetchInterval: 30_000,
   });
 }
@@ -280,6 +280,6 @@ export function useAgentIntervals(filters: { from: string; to: string; agentId?:
   if (filters.agentId) params.set('agentId', filters.agentId);
   return useQuery({
     queryKey: ['analytics', 'agent-intervals', filters],
-    queryFn: () => customFetch<AgentInterval[]>({ url: `/api/analytics/intervals/agents?${params}`, method: 'GET' }),
+    queryFn: () => customFetch<AgentInterval[]>({ url: `/api/v1/analytics/intervals/agents?${params}`, method: 'GET' }),
   });
 }

@@ -13,7 +13,7 @@ export function useDispositions() {
     queryKey: ['dispositions'],
     queryFn: () =>
       customFetch<Disposition[]>({
-        url: '/api/admin/dispositions',
+        url: '/api/v1/admin/dispositions',
         method: 'GET',
       }),
   });
@@ -24,7 +24,7 @@ export function useCreateDisposition() {
   return useMutation({
     mutationFn: (data: { name: string; category: string }) =>
       customFetch<Disposition>({
-        url: '/api/admin/dispositions',
+        url: '/api/v1/admin/dispositions',
         method: 'POST',
         data,
       }),
@@ -41,7 +41,7 @@ export function useDeleteDisposition() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/admin/dispositions/${id}`,
+        url: `/api/v1/admin/dispositions/${id}`,
         method: 'DELETE',
       }),
     onSuccess: () => {

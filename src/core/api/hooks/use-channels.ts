@@ -13,7 +13,7 @@ export function useChannel(channelId: string | undefined) {
     queryKey: ['channels', channelId],
     queryFn: () =>
       customFetch<ChannelConfig>({
-        url: `/api/admin/channels/${channelId}`,
+        url: `/api/v1/admin/channels/${channelId}`,
         method: 'GET',
       }),
     enabled: !!channelId,
@@ -32,7 +32,7 @@ export function useUpdateChannel() {
       credentials?: Record<string, string>;
     }) =>
       customFetch<ChannelConfig>({
-        url: `/api/admin/channels/${channelId}`,
+        url: `/api/v1/admin/channels/${channelId}`,
         method: 'PUT',
         data,
       }),

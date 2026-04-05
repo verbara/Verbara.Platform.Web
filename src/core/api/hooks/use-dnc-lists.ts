@@ -29,7 +29,7 @@ export function useDncLists() {
   return useQuery({
     queryKey: ['dnc-lists'],
     queryFn: () =>
-      customFetch<DncListSummary[]>({ url: '/api/admin/dnc-lists', method: 'GET' }),
+      customFetch<DncListSummary[]>({ url: '/api/v1/admin/dnc-lists', method: 'GET' }),
   });
 }
 
@@ -37,7 +37,7 @@ export function useDncList(id: number) {
   return useQuery({
     queryKey: ['dnc-list', id],
     queryFn: () =>
-      customFetch<DncListSummary>({ url: `/api/admin/dnc-lists/${id}`, method: 'GET' }),
+      customFetch<DncListSummary>({ url: `/api/v1/admin/dnc-lists/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -47,7 +47,7 @@ export function useDncEntries(listId: number, offset = 0, limit = 100) {
     queryKey: ['dnc-entries', listId, offset, limit],
     queryFn: () =>
       customFetch<DncEntry[]>({
-        url: `/api/admin/dnc-lists/${listId}/entries`,
+        url: `/api/v1/admin/dnc-lists/${listId}/entries`,
         method: 'GET',
         params: { offset: String(offset), limit: String(limit) },
       }),
@@ -59,7 +59,7 @@ export function useCreateDncList() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<Omit<DncListSummary, 'id' | 'entryCount' | 'createdAt'>>) =>
-      customFetch<DncListSummary>({ url: '/api/admin/dnc-lists', method: 'POST', data }),
+      customFetch<DncListSummary>({ url: '/api/v1/admin/dnc-lists', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
       toast.success('DNC list created');
@@ -75,7 +75,7 @@ export function useUpdateDncList() {
       id,
       ...data
     }: { id: number } & Partial<Omit<DncListSummary, 'id' | 'entryCount' | 'createdAt'>>) =>
-      customFetch<DncListSummary>({ url: `/api/admin/dnc-lists/${id}`, method: 'PUT', data }),
+      customFetch<DncListSummary>({ url: `/api/v1/admin/dnc-lists/${id}`, method: 'PUT', data }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
       qc.invalidateQueries({ queryKey: ['dnc-list', variables.id] });
@@ -89,7 +89,7 @@ export function useDeleteDncList() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/dnc-lists/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/dnc-lists/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
       toast.success('DNC list deleted');
@@ -106,7 +106,7 @@ export function useAddDncEntry() {
       ...data
     }: { listId: number } & Partial<Omit<DncEntry, 'id' | 'createdAt'>>) =>
       customFetch<DncEntry>({
-        url: `/api/admin/dnc-lists/${listId}/entries`,
+        url: `/api/v1/admin/dnc-lists/${listId}/entries`,
         method: 'POST',
         data,
       }),
@@ -124,7 +124,7 @@ export function useRemoveDncEntry() {
   return useMutation({
     mutationFn: ({ listId, entryId }: { listId: number; entryId: number }) =>
       customFetch<void>({
-        url: `/api/admin/dnc-lists/${listId}/entries/${entryId}`,
+        url: `/api/v1/admin/dnc-lists/${listId}/entries/${entryId}`,
         method: 'DELETE',
       }),
     onSuccess: (_data, variables) => {
@@ -147,7 +147,7 @@ export function useImportDncEntries() {
       entries: Partial<Omit<DncEntry, 'id' | 'createdAt'>>[];
     }) =>
       customFetch<void>({
-        url: `/api/admin/dnc-lists/${listId}/import`,
+        url: `/api/v1/admin/dnc-lists/${listId}/import`,
         method: 'POST',
         data: entries,
       }),
@@ -164,7 +164,7 @@ export function useCheckDncNumber() {
   return useMutation({
     mutationFn: (phoneNumber: string) =>
       customFetch<DncCheckResult>({
-        url: '/api/admin/dnc-lists/check',
+        url: '/api/v1/admin/dnc-lists/check',
         method: 'POST',
         data: { phoneNumber },
       }),

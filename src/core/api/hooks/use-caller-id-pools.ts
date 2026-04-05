@@ -18,7 +18,7 @@ export function useCallerIdPools() {
   return useQuery({
     queryKey: ['caller-id-pools'],
     queryFn: () =>
-      customFetch<CallerIdPoolSummary[]>({ url: '/api/admin/caller-id-pools', method: 'GET' }),
+      customFetch<CallerIdPoolSummary[]>({ url: '/api/v1/admin/caller-id-pools', method: 'GET' }),
   });
 }
 
@@ -27,7 +27,7 @@ export function useCallerIdPool(id: number) {
     queryKey: ['caller-id-pool', id],
     queryFn: () =>
       customFetch<CallerIdPoolSummary>({
-        url: `/api/admin/caller-id-pools/${id}`,
+        url: `/api/v1/admin/caller-id-pools/${id}`,
         method: 'GET',
       }),
     enabled: !!id,
@@ -39,7 +39,7 @@ export function useCallerIdPoolEntries(poolId: number) {
     queryKey: ['caller-id-pool-entries', poolId],
     queryFn: () =>
       customFetch<CallerIdEntry[]>({
-        url: `/api/admin/caller-id-pools/${poolId}/entries`,
+        url: `/api/v1/admin/caller-id-pools/${poolId}/entries`,
         method: 'GET',
       }),
     enabled: !!poolId,
@@ -51,7 +51,7 @@ export function useCreatePool() {
   return useMutation({
     mutationFn: (data: Partial<Omit<CallerIdPoolSummary, 'id'>>) =>
       customFetch<CallerIdPoolSummary>({
-        url: '/api/admin/caller-id-pools',
+        url: '/api/v1/admin/caller-id-pools',
         method: 'POST',
         data,
       }),
@@ -71,7 +71,7 @@ export function useUpdatePool() {
       ...data
     }: { id: number } & Partial<Omit<CallerIdPoolSummary, 'id'>>) =>
       customFetch<CallerIdPoolSummary>({
-        url: `/api/admin/caller-id-pools/${id}`,
+        url: `/api/v1/admin/caller-id-pools/${id}`,
         method: 'PUT',
         data,
       }),
@@ -88,7 +88,7 @@ export function useDeletePool() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/caller-id-pools/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/caller-id-pools/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['caller-id-pools'] });
       toast.success('Caller ID pool deleted');
@@ -105,7 +105,7 @@ export function useAddPoolEntry() {
       ...data
     }: { poolId: number } & Partial<Omit<CallerIdEntry, 'id'>>) =>
       customFetch<CallerIdEntry>({
-        url: `/api/admin/caller-id-pools/${poolId}/entries`,
+        url: `/api/v1/admin/caller-id-pools/${poolId}/entries`,
         method: 'POST',
         data,
       }),
@@ -122,7 +122,7 @@ export function useRemovePoolEntry() {
   return useMutation({
     mutationFn: ({ poolId, entryId }: { poolId: number; entryId: number }) =>
       customFetch<void>({
-        url: `/api/admin/caller-id-pools/${poolId}/entries/${entryId}`,
+        url: `/api/v1/admin/caller-id-pools/${poolId}/entries/${entryId}`,
         method: 'DELETE',
       }),
     onSuccess: (_data, variables) => {

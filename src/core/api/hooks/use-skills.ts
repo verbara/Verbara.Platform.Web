@@ -18,7 +18,7 @@ export function useSkills() {
   return useQuery({
     queryKey: ['skills'],
     queryFn: () =>
-      customFetch<Skill[]>({ url: '/api/admin/skills', method: 'GET' }),
+      customFetch<Skill[]>({ url: '/api/v1/admin/skills', method: 'GET' }),
   });
 }
 
@@ -26,7 +26,7 @@ export function useCreateSkill() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Skill) =>
-      customFetch<Skill>({ url: '/api/admin/skills', method: 'POST', data }),
+      customFetch<Skill>({ url: '/api/v1/admin/skills', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['skills'] });
       toast.success('Skill created');
@@ -40,7 +40,7 @@ export function useUpdateSkill() {
   return useMutation({
     mutationFn: ({ name, ...data }: Skill) =>
       customFetch<Skill>({
-        url: `/api/admin/skills/${name}`,
+        url: `/api/v1/admin/skills/${name}`,
         method: 'PUT',
         data,
       }),
@@ -56,7 +56,7 @@ export function useDeleteSkill() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (name: string) =>
-      customFetch<void>({ url: `/api/admin/skills/${name}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/skills/${name}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['skills'] });
       toast.success('Skill deleted');
@@ -70,7 +70,7 @@ export function useAgentSkills(agentId: string | undefined) {
     queryKey: ['agent-skills', agentId],
     queryFn: () =>
       customFetch<AgentSkillAssignment[]>({
-        url: `/api/admin/agents/${agentId}/skills`,
+        url: `/api/v1/admin/agents/${agentId}/skills`,
         method: 'GET',
       }),
     enabled: !!agentId,
@@ -86,7 +86,7 @@ export function useAssignSkill() {
       proficiency,
     }: AgentSkillAssignment) =>
       customFetch<void>({
-        url: `/api/admin/agents/${agentId}/skills`,
+        url: `/api/v1/admin/agents/${agentId}/skills`,
         method: 'POST',
         data: { skillName, proficiency },
       }),
@@ -111,7 +111,7 @@ export function useRemoveAgentSkill() {
       skillName: string;
     }) =>
       customFetch<void>({
-        url: `/api/admin/agents/${agentId}/skills/${skillName}`,
+        url: `/api/v1/admin/agents/${agentId}/skills/${skillName}`,
         method: 'DELETE',
       }),
     onSuccess: (_data, variables) => {
@@ -129,7 +129,7 @@ export function useAgentsWithSkill(skillName: string | undefined) {
     queryKey: ['skill-agents', skillName],
     queryFn: () =>
       customFetch<AgentSkillAssignment[]>({
-        url: `/api/admin/skills/${skillName}/agents`,
+        url: `/api/v1/admin/skills/${skillName}/agents`,
         method: 'GET',
       }),
     enabled: !!skillName,

@@ -15,7 +15,7 @@ export function useImpersonate() {
     mutationFn: async (targetTenantId: string) => {
       const { accessToken, tenantId } = useAuthStore.getState();
       const response = await customFetch<ImpersonateResponse>({
-        url: '/api/management/impersonate',
+        url: '/api/v1/management/impersonate',
         method: 'POST',
         data: { targetTenantId },
       });
@@ -31,7 +31,7 @@ export function useEndImpersonate() {
   return useMutation({
     mutationFn: async () => {
       await customFetch<void>({
-        url: '/api/management/impersonate',
+        url: '/api/v1/management/impersonate',
         method: 'DELETE',
       });
       useAuthStore.getState().endImpersonation();

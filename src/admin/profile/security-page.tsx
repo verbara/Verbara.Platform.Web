@@ -45,7 +45,7 @@ export default function SecurityPage() {
     setLoading(true);
     try {
       const data = await customFetch<MfaSetupResponse>({
-        url: '/api/auth/mfa/setup',
+        url: '/api/v1/auth/mfa/setup',
         method: 'POST',
       });
       setSetupData(data);
@@ -61,7 +61,7 @@ export default function SecurityPage() {
     setLoading(true);
     try {
       await customFetch<void>({
-        url: '/api/auth/mfa/confirm',
+        url: '/api/v1/auth/mfa/confirm',
         method: 'POST',
         data: { code: verifyCode },
       });
@@ -79,7 +79,7 @@ export default function SecurityPage() {
     setLoading(true);
     try {
       await customFetch<void>({
-        url: '/api/auth/mfa',
+        url: '/api/v1/auth/mfa',
         method: 'DELETE',
         data: { password: disablePassword },
       });
@@ -102,7 +102,7 @@ export default function SecurityPage() {
     setPasswordLoading(true);
     try {
       await customFetch<void>({
-        url: '/api/auth/change-password',
+        url: '/api/v1/auth/change-password',
         method: 'POST',
         data: { oldPassword, newPassword },
       });

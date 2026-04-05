@@ -26,7 +26,7 @@ export function useKnowledgeSearch(query: string) {
     queryKey: ['knowledge-search', query],
     queryFn: () =>
       customFetch<ArticleSearchResult[]>({
-        url: `/api/knowledge/search`,
+        url: `/api/v1/knowledge/search`,
         method: 'GET',
         params: { q: query, limit: '5' },
       }),
@@ -39,7 +39,7 @@ export function useArticles() {
   return useQuery({
     queryKey: ['articles'],
     queryFn: () =>
-      customFetch<Article[]>({ url: '/api/admin/articles', method: 'GET' }),
+      customFetch<Article[]>({ url: '/api/v1/admin/articles', method: 'GET' }),
   });
 }
 
@@ -47,7 +47,7 @@ export function useCreateArticle() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) =>
-      customFetch<Article>({ url: '/api/admin/articles', method: 'POST', data }),
+      customFetch<Article>({ url: '/api/v1/admin/articles', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] });
       toast.success('Article created');
@@ -60,7 +60,7 @@ export function useUpdateArticle() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) =>
-      customFetch<Article>({ url: `/api/admin/articles/${id}`, method: 'PUT', data }),
+      customFetch<Article>({ url: `/api/v1/admin/articles/${id}`, method: 'PUT', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] });
       toast.success('Article updated');
@@ -73,7 +73,7 @@ export function useDeleteArticle() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      customFetch<void>({ url: `/api/admin/articles/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/articles/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] });
       toast.success('Article deleted');

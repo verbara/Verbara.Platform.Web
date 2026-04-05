@@ -18,7 +18,7 @@ export function useDialerSettings() {
   return useQuery({
     queryKey: ['dialer-settings'],
     queryFn: () =>
-      customFetch<DialerSettings>({ url: '/api/admin/dialer/settings', method: 'GET' }),
+      customFetch<DialerSettings>({ url: '/api/v1/admin/dialer/settings', method: 'GET' }),
   });
 }
 
@@ -27,7 +27,7 @@ export function useUpdateDialerSettings() {
   return useMutation({
     mutationFn: (data: Partial<DialerSettings>) =>
       customFetch<DialerSettings>({
-        url: '/api/admin/dialer/settings',
+        url: '/api/v1/admin/dialer/settings',
         method: 'PUT',
         data,
       }),

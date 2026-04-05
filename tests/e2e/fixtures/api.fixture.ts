@@ -11,41 +11,41 @@ export class ApiHelper {
     maxConcurrentChannels?: number;
     maxActiveCampaigns?: number;
   }) {
-    const response = await this.request.post(`${API_BASE}/api/management/tenants`, {
+    const response = await this.request.post(`${API_BASE}/api/v1/management/tenants`, {
       data: { type: 2, maxConcurrentChannels: 100, maxActiveCampaigns: 10, ...data },
     });
     return response;
   }
 
   async deleteTenant(tenantId: string) {
-    return this.request.delete(`${API_BASE}/api/management/tenants/${tenantId}`);
+    return this.request.delete(`${API_BASE}/api/v1/management/tenants/${tenantId}`);
   }
 
   async getSystemSettings() {
-    const response = await this.request.get(`${API_BASE}/api/management/system/settings`);
+    const response = await this.request.get(`${API_BASE}/api/v1/management/system/settings`);
     return response.json();
   }
 
   async updateSystemSettings(data: Record<string, unknown>) {
-    return this.request.put(`${API_BASE}/api/management/system/settings`, { data });
+    return this.request.put(`${API_BASE}/api/v1/management/system/settings`, { data });
   }
 
   async getAuthConfig() {
-    const response = await this.request.get(`${API_BASE}/api/admin/auth/config`, {
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/auth/config`, {
       headers: { 'X-Tenant-Id': PLATFORM_ADMIN.tenantId },
     });
     return response.json();
   }
 
   async updateAuthConfig(data: Record<string, unknown>) {
-    return this.request.put(`${API_BASE}/api/admin/auth/config`, {
+    return this.request.put(`${API_BASE}/api/v1/admin/auth/config`, {
       data,
       headers: { 'X-Tenant-Id': PLATFORM_ADMIN.tenantId },
     });
   }
 
   async login(tenantId: string, email: string, password: string) {
-    const response = await this.request.post(`${API_BASE}/api/auth/login`, {
+    const response = await this.request.post(`${API_BASE}/api/v1/auth/login`, {
       data: { tenantId, email, password },
     });
     return response;
@@ -62,7 +62,7 @@ export class ApiHelper {
     rates: Array<{ usageType: string; unitPrice: number; includedQuantity: number; tiers: null }>;
   }) {
     const response = await this.request.post(
-      `${API_BASE}/api/management/rate-cards?tenantId=${tenantId}`,
+      `${API_BASE}/api/v1/management/rate-cards?tenantId=${tenantId}`,
       { data },
     );
     return response;
@@ -70,14 +70,14 @@ export class ApiHelper {
 
   async listRateCards(tenantId: string) {
     const response = await this.request.get(
-      `${API_BASE}/api/management/rate-cards?tenantId=${tenantId}`,
+      `${API_BASE}/api/v1/management/rate-cards?tenantId=${tenantId}`,
     );
     return response.json();
   }
 
   async deleteRateCard(tenantId: string, rateCardId: string) {
     return this.request.delete(
-      `${API_BASE}/api/management/rate-cards/${rateCardId}?tenantId=${tenantId}`,
+      `${API_BASE}/api/v1/management/rate-cards/${rateCardId}?tenantId=${tenantId}`,
     );
   }
 
@@ -85,7 +85,7 @@ export class ApiHelper {
 
   async generateInvoice(tenantId: string, periodStart: string, periodEnd: string) {
     const response = await this.request.post(
-      `${API_BASE}/api/management/invoices/generate?tenantId=${tenantId}`,
+      `${API_BASE}/api/v1/management/invoices/generate?tenantId=${tenantId}`,
       { data: { periodStart, periodEnd } },
     );
     return response;
@@ -93,7 +93,7 @@ export class ApiHelper {
 
   async listInvoices(tenantId: string) {
     const response = await this.request.get(
-      `${API_BASE}/api/management/invoices?tenantId=${tenantId}`,
+      `${API_BASE}/api/v1/management/invoices?tenantId=${tenantId}`,
     );
     return response.json();
   }
@@ -102,7 +102,7 @@ export class ApiHelper {
 
   async updateQuota(tenantId: string, data: Record<string, unknown>) {
     const response = await this.request.put(
-      `${API_BASE}/api/management/tenants/${tenantId}/quota`,
+      `${API_BASE}/api/v1/management/tenants/${tenantId}/quota`,
       { data },
     );
     return response;
@@ -110,7 +110,7 @@ export class ApiHelper {
 
   async getQuotaStatus(tenantId: string) {
     const response = await this.request.get(
-      `${API_BASE}/api/management/tenants/${tenantId}/quota`,
+      `${API_BASE}/api/v1/management/tenants/${tenantId}/quota`,
     );
     return response.json();
   }
@@ -119,7 +119,7 @@ export class ApiHelper {
 
   async getUsageSummary(tenantId: string) {
     const response = await this.request.get(
-      `${API_BASE}/api/management/tenants/${tenantId}/usage`,
+      `${API_BASE}/api/v1/management/tenants/${tenantId}/usage`,
     );
     return response.json();
   }
@@ -131,33 +131,33 @@ export class ApiHelper {
     endpointUrl: string;
     eventTypes: string[];
   }) {
-    const response = await this.request.post(`${API_BASE}/api/webhooks/subscriptions`, {
+    const response = await this.request.post(`${API_BASE}/api/v1/webhooks/subscriptions`, {
       data,
     });
     return response;
   }
 
   async listWebhookSubscriptions() {
-    const response = await this.request.get(`${API_BASE}/api/webhooks/subscriptions`);
+    const response = await this.request.get(`${API_BASE}/api/v1/webhooks/subscriptions`);
     return response.json();
   }
 
   async deleteWebhookSubscription(id: string) {
-    return this.request.delete(`${API_BASE}/api/webhooks/subscriptions/${id}`);
+    return this.request.delete(`${API_BASE}/api/v1/webhooks/subscriptions/${id}`);
   }
 
   // --- Retention Policy ---
 
   async getRetentionPolicy(tenantId: string) {
     const response = await this.request.get(
-      `${API_BASE}/api/management/tenants/${tenantId}/retention`,
+      `${API_BASE}/api/v1/management/tenants/${tenantId}/retention`,
     );
     return response.json();
   }
 
   async updateRetentionPolicy(tenantId: string, data: Record<string, unknown>) {
     return this.request.put(
-      `${API_BASE}/api/management/tenants/${tenantId}/retention`,
+      `${API_BASE}/api/v1/management/tenants/${tenantId}/retention`,
       { data },
     );
   }
@@ -165,50 +165,50 @@ export class ApiHelper {
   // --- Users ---
 
   async createUser(data: { email: string; displayName: string; role: string }) {
-    return this.request.post(`${API_BASE}/api/admin/users`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/users`, { data });
   }
 
   async listUsers() {
-    const response = await this.request.get(`${API_BASE}/api/admin/users`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/users`);
     return response.json();
   }
 
   async deleteUser(userId: string) {
-    return this.request.delete(`${API_BASE}/api/admin/users/${userId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/users/${userId}`);
   }
 
   // --- Teams ---
 
   async createTeam(data: { name: string }) {
-    return this.request.post(`${API_BASE}/api/admin/teams`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/teams`, { data });
   }
 
   async listTeams() {
-    const response = await this.request.get(`${API_BASE}/api/admin/teams`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/teams`);
     return response.json();
   }
 
   async deleteTeam(teamId: string) {
-    return this.request.delete(`${API_BASE}/api/admin/teams/${teamId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/teams/${teamId}`);
   }
 
   // --- Roles ---
 
   async createRole(data: { name: string; description?: string; sourceTemplateId?: string }) {
-    return this.request.post(`${API_BASE}/api/admin/roles`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/roles`, { data });
   }
 
   async listRoles() {
-    const response = await this.request.get(`${API_BASE}/api/admin/roles`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/roles`);
     return response.json();
   }
 
   async deleteRole(roleId: string) {
-    return this.request.delete(`${API_BASE}/api/admin/roles/${roleId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/roles/${roleId}`);
   }
 
   async cloneRole(roleId: string, newName: string) {
-    return this.request.post(`${API_BASE}/api/admin/roles/${roleId}/clone`, {
+    return this.request.post(`${API_BASE}/api/v1/admin/roles/${roleId}/clone`, {
       data: { name: newName },
     });
   }
@@ -216,57 +216,57 @@ export class ApiHelper {
   // --- Queues ---
 
   async createQueue(data: { name: string; isActive?: boolean }) {
-    return this.request.post(`${API_BASE}/api/admin/queues`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/queues`, { data });
   }
 
   async listQueues() {
-    const response = await this.request.get(`${API_BASE}/api/admin/queues`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/queues`);
     return response.json();
   }
 
   async deleteQueue(queueId: string) {
-    return this.request.delete(`${API_BASE}/api/admin/queues/${queueId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/queues/${queueId}`);
   }
 
   // --- Skills ---
 
   async createSkill(data: { name: string; category?: string; description?: string }) {
-    return this.request.post(`${API_BASE}/api/admin/skills`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/skills`, { data });
   }
 
   async listSkills() {
-    const response = await this.request.get(`${API_BASE}/api/admin/skills`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/skills`);
     return response.json();
   }
 
   async deleteSkill(skillName: string) {
-    return this.request.delete(`${API_BASE}/api/admin/skills/${skillName}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/skills/${skillName}`);
   }
 
   // --- Flows ---
 
   async createFlow(data: { name: string; entryNodeId?: string; nodes?: unknown[] }) {
-    return this.request.post(`${API_BASE}/api/admin/flows`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/flows`, { data });
   }
 
   async listFlows() {
-    const response = await this.request.get(`${API_BASE}/api/admin/flows`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/flows`);
     return response.json();
   }
 
   // --- Surveys ---
 
   async createSurvey(data: { name: string; type: string; questions?: unknown[]; isActive?: boolean }) {
-    return this.request.post(`${API_BASE}/api/admin/surveys`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/surveys`, { data });
   }
 
   async listSurveys() {
-    const response = await this.request.get(`${API_BASE}/api/admin/surveys`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/surveys`);
     return response.json();
   }
 
   async deleteSurvey(surveyId: string) {
-    return this.request.delete(`${API_BASE}/api/admin/surveys/${surveyId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/surveys/${surveyId}`);
   }
 
   // --- Trunks ---
@@ -278,16 +278,16 @@ export class ApiHelper {
     maxChannels: number;
     isActive?: boolean;
   }) {
-    return this.request.post(`${API_BASE}/api/admin/trunks`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/trunks`, { data });
   }
 
   async listTrunks() {
-    const response = await this.request.get(`${API_BASE}/api/admin/trunks`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/trunks`);
     return response.json();
   }
 
   async deleteTrunk(trunkId: number) {
-    return this.request.delete(`${API_BASE}/api/admin/trunks/${trunkId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/trunks/${trunkId}`);
   }
 
   // --- Routes ---
@@ -299,76 +299,76 @@ export class ApiHelper {
     priority: number;
     dialPrefix?: string;
   }) {
-    return this.request.post(`${API_BASE}/api/admin/routes`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/routes`, { data });
   }
 
   async listRoutes() {
-    const response = await this.request.get(`${API_BASE}/api/admin/routes`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/routes`);
     return response.json();
   }
 
   async deleteRoute(routeId: number) {
-    return this.request.delete(`${API_BASE}/api/admin/routes/${routeId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/routes/${routeId}`);
   }
 
   // --- Caller ID Pools ---
 
   async createCallerIdPool(data: { name: string }) {
-    return this.request.post(`${API_BASE}/api/admin/caller-id-pools`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/caller-id-pools`, { data });
   }
 
   async listCallerIdPools() {
-    const response = await this.request.get(`${API_BASE}/api/admin/caller-id-pools`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/caller-id-pools`);
     return response.json();
   }
 
   async deleteCallerIdPool(poolId: number) {
-    return this.request.delete(`${API_BASE}/api/admin/caller-id-pools/${poolId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/caller-id-pools/${poolId}`);
   }
 
   // --- DNC Lists ---
 
   async createDncList(data: { name: string; scope?: string }) {
-    return this.request.post(`${API_BASE}/api/admin/dnc-lists`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/dnc-lists`, { data });
   }
 
   async listDncLists() {
-    const response = await this.request.get(`${API_BASE}/api/admin/dnc-lists`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/dnc-lists`);
     return response.json();
   }
 
   async deleteDncList(listId: number) {
-    return this.request.delete(`${API_BASE}/api/admin/dnc-lists/${listId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/dnc-lists/${listId}`);
   }
 
   // --- Holiday Calendars ---
 
   async createHolidayCalendar(data: { name: string }) {
-    return this.request.post(`${API_BASE}/api/admin/holiday-calendars`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/holiday-calendars`, { data });
   }
 
   async listHolidayCalendars() {
-    const response = await this.request.get(`${API_BASE}/api/admin/holiday-calendars`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/holiday-calendars`);
     return response.json();
   }
 
   async deleteHolidayCalendar(calendarId: number) {
-    return this.request.delete(`${API_BASE}/api/admin/holiday-calendars/${calendarId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/holiday-calendars/${calendarId}`);
   }
 
   // --- Bots ---
 
   async createBot(data: { name: string; maxTurns?: number; isActive?: boolean }) {
-    return this.request.post(`${API_BASE}/api/admin/bots`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/bots`, { data });
   }
 
   async listBots() {
-    const response = await this.request.get(`${API_BASE}/api/admin/bots`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/bots`);
     return response.json();
   }
 
   async deleteBot(botId: string) {
-    return this.request.delete(`${API_BASE}/api/admin/bots/${botId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/bots/${botId}`);
   }
 
   // --- Knowledge Base ---
@@ -379,25 +379,25 @@ export class ApiHelper {
     tags?: string[];
     isPublished?: boolean;
   }) {
-    return this.request.post(`${API_BASE}/api/admin/articles`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/articles`, { data });
   }
 
   async listArticles() {
-    const response = await this.request.get(`${API_BASE}/api/admin/articles`);
+    const response = await this.request.get(`${API_BASE}/api/v1/admin/articles`);
     return response.json();
   }
 
   async deleteArticle(articleId: string) {
-    return this.request.delete(`${API_BASE}/api/admin/articles/${articleId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/articles/${articleId}`);
   }
 
   // --- Reports ---
 
   async createReport(data: { name: string; type: string; schedule: string; format: string }) {
-    return this.request.post(`${API_BASE}/api/admin/reports`, { data });
+    return this.request.post(`${API_BASE}/api/v1/admin/reports`, { data });
   }
 
   async deleteReport(reportId: number) {
-    return this.request.delete(`${API_BASE}/api/admin/reports/${reportId}`);
+    return this.request.delete(`${API_BASE}/api/v1/admin/reports/${reportId}`);
   }
 }

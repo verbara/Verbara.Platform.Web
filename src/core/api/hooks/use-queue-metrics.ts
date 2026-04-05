@@ -6,7 +6,7 @@ export function useQueueMetrics() {
   return useQuery({
     queryKey: ['queue-metrics'],
     queryFn: () =>
-      customFetch<QueueMetrics[]>({ url: '/api/operations/queue-metrics', method: 'GET' }),
+      customFetch<QueueMetrics[]>({ url: '/api/v1/operations/queue-metrics', method: 'GET' }),
     refetchInterval: 30_000,
   });
 }

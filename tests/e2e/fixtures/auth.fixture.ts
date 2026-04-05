@@ -14,7 +14,7 @@ async function loginViaApi(
   request: APIRequestContext,
   creds: { tenantId: string; email: string; password: string },
 ): Promise<LoginResult> {
-  const response = await request.post(`${API_BASE}/api/auth/login`, {
+  const response = await request.post(`${API_BASE}/api/v1/auth/login`, {
     data: {
       tenantId: creds.tenantId,
       email: creds.email,

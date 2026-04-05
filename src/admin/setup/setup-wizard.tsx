@@ -72,7 +72,7 @@ export default function SetupWizard() {
       if (currentStepKey === 'queue') {
         try {
           await customFetch({
-            url: '/api/admin/queues',
+            url: '/api/v1/admin/queues',
             method: 'POST',
             data: { name: values.queueName, isActive: true },
           });
@@ -88,7 +88,7 @@ export default function SetupWizard() {
           let userId = values.agentUserId;
           if (!userId && values.agentEmail) {
             const user = await customFetch<{ id: string }>({
-              url: '/api/admin/users',
+              url: '/api/v1/admin/users',
               method: 'POST',
               data: {
                 email: values.agentEmail,
@@ -99,7 +99,7 @@ export default function SetupWizard() {
             userId = user.id;
           }
           await customFetch({
-            url: '/api/admin/agents',
+            url: '/api/v1/admin/agents',
             method: 'POST',
             data: { userId, displayName: values.agentDisplayName },
           });
@@ -113,7 +113,7 @@ export default function SetupWizard() {
       if (currentStepKey === 'channel') {
         try {
           await customFetch({
-            url: `/api/admin/channels/${values.channelId}`,
+            url: `/api/v1/admin/channels/${values.channelId}`,
             method: 'PUT',
             data: { isActive: true, credentials: values.channelConfig },
           });

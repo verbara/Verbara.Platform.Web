@@ -3,7 +3,7 @@ import { API_BASE } from '../../helpers/credentials';
 
 test.describe('Setup Wizard', () => {
   test('should block setup when platform already initialized', async ({ request }) => {
-    const response = await request.post(`${API_BASE}/api/setup`, {
+    const response = await request.post(`${API_BASE}/api/v1/setup`, {
       data: {
         email: 'test@test.local',
         password: 'TestPass2026!',

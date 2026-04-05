@@ -27,7 +27,7 @@ export function useAgents() {
     queryKey: ['agents'],
     queryFn: async () => {
       const result = await customFetch<PagedResult<Agent>>({
-        url: '/api/admin/agents',
+        url: '/api/v1/admin/agents',
         method: 'GET',
         params: { page: '1', pageSize: '100' },
       });
@@ -40,7 +40,7 @@ export function useAgent(id: string | undefined) {
   return useQuery({
     queryKey: ['agents', id],
     queryFn: () =>
-      customFetch<Agent>({ url: `/api/admin/agents/${id}`, method: 'GET' }),
+      customFetch<Agent>({ url: `/api/v1/admin/agents/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -49,7 +49,7 @@ export function useAgentMe() {
   return useQuery({
     queryKey: ['agent-me'],
     queryFn: () =>
-      customFetch<Agent>({ url: '/api/agents/me', method: 'GET' }),
+      customFetch<Agent>({ url: '/api/v1/agents/me', method: 'GET' }),
   });
 }
 
@@ -57,7 +57,7 @@ export function useCreateAgent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { userId: string; displayName: string }) =>
-      customFetch<Agent>({ url: '/api/admin/agents', method: 'POST', data }),
+      customFetch<Agent>({ url: '/api/v1/admin/agents', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents'] });
       toast.success('Agent created');
@@ -79,7 +79,7 @@ export function useUpdateAgent() {
       skills?: { name: string; proficiency: number }[];
     }) =>
       customFetch<Agent>({
-        url: `/api/admin/agents/${id}`,
+        url: `/api/v1/admin/agents/${id}`,
         method: 'PUT',
         data,
       }),
@@ -95,7 +95,7 @@ export function useDeleteAgent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      customFetch<void>({ url: `/api/admin/agents/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/agents/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents'] });
       toast.success('Agent deleted');
@@ -109,7 +109,7 @@ export function useUpdateAgentState() {
   return useMutation({
     mutationFn: (data: { state: string }) =>
       customFetch<void>({
-        url: '/api/agents/me/state',
+        url: '/api/v1/agents/me/state',
         method: 'PUT',
         data,
       }),
@@ -126,7 +126,7 @@ export function useUpdateAgentStateAdmin() {
   return useMutation({
     mutationFn: ({ agentId, state }: { agentId: string; state: string }) =>
       customFetch<void>({
-        url: `/api/admin/agents/${agentId}/state`,
+        url: `/api/v1/admin/agents/${agentId}/state`,
         method: 'PUT',
         data: { state },
       }),

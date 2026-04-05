@@ -50,7 +50,7 @@ export function useSurveys() {
   return useQuery({
     queryKey: ['surveys'],
     queryFn: () =>
-      customFetch<Survey[]>({ url: '/api/admin/surveys', method: 'GET' }),
+      customFetch<Survey[]>({ url: '/api/v1/admin/surveys', method: 'GET' }),
   });
 }
 
@@ -58,7 +58,7 @@ export function useSurvey(id: number | undefined) {
   return useQuery({
     queryKey: ['survey', id],
     queryFn: () =>
-      customFetch<Survey>({ url: `/api/admin/surveys/${id}`, method: 'GET' }),
+      customFetch<Survey>({ url: `/api/v1/admin/surveys/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -67,7 +67,7 @@ export function useCreateSurvey() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<Omit<Survey, 'id' | 'createdAt' | 'responseCount'>>) =>
-      customFetch<Survey>({ url: '/api/admin/surveys', method: 'POST', data }),
+      customFetch<Survey>({ url: '/api/v1/admin/surveys', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['surveys'] });
       toast.success('Survey created');
@@ -84,7 +84,7 @@ export function useUpdateSurvey() {
       ...data
     }: { id: number } & Partial<Omit<Survey, 'id' | 'createdAt' | 'responseCount'>>) =>
       customFetch<Survey>({
-        url: `/api/admin/surveys/${id}`,
+        url: `/api/v1/admin/surveys/${id}`,
         method: 'PUT',
         data,
       }),
@@ -101,7 +101,7 @@ export function useDeleteSurvey() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/surveys/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/surveys/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['surveys'] });
       toast.success('Survey deleted');
@@ -115,7 +115,7 @@ export function useToggleSurveyActive(id: number) {
   return useMutation({
     mutationFn: (isActive: boolean) =>
       customFetch<Survey>({
-        url: `/api/admin/surveys/${id}/activate`,
+        url: `/api/v1/admin/surveys/${id}/activate`,
         method: 'PATCH',
         data: { isActive },
       }),
@@ -132,7 +132,7 @@ export function useSurveySummary(surveyId: number | undefined) {
     queryKey: ['survey-summary', surveyId],
     queryFn: () =>
       customFetch<SurveySummary>({
-        url: `/api/analytics/surveys/${surveyId}/summary`,
+        url: `/api/v1/analytics/surveys/${surveyId}/summary`,
         method: 'GET',
       }),
     enabled: !!surveyId,
@@ -144,7 +144,7 @@ export function useSurveyResponses(surveyId: number | undefined) {
     queryKey: ['survey-responses', surveyId],
     queryFn: () =>
       customFetch<SurveyResponse[]>({
-        url: `/api/analytics/surveys/${surveyId}/responses`,
+        url: `/api/v1/analytics/surveys/${surveyId}/responses`,
         method: 'GET',
       }),
     enabled: !!surveyId,

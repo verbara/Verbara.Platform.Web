@@ -104,7 +104,7 @@ export function LoginPage() {
 
     try {
       const effectiveTenant = tenant.trim() || null;
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -141,7 +141,7 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login/apikey', {
+      const res = await fetch('/api/v1/auth/login/apikey', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -169,7 +169,7 @@ export function LoginPage() {
       return;
     }
     const returnUrl = encodeURIComponent(window.location.origin + '/login');
-    window.location.href = `/api/auth/oidc/login?tenant_id=${encodeURIComponent(effectiveTenant)}&return_url=${returnUrl}`;
+    window.location.href = `/api/v1/auth/oidc/login?tenant_id=${encodeURIComponent(effectiveTenant)}&return_url=${returnUrl}`;
   }
 
   // MFA verification modal

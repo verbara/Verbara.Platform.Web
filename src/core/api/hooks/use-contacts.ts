@@ -28,7 +28,7 @@ export function useContact(id: string | undefined) {
     queryKey: ['contacts', id],
     queryFn: () =>
       customFetch<Contact>({
-        url: `/api/contacts/${id}`,
+        url: `/api/v1/contacts/${id}`,
         method: 'GET',
       }),
     enabled: !!id,
@@ -50,7 +50,7 @@ export function useContactConversations(contactId: string | undefined) {
     queryKey: ['contacts', contactId, 'conversations'],
     queryFn: async () => {
       const result = await customFetch<PagedResult<ContactConversation>>({
-        url: `/api/contacts/${contactId}/conversations`,
+        url: `/api/v1/contacts/${contactId}/conversations`,
         method: 'GET',
         params: { page: '1', pageSize: '20' },
       });
@@ -65,7 +65,7 @@ export function useSearchContacts(search: string) {
     queryKey: ['contacts', 'search', search],
     queryFn: async () => {
       const result = await customFetch<PagedResult<Contact>>({
-        url: '/api/contacts',
+        url: '/api/v1/contacts',
         method: 'GET',
         params: { search, page: '1', pageSize: '20' },
       });
@@ -80,7 +80,7 @@ export function useCreateContact() {
   return useMutation({
     mutationFn: (data: Omit<Contact, 'id' | 'createdAt'>) =>
       customFetch<Contact>({
-        url: '/api/contacts',
+        url: '/api/v1/contacts',
         method: 'POST',
         data,
       }),
@@ -97,7 +97,7 @@ export function useUpdateContact() {
   return useMutation({
     mutationFn: ({ id, ...data }: Partial<Contact> & { id: string }) =>
       customFetch<Contact>({
-        url: `/api/contacts/${id}`,
+        url: `/api/v1/contacts/${id}`,
         method: 'PUT',
         data,
       }),

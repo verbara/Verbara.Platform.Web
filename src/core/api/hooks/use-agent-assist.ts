@@ -23,7 +23,7 @@ export function useAgentAssistConfig() {
   return useQuery({
     queryKey: ['agent-assist', 'config'],
     queryFn: () =>
-      customFetch<AgentAssistConfig>({ url: '/api/admin/agent-assist/config', method: 'GET' }),
+      customFetch<AgentAssistConfig>({ url: '/api/v1/admin/agent-assist/config', method: 'GET' }),
   });
 }
 
@@ -32,7 +32,7 @@ export function useUpdateAgentAssistConfig() {
   return useMutation({
     mutationFn: (data: Partial<AgentAssistConfig>) =>
       customFetch<AgentAssistConfig>({
-        url: '/api/admin/agent-assist/config',
+        url: '/api/v1/admin/agent-assist/config',
         method: 'PUT',
         data,
       }),
@@ -48,7 +48,7 @@ export function useKeywordRules() {
   return useQuery({
     queryKey: ['agent-assist', 'keyword-rules'],
     queryFn: () =>
-      customFetch<KeywordRule[]>({ url: '/api/admin/agent-assist/keyword-rules', method: 'GET' }),
+      customFetch<KeywordRule[]>({ url: '/api/v1/admin/agent-assist/keyword-rules', method: 'GET' }),
   });
 }
 
@@ -57,7 +57,7 @@ export function useUpdateKeywordRules() {
   return useMutation({
     mutationFn: (data: KeywordRule[]) =>
       customFetch<KeywordRule[]>({
-        url: '/api/admin/agent-assist/keyword-rules',
+        url: '/api/v1/admin/agent-assist/keyword-rules',
         method: 'PUT',
         data,
       }),
@@ -82,7 +82,7 @@ export function useComplianceRules() {
     queryKey: ['agent-assist', 'compliance-rules'],
     queryFn: () =>
       customFetch<ComplianceRule[]>({
-        url: '/api/admin/agent-assist/compliance-rules',
+        url: '/api/v1/admin/agent-assist/compliance-rules',
         method: 'GET',
       }),
   });
@@ -93,7 +93,7 @@ export function useUpdateComplianceRules() {
   return useMutation({
     mutationFn: (data: ComplianceRule[]) =>
       customFetch<ComplianceRule[]>({
-        url: '/api/admin/agent-assist/compliance-rules',
+        url: '/api/v1/admin/agent-assist/compliance-rules',
         method: 'PUT',
         data,
       }),

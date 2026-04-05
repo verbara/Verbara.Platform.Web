@@ -143,7 +143,7 @@ export function useRateCards() {
     queryKey: ['rate-cards', tenantId],
     queryFn: () =>
       customFetch<RateCard[]>({
-        url: '/api/management/rate-cards',
+        url: '/api/v1/management/rate-cards',
         method: 'GET',
         params: { tenantId },
       }),
@@ -157,7 +157,7 @@ export function useCreateRateCard() {
   return useMutation({
     mutationFn: (data: CreateRateCardInput) =>
       customFetch<RateCard>({
-        url: '/api/management/rate-cards',
+        url: '/api/v1/management/rate-cards',
         method: 'POST',
         params: { tenantId },
         data,
@@ -176,7 +176,7 @@ export function useUpdateRateCard() {
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & CreateRateCardInput) =>
       customFetch<RateCard>({
-        url: `/api/management/rate-cards/${id}`,
+        url: `/api/v1/management/rate-cards/${id}`,
         method: 'PUT',
         params: { tenantId },
         data,
@@ -195,7 +195,7 @@ export function useDeleteRateCard() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/management/rate-cards/${id}`,
+        url: `/api/v1/management/rate-cards/${id}`,
         method: 'DELETE',
         params: { tenantId },
       }),
@@ -215,7 +215,7 @@ export function useInvoices(page = 1, pageSize = 20) {
     queryKey: ['invoices', tenantId, page, pageSize],
     queryFn: () =>
       customFetch<Invoice[]>({
-        url: '/api/management/invoices',
+        url: '/api/v1/management/invoices',
         method: 'GET',
         params: { tenantId, page: String(page), pageSize: String(pageSize) },
       }),
@@ -230,7 +230,7 @@ export function useGenerateInvoice() {
   return useMutation({
     mutationFn: (data: GenerateInvoiceInput) =>
       customFetch<Invoice>({
-        url: '/api/management/invoices/generate',
+        url: '/api/v1/management/invoices/generate',
         method: 'POST',
         params: { tenantId },
         data,
@@ -249,7 +249,7 @@ export function useInvoice(id: string) {
     queryKey: ['invoice', tenantId, id],
     queryFn: () =>
       customFetch<Invoice>({
-        url: `/api/management/invoices/${id}`,
+        url: `/api/v1/management/invoices/${id}`,
         method: 'GET',
         params: { tenantId },
       }),
@@ -263,7 +263,7 @@ export function useIssueInvoice() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<{ invoiceId: string; status: string }>({
-        url: `/api/management/invoices/${id}/issue`,
+        url: `/api/v1/management/invoices/${id}/issue`,
         method: 'POST',
         params: { tenantId },
       }),
@@ -286,7 +286,7 @@ export function useUsageSummary(from?: string, until?: string) {
     queryKey: ['usage-summary', tenantId, from, until],
     queryFn: () =>
       customFetch<UsageSummary[]>({
-        url: `/api/management/tenants/${tenantId}/usage`,
+        url: `/api/v1/management/tenants/${tenantId}/usage`,
         method: 'GET',
         params,
       }),
@@ -312,7 +312,7 @@ export function useUsageDetails(opts: {
     queryKey: ['usage-details', tenantId, opts],
     queryFn: () =>
       customFetch<UsageRecord[]>({
-        url: `/api/management/tenants/${tenantId}/usage/details`,
+        url: `/api/v1/management/tenants/${tenantId}/usage/details`,
         method: 'GET',
         params,
       }),
@@ -329,7 +329,7 @@ export function useQuotaStatus() {
     queryKey: ['quota-status', tenantId],
     queryFn: () =>
       customFetch<QuotaStatus>({
-        url: `/api/management/tenants/${tenantId}/quota`,
+        url: `/api/v1/management/tenants/${tenantId}/quota`,
         method: 'GET',
       }),
     enabled: !!tenantId,
@@ -342,7 +342,7 @@ export function useUpdateQuota() {
   return useMutation({
     mutationFn: (data: UpdateQuotaInput) =>
       customFetch<Quota>({
-        url: `/api/management/tenants/${tenantId}/quota`,
+        url: `/api/v1/management/tenants/${tenantId}/quota`,
         method: 'PUT',
         data,
       }),

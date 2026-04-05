@@ -22,7 +22,7 @@ async function uploadFile(file: File): Promise<MediaUploadResult> {
   if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
   if (tenantId) headers['X-Tenant-Id'] = tenantId;
 
-  const response = await fetch('/api/media/upload', {
+  const response = await fetch('/api/v1/media/upload', {
     method: 'POST',
     body: formData,
     headers,
@@ -42,5 +42,5 @@ export function useUploadMedia() {
 }
 
 export function mediaDownloadUrl(id: string): string {
-  return `/api/media/${id}/download`;
+  return `/api/v1/media/${id}/download`;
 }

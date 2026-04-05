@@ -35,7 +35,7 @@ export function useSystemInfo() {
     queryKey: ['system', 'info'],
     queryFn: () =>
       customFetch<SystemInfo>({
-        url: '/api/management/system/info',
+        url: '/api/v1/management/system/info',
         method: 'GET',
       }),
   });
@@ -46,7 +46,7 @@ export function useSystemLicense() {
     queryKey: ['system', 'license'],
     queryFn: () =>
       customFetch<LicenseInfo>({
-        url: '/api/management/system/license',
+        url: '/api/v1/management/system/license',
         method: 'GET',
       }),
   });
@@ -57,7 +57,7 @@ export function useSystemCluster() {
     queryKey: ['system', 'cluster'],
     queryFn: () =>
       customFetch<ClusterInfo>({
-        url: '/api/admin/system/cluster',
+        url: '/api/v1/admin/system/cluster',
         method: 'GET',
       }),
   });
@@ -68,7 +68,7 @@ export function useUpdateSystemSettings() {
   return useMutation({
     mutationFn: (data: SystemSettings) =>
       customFetch<SystemSettings>({
-        url: '/api/management/system/settings',
+        url: '/api/v1/management/system/settings',
         method: 'PUT',
         data,
       }),

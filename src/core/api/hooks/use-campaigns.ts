@@ -93,7 +93,7 @@ export function useCampaigns(page = 1, pageSize = 100) {
     queryKey: ['campaigns', page, pageSize],
     queryFn: async () => {
       const result = await customFetch<PagedResult<CampaignSummary>>({
-        url: '/api/admin/campaigns',
+        url: '/api/v1/admin/campaigns',
         method: 'GET',
         params: { page: String(page), pageSize: String(pageSize) },
       });
@@ -106,7 +106,7 @@ export function useCampaign(id: number) {
   return useQuery({
     queryKey: ['campaign', id],
     queryFn: () =>
-      customFetch<CampaignDetail>({ url: `/api/admin/campaigns/${id}`, method: 'GET' }),
+      customFetch<CampaignDetail>({ url: `/api/v1/admin/campaigns/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -115,7 +115,7 @@ export function useCampaignMetrics(id: number) {
   return useQuery({
     queryKey: ['campaign-metrics', id],
     queryFn: () =>
-      customFetch<CampaignMetrics>({ url: `/api/admin/campaigns/${id}/metrics`, method: 'GET' }),
+      customFetch<CampaignMetrics>({ url: `/api/v1/admin/campaigns/${id}/metrics`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -124,7 +124,7 @@ export function useActiveCampaignMetrics() {
   return useQuery({
     queryKey: ['active-campaign-metrics'],
     queryFn: () =>
-      customFetch<CampaignMetrics[]>({ url: '/api/operations/campaigns/metrics', method: 'GET' }),
+      customFetch<CampaignMetrics[]>({ url: '/api/v1/operations/campaigns/metrics', method: 'GET' }),
   });
 }
 
@@ -133,7 +133,7 @@ export function useCampaignContactLists(campaignId: number) {
     queryKey: ['campaign-contact-lists', campaignId],
     queryFn: () =>
       customFetch<ContactList[]>({
-        url: `/api/admin/campaigns/${campaignId}/contact-lists`,
+        url: `/api/v1/admin/campaigns/${campaignId}/contact-lists`,
         method: 'GET',
       }),
     enabled: !!campaignId,
@@ -145,7 +145,7 @@ export function useCampaignDispositions(campaignId: number) {
     queryKey: ['campaign-dispositions', campaignId],
     queryFn: () =>
       customFetch<DispositionCode[]>({
-        url: `/api/admin/campaigns/${campaignId}/dispositions`,
+        url: `/api/v1/admin/campaigns/${campaignId}/dispositions`,
         method: 'GET',
       }),
     enabled: !!campaignId,
@@ -156,7 +156,7 @@ export function useCreateCampaign() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<Omit<CampaignDetail, 'id' | 'createdAt'>>) =>
-      customFetch<CampaignDetail>({ url: '/api/admin/campaigns', method: 'POST', data }),
+      customFetch<CampaignDetail>({ url: '/api/v1/admin/campaigns', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       toast.success('Campaign created');
@@ -173,7 +173,7 @@ export function useUpdateCampaign() {
       ...data
     }: { id: number } & Partial<Omit<CampaignDetail, 'id' | 'createdAt'>>) =>
       customFetch<CampaignDetail>({
-        url: `/api/admin/campaigns/${id}`,
+        url: `/api/v1/admin/campaigns/${id}`,
         method: 'PUT',
         data,
       }),
@@ -190,7 +190,7 @@ export function useDeleteCampaign() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/campaigns/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/campaigns/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       toast.success('Campaign deleted');
@@ -203,7 +203,7 @@ export function useStartCampaign() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/campaigns/${id}/start`, method: 'POST' }),
+      customFetch<void>({ url: `/api/v1/admin/campaigns/${id}/start`, method: 'POST' }),
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', id] });
@@ -217,7 +217,7 @@ export function usePauseCampaign() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/campaigns/${id}/pause`, method: 'POST' }),
+      customFetch<void>({ url: `/api/v1/admin/campaigns/${id}/pause`, method: 'POST' }),
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', id] });
@@ -231,7 +231,7 @@ export function useResumeCampaign() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/campaigns/${id}/resume`, method: 'POST' }),
+      customFetch<void>({ url: `/api/v1/admin/campaigns/${id}/resume`, method: 'POST' }),
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', id] });
@@ -245,7 +245,7 @@ export function useStopCampaign() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/campaigns/${id}/stop`, method: 'POST' }),
+      customFetch<void>({ url: `/api/v1/admin/campaigns/${id}/stop`, method: 'POST' }),
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', id] });
@@ -263,7 +263,7 @@ export function useCreateContactList() {
       ...data
     }: { campaignId: number } & Partial<Omit<ContactList, 'id' | 'createdAt'>>) =>
       customFetch<ContactList>({
-        url: `/api/admin/campaigns/${campaignId}/contact-lists`,
+        url: `/api/v1/admin/campaigns/${campaignId}/contact-lists`,
         method: 'POST',
         data,
       }),
@@ -288,7 +288,7 @@ export function useImportContacts() {
       contacts: ContactImportRow[];
     }) =>
       customFetch<void>({
-        url: `/api/admin/campaigns/${campaignId}/contact-lists/${listId}/import`,
+        url: `/api/v1/admin/campaigns/${campaignId}/contact-lists/${listId}/import`,
         method: 'POST',
         data: contacts,
       }),
@@ -308,7 +308,7 @@ export function useCreateDispositionCode() {
       ...data
     }: { campaignId: number } & Partial<Omit<DispositionCode, 'id'>>) =>
       customFetch<DispositionCode>({
-        url: `/api/admin/campaigns/${campaignId}/dispositions`,
+        url: `/api/v1/admin/campaigns/${campaignId}/dispositions`,
         method: 'POST',
         data,
       }),
@@ -329,7 +329,7 @@ export function useUpdateDispositionCode() {
       ...data
     }: { campaignId: number; codeId: number } & Partial<Omit<DispositionCode, 'id'>>) =>
       customFetch<DispositionCode>({
-        url: `/api/admin/campaigns/${campaignId}/dispositions/${codeId}`,
+        url: `/api/v1/admin/campaigns/${campaignId}/dispositions/${codeId}`,
         method: 'PUT',
         data,
       }),
@@ -346,7 +346,7 @@ export function useDeleteDispositionCode() {
   return useMutation({
     mutationFn: ({ campaignId, codeId }: { campaignId: number; codeId: number }) =>
       customFetch<void>({
-        url: `/api/admin/campaigns/${campaignId}/dispositions/${codeId}`,
+        url: `/api/v1/admin/campaigns/${campaignId}/dispositions/${codeId}`,
         method: 'DELETE',
       }),
     onSuccess: (_data, variables) => {
@@ -362,7 +362,7 @@ export function useCallbacks(campaignId: number) {
     queryKey: ['callbacks', campaignId],
     queryFn: () =>
       customFetch<Array<{ campaignId: number; contactId: number; scheduledAt: string; agentId?: string }>>({
-        url: `/api/admin/campaigns/${campaignId}/callbacks`,
+        url: `/api/v1/admin/campaigns/${campaignId}/callbacks`,
         method: 'GET',
       }),
     enabled: !!campaignId,
@@ -376,7 +376,7 @@ export function useCreateCallback() {
       campaignId: number; contactId: number; phone: string; agentId?: string; scheduledAt: string;
     }) =>
       customFetch<void>({
-        url: `/api/admin/campaigns/${campaignId}/callbacks`,
+        url: `/api/v1/admin/campaigns/${campaignId}/callbacks`,
         method: 'POST',
         data: { contactId, phone, agentId, scheduledAt },
       }),

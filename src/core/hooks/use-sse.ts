@@ -15,7 +15,7 @@ export function useSSE() {
   const connect = useCallback(() => {
     if (!accessToken || sourceRef.current) return;
 
-    const url = `/api/events/stream?token=${encodeURIComponent(accessToken)}`;
+    const url = `/api/v1/events/stream?token=${encodeURIComponent(accessToken)}`;
     const source = new EventSource(url);
     sourceRef.current = source;
 

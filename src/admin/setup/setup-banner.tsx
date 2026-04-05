@@ -27,14 +27,14 @@ export function SetupBanner() {
       let hasChannel = false;
 
       try {
-        const queues = await customFetch<unknown[]>({ url: '/api/admin/queues', method: 'GET' });
+        const queues = await customFetch<unknown[]>({ url: '/api/v1/admin/queues', method: 'GET' });
         hasQueues = queues.length > 0;
       } catch {
         hasQueues = false;
       }
 
       try {
-        const agents = await customFetch<unknown[]>({ url: '/api/admin/agents', method: 'GET' });
+        const agents = await customFetch<unknown[]>({ url: '/api/v1/admin/agents', method: 'GET' });
         hasAgents = agents.length > 0;
       } catch {
         hasAgents = false;
@@ -42,7 +42,7 @@ export function SetupBanner() {
 
       try {
         const channels = await customFetch<{ isActive?: boolean }[]>({
-          url: '/api/admin/channels',
+          url: '/api/v1/admin/channels',
           method: 'GET',
         });
         hasChannel = channels.some((c) => c.isActive);

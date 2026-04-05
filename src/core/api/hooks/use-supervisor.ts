@@ -16,7 +16,7 @@ export function useActiveSessions() {
   return useQuery({
     queryKey: ['supervisor', 'sessions', 'active'],
     queryFn: () =>
-      customFetch<ActiveSession[]>({ url: '/api/supervisor/sessions/active', method: 'GET' }),
+      customFetch<ActiveSession[]>({ url: '/api/v1/supervisor/sessions/active', method: 'GET' }),
     refetchInterval: 10_000,
   });
 }
@@ -25,7 +25,7 @@ export function useSendWhisper() {
   return useMutation({
     mutationFn: ({ sessionId, message }: { sessionId: string; message: string }) =>
       customFetch<void>({
-        url: `/api/supervisor/sessions/${sessionId}/whisper`,
+        url: `/api/v1/supervisor/sessions/${sessionId}/whisper`,
         method: 'POST',
         data: { message },
       }),
@@ -38,7 +38,7 @@ export function useStartListening() {
   return useMutation({
     mutationFn: (sessionId: string) =>
       customFetch<void>({
-        url: `/api/supervisor/sessions/${sessionId}/listen`,
+        url: `/api/v1/supervisor/sessions/${sessionId}/listen`,
         method: 'POST',
       }),
     onError: (err: Error) => toast.error(err.message),

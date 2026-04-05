@@ -65,7 +65,7 @@ export default function ChannelsPage() {
       queryKey: ['channels', ch.id],
       queryFn: () =>
         customFetch<ChannelConfig>({
-          url: `/api/admin/channels/${ch.id}`,
+          url: `/api/v1/admin/channels/${ch.id}`,
           method: 'GET' as const,
         }).catch(() => null),
       staleTime: 60_000,

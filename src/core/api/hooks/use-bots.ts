@@ -17,7 +17,7 @@ export function useBots() {
   return useQuery({
     queryKey: ['bots'],
     queryFn: () =>
-      customFetch<Bot[]>({ url: '/api/admin/bots', method: 'GET' }),
+      customFetch<Bot[]>({ url: '/api/v1/admin/bots', method: 'GET' }),
   });
 }
 
@@ -25,7 +25,7 @@ export function useBot(id: string | undefined) {
   return useQuery({
     queryKey: ['bots', id],
     queryFn: () =>
-      customFetch<Bot>({ url: `/api/admin/bots/${id}`, method: 'GET' }),
+      customFetch<Bot>({ url: `/api/v1/admin/bots/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -34,7 +34,7 @@ export function useCreateBot() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<Omit<Bot, 'id' | 'createdAt'>>) =>
-      customFetch<Bot>({ url: '/api/admin/bots', method: 'POST', data }),
+      customFetch<Bot>({ url: '/api/v1/admin/bots', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bots'] });
       toast.success('Bot created');
@@ -51,7 +51,7 @@ export function useUpdateBot() {
       ...data
     }: { id: string } & Partial<Omit<Bot, 'id' | 'createdAt'>>) =>
       customFetch<Bot>({
-        url: `/api/admin/bots/${id}`,
+        url: `/api/v1/admin/bots/${id}`,
         method: 'PUT',
         data,
       }),
@@ -67,7 +67,7 @@ export function useDeleteBot() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      customFetch<void>({ url: `/api/admin/bots/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/bots/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bots'] });
       toast.success('Bot deleted');

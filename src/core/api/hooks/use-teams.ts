@@ -21,7 +21,7 @@ export function useTeams() {
     queryKey: ['teams'],
     queryFn: async () => {
       const result = await customFetch<PagedResult<Team>>({
-        url: '/api/admin/teams',
+        url: '/api/v1/admin/teams',
         method: 'GET',
         params: { page: '1', pageSize: '100' },
       });
@@ -34,7 +34,7 @@ export function useTeam(id: string | undefined) {
   return useQuery({
     queryKey: ['teams', id],
     queryFn: () =>
-      customFetch<Team>({ url: `/api/admin/teams/${id}`, method: 'GET' }),
+      customFetch<Team>({ url: `/api/v1/admin/teams/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -43,7 +43,7 @@ export function useCreateTeam() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { name: string }) =>
-      customFetch<Team>({ url: '/api/admin/teams', method: 'POST', data }),
+      customFetch<Team>({ url: '/api/v1/admin/teams', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams'] });
       toast.success('Team created');
@@ -57,7 +57,7 @@ export function useUpdateTeam() {
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string; name: string }) =>
       customFetch<Team>({
-        url: `/api/admin/teams/${id}`,
+        url: `/api/v1/admin/teams/${id}`,
         method: 'PUT',
         data,
       }),
@@ -73,7 +73,7 @@ export function useDeleteTeam() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      customFetch<void>({ url: `/api/admin/teams/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/teams/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams'] });
       toast.success('Team deleted');

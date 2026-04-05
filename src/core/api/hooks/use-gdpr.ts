@@ -62,7 +62,7 @@ export function useGdprExport() {
   return useMutation({
     mutationFn: (data: { contactId: string }) =>
       customFetch<GdprExportResult>({
-        url: '/api/admin/gdpr/export',
+        url: '/api/v1/admin/gdpr/export',
         method: 'POST',
         data,
       }),
@@ -78,7 +78,7 @@ export function useGdprPurge() {
   return useMutation({
     mutationFn: (data: { contactId: string; reason: string }) =>
       customFetch<PurgeResult>({
-        url: '/api/admin/gdpr/purge',
+        url: '/api/v1/admin/gdpr/purge',
         method: 'POST',
         data,
       }),
@@ -106,7 +106,7 @@ export function usePurgeLog(params?: {
     queryKey: ['purge-log', params],
     queryFn: () =>
       customFetch<PagedResult<PurgeEntry>>({
-        url: '/api/management/gdpr/purge-log',
+        url: '/api/v1/management/gdpr/purge-log',
         method: 'GET',
         params: queryParams,
       }),
@@ -121,7 +121,7 @@ export function useRetentionPolicy(tenantId: string) {
     queryKey: ['retention-policy', tenantId],
     queryFn: () =>
       customFetch<RetentionPolicy>({
-        url: `/api/management/tenants/${tenantId}/retention`,
+        url: `/api/v1/management/tenants/${tenantId}/retention`,
         method: 'GET',
       }),
     enabled: !!tenantId,
@@ -133,7 +133,7 @@ export function useUpdateRetentionPolicy(tenantId: string) {
   return useMutation({
     mutationFn: (data: UpdateRetentionPolicyRequest) =>
       customFetch<RetentionPolicy>({
-        url: `/api/management/tenants/${tenantId}/retention`,
+        url: `/api/v1/management/tenants/${tenantId}/retention`,
         method: 'PUT',
         data,
       }),

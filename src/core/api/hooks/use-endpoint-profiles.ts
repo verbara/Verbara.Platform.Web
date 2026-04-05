@@ -44,7 +44,7 @@ export function useEndpointProfiles() {
   return useQuery({
     queryKey: ['endpoint-profiles'],
     queryFn: () =>
-      customFetch<EndpointProfile[]>({ url: '/api/admin/realtime/profiles', method: 'GET' }),
+      customFetch<EndpointProfile[]>({ url: '/api/v1/admin/realtime/profiles', method: 'GET' }),
   });
 }
 
@@ -52,7 +52,7 @@ export function useEndpointProfile(id: number) {
   return useQuery({
     queryKey: ['endpoint-profile', id],
     queryFn: () =>
-      customFetch<EndpointProfile>({ url: `/api/admin/realtime/profiles/${id}`, method: 'GET' }),
+      customFetch<EndpointProfile>({ url: `/api/v1/admin/realtime/profiles/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -61,7 +61,7 @@ export function useCreateEndpointProfile() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateEndpointProfilePayload) =>
-      customFetch<EndpointProfile>({ url: '/api/admin/realtime/profiles', method: 'POST', data }),
+      customFetch<EndpointProfile>({ url: '/api/v1/admin/realtime/profiles', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['endpoint-profiles'] });
       toast.success('Profile created');
@@ -74,7 +74,7 @@ export function useUpdateEndpointProfile() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...data }: { id: number } & UpdateEndpointProfilePayload) =>
-      customFetch<EndpointProfile>({ url: `/api/admin/realtime/profiles/${id}`, method: 'PUT', data }),
+      customFetch<EndpointProfile>({ url: `/api/v1/admin/realtime/profiles/${id}`, method: 'PUT', data }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['endpoint-profiles'] });
       qc.invalidateQueries({ queryKey: ['endpoint-profile', variables.id] });
@@ -88,7 +88,7 @@ export function useDeleteEndpointProfile() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/realtime/profiles/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/realtime/profiles/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['endpoint-profiles'] });
       toast.success('Profile deleted');
@@ -101,7 +101,7 @@ export function useSeedDefaults() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      customFetch<void>({ url: '/api/admin/realtime/profiles/seed-defaults', method: 'POST' }),
+      customFetch<void>({ url: '/api/v1/admin/realtime/profiles/seed-defaults', method: 'POST' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['endpoint-profiles'] });
       toast.success('Default profiles seeded');

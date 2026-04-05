@@ -15,7 +15,7 @@ export function useTrunks() {
   return useQuery({
     queryKey: ['trunks'],
     queryFn: () =>
-      customFetch<TrunkSummary[]>({ url: '/api/admin/trunks', method: 'GET' }),
+      customFetch<TrunkSummary[]>({ url: '/api/v1/admin/trunks', method: 'GET' }),
   });
 }
 
@@ -23,7 +23,7 @@ export function useTrunk(id: number) {
   return useQuery({
     queryKey: ['trunk', id],
     queryFn: () =>
-      customFetch<TrunkSummary>({ url: `/api/admin/trunks/${id}`, method: 'GET' }),
+      customFetch<TrunkSummary>({ url: `/api/v1/admin/trunks/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -32,7 +32,7 @@ export function useCreateTrunk() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<Omit<TrunkSummary, 'id'>>) =>
-      customFetch<TrunkSummary>({ url: '/api/admin/trunks', method: 'POST', data }),
+      customFetch<TrunkSummary>({ url: '/api/v1/admin/trunks', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['trunks'] });
       toast.success('Trunk created');
@@ -45,7 +45,7 @@ export function useUpdateTrunk() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...data }: { id: number } & Partial<Omit<TrunkSummary, 'id'>>) =>
-      customFetch<TrunkSummary>({ url: `/api/admin/trunks/${id}`, method: 'PUT', data }),
+      customFetch<TrunkSummary>({ url: `/api/v1/admin/trunks/${id}`, method: 'PUT', data }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['trunks'] });
       qc.invalidateQueries({ queryKey: ['trunk', variables.id] });
@@ -59,7 +59,7 @@ export function useDeleteTrunk() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/trunks/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/trunks/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['trunks'] });
       toast.success('Trunk deleted');
@@ -71,14 +71,14 @@ export function useDeleteTrunk() {
 export function useActiveTrunks() {
   return useQuery({
     queryKey: ['trunks', 'active'],
-    queryFn: () => customFetch<TrunkSummary[]>({ url: '/api/admin/trunks/active', method: 'GET' }),
+    queryFn: () => customFetch<TrunkSummary[]>({ url: '/api/v1/admin/trunks/active', method: 'GET' }),
   });
 }
 
 export function useTrunkByName(name: string) {
   return useQuery({
     queryKey: ['trunks', 'by-name', name],
-    queryFn: () => customFetch<TrunkSummary>({ url: `/api/admin/trunks/by-name/${encodeURIComponent(name)}`, method: 'GET' }),
+    queryFn: () => customFetch<TrunkSummary>({ url: `/api/v1/admin/trunks/by-name/${encodeURIComponent(name)}`, method: 'GET' }),
     enabled: !!name,
   });
 }

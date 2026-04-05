@@ -45,7 +45,7 @@ export function useQueues() {
     queryKey: ['queues'],
     queryFn: async () => {
       const result = await customFetch<PagedResult<Queue>>({
-        url: '/api/admin/queues',
+        url: '/api/v1/admin/queues',
         method: 'GET',
         params: { page: '1', pageSize: '100' },
       });
@@ -58,7 +58,7 @@ export function useQueue(id: string | undefined) {
   return useQuery({
     queryKey: ['queues', id],
     queryFn: () =>
-      customFetch<Queue>({ url: `/api/admin/queues/${id}`, method: 'GET' }),
+      customFetch<Queue>({ url: `/api/v1/admin/queues/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -67,7 +67,7 @@ export function useCreateQueue() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Partial<Omit<Queue, 'id' | 'createdAt'>>) =>
-      customFetch<Queue>({ url: '/api/admin/queues', method: 'POST', data }),
+      customFetch<Queue>({ url: '/api/v1/admin/queues', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queues'] });
       toast.success('Queue created');
@@ -84,7 +84,7 @@ export function useUpdateQueue() {
       ...data
     }: { id: string } & Partial<Omit<Queue, 'id' | 'createdAt'>>) =>
       customFetch<Queue>({
-        url: `/api/admin/queues/${id}`,
+        url: `/api/v1/admin/queues/${id}`,
         method: 'PUT',
         data,
       }),
@@ -100,7 +100,7 @@ export function useDeleteQueue() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      customFetch<void>({ url: `/api/admin/queues/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/queues/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queues'] });
       toast.success('Queue deleted');

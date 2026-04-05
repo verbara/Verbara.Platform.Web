@@ -23,7 +23,7 @@ export function useFlows() {
     queryKey: ['flows'],
     queryFn: () =>
       customFetch<FlowDefinition[]>({
-        url: '/api/admin/flows',
+        url: '/api/v1/admin/flows',
         method: 'GET',
       }),
   });
@@ -34,7 +34,7 @@ export function useFlow(id: string | undefined) {
     queryKey: ['flows', id],
     queryFn: () =>
       customFetch<FlowDefinition>({
-        url: `/api/admin/flows/${id}`,
+        url: `/api/v1/admin/flows/${id}`,
         method: 'GET',
       }),
     enabled: !!id,
@@ -50,7 +50,7 @@ export function useCreateFlow() {
       nodes: FlowNodeDto[];
     }) =>
       customFetch<FlowDefinition>({
-        url: '/api/admin/flows',
+        url: '/api/v1/admin/flows',
         method: 'POST',
         data,
       }),
@@ -75,7 +75,7 @@ export function useUpdateFlow() {
       nodes?: FlowNodeDto[];
     }) =>
       customFetch<FlowDefinition>({
-        url: `/api/admin/flows/${id}`,
+        url: `/api/v1/admin/flows/${id}`,
         method: 'PUT',
         data,
       }),
@@ -92,7 +92,7 @@ export function usePublishFlow() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/admin/flows/${id}/publish`,
+        url: `/api/v1/admin/flows/${id}/publish`,
         method: 'POST',
       }),
     onSuccess: () => {

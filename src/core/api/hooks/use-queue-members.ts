@@ -6,7 +6,7 @@ export function useAddQueueMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { queueId: string; agentId: string }) =>
-      customFetch<void>({ url: '/api/admin/queue-members', method: 'POST', data }),
+      customFetch<void>({ url: '/api/v1/admin/queue-members', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queues'] });
       qc.invalidateQueries({ queryKey: ['agents'] });
@@ -20,7 +20,7 @@ export function useRemoveQueueMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ queueId, agentId }: { queueId: string; agentId: string }) =>
-      customFetch<void>({ url: `/api/admin/queue-members/${queueId}/${agentId}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/queue-members/${queueId}/${agentId}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queues'] });
       qc.invalidateQueries({ queryKey: ['agents'] });

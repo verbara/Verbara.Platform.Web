@@ -59,7 +59,7 @@ export function useAuthConfig() {
   return useQuery({
     queryKey: ['auth-config'],
     queryFn: () =>
-      customFetch<AuthConfig>({ url: '/api/admin/auth/config', method: 'GET' }),
+      customFetch<AuthConfig>({ url: '/api/v1/admin/auth/config', method: 'GET' }),
   });
 }
 
@@ -68,7 +68,7 @@ export function useUpdateAuthConfig() {
   return useMutation({
     mutationFn: (data: Partial<AuthConfig>) =>
       customFetch<AuthConfig>({
-        url: '/api/admin/auth/config',
+        url: '/api/v1/admin/auth/config',
         method: 'PUT',
         data,
       }),
@@ -87,7 +87,7 @@ export function useAuthEvents(params?: Record<string, string>) {
     queryKey: ['auth-events', params],
     queryFn: () =>
       customFetch<PagedResult<AuthEvent>>({
-        url: '/api/admin/auth/events',
+        url: '/api/v1/admin/auth/events',
         method: 'GET',
         params,
       }),
@@ -101,7 +101,7 @@ export function useActiveSessions() {
   return useQuery({
     queryKey: ['auth-sessions'],
     queryFn: () =>
-      customFetch<ActiveSession[]>({ url: '/api/admin/auth/sessions', method: 'GET' }),
+      customFetch<ActiveSession[]>({ url: '/api/v1/admin/auth/sessions', method: 'GET' }),
     refetchInterval: 30_000,
   });
 }
@@ -111,7 +111,7 @@ export function useForceLogout() {
   return useMutation({
     mutationFn: (sessionId: string) =>
       customFetch<void>({
-        url: `/api/admin/auth/sessions/${sessionId}`,
+        url: `/api/v1/admin/auth/sessions/${sessionId}`,
         method: 'DELETE',
       }),
     onSuccess: () => {
@@ -127,7 +127,7 @@ export function useForceLogoutUser() {
   return useMutation({
     mutationFn: (userId: string) =>
       customFetch<void>({
-        url: `/api/admin/auth/sessions/user/${userId}`,
+        url: `/api/v1/admin/auth/sessions/user/${userId}`,
         method: 'DELETE',
       }),
     onSuccess: () => {

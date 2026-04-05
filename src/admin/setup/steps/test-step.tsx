@@ -24,7 +24,7 @@ export default function TestStep() {
   const tenantId = useTenantStore.getState().activeTenantId ?? 'default';
 
   const isWebchat = channelId === 'webchat';
-  const webhookUrl = `https://your-api.com/api/webhooks/${tenantId}/${channelId}`;
+  const webhookUrl = `https://your-api.com/api/v1/webhooks/${tenantId}/${channelId}`;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(webhookUrl);

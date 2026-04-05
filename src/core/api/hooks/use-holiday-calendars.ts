@@ -20,7 +20,7 @@ export function useHolidayCalendars() {
     queryKey: ['holiday-calendars'],
     queryFn: () =>
       customFetch<HolidayCalendarSummary[]>({
-        url: '/api/admin/holiday-calendars',
+        url: '/api/v1/admin/holiday-calendars',
         method: 'GET',
       }),
   });
@@ -31,7 +31,7 @@ export function useHolidayCalendar(id: number) {
     queryKey: ['holiday-calendar', id],
     queryFn: () =>
       customFetch<HolidayCalendarSummary>({
-        url: `/api/admin/holiday-calendars/${id}`,
+        url: `/api/v1/admin/holiday-calendars/${id}`,
         method: 'GET',
       }),
     enabled: !!id,
@@ -43,7 +43,7 @@ export function useHolidayCalendarHolidays(calendarId: number) {
     queryKey: ['holiday-calendar-holidays', calendarId],
     queryFn: () =>
       customFetch<Holiday[]>({
-        url: `/api/admin/holiday-calendars/${calendarId}/holidays`,
+        url: `/api/v1/admin/holiday-calendars/${calendarId}/holidays`,
         method: 'GET',
       }),
     enabled: !!calendarId,
@@ -55,7 +55,7 @@ export function useCreateCalendar() {
   return useMutation({
     mutationFn: (data: Partial<Omit<HolidayCalendarSummary, 'id'>>) =>
       customFetch<HolidayCalendarSummary>({
-        url: '/api/admin/holiday-calendars',
+        url: '/api/v1/admin/holiday-calendars',
         method: 'POST',
         data,
       }),
@@ -75,7 +75,7 @@ export function useUpdateCalendar() {
       ...data
     }: { id: number } & Partial<Omit<HolidayCalendarSummary, 'id'>>) =>
       customFetch<HolidayCalendarSummary>({
-        url: `/api/admin/holiday-calendars/${id}`,
+        url: `/api/v1/admin/holiday-calendars/${id}`,
         method: 'PUT',
         data,
       }),
@@ -92,7 +92,7 @@ export function useDeleteCalendar() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/holiday-calendars/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/holiday-calendars/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['holiday-calendars'] });
       toast.success('Holiday calendar deleted');
@@ -109,7 +109,7 @@ export function useAddHoliday() {
       ...data
     }: { calendarId: number } & Partial<Omit<Holiday, 'id'>>) =>
       customFetch<Holiday>({
-        url: `/api/admin/holiday-calendars/${calendarId}/holidays`,
+        url: `/api/v1/admin/holiday-calendars/${calendarId}/holidays`,
         method: 'POST',
         data,
       }),
@@ -126,7 +126,7 @@ export function useRemoveHoliday() {
   return useMutation({
     mutationFn: ({ calendarId, holidayId }: { calendarId: number; holidayId: number }) =>
       customFetch<void>({
-        url: `/api/admin/holiday-calendars/${calendarId}/holidays/${holidayId}`,
+        url: `/api/v1/admin/holiday-calendars/${calendarId}/holidays/${holidayId}`,
         method: 'DELETE',
       }),
     onSuccess: (_data, variables) => {

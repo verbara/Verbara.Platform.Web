@@ -53,7 +53,7 @@ export function usePermissions() {
   return useQuery({
     queryKey: ['permissions'],
     queryFn: () =>
-      customFetch<Permission[]>({ url: '/api/admin/permissions', method: 'GET' }),
+      customFetch<Permission[]>({ url: '/api/v1/admin/permissions', method: 'GET' }),
     staleTime: 60 * 60 * 1000, // 1 hour — permissions are immutable
   });
 }
@@ -63,7 +63,7 @@ export function usePermissionCategories() {
     queryKey: ['permissions', 'categories'],
     queryFn: () =>
       customFetch<PermissionCategory[]>({
-        url: '/api/admin/permissions/categories',
+        url: '/api/v1/admin/permissions/categories',
         method: 'GET',
       }),
     staleTime: 60 * 60 * 1000,
@@ -76,7 +76,7 @@ export function useRoles() {
   return useQuery({
     queryKey: ['roles'],
     queryFn: () =>
-      customFetch<TenantRole[]>({ url: '/api/admin/roles', method: 'GET' }),
+      customFetch<TenantRole[]>({ url: '/api/v1/admin/roles', method: 'GET' }),
   });
 }
 
@@ -84,7 +84,7 @@ export function useRole(id: string | undefined) {
   return useQuery({
     queryKey: ['roles', id],
     queryFn: () =>
-      customFetch<TenantRole>({ url: `/api/admin/roles/${id}`, method: 'GET' }),
+      customFetch<TenantRole>({ url: `/api/v1/admin/roles/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -93,7 +93,7 @@ export function useRoleTemplates() {
   return useQuery({
     queryKey: ['role-templates'],
     queryFn: () =>
-      customFetch<RoleTemplate[]>({ url: '/api/admin/role-templates', method: 'GET' }),
+      customFetch<RoleTemplate[]>({ url: '/api/v1/admin/role-templates', method: 'GET' }),
     staleTime: 60 * 60 * 1000,
   });
 }
@@ -108,7 +108,7 @@ export function useCreateRole() {
       description?: string;
       sourceTemplateId?: string;
       permissions?: string[];
-    }) => customFetch<TenantRole>({ url: '/api/admin/roles', method: 'POST', data }),
+    }) => customFetch<TenantRole>({ url: '/api/v1/admin/roles', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['roles'] });
       toast.success('Role created');
@@ -128,7 +128,7 @@ export function useUpdateRole() {
       name?: string;
       description?: string;
       permissions?: string[];
-    }) => customFetch<TenantRole>({ url: `/api/admin/roles/${id}`, method: 'PUT', data }),
+    }) => customFetch<TenantRole>({ url: `/api/v1/admin/roles/${id}`, method: 'PUT', data }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['roles'] });
       qc.invalidateQueries({ queryKey: ['roles', variables.id] });
@@ -142,7 +142,7 @@ export function useDeleteRole() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      customFetch<void>({ url: `/api/admin/roles/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/roles/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['roles'] });
       toast.success('Role deleted');
@@ -156,7 +156,7 @@ export function useCloneRole() {
   return useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) =>
       customFetch<TenantRole>({
-        url: `/api/admin/roles/${id}/clone`,
+        url: `/api/v1/admin/roles/${id}/clone`,
         method: 'POST',
         data: { name },
       }),
@@ -175,7 +175,7 @@ export function useUserRoles(userId: string | undefined) {
     queryKey: ['users', userId, 'roles'],
     queryFn: () =>
       customFetch<UserRoleAssignment[]>({
-        url: `/api/admin/users/${userId}/roles`,
+        url: `/api/v1/admin/users/${userId}/roles`,
         method: 'GET',
       }),
     enabled: !!userId,
@@ -187,7 +187,7 @@ export function useUserPermissions(userId: string | undefined) {
     queryKey: ['users', userId, 'permissions'],
     queryFn: () =>
       customFetch<string[]>({
-        url: `/api/admin/users/${userId}/permissions`,
+        url: `/api/v1/admin/users/${userId}/permissions`,
         method: 'GET',
       }),
     enabled: !!userId,
@@ -201,7 +201,7 @@ export function useAssignRole() {
   return useMutation({
     mutationFn: ({ userId, roleId }: { userId: string; roleId: string }) =>
       customFetch<void>({
-        url: `/api/admin/users/${userId}/roles/${roleId}`,
+        url: `/api/v1/admin/users/${userId}/roles/${roleId}`,
         method: 'POST',
       }),
     onSuccess: (_data, variables) => {
@@ -218,7 +218,7 @@ export function useRemoveRole() {
   return useMutation({
     mutationFn: ({ userId, roleId }: { userId: string; roleId: string }) =>
       customFetch<void>({
-        url: `/api/admin/users/${userId}/roles/${roleId}`,
+        url: `/api/v1/admin/users/${userId}/roles/${roleId}`,
         method: 'DELETE',
       }),
     onSuccess: (_data, variables) => {

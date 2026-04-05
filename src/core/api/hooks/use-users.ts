@@ -23,7 +23,7 @@ export function useUsers() {
     queryKey: ['users'],
     queryFn: async () => {
       const result = await customFetch<PagedResult<User>>({
-        url: '/api/admin/users',
+        url: '/api/v1/admin/users',
         method: 'GET',
         params: { page: '1', pageSize: '100' },
       });
@@ -36,7 +36,7 @@ export function useUser(id: string | undefined) {
   return useQuery({
     queryKey: ['users', id],
     queryFn: () =>
-      customFetch<User>({ url: `/api/admin/users/${id}`, method: 'GET' }),
+      customFetch<User>({ url: `/api/v1/admin/users/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -45,7 +45,7 @@ export function useCreateUser() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { email: string; displayName: string; role: string }) =>
-      customFetch<User>({ url: '/api/admin/users', method: 'POST', data }),
+      customFetch<User>({ url: '/api/v1/admin/users', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
       toast.success('User created');
@@ -67,7 +67,7 @@ export function useUpdateUser() {
       status?: string;
     }) =>
       customFetch<User>({
-        url: `/api/admin/users/${id}`,
+        url: `/api/v1/admin/users/${id}`,
         method: 'PUT',
         data,
       }),
@@ -83,7 +83,7 @@ export function useDeleteUser() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      customFetch<void>({ url: `/api/admin/users/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/users/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
       toast.success('User deleted');

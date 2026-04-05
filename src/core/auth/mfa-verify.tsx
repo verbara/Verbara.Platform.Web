@@ -36,7 +36,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
         ? { mfaToken, recoveryCode: code }
         : { mfaToken, code };
 
-      const res = await fetch('/api/auth/mfa/verify', {
+      const res = await fetch('/api/v1/auth/mfa/verify', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

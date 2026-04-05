@@ -64,7 +64,7 @@ export function useWebhookSubscriptions() {
     queryKey: ['webhooks'],
     queryFn: () =>
       customFetch<WebhookSubscription[]>({
-        url: '/api/webhooks/subscriptions',
+        url: '/api/v1/webhooks/subscriptions',
         method: 'GET',
       }),
   });
@@ -75,7 +75,7 @@ export function useWebhookSubscription(id: string) {
     queryKey: ['webhook', id],
     queryFn: () =>
       customFetch<WebhookSubscription>({
-        url: `/api/webhooks/subscriptions/${id}`,
+        url: `/api/v1/webhooks/subscriptions/${id}`,
         method: 'GET',
       }),
     enabled: !!id,
@@ -87,7 +87,7 @@ export function useCreateWebhookSubscription() {
   return useMutation({
     mutationFn: (data: CreateWebhookSubscriptionRequest) =>
       customFetch<WebhookSubscription>({
-        url: '/api/webhooks/subscriptions',
+        url: '/api/v1/webhooks/subscriptions',
         method: 'POST',
         data,
       }),
@@ -104,7 +104,7 @@ export function useUpdateWebhookSubscription() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateWebhookSubscriptionRequest }) =>
       customFetch<WebhookSubscription>({
-        url: `/api/webhooks/subscriptions/${id}`,
+        url: `/api/v1/webhooks/subscriptions/${id}`,
         method: 'PUT',
         data,
       }),
@@ -122,7 +122,7 @@ export function useDeleteWebhookSubscription() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/webhooks/subscriptions/${id}`,
+        url: `/api/v1/webhooks/subscriptions/${id}`,
         method: 'DELETE',
       }),
     onSuccess: () => {
@@ -137,7 +137,7 @@ export function useTestWebhookSubscription() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/webhooks/subscriptions/${id}/test`,
+        url: `/api/v1/webhooks/subscriptions/${id}/test`,
         method: 'POST',
       }),
     onSuccess: () => {
@@ -152,7 +152,7 @@ export function useRotateWebhookSecret() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<WebhookSubscription>({
-        url: `/api/webhooks/subscriptions/${id}/rotate-secret`,
+        url: `/api/v1/webhooks/subscriptions/${id}/rotate-secret`,
         method: 'POST',
       }),
     onSuccess: (_data, id) => {
@@ -171,7 +171,7 @@ export function useWebhookDeliveries(id: string, page = 1, pageSize = 20) {
     queryKey: ['webhook-deliveries', id, page, pageSize],
     queryFn: () =>
       customFetch<PagedResult<WebhookDelivery>>({
-        url: `/api/webhooks/subscriptions/${id}/deliveries`,
+        url: `/api/v1/webhooks/subscriptions/${id}/deliveries`,
         method: 'GET',
         params: { page: String(page), pageSize: String(pageSize) },
       }),
@@ -187,7 +187,7 @@ export function useWebhookEventTypes() {
     queryKey: ['webhook-event-types'],
     queryFn: () =>
       customFetch<WebhookEventType[]>({
-        url: '/api/webhooks/event-types',
+        url: '/api/v1/webhooks/event-types',
         method: 'GET',
       }),
     staleTime: 60 * 60 * 1000,
@@ -201,7 +201,7 @@ export function useWebhookDeadLetter(tenantId: string, page = 1, pageSize = 20) 
     queryKey: ['webhook-dead-letter', tenantId, page, pageSize],
     queryFn: () =>
       customFetch<PagedResult<WebhookDelivery>>({
-        url: '/api/management/webhooks/dead-letter',
+        url: '/api/v1/management/webhooks/dead-letter',
         method: 'GET',
         params: { tenantId, page: String(page), pageSize: String(pageSize) },
       }),
@@ -215,7 +215,7 @@ export function useRetryDeadLetter() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/management/webhooks/dead-letter/${id}/retry`,
+        url: `/api/v1/management/webhooks/dead-letter/${id}/retry`,
         method: 'POST',
       }),
     onSuccess: () => {

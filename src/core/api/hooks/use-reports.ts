@@ -23,7 +23,7 @@ export function useReports() {
   return useQuery({
     queryKey: ['reports'],
     queryFn: () =>
-      customFetch<ScheduledReport[]>({ url: '/api/admin/reports', method: 'GET' }),
+      customFetch<ScheduledReport[]>({ url: '/api/v1/admin/reports', method: 'GET' }),
   });
 }
 
@@ -31,7 +31,7 @@ export function useReport(id: number | undefined) {
   return useQuery({
     queryKey: ['report', id],
     queryFn: () =>
-      customFetch<ScheduledReport>({ url: `/api/admin/reports/${id}`, method: 'GET' }),
+      customFetch<ScheduledReport>({ url: `/api/v1/admin/reports/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -40,7 +40,7 @@ export function useCreateReport() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Omit<ScheduledReport, 'id' | 'createdAt'>) =>
-      customFetch<ScheduledReport>({ url: '/api/admin/reports', method: 'POST', data }),
+      customFetch<ScheduledReport>({ url: '/api/v1/admin/reports', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['reports'] });
       toast.success('Report created');
@@ -57,7 +57,7 @@ export function useUpdateReport() {
       ...data
     }: { id: number } & Partial<Omit<ScheduledReport, 'id' | 'createdAt'>>) =>
       customFetch<ScheduledReport>({
-        url: `/api/admin/reports/${id}`,
+        url: `/api/v1/admin/reports/${id}`,
         method: 'PUT',
         data,
       }),
@@ -74,7 +74,7 @@ export function useDeleteReport() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) =>
-      customFetch<void>({ url: `/api/admin/reports/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/admin/reports/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['reports'] });
       toast.success('Report deleted');
@@ -88,7 +88,7 @@ export function useToggleReportActive(id: number) {
   return useMutation({
     mutationFn: (isActive: boolean) =>
       customFetch<ScheduledReport>({
-        url: `/api/admin/reports/${id}/activate`,
+        url: `/api/v1/admin/reports/${id}/activate`,
         method: 'PATCH',
         data: { isActive },
       }),

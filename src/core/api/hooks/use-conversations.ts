@@ -61,7 +61,7 @@ export function useConversations(filter?: {
     queryKey: ['conversations', params],
     queryFn: async () => {
       const result = await customFetch<PagedResult<Conversation>>({
-        url: '/api/conversations',
+        url: '/api/v1/conversations',
         method: 'GET',
         params,
       });
@@ -75,7 +75,7 @@ export function useConversation(id: string | undefined) {
     queryKey: ['conversations', id],
     queryFn: () =>
       customFetch<Conversation>({
-        url: `/api/conversations/${id}`,
+        url: `/api/v1/conversations/${id}`,
         method: 'GET',
       }),
     enabled: !!id,
@@ -87,7 +87,7 @@ export function useMessages(conversationId: string | undefined) {
     queryKey: ['messages', conversationId],
     queryFn: () =>
       customFetch<Message[]>({
-        url: `/api/conversations/${conversationId}/messages`,
+        url: `/api/v1/conversations/${conversationId}/messages`,
         method: 'GET',
         params: { limit: '50', offset: '0' },
       }),
@@ -100,7 +100,7 @@ export function useSendMessage() {
   return useMutation({
     mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
       customFetch<Message>({
-        url: `/api/conversations/${conversationId}/messages`,
+        url: `/api/v1/conversations/${conversationId}/messages`,
         method: 'POST',
         data: { text },
       }),
@@ -116,7 +116,7 @@ export function useAcceptConversation() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/conversations/${id}/accept`,
+        url: `/api/v1/conversations/${id}/accept`,
         method: 'POST',
       }),
     onSuccess: () => {
@@ -132,7 +132,7 @@ export function useRejectConversation() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/conversations/${id}/reject`,
+        url: `/api/v1/conversations/${id}/reject`,
         method: 'POST',
       }),
     onSuccess: () => {
@@ -155,7 +155,7 @@ export function useTransferConversation() {
       targetAgentId?: string;
     }) =>
       customFetch<void>({
-        url: `/api/conversations/${id}/transfer`,
+        url: `/api/v1/conversations/${id}/transfer`,
         method: 'POST',
         data,
       }),
@@ -172,7 +172,7 @@ export function useCloseConversation() {
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
-        url: `/api/conversations/${id}/close`,
+        url: `/api/v1/conversations/${id}/close`,
         method: 'POST',
       }),
     onSuccess: () => {
@@ -198,7 +198,7 @@ export function useWrapUp() {
       callbackPhone?: string;
     }) =>
       customFetch<void>({
-        url: `/api/conversations/${id}/wrapup`,
+        url: `/api/v1/conversations/${id}/wrapup`,
         method: 'POST',
         data,
       }),

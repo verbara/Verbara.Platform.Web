@@ -67,7 +67,7 @@ export function useClusterStatus() {
   return useQuery({
     queryKey: ['cluster', 'status'],
     queryFn: () =>
-      customFetch<ClusterStatus>({ url: '/api/management/cluster/status', method: 'GET' }),
+      customFetch<ClusterStatus>({ url: '/api/v1/management/cluster/status', method: 'GET' }),
     refetchInterval: 10_000,
   });
 }
@@ -76,7 +76,7 @@ export function useClusterNodes() {
   return useQuery({
     queryKey: ['cluster', 'nodes'],
     queryFn: () =>
-      customFetch<ClusterNode[]>({ url: '/api/management/cluster/nodes', method: 'GET' }),
+      customFetch<ClusterNode[]>({ url: '/api/v1/management/cluster/nodes', method: 'GET' }),
     refetchInterval: 10_000,
   });
 }
@@ -85,7 +85,7 @@ export function useClusterInstances() {
   return useQuery({
     queryKey: ['cluster', 'instances'],
     queryFn: () =>
-      customFetch<ClusterInstance[]>({ url: '/api/management/cluster/instances', method: 'GET' }),
+      customFetch<ClusterInstance[]>({ url: '/api/v1/management/cluster/instances', method: 'GET' }),
     refetchInterval: 10_000,
   });
 }
@@ -97,7 +97,7 @@ export function useCreateNode() {
   return useMutation({
     mutationFn: (input: CreateNodeInput) =>
       customFetch<ClusterNode>({
-        url: '/api/management/cluster/nodes',
+        url: '/api/v1/management/cluster/nodes',
         method: 'POST',
         data: input,
       }),
@@ -114,7 +114,7 @@ export function useUpdateNode() {
   return useMutation({
     mutationFn: ({ nodeId, ...input }: UpdateNodeInput & { nodeId: string }) =>
       customFetch<ClusterNode>({
-        url: `/api/management/cluster/nodes/${nodeId}`,
+        url: `/api/v1/management/cluster/nodes/${nodeId}`,
         method: 'PUT',
         data: input,
       }),
@@ -131,7 +131,7 @@ export function useDeleteNode() {
   return useMutation({
     mutationFn: (nodeId: string) =>
       customFetch<void>({
-        url: `/api/management/cluster/nodes/${nodeId}`,
+        url: `/api/v1/management/cluster/nodes/${nodeId}`,
         method: 'DELETE',
       }),
     onSuccess: (_data, nodeId) => {
@@ -147,7 +147,7 @@ export function useDrainNode() {
   return useMutation({
     mutationFn: ({ nodeId, gracePeriodSeconds }: { nodeId: string; gracePeriodSeconds?: number }) =>
       customFetch<DrainStatus>({
-        url: `/api/management/cluster/nodes/${nodeId}/drain`,
+        url: `/api/v1/management/cluster/nodes/${nodeId}/drain`,
         method: 'POST',
         data: { gracePeriodSeconds },
       }),
@@ -164,7 +164,7 @@ export function useCancelDrain() {
   return useMutation({
     mutationFn: (nodeId: string) =>
       customFetch<void>({
-        url: `/api/management/cluster/nodes/${nodeId}/drain`,
+        url: `/api/v1/management/cluster/nodes/${nodeId}/drain`,
         method: 'DELETE',
       }),
     onSuccess: (_data, nodeId) => {
@@ -180,7 +180,7 @@ export function useForceDrain() {
   return useMutation({
     mutationFn: (nodeId: string) =>
       customFetch<DrainStatus>({
-        url: `/api/management/cluster/nodes/${nodeId}/force-drain`,
+        url: `/api/v1/management/cluster/nodes/${nodeId}/force-drain`,
         method: 'POST',
       }),
     onSuccess: (_data, nodeId) => {
