@@ -28,14 +28,14 @@ export default function MonitorPage() {
   );
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-hidden">
+    <div className="flex h-full flex-col gap-4 overflow-hidden" data-testid="monitor-page">
       <PageHeader title={t('monitor.title')} />
 
       <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
         {/* Left panel — session list */}
-        <div className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto">
+        <div className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto" data-testid="monitor-sessions-list">
           {sessions.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
+            <p className="py-8 text-center text-sm text-muted-foreground" data-testid="monitor-empty-state">
               {t('monitor.noSessions')}
             </p>
           ) : (
@@ -51,7 +51,7 @@ export default function MonitorPage() {
         </div>
 
         {/* Right panel — session detail */}
-        <div className="min-w-0 flex-1 overflow-hidden">
+        <div className="min-w-0 flex-1 overflow-hidden" data-testid="monitor-detail-panel">
           {selectedSessionId ? (
             <SessionDetail sessionId={selectedSessionId} />
           ) : (

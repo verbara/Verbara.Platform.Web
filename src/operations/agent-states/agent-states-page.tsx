@@ -135,14 +135,16 @@ export default function AgentStatesPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="agent-states-page">
       <PageHeader title={t('agent_states.title')} />
-      <DataTable
-        data={agents}
-        columns={columns}
-        searchPlaceholder={t('agent_states.name')}
-        noResultsMessage="No agents found."
-      />
+      <div data-testid="agent-states-table">
+        <DataTable
+          data={agents}
+          columns={columns}
+          searchPlaceholder={t('agent_states.name')}
+          noResultsMessage="No agents found."
+        />
+      </div>
     </div>
   );
 }

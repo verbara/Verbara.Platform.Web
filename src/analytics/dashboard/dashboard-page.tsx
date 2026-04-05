@@ -84,7 +84,7 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="dashboard-page">
       <FilterBar onFilterChange={setFilters} />
 
       <div className="px-6 space-y-6">
@@ -103,7 +103,7 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="dashboard-kpis">
             <KpiCard
               label={t('dashboard.conversations_handled')}
               value={kpis ? kpis.conversationsHandled.toLocaleString() : '—'}
@@ -145,7 +145,7 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2" data-testid="dashboard-charts">
             <TrendChart
               title={t('dashboard.volume_trend')}
               type="area"

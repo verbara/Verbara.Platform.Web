@@ -35,7 +35,7 @@ export function GlobalKpis({ totalActive, totalAgents, globalSla }: GlobalKpisPr
   const { t } = useTranslation('operations');
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" data-testid="wallboard-global-kpis">
       <KpiCard
         label={t('wallboard.total_active')}
         value={totalActive}

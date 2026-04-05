@@ -28,16 +28,16 @@ export default function WallboardPage() {
   }, [queues]);
 
   const content = (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="wallboard-page">
       <GlobalKpis totalActive={totalActive} totalAgents={totalAgents} globalSla={globalSla} />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="wallboard-queue-cards">
         {sortedQueues.map((q) => (
           <QueueCard key={q.queueId} queue={q} />
         ))}
       </div>
 
       {liveStates.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-3" data-testid="wallboard-live-states">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Live Queue States
           </h3>

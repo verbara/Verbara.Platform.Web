@@ -73,17 +73,18 @@ export default function CampaignMonitorPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="campaign-monitor-page">
       <PageHeader title={t('campaigns.title')} />
 
       {/* Filter buttons */}
-      <div className="flex gap-2">
+      <div className="flex gap-2" data-testid="campaign-monitor-filters">
         {filterOptions.map((opt) => (
           <Button
             key={opt}
             variant={filter === opt ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter(opt)}
+            data-testid={`campaign-monitor-filter-${opt}`}
           >
             {t(`campaigns.${opt}`)}
           </Button>
@@ -91,7 +92,7 @@ export default function CampaignMonitorPage() {
       </div>
 
       {/* Campaign grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="campaign-monitor-cards">
         {filtered.map((campaign) => (
           <CampaignCard
             key={campaign.campaignId}

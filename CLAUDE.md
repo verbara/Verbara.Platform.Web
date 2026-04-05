@@ -4,7 +4,7 @@
 
 Asterisk.Platform.Web is the React 19 UI for the omnichannel contact center platform. It provides admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**263 TS/TSX files, 52 pages, 38 API hooks, 20 UI components, 39 E2E spec files (202 tests)**
+**263 TS/TSX files, 52 pages, 38 API hooks, 20 UI components, 39 E2E spec files (241 tests)**
 
 ## Stack
 
@@ -42,6 +42,9 @@ npm run build
 
 # Run tests
 npm run test
+
+# Run E2E tests (requires running demo backend)
+npx playwright test
 
 # Lint (ESLint 9 flat config)
 npm run lint
@@ -109,7 +112,8 @@ Custom `customFetch<T>()` in `src/core/api/client.ts`:
 - Adds `X-Tenant-Id` header from tenant store
 - Pre-flight token refresh when expired (deduplicates concurrent refreshes)
 - On 401: attempts single refresh, then redirects to `/login`
-- Dev proxy: Vite forwards `/api` to `http://localhost:5000`
+- Dev proxy: Vite forwards `/api/v1` to `http://localhost:5000`
+- All API paths use versioned `/api/v1/` prefix (migrated from `/api/` in v1.3.1)
 
 **38 TanStack Query hooks** in `src/core/api/hooks/`:
 - `use-agents`, `use-analytics`, `use-audit`, `use-auth-admin`, `use-billing`, `use-bots`, `use-caller-id-pools`, `use-campaigns`, `use-channels`, `use-cluster`, `use-contacts`, `use-conversations`, `use-dialer-settings`, `use-dispositions`, `use-dnc-lists`, `use-endpoint-profiles`, `use-flows`, `use-gdpr`, `use-holiday-calendars`, `use-knowledge`, `use-media`, `use-queue-members`, `use-queue-metrics`, `use-queues`, `use-rbac`, `use-reports`, `use-routes`, `use-skills`, `use-supervisor`, `use-surveys`, `use-system`, `use-teams`, `use-tenants`, `use-trunks`, `use-users`, `use-agent-assist`, `use-webhooks`, `use-impersonation`
@@ -304,6 +308,12 @@ CRUD methods for: Users (3), Teams (3), Roles (4 incl clone), Queues (3), Skills
 - **reports.spec.ts** (1 test) — Page display
 
 Result: 116 → 202 tests, 19 → 39 spec files
+
+## v1.3.1 Stabilization — COMPLETE (2026-04-05)
+
+Two changes:
+1. **API URL migration** — All 55 files (38 hooks, auth pages, SSE, config, E2E fixtures) updated from `/api/` to `/api/v1/`
+2. **Vitest E2E exclusion** — Added `exclude: ['**/tests/e2e/**']` to vitest.config.ts so `npm run test` only runs 4 unit test files (28 tests) without contamination from Playwright specs
 
 ## Plan Execution
 

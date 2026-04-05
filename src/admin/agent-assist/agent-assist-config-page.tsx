@@ -41,13 +41,15 @@ function SectionCard({
   title,
   description,
   children,
+  testId,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
+  testId?: string;
 }) {
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm">
+    <div className="rounded-lg border bg-card p-6 shadow-sm" data-testid={testId}>
       <div className="mb-4">
         <h2 className="text-base font-semibold text-foreground">{title}</h2>
         {description && (
@@ -931,7 +933,7 @@ export default function AgentAssistConfigPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="agent-assist-config-page">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -951,6 +953,7 @@ export default function AgentAssistConfigPage() {
       <SectionCard
         title={t('admin:agentAssist.status.title')}
         description={t('admin:agentAssist.status.description')}
+        testId="agent-assist-section-status"
       >
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="space-y-0.5">
@@ -1159,6 +1162,7 @@ export default function AgentAssistConfigPage() {
       <SectionCard
         title={t('admin:agentAssist.rules.title')}
         description={t('admin:agentAssist.rules.description')}
+        testId="agent-assist-section-keyword-rules"
       >
         <KeywordRulesSection />
       </SectionCard>
@@ -1167,6 +1171,7 @@ export default function AgentAssistConfigPage() {
       <SectionCard
         title={t('admin:agentAssist.complianceRules.title')}
         description={t('admin:agentAssist.complianceRules.description')}
+        testId="agent-assist-section-compliance-rules"
       >
         <ComplianceRulesSection />
       </SectionCard>

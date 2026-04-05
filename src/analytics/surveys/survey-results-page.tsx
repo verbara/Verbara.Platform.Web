@@ -163,7 +163,7 @@ export default function SurveyResultsPage() {
   const { data: responses = [], isLoading: responsesLoading } = useSurveyResponses(selectedSurveyId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="survey-results-page">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           {t('surveys.title')}
@@ -171,7 +171,7 @@ export default function SurveyResultsPage() {
       </div>
 
       {/* Survey Selector */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3" data-testid="survey-results-selector">
         <ClipboardList className="h-4 w-4 text-muted-foreground shrink-0" />
         <Select
           value={selectedSurveyId !== undefined ? String(selectedSurveyId) : NO_SELECTION}
@@ -197,7 +197,7 @@ export default function SurveyResultsPage() {
       </div>
 
       {selectedSurveyId === undefined && (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center">
+        <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center" data-testid="survey-results-empty">
           <ClipboardList className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">{t('surveys.selectSurveyHint')}</p>
         </div>
@@ -232,7 +232,7 @@ export default function SurveyResultsPage() {
           </div>
 
           {/* Responses Table */}
-          <div className="space-y-2">
+          <div className="space-y-2" data-testid="survey-results-table">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               {t('surveys.responsesTitle')}
             </h2>

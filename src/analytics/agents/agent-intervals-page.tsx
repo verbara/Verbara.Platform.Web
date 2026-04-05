@@ -7,7 +7,7 @@ function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof us
     return <p className="text-sm text-muted-foreground">No agent interval data for this period.</p>;
   }
   return (
-    <div className="rounded-lg border">
+    <div className="rounded-lg border" data-testid="agent-intervals-table">
       <table className="w-full text-sm">
         <thead className="border-b bg-muted/50">
           <tr>
@@ -46,7 +46,7 @@ export default function AgentIntervalsPage() {
   const { data: intervals = [], isLoading } = useAgentIntervals({ from, to });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="agent-intervals-page">
       <PageHeader title="Agent Intervals" />
       {isLoading
         ? <p className="text-sm text-muted-foreground">Loading...</p>

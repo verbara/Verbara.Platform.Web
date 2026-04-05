@@ -159,17 +159,17 @@ export default function IntervalPage() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="interval-page">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           {t('intervals.title')}
         </h1>
-        <ExportButton onClick={handleExport} />
+        <span data-testid="interval-export-btn"><ExportButton onClick={handleExport} /></span>
       </div>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800">
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800" data-testid="interval-filters">
         <DateRangePicker value={dateRange} onChange={setDateRange} />
 
         <select
@@ -200,7 +200,7 @@ export default function IntervalPage() {
       )}
 
       {!isLoading && sorted.length > 0 && (
-        <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="overflow-auto rounded-lg border border-slate-200 dark:border-slate-700" data-testid="interval-table">
           <table className="w-full min-w-[720px] border-collapse bg-white dark:bg-slate-900">
             <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
               <tr>

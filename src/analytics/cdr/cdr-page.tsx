@@ -306,7 +306,7 @@ export default function CdrPage() {
   }, [rowData]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="cdr-page">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           {t('cdr.title')}
@@ -320,7 +320,7 @@ export default function CdrPage() {
             <Users className="mr-1.5 h-4 w-4" />
             Contact Search
           </Button>
-          <ExportButton onClick={handleExport} />
+          <span data-testid="cdr-export-btn"><ExportButton onClick={handleExport} /></span>
         </div>
       </div>
 
@@ -337,7 +337,7 @@ export default function CdrPage() {
       )}
 
       {!isLoading && (
-        <div className="ag-theme-alpine h-[600px] w-full rounded-lg border dark:ag-theme-alpine-dark">
+        <div className="ag-theme-alpine h-[600px] w-full rounded-lg border dark:ag-theme-alpine-dark" data-testid="cdr-table">
           <AgGridReact<CdrRow>
             rowData={rowData}
             columnDefs={columnDefs}
@@ -350,7 +350,7 @@ export default function CdrPage() {
       )}
 
       {/* Pagination */}
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-end gap-2" data-testid="cdr-pagination">
         <Button
           variant="outline"
           size="sm"

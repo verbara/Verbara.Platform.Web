@@ -119,7 +119,7 @@ export default function QaPage() {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="qa-page">
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
         {t('qa.title')}
       </h1>
@@ -129,13 +129,15 @@ export default function QaPage() {
           {t('common.loading', 'Loading…')}
         </div>
       ) : (
-        <DataTable<QaRow>
-          data={rows}
-          columns={columns}
-          searchPlaceholder={t('cdr.search_placeholder')}
-          pageSize={10}
-          onRowClick={handleRowClick}
-        />
+        <div data-testid="qa-table">
+          <DataTable<QaRow>
+            data={rows}
+            columns={columns}
+            searchPlaceholder={t('cdr.search_placeholder')}
+            pageSize={10}
+            onRowClick={handleRowClick}
+          />
+        </div>
       )}
 
       <QaDetailDrawer
