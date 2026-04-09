@@ -6,6 +6,7 @@ import { useAgentMe } from '@/core/api/hooks/use-agents';
 import { InboxFilters } from './inbox-filters';
 import { InboxItem } from './inbox-item';
 import { InboxEmpty } from './inbox-empty';
+import { AgentStatusSelector } from './agent-status-selector';
 
 export function InboxPanel() {
   const { t } = useTranslation(['agent']);
@@ -28,6 +29,7 @@ export function InboxPanel() {
         <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
           {t('agent:inbox.title')}
         </span>
+        <AgentStatusSelector />
       </div>
 
       <InboxFilters />
