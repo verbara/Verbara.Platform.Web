@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
@@ -41,6 +41,17 @@ export function NotificationDrawer({ open, onOpenChange }: NotificationDrawerPro
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
 
+  // Reset drawer state when closed so reopening lands on a predictable view.
+  useEffect(() => {
+    if (!open) {
+      setActiveTab('all');
+      setLimit(PAGE_SIZE);
+    }
+  }, [open]);
+
+  // Category filtering is client-side: backend /notifications endpoint does not
+  // accept a ?category= param. Counts and filtered list operate only on the
+  // currently loaded page (up to `limit` items).
   const categoryCounts = useMemo(() => {
     const counts: Record<TabValue, number> = {
       all: 0,
@@ -146,6 +157,7 @@ export function NotificationDrawer({ open, onOpenChange }: NotificationDrawerPro
                       onClick={handleItemClick}
                     />
                   ))}
+                  {/* Load more only on 'all' tab because category filter is client-side */}
                   {canLoadMore && activeTab === 'all' && (
                     <div className="p-3 text-center">
                       <Button
