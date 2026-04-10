@@ -22,6 +22,7 @@ import {
   ChevronDown,
   Bot,
   BookOpen,
+  Briefcase,
   Sparkles,
   Zap,
   FileSearch,
@@ -83,6 +84,7 @@ const groups: SidebarGroup[] = [
       { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone, requiredPermission: 'campaigns:campaign:view' },
       { key: 'surveys', labelKey: 'admin:sidebar.surveys', to: '/admin/surveys', icon: ClipboardList, requiredPermission: 'system:integration:manage' },
       { key: 'canned-responses', labelKey: 'admin:sidebar.cannedResponses', to: '/admin/canned-responses', icon: MessageSquareText, requiredPermission: 'system:integration:manage' },
+      { key: 'cases', labelKey: 'admin:sidebar.cases', to: '/admin/cases', icon: Briefcase, requiredPermission: 'contacts:contact:view' },
     ],
   },
   {
