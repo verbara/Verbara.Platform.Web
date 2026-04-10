@@ -31,7 +31,7 @@
 - `src/core/stores/notification-store.test.ts`
 
 **Tests (2 new):**
-- `src/core/api/hooks/use-notifications.test.ts`
+- `src/core/api/hooks/use-notifications.test.tsx`
 - `src/shell/notification-item.test.tsx`
 
 ---
@@ -65,11 +65,11 @@ Tasks 1→4 form the "center" track. Tasks 5→8 form the "agent badge" track. T
 
 **Files:**
 - Create: `src/core/api/hooks/use-notifications.ts`
-- Create: `src/core/api/hooks/use-notifications.test.ts`
+- Create: `src/core/api/hooks/use-notifications.test.tsx`
 
 - [ ] **Step 1: Write the failing test**
 
-Create `src/core/api/hooks/use-notifications.test.ts`:
+Create `src/core/api/hooks/use-notifications.test.tsx`:
 
 ```typescript
 import { renderHook, waitFor } from '@testing-library/react';
@@ -389,7 +389,7 @@ npm run build 2>&1 | tail -20
 Expected: 0 TypeScript errors.
 
 ```bash
-git add src/core/api/hooks/use-notifications.ts src/core/api/hooks/use-notifications.test.ts
+git add src/core/api/hooks/use-notifications.ts src/core/api/hooks/use-notifications.test.tsx
 git commit -m "feat(notifications): add use-notifications hook with optimistic updates"
 ```
 
@@ -1382,7 +1382,7 @@ Expected: build completes with 0 errors, 0 warnings.
 npm run test
 ```
 
-Expected: all unit tests pass. Count should include the new tests from Tasks 1 and 2 (approximately 11 new tests: 5 in `use-notifications.test.ts` + 6 in `notification-item.test.tsx`).
+Expected: all unit tests pass. Count should include the new tests from Tasks 1 and 2 (approximately 11 new tests: 5 in `use-notifications.test.tsx` + 6 in `notification-item.test.tsx`).
 
 - [ ] **Step 3: Lint**
 
