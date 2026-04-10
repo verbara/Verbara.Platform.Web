@@ -31,7 +31,7 @@ export interface UpdateCannedResponseRequest {
 
 export function useCannedResponses() {
   return useQuery({
-    queryKey: ['canned-responses'],
+    queryKey: ['canned-responses', 'list'],
     queryFn: () =>
       customFetch<CannedResponse[]>({
         url: '/api/v1/admin/canned-responses',
@@ -49,6 +49,7 @@ export function useSearchCannedResponses(query: string) {
         method: 'GET',
         params: query ? { q: query } : undefined,
       }),
+    enabled: query.length > 0,
   });
 }
 
@@ -62,7 +63,7 @@ export function useCreateCannedResponse() {
         data,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['canned-responses'] });
+      qc.invalidateQueries({ queryKey: ['canned-responses', 'list'] });
       toast.success('Canned response created');
     },
     onError: (err: Error) => toast.error(err.message),
@@ -79,7 +80,7 @@ export function useUpdateCannedResponse() {
         data,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['canned-responses'] });
+      qc.invalidateQueries({ queryKey: ['canned-responses', 'list'] });
       toast.success('Canned response updated');
     },
     onError: (err: Error) => toast.error(err.message),
@@ -95,7 +96,7 @@ export function useDeleteCannedResponse() {
         method: 'DELETE',
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['canned-responses'] });
+      qc.invalidateQueries({ queryKey: ['canned-responses', 'list'] });
       toast.success('Canned response deleted');
     },
     onError: (err: Error) => toast.error(err.message),
