@@ -58,6 +58,7 @@ const RateCardsPage = lazy(() => import('@/admin/billing/rate-cards-page'));
 const InvoicesPage = lazy(() => import('@/admin/billing/invoices-page'));
 const UsagePage = lazy(() => import('@/admin/billing/usage-page'));
 const QuotasPage = lazy(() => import('@/admin/billing/quotas-page'));
+const CannedResponsesPage = lazy(() => import('@/admin/canned-responses/canned-responses-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
@@ -453,6 +454,16 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <SurveyListPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'canned-responses',
+            element: (
+              <PermissionGuard requires="system:integration:manage" redirect>
+                <LazyLoad>
+                  <CannedResponsesPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

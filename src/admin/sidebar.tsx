@@ -32,6 +32,7 @@ import {
   KeyRound,
   Activity,
   Monitor,
+  MessageSquareText,
   CreditCard,
   Receipt,
   BarChart3,
@@ -81,6 +82,7 @@ const groups: SidebarGroup[] = [
       { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow, requiredPermission: 'routing:flow:view' },
       { key: 'campaigns', labelKey: 'admin:sidebar.campaigns', to: '/admin/campaigns', icon: Megaphone, requiredPermission: 'campaigns:campaign:view' },
       { key: 'surveys', labelKey: 'admin:sidebar.surveys', to: '/admin/surveys', icon: ClipboardList, requiredPermission: 'system:integration:manage' },
+      { key: 'canned-responses', labelKey: 'admin:sidebar.cannedResponses', to: '/admin/canned-responses', icon: MessageSquareText, requiredPermission: 'system:integration:manage' },
     ],
   },
   {
