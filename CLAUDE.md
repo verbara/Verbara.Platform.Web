@@ -4,7 +4,7 @@
 
 Asterisk.Platform.Web is the React 19 UI for the omnichannel contact center platform. It provides admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**263 TS/TSX files, 52 pages, 38 API hooks, 20 UI components, 39 E2E spec files (241 tests)**
+**274 TS/TSX files, 54 pages, 40 API hooks, 20 UI components, 50 E2E spec files (253 tests)**
 
 ## Stack
 
@@ -314,6 +314,52 @@ Result: 116 → 202 tests, 19 → 39 spec files
 Two changes:
 1. **API URL migration** — All 55 files (38 hooks, auth pages, SSE, config, E2E fixtures) updated from `/api/` to `/api/v1/`
 2. **Vitest E2E exclusion** — Added `exclude: ['**/tests/e2e/**']` to vitest.config.ts so `npm run test` only runs 4 unit test files (28 tests) without contamination from Playwright specs
+
+## v1.5.0 Web Sync — COMPLETE (2026-04-10, Plan 33)
+
+14 commits closing Tier-1 frontend-backend gaps with Platform API v1.5.0. Package version bumped to 1.5.0.
+
+Spec: `docs/superpowers/specs/2026-04-09-v150-web-sync-design.md`
+Plan: `docs/superpowers/plans/2026-04-09-plan33-v150-web-sync.md`
+
+### 5 Deliverables
+
+1. **Canned Responses** — `use-canned-responses.ts` hook (admin list with `['canned-responses','list']` key + agent search with `enabled: query.length > 0`), admin CRUD page at `/admin/canned-responses`, replaced hardcoded 6-item agent component with dynamic API search
+2. **Hold/Unhold + Outbound Conversations** — 3 new hooks on `use-conversations.ts` (`useHoldConversation`, `useUnholdConversation`, `useCreateConversation`), Pause/Resume buttons in `conversation-panel.tsx` (gated: Hold disabled when state !== 'active'), `new-conversation-dialog.tsx` with contact search (min 2 chars) + channel select (WhatsApp/SMS/WebChat/Email/Messenger/Telegram) + optional initial message, "+" button in inbox-panel header
+3. **Supervisor Digital Monitoring** — 5 new hooks on `use-supervisor.ts` (`useSupervisorConversations` with filters, `useSupervisorMessages` with 5s poll, `useTakeoverConversation`, `useCloseDigitalConversation`, `useSendCoachingNote`), Voice/Digital tabs in `monitor-page.tsx`, `digital-monitor-tab.tsx` (list+detail layout), `digital-conversation-detail.tsx` (read-only messages + takeover + close + coaching note input)
+4. **Cases Admin** — `use-cases.ts` hook (CRUD + `useLinkConversationToCase`), admin page at `/admin/cases` with `CasePriority`/`CaseStatus` union types, colored priority/status badges, contact search (create mode only) + status edit (edit mode only), agent assignment with "unassigned" sentinel, no delete endpoint
+5. **Bot Analytics Card** — `useBotAnalytics(from?, to?)` hook on `use-analytics.ts`, `BotAnalyticsCard` in analytics dashboard with 4-column KPI grid (conversations, resolution %, handoff %, avg turns), 3-section summary bar (resolved/handoff/failed), color-coded thresholds (resolution green>60% amber>30% red, handoff amber>40%), returns null when no bot data
+
+### Files changed
+
+**New (8):**
+- `src/core/api/hooks/use-canned-responses.ts`
+- `src/core/api/hooks/use-cases.ts`
+- `src/admin/canned-responses/canned-responses-page.tsx`
+- `src/admin/cases/cases-page.tsx`
+- `src/agent/inbox/new-conversation-dialog.tsx`
+- `src/operations/monitor/digital-conversation-detail.tsx`
+- `src/operations/monitor/digital-monitor-tab.tsx`
+- `src/analytics/dashboard/bot-analytics-card.tsx`
+
+**Modified (10):**
+- `src/core/api/hooks/use-conversations.ts` (+3 hooks)
+- `src/core/api/hooks/use-supervisor.ts` (+5 hooks, +4 types)
+- `src/core/api/hooks/use-analytics.ts` (+1 hook, +1 interface)
+- `src/agent/conversation/canned-responses.tsx` (hardcoded → dynamic)
+- `src/agent/conversation/conversation-panel.tsx` (Hold/Resume buttons)
+- `src/agent/inbox/inbox-panel.tsx` ("+" button + dialog mount)
+- `src/operations/monitor/monitor-page.tsx` (Voice/Digital tab system)
+- `src/analytics/dashboard/dashboard-page.tsx` (BotAnalyticsCard)
+- `src/admin/sidebar.tsx` (+2 entries: canned-responses, cases)
+- `src/router.tsx` (+2 routes)
+
+### Stats
+- 266 → 274 TS/TSX files (+8)
+- 52 → 54 pages (+2)
+- 38 → 40 hooks (+2)
+- Version: 1.3.0 → 1.5.0
+- Execution: Subagent-Driven Development with 2-stage review (spec compliance + code quality) per task, 11 tasks approved, 0 TypeScript errors throughout
 
 ## Plan Execution
 
