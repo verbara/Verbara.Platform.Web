@@ -209,3 +209,54 @@ export function useWrapUp() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useHoldConversation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      customFetch<void>({
+        url: `/api/v1/conversations/${id}/hold`,
+        method: 'POST',
+      }),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ['conversations'] });
+      qc.invalidateQueries({ queryKey: ['conversations', id] });
+      toast.success('Conversation on hold');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useUnholdConversation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      customFetch<void>({
+        url: `/api/v1/conversations/${id}/unhold`,
+        method: 'POST',
+      }),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ['conversations'] });
+      qc.invalidateQueries({ queryKey: ['conversations', id] });
+      toast.success('Conversation resumed');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useCreateConversation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { contactId: string; channel: string; initialMessage?: string }) =>
+      customFetch<Conversation>({
+        url: '/api/v1/conversations',
+        method: 'POST',
+        data,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['conversations'] });
+      toast.success('Conversation created');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
