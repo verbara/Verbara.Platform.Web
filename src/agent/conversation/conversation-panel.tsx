@@ -14,6 +14,8 @@ import {
   X,
   Check,
   XCircle,
+  Pause,
+  Play,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
@@ -23,6 +25,8 @@ import {
   useAcceptConversation,
   useRejectConversation,
   useCloseConversation,
+  useHoldConversation,
+  useUnholdConversation,
 } from '@/core/api/hooks/use-conversations';
 import { MessageThread } from './message-thread';
 import { ReplyComposer } from './reply-composer';
@@ -61,6 +65,8 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
   const acceptMutation = useAcceptConversation();
   const rejectMutation = useRejectConversation();
   const closeMutation = useCloseConversation();
+  const holdMutation = useHoldConversation();
+  const unholdMutation = useUnholdConversation();
 
   const [transferOpen, setTransferOpen] = useState(false);
   const [wrapUpOpen, setWrapUpOpen] = useState(false);
@@ -142,6 +148,29 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
 
           {isActive && (
             <>
+              {conversation.state === 'on_hold' ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => unholdMutation.mutate(conversation.id)}
+                  disabled={unholdMutation.isPending}
+                  data-testid="conversation-resume-btn"
+                >
+                  <Play className="h-3.5 w-3.5" data-icon="inline-start" />
+                  {t('conversation.resume')}
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => holdMutation.mutate(conversation.id)}
+                  disabled={holdMutation.isPending || conversation.state !== 'active'}
+                  data-testid="conversation-hold-btn"
+                >
+                  <Pause className="h-3.5 w-3.5" data-icon="inline-start" />
+                  {t('conversation.hold')}
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="outline"
