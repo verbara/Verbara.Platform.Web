@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { initConversationSSE } from '@/agent/stores/conversation-store';
+import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { InboxPanel } from '@/agent/inbox/inbox-panel';
 import { ContextPanel } from '@/agent/context/context-panel';
 import { AgentTour } from '@/agent/tour/agent-tour';
@@ -15,6 +16,10 @@ export default function AgentLayout() {
 
   useEffect(() => {
     initConversationSSE();
+  }, []);
+
+  useEffect(() => {
+    useAgentAlertsStore.getState().reset();
   }, []);
 
   useEffect(() => {
