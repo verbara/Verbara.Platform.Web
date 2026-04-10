@@ -7,6 +7,7 @@ import { Heatmap, type HeatmapCell } from './heatmap';
 import { FilterBar, type FilterState } from '@/analytics/shared/filter-bar';
 import { useDashboard, useIntervals, type DashboardKpis } from '@/core/api/hooks/use-analytics';
 import { CurrentIntervalCard } from './current-interval-card';
+import { BotAnalyticsCard } from './bot-analytics-card';
 
 function daysAgo(n: number): string {
   const d = new Date();
@@ -133,6 +134,9 @@ export default function DashboardPage() {
 
         {/* Current Interval */}
         <CurrentIntervalCard />
+
+        {/* Bot Analytics */}
+        <BotAnalyticsCard from={filters.from} to={filters.to} />
 
         {/* Charts */}
         {isLoading ? (

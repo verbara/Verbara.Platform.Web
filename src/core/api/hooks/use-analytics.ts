@@ -283,3 +283,30 @@ export function useAgentIntervals(filters: { from: string; to: string; agentId?:
     queryFn: () => customFetch<AgentInterval[]>({ url: `/api/v1/analytics/intervals/agents?${params}`, method: 'GET' }),
   });
 }
+
+// ─── Bot Analytics ─────────────────────────────────────
+export interface BotAnalyticsSummary {
+  totalConversations: number;
+  handedOff: number;
+  resolved: number;
+  failed: number;
+  handoffRate: number;
+  resolutionRate: number;
+  avgTurns: number;
+  failureRate: number;
+}
+
+export function useBotAnalytics(from?: string, to?: string) {
+  return useQuery({
+    queryKey: ['analytics', 'bot', from, to],
+    queryFn: () =>
+      customFetch<BotAnalyticsSummary>({
+        url: '/api/v1/analytics/bot',
+        method: 'GET',
+        params: {
+          ...(from && { from }),
+          ...(to && { to }),
+        },
+      }),
+  });
+}
