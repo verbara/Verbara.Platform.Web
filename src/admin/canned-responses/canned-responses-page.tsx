@@ -64,8 +64,8 @@ export default function CannedResponsesPage() {
     e.preventDefault();
     const tags = tagsInput
       .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0);
 
     if (editing) {
       updateMutation.mutate(
