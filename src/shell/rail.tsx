@@ -3,12 +3,14 @@ import { RailIcon } from './rail-icon';
 import { NotificationBell } from './notification-bell';
 import { UserMenu } from './user-menu';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
 import { Settings, Activity, BarChart3, MessageSquare, Hexagon, Command } from 'lucide-react';
 
 export function Rail() {
   const { t } = useTranslation();
   const permissions = useAuthStore((s) => s.permissions);
+  const agentAlerts = useAgentAlertsStore((s) => s.pendingCount);
 
   function hasAny(...perms: string[]) {
     return perms.some((p) => permissions.includes(p));
@@ -44,7 +46,17 @@ export function Rail() {
         {showAnalytics && (
           <RailIcon to="/analytics" icon={BarChart3} label={t('nav.analytics')} />
         )}
-        <RailIcon to="/agent" icon={MessageSquare} label={t('nav.agent')} />
+        <div className="relative">
+          <RailIcon to="/agent" icon={MessageSquare} label={t('nav.agent')} />
+          {agentAlerts > 0 && (
+            <span
+              className="pointer-events-none absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white"
+              data-testid="agent-rail-badge"
+            >
+              {agentAlerts > 9 ? '9+' : agentAlerts}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col items-center gap-1">
