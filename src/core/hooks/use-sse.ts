@@ -1,15 +1,20 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
-import { useNotificationStore } from '@/core/stores/notification-store';
+import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { useCampaignMetricsStore, type CampaignStatus } from '@/operations/stores/campaign-metrics-store';
 import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
+import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
 type SseEventHandler = (data: unknown) => void;
 const handlers: Record<string, SseEventHandler[]> = {};
 
 export function useSSE() {
   const accessToken = useAuthStore((s) => s.accessToken);
-  const addNotification = useNotificationStore((s) => s.addNotification);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const sourceRef = useRef<EventSource | null>(null);
 
   const connect = useCallback(() => {
@@ -20,85 +25,172 @@ export function useSSE() {
     sourceRef.current = source;
 
     source.addEventListener('conversation.assigned', (e) => {
-      const data = JSON.parse(e.data);
-      addNotification({
-        type: 'conversation.assigned',
-        title: `New conversation from ${data.contactName}`,
-        conversationId: data.conversationId,
-        timestamp: data.timestamp,
-      });
-      handlers['conversation.assigned']?.forEach((h) => h(data));
+      try {
+        const data = JSON.parse(e.data) as {
+          conversationId: string;
+          contactName: string;
+        };
+        const isInAgentRoute = window.location.pathname.startsWith('/agent');
+
+        toast.info(`New conversation from ${data.contactName}`, {
+          duration: 6000,
+          action: {
+            label: 'Open',
+            onClick: () => navigate(`/agent/conversation/${data.conversationId}`),
+          },
+        });
+
+        if (!isInAgentRoute) {
+          useAgentAlertsStore.getState().increment();
+        }
+
+        handlers['conversation.assigned']?.forEach((h) => h(data));
+      } catch {
+        // Malformed payload — skip
+      }
     });
 
     source.addEventListener('conversation.message', (e) => {
-      const data = JSON.parse(e.data);
-      handlers['conversation.message']?.forEach((h) => h(data));
+      try {
+        const data = JSON.parse(e.data);
+        handlers['conversation.message']?.forEach((h) => h(data));
+      } catch {
+        // ignore
+      }
     });
 
     source.addEventListener('conversation.state_changed', (e) => {
-      const data = JSON.parse(e.data);
-      handlers['conversation.state_changed']?.forEach((h) => h(data));
+      try {
+        const data = JSON.parse(e.data);
+        handlers['conversation.state_changed']?.forEach((h) => h(data));
+      } catch {
+        // ignore
+      }
     });
 
     source.addEventListener('agent.state_changed', (e) => {
-      const data = JSON.parse(e.data);
-      handlers['agent.state_changed']?.forEach((h) => h(data));
+      try {
+        const data = JSON.parse(e.data);
+        handlers['agent.state_changed']?.forEach((h) => h(data));
+      } catch {
+        // ignore
+      }
     });
 
     source.addEventListener('campaign.status_changed', (e) => {
-      const data = JSON.parse(e.data) as { campaignId: string; newStatus: CampaignStatus };
-      useCampaignMetricsStore.getState().updateStatus(data.campaignId, data.newStatus);
-      handlers['campaign.status_changed']?.forEach((h) => h(data));
+      try {
+        const data = JSON.parse(e.data) as { campaignId: string; newStatus: CampaignStatus };
+        useCampaignMetricsStore.getState().updateStatus(data.campaignId, data.newStatus);
+        handlers['campaign.status_changed']?.forEach((h) => h(data));
+      } catch {
+        // ignore
+      }
     });
 
     source.addEventListener('campaign.metrics_updated', (e) => {
-      const data: { campaignId: string } & Record<string, unknown> = JSON.parse(e.data);
-      useCampaignMetricsStore.getState().updateMetrics(data.campaignId, data);
-      handlers['campaign.metrics_updated']?.forEach((h) => h(data));
+      try {
+        const data: { campaignId: string } & Record<string, unknown> = JSON.parse(e.data);
+        useCampaignMetricsStore.getState().updateMetrics(data.campaignId, data);
+        handlers['campaign.metrics_updated']?.forEach((h) => h(data));
+      } catch {
+        // ignore
+      }
     });
 
     source.addEventListener('agentassist.suggestion', (e: MessageEvent) => {
-      const data = JSON.parse(e.data);
-      const currentUserId = useAuthStore.getState().user?.id;
-      if (data.agentId === currentUserId) {
-        useAgentAiStore.getState().addSuggestion(data.suggestion ?? data);
+      try {
+        const data = JSON.parse(e.data);
+        const currentUserId = useAuthStore.getState().user?.id;
+        if (data.agentId === currentUserId) {
+          useAgentAiStore.getState().addSuggestion(data.suggestion ?? data);
+        }
+        handlers['agentassist.suggestion']?.forEach((h) => h(data));
+      } catch {
+        // ignore
       }
-      handlers['agentassist.suggestion']?.forEach((h) => h(data));
     });
 
     source.addEventListener('agentassist.sentiment', (e: MessageEvent) => {
-      const data = JSON.parse(e.data);
-      const currentUserId = useAuthStore.getState().user?.id;
-      if (data.agentId === currentUserId) {
-        useAgentAiStore.getState().updateSentiment(data.sentiment ?? data);
+      try {
+        const data = JSON.parse(e.data);
+        const currentUserId = useAuthStore.getState().user?.id;
+        if (data.agentId === currentUserId) {
+          useAgentAiStore.getState().updateSentiment(data.sentiment ?? data);
+        }
+        handlers['agentassist.sentiment']?.forEach((h) => h(data));
+      } catch {
+        // ignore
       }
-      handlers['agentassist.sentiment']?.forEach((h) => h(data));
     });
 
     source.addEventListener('agentassist.compliance_alert', (e: MessageEvent) => {
-      const data = JSON.parse(e.data);
-      const currentUserId = useAuthStore.getState().user?.id;
-      if (data.agentId === currentUserId) {
-        useAgentAiStore.getState().addComplianceAlert(data.alert ?? data);
+      try {
+        const data = JSON.parse(e.data);
+        const currentUserId = useAuthStore.getState().user?.id;
+        if (data.agentId === currentUserId) {
+          useAgentAiStore.getState().addComplianceAlert(data.alert ?? data);
+        }
+        handlers['agentassist.compliance_alert']?.forEach((h) => h(data));
+      } catch {
+        // ignore
       }
-      handlers['agentassist.compliance_alert']?.forEach((h) => h(data));
     });
 
     source.addEventListener('agentassist.transcript', (e: MessageEvent) => {
-      const data = JSON.parse(e.data);
-      const currentUserId = useAuthStore.getState().user?.id;
-      if (data.agentId === currentUserId) {
-        useAgentAiStore.getState().addTranscript(data.segment ?? data);
+      try {
+        const data = JSON.parse(e.data);
+        const currentUserId = useAuthStore.getState().user?.id;
+        if (data.agentId === currentUserId) {
+          useAgentAiStore.getState().addTranscript(data.segment ?? data);
+        }
+        handlers['agentassist.transcript']?.forEach((h) => h(data));
+      } catch {
+        // ignore
       }
-      handlers['agentassist.transcript']?.forEach((h) => h(data));
+    });
+
+    source.addEventListener('notification.created', (e) => {
+      try {
+        const data = JSON.parse(e.data) as {
+          notificationId: string;
+          userId: string;
+          category: string;
+          severity: NotificationSeverity;
+          title: string;
+          body: string;
+          actionUrl: string | null;
+          timestamp: string;
+        };
+
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+
+        if (data.severity === 'Critical') {
+          toast.error(data.title, {
+            description: data.body,
+            duration: 10000,
+            action: data.actionUrl
+              ? { label: 'View', onClick: () => navigate(data.actionUrl!) }
+              : undefined,
+          });
+        } else if (data.severity === 'Warning') {
+          toast.warning(data.title, { description: data.body, duration: 6000 });
+        }
+        // Info: silent, only bell badge updates via invalidation
+
+        handlers['notification.created']?.forEach((h) => h(data));
+      } catch {
+        // Malformed payload — skip
+      }
     });
 
     source.onerror = () => {
       source.close();
       sourceRef.current = null;
+      // Catch up missed notifications on reconnect
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
       setTimeout(connect, 2000);
     };
-  }, [accessToken, addNotification]);
+  }, [accessToken, queryClient, navigate]);
 
   useEffect(() => {
     connect();
