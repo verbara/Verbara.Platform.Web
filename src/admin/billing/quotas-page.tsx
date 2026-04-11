@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Pencil, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
+import { Link } from 'react-router';
+import { Pencil, ShieldAlert, ShieldCheck, ShieldX, AlertTriangle } from 'lucide-react';
 import { PageHeader } from '@/admin/shared/page-header';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
@@ -26,6 +27,7 @@ import {
 import {
   useQuotaStatus,
   useUpdateQuota,
+  useDunningStatus,
   QUOTA_ACTIONS,
   type UpdateQuotaInput,
 } from '@/core/api/hooks/use-billing';
@@ -105,6 +107,7 @@ export default function QuotasPage() {
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
   const { data: status } = useQuotaStatus();
+  const { data: dunning } = useDunningStatus(tenantId ?? undefined);
   const updateQuota = useUpdateQuota();
   const [editOpen, setEditOpen] = useState(false);
 
@@ -175,6 +178,38 @@ export default function QuotasPage() {
           Edit quotas
         </Button>
       </PageHeader>
+
+      {dunning?.isActive && (
+        <div
+          className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-700 dark:bg-amber-950"
+          data-testid="dunning-banner"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="flex-1 space-y-1">
+            <p className="font-medium text-amber-900 dark:text-amber-100">
+              Account overdue
+              {dunning.phase && (
+                <span className="ml-2 inline-flex items-center rounded-full bg-amber-200 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-800 dark:text-amber-100">
+                  {dunning.phase}
+                </span>
+              )}
+            </p>
+            <p className="text-amber-800 dark:text-amber-200">
+              {dunning.daysOverdue} {dunning.daysOverdue === 1 ? 'day' : 'days'} overdue
+              {dunning.overdueAmount > 0 && (
+                <> &mdash; overdue amount: <span className="font-medium">${dunning.overdueAmount.toFixed(2)}</span></>
+              )}
+            </p>
+          </div>
+          <Link
+            to="/admin/billing/invoices"
+            className="shrink-0 text-xs font-medium text-amber-700 underline hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100"
+            data-testid="dunning-view-invoice"
+          >
+            View Invoice
+          </Link>
+        </div>
+      )}
 
       {!quota ? (
         <div className="flex h-40 items-center justify-center rounded-md border bg-card">

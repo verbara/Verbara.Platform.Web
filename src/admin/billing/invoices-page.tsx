@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { FileText, Send, Eye } from 'lucide-react';
+import { FileText, Send, Eye, CheckCircle } from 'lucide-react';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
@@ -27,6 +27,7 @@ import {
   useInvoices,
   useGenerateInvoice,
   useIssueInvoice,
+  usePayInvoice,
   type Invoice,
 } from '@/core/api/hooks/use-billing';
 import { useTenantStore } from '@/core/tenant/tenant-store';
@@ -53,6 +54,7 @@ export default function InvoicesPage() {
   const { data: invoices = [] } = useInvoices(page, 20);
   const generateInvoice = useGenerateInvoice();
   const issueInvoice = useIssueInvoice();
+  const payInvoice = usePayInvoice();
 
   const [generateOpen, setGenerateOpen] = useState(false);
   const [periodStart, setPeriodStart] = useState('');
@@ -124,11 +126,25 @@ export default function InvoicesPage() {
                 <Send className="h-3.5 w-3.5" />
               </Button>
             )}
+            {row.original.status === 'Issued' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                data-testid={`pay-invoice-${row.original.invoiceId}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  payInvoice.mutate(row.original.invoiceId);
+                }}
+              >
+                <CheckCircle className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         ),
       }),
     ],
-    [issueInvoice],
+    [issueInvoice, payInvoice],
   );
 
   const handleGenerate = () => {
@@ -238,13 +254,23 @@ export default function InvoicesPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant={STATUS_COLORS[detailInvoice.status] ?? 'outline'}>
                   {detailInvoice.status}
                 </Badge>
+                {detailInvoice.paymentStatus && (
+                  <Badge variant="outline" data-testid="invoice-payment-status">
+                    {detailInvoice.paymentStatus}
+                  </Badge>
+                )}
                 {detailInvoice.issuedAt && (
                   <span className="text-xs text-muted-foreground">
                     Issued {format(new Date(detailInvoice.issuedAt), 'MMM d, yyyy')}
+                  </span>
+                )}
+                {detailInvoice.dueDate && (
+                  <span className="text-xs text-muted-foreground" data-testid="invoice-due-date">
+                    Due {format(new Date(detailInvoice.dueDate), 'MMM d, yyyy')}
                   </span>
                 )}
               </div>

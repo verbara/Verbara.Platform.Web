@@ -63,6 +63,8 @@ export interface Invoice {
   generatedAt: string;
   issuedAt: string | null;
   paidAt: string | null;
+  paymentStatus?: string;
+  dueDate?: string | null;
 }
 
 export interface GenerateInvoiceInput {
@@ -272,6 +274,44 @@ export function useIssueInvoice() {
       toast.success('Invoice issued');
     },
     onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function usePayInvoice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invoiceId: string) =>
+      customFetch<void>({
+        url: `/api/v1/management/invoices/${invoiceId}/pay`,
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['billing', 'invoices'] });
+      toast.success('Invoice marked as paid');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+// --- Dunning ---
+
+export interface DunningStatus {
+  isActive: boolean;
+  phase: string | null;
+  daysOverdue: number;
+  overdueAmount: number;
+  invoiceId: string | null;
+}
+
+export function useDunningStatus(tenantId: string | undefined) {
+  return useQuery({
+    queryKey: ['billing', 'dunning', tenantId],
+    queryFn: () =>
+      customFetch<DunningStatus>({
+        url: `/api/v1/management/tenants/${tenantId}/dunning`,
+        method: 'GET',
+      }),
+    enabled: !!tenantId,
   });
 }
 
