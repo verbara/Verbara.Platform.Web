@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/core/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/core/ui/avatar';
-import { LogOut, Sun, Moon, Monitor } from 'lucide-react';
+import { Lock, LogOut, Sun, Moon, Monitor } from 'lucide-react';
 
 export function UserMenu() {
   const { t } = useTranslation();
@@ -73,6 +73,9 @@ export function UserMenu() {
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
+        <DropdownMenuItem onClick={() => navigate('/admin/security')}>
+          <Lock className="mr-2 h-4 w-4" /> {t('admin:sidebar.security')}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-critical">
           <LogOut className="mr-2 h-4 w-4" /> {t('auth.logout')}
