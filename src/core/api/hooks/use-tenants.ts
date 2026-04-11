@@ -41,7 +41,7 @@ export function useTenants() {
   return useQuery({
     queryKey: ['tenants'],
     queryFn: () =>
-      customFetch<Tenant[]>({ url: '/api/v1/admin/tenants', method: 'GET' }),
+      customFetch<Tenant[]>({ url: '/api/v1/management/tenants', method: 'GET' }),
   });
 }
 
@@ -49,7 +49,7 @@ export function useTenant(id: string) {
   return useQuery({
     queryKey: ['tenant', id],
     queryFn: () =>
-      customFetch<Tenant>({ url: `/api/v1/admin/tenants/${id}`, method: 'GET' }),
+      customFetch<Tenant>({ url: `/api/v1/management/tenants/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -58,7 +58,7 @@ export function useCreateTenant() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateTenantInput) =>
-      customFetch<Tenant>({ url: '/api/v1/admin/tenants', method: 'POST', data }),
+      customFetch<Tenant>({ url: '/api/v1/management/tenants', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenants'] });
       toast.success('Tenant created');
@@ -71,7 +71,7 @@ export function useUpdateTenant() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & UpdateTenantInput) =>
-      customFetch<Tenant>({ url: `/api/v1/admin/tenants/${id}`, method: 'PUT', data }),
+      customFetch<Tenant>({ url: `/api/v1/management/tenants/${id}`, method: 'PUT', data }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['tenants'] });
       qc.invalidateQueries({ queryKey: ['tenant', variables.id] });
@@ -85,7 +85,7 @@ export function useDeleteTenant() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      customFetch<void>({ url: `/api/v1/admin/tenants/${id}`, method: 'DELETE' }),
+      customFetch<void>({ url: `/api/v1/management/tenants/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenants'] });
       toast.success('Tenant deleted');
