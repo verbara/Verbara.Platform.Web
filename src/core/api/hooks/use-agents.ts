@@ -126,9 +126,9 @@ export function useUpdateAgentStateAdmin() {
   return useMutation({
     mutationFn: ({ agentId, state }: { agentId: string; state: string }) =>
       customFetch<void>({
-        url: `/api/v1/admin/agents/${agentId}/state`,
+        url: `/api/v1/admin/agents/${agentId}`,
         method: 'PUT',
-        data: { state },
+        data: { status: state },
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents'] });
