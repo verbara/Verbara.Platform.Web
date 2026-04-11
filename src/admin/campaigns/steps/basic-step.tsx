@@ -7,7 +7,7 @@ import { useTeams } from '@/core/api/hooks/use-teams';
 import type { CampaignFormValues } from '../campaign-wizard';
 
 export default function BasicStep() {
-  const { register } = useFormContext<CampaignFormValues>();
+  const { register, formState: { errors } } = useFormContext<CampaignFormValues>();
   const { data: queues } = useQueues();
   const { data: teams } = useTeams();
 
@@ -16,6 +16,7 @@ export default function BasicStep() {
       <div className="space-y-1.5">
         <Label htmlFor="name">Campaign Name</Label>
         <Input id="name" placeholder="e.g. Q2 Outbound Sales" {...register('name')} />
+        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
       </div>
 
       <div className="space-y-1.5">
@@ -43,6 +44,7 @@ export default function BasicStep() {
               </option>
             ))}
           </select>
+          {errors.queueId && <p className="text-sm text-destructive">{errors.queueId.message}</p>}
         </div>
 
         <div className="space-y-1.5">

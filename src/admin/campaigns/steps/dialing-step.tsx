@@ -28,7 +28,7 @@ const PACING_STRATEGIES: { value: PacingStrategy; label: string; description: st
 ];
 
 export default function DialingStep() {
-  const { register, watch, setValue } = useFormContext<CampaignFormValues>();
+  const { register, watch, setValue, formState: { errors } } = useFormContext<CampaignFormValues>();
   const selectedMode = watch('mode');
   const selectedPacing = watch('pacingStrategy');
   const callerIdPoolId = watch('callerIdPoolId');
@@ -160,6 +160,7 @@ export default function DialingStep() {
               max={500}
               {...register('maxChannels', { valueAsNumber: true })}
             />
+            {errors.maxChannels && <p className="text-sm text-destructive">{errors.maxChannels.message}</p>}
           </div>
         </div>
       )}

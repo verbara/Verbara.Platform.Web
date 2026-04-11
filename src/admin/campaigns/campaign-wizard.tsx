@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, FormProvider } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ArrowRight, Save, Rocket } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { PageHeader } from '@/admin/shared/page-header';
@@ -15,6 +17,21 @@ import ContactsStep from './steps/contacts-step';
 
 const STEP_KEYS = ['basic', 'dialing', 'schedule', 'compliance', 'contacts'] as const;
 type StepKey = (typeof STEP_KEYS)[number];
+
+const stepSchemas: Partial<Record<StepKey, z.ZodType>> = {
+  basic: z.object({
+    name: z.string().min(2, 'Campaign name must be at least 2 characters'),
+    queueId: z.string().min(1, 'Queue is required'),
+  }),
+  dialing: z.object({
+    dialingMode: z.string().min(1, 'Dialing mode is required'),
+    maxChannels: z.coerce.number().int().positive('Must be a positive number'),
+  }),
+  schedule: z.object({
+    timezone: z.string().min(1, 'Timezone is required'),
+    startDate: z.string().min(1, 'Start date is required'),
+  }),
+};
 
 export type DialingMode = 'preview' | 'progressive' | 'predictive' | 'power' | 'agentless';
 export type PacingStrategy = 'fixed' | 'adaptive' | 'timeBased';
@@ -113,8 +130,10 @@ export default function CampaignWizard() {
   const createContactList = useCreateContactList();
   const importContacts = useImportContacts();
 
+  const currentSchema = stepSchemas[currentStepKey];
   const methods = useForm<CampaignFormValues>({
     defaultValues: DEFAULT_VALUES,
+    resolver: currentSchema ? (zodResolver(currentSchema) as never) : undefined,
   });
 
   const currentStepKey = STEP_KEYS[step] ?? STEP_KEYS[0];

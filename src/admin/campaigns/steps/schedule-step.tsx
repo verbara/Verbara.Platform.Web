@@ -27,7 +27,7 @@ const TIMEZONES = [
 ];
 
 export default function ScheduleStep() {
-  const { register, control, watch, setValue } = useFormContext<CampaignFormValues>();
+  const { register, control, watch, setValue, formState: { errors } } = useFormContext<CampaignFormValues>();
   const holidays = watch('holidays') ?? [];
   const holidayCalendarId = watch('holidayCalendarId');
   const { data: calendars = [] } = useHolidayCalendars();
@@ -97,6 +97,7 @@ export default function ScheduleStep() {
             <option key={tz} value={tz}>{tz}</option>
           ))}
         </select>
+        {errors.timezone && <p className="text-sm text-destructive">{errors.timezone.message}</p>}
       </div>
 
       {/* Campaign Dates */}
@@ -104,6 +105,7 @@ export default function ScheduleStep() {
         <div className="space-y-1.5">
           <Label htmlFor="campaignStart">Start Date</Label>
           <Input id="campaignStart" type="date" {...register('campaignStart')} />
+          {errors.campaignStart && <p className="text-sm text-destructive">{errors.campaignStart.message}</p>}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="campaignEnd">End Date</Label>
