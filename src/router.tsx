@@ -7,6 +7,7 @@ import { ForgotPasswordPage } from '@/core/auth/forgot-password-page';
 import { ResetPasswordPage } from '@/core/auth/reset-password-page';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import UnauthorizedPage from '@/pages/unauthorized';
+import { RouteErrorBoundary } from '@/core/ui/route-error-boundary';
 
 const AdminLayout = lazy(() => import('@/pages/admin/admin-layout'));
 const UsersPage = lazy(() => import('@/admin/users/users-page'));
@@ -104,6 +105,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/admin" replace /> },
       {
         path: 'admin',
+        errorElement: <RouteErrorBoundary />,
         element: (
           <PermissionGuard
             requiresAny={[
@@ -642,6 +644,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'operations',
+        errorElement: <RouteErrorBoundary />,
         element: (
           <PermissionGuard
             requiresAny={['reporting:realtime:view', 'contacts:conversation:monitor']}
@@ -692,6 +695,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'analytics',
+        errorElement: <RouteErrorBoundary />,
         element: (
           <PermissionGuard
             requiresAny={['analytics:cdr:view', 'reporting:historical:view']}
@@ -762,6 +766,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'agent',
+        errorElement: <RouteErrorBoundary />,
         element: (
           <PermissionGuard requires="contacts:conversation:handle" redirect>
             <LazyLoad>
