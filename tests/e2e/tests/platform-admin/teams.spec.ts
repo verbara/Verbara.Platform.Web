@@ -89,4 +89,19 @@ test.describe('Teams', () => {
       await expect(page).toHaveURL(/\/admin\/teams/);
     }
   });
+
+  test('should navigate to teams via sidebar', async ({ platformAdminPage: page }) => {
+    await page.goto('/admin/users');
+    await expect(page).toHaveURL(/\/admin\/users/);
+
+    // Expand People group if needed
+    const teamsLink = page.getByTestId('sidebar-link-teams');
+    if (!(await teamsLink.isVisible().catch(() => false))) {
+      await page.getByTestId('sidebar-group-people').click();
+    }
+    await teamsLink.click();
+
+    await expect(page).toHaveURL(/\/admin\/teams/);
+    await expect(page.getByTestId('teams-page')).toBeVisible();
+  });
 });

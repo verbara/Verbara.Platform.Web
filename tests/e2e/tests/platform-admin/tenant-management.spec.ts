@@ -122,4 +122,21 @@ test.describe('Tenant Management', () => {
       await expect(page.getByText(/cannot delete|error/i)).toBeVisible();
     }
   });
+
+  test('should navigate to billing via Manage Billing action', async ({ platformAdminPage: page }) => {
+    // Find the demo tenant row and open the dropdown
+    const demoRow = page.getByText('demo').locator('..').locator('..');
+    const dropdownTrigger = demoRow.locator('[data-testid^="tenant-"]').first();
+
+    // Try clicking the dropdown to find Manage Billing
+    // Alternative: look for a direct "Manage Billing" text
+    await page.getByText('Manage Billing').first().click({ timeout: 5000 }).catch(async () => {
+      // If not directly visible, open dropdown first
+      const moreBtn = demoRow.getByRole('button').last();
+      await moreBtn.click();
+      await page.getByText('Manage Billing').click();
+    });
+
+    await expect(page).toHaveURL(/\/admin\/billing\/rate-cards/);
+  });
 });

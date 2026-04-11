@@ -114,4 +114,34 @@ test.describe('GDPR Data Management', () => {
     await expect(page).toHaveURL(/\/admin\/gdpr/);
     await expect(page.getByTestId('gdpr-export-contactId')).toBeVisible();
   });
+
+  test('should show user purge tab with userId input', async ({ platformAdminPage: page }) => {
+    // Click the "By User" tab
+    await page.getByRole('tab', { name: /by user/i }).click();
+
+    // Verify user purge fields are visible
+    await expect(page.getByTestId('gdpr-purge-userId')).toBeVisible();
+    await expect(page.getByTestId('gdpr-purge-userReason')).toBeVisible();
+    await expect(page.getByTestId('gdpr-purge-user-btn')).toBeVisible();
+    await expect(page.getByTestId('gdpr-preview-btn')).toBeVisible();
+  });
+
+  test('should disable user purge button when inputs empty', async ({ platformAdminPage: page }) => {
+    await page.getByRole('tab', { name: /by user/i }).click();
+
+    // Button disabled by default
+    await expect(page.getByTestId('gdpr-purge-user-btn')).toBeDisabled();
+
+    // Fill userId only — still disabled (no reason)
+    await page.getByTestId('gdpr-purge-userId').fill('test-user-123');
+    await expect(page.getByTestId('gdpr-purge-user-btn')).toBeDisabled();
+
+    // Fill short reason — still disabled
+    await page.getByTestId('gdpr-purge-userReason').fill('short');
+    await expect(page.getByTestId('gdpr-purge-user-btn')).toBeDisabled();
+
+    // Fill valid reason (>= 10 chars) — enabled
+    await page.getByTestId('gdpr-purge-userReason').fill('Valid reason for user data purge');
+    await expect(page.getByTestId('gdpr-purge-user-btn')).toBeEnabled();
+  });
 });

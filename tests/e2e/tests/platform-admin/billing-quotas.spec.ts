@@ -76,4 +76,9 @@ test.describe('Billing — Quotas', () => {
     await expect(page).toHaveURL(/\/admin\/billing\/quotas/);
     await expect(page.getByTestId('quotas-page')).toBeVisible();
   });
+
+  test('should not show dunning banner in normal state', async ({ platformAdminPage: page }) => {
+    // In normal state (no active dunning), the banner should not be visible
+    await expect(page.getByTestId('dunning-banner')).not.toBeVisible();
+  });
 });

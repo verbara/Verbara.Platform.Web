@@ -37,4 +37,28 @@ test.describe('System Settings', () => {
     await expect(page.getByTestId('system-settings-save')).toBeDisabled();
   });
 
+  test('should load current settings from API', async ({ platformAdminPage: page, authenticatedApiContext }) => {
+    const api = new ApiHelper(authenticatedApiContext);
+
+    // Set known values via API
+    await api.updateSystemSettings({
+      platformName: 'E2E Test Platform',
+      defaultTimezone: 'America/New_York',
+      defaultLanguage: 'en-US',
+    });
+
+    // Reload the page
+    await page.goto('/admin/system');
+
+    // Verify the form shows the API values, not hardcoded defaults
+    const nameInput = page.locator('input[name="platformName"]');
+    await expect(nameInput).toHaveValue('E2E Test Platform');
+
+    // Restore defaults
+    await api.updateSystemSettings({
+      platformName: 'Asterisk Platform',
+      defaultTimezone: 'America/Bogota',
+      defaultLanguage: 'es-419',
+    });
+  });
 });

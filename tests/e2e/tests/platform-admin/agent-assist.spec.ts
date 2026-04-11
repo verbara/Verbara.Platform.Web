@@ -20,4 +20,14 @@ test.describe('Agent Assist Configuration', () => {
   test('should show compliance rules section', async ({ platformAdminPage: page }) => {
     await expect(page.getByTestId('agent-assist-section-compliance-rules')).toBeVisible();
   });
+
+  test('should show coming soon banner and disable form', async ({ platformAdminPage: page }) => {
+    // The coming soon banner should be visible
+    await expect(page.getByText(/coming soon/i)).toBeVisible();
+    await expect(page.getByText(/speech recognition/i)).toBeVisible();
+
+    // Form should be disabled (wrapped in disabled fieldset)
+    const fieldset = page.locator('fieldset[disabled]');
+    await expect(fieldset).toBeVisible();
+  });
 });

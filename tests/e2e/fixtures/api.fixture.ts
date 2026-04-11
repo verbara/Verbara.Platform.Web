@@ -479,8 +479,9 @@ export class ApiHelper {
 
   // --- Reports ---
 
-  async createReport(data: { name: string; type: string; schedule: string; format: string }) {
-    return this.request.post(`${API_BASE}/api/v1/admin/reports`, { data });
+  async createReport(data: { name: string; type: string; schedule: string; format: string; isActive?: boolean }) {
+    const response = await this.request.post(`${API_BASE}/api/v1/admin/reports`, { data });
+    return response.json();
   }
 
   async deleteReport(reportId: number) {
