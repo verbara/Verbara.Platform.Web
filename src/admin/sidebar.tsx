@@ -39,6 +39,7 @@ import {
   BarChart3,
   Gauge,
   Network,
+  UsersRound,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -70,6 +71,7 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'users', labelKey: 'admin:sidebar.users', to: '/admin/users', icon: Users, requiredPermission: 'users:user:view' },
       { key: 'agents', labelKey: 'admin:sidebar.agents', to: '/admin/agents', icon: Headset, requiredAnyPermission: ['users:user:view', 'queues:member:assign'] },
+      { key: 'teams', labelKey: 'admin:sidebar.teams', to: '/admin/teams', icon: UsersRound, requiredPermission: 'core:team:view' },
       { key: 'roles', labelKey: 'admin:sidebar.roles', to: '/admin/roles', icon: Shield, requiredPermission: 'users:role:assign' },
     ],
   },

@@ -941,6 +941,14 @@ export default function AgentAssistConfigPage() {
 
   return (
     <div className="space-y-6" data-testid="agent-assist-config-page">
+      {/* Coming Soon banner */}
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+          Coming Soon — Agent Assist requires speech recognition configuration.
+          This feature will be available in a future release.
+        </p>
+      </div>
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -956,6 +964,7 @@ export default function AgentAssistConfigPage() {
         </div>
       </div>
 
+      <fieldset disabled className="space-y-6 opacity-50 pointer-events-none">
       {/* Section 1 — Engine Status */}
       <SectionCard
         title={t('admin:agentAssist.status.title')}
@@ -1182,6 +1191,7 @@ export default function AgentAssistConfigPage() {
       >
         <ComplianceRulesSection />
       </SectionCard>
+      </fieldset>
     </div>
   );
 }
