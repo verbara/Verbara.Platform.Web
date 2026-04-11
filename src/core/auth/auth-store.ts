@@ -45,9 +45,7 @@ interface AuthState {
   clearMfaPending: () => void;
   setRememberMe: (value: boolean) => void;
   logout: () => void;
-  hasFeature: (feature: string) => boolean;
   hasPermission: (permission: string) => boolean;
-  hasAnyPermission: (...permissions: string[]) => boolean;
   isTokenExpired: () => boolean;
   startImpersonation: (
     response: {
@@ -93,10 +91,7 @@ export const useAuthStore = create<AuthState>()(
           mfaPending: null,
           impersonation: null,
         }),
-      hasFeature: (feature) => get().features[feature] === true,
       hasPermission: (permission) => get().permissions.includes(permission),
-      hasAnyPermission: (...permissions) =>
-        permissions.some((p) => get().permissions.includes(p)),
       isTokenExpired: () => {
         const expiry = get().tokenExpiry;
         if (!expiry) return true;

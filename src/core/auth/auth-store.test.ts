@@ -34,20 +34,6 @@ describe('AuthStore', () => {
     expect(useAuthStore.getState().mfaPending).toBeNull();
   });
 
-  it('should_ReturnTrue_WhenFeatureEnabled', () => {
-    useAuthStore.getState().setAuth(
-      'token',
-      Date.now() + 3600_000,
-      { id: '1', email: '', displayName: 'T', role: 'admin' },
-      't1',
-      [],
-      { conversations: true, dialer: false },
-    );
-    expect(useAuthStore.getState().hasFeature('conversations')).toBe(true);
-    expect(useAuthStore.getState().hasFeature('dialer')).toBe(false);
-    expect(useAuthStore.getState().hasFeature('unknown')).toBe(false);
-  });
-
   it('should_CheckPermissions_WhenHasPermissionCalled', () => {
     useAuthStore.getState().setAuth(
       'token',
@@ -59,8 +45,6 @@ describe('AuthStore', () => {
     );
     expect(useAuthStore.getState().hasPermission('users.read')).toBe(true);
     expect(useAuthStore.getState().hasPermission('users.delete')).toBe(false);
-    expect(useAuthStore.getState().hasAnyPermission('users.delete', 'cdr.read')).toBe(true);
-    expect(useAuthStore.getState().hasAnyPermission('users.delete', 'cdr.delete')).toBe(false);
   });
 
   it('should_ReturnExpired_WhenTokenPastExpiry', () => {
