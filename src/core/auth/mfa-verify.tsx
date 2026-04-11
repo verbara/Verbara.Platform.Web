@@ -147,6 +147,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
               onKeyDown={(e) => handleKeyDown(i, e)}
               className="h-12 w-10 rounded-lg border border-slate-200 bg-transparent text-center text-lg font-mono outline-none focus:border-brand focus:ring-2 focus:ring-brand/50 dark:border-slate-700 dark:bg-slate-800"
               autoFocus={i === 0}
+              data-testid={`login-mfa-digit-${i}`}
             />
           ))}
         </div>
@@ -158,11 +159,13 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
             value={recoveryCode}
             onChange={(e) => setRecoveryCode(e.target.value)}
             autoFocus
+            data-testid="login-mfa-recovery-input"
           />
           <Button
             className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
             disabled={loading || !recoveryCode.trim()}
             onClick={() => void verifyCode(recoveryCode)}
+            data-testid="login-mfa-submit"
           >
             {loading ? t('status.loading') : t('auth.mfa_verify')}
           </Button>
@@ -181,6 +184,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
             setError('');
           }}
           className="text-xs text-brand hover:underline"
+          data-testid="login-mfa-use-recovery"
         >
           {recoveryMode ? t('auth.mfa_use_code') : t('auth.mfa_use_recovery')}
         </button>

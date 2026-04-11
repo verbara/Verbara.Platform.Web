@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { test as authTest } from '../../fixtures/auth.fixture';
+import { ApiHelper } from '../../fixtures/api.fixture';
 import { PLATFORM_ADMIN, DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Login', () => {
@@ -75,4 +77,42 @@ test.describe('Login', () => {
     await page.reload();
     await expect(page).not.toHaveURL(/\/login/);
   });
+});
+
+authTest.describe('Login - MFA recovery code', () => {
+  authTest(
+    'should accept recovery code instead of TOTP during MFA verify',
+    async ({ page, authenticatedApiContext }) => {
+      const api = new ApiHelper(authenticatedApiContext);
+      const email = `mfa-recovery-${Date.now()}@test.local`;
+      const password = 'TestPassword123!';
+
+      const { recoveryCodes } = await api.setupTestUserWithMfa(email, password);
+      const [firstCode] = recoveryCodes;
+      if (!firstCode) {
+        throw new Error('setupTestUserWithMfa returned no recovery codes');
+      }
+
+      await page.goto('/login');
+
+      // Tenant toggle is collapsed by default on the demo build — open it so
+      // the test user (created in the platform admin tenant) can authenticate.
+      await page.getByTestId('login-tenant-toggle').click();
+      await page.getByTestId('login-tenant').fill(PLATFORM_ADMIN.tenantId);
+      await page.getByTestId('login-email').fill(email);
+      await page.getByTestId('login-password').fill(password);
+      await page.getByTestId('login-submit').click();
+
+      // MFA challenge should appear
+      await expect(page.getByTestId('login-mfa-section')).toBeVisible();
+
+      // Toggle to recovery code mode and submit the first recovery code
+      await page.getByTestId('login-mfa-use-recovery').click();
+      await page.getByTestId('login-mfa-recovery-input').fill(firstCode);
+      await page.getByTestId('login-mfa-submit').click();
+
+      // Successful verification should redirect to an authenticated app area
+      await expect(page).toHaveURL(/\/admin|\/agent|\/operations|\/analytics/);
+    },
+  );
 });

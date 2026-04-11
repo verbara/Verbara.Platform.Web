@@ -1,8 +1,16 @@
 import { type APIRequestContext } from '@playwright/test';
+import { generate as generateTotp } from 'otplib';
 import { API_BASE, PLATFORM_ADMIN } from '../helpers/credentials';
 
 export class ApiHelper {
   constructor(private readonly request: APIRequestContext) {}
+
+  /**
+   * Tenant that the authenticated request context is scoped to.
+   * The auth fixture bakes PLATFORM_ADMIN.tenantId into X-Tenant-Id, so
+   * any user created via this helper lives in that tenant.
+   */
+  readonly tenantId = PLATFORM_ADMIN.tenantId;
 
   async createTenant(data: {
     tenantId: string;
@@ -164,8 +172,86 @@ export class ApiHelper {
 
   // --- Users ---
 
-  async createUser(data: { email: string; displayName: string; role: string }) {
+  async createUser(data: {
+    email: string;
+    displayName: string;
+    role: string;
+    password?: string;
+  }) {
     return this.request.post(`${API_BASE}/api/v1/admin/users`, { data });
+  }
+
+  /**
+   * Provisions a test user with MFA already enrolled and returns the
+   * plaintext recovery codes so tests can exercise the recovery-code login
+   * path. The user is created via the authenticated admin context, then the
+   * helper performs its own unauthenticated login + MFA setup/confirm cycle
+   * using the freshly generated TOTP secret.
+   */
+  async setupTestUserWithMfa(
+    email: string,
+    password: string,
+  ): Promise<{ recoveryCodes: string[] }> {
+    // Step 1: create the user with a known password
+    const createRes = await this.createUser({
+      email,
+      displayName: email,
+      role: 'Agent',
+      password,
+    });
+    if (!createRes.ok()) {
+      throw new Error(
+        `setupTestUserWithMfa: createUser failed: ${createRes.status()} ${await createRes.text()}`,
+      );
+    }
+
+    // Step 2: log in as that user to obtain a JWT for the MFA setup endpoints
+    const loginRes = await this.request.post(`${API_BASE}/api/v1/auth/login`, {
+      data: { tenantId: this.tenantId, email, password },
+    });
+    if (!loginRes.ok()) {
+      throw new Error(
+        `setupTestUserWithMfa: login failed: ${loginRes.status()} ${await loginRes.text()}`,
+      );
+    }
+    const loginBody = (await loginRes.json()) as { accessToken?: string };
+    const accessToken = loginBody.accessToken;
+    if (!accessToken) {
+      throw new Error('setupTestUserWithMfa: login response missing accessToken');
+    }
+
+    const authHeaders = {
+      Authorization: `Bearer ${accessToken}`,
+      'X-Tenant-Id': this.tenantId,
+    };
+
+    // Step 3: initiate MFA setup — backend returns secret + plaintext recovery codes
+    const setupRes = await this.request.post(`${API_BASE}/api/v1/auth/mfa/setup`, {
+      headers: authHeaders,
+    });
+    if (!setupRes.ok()) {
+      throw new Error(
+        `setupTestUserWithMfa: mfa/setup failed: ${setupRes.status()} ${await setupRes.text()}`,
+      );
+    }
+    const { secret, recoveryCodes } = (await setupRes.json()) as {
+      secret: string;
+      recoveryCodes: string[];
+    };
+
+    // Step 4: confirm MFA with a TOTP code derived from the secret
+    const code = await generateTotp({ secret });
+    const confirmRes = await this.request.post(`${API_BASE}/api/v1/auth/mfa/confirm`, {
+      headers: authHeaders,
+      data: { code },
+    });
+    if (!confirmRes.ok()) {
+      throw new Error(
+        `setupTestUserWithMfa: mfa/confirm failed: ${confirmRes.status()} ${await confirmRes.text()}`,
+      );
+    }
+
+    return { recoveryCodes };
   }
 
   async listUsers() {
