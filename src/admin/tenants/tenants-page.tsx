@@ -3,7 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Building2, Trash2, Pencil, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Building2, Trash2, Pencil, Clock, CreditCard, Ban, CheckCircle2 } from 'lucide-react';
+import { useTenantStore } from '@/core/tenant/tenant-store';
 import { RetentionPolicySection } from '@/admin/gdpr/retention-policy-section';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
@@ -70,8 +72,10 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TenantsPage() {
+  const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
+  const [suspendTarget, setSuspendTarget] = useState<Tenant | null>(null);
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
   const [editForm, setEditForm] = useState({ name: '', status: 'active', maxConcurrentChannels: 0, maxActiveCampaigns: 0 });
   const [retentionTenantId, setRetentionTenantId] = useState<string | null>(null);
@@ -80,6 +84,11 @@ export default function TenantsPage() {
   const createTenant = useCreateTenant();
   const updateTenant = useUpdateTenant();
   const deleteTenant = useDeleteTenant();
+
+  const handleManageBilling = (tenant: Tenant) => {
+    useTenantStore.getState().setActiveTenant(tenant.tenantId);
+    navigate('/admin/billing/rate-cards');
+  };
 
   const {
     register,
@@ -189,6 +198,41 @@ export default function TenantsPage() {
               >
                 <Clock className="h-3.5 w-3.5" />
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                title="Manage Billing"
+                data-testid={`tenant-billing-${row.original.tenantId}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleManageBilling(row.original);
+                }}
+              >
+                <CreditCard className="h-3.5 w-3.5" />
+              </Button>
+              {row.original.status === 'Active' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                  title="Suspend"
+                  onClick={(e) => { e.stopPropagation(); setSuspendTarget(row.original); }}
+                >
+                  <Ban className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              {row.original.status === 'Suspended' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-emerald-600"
+                  title="Activate"
+                  onClick={(e) => { e.stopPropagation(); updateTenant.mutate({ id: row.original.tenantId, status: 'Active' }); }}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </PermissionGuard>
             <Button
               variant="ghost"
@@ -337,6 +381,26 @@ export default function TenantsPage() {
         }
         confirmLabel="Delete"
         onConfirm={handleDeleteConfirm}
+      />
+
+      {/* Suspend confirm dialog */}
+      <ConfirmDialog
+        open={suspendTarget !== null}
+        onOpenChange={(open) => { if (!open) setSuspendTarget(null); }}
+        title="Suspend Tenant"
+        description={
+          <>
+            Are you sure you want to suspend{' '}
+            <span className="font-semibold">{suspendTarget?.name}</span>? Active sessions will be blocked.
+          </>
+        }
+        confirmLabel="Suspend"
+        onConfirm={() => {
+          if (suspendTarget) {
+            updateTenant.mutate({ id: suspendTarget.tenantId, status: 'Suspended' });
+            setSuspendTarget(null);
+          }
+        }}
       />
 
       {/* Retention policy sheet */}
