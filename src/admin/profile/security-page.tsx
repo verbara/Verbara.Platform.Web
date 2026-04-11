@@ -11,7 +11,6 @@ import { Badge } from '@/core/ui/badge';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose,
 } from '@/core/ui/dialog';
-import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { useMe, isLockedOut, type Me } from '@/core/api/hooks/use-me';
 import {
   useSetupMfa, useConfirmMfa, useDisableMfa,
@@ -489,9 +488,15 @@ function SessionsSection({ locked }: Readonly<{ locked: boolean }>) {
   const { data: sessions, isLoading } = useMySessions();
   const revokeSession = useRevokeSession();
   const revokeOthers = useRevokeOtherSessions();
+  const [revokeAllOpen, setRevokeAllOpen] = useState(false);
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Loading sessions…</p>;
+  }
+
+  async function handleRevokeAll() {
+    await revokeOthers.mutateAsync();
+    setRevokeAllOpen(false);
   }
 
   return (
@@ -524,21 +529,38 @@ function SessionsSection({ locked }: Readonly<{ locked: boolean }>) {
         </table>
       </div>
 
-      <ConfirmDeleteDialog
-        trigger={
-          <Button
-            variant="destructive"
-            data-testid="security-sessions-revoke-others"
-            disabled={locked}
-          >
-            <LogOutIcon className="mr-1.5 h-4 w-4" />
-            {t('admin:security.sign_out_others')}
-          </Button>
-        }
-        title={t('admin:security.sign_out_others')}
-        description=""
-        onConfirm={() => void revokeOthers.mutateAsync()}
-      />
+      <Button
+        variant="destructive"
+        data-testid="security-sessions-revoke-others"
+        disabled={locked}
+        onClick={() => setRevokeAllOpen(true)}
+      >
+        <LogOutIcon className="mr-1.5 h-4 w-4" />
+        {t('admin:security.sign_out_others')}
+      </Button>
+
+      <Dialog open={revokeAllOpen} onOpenChange={setRevokeAllOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('admin:security.sign_out_others')}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will sign out all sessions except your current one.
+          </p>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>
+              {t('common:actions.cancel')}
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={() => void handleRevokeAll()}
+              disabled={revokeOthers.isPending}
+            >
+              {t('admin:security.sign_out_others')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
