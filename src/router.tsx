@@ -60,6 +60,7 @@ const UsagePage = lazy(() => import('@/admin/billing/usage-page'));
 const QuotasPage = lazy(() => import('@/admin/billing/quotas-page'));
 const CannedResponsesPage = lazy(() => import('@/admin/canned-responses/canned-responses-page'));
 const CasesPage = lazy(() => import('@/admin/cases/cases-page'));
+const WebChatPage = lazy(() => import('@/admin/webchat/webchat-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
@@ -475,6 +476,16 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="contacts:contact:view" redirect>
                 <LazyLoad>
                   <CasesPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'webchat',
+            element: (
+              <PermissionGuard requires="system:integration:manage" redirect>
+                <LazyLoad>
+                  <WebChatPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

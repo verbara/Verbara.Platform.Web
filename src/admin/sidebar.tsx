@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   CalendarOff,
   Server,
+  MessageCircle,
   Webhook,
   AlertTriangle,
   SlidersHorizontal,
@@ -77,6 +78,7 @@ const groups: SidebarGroup[] = [
     labelKey: 'admin:sidebar.communication',
     items: [
       { key: 'channels', labelKey: 'admin:sidebar.channels', to: '/admin/channels', icon: Radio, requiredPermission: 'system:integration:manage' },
+      { key: 'webchat', labelKey: 'admin:sidebar.webchat', to: '/admin/webchat', icon: MessageCircle, requiredPermission: 'system:integration:manage' },
       { key: 'queues', labelKey: 'admin:sidebar.queues', to: '/admin/queues', icon: ListChecks, requiredPermission: 'queues:queue:view' },
       { key: 'skills', labelKey: 'admin:sidebar.skills', to: '/admin/skills', icon: Zap, requiredPermission: 'routing:skill:view' },
       { key: 'flows', labelKey: 'admin:sidebar.flows', to: '/admin/flows', icon: Workflow, requiredPermission: 'routing:flow:view' },
