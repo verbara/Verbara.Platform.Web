@@ -117,7 +117,7 @@ test.describe('GDPR Data Management', () => {
 
   test('should show user purge tab with userId input', async ({ platformAdminPage: page }) => {
     // Click the "By User" tab
-    await page.getByRole('tab', { name: /by user/i }).click();
+    await page.getByText('By User').click();
 
     // Verify user purge fields are visible
     await expect(page.getByTestId('gdpr-purge-userId')).toBeVisible();
@@ -127,7 +127,7 @@ test.describe('GDPR Data Management', () => {
   });
 
   test('should disable user purge button when inputs empty', async ({ platformAdminPage: page }) => {
-    await page.getByRole('tab', { name: /by user/i }).click();
+    await page.getByText('By User').click();
 
     // Button disabled by default
     await expect(page.getByTestId('gdpr-purge-user-btn')).toBeDisabled();
