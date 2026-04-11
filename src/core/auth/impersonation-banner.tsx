@@ -53,6 +53,9 @@ export function ImpersonationBanner() {
       <span>
         Operating as <strong>{impersonation.targetTenantName}</strong>
       </span>
+      {impersonation.readOnly && (
+        <span className="rounded bg-amber-700 px-1.5 py-0.5 text-xs">Read-Only</span>
+      )}
       <span className="font-mono">{formatTimeRemaining(remaining)}</span>
       <button
         onClick={handleEnd}

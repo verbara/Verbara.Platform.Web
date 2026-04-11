@@ -8,16 +8,17 @@ interface ImpersonateResponse {
   expiresAt: string;
   targetTenantId: string;
   targetTenantName: string;
+  readOnly?: boolean;
 }
 
 export function useImpersonate() {
   return useMutation({
-    mutationFn: async (targetTenantId: string) => {
+    mutationFn: async ({ targetTenantId, readOnly }: { targetTenantId: string; readOnly?: boolean }) => {
       const { accessToken, tenantId } = useAuthStore.getState();
       const response = await customFetch<ImpersonateResponse>({
         url: '/api/v1/management/impersonate',
         method: 'POST',
-        data: { targetTenantId },
+        data: { targetTenantId, readOnly },
       });
       useAuthStore.getState().startImpersonation(response, accessToken!, tenantId!);
       return response;

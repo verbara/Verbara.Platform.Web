@@ -19,6 +19,7 @@ export interface ImpersonationState {
   originalToken: string;
   originalTenantId: string;
   expiresAt: number;
+  readOnly: boolean;
 }
 
 interface AuthState {
@@ -54,6 +55,7 @@ interface AuthState {
       expiresAt: string;
       targetTenantId: string;
       targetTenantName: string;
+      readOnly?: boolean;
     },
     originalToken: string,
     originalTenantId: string,
@@ -112,6 +114,7 @@ export const useAuthStore = create<AuthState>()(
             originalToken,
             originalTenantId,
             expiresAt: new Date(response.expiresAt).getTime(),
+            readOnly: response.readOnly ?? false,
           },
         }),
       endImpersonation: () => {
