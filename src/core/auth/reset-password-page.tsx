@@ -5,19 +5,27 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { usePasswordPolicy, type PasswordPolicy } from '@/core/api/hooks/use-auth-admin';
 
-function PasswordStrength({ password }: { password: string }) {
+const defaultPolicy: PasswordPolicy = {
+  minLength: 12,
+  requireUppercase: true,
+  requireNumber: true,
+  requireSpecial: true,
+};
+
+function PasswordStrength({ password, policy }: { password: string; policy: PasswordPolicy }) {
   const { t } = useTranslation();
 
-  const checks = useMemo(
-    () => [
-      { key: 'length', label: t('auth.password_min_length'), met: password.length >= 12 },
-      { key: 'upper', label: t('auth.password_uppercase'), met: /[A-Z]/.test(password) },
-      { key: 'number', label: t('auth.password_number'), met: /\d/.test(password) },
-      { key: 'special', label: t('auth.password_special'), met: /[!@#$%^&*(),.?":{}|<>]/.test(password) },
-    ],
-    [password, t],
-  );
+  const checks = useMemo(() => {
+    const items = [
+      { key: 'length', label: t('admin:security.password_too_short', { n: policy.minLength }), met: password.length >= policy.minLength },
+    ];
+    if (policy.requireUppercase) items.push({ key: 'upper', label: t('admin:security.password_needs_uppercase'), met: /[A-Z]/.test(password) });
+    if (policy.requireNumber) items.push({ key: 'number', label: t('admin:security.password_needs_number'), met: /\d/.test(password) });
+    if (policy.requireSpecial) items.push({ key: 'special', label: t('admin:security.password_needs_special'), met: /[!@#$%^&*(),.?":{}|<>]/.test(password) });
+    return items;
+  }, [password, policy, t]);
 
   const score = checks.filter((c) => c.met).length;
   const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-400', 'bg-green-500'];
@@ -57,9 +65,11 @@ export function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { data: policy } = usePasswordPolicy();
+  const effectivePolicy = policy ?? defaultPolicy;
 
   const passwordsMatch = newPassword === confirmPassword;
-  const canSubmit = newPassword.length >= 12 && passwordsMatch && !loading;
+  const canSubmit = newPassword.length >= effectivePolicy.minLength && passwordsMatch && !loading;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -122,7 +132,7 @@ export function ResetPasswordPage() {
               required
               autoFocus
             />
-            <PasswordStrength password={newPassword} />
+            <PasswordStrength password={newPassword} policy={effectivePolicy} />
           </div>
 
           <div className="space-y-2">
