@@ -108,3 +108,19 @@ export function useUpdateContact() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useDeleteContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      customFetch<void>({
+        url: `/api/v1/contacts/${id}`,
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['contacts'] });
+      toast.success('Contact deleted');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

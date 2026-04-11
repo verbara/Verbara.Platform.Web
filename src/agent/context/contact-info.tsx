@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Copy, Check, User, Phone, Mail, Building2, Globe, MessageSquare, Pencil } from 'lucide-react';
+import { Copy, Check, User, Phone, Mail, Building2, Globe, MessageSquare, Pencil, Trash2 } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
@@ -12,9 +12,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/core/ui/dialog';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-import { useContact, useUpdateContact } from '@/core/api/hooks/use-contacts';
+import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
 
 function CopyButton({ value }: { value: string }) {
   const { t } = useTranslation(['agent']);
@@ -95,11 +96,13 @@ export function ContactInfo() {
   const selectedId = useConversationStore((s) => s.selectedId);
   const conversations = useConversationStore((s) => s.conversations);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [editForm, setEditForm] = useState<ContactEditForm>({
     firstName: '', lastName: '', company: '', segment: '',
     preferredChannel: '', preferredLanguage: '', timezone: '',
   });
   const updateContact = useUpdateContact();
+  const deleteContact = useDeleteContact();
 
   const conversation = selectedId ? conversations[selectedId] : null;
   const contactId = conversation?.contactId;
@@ -135,12 +138,24 @@ export function ContactInfo() {
     <div className="space-y-1 p-4">
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Contact</span>
-        <PermissionGuard requires="contacts:contact:edit">
-          <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={openEditDialog}>
-            <Pencil className="mr-1 h-3 w-3" />
-            Edit
-          </Button>
-        </PermissionGuard>
+        <div className="flex items-center gap-0.5">
+          <PermissionGuard requires="contacts:contact:edit">
+            <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={openEditDialog}>
+              <Pencil className="mr-1 h-3 w-3" />
+              Edit
+            </Button>
+          </PermissionGuard>
+          <PermissionGuard requires="contacts:contact:delete">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-1.5 text-xs text-red-500 hover:text-red-600"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </PermissionGuard>
+        </div>
       </div>
       <InfoRow icon={User} label={t('agent:context.name')} value={displayName} />
       <InfoRow icon={Phone} label={t('agent:context.phone')} value={phone} copyable={phone !== '—'} />
@@ -170,6 +185,19 @@ export function ContactInfo() {
           ))}
         </div>
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={() => {
+          deleteContact.mutate(contact.id, {
+            onSuccess: () => setDeleteOpen(false),
+          });
+        }}
+        entityName={[contact.firstName, contact.lastName].filter(Boolean).join(' ') || contact.id}
+        entityType="Contact"
+        isPending={deleteContact.isPending}
+      />
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-md">
