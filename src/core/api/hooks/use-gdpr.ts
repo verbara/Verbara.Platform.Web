@@ -114,6 +114,47 @@ export function usePurgeLog(params?: {
   });
 }
 
+// --- Purge Preview ---
+
+export interface PurgePreview {
+  conversations: number;
+  messages: number;
+  authEvents: number;
+  auditEntries: number;
+}
+
+export function usePurgePreview(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['gdpr', 'purge-preview', userId],
+    queryFn: () =>
+      customFetch<PurgePreview>({
+        url: '/api/v1/admin/gdpr/purge-preview',
+        method: 'GET',
+        params: { userId: userId ?? '' },
+      }),
+    enabled: !!userId,
+  });
+}
+
+// --- Purge User ---
+
+export function useGdprPurgeUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { userId: string; reason: string }) =>
+      customFetch<PurgeResult>({
+        url: '/api/v1/admin/gdpr/purge-user',
+        method: 'POST',
+        data,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['purge-log'] });
+      toast.success('User data purged');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 // --- Retention Policy ---
 
 export function useRetentionPolicy(tenantId: string) {
