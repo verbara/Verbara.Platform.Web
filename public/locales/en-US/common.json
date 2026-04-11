@@ -45,6 +45,8 @@
     "mfa_verify": "Verify",
     "mfa_invalid_code": "Invalid code. Please try again.",
     "mfa_error": "Verification failed. Please try again.",
+    "mfa_rate_limited": "Too many attempts. Please wait a few minutes and try again.",
+    "mfa_challenge_expired": "Your session expired. Please log in again.",
     "mfa_use_code": "Use authenticator code",
     "mfa_use_recovery": "Use a recovery code"
   },

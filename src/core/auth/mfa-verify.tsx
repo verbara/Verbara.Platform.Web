@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
+import { useAuthStore } from '@/core/auth/auth-store';
 
 interface LoginResponse {
   accessToken?: string;
@@ -44,6 +45,35 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
       });
 
       if (!res.ok) {
+        // Sub C T0.3: distinguish rate-limit, expired token, and generic errors
+        if (res.status === 429) {
+          setError(t('auth.mfa_rate_limited'));
+          setDigits(Array(6).fill(''));
+          inputRefs.current[0]?.focus();
+          return;
+        }
+
+        // Read response body once (may be JSON or text) to look for expiry markers
+        let bodyText = '';
+        try {
+          bodyText = await res.text();
+        } catch {
+          // ignore body read errors
+        }
+
+        const isExpired =
+          res.status === 400 &&
+          /expired|CHALLENGE_EXPIRED/i.test(bodyText);
+
+        if (isExpired) {
+          setError(t('auth.mfa_challenge_expired'));
+          setDigits(Array(6).fill(''));
+          setTimeout(() => {
+            useAuthStore.getState().clearMfaPending();
+          }, 3000);
+          return;
+        }
+
         setError(t('auth.mfa_invalid_code'));
         setDigits(Array(6).fill(''));
         inputRefs.current[0]?.focus();
