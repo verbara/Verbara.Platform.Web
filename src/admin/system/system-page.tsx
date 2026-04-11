@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from '@/core/ui/select';
 import { LicenseCard } from './license-card';
-import { useSystemLicense, useUpdateSystemSettings } from '@/core/api/hooks/use-system';
+import { useEffect } from 'react';
+import { useSystemLicense, useSystemSettings, useUpdateSystemSettings } from '@/core/api/hooks/use-system';
 
 /* ---------- Constants ---------- */
 
@@ -57,6 +58,7 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 export default function SystemPage() {
   const { t } = useTranslation(['admin']);
   const { data: license } = useSystemLicense();
+  const { data: settings } = useSystemSettings();
   const updateSettings = useUpdateSystemSettings();
 
   const {
@@ -64,15 +66,22 @@ export default function SystemPage() {
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors, isDirty },
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      platformName: 'Asterisk Platform',
-      defaultTimezone: 'America/Bogota',
-      defaultLanguage: 'es-419',
+      platformName: '',
+      defaultTimezone: '',
+      defaultLanguage: '',
     },
   });
+
+  useEffect(() => {
+    if (settings) {
+      reset(settings);
+    }
+  }, [settings, reset]);
 
   const onSubmit = handleSubmit((values) => {
     updateSettings.mutate(values);

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Server, Shield, Cpu, ArrowRight } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { PageHeader } from '@/admin/shared/page-header';
-import { useSystemInfo, useSystemLicense, useSystemCluster } from '@/core/api/hooks/use-system';
+import { useSystemInfo, useSystemLicense } from '@/core/api/hooks/use-system';
 import { useClusterStatus } from '@/core/api/hooks/use-cluster';
 
 interface StatusCardProps {
@@ -40,8 +40,7 @@ function StatusCard({ title, icon: Icon, status, children, testId }: StatusCardP
 export default function DiagnosticsPage() {
   const { data: systemInfo, isLoading: loadingInfo } = useSystemInfo();
   const { data: license, isLoading: loadingLicense } = useSystemLicense();
-  const { data: cluster, isLoading: loadingCluster } = useSystemCluster();
-  const { data: clusterStatus } = useClusterStatus();
+  const { data: clusterStatus, isLoading: loadingCluster } = useClusterStatus();
 
   const isLoading = loadingInfo || loadingLicense || loadingCluster;
 
@@ -115,13 +114,9 @@ export default function DiagnosticsPage() {
         <StatusCard
           title="Cluster"
           icon={Cpu}
-          status={cluster && cluster.nodes.length > 0 ? 'connected' : 'warning'}
+          status={clusterStatus ? 'connected' : 'warning'}
           testId="diag-cluster-card"
         >
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Nodes</span>
-            <span>{cluster?.nodes.length ?? 0}</span>
-          </div>
           {clusterStatus && (
             <>
               <div className="flex justify-between">

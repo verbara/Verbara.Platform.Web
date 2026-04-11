@@ -20,10 +20,6 @@ export interface LicenseInfo {
   lastValidatedAt: string;
 }
 
-export interface ClusterInfo {
-  nodes: { id: string; status: string }[];
-}
-
 export interface SystemSettings {
   platformName: string;
   defaultTimezone: string;
@@ -52,12 +48,12 @@ export function useSystemLicense() {
   });
 }
 
-export function useSystemCluster() {
+export function useSystemSettings() {
   return useQuery({
-    queryKey: ['system', 'cluster'],
+    queryKey: ['system', 'settings'],
     queryFn: () =>
-      customFetch<ClusterInfo>({
-        url: '/api/v1/admin/system/cluster',
+      customFetch<SystemSettings>({
+        url: '/api/v1/management/system/settings',
         method: 'GET',
       }),
   });
