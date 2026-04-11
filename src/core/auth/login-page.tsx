@@ -49,6 +49,7 @@ export function LoginPage() {
 
   // Handle OIDC callback via URL fragment (#oidc_callback&access_token=...&...)
   useEffect(() => {
+    void (async () => {
     const hash = window.location.hash;
     if (!hash.startsWith('#oidc_callback')) return;
 
@@ -64,15 +65,29 @@ export function LoginPage() {
     if (accessToken && tenantId && userId && email && role) {
       // Clear the hash to prevent re-processing
       window.history.replaceState(null, '', window.location.pathname);
+
+      let permissions: string[] = [];
+      let features: Record<string, boolean> = {};
+      try {
+        const me = await fetch('/api/v1/users/me', {
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'X-Tenant-Id': tenantId },
+        }).then((r) => r.json() as Promise<{ permissions?: string[]; features?: Record<string, boolean> }>);
+        permissions = me.permissions ?? [];
+        features = me.features ?? {};
+      } catch {
+        // Degraded: login proceeds without permissions
+      }
+
       completeLogin({
         accessToken,
         expiresAt: expiresAt ?? undefined,
         tenantId,
         user: { id: userId, email, displayName: displayName ?? email, role },
-        permissions: [],
-        features: {},
+        permissions,
+        features,
       });
     }
+    })();
   }, []);
 
   function completeLogin(data: LoginResponse) {
