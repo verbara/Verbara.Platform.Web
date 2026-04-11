@@ -8,6 +8,7 @@ import { Button } from '@/core/ui/button';
 import { PageHeader } from '@/admin/shared/page-header';
 import { useUiStore } from '@/core/stores/ui-store';
 import { customFetch } from '@/core/api/client';
+import { useCompleteOnboarding } from '@/core/api/hooks/use-onboarding';
 import WelcomeStep from './steps/welcome-step';
 import QueueStep from './steps/queue-step';
 import AgentStep from './steps/agent-step';
@@ -52,6 +53,7 @@ export default function SetupWizard() {
     defaultValues: DEFAULT_VALUES,
   });
   const [loading, setLoading] = useState(false);
+  const completeOnboarding = useCompleteOnboarding();
 
   const currentStepKey = STEP_KEYS[step] as StepKey;
   const StepComponent = STEP_COMPONENTS[currentStepKey];
@@ -130,7 +132,12 @@ export default function SetupWizard() {
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    try {
+      await completeOnboarding.mutateAsync();
+    } catch {
+      // best-effort — don't block wizard completion
+    }
     useUiStore.getState().setTestCompleted(true);
     toast.success('Setup complete!');
     navigate('/admin');
@@ -198,7 +205,7 @@ export default function SetupWizard() {
                   {t('admin:setup.getStarted', "Let's get started")}
                 </Button>
               ) : isLast ? (
-                <Button data-testid="setup-finish" disabled={loading} onClick={handleFinish}>
+                <Button data-testid="setup-finish" disabled={loading} onClick={() => void handleFinish()}>
                   <Check className="mr-1.5 h-4 w-4" />
                   {t('admin:setup.finish', 'Finish Setup')}
                 </Button>
