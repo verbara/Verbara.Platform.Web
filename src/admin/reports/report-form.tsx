@@ -34,7 +34,7 @@ import {
 const reportSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   type: z.enum(['CDRSummary', 'QASummary', 'IntervalReport', 'AgentPerformance'] as const),
-  schedule: z.enum(['daily_8am', 'weekly_monday', 'monthly_1st', 'custom'] as const),
+  schedule: z.string().min(1, 'Schedule is required'),
   cronExpression: z.string().optional(),
   filters: z.string().optional(),
   recipients: z.string().optional(),

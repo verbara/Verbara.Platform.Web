@@ -130,13 +130,14 @@ export default function CampaignWizard() {
   const createContactList = useCreateContactList();
   const importContacts = useImportContacts();
 
+  const currentStepKey = STEP_KEYS[step] ?? STEP_KEYS[0];
   const currentSchema = stepSchemas[currentStepKey];
   const methods = useForm<CampaignFormValues>({
     defaultValues: DEFAULT_VALUES,
-    resolver: currentSchema ? (zodResolver(currentSchema) as never) : undefined,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: currentSchema ? zodResolver(currentSchema as any) : undefined,
   });
 
-  const currentStepKey = STEP_KEYS[step] ?? STEP_KEYS[0];
   const StepComponent = STEP_COMPONENTS[currentStepKey];
   const isFirst = step === 0;
   const isLast = step === STEP_KEYS.length - 1;

@@ -119,7 +119,7 @@ export default function DashboardPage() {
         <CurrentIntervalCard />
 
         {/* Bot Analytics */}
-        <BotAnalyticsCard from={filters.from} to={filters.to} />
+        <BotAnalyticsCard from={from} to={to} />
 
         {/* Charts */}
         {isLoading ? (
