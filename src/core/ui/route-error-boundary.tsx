@@ -27,7 +27,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-full flex-col items-center justify-center gap-4 p-8">
+        <div className="flex h-full flex-col items-center justify-center gap-4 p-8" data-testid="route-error-boundary">
           <h2 className="text-lg font-semibold">Something went wrong on this page</h2>
           <p className="text-sm text-muted-foreground">
             {this.state.error?.message ?? 'An unexpected error occurred.'}
@@ -35,11 +35,12 @@ export class RouteErrorBoundary extends Component<Props, State> {
           <div className="flex gap-2">
             <Button
               variant="outline"
+              data-testid="route-error-retry"
               onClick={() => this.setState({ hasError: false, error: null })}
             >
               Try Again
             </Button>
-            <Button variant="ghost" onClick={() => (window.location.href = '/admin')}>
+            <Button variant="ghost" data-testid="route-error-home" onClick={() => (window.location.href = '/admin')}>
               Go Home
             </Button>
           </div>

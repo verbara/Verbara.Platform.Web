@@ -150,6 +150,7 @@ export function ContactInfo() {
               variant="ghost"
               size="sm"
               className="h-6 px-1.5 text-xs text-red-500 hover:text-red-600"
+              data-testid="contact-delete-btn"
               onClick={() => setDeleteOpen(true)}
             >
               <Trash2 className="h-3 w-3" />

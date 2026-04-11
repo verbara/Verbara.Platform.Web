@@ -126,7 +126,10 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
                 <>
                   <dt className="text-muted-foreground">Circuit</dt>
                   <dd className="flex items-center gap-2">
-                    <Badge variant={circuit.state === 'Closed' ? 'default' : circuit.state === 'Open' ? ('destructive' as const) : 'secondary'}>
+                    <Badge
+                      data-testid="webhook-circuit-status"
+                      variant={circuit.state === 'Closed' ? 'default' : circuit.state === 'Open' ? ('destructive' as const) : 'secondary'}
+                    >
                       {circuit.state}
                     </Badge>
                     {circuit.state === 'Open' && (
@@ -134,6 +137,7 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
                         variant="outline"
                         size="sm"
                         disabled={resetCircuit.isPending}
+                        data-testid="webhook-reset-circuit"
                         onClick={() => resetCircuit.mutate(subscription.subscriptionId)}
                       >
                         Reset Circuit

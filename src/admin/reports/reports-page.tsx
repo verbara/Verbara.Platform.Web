@@ -130,6 +130,7 @@ export default function ReportsPage() {
               className="h-7 w-7 p-0"
               title="Run now"
               disabled={runReport.isPending}
+              data-testid={`report-run-${info.row.original.id}`}
               onClick={(e) => { e.stopPropagation(); runReport.mutate(info.row.original.id); }}
             >
               <Play className="h-3.5 w-3.5" />
@@ -139,6 +140,7 @@ export default function ReportsPage() {
               size="sm"
               className="h-7 w-7 p-0"
               title="Execution history"
+              data-testid={`report-history-${info.row.original.id}`}
               onClick={(e) => { e.stopPropagation(); setHistoryReportId(info.row.original.id); }}
             >
               <Clock className="h-3.5 w-3.5" />
@@ -234,7 +236,7 @@ export default function ReportsPage() {
       />
 
       <Sheet open={!!historyReportId} onOpenChange={(open) => { if (!open) setHistoryReportId(undefined); }}>
-        <SheetContent>
+        <SheetContent data-testid="report-history-sheet">
           <SheetHeader>
             <SheetTitle>Execution History</SheetTitle>
           </SheetHeader>
