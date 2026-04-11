@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Calendar, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Trash2, Play, Clock, Download } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Switch } from '@/core/ui/switch';
@@ -12,12 +12,21 @@ import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { ReportForm } from './report-form';
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/core/ui/sheet';
+import {
   useReports,
-  useToggleReportActive,
+  useUpdateReport,
   useDeleteReport,
+  useRunReport,
+  useReportHistory,
   type ScheduledReport,
   type ReportType,
   type ReportFormat,
+  type ReportExecution,
 } from '@/core/api/hooks/use-reports';
 
 const columnHelper = createColumnHelper<ScheduledReport>();
@@ -44,14 +53,22 @@ function FormatBadge({ format }: { format: ReportFormat }) {
 }
 
 function ActiveToggle({ report }: { report: ScheduledReport }) {
-  const toggle = useToggleReportActive(report.id);
+  const updateReport = useUpdateReport();
   return (
     <Switch
       checked={report.isActive}
-      onCheckedChange={(checked) => toggle.mutate(checked)}
+      onCheckedChange={(checked) =>
+        updateReport.mutate({ id: report.id, isActive: checked })
+      }
       onClick={(e) => e.stopPropagation()}
     />
   );
+}
+
+function statusVariant(status: ReportExecution['status']): 'default' | 'destructive' | 'secondary' {
+  if (status === 'Completed') return 'default';
+  if (status === 'Failed') return 'destructive';
+  return 'secondary';
 }
 
 export default function ReportsPage() {
@@ -59,7 +76,10 @@ export default function ReportsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editReport, setEditReport] = useState<ScheduledReport | null>(null);
   const [deletingReport, setDeletingReport] = useState<ScheduledReport | null>(null);
+  const [historyReportId, setHistoryReportId] = useState<string | undefined>();
   const deleteReport = useDeleteReport();
+  const runReport = useRunReport();
+  const { data: history = [] } = useReportHistory(historyReportId);
 
   const { data: reports = [], isLoading } = useReports();
 
@@ -103,20 +123,41 @@ export default function ReportsPage() {
         id: 'actions',
         header: () => '',
         cell: (info) => (
-          <PermissionGuard requires="reporting:dashboard:edit">
+          <div className="flex justify-end gap-1">
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-              data-testid={`delete-report-${info.row.original.id}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeletingReport(info.row.original);
-              }}
+              className="h-7 w-7 p-0"
+              title="Run now"
+              disabled={runReport.isPending}
+              onClick={(e) => { e.stopPropagation(); runReport.mutate(info.row.original.id); }}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Play className="h-3.5 w-3.5" />
             </Button>
-          </PermissionGuard>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              title="Execution history"
+              onClick={(e) => { e.stopPropagation(); setHistoryReportId(info.row.original.id); }}
+            >
+              <Clock className="h-3.5 w-3.5" />
+            </Button>
+            <PermissionGuard requires="reporting:dashboard:edit">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                data-testid={`delete-report-${info.row.original.id}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeletingReport(info.row.original);
+                }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </PermissionGuard>
+          </div>
         ),
       }),
     ],
@@ -191,6 +232,38 @@ export default function ReportsPage() {
         entityType="Report"
         isPending={deleteReport.isPending}
       />
+
+      <Sheet open={!!historyReportId} onOpenChange={(open) => { if (!open) setHistoryReportId(undefined); }}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Execution History</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-3">
+            {history.map((exec) => (
+              <div key={exec.id} className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <Badge variant={statusVariant(exec.status)}>{exec.status}</Badge>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {new Date(exec.startedAt).toLocaleString()}
+                  </p>
+                </div>
+                {exec.status === 'Completed' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => globalThis.open(`/api/v1/admin/reports/${historyReportId}/history/${exec.id}/download`)}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            {history.length === 0 && (
+              <p className="text-sm text-muted-foreground">No executions yet</p>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

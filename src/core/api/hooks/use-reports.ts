@@ -4,13 +4,12 @@ import { toast } from 'sonner';
 
 export type ReportType = 'CDRSummary' | 'QASummary' | 'IntervalReport' | 'AgentPerformance';
 export type ReportFormat = 'CSV' | 'PDF';
-export type ReportSchedule = 'daily_8am' | 'weekly_monday' | 'monthly_1st' | 'custom';
 
 export interface ScheduledReport {
-  id: number;
+  id: string;
   name: string;
   type: ReportType;
-  schedule: ReportSchedule;
+  schedule: string;
   cronExpression?: string;
   filters?: string;
   recipients?: string;
@@ -27,7 +26,7 @@ export function useReports() {
   });
 }
 
-export function useReport(id: number | undefined) {
+export function useReport(id: string | undefined) {
   return useQuery({
     queryKey: ['report', id],
     queryFn: () =>
@@ -55,7 +54,7 @@ export function useUpdateReport() {
     mutationFn: ({
       id,
       ...data
-    }: { id: number } & Partial<Omit<ScheduledReport, 'id' | 'createdAt'>>) =>
+    }: { id: string } & Partial<Omit<ScheduledReport, 'id' | 'createdAt'>>) =>
       customFetch<ScheduledReport>({
         url: `/api/v1/admin/reports/${id}`,
         method: 'PUT',
@@ -73,7 +72,7 @@ export function useUpdateReport() {
 export function useDeleteReport() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) =>
+    mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/reports/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['reports'] });
@@ -83,19 +82,33 @@ export function useDeleteReport() {
   });
 }
 
-export function useToggleReportActive(id: number) {
-  const qc = useQueryClient();
+export function useRunReport() {
   return useMutation({
-    mutationFn: (isActive: boolean) =>
-      customFetch<ScheduledReport>({
-        url: `/api/v1/admin/reports/${id}/activate`,
-        method: 'PATCH',
-        data: { isActive },
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['reports'] });
-      qc.invalidateQueries({ queryKey: ['report', id] });
-    },
+    mutationFn: (id: string) =>
+      customFetch<void>({ url: `/api/v1/admin/reports/${id}/run`, method: 'POST' }),
+    onSuccess: () => toast.success('Report execution started'),
     onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export interface ReportExecution {
+  id: string;
+  reportId: string;
+  status: 'Pending' | 'Running' | 'Completed' | 'Failed';
+  startedAt: string;
+  completedAt: string | null;
+  error: string | null;
+}
+
+export function useReportHistory(reportId: string | undefined) {
+  return useQuery({
+    queryKey: ['report-history', reportId],
+    queryFn: () =>
+      customFetch<ReportExecution[]>({
+        url: `/api/v1/admin/reports/${reportId}/history`,
+        method: 'GET',
+        params: { limit: '25' },
+      }),
+    enabled: !!reportId,
   });
 }

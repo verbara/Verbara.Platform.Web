@@ -29,7 +29,6 @@ import {
   type ScheduledReport,
   type ReportType,
   type ReportFormat,
-  type ReportSchedule,
 } from '@/core/api/hooks/use-reports';
 
 const reportSchema = z.object({
@@ -54,7 +53,7 @@ interface ReportFormProps {
 
 const REPORT_TYPES: ReportType[] = ['CDRSummary', 'QASummary', 'IntervalReport', 'AgentPerformance'];
 const REPORT_FORMATS: ReportFormat[] = ['CSV', 'PDF'];
-const REPORT_SCHEDULES: ReportSchedule[] = ['daily_8am', 'weekly_monday', 'monthly_1st', 'custom'];
+const REPORT_SCHEDULES: string[] = ['daily_8am', 'weekly_monday', 'monthly_1st', 'custom'];
 
 const DEFAULT_VALUES: ReportFormValues = {
   name: '',
