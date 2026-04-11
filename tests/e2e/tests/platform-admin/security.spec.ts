@@ -95,4 +95,19 @@ test.describe('Security — Personal', () => {
 
     await expect(page).toHaveURL(/\/admin\/security/);
   });
+
+  test('should display password policy checklist', async ({ platformAdminPage: page }) => {
+    await expect(page.getByTestId('security-password-checklist')).toBeVisible();
+    await expect(page.getByTestId('security-password-checklist')).toContainText(/characters/i);
+  });
+
+  test('should display sessions list', async ({ platformAdminPage: page }) => {
+    await expect(page.getByTestId('security-sessions-list')).toBeVisible();
+    // Current session should be highlighted
+    await expect(page.getByTestId('security-sessions-list')).toContainText(/this session/i);
+  });
+
+  test('should show sign out others button', async ({ platformAdminPage: page }) => {
+    await expect(page.getByTestId('security-sessions-revoke-others')).toBeVisible();
+  });
 });
