@@ -23,7 +23,6 @@ import {
   Bot,
   BookOpen,
   Briefcase,
-  Sparkles,
   Zap,
   FileSearch,
   ClipboardList,
@@ -133,7 +132,9 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'bots', labelKey: 'admin:sidebar.bots', to: '/admin/bots', icon: Bot, requiredPermission: 'system:integration:manage' },
       { key: 'knowledge-base', labelKey: 'admin:sidebar.knowledgeBase', to: '/admin/knowledge-base', icon: BookOpen, requiredPermission: 'system:integration:manage' },
-      { key: 'agent-assist', labelKey: 'admin:sidebar.agent_assist', to: '/admin/agent-assist', icon: Sparkles, requiredPermission: 'agentassist:config:manage' },
+      // agent-assist: deferred to v1.7.0+ (full-stack activation required).
+      // See memory/project_agent_assist_deferred.md for full 8-layer spec.
+      // Route + page code retained as scaffolding; no nav link exposed.
     ],
   },
   {

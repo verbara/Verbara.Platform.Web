@@ -1,3 +1,10 @@
+// AGENT ASSIST: deferred to v1.7.0+ as 8-layer cross-repo activation project.
+// These hooks are retained but not used in navigation. Backend is dead code:
+// engine disabled, config store is a museum, session stores empty at runtime.
+// DTO contracts in this file also drift from backend (`enabled`/`samplingRate`/
+// `isActive` do not exist backend-side) — will be rewritten against canonical
+// SDK types in v1.7.0 Layer 8.
+// Full activation spec: memory/project_agent_assist_deferred.md
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import { toast } from 'sonner';

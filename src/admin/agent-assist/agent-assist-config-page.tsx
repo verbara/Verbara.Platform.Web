@@ -1,3 +1,10 @@
+// AGENT ASSIST: deferred to v1.7.0+ as 8-layer cross-repo activation project.
+// This page is retained as scaffolding but is NOT reachable from navigation.
+// Backend is dead code: engine is disabled in Program.cs (no SpeechRecognizer),
+// AgentAssistConfigStore is a sealed in-memory singleton that nothing consumes,
+// KeywordSuggestionProvider is instantiated with empty list, session stores are
+// empty at runtime. Saves from this page have zero runtime effect.
+// Full activation spec: memory/project_agent_assist_deferred.md
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Plus, Pencil, Trash2, Save, X, Check } from 'lucide-react';
