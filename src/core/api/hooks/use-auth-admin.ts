@@ -137,3 +137,162 @@ export function useForceLogoutUser() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+// --- User-scoped MFA + Password + Sessions (Sub C T1.2) ---
+
+export interface MfaSetupResponse {
+  secret: string;
+  qrUri: string;
+  recoveryCodes: string[];
+}
+
+export function useSetupMfa() {
+  return useMutation({
+    mutationFn: () =>
+      customFetch<MfaSetupResponse>({
+        url: '/api/v1/auth/mfa/setup',
+        method: 'POST',
+      }),
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useConfirmMfa() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (code: string) =>
+      customFetch<void>({
+        url: '/api/v1/auth/mfa/confirm',
+        method: 'POST',
+        data: { code },
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['me'] });
+      toast.success('MFA enabled');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useDisableMfa() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (password: string) =>
+      customFetch<void>({
+        url: '/api/v1/auth/mfa',
+        method: 'DELETE',
+        data: { password },
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['me'] });
+      toast.success('MFA disabled');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (data: ChangePasswordRequest) =>
+      customFetch<void>({
+        url: '/api/v1/auth/change-password',
+        method: 'POST',
+        data,
+      }),
+    onSuccess: () => toast.success('Password changed'),
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export interface UserSession {
+  tokenId: string;
+  userAgent: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+  expiresAt: string;
+  isCurrentSession: boolean;
+}
+
+export function useMySessions() {
+  return useQuery({
+    queryKey: ['auth', 'sessions', 'me'],
+    queryFn: () =>
+      customFetch<UserSession[]>({
+        url: '/api/v1/auth/sessions',
+        method: 'GET',
+      }),
+  });
+}
+
+export function useRevokeSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (tokenId: string) =>
+      customFetch<void>({
+        url: `/api/v1/auth/sessions/${tokenId}`,
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['auth', 'sessions', 'me'] });
+      toast.success('Session revoked');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useRevokeOtherSessions() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      customFetch<void>({
+        url: '/api/v1/auth/sessions/revoke-others',
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['auth', 'sessions', 'me'] });
+      toast.success('All other sessions signed out');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export interface RecoveryCodesResponse {
+  recoveryCodes: string[];
+}
+
+export function useRegenerateRecoveryCodes() {
+  return useMutation({
+    mutationFn: (password: string) =>
+      customFetch<RecoveryCodesResponse>({
+        url: '/api/v1/auth/mfa/recovery-codes/regenerate',
+        method: 'POST',
+        data: { password },
+      }),
+    onSuccess: () => toast.success('Recovery codes regenerated'),
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export interface PasswordPolicy {
+  minLength: number;
+  requireUppercase: boolean;
+  requireNumber: boolean;
+  requireSpecial: boolean;
+}
+
+export function usePasswordPolicy() {
+  return useQuery({
+    queryKey: ['auth', 'password-policy'],
+    queryFn: () =>
+      customFetch<PasswordPolicy>({
+        url: '/api/v1/auth/password-policy',
+        method: 'GET',
+      }),
+    staleTime: Infinity,
+  });
+}
