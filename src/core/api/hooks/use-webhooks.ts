@@ -225,3 +225,40 @@ export function useRetryDeadLetter() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+// --- Circuit Breaker ---
+
+export interface CircuitBreakerStatus {
+  state: 'Closed' | 'Open' | 'HalfOpen';
+  failureCount: number;
+  lastFailureAt: string | null;
+  nextRetryAt: string | null;
+}
+
+export function useCircuitStatus(subscriptionId: string | undefined) {
+  return useQuery({
+    queryKey: ['webhook-circuit', subscriptionId],
+    queryFn: () =>
+      customFetch<CircuitBreakerStatus>({
+        url: `/api/v1/webhooks/subscriptions/${subscriptionId}/circuit-status`,
+        method: 'GET',
+      }),
+    enabled: !!subscriptionId,
+  });
+}
+
+export function useResetCircuit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (subscriptionId: string) =>
+      customFetch<void>({
+        url: `/api/v1/webhooks/subscriptions/${subscriptionId}/reset-circuit`,
+        method: 'POST',
+      }),
+    onSuccess: (_data, subscriptionId) => {
+      qc.invalidateQueries({ queryKey: ['webhook-circuit', subscriptionId] });
+      toast.success('Circuit breaker reset');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

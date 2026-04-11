@@ -14,6 +14,8 @@ import {
   useWebhookDeliveries,
   useTestWebhookSubscription,
   useRotateWebhookSecret,
+  useCircuitStatus,
+  useResetCircuit,
   type WebhookSubscription,
 } from '@/core/api/hooks/use-webhooks';
 
@@ -61,6 +63,8 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
 
   const testWebhook = useTestWebhookSubscription();
   const rotateSecret = useRotateWebhookSecret();
+  const { data: circuit } = useCircuitStatus(subscription?.subscriptionId);
+  const resetCircuit = useResetCircuit();
 
   const handleTest = useCallback(() => {
     if (subscription) testWebhook.mutate(subscription.subscriptionId);
@@ -117,6 +121,30 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
                   <Badge variant="secondary">Inactive</Badge>
                 )}
               </dd>
+
+              {circuit && (
+                <>
+                  <dt className="text-muted-foreground">Circuit</dt>
+                  <dd className="flex items-center gap-2">
+                    <Badge variant={circuit.state === 'Closed' ? 'default' : circuit.state === 'Open' ? ('destructive' as const) : 'secondary'}>
+                      {circuit.state}
+                    </Badge>
+                    {circuit.state === 'Open' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={resetCircuit.isPending}
+                        onClick={() => resetCircuit.mutate(subscription.subscriptionId)}
+                      >
+                        Reset Circuit
+                      </Button>
+                    )}
+                    {circuit.failureCount > 0 && (
+                      <span className="text-xs text-muted-foreground">{circuit.failureCount} failures</span>
+                    )}
+                  </dd>
+                </>
+              )}
 
               <dt className="text-muted-foreground">Created</dt>
               <dd>{format(new Date(subscription.createdAt), 'MMM d, yyyy HH:mm')}</dd>
