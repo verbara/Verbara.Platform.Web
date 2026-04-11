@@ -15,11 +15,8 @@ const DEFAULT_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 function interpolateBlue(ratio: number): string {
-  // White (255,255,255) → light blue (219,234,254) → brand blue (59,130,246)
-  const r = Math.round(255 - ratio * (255 - 59));
-  const g = Math.round(255 - ratio * (255 - 130));
-  const b = Math.round(255 - ratio * (255 - 246));
-  return `rgb(${r},${g},${b})`;
+  // Transparent → primary color using CSS opacity so dark mode adapts automatically
+  return `hsl(var(--primary) / ${Math.round(ratio * 90 + 5)}%)`;
 }
 
 export function Heatmap({
@@ -74,7 +71,7 @@ export function Heatmap({
                     const val = lookup.get(dayIndex)?.get(hour) ?? 0;
                     const ratio = maxValue > 0 ? val / maxValue : 0;
                     const bg = interpolateBlue(ratio);
-                    const textColor = ratio > 0.55 ? '#ffffff' : '#1e293b';
+                    const textColor = ratio > 0.55 ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))';
                     return (
                       <td
                         key={hour}

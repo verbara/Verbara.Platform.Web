@@ -23,8 +23,14 @@ interface TrendChartProps {
   colors?: string[];
 }
 
-const DEFAULT_COLOR = '#6366f1';
-const PIE_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+const DEFAULT_COLOR = 'hsl(var(--primary))';
+const PIE_COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
 
 export function TrendChart({
   title,
@@ -42,9 +48,9 @@ export function TrendChart({
         <ResponsiveContainer width="100%" height="100%">
           {type === 'area' ? (
             <AreaChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey={nameKey} tick={{ fontSize: 11 }} stroke="#94a3b8" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey={nameKey} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
               <Tooltip />
               <Area
                 type="monotone"
@@ -57,9 +63,9 @@ export function TrendChart({
             </AreaChart>
           ) : type === 'line' ? (
             <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey={nameKey} tick={{ fontSize: 11 }} stroke="#94a3b8" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" domain={[0, 100]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey={nameKey} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" domain={[0, 100]} />
               <Tooltip />
               <Line
                 type="monotone"

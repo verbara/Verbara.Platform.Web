@@ -42,13 +42,13 @@ export function OverlayChart({
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis
                 yAxisId="left"
                 orientation="left"
                 tick={{ fontSize: 11 }}
-                stroke="#94a3b8"
+                stroke="hsl(var(--muted-foreground))"
                 allowDecimals={false}
               />
               <YAxis
@@ -56,7 +56,7 @@ export function OverlayChart({
                 orientation="right"
                 domain={[0, 100]}
                 tick={{ fontSize: 11 }}
-                stroke="#94a3b8"
+                stroke="hsl(var(--muted-foreground))"
                 unit="%"
               />
               <Tooltip
@@ -72,7 +72,7 @@ export function OverlayChart({
                 yAxisId="left"
                 dataKey="volume"
                 name={volumeLabel}
-                fill="#3b82f6"
+                fill="hsl(var(--chart-1))"
                 radius={[3, 3, 0, 0]}
                 maxBarSize={40}
               />
@@ -81,9 +81,9 @@ export function OverlayChart({
                 type="monotone"
                 dataKey="slaPercent"
                 name={slaLabel}
-                stroke="#10b981"
+                stroke="hsl(var(--chart-2))"
                 strokeWidth={2}
-                dot={{ r: 3, fill: '#10b981' }}
+                dot={{ r: 3, fill: 'hsl(var(--chart-2))' }}
                 activeDot={{ r: 5 }}
               />
             </ComposedChart>
