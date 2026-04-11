@@ -9,6 +9,8 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { useUiStore } from '@/core/stores/ui-store';
 import { customFetch } from '@/core/api/client';
 import { useCompleteOnboarding } from '@/core/api/hooks/use-onboarding';
+import { useCreateQueue } from '@/core/api/hooks/use-queues';
+import { useCreateAgent } from '@/core/api/hooks/use-agents';
 import WelcomeStep from './steps/welcome-step';
 import QueueStep from './steps/queue-step';
 import AgentStep from './steps/agent-step';
@@ -54,6 +56,8 @@ export default function SetupWizard() {
   });
   const [loading, setLoading] = useState(false);
   const completeOnboarding = useCompleteOnboarding();
+  const createQueue = useCreateQueue();
+  const createAgent = useCreateAgent();
 
   const currentStepKey = STEP_KEYS[step] as StepKey;
   const StepComponent = STEP_COMPONENTS[currentStepKey];
@@ -73,14 +77,8 @@ export default function SetupWizard() {
     try {
       if (currentStepKey === 'queue') {
         try {
-          await customFetch({
-            url: '/api/v1/admin/queues',
-            method: 'POST',
-            data: { name: values.queueName, isActive: true },
-          });
-          toast.success('Queue created successfully');
+          await createQueue.mutateAsync({ name: values.queueName, isActive: true });
         } catch {
-          toast.error('Failed to create queue');
           return;
         }
       }
@@ -100,14 +98,8 @@ export default function SetupWizard() {
             });
             userId = user.id;
           }
-          await customFetch({
-            url: '/api/v1/admin/agents',
-            method: 'POST',
-            data: { userId, displayName: values.agentDisplayName },
-          });
-          toast.success('Agent created successfully');
+          await createAgent.mutateAsync({ userId, displayName: values.agentDisplayName });
         } catch {
-          toast.error('Failed to create agent');
           return;
         }
       }
