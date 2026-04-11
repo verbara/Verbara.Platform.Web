@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, type ColDef, type ICellRendererParams, ModuleRegistry } from 'ag-grid-community';
@@ -22,6 +22,7 @@ import { ExportButton } from '@/analytics/shared/export-button';
 import { ContactSearchPanel } from '@/admin/shared/contact-search-panel';
 import { CdrDetailDrawer } from './cdr-detail-drawer';
 import { useCdrList, type CdrRow as ApiCdrRow } from '@/core/api/hooks/use-analytics';
+import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -190,8 +191,11 @@ export default function CdrPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [contactSearchOpen, setContactSearchOpen] = useState(false);
+  const { from, to, queue } = useAnalyticsFilterStore();
 
-  const { data, isLoading } = useCdrList(undefined, undefined, {}, page);
+  useEffect(() => { setPage(1); }, [from, to, queue]);
+
+  const { data, isLoading } = useCdrList(from, to, { queue: queue || undefined }, page);
 
   const rowData = useMemo<CdrRow[]>(
     () => (data?.items ?? []).map(mapApiRowToGridRow),

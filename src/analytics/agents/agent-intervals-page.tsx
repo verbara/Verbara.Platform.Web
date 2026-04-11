@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useAgentIntervals } from '@/core/api/hooks/use-analytics';
+import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 import { PageHeader } from '@/admin/shared/page-header';
 
 function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof useAgentIntervals>['data'] & object[] }) {
@@ -39,10 +39,7 @@ function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof us
 }
 
 export default function AgentIntervalsPage() {
-  const [from] = useState(() => {
-    const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString();
-  });
-  const [to] = useState(() => new Date().toISOString());
+  const { from, to } = useAnalyticsFilterStore();
   const { data: intervals = [], isLoading } = useAgentIntervals({ from, to });
 
   return (

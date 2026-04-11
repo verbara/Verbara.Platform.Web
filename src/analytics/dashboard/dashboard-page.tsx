@@ -1,23 +1,13 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KpiCard } from './kpi-card';
 import { TrendChart } from './trend-chart';
 import { OverlayChart, type OverlayChartPoint } from './overlay-chart';
 import { Heatmap, type HeatmapCell } from './heatmap';
-import { FilterBar, type FilterState } from '@/analytics/shared/filter-bar';
+import { FilterBar } from '@/analytics/shared/filter-bar';
 import { useDashboard, useIntervals, type DashboardKpis } from '@/core/api/hooks/use-analytics';
+import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 import { CurrentIntervalCard } from './current-interval-card';
 import { BotAnalyticsCard } from './bot-analytics-card';
-
-function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
-}
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function formatWait(ms: number): string {
   return `${Math.round(ms / 1000)}s`;
@@ -37,17 +27,10 @@ function computeDelta(current: number, previous: number): number {
 
 export default function DashboardPage() {
   const { t } = useTranslation('analytics');
+  const { from, to, queue } = useAnalyticsFilterStore();
 
-  const [filters, setFilters] = useState<FilterState>({
-    from: daysAgo(7),
-    to: todayStr(),
-    queue: '',
-    agent: '',
-    channel: '',
-  });
-
-  const { data, isLoading } = useDashboard(filters.from, filters.to, filters.queue || undefined);
-  const { data: intervalsData } = useIntervals(filters.from, filters.to, filters.queue || undefined);
+  const { data, isLoading } = useDashboard(from, to, queue || undefined);
+  const { data: intervalsData } = useIntervals(from, to, queue || undefined);
 
   const kpis = data?.kpis;
   const prev = data?.previousPeriodKpis;
@@ -86,7 +69,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6" data-testid="dashboard-page">
-      <FilterBar onFilterChange={setFilters} />
+      <FilterBar />
 
       <div className="px-6 space-y-6">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">

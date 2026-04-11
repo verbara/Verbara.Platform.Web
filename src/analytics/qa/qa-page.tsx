@@ -7,13 +7,15 @@ import { DataTable } from '@/admin/shared/data-table';
 import { ScoreInline } from './score-gauge';
 import { QaDetailDrawer } from './qa-detail-drawer';
 import { useQaList, type QaRow } from '@/core/api/hooks/use-analytics';
+import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 
 export default function QaPage() {
   const { t } = useTranslation('analytics');
   const [searchParams] = useSearchParams();
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [page] = useState(1);
+  const [page, setPage] = useState(1);
+  const { from, to, queue } = useAnalyticsFilterStore();
 
   const autoSessionId = searchParams.get('sessionId');
 
@@ -24,7 +26,9 @@ export default function QaPage() {
     }
   }, [autoSessionId]);
 
-  const { data, isLoading } = useQaList(undefined, undefined, {}, page);
+  useEffect(() => { setPage(1); }, [from, to, queue]);
+
+  const { data, isLoading } = useQaList(from, to, { queue: queue || undefined }, page);
 
   const rows: QaRow[] = data?.items ?? [];
 
