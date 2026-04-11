@@ -127,7 +127,7 @@ export function useForceLogoutUser() {
   return useMutation({
     mutationFn: (userId: string) =>
       customFetch<void>({
-        url: `/api/v1/admin/auth/sessions/user/${userId}`,
+        url: `/api/v1/admin/auth/sessions/by-user/${userId}`,
         method: 'DELETE',
       }),
     onSuccess: () => {
