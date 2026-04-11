@@ -16,6 +16,7 @@ export function useSSE() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const sourceRef = useRef<EventSource | null>(null);
+  const reconnectAttemptRef = useRef(0);
 
   const connect = useCallback(() => {
     if (!accessToken || sourceRef.current) return;
@@ -23,6 +24,10 @@ export function useSSE() {
     const url = `/api/v1/events/stream?token=${encodeURIComponent(accessToken)}`;
     const source = new EventSource(url);
     sourceRef.current = source;
+
+    source.onopen = () => {
+      reconnectAttemptRef.current = 0;
+    };
 
     source.addEventListener('conversation.assigned', (e) => {
       try {
@@ -188,7 +193,15 @@ export function useSSE() {
       sourceRef.current = null;
       // Catch up missed notifications on reconnect
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      setTimeout(connect, 2000);
+
+      const attempt = reconnectAttemptRef.current;
+      if (attempt >= 10) {
+        toast.error('Real-time connection lost. Refresh the page to reconnect.');
+        return;
+      }
+      const delay = Math.min(2000 * Math.pow(2, attempt), 30000) + Math.random() * 1000;
+      reconnectAttemptRef.current = attempt + 1;
+      setTimeout(connect, delay);
     };
   }, [accessToken, queryClient, navigate]);
 
