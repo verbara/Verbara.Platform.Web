@@ -1,8 +1,8 @@
 {
   "app": { "name": "Asterisk Platform" },
   "nav": { "admin": "Administración", "operations": "Operaciones", "analytics": "Analítica", "agent": "Agente", "notifications": "Notificaciones" },
-  "actions": { "save": "Guardar", "cancel": "Cancelar", "delete": "Eliminar", "create": "Crear", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Cerrar", "back": "Volver", "clear_all": "Limpiar todo" },
-  "status": { "loading": "Cargando...", "error": "Error", "success": "Éxito", "no_results": "Sin resultados", "reconnecting": "Reconectando..." },
+  "actions": { "save": "Guardar", "cancel": "Cancelar", "delete": "Eliminar", "create": "Crear", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Cerrar", "back": "Volver", "clear_all": "Limpiar todo", "copy": "Copiar", "download": "Descargar", "done": "Listo", "next": "Siguiente" },
+  "status": { "loading": "Cargando...", "error": "Error", "success": "Éxito", "no_results": "Sin resultados", "reconnecting": "Reconectando...", "enabled": "Habilitado", "disabled": "Deshabilitado" },
   "auth": {
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
