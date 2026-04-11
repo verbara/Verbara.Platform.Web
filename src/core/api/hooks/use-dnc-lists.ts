@@ -162,11 +162,10 @@ export function useImportDncEntries() {
 
 export function useCheckDncNumber() {
   return useMutation({
-    mutationFn: (phoneNumber: string) =>
+    mutationFn: ({ listId, phoneNumber }: { listId: number; phoneNumber: string }) =>
       customFetch<DncCheckResult>({
-        url: '/api/v1/admin/dnc-lists/check',
-        method: 'POST',
-        data: { phoneNumber },
+        url: `/api/v1/admin/dnc-lists/${listId}/check/${encodeURIComponent(phoneNumber)}`,
+        method: 'GET',
       }),
     onError: (err: Error) => toast.error(err.message),
   });

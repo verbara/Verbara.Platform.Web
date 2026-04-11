@@ -78,7 +78,7 @@ export default function DncListDetail() {
 
   const handleCheck = () => {
     if (!checkPhone.trim()) return;
-    checkNumber.mutate(checkPhone.trim());
+    checkNumber.mutate({ listId: listIdNum, phoneNumber: checkPhone.trim() });
   };
 
   const handleConfirmDelete = () => {
