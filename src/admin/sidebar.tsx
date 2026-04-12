@@ -166,21 +166,42 @@ function CollapsibleGroup({
   label,
   groupKey,
   children,
-  defaultOpen,
+  containsActiveRoute,
 }: {
   label: string;
   groupKey: string;
   children: React.ReactNode;
-  defaultOpen: boolean;
+  containsActiveRoute: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  // User's manual toggle (null = "not yet touched, follow active route").
+  // Keeping this separate from `containsActiveRoute` lets the group auto-open
+  // when the user navigates INTO it, while still letting them manually collapse
+  // a group that doesn't contain their current route.
+  const [manualOverride, setManualOverride] = useState<boolean | null>(null);
+
+  // Effective open state:
+  //   - If this group contains the active route, it MUST be open — otherwise
+  //     clicking the header would hide the user's own navigation context.
+  //   - Otherwise, use the manual toggle; default closed.
+  const open = containsActiveRoute ? true : manualOverride ?? false;
+
+  function handleClick() {
+    if (containsActiveRoute) {
+      // Already open and locked-open; a click on the header is a no-op.
+      // Clicking a sibling group to open it is the expected way to navigate
+      // elsewhere. This keeps tests like `goto /admin/X + click group-X + click
+      // link-Y-in-group-X` reliable: the group stays open either way.
+      return;
+    }
+    setManualOverride((prev) => !(prev ?? false));
+  }
 
   return (
     <div>
       <button
         type="button"
         data-testid={`sidebar-group-${groupKey}`}
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleClick}
         className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
       >
         {label}
@@ -256,7 +277,7 @@ export function AdminSidebar() {
           key={group.key}
           groupKey={group.key}
           label={t(group.labelKey)}
-          defaultOpen={group.items.some((item) => location.pathname.startsWith(item.to))}
+          containsActiveRoute={group.items.some((item) => location.pathname.startsWith(item.to))}
         >
           {group.items.map((item) => (
             <SidebarLink key={item.key} item={item} />
