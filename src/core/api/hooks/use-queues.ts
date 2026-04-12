@@ -2,12 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import { toast } from 'sonner';
 
+// NOTE: `timezone`, `schedule`, `dispositionCodes`, and `agentIds` were previously
+// declared here and submitted by the queue form, but the backend never persisted
+// them — Queue aggregate only has Hours (not wired through the API), and
+// dispositions/agent membership live in separate endpoints. Fields removed to
+// make the client honestly reflect the server contract. See feat(queues):
+// QueueDto + clean form commit.
 export interface Queue {
   id: string;
   name: string;
   isActive: boolean;
   maxWaiting?: number;
-  timezone?: string;
   slaTargets?: {
     answerWithinSeconds?: number;
     firstResponseWithinSeconds?: number;
@@ -22,14 +27,6 @@ export interface Queue {
     forceWrapUp: boolean;
   };
   requiredSkills: string[];
-  schedule: {
-    day: string;
-    open: string;
-    close: string;
-    enabled: boolean;
-  }[];
-  dispositionCodes: string[];
-  agentIds: string[];
   createdAt: string;
 }
 

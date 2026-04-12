@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, X, GripVertical } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -27,61 +27,30 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
 import { Separator } from '@/core/ui/separator';
 import { useQueues } from '@/core/api/hooks/use-queues';
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
-
-const COMMON_TIMEZONES = [
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Bogota',
-  'America/Mexico_City',
-  'America/Sao_Paulo',
-  'America/Argentina/Buenos_Aires',
-  'America/Santiago',
-  'America/Lima',
-  'Europe/London',
-  'Europe/Madrid',
-  'Europe/Berlin',
-  'UTC',
-] as const;
-
-const scheduleEntrySchema = z.object({
-  day: z.string(),
-  open: z.string(),
-  close: z.string(),
-  enabled: z.boolean(),
-});
-
-const dispositionSchema = z.object({
-  code: z.string().min(1, 'Code is required'),
-});
+// NOTE: The form previously included "Schedule" (per-day hours) and
+// "Disposition codes" tabs and a timezone selector. Those fields were
+// submitted to /admin/queues but the backend silently dropped them — the
+// Queue aggregate has a `Hours` field but it isn't wired through the API,
+// dispositions are a tenant-wide concept (see /admin/dispositions), and
+// agent assignment happens via /admin/queue-members. Those tabs are gone
+// so the form reflects the actual contract. Re-adding them is future
+// feature work that must include backend persistence (tracked in roadmap).
 
 const queueSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   isActive: z.boolean(),
   maxWaiting: z.string(),
-  timezone: z.string().optional(),
   answerWithinSeconds: z.string(),
   firstResponseWithinSeconds: z.string(),
   resolutionWithinSeconds: z.string(),
   overflowQueueId: z.string().optional(),
   overflowAfterSeconds: z.string(),
   requiredSkills: z.array(z.object({ name: z.string().min(1) })),
-  schedule: z.array(scheduleEntrySchema),
   defaultWrapUpSeconds: z.string(),
   forceWrapUp: z.boolean(),
-  dispositions: z.array(dispositionSchema),
 });
 
 export type QueueFormValues = z.infer<typeof queueSchema>;
-
-const defaultSchedule = DAYS.map((day) => ({
-  day,
-  open: '08:00',
-  close: '18:00',
-  enabled: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day),
-}));
 
 interface QueueFormProps {
   open: boolean;
@@ -100,17 +69,14 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     name: '',
     isActive: true,
     maxWaiting: '',
-    timezone: '',
     answerWithinSeconds: '',
     firstResponseWithinSeconds: '',
     resolutionWithinSeconds: '',
     overflowQueueId: '',
     overflowAfterSeconds: '',
     requiredSkills: [],
-    schedule: defaultSchedule,
     defaultWrapUpSeconds: '30',
     forceWrapUp: false,
-    dispositions: [],
     ...defaultValues,
   };
 
@@ -119,7 +85,6 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     handleSubmit,
     control,
     reset,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<QueueFormValues>({
     resolver: zodResolver(queueSchema),
@@ -131,15 +96,6 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     append: appendSkill,
     remove: removeSkill,
   } = useFieldArray({ control, name: 'requiredSkills' });
-
-  const {
-    fields: dispositionFields,
-    append: appendDisposition,
-    remove: removeDisposition,
-    move: moveDisposition,
-  } = useFieldArray({ control, name: 'dispositions' });
-
-  const schedule = watch('schedule');
 
   useEffect(() => {
     if (open) {
@@ -196,13 +152,11 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
               <TabsTrigger value="general">{t('admin:queues.general')}</TabsTrigger>
               <TabsTrigger value="sla">{t('admin:queues.sla')}</TabsTrigger>
               <TabsTrigger value="routing">{t('admin:queues.routing')}</TabsTrigger>
-              <TabsTrigger value="schedule">{t('admin:queues.hours')}</TabsTrigger>
               <TabsTrigger value="wrapup">{t('admin:queues.wrap_up')}</TabsTrigger>
             </TabsList>
 
             {/* Tab 1: General */}
             <TabsContent value="general" className="space-y-4 pt-4">
-              {/* Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="name">{t('admin:queues.name')}</Label>
                 <Input
@@ -217,7 +171,6 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                 )}
               </div>
 
-              {/* Max Waiting */}
               <div className="space-y-1.5">
                 <Label htmlFor="maxWaiting">{t('admin:queues.maxWaiting')}</Label>
                 <Input
@@ -229,7 +182,6 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                 />
               </div>
 
-              {/* Is Active */}
               <div className="flex items-center gap-2">
                 <Controller
                   name="isActive"
@@ -242,29 +194,6 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                   )}
                 />
                 <Label>{t('admin:queues.active')}</Label>
-              </div>
-
-              {/* Timezone */}
-              <div className="space-y-1.5">
-                <Label>{t('admin:queues.timezone')}</Label>
-                <Controller
-                  name="timezone"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('admin:queues.selectTimezone')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {COMMON_TIMEZONES.map((tz) => (
-                          <SelectItem key={tz} value={tz}>
-                            {tz}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
               </div>
             </TabsContent>
 
@@ -306,7 +235,6 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
 
             {/* Tab 3: Routing */}
             <TabsContent value="routing" className="space-y-4 pt-4">
-              {/* Required Skills */}
               <div className="space-y-2">
                 <Label>{t('admin:queues.skills')}</Label>
                 <div className="flex gap-2">
@@ -345,7 +273,6 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
 
               <Separator />
 
-              {/* Overflow */}
               <div className="space-y-1.5">
                 <Label>{t('admin:queues.overflowQueue')}</Label>
                 <Controller
@@ -381,40 +308,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
               </div>
             </TabsContent>
 
-            {/* Tab 4: Schedule */}
-            <TabsContent value="schedule" className="space-y-3 pt-4">
-              <p className="text-xs text-muted-foreground">{t('admin:queues.scheduleDescription')}</p>
-              {schedule?.map((entry, index) => (
-                <div key={entry.day} className="flex items-center gap-2">
-                  <Controller
-                    name={`schedule.${index}.enabled`}
-                    control={control}
-                    render={({ field }) => (
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    )}
-                  />
-                  <span className="w-24 text-sm font-medium">{entry.day}</span>
-                  <Input
-                    type="time"
-                    className="w-28"
-                    disabled={!entry.enabled}
-                    {...register(`schedule.${index}.open`)}
-                  />
-                  <span className="text-xs text-muted-foreground">to</span>
-                  <Input
-                    type="time"
-                    className="w-28"
-                    disabled={!entry.enabled}
-                    {...register(`schedule.${index}.close`)}
-                  />
-                </div>
-              ))}
-            </TabsContent>
-
-            {/* Tab 5: Wrap-up */}
+            {/* Tab 4: Wrap-up */}
             <TabsContent value="wrapup" className="space-y-4 pt-4">
               <div className="space-y-1.5">
                 <Label htmlFor="defaultWrapUpSeconds">{t('admin:queues.wrapUpSeconds')}</Label>
@@ -439,59 +333,6 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                   )}
                 />
                 <Label>{t('admin:queues.forceWrapUp')}</Label>
-              </div>
-
-              <Separator />
-
-              {/* Disposition codes */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>{t('admin:queues.dispositionCodes')}</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => appendDisposition({ code: '' })}
-                  >
-                    <Plus className="mr-1 h-3 w-3" />
-                    {t('admin:queues.addDisposition')}
-                  </Button>
-                </div>
-                {dispositionFields.map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2">
-                    <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-muted-foreground" />
-                    <Input
-                      placeholder={t('admin:queues.dispositionPlaceholder')}
-                      aria-invalid={!!errors.dispositions?.[index]?.code}
-                      {...register(`dispositions.${index}.code`)}
-                      className="flex-1"
-                    />
-                    {index > 0 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => moveDisposition(index, index - 1)}
-                        title="Move up"
-                      >
-                        &uarr;
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      onClick={() => removeDisposition(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                {dispositionFields.length === 0 && (
-                  <p className="text-xs text-muted-foreground">{t('admin:queues.noDispositions')}</p>
-                )}
               </div>
             </TabsContent>
           </Tabs>

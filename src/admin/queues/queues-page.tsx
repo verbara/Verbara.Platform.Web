@@ -41,11 +41,6 @@ export default function QueuesPage() {
         ),
       }),
       columnHelper.display({
-        id: 'agents',
-        header: () => t('admin:queues.agents'),
-        cell: (info) => info.row.original.agentIds.length,
-      }),
-      columnHelper.display({
         id: 'slaAnswer',
         header: () => t('admin:queues.sla_answer'),
         cell: (info) => {
@@ -107,7 +102,6 @@ export default function QueuesPage() {
             name: values.name,
             isActive: values.isActive,
             maxWaiting: values.maxWaiting ? Number(values.maxWaiting) : undefined,
-            timezone: values.timezone || undefined,
             slaTargets: {
               answerWithinSeconds: values.answerWithinSeconds ? Number(values.answerWithinSeconds) : undefined,
               firstResponseWithinSeconds: values.firstResponseWithinSeconds ? Number(values.firstResponseWithinSeconds) : undefined,
@@ -121,9 +115,6 @@ export default function QueuesPage() {
               forceWrapUp: values.forceWrapUp,
             },
             requiredSkills: values.requiredSkills.map((s) => s.name),
-            schedule: values.schedule,
-            dispositionCodes: values.dispositions.map((d) => d.code),
-            agentIds: [],
           })
         }
       />

@@ -307,7 +307,10 @@ export class ApiHelper {
 
   async listQueues() {
     const response = await this.request.get(`${API_BASE}/api/v1/admin/queues`);
-    return response.json();
+    // Endpoint returns PagedResult<QueueDto>: { items, totalCount, page, pageSize }.
+    // Return the items array so callers can `.find(...)` without unwrapping.
+    const body = await response.json();
+    return Array.isArray(body) ? body : body.items ?? [];
   }
 
   async deleteQueue(queueId: string) {

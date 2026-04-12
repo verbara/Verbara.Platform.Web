@@ -8,7 +8,6 @@ import {
   Clock,
   Target,
   ArrowRightLeft,
-  Calendar,
   Tags,
   Users,
   Zap,
@@ -77,8 +76,12 @@ export default function QueueDetailPage() {
     });
   };
 
-  const assignedAgents = allAgents.filter((a) => queue.agentIds.includes(a.id));
-  const availableAgents = allAgents.filter((a) => !queue.agentIds.includes(a.id));
+  // TODO(v1.7): Replace with a dedicated useQueueMembers(queueId) hook that calls
+  // a new GET /admin/queue-members/{queueId} endpoint. The Queue aggregate never
+  // carried agent membership; it was a phantom field on the frontend type.
+  // For now, show all agents as "available" (none "assigned") until the hook lands.
+  const assignedAgents: typeof allAgents = [];
+  const availableAgents = allAgents;
 
   const handleAddMember = () => {
     if (!addAgentId || !queueId) return;
@@ -94,17 +97,14 @@ export default function QueueDetailPage() {
     name: queue.name,
     isActive: queue.isActive,
     maxWaiting: queue.maxWaiting?.toString() ?? '',
-    timezone: queue.timezone ?? '',
     answerWithinSeconds: queue.slaTargets?.answerWithinSeconds?.toString() ?? '',
     firstResponseWithinSeconds: queue.slaTargets?.firstResponseWithinSeconds?.toString() ?? '',
     resolutionWithinSeconds: queue.slaTargets?.resolutionWithinSeconds?.toString() ?? '',
     overflowQueueId: queue.overflowRule?.overflowQueueId ?? '',
     overflowAfterSeconds: queue.overflowRule?.overflowAfterSeconds?.toString() ?? '',
     requiredSkills: queue.requiredSkills.map((s) => ({ name: s })),
-    schedule: queue.schedule,
     defaultWrapUpSeconds: (queue.wrapUp?.defaultWrapUpSeconds ?? 30).toString(),
     forceWrapUp: queue.wrapUp?.forceWrapUp ?? false,
-    dispositions: queue.dispositionCodes.map((code) => ({ code })),
   };
 
   const overflowTarget = queue.overflowRule
@@ -148,12 +148,6 @@ export default function QueueDetailPage() {
             {queue.maxWaiting}
           </InfoRow>
         )}
-        {queue.timezone && (
-          <InfoRow icon={Clock} label={t('admin:queues.timezone')}>
-            {queue.timezone}
-          </InfoRow>
-        )}
-
         {/* SLA */}
         {queue.slaTargets && (
           <>
@@ -203,30 +197,6 @@ export default function QueueDetailPage() {
           </>
         )}
 
-        {/* Schedule */}
-        {queue.schedule.length > 0 && (
-          <>
-            <Separator className="my-2" />
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {t('admin:queues.hours')}
-            </p>
-            <InfoRow icon={Calendar} label={t('admin:queues.hours')}>
-              <div className="space-y-0.5">
-                {queue.schedule.map((entry) => (
-                  <div key={entry.day} className="flex items-center gap-2 text-xs">
-                    <span className="w-20 font-medium">{entry.day}</span>
-                    {entry.enabled ? (
-                      <span>{entry.open} &ndash; {entry.close}</span>
-                    ) : (
-                      <span className="text-muted-foreground">Closed</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </InfoRow>
-          </>
-        )}
-
         {/* Wrap-up */}
         {queue.wrapUp && (
           <>
@@ -243,19 +213,6 @@ export default function QueueDetailPage() {
           </>
         )}
 
-        {/* Disposition codes */}
-        {queue.dispositionCodes.length > 0 && (
-          <>
-            <Separator className="my-2" />
-            <InfoRow icon={Tags} label={t('admin:queues.dispositionCodes')}>
-              <div className="flex flex-wrap gap-1">
-                {queue.dispositionCodes.map((code) => (
-                  <Badge key={code} variant="outline">{code}</Badge>
-                ))}
-              </div>
-            </InfoRow>
-          </>
-        )}
       </div>
 
       {/* Agent membership */}
@@ -327,7 +284,6 @@ export default function QueueDetailPage() {
             name: values.name,
             isActive: values.isActive,
             maxWaiting: values.maxWaiting ? Number(values.maxWaiting) : undefined,
-            timezone: values.timezone || undefined,
             slaTargets: {
               answerWithinSeconds: values.answerWithinSeconds ? Number(values.answerWithinSeconds) : undefined,
               firstResponseWithinSeconds: values.firstResponseWithinSeconds ? Number(values.firstResponseWithinSeconds) : undefined,
@@ -341,9 +297,6 @@ export default function QueueDetailPage() {
               forceWrapUp: values.forceWrapUp,
             },
             requiredSkills: values.requiredSkills.map((s) => s.name),
-            schedule: values.schedule,
-            dispositionCodes: values.dispositions.map((d) => d.code),
-            agentIds: queue.agentIds,
           })
         }
       />
