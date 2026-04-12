@@ -134,7 +134,11 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
             </p>
           </div>
         </div>
-        <Badge data-testid="security-mfa-status" variant={me.mfaEnabled ? 'default' : 'secondary'}>
+        <Badge
+          data-testid="security-mfa-status"
+          data-status={me.mfaEnabled ? 'enabled' : 'disabled'}
+          variant={me.mfaEnabled ? 'default' : 'secondary'}
+        >
           {me.mfaEnabled ? t('common:status.enabled') : t('common:status.disabled')}
         </Badge>
       </div>
@@ -446,21 +450,33 @@ function PasswordSection({ locked }: Readonly<{ locked: boolean }>) {
         <div data-testid="security-password-checklist" className="space-y-1 rounded-md bg-muted p-3 text-sm">
           <p className="font-medium">{t('admin:security.password_policy_title')}</p>
           <ul className="space-y-0.5">
-            <li className={checks.length ? 'text-green-600' : 'text-muted-foreground'}>
+            <li
+              data-testid="security-password-rule-length"
+              className={checks.length ? 'text-green-600' : 'text-muted-foreground'}
+            >
               {checks.length ? '✓' : '○'} {t('admin:security.password_too_short', { n: effective.minLength })}
             </li>
             {effective.requireUppercase && (
-              <li className={checks.uppercase ? 'text-green-600' : 'text-muted-foreground'}>
+              <li
+                data-testid="security-password-rule-uppercase"
+                className={checks.uppercase ? 'text-green-600' : 'text-muted-foreground'}
+              >
                 {checks.uppercase ? '✓' : '○'} {t('admin:security.password_needs_uppercase')}
               </li>
             )}
             {effective.requireNumber && (
-              <li className={checks.number ? 'text-green-600' : 'text-muted-foreground'}>
+              <li
+                data-testid="security-password-rule-number"
+                className={checks.number ? 'text-green-600' : 'text-muted-foreground'}
+              >
                 {checks.number ? '✓' : '○'} {t('admin:security.password_needs_number')}
               </li>
             )}
             {effective.requireSpecial && (
-              <li className={checks.special ? 'text-green-600' : 'text-muted-foreground'}>
+              <li
+                data-testid="security-password-rule-special"
+                className={checks.special ? 'text-green-600' : 'text-muted-foreground'}
+              >
                 {checks.special ? '✓' : '○'} {t('admin:security.password_needs_special')}
               </li>
             )}
@@ -577,7 +593,10 @@ function SessionRow({
   const created = new Date(session.createdAt).toLocaleString();
 
   return (
-    <tr className="border-b last:border-0 hover:bg-muted/30">
+    <tr
+      className="border-b last:border-0 hover:bg-muted/30"
+      data-current={session.isCurrentSession ? 'true' : 'false'}
+    >
       <td className="px-3 py-2">
         <div className="flex items-center gap-2">
           {device}
