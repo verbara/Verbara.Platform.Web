@@ -58,8 +58,8 @@ const ACTION_COLORS: Record<string, string> = {
   HardBlock: 'text-destructive',
 };
 
-function formatBytes(bytes: number | null): string {
-  if (bytes === null || bytes === 0) return '—';
+function formatBytes(bytes: number | null | undefined): string {
+  if (bytes === null || bytes === undefined || bytes === 0) return '—';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let val = bytes;
   let idx = 0;
@@ -72,13 +72,13 @@ function formatBytes(bytes: number | null): string {
 
 interface QuotaRowProps {
   label: string;
-  limit: number | null;
+  limit: number | null | undefined;
   usage?: number;
-  formatter?: (v: number | null) => string;
+  formatter?: (v: number | null | undefined) => string;
 }
 
 function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
-  const fmt = formatter ?? ((v: number | null) => v?.toLocaleString() ?? '—');
+  const fmt = formatter ?? ((v: number | null | undefined) => v?.toLocaleString() ?? '—');
   const pct = limit && limit > 0 ? Math.min(100, (usage / limit) * 100) : 0;
   const color = pct >= 90 ? 'bg-destructive' : pct >= 70 ? 'bg-warning' : 'bg-brand';
 
@@ -90,7 +90,7 @@ function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
           {usage.toLocaleString()} / {fmt(limit)}
         </span>
       </div>
-      {limit !== null && limit > 0 && (
+      {limit != null && limit > 0 && (
         <div className="h-2 rounded-full bg-muted">
           <div
             className={`h-full rounded-full transition-all ${color}`}
