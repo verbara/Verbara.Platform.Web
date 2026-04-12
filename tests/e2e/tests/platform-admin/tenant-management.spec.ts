@@ -7,8 +7,8 @@ test.describe('Tenant Management', () => {
   });
 
   test('should display tenant list with platform and demo', async ({ platformAdminPage: page }) => {
-    await expect(page.getByText('platform')).toBeVisible();
-    await expect(page.getByText('demo')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'platform', exact: true })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'demo', exact: true })).toBeVisible();
   });
 
   test('should display correct table columns', async ({ platformAdminPage: page }) => {
@@ -20,7 +20,7 @@ test.describe('Tenant Management', () => {
 
   test('should filter tenants by search', async ({ platformAdminPage: page }) => {
     await page.getByTestId('data-table-search').fill('demo');
-    await expect(page.getByText('demo')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'demo', exact: true })).toBeVisible();
   });
 
   test('should create a new tenant', async ({ platformAdminPage: page, authenticatedApiContext }) => {
@@ -29,6 +29,7 @@ test.describe('Tenant Management', () => {
     await page.getByTestId('tenants-form-tenantId').fill(tenantId);
     await page.getByTestId('tenants-form-name').fill('E2E Test Tenant');
     await page.getByTestId('tenants-form-submit').click();
+    await page.getByTestId('data-table-search').fill(tenantId);
 
     await expect(page.getByText(tenantId)).toBeVisible();
 
@@ -50,6 +51,7 @@ test.describe('Tenant Management', () => {
     const tenantId = `e2e-edit-${Date.now()}`;
     await api.createTenant({ tenantId, name: 'Edit Me' });
     await page.reload();
+    await page.getByTestId('data-table-search').fill(tenantId);
 
     await page.getByTestId(`tenant-edit-${tenantId}`).click();
     await page.getByTestId('tenants-edit-name').clear();
@@ -66,9 +68,11 @@ test.describe('Tenant Management', () => {
     const tenantId = `e2e-suspend-${Date.now()}`;
     await api.createTenant({ tenantId, name: 'Suspend Me' });
     await page.reload();
+    await page.getByTestId('data-table-search').fill(tenantId);
 
     await page.getByTestId(`tenant-edit-${tenantId}`).click();
-    await page.getByTestId('tenants-edit-status').selectOption('suspended');
+    await page.getByTestId('tenants-edit-status').click();
+    await page.getByRole('option', { name: 'Suspended' }).click();
     await page.getByTestId('tenants-edit-submit').click();
 
     await expect(page.getByTestId(`tenant-status-${tenantId}`)).toContainText(/suspended/i);
@@ -81,13 +85,16 @@ test.describe('Tenant Management', () => {
     const tenantId = `e2e-reactivate-${Date.now()}`;
     await api.createTenant({ tenantId, name: 'Reactivate Me' });
     await page.reload();
+    await page.getByTestId('data-table-search').fill(tenantId);
 
     await page.getByTestId(`tenant-edit-${tenantId}`).click();
-    await page.getByTestId('tenants-edit-status').selectOption('suspended');
+    await page.getByTestId('tenants-edit-status').click();
+    await page.getByRole('option', { name: 'Suspended' }).click();
     await page.getByTestId('tenants-edit-submit').click();
 
     await page.getByTestId(`tenant-edit-${tenantId}`).click();
-    await page.getByTestId('tenants-edit-status').selectOption('active');
+    await page.getByTestId('tenants-edit-status').click();
+    await page.getByRole('option', { name: 'Active' }).click();
     await page.getByTestId('tenants-edit-submit').click();
 
     await expect(page.getByTestId(`tenant-status-${tenantId}`)).toContainText(/active/i);
@@ -100,9 +107,10 @@ test.describe('Tenant Management', () => {
     const tenantId = `e2e-delete-${Date.now()}`;
     await api.createTenant({ tenantId, name: 'Delete Me' });
     await page.reload();
+    await page.getByTestId('data-table-search').fill(tenantId);
 
     await page.getByTestId(`tenant-delete-${tenantId}`).click();
-    const confirmBtn = page.getByTestId('confirm-dialog-confirm');
+    const confirmBtn = page.getByTestId('confirm-delete-btn');
     await expect(confirmBtn).toBeDisabled();
     await page.waitForTimeout(3500);
     await expect(confirmBtn).toBeEnabled();
@@ -124,19 +132,7 @@ test.describe('Tenant Management', () => {
   });
 
   test('should navigate to billing via Manage Billing action', async ({ platformAdminPage: page }) => {
-    // Find the demo tenant row and open the dropdown
-    const demoRow = page.getByText('demo').locator('..').locator('..');
-    const dropdownTrigger = demoRow.locator('[data-testid^="tenant-"]').first();
-
-    // Try clicking the dropdown to find Manage Billing
-    // Alternative: look for a direct "Manage Billing" text
-    await page.getByText('Manage Billing').first().click({ timeout: 5000 }).catch(async () => {
-      // If not directly visible, open dropdown first
-      const moreBtn = demoRow.getByRole('button').last();
-      await moreBtn.click();
-      await page.getByText('Manage Billing').click();
-    });
-
+    await page.getByTestId('tenant-billing-demo').click();
     await expect(page).toHaveURL(/\/admin\/billing\/rate-cards/);
   });
 });

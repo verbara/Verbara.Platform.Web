@@ -23,6 +23,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import {
   Dialog,
   DialogContent,
@@ -368,19 +369,13 @@ export default function TenantsPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Delete confirm dialog */}
-      <ConfirmDialog
+      {/* Delete confirm dialog (3s countdown) */}
+      <ConfirmDeleteDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-        title="Delete Tenant"
-        description={
-          <>
-            Are you sure you want to delete{' '}
-            <span className="font-semibold">{deleteTarget?.name}</span>? This action will mark the tenant as deleted.
-          </>
-        }
-        confirmLabel="Delete"
         onConfirm={handleDeleteConfirm}
+        entityName={deleteTarget?.name ?? ''}
+        entityType="tenant"
       />
 
       {/* Suspend confirm dialog */}
