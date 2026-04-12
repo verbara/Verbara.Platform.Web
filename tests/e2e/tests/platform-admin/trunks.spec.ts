@@ -19,6 +19,8 @@ test.describe('Trunks', () => {
     const created = await res.json();
 
     await page.reload();
+    // Paginated list — filter to ensure visibility regardless of leftover rows.
+    await page.getByTestId('trunks-search').fill(name);
     await expect(page.getByText(name)).toBeVisible();
 
     await api.deleteTrunk(created.id);
@@ -34,8 +36,10 @@ test.describe('Trunks', () => {
     await page.getByTestId('trunk-form-maxChannels').clear();
     await page.getByTestId('trunk-form-maxChannels').fill('30');
     await page.getByTestId('trunk-form-submit').click();
-    await page.waitForTimeout(600);
 
+    // Paginated list; filter by name to make the assertion deterministic
+    // regardless of leftover rows from prior runs.
+    await page.getByTestId('trunks-search').fill(name);
     await expect(page.getByText(name)).toBeVisible();
 
     const trunks = await api.listTrunks();
@@ -82,6 +86,14 @@ test.describe('Trunks', () => {
     const created = await res.json();
 
     await page.reload();
+    // Filter so the delete button for this specific trunk is always rendered.
+    // Wait for the debounced search (300ms) to settle and the row to appear in
+    // the filtered view before clicking — this keeps the subsequent delete flow
+    // deterministic against the paginated table.
+    await page.getByTestId('trunks-search').fill(name);
+    await expect(
+      page.getByTestId('data-table').getByText(name),
+    ).toBeVisible();
     await page.getByTestId(`delete-trunk-${created.id}`).click();
 
     const confirmBtn = page.getByTestId('confirm-delete-btn');
@@ -89,9 +101,15 @@ test.describe('Trunks', () => {
     await page.waitForTimeout(3500);
     await expect(confirmBtn).toBeEnabled();
     await confirmBtn.click();
-    await page.waitForTimeout(600);
 
-    await expect(page.getByText(name)).not.toBeVisible();
+    // Clear the search so the table re-renders from the (freshly invalidated)
+    // allTrunks list rather than the stale by-name query; verify the row is
+    // gone. The toast message also quotes the trunk name, so scope the
+    // visibility assertion to the table.
+    await page.getByTestId('trunks-search').fill('');
+    await expect(
+      page.getByTestId('data-table').getByText(name),
+    ).not.toBeVisible();
   });
 
   test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
