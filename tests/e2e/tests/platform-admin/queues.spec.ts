@@ -22,13 +22,17 @@ test.describe('Queues', () => {
     await page.getByTestId('queues-create-btn').click();
     await page.getByTestId('queue-form-name').fill(name);
     await page.getByTestId('queue-form-submit').click();
-    await page.waitForTimeout(600);
 
+    // The list is paginated (10 per page) and ordered by createdAt ascending,
+    // so the newly-created row may land on a later page. Filter by name via
+    // the search input to make the assertion deterministic regardless of how
+    // much leftover data exists from prior runs.
+    await page.getByTestId('data-table-search').fill(name);
     await expect(page.getByText(name)).toBeVisible();
 
     const queues = await api.listQueues();
     const created = queues.find((q: any) => q.name === name);
-    if (created) await api.deleteQueue(created.queueId);
+    if (created) await api.deleteQueue(created.id);
   });
 
   test('should search queues', async ({ platformAdminPage: page, authenticatedApiContext }) => {
@@ -43,7 +47,7 @@ test.describe('Queues', () => {
 
     const queues = await api.listQueues();
     const created = queues.find((q: any) => q.name === name);
-    if (created) await api.deleteQueue(created.queueId);
+    if (created) await api.deleteQueue(created.id);
   });
 
   test('should navigate to queue detail', async ({ platformAdminPage: page, authenticatedApiContext }) => {
@@ -55,10 +59,13 @@ test.describe('Queues', () => {
 
     await page.reload();
 
+    // Filter to the specific queue — with leftover data from prior runs,
+    // the row may not be on page 1.
+    await page.getByTestId('data-table-search').fill(name);
     await page.getByText(name).click();
     await expect(page).toHaveURL(/\/admin\/queues\//);
 
-    await api.deleteQueue(created.queueId);
+    await api.deleteQueue(created.id);
   });
 
   test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
