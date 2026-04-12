@@ -579,12 +579,22 @@ export default function ClusterPage() {
         </CollapsibleSection>
       )}
 
-      {/* Platform Instances */}
-      {instances.length > 0 && (
-        <CollapsibleSection
-          title={`Platform Instances (${instances.length})`}
-          testId="cluster-instances"
-        >
+      {/* Platform Instances — always rendered (with empty state) so platform
+          admins always have a visual for their instance registry. The section
+          was previously conditional on `instances.length > 0`, which hid it on
+          fresh installs where no Platform.Api replica has registered yet. */}
+      <CollapsibleSection
+        title={`Platform Instances (${instances.length})`}
+        testId="cluster-instances"
+      >
+        {instances.length === 0 ? (
+          <div
+            className="rounded-lg border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground"
+            data-testid="cluster-instances-empty"
+          >
+            No Platform.Api instances have registered yet. Instances self-register via the cluster transport on startup.
+          </div>
+        ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {instances.map((inst) => (
               <div key={inst.instanceId} className="rounded-lg border bg-card p-4 space-y-2">
@@ -608,8 +618,8 @@ export default function ClusterPage() {
               </div>
             ))}
           </div>
-        </CollapsibleSection>
-      )}
+        )}
+      </CollapsibleSection>
 
       {/* Sheets & Dialogs */}
       <AddNodeSheet open={addOpen} onOpenChange={setAddOpen} />
