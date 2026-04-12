@@ -38,7 +38,7 @@ test.describe('Surveys', () => {
     const api = new ApiHelper(authenticatedApiContext);
     const name = `E2E Delete Survey ${Date.now()}`;
 
-    const res = await api.createSurvey({ name, type: 'PostConversation' });
+    const res = await api.createSurvey({ name, type: 'Csat', questions: [] });
     const created = await res.json();
 
     await page.reload();
