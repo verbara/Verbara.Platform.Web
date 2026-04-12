@@ -39,7 +39,15 @@ const PATTERN_TYPE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> 
   regex: 'outline',
 };
 
-function SortableRow({ route, trunkMap }: { route: OutboundRouteSummary; trunkMap: Map<number, string> }) {
+function SortableRow({
+  route,
+  trunkMap,
+  onDelete,
+}: Readonly<{
+  route: OutboundRouteSummary;
+  trunkMap: Map<number, string>;
+  onDelete: (route: OutboundRouteSummary) => void;
+}>) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: route.id,
   });
@@ -71,6 +79,19 @@ function SortableRow({ route, trunkMap }: { route: OutboundRouteSummary; trunkMa
       <td className="px-3 py-2 font-mono text-muted-foreground">#{route.priority}</td>
       <td className="px-3 py-2">{trunkName ?? route.trunkId}</td>
       <td className="px-3 py-2 font-mono">{route.dialPrefix ?? <span className="text-muted-foreground">&mdash;</span>}</td>
+      <td className="px-3 py-2 text-right">
+        <Button
+          variant="ghost"
+          size="icon"
+          data-testid={`delete-route-${route.id}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(route);
+          }}
+        >
+          <Trash2 className="h-4 w-4 text-destructive" />
+        </Button>
+      </td>
     </tr>
   );
 }
@@ -234,11 +255,17 @@ export default function RoutesPage() {
                       <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Priority</th>
                       <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Trunk</th>
                       <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Prefix</th>
+                      <th className="w-12 px-3 py-2" />
                     </tr>
                   </thead>
                   <tbody>
                     {orderedRoutes.map((route) => (
-                      <SortableRow key={route.id} route={route} trunkMap={trunkMap} />
+                      <SortableRow
+                        key={route.id}
+                        route={route}
+                        trunkMap={trunkMap}
+                        onDelete={setDeletingRoute}
+                      />
                     ))}
                   </tbody>
                 </table>

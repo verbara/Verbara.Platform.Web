@@ -32,9 +32,10 @@ test.describe('Routes', () => {
   test('should create a route', async ({ platformAdminPage: page, authenticatedApiContext }) => {
     const api = new ApiHelper(authenticatedApiContext);
     const trunkName = `e2e-create-route-trunk-${Date.now()}`;
+    const trunkDisplayName = `E2E Route Trunk ${Date.now()}`;
     const pattern = `9${Date.now()}`;
 
-    const trunkRes = await api.createTrunk({ name: trunkName, displayName: 'Create Route Trunk', type: 'SIP', maxChannels: 10 });
+    const trunkRes = await api.createTrunk({ name: trunkName, displayName: trunkDisplayName, type: 'SIP', maxChannels: 10 });
     const trunk = await trunkRes.json();
 
     await page.reload();
@@ -42,9 +43,18 @@ test.describe('Routes', () => {
     await page.getByTestId('route-form-pattern').fill(pattern);
     await page.getByTestId('route-form-priority').clear();
     await page.getByTestId('route-form-priority').fill('1');
-    await page.getByTestId('route-form-submit').click();
-    await page.waitForTimeout(600);
 
+    // Trunk is a required Zod field — pick the one we just created via the
+    // shadcn Select (role=combobox / role=option, not native <select>).
+    // The select renders displayName, not name.
+    await page.getByTestId('route-form-trunkId').click();
+    await page.getByRole('option', { name: trunkDisplayName }).click();
+
+    await page.getByTestId('route-form-submit').click();
+
+    // Routes render in a sortable (dnd-kit) list for manage-capable users —
+    // no pagination, all rows in the DOM. Playwright finds any matching
+    // text regardless of scroll position, so a direct assertion is enough.
     await expect(page.getByText(pattern)).toBeVisible();
 
     const routes = await api.listRoutes();
@@ -65,6 +75,7 @@ test.describe('Routes', () => {
     const route = await routeRes.json();
 
     await page.reload();
+    // Sortable (non-paginated) list — the delete button is always in the DOM.
     await page.getByTestId(`delete-route-${route.id}`).click();
 
     const confirmBtn = page.getByTestId('confirm-delete-btn');
@@ -72,7 +83,6 @@ test.describe('Routes', () => {
     await page.waitForTimeout(3500);
     await expect(confirmBtn).toBeEnabled();
     await confirmBtn.click();
-    await page.waitForTimeout(600);
 
     await api.deleteTrunk(trunk.id);
   });
