@@ -21,7 +21,7 @@ import {
   SelectItem,
   SelectValue,
 } from '@/core/ui/select';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import {
   useRoles,
   useCreateRole,
@@ -121,7 +121,7 @@ export default function RolesPage() {
                 <td className="px-4 py-2.5 text-muted-foreground">
                   {role.sourceTemplateId ?? t('admin:roles.custom', 'Custom')}
                 </td>
-                <td className="px-4 py-2.5">{role.permissions.length}</td>
+                <td className="px-4 py-2.5">{role.permissions?.length ?? 0}</td>
                 <td className="px-4 py-2.5">{role.userCount ?? 0}</td>
                 <td className="px-4 py-2.5">
                   <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
@@ -238,17 +238,12 @@ export default function RolesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
-      <ConfirmDialog
+      {/* Delete Confirmation — 3s countdown matches the app-wide destructive pattern
+          (tenants, teams, billing, surveys). Replaces the previous instant ConfirmDialog
+          which was the only destructive action in the admin UI that skipped the delay. */}
+      <ConfirmDeleteDialog
         open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-        title={t('admin:roles.delete_title', 'Delete Role')}
-        description={
-          <>
-            Are you sure you want to delete <strong>{deleteTarget?.name}</strong>? Users assigned
-            this role will lose these permissions.
-          </>
-        }
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
         onConfirm={() => {
           if (deleteTarget) {
             deleteRole.mutate(deleteTarget.id, {
@@ -256,8 +251,9 @@ export default function RolesPage() {
             });
           }
         }}
-        confirmLabel={t('actions.delete', 'Delete')}
-        variant="destructive"
+        entityName={deleteTarget?.name ?? ''}
+        entityType="role"
+        isPending={deleteRole.isPending}
       />
     </div>
   );

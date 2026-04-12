@@ -19,9 +19,8 @@ test.describe('Roles', () => {
     await page.getByTestId('role-form-name').fill(name);
     await page.getByTestId('role-form-description').fill('Test role from E2E');
     await page.getByTestId('role-form-submit').click();
-    await page.waitForTimeout(600);
 
-    await expect(page.getByText(name)).toBeVisible();
+    await expect(page.getByText(name)).toBeVisible({ timeout: 5000 });
 
     const roles = await api.listRoles();
     const list = Array.isArray(roles) ? roles : roles.items || [];
@@ -43,9 +42,8 @@ test.describe('Roles', () => {
     await page.getByTestId('role-clone-name').clear();
     await page.getByTestId('role-clone-name').fill(cloneName);
     await page.getByTestId('role-clone-submit').click();
-    await page.waitForTimeout(600);
 
-    await expect(page.getByText(cloneName)).toBeVisible();
+    await expect(page.getByText(cloneName)).toBeVisible({ timeout: 5000 });
 
     // Cleanup both
     const roles = await api.listRoles();
@@ -55,7 +53,7 @@ test.describe('Roles', () => {
     await api.deleteRole(created.roleId);
   });
 
-  test('should delete a non-default role', async ({ platformAdminPage: page, authenticatedApiContext }) => {
+  test('should delete a non-default role with 3s confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
     const api = new ApiHelper(authenticatedApiContext);
     const name = `E2E Del Role ${Date.now()}`;
 
@@ -64,11 +62,23 @@ test.describe('Roles', () => {
 
     await page.reload();
 
+    // Roles table is not paginated server-side, but we still target the row by its
+    // generated testid rather than the role's name text to avoid any locale drift.
     await page.getByTestId(`delete-role-${created.roleId}`).click();
-    await page.getByTestId('confirm-dialog-confirm').click();
-    await page.waitForTimeout(600);
 
-    await expect(page.getByText(name)).not.toBeVisible();
+    // ConfirmDeleteDialog carries a 3-second countdown — the destructive pattern
+    // used across tenants / teams / billing / surveys. Roles was the last holdout
+    // on the instant ConfirmDialog; this test locks in the new behavior.
+    const confirmBtn = page.getByTestId('confirm-delete-btn');
+    await expect(confirmBtn).toBeDisabled();
+    await page.waitForTimeout(3500);
+    await expect(confirmBtn).toBeEnabled();
+    await confirmBtn.click();
+
+    // The row carries the `delete-role-${roleId}` action button — wait for that
+    // testid to disappear rather than matching role name text, which briefly
+    // co-exists in both the deleted row and the success toast (strict-mode violation).
+    await expect(page.getByTestId(`delete-role-${created.roleId}`)).toHaveCount(0, { timeout: 5000 });
   });
 
   test('should navigate to role detail on row click', async ({ platformAdminPage: page, authenticatedApiContext }) => {
@@ -80,6 +90,7 @@ test.describe('Roles', () => {
 
     await page.reload();
 
+    await expect(page.getByText(name)).toBeVisible({ timeout: 5000 });
     await page.getByText(name).click();
     await expect(page).toHaveURL(/\/admin\/roles\//);
 
