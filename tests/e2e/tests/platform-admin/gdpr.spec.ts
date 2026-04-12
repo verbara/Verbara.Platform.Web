@@ -96,19 +96,22 @@ test.describe('GDPR Data Management', () => {
     // Verify we're on a different page
     await expect(page).toHaveURL(/\/admin\/tenants/);
 
-    // Expand compliance group in sidebar if needed
+    // Wait for the sidebar to render before interacting with it. The
+    // Compliance group collapses when the active route is elsewhere
+    // (active-route locking keeps only the current group expanded), so we must
+    // click its header to reveal the GDPR link. Using `isVisible()` without an
+    // explicit wait races against the layout mount and silently no-ops.
     const complianceGroup = page.getByTestId('sidebar-group-compliance');
-    if (await complianceGroup.isVisible()) {
-      // Group might be collapsed, click to expand
-      const gdprLink = page.getByTestId('sidebar-link-gdpr');
-      const isVisible = await gdprLink.isVisible().catch(() => false);
-      if (!isVisible) {
-        await complianceGroup.click();
-      }
+    await expect(complianceGroup).toBeVisible();
+
+    const gdprLink = page.getByTestId('sidebar-link-gdpr');
+    if (!(await gdprLink.isVisible())) {
+      await complianceGroup.click();
+      await expect(gdprLink).toBeVisible();
     }
 
     // Click GDPR link in sidebar
-    await page.getByTestId('sidebar-link-gdpr').click();
+    await gdprLink.click();
 
     // Verify navigation
     await expect(page).toHaveURL(/\/admin\/gdpr/);
