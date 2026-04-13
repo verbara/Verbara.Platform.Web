@@ -8,19 +8,19 @@ test.describe('Auth Config', () => {
 
   test('should display MFA policy section', async ({ platformAdminPage: page }) => {
     await expect(page.getByTestId('auth-config-mfa-optional')).toBeVisible();
-    await expect(page.getByTestId('auth-config-mfa-required-roles')).toBeVisible();
-    await expect(page.getByTestId('auth-config-mfa-required-all')).toBeVisible();
+    await expect(page.getByTestId('auth-config-mfa-required_for_roles')).toBeVisible();
+    await expect(page.getByTestId('auth-config-mfa-required_all')).toBeVisible();
   });
 
   test('should change and save MFA policy', async ({ platformAdminPage: page, authenticatedApiContext }) => {
     const api = new ApiHelper(authenticatedApiContext);
     const original = await api.getAuthConfig();
 
-    await page.getByTestId('auth-config-mfa-required-all').click();
+    await page.getByTestId('auth-config-mfa-required_all').click();
     await page.getByTestId('auth-config-save').click();
 
     await page.reload();
-    await expect(page.getByTestId('auth-config-mfa-required-all')).toBeChecked();
+    await expect(page.getByTestId('auth-config-mfa-required_all')).toBeChecked();
 
     await api.updateAuthConfig(original);
   });
