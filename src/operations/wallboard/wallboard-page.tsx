@@ -31,9 +31,15 @@ export default function WallboardPage() {
     <div className="space-y-6" data-testid="wallboard-page">
       <GlobalKpis totalActive={totalActive} totalAgents={totalAgents} globalSla={globalSla} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="wallboard-queue-cards">
-        {sortedQueues.map((q) => (
-          <QueueCard key={q.queueId} queue={q} />
-        ))}
+        {sortedQueues.length === 0 ? (
+          <div className="col-span-full rounded-lg border border-dashed p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              No queue metrics yet. Cards will appear once calls are routed.
+            </p>
+          </div>
+        ) : (
+          sortedQueues.map((q) => <QueueCard key={q.queueId} queue={q} />)
+        )}
       </div>
 
       {liveStates.length > 0 && (
