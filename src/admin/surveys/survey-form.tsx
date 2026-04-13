@@ -68,16 +68,23 @@ const QUESTION_TYPES: QuestionType[] = ['Scale', 'FreeText', 'Choice'];
 function mapSurveyToForm(survey: Survey): SurveyFormValues {
   return {
     name: survey.name,
-    type: survey.type,
+    type: normalizeSurveyType(survey.type),
     isActive: survey.isActive,
-    questions: survey.questions.map((q) => ({
-      id: q.id,
+    questions: survey.questions.map((q, i) => ({
+      id: nextQuestionId(),
       text: q.text,
       type: q.type,
       options: q.options?.join(', '),
-      order: q.order,
+      order: i,
     })),
   };
+}
+
+function normalizeSurveyType(type: SurveyType): 'CSAT' | 'NPS' | 'Custom' {
+  const upper = (type as string).toUpperCase();
+  if (upper === 'CSAT') return 'CSAT';
+  if (upper === 'NPS') return 'NPS';
+  return 'Custom';
 }
 
 const DEFAULT_VALUES: SurveyFormValues = {

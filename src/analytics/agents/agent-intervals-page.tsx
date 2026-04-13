@@ -4,7 +4,11 @@ import { PageHeader } from '@/admin/shared/page-header';
 
 function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof useAgentIntervals>['data'] & object[] }) {
   if (intervals.length === 0) {
-    return <p className="text-sm text-muted-foreground">No agent interval data for this period.</p>;
+    return (
+      <div data-testid="agent-intervals-table" className="rounded-lg border border-dashed p-8 text-center">
+        <p className="text-sm text-muted-foreground">No agent interval data for this period.</p>
+      </div>
+    );
   }
   return (
     <div className="rounded-lg border" data-testid="agent-intervals-table">

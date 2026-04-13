@@ -120,6 +120,10 @@ export default function DiagnosticsPage() {
           {clusterStatus && (
             <>
               <div className="flex justify-between">
+                <span className="text-muted-foreground">Nodes</span>
+                <span>{clusterStatus.nodes?.length ?? 0}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-muted-foreground">Total Channels</span>
                 <span>{clusterStatus.totalChannels}</span>
               </div>

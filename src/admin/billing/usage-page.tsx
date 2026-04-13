@@ -180,7 +180,7 @@ export default function UsagePage() {
       )}
 
       {/* Detailed Records */}
-      <div>
+      <div data-testid="usage-records-section">
         <h3 className="mb-3 text-sm font-medium">Detailed records</h3>
         <DataTable
           data={records}

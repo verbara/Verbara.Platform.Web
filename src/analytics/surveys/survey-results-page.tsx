@@ -156,7 +156,7 @@ const NO_SELECTION = '__none__';
 
 export default function SurveyResultsPage() {
   const { t } = useTranslation('analytics');
-  const [selectedSurveyId, setSelectedSurveyId] = useState<number | undefined>(undefined);
+  const [selectedSurveyId, setSelectedSurveyId] = useState<string | undefined>(undefined);
 
   const { data: surveys = [] } = useSurveys();
   const { data: summary, isLoading: summaryLoading } = useSurveySummary(selectedSurveyId);
@@ -174,9 +174,9 @@ export default function SurveyResultsPage() {
       <div className="flex items-center gap-3" data-testid="survey-results-selector">
         <ClipboardList className="h-4 w-4 text-muted-foreground shrink-0" />
         <Select
-          value={selectedSurveyId !== undefined ? String(selectedSurveyId) : NO_SELECTION}
+          value={selectedSurveyId ?? NO_SELECTION}
           onValueChange={(v) =>
-            setSelectedSurveyId(v === NO_SELECTION ? undefined : Number(v))
+            setSelectedSurveyId(v === NO_SELECTION || !v ? undefined : v)
           }
         >
           <SelectTrigger className="w-72">
@@ -185,7 +185,7 @@ export default function SurveyResultsPage() {
           <SelectContent>
             <SelectItem value={NO_SELECTION}>{t('surveys.selectSurvey')}</SelectItem>
             {surveys.map((s) => (
-              <SelectItem key={s.id} value={String(s.id)}>
+              <SelectItem key={s.id} value={s.id}>
                 {s.name}
               </SelectItem>
             ))}

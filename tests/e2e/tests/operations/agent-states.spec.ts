@@ -14,7 +14,9 @@ test.describe('Agent States', () => {
   });
 
   test('should display page header with title', async ({ platformAdminPage: page }) => {
-    await expect(page.getByText(/estados de agentes/i)).toBeVisible();
+    await expect(
+      page.getByTestId('agent-states-page').getByRole('heading', { name: /estados de agentes/i }),
+    ).toBeVisible();
   });
 
   test('should navigate via sidebar', async ({ platformAdminPage: page }) => {

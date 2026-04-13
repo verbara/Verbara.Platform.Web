@@ -31,7 +31,7 @@ test.describe('Surveys', () => {
 
     const surveys = await api.listSurveys();
     const created = surveys.find((s: any) => s.name === name);
-    if (created) await api.deleteSurvey(created.surveyId);
+    if (created) await api.deleteSurvey(created.id);
   });
 
   test('should delete a survey with 3s confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
@@ -43,7 +43,7 @@ test.describe('Surveys', () => {
 
     await page.reload();
 
-    await page.getByTestId(`delete-survey-${created.surveyId}`).click();
+    await page.getByTestId(`delete-survey-${created.id}`).click();
 
     const confirmBtn = page.getByTestId('confirm-delete-btn');
     await expect(confirmBtn).toBeDisabled();

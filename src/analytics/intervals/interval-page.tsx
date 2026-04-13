@@ -194,7 +194,10 @@ export default function IntervalPage() {
       )}
 
       {!isLoading && sorted.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 py-16 dark:border-slate-700">
+        <div
+          data-testid="interval-table"
+          className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 py-16 dark:border-slate-700"
+        >
           <p className="text-sm text-muted-foreground">{t('intervals.empty')}</p>
         </div>
       )}

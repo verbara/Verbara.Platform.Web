@@ -62,7 +62,12 @@ test.describe('Billing — Quotas', () => {
     await page.getByTestId('edit-quota').click();
     await page.getByTestId('quota-channels').clear();
     await page.getByTestId('quota-channels').fill('500');
-    await page.getByTestId('quota-submit').click();
+
+    const [saveResponse] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/quota') && r.request().method() === 'PUT'),
+      page.getByTestId('quota-submit').click(),
+    ]);
+    expect(saveResponse.ok()).toBe(true);
 
     const status = await api.getQuotaStatus(TENANT_ID);
     expect(status.quota.maxConcurrentChannels).toBe(500);

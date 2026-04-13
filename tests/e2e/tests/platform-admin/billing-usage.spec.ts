@@ -28,7 +28,7 @@ test.describe('Billing — Usage Dashboard', () => {
   });
 
   test('should show detailed records section', async ({ platformAdminPage: page }) => {
-    await expect(page.getByText('Detailed records')).toBeVisible();
+    await expect(page.getByTestId('usage-records-section')).toBeVisible();
     await expect(page.getByTestId('data-table')).toBeVisible();
   });
 
