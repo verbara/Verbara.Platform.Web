@@ -33,8 +33,12 @@ export function useSSE() {
       try {
         const data = JSON.parse(e.data) as {
           conversationId: string;
+          agentId: string;
           contactName: string;
         };
+        const currentUserId = useAuthStore.getState().user?.id;
+        if (!currentUserId || data.agentId !== currentUserId) return;
+
         const isInAgentRoute = window.location.pathname.startsWith('/agent');
 
         toast.info(`New conversation from ${data.contactName}`, {
@@ -169,7 +173,12 @@ export function useSSE() {
 
         queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
-        if (data.severity === 'Critical') {
+        const validSeverities = ['Info', 'Warning', 'Critical'] as const;
+        const severity = validSeverities.includes(data.severity as (typeof validSeverities)[number])
+          ? data.severity
+          : 'Info';
+
+        if (severity === 'Critical') {
           toast.error(data.title, {
             description: data.body,
             duration: 10000,
@@ -177,10 +186,10 @@ export function useSSE() {
               ? { label: 'View', onClick: () => navigate(data.actionUrl!) }
               : undefined,
           });
-        } else if (data.severity === 'Warning') {
+        } else if (severity === 'Warning') {
           toast.warning(data.title, { description: data.body, duration: 6000 });
         }
-        // Info: silent, only bell badge updates via invalidation
+        // Info / unknown: silent, only bell badge updates via invalidation
 
         handlers['notification.created']?.forEach((h) => h(data));
       } catch {
