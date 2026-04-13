@@ -5,6 +5,7 @@ import { useUiStore } from '@/core/stores/ui-store';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -42,6 +43,7 @@ export function UserMenu() {
         render={(props) => (
           <button
             {...props}
+            data-testid="user-menu-trigger"
             className="flex h-10 w-10 items-center justify-center rounded-md text-rail-icon hover:bg-slate-800 hover:text-rail-icon-active"
           />
         )}
@@ -53,7 +55,9 @@ export function UserMenu() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right" align="end" className="w-48">
-        <DropdownMenuLabel>{user?.displayName ?? 'User'}</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{user?.displayName ?? 'User'}</DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
@@ -77,7 +81,7 @@ export function UserMenu() {
           <Lock className="mr-2 h-4 w-4" /> {t('admin:sidebar.security')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-critical">
+        <DropdownMenuItem data-testid="user-menu-logout" onClick={handleLogout} className="text-critical">
           <LogOut className="mr-2 h-4 w-4" /> {t('auth.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>

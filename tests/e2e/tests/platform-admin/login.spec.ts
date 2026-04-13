@@ -46,7 +46,8 @@ test.describe('Login', () => {
   });
 
   test('should show validation on empty fields', async ({ page }) => {
-    await page.getByTestId('login-submit').click();
+    // Submit button stays disabled until email + password are filled.
+    await expect(page.getByTestId('login-submit')).toBeDisabled();
     await expect(page).toHaveURL(/\/login/);
   });
 
@@ -56,7 +57,8 @@ test.describe('Login', () => {
     await page.getByTestId('login-submit').click();
     await expect(page).not.toHaveURL(/\/login/);
 
-    await page.getByRole('button', { name: /logout|sign out/i }).click();
+    await page.getByTestId('user-menu-trigger').click();
+    await page.getByTestId('user-menu-logout').click();
     await expect(page).toHaveURL(/\/login/);
 
     await page.goto('/admin/tenants');
