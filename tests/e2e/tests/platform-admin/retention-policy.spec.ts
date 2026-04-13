@@ -36,8 +36,8 @@ test.describe('Retention Policy', () => {
     const switches = sheet.getByRole('switch');
     await expect(switches).toHaveCount(4);
 
-    await expect(sheet.getByText('Conversation')).toBeVisible();
-    await expect(sheet.getByText('Auth Event')).toBeVisible();
+    await expect(sheet.getByText('Conversation Retention')).toBeVisible();
+    await expect(sheet.getByText('Auth Event Retention')).toBeVisible();
   });
 
   test('should toggle field on and show input', async ({
