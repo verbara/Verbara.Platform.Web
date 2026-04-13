@@ -26,35 +26,41 @@ export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
 
   return (
     <div className="space-y-0">
-      {entries.map((entry, i) => (
-        <div key={entry.id} className="flex gap-3 pb-4">
-          {/* Timeline line */}
-          <div className="flex flex-col items-center">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
-              <Clock className="h-3 w-3 text-muted-foreground" />
+      {entries.map((entry, i) => {
+        const meta = entry.metadata ?? entry.details;
+        const metaText = meta
+          ? Object.entries(meta).map(([k, v]) => k + '=' + (typeof v === 'string' ? v : JSON.stringify(v))).join(' · ')
+          : null;
+        return (
+          <div key={entry.entryId} className="flex gap-3 pb-4">
+            {/* Timeline line */}
+            <div className="flex flex-col items-center">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
+                <Clock className="h-3 w-3 text-muted-foreground" />
+              </div>
+              {i < entries.length - 1 && (
+                <div className="w-px flex-1 bg-border" />
+              )}
             </div>
-            {i < entries.length - 1 && (
-              <div className="w-px flex-1 bg-border" />
-            )}
-          </div>
 
-          {/* Content */}
-          <div className="flex-1 pb-1">
-            <p className="text-sm">
-              <span className="text-xs text-muted-foreground">
-                {formatTimestamp(entry.timestamp)}
-              </span>
-              {' '}
-              <span className="font-medium">{entry.performedBy}</span>
-              {': '}
-              <span className="capitalize">{entry.action.replace(/_/g, ' ')}</span>
-            </p>
-            {entry.details && (
-              <p className="mt-0.5 text-xs text-muted-foreground">{entry.details}</p>
-            )}
+            {/* Content */}
+            <div className="flex-1 pb-1">
+              <p className="text-sm">
+                <span className="text-xs text-muted-foreground">
+                  {formatTimestamp(entry.occurredAt)}
+                </span>
+                {' '}
+                <span className="font-medium">{entry.performedBy ?? 'system'}</span>
+                {': '}
+                <span className="capitalize">{entry.action.replace(/_/g, ' ')}</span>
+              </p>
+              {metaText && (
+                <p className="mt-0.5 text-xs text-muted-foreground">{metaText}</p>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

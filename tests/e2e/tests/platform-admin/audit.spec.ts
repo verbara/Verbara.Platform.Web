@@ -13,10 +13,9 @@ test.describe('Audit Log', () => {
   });
 
   test('should display correct columns', async ({ platformAdminPage: page }) => {
-    const table = page.getByTestId('audit-table');
-    const header = table.locator('thead');
-    await expect(header).toContainText(/action/i);
-    await expect(header).toContainText(/entity/i);
+    await expect(page.getByTestId('audit-col-action')).toBeVisible();
+    await expect(page.getByTestId('audit-col-entityType')).toBeVisible();
+    await expect(page.getByTestId('audit-col-entityId')).toBeVisible();
   });
 
   test('should filter by action', async ({ platformAdminPage: page }) => {

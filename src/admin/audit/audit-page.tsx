@@ -17,7 +17,7 @@ const ACTION_BADGE: Record<string, { variant: 'default' | 'destructive' | 'secon
   delete: { variant: 'destructive', className: '' },
 };
 
-function ActionBadge({ action }: { action: string }) {
+function ActionBadge({ action }: Readonly<{ action: string }>) {
   const lower = action.toLowerCase();
   const style = ACTION_BADGE[lower];
   if (!style) {
@@ -32,17 +32,21 @@ function ActionBadge({ action }: { action: string }) {
 
 /* ---------- Detail cell with expand ---------- */
 
-function DetailsCell({ details }: { details?: string }) {
+function DetailsCell({ details }: Readonly<{ details?: Record<string, string> | null }>) {
   const [expanded, setExpanded] = useState(false);
   const { t } = useTranslation(['admin']);
 
   if (!details) return <span className="text-muted-foreground">—</span>;
 
-  const truncated = details.length > 80;
-  const display = truncated && !expanded ? `${details.slice(0, 80)}…` : details;
+  const entries = Object.entries(details);
+  if (entries.length === 0) return <span className="text-muted-foreground">—</span>;
+
+  const text = entries.map(([k, v]) => k + '=' + (typeof v === 'string' ? v : JSON.stringify(v))).join(' · ');
+  const truncated = text.length > 80;
+  const display = truncated && !expanded ? `${text.slice(0, 80)}…` : text;
 
   return (
-    <span className="text-sm">
+    <span className="text-sm font-mono text-xs">
       {display}
       {truncated && (
         <button
@@ -221,31 +225,31 @@ export default function AuditPage() {
             <table data-testid="audit-table" className="w-full text-sm">
               <thead className="border-b bg-muted/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th data-testid="audit-col-timestamp" data-column="timestamp" className="px-4 py-3 text-left font-medium text-muted-foreground">
                     {t('admin:audit.col.timestamp')}
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th data-testid="audit-col-action" data-column="action" className="px-4 py-3 text-left font-medium text-muted-foreground">
                     {t('admin:audit.col.action')}
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th data-testid="audit-col-entityType" data-column="entityType" className="px-4 py-3 text-left font-medium text-muted-foreground">
                     {t('admin:audit.col.entityType')}
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th data-testid="audit-col-entityId" data-column="entityId" className="px-4 py-3 text-left font-medium text-muted-foreground">
                     {t('admin:audit.col.entityId')}
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th data-testid="audit-col-performedBy" data-column="performedBy" className="px-4 py-3 text-left font-medium text-muted-foreground">
                     {t('admin:audit.col.performedBy')}
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th data-testid="audit-col-details" data-column="details" className="px-4 py-3 text-left font-medium text-muted-foreground">
                     {t('admin:audit.col.details')}
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {items.map((entry) => (
-                  <tr key={entry.id} className="transition-colors hover:bg-muted/50">
+                  <tr key={entry.entryId} className="transition-colors hover:bg-muted/50">
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                      {formatTimestamp(entry.timestamp)}
+                      {formatTimestamp(entry.occurredAt)}
                     </td>
                     <td className="px-4 py-3">
                       <ActionBadge action={entry.action} />
@@ -256,9 +260,9 @@ export default function AuditPage() {
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                       {entry.entityId}
                     </td>
-                    <td className="px-4 py-3">{entry.performedBy}</td>
+                    <td className="px-4 py-3">{entry.performedBy ?? '—'}</td>
                     <td className="max-w-xs px-4 py-3">
-                      <DetailsCell details={entry.details} />
+                      <DetailsCell details={entry.metadata ?? entry.details} />
                     </td>
                   </tr>
                 ))}

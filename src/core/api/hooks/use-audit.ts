@@ -2,13 +2,20 @@ import { useQuery } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 
 export interface AuditEntry {
-  id: string;
-  timestamp: string;
+  entryId: string;
+  occurredAt: string;
   action: string;
+  category?: string;
+  severity?: string;
+  actorId?: string;
+  actorType?: string;
+  targetId?: string | null;
+  targetType?: string | null;
   entityType: string;
   entityId: string;
-  performedBy: string;
-  details?: string;
+  performedBy: string | null;
+  metadata?: Record<string, string> | null;
+  details?: Record<string, string> | null;
 }
 
 interface PagedResult<T> {
