@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { PageHeader } from '@/admin/shared/page-header';
 import { Button } from '@/core/ui/button';
@@ -23,13 +23,12 @@ export default function PartnerSettingsPage() {
   const [defaultTimezone, setDefaultTimezone] = useState('');
   const [defaultLanguage, setDefaultLanguage] = useState('');
 
-  useEffect(() => {
-    if (settings) {
-      setPlatformName(settings.platformName ?? '');
-      setDefaultTimezone(settings.defaultTimezone ?? '');
-      setDefaultLanguage(settings.defaultLanguage ?? '');
-    }
-  }, [settings]);
+  function openEdit() {
+    setPlatformName(settings?.platformName ?? '');
+    setDefaultTimezone(settings?.defaultTimezone ?? '');
+    setDefaultLanguage(settings?.defaultLanguage ?? '');
+    setEditOpen(true);
+  }
 
   function handleSave() {
     update.mutate(
@@ -53,7 +52,7 @@ export default function PartnerSettingsPage() {
   return (
     <div className="space-y-6" data-testid="partner-settings-page">
       <PageHeader title="Partner Settings" description="Manage your partner account configuration.">
-        <Button onClick={() => setEditOpen(true)} data-testid="edit-partner-settings">
+        <Button onClick={openEdit} data-testid="edit-partner-settings">
           <Pencil className="mr-1.5 h-4 w-4" />
           Edit settings
         </Button>
