@@ -19,9 +19,9 @@ test.describe('Knowledge Base', () => {
     await page.getByTestId('article-form-title').fill(title);
     await page.getByTestId('article-form-content').fill('This is E2E test content for knowledge base article.');
     await page.getByTestId('article-form-submit').click();
-    await page.waitForTimeout(600);
 
-    await expect(page.getByText(title)).toBeVisible();
+    await page.getByTestId('data-table-search').fill(title);
+    await expect(page.getByTestId('data-table').getByText(title)).toBeVisible({ timeout: 5000 });
 
     const articles = await api.listArticles();
     const arr = Array.isArray(articles) ? articles : articles.items || [];
@@ -37,12 +37,14 @@ test.describe('Knowledge Base', () => {
     const created = await res.json();
 
     await page.reload();
+    await page.getByTestId('data-table-search').fill(title);
+    await expect(page.getByTestId('data-table').getByText(title)).toBeVisible();
 
     page.once('dialog', (dialog) => dialog.accept());
     await page.getByTestId(`delete-article-${created.id}`).click();
-    await page.waitForTimeout(600);
 
-    await expect(page.getByText(title)).not.toBeVisible();
+    await page.getByTestId('data-table-search').fill('');
+    await expect(page.getByTestId('data-table').getByText(title)).not.toBeVisible();
   });
 
   test('should navigate via sidebar', async ({ platformAdminPage: page }) => {

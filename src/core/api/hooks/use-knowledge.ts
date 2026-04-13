@@ -7,7 +7,7 @@ export interface Article {
   title: string;
   content: string;
   tags: string[];
-  language: string;
+  language: string | null;
   published: boolean;
   updatedAt: string;
   createdAt: string;
