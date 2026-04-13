@@ -30,7 +30,12 @@
     "realtime": "Endpoint Profiles",
     "diagnostics": "Diagnostics",
     "cluster": "Cluster",
-    "security": "Security"
+    "security": "Security",
+    "partnerPortal": "Partner Portal",
+    "partnerCustomers": "Customers",
+    "partnerRateCards": "Rate Cards",
+    "partnerRevenue": "Revenue",
+    "partnerSettings": "Settings"
   },
   "users": { "title": "Users", "create": "Create user", "email": "Email", "name": "Name", "role": "Role", "status": "Status" },
   "agents": { "title": "Agents", "create": "Create agent", "edit": "Edit agent", "skills": "Skills", "team": "Team", "displayName": "Display Name", "user": "User", "state": "State", "queueCount": "Queues", "searchPlaceholder": "Search agents...", "selectUser": "Select a user", "noTeam": "No team", "addSkill": "Add skill", "skillName": "Skill name", "noSkills": "No skills assigned yet.", "save": "Save changes", "createDescription": "Create a new agent from an existing user.", "editDescription": "Update agent details.", "deleteTitle": "Delete agent", "queues": "Queue Memberships", "noQueues": "Not assigned to any queues.", "queuesNote": "Queue assignment is managed from queue configuration." },

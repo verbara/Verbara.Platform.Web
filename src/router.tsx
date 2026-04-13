@@ -62,6 +62,11 @@ const QuotasPage = lazy(() => import('@/admin/billing/quotas-page'));
 const CannedResponsesPage = lazy(() => import('@/admin/canned-responses/canned-responses-page'));
 const CasesPage = lazy(() => import('@/admin/cases/cases-page'));
 const WebChatPage = lazy(() => import('@/admin/webchat/webchat-page'));
+const PartnerCustomersPage = lazy(() => import('@/admin/partner/customers-page'));
+const PartnerCustomerDetailPage = lazy(() => import('@/admin/partner/customer-detail-page'));
+const PartnerRateCardsPage = lazy(() => import('@/admin/partner/partner-rate-cards-page'));
+const PartnerRevenuePage = lazy(() => import('@/admin/partner/revenue-page'));
+const PartnerSettingsPage = lazy(() => import('@/admin/partner/partner-settings-page'));
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
@@ -488,6 +493,56 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <WebChatPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'partner/customers',
+            element: (
+              <PermissionGuard requires="partner:customer:view" redirect>
+                <LazyLoad>
+                  <PartnerCustomersPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'partner/customers/:id',
+            element: (
+              <PermissionGuard requires="partner:customer:view" redirect>
+                <LazyLoad>
+                  <PartnerCustomerDetailPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'partner/rate-cards',
+            element: (
+              <PermissionGuard requires="partner:billing:manage" redirect>
+                <LazyLoad>
+                  <PartnerRateCardsPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'partner/revenue',
+            element: (
+              <PermissionGuard requires="partner:billing:view" redirect>
+                <LazyLoad>
+                  <PartnerRevenuePage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'partner/settings',
+            element: (
+              <PermissionGuard requires="partner:settings:view" redirect>
+                <LazyLoad>
+                  <PartnerSettingsPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

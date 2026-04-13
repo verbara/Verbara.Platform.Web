@@ -40,6 +40,8 @@ import {
   Gauge,
   Network,
   UsersRound,
+  TrendingUp,
+  Handshake,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -127,6 +129,17 @@ const groups: SidebarGroup[] = [
       { key: 'invoices', labelKey: 'admin:sidebar.invoices', to: '/admin/billing/invoices', icon: Receipt, requiredPermission: 'system:tenant:configure' },
       { key: 'usage', labelKey: 'admin:sidebar.usage', to: '/admin/billing/usage', icon: BarChart3, requiredPermission: 'system:tenant:configure' },
       { key: 'quotas', labelKey: 'admin:sidebar.quotas', to: '/admin/billing/quotas', icon: Gauge, requiredPermission: 'system:tenant:configure' },
+    ],
+  },
+  {
+    key: 'partner-portal',
+    labelKey: 'admin:sidebar.partnerPortal',
+    requiredPermission: 'partner:customer:view',
+    items: [
+      { key: 'partner-customers', labelKey: 'admin:sidebar.partnerCustomers', to: '/admin/partner/customers', icon: Handshake, requiredPermission: 'partner:customer:view' },
+      { key: 'partner-rate-cards', labelKey: 'admin:sidebar.partnerRateCards', to: '/admin/partner/rate-cards', icon: CreditCard, requiredPermission: 'partner:billing:manage' },
+      { key: 'partner-revenue', labelKey: 'admin:sidebar.partnerRevenue', to: '/admin/partner/revenue', icon: TrendingUp, requiredPermission: 'partner:billing:view' },
+      { key: 'partner-settings', labelKey: 'admin:sidebar.partnerSettings', to: '/admin/partner/settings', icon: SlidersHorizontal, requiredPermission: 'partner:settings:view' },
     ],
   },
   {
