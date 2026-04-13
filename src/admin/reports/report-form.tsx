@@ -33,7 +33,7 @@ import {
 
 const reportSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  type: z.enum(['CDRSummary', 'QASummary', 'IntervalReport', 'AgentPerformance'] as const),
+  type: z.enum(['agent_performance', 'queue_analytics', 'conversation_summary'] as const),
   schedule: z.string().min(1, 'Schedule is required'),
   cronExpression: z.string().optional(),
   filters: z.string().optional(),
@@ -51,13 +51,13 @@ interface ReportFormProps {
   report?: ScheduledReport;
 }
 
-const REPORT_TYPES: ReportType[] = ['CDRSummary', 'QASummary', 'IntervalReport', 'AgentPerformance'];
+const REPORT_TYPES: ReportType[] = ['agent_performance', 'queue_analytics', 'conversation_summary'];
 const REPORT_FORMATS: ReportFormat[] = ['CSV', 'PDF'];
 const REPORT_SCHEDULES: string[] = ['daily_8am', 'weekly_monday', 'monthly_1st', 'custom'];
 
 const DEFAULT_VALUES: ReportFormValues = {
   name: '',
-  type: 'CDRSummary',
+  type: 'agent_performance',
   schedule: 'daily_8am',
   cronExpression: '',
   filters: '',

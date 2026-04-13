@@ -487,7 +487,7 @@ export class ApiHelper {
     return response.json();
   }
 
-  async deleteReport(reportId: number) {
+  async deleteReport(reportId: string) {
     return this.request.delete(`${API_BASE}/api/v1/admin/reports/${reportId}`);
   }
 }

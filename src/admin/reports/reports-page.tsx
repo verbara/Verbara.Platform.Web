@@ -31,17 +31,15 @@ import {
 
 const columnHelper = createColumnHelper<ScheduledReport>();
 
-function TypeBadge({ type }: { type: ReportType }) {
+const REPORT_TYPE_VARIANT: Record<ReportType, 'default' | 'secondary' | 'outline'> = {
+  agent_performance: 'default',
+  queue_analytics: 'secondary',
+  conversation_summary: 'outline',
+};
+
+function TypeBadge({ type }: Readonly<{ type: ReportType }>) {
   const { t } = useTranslation(['admin']);
-  const variant =
-    type === 'CDRSummary'
-      ? 'default'
-      : type === 'QASummary'
-        ? 'secondary'
-        : type === 'IntervalReport'
-          ? 'outline'
-          : 'destructive';
-  return <Badge variant={variant}>{t(`admin:reports.type_${type}`)}</Badge>;
+  return <Badge variant={REPORT_TYPE_VARIANT[type] ?? 'outline'}>{t(`admin:reports.type_${type}`, type)}</Badge>;
 }
 
 function FormatBadge({ format }: { format: ReportFormat }) {

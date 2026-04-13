@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import { toast } from 'sonner';
 
-export type ReportType = 'CDRSummary' | 'QASummary' | 'IntervalReport' | 'AgentPerformance';
+export type ReportType = 'agent_performance' | 'queue_analytics' | 'conversation_summary';
 export type ReportFormat = 'CSV' | 'PDF';
 
 export interface ScheduledReport {

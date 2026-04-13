@@ -15,7 +15,7 @@ test.describe('Reports', () => {
     const api = new ApiHelper(authenticatedApiContext);
     const report = await api.createReport({
       name: `E2E Report ${Date.now()}`,
-      type: 'CDRSummary',
+      type: 'agent_performance',
       schedule: '0 8 * * *',
       format: 'CSV',
       isActive: true,
@@ -32,7 +32,7 @@ test.describe('Reports', () => {
     const api = new ApiHelper(authenticatedApiContext);
     const report = await api.createReport({
       name: `E2E History ${Date.now()}`,
-      type: 'CDRSummary',
+      type: 'agent_performance',
       schedule: '0 8 * * *',
       format: 'CSV',
       isActive: true,
