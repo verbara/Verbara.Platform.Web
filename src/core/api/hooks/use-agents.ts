@@ -3,16 +3,33 @@ import { customFetch } from '@/core/api/client';
 import { toast } from 'sonner';
 
 export interface Agent {
+  /** Primary identifier returned by the backend. */
+  agentId: string;
+  /**
+   * Alias of {@link agentId} synthesized in `useAgents`/`useAgent` so existing
+   * callers (`agent.id`) keep working during the DTO alignment.
+   */
   id: string;
   userId: string;
-  userEmail: string;
   displayName: string;
   state: string;
-  teamId?: string;
-  teamName?: string;
-  skills: { name: string; proficiency: number }[];
-  queueIds: string[];
+  skills: string[];
+  extension?: string | null;
+  teamId?: string | null;
+  teamName?: string | null;
+  userEmail?: string | null;
+  capacity?: {
+    maxVoice: number;
+    maxChat: number;
+    maxEmail: number;
+    maxSms: number;
+    maxTotal: number;
+  };
   createdAt: string;
+}
+
+function hydrate(a: Agent): Agent {
+  return { ...a, id: a.agentId, skills: a.skills ?? [] };
 }
 
 interface PagedResult<T> {
@@ -31,7 +48,7 @@ export function useAgents() {
         method: 'GET',
         params: { page: '1', pageSize: '100' },
       });
-      return result.items;
+      return result.items.map(hydrate);
     },
   });
 }
@@ -39,8 +56,10 @@ export function useAgents() {
 export function useAgent(id: string | undefined) {
   return useQuery({
     queryKey: ['agents', id],
-    queryFn: () =>
-      customFetch<Agent>({ url: `/api/v1/admin/agents/${id}`, method: 'GET' }),
+    queryFn: async () => {
+      const agent = await customFetch<Agent>({ url: `/api/v1/admin/agents/${id}`, method: 'GET' });
+      return hydrate(agent);
+    },
     enabled: !!id,
   });
 }

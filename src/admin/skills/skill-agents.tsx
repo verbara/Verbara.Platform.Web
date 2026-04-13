@@ -51,17 +51,17 @@ export function SkillAgents({ skill, onClose }: SkillAgentsProps) {
         };
       });
     }
-    // Fallback: derive from full agents list
+    // Fallback: derive from full agents list.
+    // Note: agent.skills is `string[]` in the backend contract — proficiency
+    // is a client-side convenience that defaults to 5 when not tracked
+    // server-side (IAgentSkillStore provides that when it exists).
     return allAgents
-      .filter((a) => a.skills.some((s) => s.name === skill.name))
-      .map((a) => {
-        const assignment = a.skills.find((s) => s.name === skill.name);
-        return {
-          agentId: a.id,
-          displayName: a.displayName,
-          proficiency: localProficiencies[a.id] ?? assignment?.proficiency ?? 5,
-        };
-      });
+      .filter((a) => a.skills.includes(skill.name))
+      .map((a) => ({
+        agentId: a.id,
+        displayName: a.displayName,
+        proficiency: localProficiencies[a.id] ?? 5,
+      }));
   }, [allAgents, serverAssignments, skill, localProficiencies]);
 
   const assignedAgentIds = useMemo(

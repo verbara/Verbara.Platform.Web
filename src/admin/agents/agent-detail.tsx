@@ -54,7 +54,7 @@ export default function AgentDetailPage() {
 
   /* Initialize skills from agent data once loaded */
   if (agent && !skillsInitialized) {
-    setSkills(agent.skills);
+    setSkills((agent.skills ?? []).map((name) => ({ name, proficiency: 5 })));
     setSkillsInitialized(true);
   }
 
@@ -89,8 +89,9 @@ export default function AgentDetailPage() {
     setSkills(skills.filter((s) => s.name !== name));
   };
 
-  /* Queue memberships from agent data */
-  const queueCount = agent.queueIds.length;
+  /* Queue memberships are resolved separately; backend agent DTO does not
+     embed queueIds (see IAgentQueueStore for the canonical relation). */
+  const queueCount = 0;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -242,7 +243,7 @@ export default function AgentDetailPage() {
           userId: agent.userId,
           displayName: agent.displayName,
           teamId: agent.teamId ?? '',
-          skills: agent.skills,
+          skills: (agent.skills ?? []).map((name) => ({ name, proficiency: 5 })),
         }}
         onSubmit={(v) => updateAgent.mutate({ id: agent.id, ...v })}
       />

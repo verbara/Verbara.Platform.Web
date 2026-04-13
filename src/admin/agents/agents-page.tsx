@@ -37,25 +37,30 @@ export default function AgentsPage() {
           <span className="font-medium text-foreground">{info.getValue()}</span>
         ),
       }),
-      columnHelper.accessor('userEmail', {
+      columnHelper.accessor('userId', {
         header: () => t('admin:agents.user'),
-        cell: (info) => info.getValue(),
+        cell: (info) => <span className="font-mono text-xs text-muted-foreground">{info.getValue()}</span>,
       }),
-      columnHelper.accessor('teamName', {
-        header: () => t('admin:agents.team'),
-        cell: (info) => info.getValue() ?? <span className="text-muted-foreground">&mdash;</span>,
+      columnHelper.accessor('extension', {
+        header: () => t('admin:agents.extension', 'Extension'),
+        cell: (info) =>
+          info.getValue() ? (
+            <span className="font-mono">{info.getValue()}</span>
+          ) : (
+            <span className="text-muted-foreground">&mdash;</span>
+          ),
       }),
       columnHelper.accessor('state', {
         header: () => t('admin:agents.state'),
         cell: (info) => (
-          <Badge variant={stateBadgeVariant[info.getValue()] ?? 'outline'}>
+          <Badge variant={stateBadgeVariant[info.getValue().toLowerCase()] ?? 'outline'}>
             {info.getValue()}
           </Badge>
         ),
       }),
-      columnHelper.accessor('queueIds', {
-        header: () => t('admin:agents.queueCount'),
-        cell: (info) => info.getValue().length,
+      columnHelper.accessor('skills', {
+        header: () => t('admin:agents.skills', 'Skills'),
+        cell: (info) => info.getValue()?.length ?? 0,
       }),
     ],
     [t],
@@ -83,7 +88,7 @@ export default function AgentsPage() {
           columns={columns}
           searchPlaceholder={t('admin:agents.searchPlaceholder')}
           noResultsMessage="No matching agents found."
-          onRowClick={(agent) => navigate(`/admin/agents/${agent.id}`)}
+          onRowClick={(agent) => navigate(`/admin/agents/${agent.agentId}`)}
         />
       )}
 
