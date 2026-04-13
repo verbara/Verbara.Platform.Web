@@ -45,7 +45,7 @@ test.describe('Webhooks', () => {
     await page.getByTestId('webhook-form-submit').click();
 
     await expect(page.getByTestId('webhook-form-name')).toBeVisible();
-    await expect(page.getByText(/https/i)).toBeVisible();
+    await expect(page.getByTestId('webhook-form-url-error')).toContainText(/https/i);
   });
 
   test('should show one-time secret dialog after creation', async ({ platformAdminPage: page, authenticatedApiContext }) => {

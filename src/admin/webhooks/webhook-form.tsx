@@ -159,7 +159,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                 {...register('endpointUrl')}
               />
               {errors.endpointUrl && (
-                <p className="text-xs text-destructive">{errors.endpointUrl.message}</p>
+                <p data-testid="webhook-form-url-error" className="text-xs text-destructive">{errors.endpointUrl.message}</p>
               )}
             </div>
 
