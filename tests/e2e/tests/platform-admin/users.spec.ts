@@ -28,9 +28,9 @@ test.describe('Users', () => {
     await page.getByTestId('user-form-email').fill(email);
     await page.getByTestId('user-form-displayName').fill('E2E Test User');
     await page.getByTestId('user-form-submit').click();
-    await page.waitForTimeout(600);
 
-    await expect(page.getByText(email)).toBeVisible();
+    await page.getByTestId('data-table-search').fill(email);
+    await expect(page.getByTestId('data-table').getByText(email)).toBeVisible({ timeout: 5000 });
 
     const users = await api.listUsers();
     const list = Array.isArray(users) ? users : users.items || [];
@@ -53,7 +53,8 @@ test.describe('Users', () => {
     const created = await res.json();
 
     await page.reload();
-    await page.getByText(email).click();
+    await page.getByTestId('data-table-search').fill(email);
+    await page.getByTestId('data-table').getByText(email).click();
 
     await expect(page).toHaveURL(/\/admin\/users\//);
     await expect(page.getByTestId('user-detail-page')).toBeVisible();
