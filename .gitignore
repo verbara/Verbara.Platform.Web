@@ -29,3 +29,6 @@ dist-ssr
 tests/e2e/.auth-*.json
 playwright-report/
 test-results/
+
+# claudelint
+.claudelint-cache/
