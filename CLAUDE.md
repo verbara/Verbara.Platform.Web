@@ -6,6 +6,23 @@ Asterisk.Platform.Web is the React 19 UI for the omnichannel contact center plat
 
 **274 TS/TSX files, 54 pages, 40 API hooks, 20 UI components, 50 E2E spec files (253 tests)**
 
+## Documentation Layout (all git-tracked, private repo)
+
+| Folder | Purpose | Lifecycle |
+|--------|---------|-----------|
+| `docs/specs/` | Technical designs (input to implementation) | Add on new feature, rarely edited after |
+| `docs/specs/archived/` | Superseded / draft specs kept for history | Append-only |
+| `docs/decisions/` | ADRs — architecture decision records (why, not how) | Append-only; never delete |
+| `docs/plans/active/` | Execution plans currently in progress | Moves to `completed/` on ship |
+| `docs/plans/completed/` | Shipped plans, preserved as historical record | Append-only |
+| `docs/plans/archived/` | Skeletons / superseded / abandoned plans | Append-only |
+| `docs/research/` | Exploratory findings, market analysis, discovery | Freeform |
+| `docs/research/archived/` | Older research kept for context | Append-only |
+
+After `ExitPlanMode` approval, copy the system-path plan file (`~/.claude/plans/*.md`) into `docs/plans/active/` with a date-prefixed meaningful name — the repo is authoritative. When the plan ships, `git mv` it to `docs/plans/completed/`.
+
+ADR numbering is sequential (`0001`, `0002`, …). Once `Accepted`, ADRs are append-only — supersede with a new ADR that references the predecessor.
+
 ## Stack
 
 | Library | Version |
