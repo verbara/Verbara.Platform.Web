@@ -17,3 +17,9 @@ export const DEMO_SUPERVISOR = {
   email: 'supervisor@demo.local',
   password: 'DemoSupervisor2026!',
 } as const;
+
+export const DEMO_AGENT = {
+  tenantId: 'demo',
+  email: 'demo.agent@demo.local',
+  password: 'DemoAgent2026!',
+} as const;
