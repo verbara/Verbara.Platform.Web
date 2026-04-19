@@ -6,7 +6,7 @@
 
 Asterisk.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**292 TS/TSX files · 54 pages · 45 API hooks · 21 UI components · 11 Zustand stores · 52 E2E specs · Version 1.7.0**
+**298 TS/TSX files · 54 pages · 45 API hooks · 21 UI components · 12 Zustand stores · 54 E2E specs · Version 1.8.0**
 
 See [docs/plans/completed/](docs/plans/completed/) for delivery history; earlier milestones are in `git log`.
 
