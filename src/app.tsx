@@ -9,9 +9,10 @@ import { startPlatformHub, stopPlatformHub } from '@/core/realtime';
 
 function useRealtimeBootstrap() {
   const accessToken = useAuthStore((s) => s.accessToken);
+  const signalREnabled = useAuthStore((s) => s.features?.realtimePushSignalR === true);
 
   useEffect(() => {
-    if (!accessToken) {
+    if (!accessToken || !signalREnabled) {
       stopPlatformHub().catch(() => undefined);
       return;
     }
@@ -19,7 +20,7 @@ function useRealtimeBootstrap() {
     return () => {
       stopPlatformHub().catch(() => undefined);
     };
-  }, [accessToken]);
+  }, [accessToken, signalREnabled]);
 }
 
 export function App() {
