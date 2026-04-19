@@ -23,6 +23,8 @@ import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { useAgentStateStore, type AgentState, type AgentPresence } from '@/operations/stores/agent-state-store';
 import { useAgents, useUpdateAgentStateAdmin, type Agent } from '@/core/api/hooks/use-agents';
+import { invokeHub } from '@/core/realtime';
+import { useRealtimeStore } from '@/core/stores/realtime-store';
 
 function toAgentState(a: Agent): AgentState {
   return {
@@ -78,12 +80,34 @@ export default function AgentStatesPage() {
   const { formatRelative } = useFormatDate();
   const { agents, setAgents } = useAgentStateStore();
   const { data: apiAgents } = useAgents();
+  const presences = useRealtimeStore((s) => s.agentPresences);
+  const connectionState = useRealtimeStore((s) => s.connectionState);
 
   useEffect(() => {
-    if (apiAgents) {
-      setAgents(apiAgents.map(toAgentState));
+    if (!apiAgents) return;
+    const merged = apiAgents.map((a) => {
+      const base = toAgentState(a);
+      const snap = presences[a.id];
+      if (!snap || snap.state === 'unknown') return base;
+      return { ...base, state: snap.state as AgentPresence, stateChangedAt: snap.lastHeartbeat };
+    });
+    setAgents(merged);
+  }, [apiAgents, presences, setAgents]);
+
+  useEffect(() => {
+    if (connectionState !== 'connected') return;
+    if (!apiAgents || apiAgents.length === 0) return;
+
+    const agentIds = apiAgents.map((a) => a.id);
+    for (const id of agentIds) {
+      invokeHub('SubscribeToAgentPresenceAsync', id).catch(() => undefined);
     }
-  }, [apiAgents, setAgents]);
+    return () => {
+      for (const id of agentIds) {
+        invokeHub('UnsubscribeFromAgentPresenceAsync', id).catch(() => undefined);
+      }
+    };
+  }, [apiAgents, connectionState]);
 
   const columns = useMemo(
     () => [

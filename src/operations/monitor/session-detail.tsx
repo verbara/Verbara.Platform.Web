@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Headphones } from 'lucide-react';
+import { Send, Headphones, Eye, Square } from 'lucide-react';
 import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
-import { useSendWhisper } from '@/core/api/hooks/use-supervisor';
 import { Button } from '@/core/ui/button';
+import { useSupervisorActions } from '@/core/realtime';
 
 interface SessionDetailProps {
   sessionId: string;
@@ -27,28 +27,45 @@ const alertSeverityColors: Record<string, string> = {
   Critical: 'border-red-400 bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200',
 };
 
-export function SessionDetail({ sessionId }: SessionDetailProps) {
+export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
   const { t } = useTranslation('operations');
   const { transcript, suggestions, sentiment, complianceAlerts } = useAgentAiStore();
-  const sendWhisper = useSendWhisper();
+  const { startSupervision, whisper, stopSupervision } = useSupervisorActions(sessionId);
   const [whisperText, setWhisperText] = useState('');
+  const [supervising, setSupervising] = useState(false);
+  const [sending, setSending] = useState(false);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcript]);
 
-  function handleSend() {
+  async function handleSend() {
     const msg = whisperText.trim();
     if (!msg) return;
-    sendWhisper.mutate({ sessionId, message: msg });
-    setWhisperText('');
+    setSending(true);
+    try {
+      await whisper(msg);
+      setWhisperText('');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function handleStartSupervision() {
+    await startSupervision('Listen');
+    setSupervising(true);
+  }
+
+  async function handleStopSupervision() {
+    await stopSupervision();
+    setSupervising(false);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   }
 
@@ -63,6 +80,17 @@ export function SessionDetail({ sessionId }: SessionDetailProps) {
           <Headphones className="h-3.5 w-3.5" />
           {t('monitor.listening')}
         </span>
+        {supervising ? (
+          <Button size="sm" variant="destructive" onClick={handleStopSupervision}>
+            <Square className="mr-1.5 h-3.5 w-3.5" />
+            Stop
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" onClick={handleStartSupervision}>
+            <Eye className="mr-1.5 h-3.5 w-3.5" />
+            Supervise
+          </Button>
+        )}
       </div>
 
       {/* Compliance alerts */}
@@ -119,7 +147,7 @@ export function SessionDetail({ sessionId }: SessionDetailProps) {
         )}
         {transcript.map((seg, i) => (
           <div
-            key={i}
+            key={`${seg.speaker}-${i}-${seg.text.slice(0, 16)}`}
             className={`inline-block max-w-[85%] rounded-lg px-3 py-1.5 text-sm ${
               speakerColors[seg.speaker] ?? 'bg-muted text-foreground'
             } ${seg.speaker === 'Agent' ? 'ml-auto block' : 'block'}`}
@@ -144,7 +172,7 @@ export function SessionDetail({ sessionId }: SessionDetailProps) {
         <Button
           size="sm"
           onClick={handleSend}
-          disabled={!whisperText.trim() || sendWhisper.isPending}
+          disabled={!whisperText.trim() || sending}
         >
           <Send className="mr-1.5 h-3.5 w-3.5" />
           {t('monitor.send')}

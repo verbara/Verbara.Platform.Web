@@ -6,6 +6,7 @@ import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { InboxPanel } from '@/agent/inbox/inbox-panel';
 import { ContextPanel } from '@/agent/context/context-panel';
 import { AgentTour } from '@/agent/tour/agent-tour';
+import { SupervisionBanner } from '@/core/realtime';
 
 export default function AgentLayout() {
   const [contextOpen, setContextOpen] = useState(true);
@@ -34,7 +35,9 @@ export default function AgentLayout() {
   }, [toggleContext]);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col">
+      <SupervisionBanner />
+      <div className="flex min-h-0 flex-1">
       {/* Inbox Panel */}
       <aside data-tour="inbox" className="flex w-70 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
         <InboxPanel />
@@ -62,6 +65,7 @@ export default function AgentLayout() {
       )}
 
       <AgentTour />
+      </div>
     </div>
   );
 }
