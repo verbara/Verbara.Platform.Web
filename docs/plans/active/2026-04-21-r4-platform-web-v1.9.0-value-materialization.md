@@ -319,3 +319,51 @@ npm run dev                      # local Web server
 **New Pro version:** `1.11.0-pro` (minor, additive). Packaged in local feed; Platform pins advanced 15 entries from `1.10.0-pro` to `1.11.0-pro`.
 
 **Frente A is now fully complete.** Next fronts: B (dashboards sin mocks — includes the deferred Playwright E2E for T27 conversation bridge), C (retention admin), D (audit UI), E (P0 security UI), F (Sub-B).
+
+### 2026-04-21 — Frente B pivot: Pro.CallAnalytics materialization (Ω track)
+
+**Scope correction driven by deep analysis.** Frente B as originally written (migrate Call Analytics + Bot Analytics dashboards from mocks) was premised on a stale understanding of the codebase. Reality check:
+
+- `DashboardPage` + `BotAnalyticsCard` already consume real backend APIs — no mocks to migrate.
+- `useCallAnalytics` hook does not exist; `/api/v1/analytics/qa` already surfaces Pro.CallAnalytics results via QA scoring UI.
+- The genuine gap is **Pro.CallAnalytics aggregations** (topic trends, sentiment trends, compliance roll-ups) which `AnalyticsEndpoints.ListQa` does NOT expose — it returns per-session rows, not tenant-scoped aggregations.
+
+**Frente B replaced by Ω track** — a 3-phase vertical slice materializing the latent Pro.CallAnalytics investment (99 backend tests, 5 analyzers, storage, tracing, per-analyzer resilience) via a supervisor-facing Speech Analytics dashboard.
+
+#### Ω-1 → Ω-1b — Platform v1.9.3 aggregation endpoints (backend)
+
+- **Ω-1 initial (commits `ca84105` + `bd5c498`)** — shipped list + detail endpoints that, post-landing, were discovered to duplicate `/api/v1/analytics/qa` list + detail (which already uses `ICallAnalyticsStore.QueryAsync` + CDR/agent enrichment). **Scope correction mid-flight** — no revert, refactor forward.
+- **Ω-1b (commit `69ef239`)** — `CallAnalyticsEndpoints.cs` refactored to aggregations-only:
+  - `GET /api/v1/call-analytics/topics/trends` — top N topics by occurrence with avg confidence
+  - `GET /api/v1/call-analytics/sentiment/trends` — time-bucketed (day/week) sentiment metrics: avg score + positive/neutral/negative counts per bucket
+  - `GET /api/v1/call-analytics/compliance/summary` — violations grouped by (RuleId, Severity) with occurrence + sessions-affected + severity breakdown
+  - All gated by `SupervisorPlus` + `Analytics` license feature
+- Platform bumped 1.9.2 → 1.9.3. CHANGELOG documents scope correction honestly. 7 tests (5 new + 2 kept topic/auth).
+
+**Learnings from Ω-1 mistake:** when adding endpoints, grep existing endpoint code for the same backend service dependency (`ICallAnalyticsStore` here) before designing surface. Two endpoints touching the same store is a hot warning signal for duplication.
+
+#### Ω-2 — Platform.Web Speech Analytics page (frontend)
+
+- **Commits `9a7fcd1` + `41ef339`**:
+  - 3 new hooks in `use-analytics.ts`: `useTopicTrends`, `useSentimentTrends`, `useComplianceSummary`. Query keys scoped to `['call-analytics', *]`.
+  - New page at `/analytics/speech` (`src/analytics/speech-analytics/speech-analytics-page.tsx`) with 3 tabs consuming the hooks:
+    - **Topic Trends** — horizontal bar chart + table (top N selectable 10 / 25 / 50)
+    - **Sentiment Trends** — stacked bars (pos/neu/neg) + avg score line chart, Day/Week bucket toggle
+    - **Compliance Overview** — severity pie + sortable rules table + severity filter
+  - Page-level `onHubEvent('OnConversationStateChanged')` invalidates `['call-analytics']` when `newState === 'ended'` → live refresh without polling. Keeps generic `useConversationStateStream` hook untouched.
+  - Sidebar entry: `sidebar.speech` (AudioWaveform icon) after QA.
+  - Route wired in `router.tsx` via lazy import.
+  - i18n: 28 keys in en-US + es-419 + pt-BR.
+- Tests: 8 new (5 page + 3 hooks). Vitest 62 → 70 green.
+
+#### Ω-3 — pending (next session)
+
+1. **Enrich `qa-detail-drawer.tsx`** to surface Pro.CallAnalytics summary narrative + compliance violation list + sentiment per-turn timeline. The drawer today shows QA scorecard; the backend exposes more via `/api/v1/analytics/qa/{sessionId}` (`QaDetail` type already has summary + violations + sentiment + topics — the frontend fields may not all be rendered yet; audit needed).
+2. **Playwright E2E for T27 conversation bridge** — closes the deferred acceptance criterion from Frente A. Spec: login supervisor → open `/analytics/speech` → trigger conversation close via API → assert `['call-analytics']` invalidation fires within 500ms (observable via re-fetch network request or data change on the page). Gate with `E2E_FULL_STACK=true`.
+
+### Status after this session
+
+- **Frente A ✅** (3/3 SignalR hooks, end-to-end wiring)
+- **Frente B → pivoted to Ω** (Ω-1 + Ω-1b + Ω-2 shipped; Ω-3 pending)
+- **Frente C / D / E / F** — pending
+- **R4 release (v1.9.0 Web)** — will bundle Ω-3 completion + any subset of C/D/E/F desired
