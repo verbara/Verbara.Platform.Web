@@ -298,3 +298,24 @@ npm run dev                      # local Web server
 - Contract is already covered end-to-end by unit tests on both layers (Platform 5 + Web 11 = 16). Transport is `@microsoft/signalr` v10 + ASP.NET SignalR — battle-tested.
 
 **TODO for Frente B session:** add a Playwright spec under `tests/e2e/tests/analytics/` that (a) logs in as supervisor, (b) opens Call Analytics dashboard, (c) triggers conversation close via API or UI, (d) asserts the affected row updates within 500ms. Gate behind `E2E_FULL_STACK=true` following the existing `realtime-presence.spec.ts` pattern.
+
+### 2026-04-21 — Frente A / Opción A follow-up landed (local, pending push)
+
+**Scope:** 3/3 hooks complete. Migrated to typed `IPlatformHubClient` interface in Pro, added `admins:platform` SignalR group for PlatformAdmin connections, added cluster hook end-to-end.
+
+**Commits (local main, not pushed):**
+- Pro `68176d4` — `feat(push-signalr): add typed hub client methods + admins:platform group for T27 events`
+- Pro `fa68350` — `chore(release): bump Pro 1.10.0-pro -> 1.11.0-pro`
+- Platform `cbd66cd` — `feat(api): migrate PushToHubRelay to typed IHubContext + add cluster event forward`
+- Web `39c2cb3` — `feat(hooks): add useClusterStateStream for T27 cluster bridge`
+
+**Tests:**
+- Pro `Push.SignalR.Tests` 58 → 61 (+3 admin group join scenarios)
+- Platform `PushToHubRelayTests` 5 → 7 (+2 cluster forward + null-node skip) — all migrated to typed NSubstitute mocks
+- Web total 56 → 62 (+6 cluster stream scenarios)
+
+**Wire contract:** `OnConversationStateChanged` / `OnAgentStateChanged` / `OnClusterNodeStateChanged`. Payloads camelCase (Pro's `ProPresenceJsonContext` matches Platform's `ApiJsonContext`). No breaking change for Opción B consumers — the frontend hooks require no modification.
+
+**New Pro version:** `1.11.0-pro` (minor, additive). Packaged in local feed; Platform pins advanced 15 entries from `1.10.0-pro` to `1.11.0-pro`.
+
+**Frente A is now fully complete.** Next fronts: B (dashboards sin mocks — includes the deferred Playwright E2E for T27 conversation bridge), C (retention admin), D (audit UI), E (P0 security UI), F (Sub-B).
