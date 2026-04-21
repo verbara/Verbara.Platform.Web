@@ -173,3 +173,9 @@ export async function invokeHub<T = void>(method: string, ...args: unknown[]): P
   }
   return conn.invoke<T>(method, ...args);
 }
+
+export function onHubEvent<T>(method: string, handler: (payload: T) => void): () => void {
+  if (!connection) return () => { /* no-op; hub not initialized yet */ };
+  connection.on(method, handler);
+  return () => connection?.off(method, handler);
+}
