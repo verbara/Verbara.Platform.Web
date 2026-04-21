@@ -284,6 +284,122 @@ export function useAgentIntervals(filters: { from: string; to: string; agentId?:
   });
 }
 
+// ─── Speech Analytics / CallAnalytics aggregations (v1.9.3) ──────────────────
+
+export interface TopicTrendDto {
+  topic: string;
+  occurrences: number;
+  avgConfidence: number;
+}
+
+export interface TopicTrendsResponse {
+  topics: TopicTrendDto[];
+  totalAnalyzed: number;
+  from: string;
+  to: string;
+}
+
+export interface SentimentTrendPointDto {
+  bucketStart: string;
+  avgSentimentScore: number | null;
+  positiveCount: number;
+  neutralCount: number;
+  negativeCount: number;
+  totalCount: number;
+}
+
+export interface SentimentTrendsResponse {
+  points: SentimentTrendPointDto[];
+  bucket: string;
+  from: string;
+  to: string;
+}
+
+export interface ComplianceRuleSummaryDto {
+  ruleId: string;
+  ruleName: string;
+  severity: 'Info' | 'Warning' | 'Critical';
+  occurrences: number;
+  sessionsAffected: number;
+  firstSeen: string;
+  lastSeen: string;
+}
+
+export interface ComplianceSeverityBreakdownDto {
+  info: number;
+  warning: number;
+  critical: number;
+}
+
+export interface ComplianceSummaryResponse {
+  rules: ComplianceRuleSummaryDto[];
+  totalViolations: number;
+  totalSessionsWithViolations: number;
+  severityBreakdown: ComplianceSeverityBreakdownDto;
+  from: string;
+  to: string;
+}
+
+export function useTopicTrends(from?: string, to?: string, topN = 10) {
+  return useQuery({
+    queryKey: ['call-analytics', 'topics-trends', from, to, topN],
+    queryFn: () =>
+      customFetch<TopicTrendsResponse>({
+        url: '/api/v1/call-analytics/topics/trends',
+        method: 'GET',
+        params: {
+          ...(from && { from }),
+          ...(to && { to }),
+          topN: String(topN),
+        },
+      }),
+  });
+}
+
+export function useSentimentTrends(
+  from?: string,
+  to?: string,
+  bucket: 'day' | 'week' = 'day',
+  queueName?: string,
+) {
+  return useQuery({
+    queryKey: ['call-analytics', 'sentiment-trends', from, to, bucket, queueName],
+    queryFn: () =>
+      customFetch<SentimentTrendsResponse>({
+        url: '/api/v1/call-analytics/sentiment/trends',
+        method: 'GET',
+        params: {
+          ...(from && { from }),
+          ...(to && { to }),
+          bucket,
+          ...(queueName && { queueName }),
+        },
+      }),
+  });
+}
+
+export function useComplianceSummary(
+  from?: string,
+  to?: string,
+  queueName?: string,
+  severity?: 'Info' | 'Warning' | 'Critical',
+) {
+  return useQuery({
+    queryKey: ['call-analytics', 'compliance-summary', from, to, queueName, severity],
+    queryFn: () =>
+      customFetch<ComplianceSummaryResponse>({
+        url: '/api/v1/call-analytics/compliance/summary',
+        method: 'GET',
+        params: {
+          ...(from && { from }),
+          ...(to && { to }),
+          ...(queueName && { queueName }),
+          ...(severity && { severity }),
+        },
+      }),
+  });
+}
+
 // ─── Bot Analytics ─────────────────────────────────────
 export interface BotAnalyticsSummary {
   totalConversations: number;
