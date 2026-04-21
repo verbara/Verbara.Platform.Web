@@ -1,5 +1,5 @@
 {
-  "sidebar": { "dashboard": "Dashboard", "cdr": "Call Records", "qa": "Quality (QA)", "surveys": "Surveys", "intervals": "Intervals", "agent_intervals": "Agent Intervals" },
+  "sidebar": { "dashboard": "Dashboard", "cdr": "Call Records", "qa": "Quality (QA)", "surveys": "Surveys", "intervals": "Intervals", "agent_intervals": "Agent Intervals", "speech": "Speech Analytics" },
   "filters": { "date_range": "Date Range", "queue": "Queue", "channel": "Channel", "agent": "Agent", "today": "Today", "last_7d": "Last 7 days", "last_30d": "Last 30 days", "custom": "Custom", "apply": "Apply" },
   "dashboard": { "title": "Analytics Dashboard", "conversations_handled": "Conversations Handled", "avg_wait": "Avg Wait Time", "avg_handle": "Avg Handle Time", "sla_percent": "SLA %", "channel_distribution": "Channel Distribution", "volume_trend": "Volume Trend", "sla_trend": "SLA Trend", "volume_vs_sla": "Volume vs SLA", "volume_label": "Call Volume", "sla_label": "SLA %", "heatmap_title": "Call Volume Heatmap", "no_data": "No data available", "day_mon": "Mon", "day_tue": "Tue", "day_wed": "Wed", "day_thu": "Thu", "day_fri": "Fri", "day_sat": "Sat", "day_sun": "Sun" },
   "cdr": { "title": "Detail Records", "search_placeholder": "Search by number, agent, queue...", "no_results": "No results", "duration": "Duration", "disposition": "Disposition", "recording": "Recording", "contact": "Contact", "channel": "Channel", "queue": "Queue", "agent": "Agent", "date": "Date", "sla_met": "SLA Met", "view_full_qa": "View Full QA", "qa_score": "QA Score", "sentiment": "Sentiment", "ring_duration": "Ring Duration", "hold_count": "Holds", "acw_duration": "ACW" },
@@ -34,5 +34,41 @@
     "prev": "Prev",
     "next": "Next"
   },
-  "export": { "csv": "Export CSV" }
+  "export": { "csv": "Export CSV" },
+  "speechAnalytics": {
+    "title": "Speech Analytics",
+    "tabs": {
+      "topics": "Topic Trends",
+      "sentiment": "Sentiment Trends",
+      "compliance": "Compliance Overview"
+    },
+    "topN": "Top N",
+    "bucket": {
+      "day": "Day",
+      "week": "Week"
+    },
+    "severity": {
+      "all": "All severities",
+      "info": "Info",
+      "warning": "Warning",
+      "critical": "Critical"
+    },
+    "columns": {
+      "topic": "Topic",
+      "avgConfidence": "Avg Confidence",
+      "occurrences": "Occurrences",
+      "rule": "Rule Name",
+      "severity": "Severity",
+      "sessionsAffected": "Sessions Affected",
+      "firstSeen": "First Seen",
+      "lastSeen": "Last Seen"
+    },
+    "empty": {
+      "topics": "No topics found for this period.",
+      "sentiment": "No sentiment data for this period.",
+      "compliance": "No compliance violations for this period."
+    },
+    "totalAnalyzed": "{{count}} results analyzed",
+    "totalViolations": "Total violations: {{violations}} · Sessions affected: {{sessions}}"
+  }
 }

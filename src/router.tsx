@@ -79,6 +79,7 @@ const QaPage = lazy(() => import('@/analytics/qa/qa-page'));
 const SurveyResultsPage = lazy(() => import('@/analytics/surveys/survey-results-page'));
 const IntervalPage = lazy(() => import('@/analytics/intervals/interval-page'));
 const AgentIntervalsPage = lazy(() => import('@/analytics/agents/agent-intervals-page'));
+const SpeechAnalyticsPage = lazy(() => import('@/analytics/speech-analytics/speech-analytics-page'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
 const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
 
@@ -815,6 +816,14 @@ export const router = createBrowserRouter([
                   <AgentIntervalsPage />
                 </LazyLoad>
               </PermissionGuard>
+            ),
+          },
+          {
+            path: 'speech',
+            element: (
+              <LazyLoad>
+                <SpeechAnalyticsPage />
+              </LazyLoad>
             ),
           },
         ],
