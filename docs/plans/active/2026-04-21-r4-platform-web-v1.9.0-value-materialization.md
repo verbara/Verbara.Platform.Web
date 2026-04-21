@@ -270,3 +270,31 @@ npm run dev                      # local Web server
   - NO consumir mocks en Call Analytics o Bot Analytics post-ship (backend APIs existen y están probadas)
   - NO skippear Playwright E2E en MFA wizard (P0 flow, needs end-to-end validation)
   - NO bundlear los 3 SignalR hooks en un solo commit (cada hook independiente → audit trail claro)
+
+---
+
+## Progress log
+
+### 2026-04-21 — Frente A / Opción B landed (local, pending push)
+
+**Scope:** 2/3 hooks shipped via Platform-only relay (Opción B). Cluster hook diferido a Opción A (requires Pro-side `admins:platform` group, separate session).
+
+**Commits (local main, not pushed):**
+- Platform `999d494` — `feat(api): add PushToHubRelay forwarding T27 conversation+agent events to SignalR`
+- Web `111d9ac` — `feat(realtime): add onHubEvent subscription helper for ad-hoc hub events`
+- Web `a86cd01` — `feat(hooks): add useConversationStateStream for T27 conversation bridge`
+- Web `00f1184` — `feat(hooks): add useAgentStateStream for T27 agent bridge`
+
+**Tests:** Platform +5 (`PushToHubRelayTests`, 5/5 green, 1,762 total non-Postgres). Web +11 (6 conversation + 5 agent stream tests, 56/56 green, baseline 45).
+
+**Implementation notes:**
+- Relay uses dynamic SignalR method name via `SendCoreAsync(method, [payload], ct)` — avoids Pro change (no typed `IPlatformHubClient` extension). Opción A follow-up migrates to typed interface.
+- Hooks use a new `onHubEvent<T>(method, handler) → unsubscribe` helper exported from `platform-hub.ts` — keeps the global `registerHandlers()` unchanged and lets components opt in per-effect.
+- Broadcasts target the existing `tenant:{tenantId}` SignalR group (clients auto-join on connect via JWT `tid`). No backend schema / auth changes required.
+
+**E2E deferred to Frente B.** Rationale:
+- Hooks return `void` — no observable UI state without a consumer. Validating cache invalidation without a visible re-fetch adds either a test-only endpoint (backend debt) or a fake debug page (frontend debt).
+- Frente B wires `Call Analytics` + `Bot Analytics` dashboards to real backend data → those become the natural consumers. Closing a conversation via the existing API causes `CallEndedEvent` → bridge → bus → relay → hub → `useConversationStateStream` → dashboard re-fetches updated row. That Playwright spec validates the complete wire with a realistic trigger.
+- Contract is already covered end-to-end by unit tests on both layers (Platform 5 + Web 11 = 16). Transport is `@microsoft/signalr` v10 + ASP.NET SignalR — battle-tested.
+
+**TODO for Frente B session:** add a Playwright spec under `tests/e2e/tests/analytics/` that (a) logs in as supervisor, (b) opens Call Analytics dashboard, (c) triggers conversation close via API or UI, (d) asserts the affected row updates within 500ms. Gate behind `E2E_FULL_STACK=true` following the existing `realtime-presence.spec.ts` pattern.
