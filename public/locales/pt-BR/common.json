@@ -1,5 +1,7 @@
 {
   "app": { "name": "Asterisk Platform" },
+  "copy": "Copiar",
+  "copied": "Copiado",
   "nav": { "admin": "Administração", "operations": "Operações", "analytics": "Análise", "agent": "Agente", "notifications": "Notificações" },
   "actions": { "save": "Salvar", "cancel": "Cancelar", "delete": "Excluir", "create": "Criar", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Fechar", "back": "Voltar", "clear_all": "Limpar tudo", "copy": "Copiar", "download": "Baixar", "done": "Conclu\u00eddo", "next": "Pr\u00f3ximo" },
   "status": { "loading": "Carregando...", "error": "Erro", "success": "Sucesso", "no_results": "Sem resultados", "reconnecting": "Reconectando...", "enabled": "Habilitado", "disabled": "Desabilitado" },

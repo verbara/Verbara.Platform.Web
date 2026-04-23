@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, Copy, Check } from 'lucide-react';
-import { Button } from '@/core/ui/button';
+import { CheckCircle } from 'lucide-react';
+import { CopyButton } from '@/core/ui/copy-button';
 import { Checkbox } from '@/core/ui/checkbox';
 import { Label } from '@/core/ui/label';
 import { useTenantStore } from '@/core/tenant/tenant-store';
@@ -16,7 +16,6 @@ export default function TestStep() {
   const { t } = useTranslation(['admin']);
   const { watch } = useFormContext<SetupFormValues>();
   const [tested, setTested] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const queueName = watch('queueName');
   const agentDisplayName = watch('agentDisplayName');
@@ -25,12 +24,6 @@ export default function TestStep() {
 
   const isWebchat = channelId === 'webchat';
   const webhookUrl = `https://your-api.com/api/v1/webhooks/${tenantId}/${channelId}`;
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(webhookUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-4">
@@ -122,13 +115,7 @@ export default function TestStep() {
               <code className="flex-1 rounded-md border bg-muted px-3 py-2 text-sm break-all">
                 {webhookUrl}
               </code>
-              <Button variant="outline" size="icon" onClick={handleCopy}>
-                {copied ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
+              <CopyButton value={webhookUrl} variant="outline" iconOnly />
             </div>
           </div>
 

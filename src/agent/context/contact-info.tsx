@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Copy, Check, User, Phone, Mail, Building2, Globe, MessageSquare, Pencil, Trash2 } from 'lucide-react';
-import { useState, useCallback } from 'react';
-import { toast } from 'sonner';
+import { User, Phone, Mail, Building2, Globe, MessageSquare, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/core/ui/button';
+import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import {
@@ -16,30 +16,6 @@ import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
-
-function CopyButton({ value }: { value: string }) {
-  const { t } = useTranslation(['agent']);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = useCallback(() => {
-    void navigator.clipboard.writeText(value).then(() => {
-      setCopied(true);
-      toast.success(t('agent:context.copied'));
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }, [value, t]);
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="ml-1 inline-flex shrink-0 rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-      title={t('agent:context.copy')}
-    >
-      {copied ? <Check size={14} /> : <Copy size={14} />}
-    </button>
-  );
-}
 
 function InfoRow({
   icon: Icon,
@@ -59,7 +35,7 @@ function InfoRow({
         <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
         <div className="flex items-center">
           <p className="truncate text-sm text-slate-700 dark:text-slate-200">{value}</p>
-          {copyable && <CopyButton value={value} />}
+          {copyable && <CopyButton value={value} iconOnly />}
         </div>
       </div>
     </div>

@@ -1,22 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Copy, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { Input } from '@/core/ui/input';
-import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
+import { CopyButton } from '@/core/ui/copy-button';
 import { useKnowledgeSearch } from '@/core/api/hooks/use-knowledge';
-import { toast } from 'sonner';
 import type { ArticleSearchResult } from '@/core/api/hooks/use-knowledge';
 
 function ArticleCard({ article }: { article: ArticleSearchResult }) {
   const { t } = useTranslation(['agent']);
   const [expanded, setExpanded] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(article.content).then(() => {
-      toast.success(t('agent:context.copied'));
-    });
-  };
 
   const scorePercent = Math.round(article.relevanceScore * 100);
 
@@ -58,10 +51,7 @@ function ArticleCard({ article }: { article: ArticleSearchResult }) {
             {article.content}
           </p>
           <div className="mt-2 flex justify-end">
-            <Button size="sm" variant="outline" onClick={handleCopy}>
-              <Copy className="mr-1.5 h-3 w-3" />
-              {t('agent:context.copy')}
-            </Button>
+            <CopyButton value={article.content} variant="outline" label={t('agent:context.copy')} />
           </div>
         </div>
       )}

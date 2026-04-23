@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Copy, Check } from 'lucide-react';
 import { Button } from '@/core/ui/button';
+import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
@@ -70,7 +70,6 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
 
   const [secretDialog, setSecretDialog] = useState(false);
   const [createdSecret, setCreatedSecret] = useState('');
-  const [copied, setCopied] = useState(false);
 
   const {
     register,
@@ -88,12 +87,6 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
       reset(subscription ? mapToForm(subscription) : DEFAULT_VALUES);
     }
   }, [open, subscription, reset]);
-
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(createdSecret);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [createdSecret]);
 
   const onSubmit = handleSubmit((values) => {
     if (isEdit && subscription) {
@@ -245,7 +238,6 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
           setSecretDialog(o);
           if (!o) {
             setCreatedSecret('');
-            setCopied(false);
           }
         }}
       >
@@ -261,9 +253,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
             <code className="flex-1 overflow-x-auto rounded-md bg-muted px-3 py-2 font-mono text-sm">
               {createdSecret}
             </code>
-            <Button variant="outline" size="sm" onClick={handleCopy}>
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
+            <CopyButton value={createdSecret} variant="outline" iconOnly />
           </div>
 
           <p className="text-xs text-amber-600 dark:text-amber-400">

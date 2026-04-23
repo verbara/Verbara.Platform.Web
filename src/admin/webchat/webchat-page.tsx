@@ -1,14 +1,10 @@
-import { useState } from 'react';
-import { Copy, Check, MessageCircle } from 'lucide-react';
-import { Button } from '@/core/ui/button';
+import { MessageCircle } from 'lucide-react';
+import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
-import { toast } from 'sonner';
 
 export default function WebChatPage() {
-  const [copied, setCopied] = useState(false);
-
   const apiBase = window.location.origin;
   const snippet = `<!-- Asterisk Platform WebChat Widget -->
 <script>
@@ -25,13 +21,6 @@ export default function WebChatPage() {
   document.body.appendChild(s);
 })();
 </script>`;
-
-  function handleCopy() {
-    void navigator.clipboard.writeText(snippet);
-    setCopied(true);
-    toast.success('Snippet copied to clipboard');
-    setTimeout(() => setCopied(false), 2000);
-  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -60,16 +49,9 @@ export default function WebChatPage() {
           >
             {snippet}
           </pre>
-          <Button
-            data-testid="webchat-copy"
-            variant="outline"
-            size="sm"
-            className="absolute right-2 top-2"
-            onClick={handleCopy}
-          >
-            {copied ? <Check className="mr-1 h-3.5 w-3.5" /> : <Copy className="mr-1 h-3.5 w-3.5" />}
-            {copied ? 'Copied' : 'Copy'}
-          </Button>
+          <div className="absolute right-2 top-2" data-testid="webchat-copy">
+            <CopyButton value={snippet} variant="outline" />
+          </div>
         </div>
       </div>
 

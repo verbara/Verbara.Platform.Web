@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Shield, ShieldCheck, Download, Copy, KeyRound, Lock, RefreshCw, LogOut as LogOutIcon,
+  Shield, ShieldCheck, Download, KeyRound, Lock, RefreshCw, LogOut as LogOutIcon,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/core/ui/button';
+import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
@@ -334,17 +335,9 @@ function RecoveryCodesDisplay({ codes, onDone }: Readonly<{ codes: string[]; onD
         ))}
       </div>
       <div className="flex gap-2">
-        <Button
-          data-testid="security-mfa-copy"
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            void navigator.clipboard.writeText(codes.join('\n'));
-          }}
-        >
-          <Copy className="mr-1.5 h-3.5 w-3.5" />
-          {t('common:actions.copy')}
-        </Button>
+        <span data-testid="security-mfa-copy">
+          <CopyButton value={codes.join('\n')} variant="outline" label={t('common:actions.copy')} />
+        </span>
         <Button
           data-testid="security-mfa-download"
           variant="outline"
