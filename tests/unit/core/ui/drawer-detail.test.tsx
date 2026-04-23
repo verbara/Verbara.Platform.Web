@@ -105,6 +105,27 @@ describe('DrawerDetail', () => {
     expect(loadingBtn.querySelector('.animate-spin')).not.toBeNull();
   });
 
+  it('Actions_ShouldForwardDataTestid_WhenProvided', () => {
+    render(
+      <DrawerDetail
+        open
+        onOpenChange={vi.fn()}
+        title="Detail"
+        actions={[
+          {
+            key: 'rotate',
+            label: 'Rotate',
+            onAction: vi.fn(),
+            'data-testid': 'action-rotate',
+          },
+        ]}
+      />
+    );
+    const btn = screen.getByTestId('action-rotate');
+    expect(btn).toBeInTheDocument();
+    expect(btn.tagName).toBe('BUTTON');
+  });
+
   it('Close_ShouldCallOnOpenChangeFalse_WhenEscapePressed', async () => {
     const onOpenChange = vi.fn();
     render(

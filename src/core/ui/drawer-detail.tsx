@@ -34,6 +34,8 @@ export interface DrawerDetailAction {
   readonly disabled?: boolean;
   /** When true, shows a spinner and disables the button. Consumer-controlled. */
   readonly loading?: boolean;
+  /** Optional passthrough for E2E hooks. Forwarded to the rendered button. */
+  readonly 'data-testid'?: string;
 }
 
 export type DrawerDetailWidth = 'sm' | 'md' | 'lg' | 'xl';
@@ -157,12 +159,13 @@ export function DrawerDetail({
                   type="button"
                   variant={action.variant ?? 'default'}
                   disabled={isDisabled}
+                  data-testid={action['data-testid']}
                   onClick={() => {
                     void action.onAction();
                   }}
                 >
                   {isLoading ? (
-                    <Loader2 aria-hidden="true" className="animate-spin" />
+                    <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
                   ) : (
                     action.icon
                   )}

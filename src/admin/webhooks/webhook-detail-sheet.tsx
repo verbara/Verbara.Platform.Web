@@ -82,6 +82,7 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
       variant: 'outline',
       onAction: handleRotate,
       loading: rotateSecret.isPending,
+      'data-testid': 'webhook-rotate-secret',
     },
     {
       key: 'test',
@@ -90,6 +91,7 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
       variant: 'outline',
       onAction: handleTest,
       loading: testWebhook.isPending,
+      'data-testid': 'webhook-send-test',
     },
   ];
 
