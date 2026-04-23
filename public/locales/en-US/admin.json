@@ -352,5 +352,16 @@
     "empty": "No surveys yet — Add your first survey",
     "createDescription": "Build a new customer feedback survey.",
     "editDescription": "Update survey configuration and questions."
+  },
+  "cluster-nodes": {
+    "detail": {
+      "overview": "Overview",
+      "drain-status": "Drain Status",
+      "history": "History",
+      "not-draining": "This node is not currently draining.",
+      "active-sessions": "Active sessions",
+      "grafana-dashboard": "Open in Grafana",
+      "force-confirm-word": "FORCE"
+    }
   }
 }

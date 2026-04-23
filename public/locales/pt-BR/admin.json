@@ -352,5 +352,16 @@
     "empty": "Sem pesquisas — Crie sua primeira pesquisa",
     "createDescription": "Crie uma nova pesquisa de satisfação.",
     "editDescription": "Atualize a configuração e perguntas da pesquisa."
+  },
+  "cluster-nodes": {
+    "detail": {
+      "overview": "Visão geral",
+      "drain-status": "Status de drenagem",
+      "history": "Histórico",
+      "not-draining": "Este nó não está drenando no momento.",
+      "active-sessions": "Sessões ativas",
+      "grafana-dashboard": "Abrir no Grafana",
+      "force-confirm-word": "FORÇAR"
+    }
   }
 }

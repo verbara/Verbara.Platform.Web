@@ -63,6 +63,7 @@ import {
   type CreateNodeInput,
   type UpdateNodeInput,
 } from '@/core/api/hooks/use-cluster';
+import { NodeDetailDrawer } from '@/admin/cluster/node-detail-drawer';
 
 // ── State badge ──
 // Delegates to the shared StatusBadge primitive (variant="cluster-node")
@@ -370,6 +371,7 @@ export default function ClusterPage() {
   const [drainNodeId, setDrainNodeId] = useState<string | undefined>();
   const [removeNode, setRemoveNode] = useState<ClusterNode | undefined>();
   const [forceNode, setForceNode] = useState<ClusterNode | undefined>();
+  const [detailNode, setDetailNode] = useState<ClusterNode | undefined>();
 
   const healthyCount = nodes.filter((n) => n.state === 'Healthy').length;
   const totalCapacity = nodes.reduce((acc, n) => acc + n.maxCapacity, 0);
@@ -415,7 +417,14 @@ export default function ClusterPage() {
           const canCancelDrain = state === 'Draining';
           const canRemove = state === 'Offline' || state === 'Unhealthy';
 
+          // Stop propagation on the actions cell so clicking the kebab menu
+          // (or any item inside it) does not bubble up to the row-click
+          // handler that opens the detail drawer. `onClickCapture` at the
+          // wrapper is a native <span>, not an interactive element — we're
+          // only intercepting bubbling, so no keyboard handler is required.
+          const stop = (e: React.MouseEvent) => e.stopPropagation();
           return (
+            <span className="inline-block" onClickCapture={stop}>
             <DropdownMenu>
               <DropdownMenuTrigger
                 data-testid={`cluster-node-${node.nodeId}-actions`}
@@ -459,6 +468,7 @@ export default function ClusterPage() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+            </span>
           );
         },
       }),
@@ -512,6 +522,7 @@ export default function ClusterPage() {
           columns={columns}
           searchPlaceholder="Search nodes..."
           noResultsMessage="No cluster nodes registered."
+          onRowClick={(row) => setDetailNode(row)}
         />
       </div>
 
@@ -645,6 +656,18 @@ export default function ClusterPage() {
         entityName={forceNode?.nodeId ?? ''}
         entityType="force drain on node"
         isPending={forceDrain.isPending}
+        confirmationWord="FORCE"
+      />
+
+      <NodeDetailDrawer
+        node={detailNode}
+        activeDrain={
+          detailNode
+            ? activeDrains.find((d) => d.nodeId === detailNode.nodeId)
+            : undefined
+        }
+        open={!!detailNode}
+        onOpenChange={(open) => { if (!open) setDetailNode(undefined); }}
       />
     </div>
   );

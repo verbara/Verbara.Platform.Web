@@ -368,5 +368,16 @@
     "empty": "Sin encuestas — Crea tu primera encuesta",
     "createDescription": "Crea una nueva encuesta de satisfacción.",
     "editDescription": "Actualiza la configuración y preguntas de la encuesta."
+  },
+  "cluster-nodes": {
+    "detail": {
+      "overview": "Resumen",
+      "drain-status": "Estado de drenaje",
+      "history": "Historial",
+      "not-draining": "Este nodo no está drenando actualmente.",
+      "active-sessions": "Sesiones activas",
+      "grafana-dashboard": "Abrir en Grafana",
+      "force-confirm-word": "FORZAR"
+    }
   }
 }
