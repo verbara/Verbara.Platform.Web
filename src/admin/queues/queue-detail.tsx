@@ -13,9 +13,12 @@ import {
   Zap,
   X,
   UserPlus,
+  Pause,
+  Play,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
+import { Input } from '@/core/ui/input';
 import { Separator } from '@/core/ui/separator';
 import {
   Select,
@@ -28,7 +31,13 @@ import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { QueueForm } from './queue-form';
 import { useQueue, useQueues, useDeleteQueue, useUpdateQueue } from '@/core/api/hooks/use-queues';
 import { useAgents } from '@/core/api/hooks/use-agents';
-import { useAddQueueMember, useRemoveQueueMember } from '@/core/api/hooks/use-queue-members';
+import {
+  useAddQueueMember,
+  useQueueMemberPause,
+  useQueueMemberResume,
+  useQueueMembers,
+  useRemoveQueueMember,
+} from '@/core/api/hooks/use-queue-members';
 
 function InfoRow({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: React.ReactNode }) {
   return (
@@ -50,14 +59,21 @@ export default function QueueDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const [addAgentId, setAddAgentId] = useState('');
+  const [addPenalty, setAddPenalty] = useState('0');
+  const [removeTargetAgentId, setRemoveTargetAgentId] = useState<string | null>(null);
+  const [pauseTargetAgentId, setPauseTargetAgentId] = useState<string | null>(null);
+  const [pauseReason, setPauseReason] = useState('');
 
   const { data: queue } = useQueue(queueId);
   const { data: allQueues = [] } = useQueues();
   const { data: allAgents = [] } = useAgents();
+  const { data: assignedMembers = [] } = useQueueMembers(queueId);
   const deleteQueue = useDeleteQueue();
   const updateQueue = useUpdateQueue();
   const addMember = useAddQueueMember();
   const removeMember = useRemoveQueueMember();
+  const pauseMember = useQueueMemberPause();
+  const resumeMember = useQueueMemberResume();
 
   if (!queue) {
     return (
@@ -76,21 +92,57 @@ export default function QueueDetailPage() {
     });
   };
 
-  // TODO(v1.7): Replace with a dedicated useQueueMembers(queueId) hook that calls
-  // a new GET /admin/queue-members/{queueId} endpoint. The Queue aggregate never
-  // carried agent membership; it was a phantom field on the frontend type.
-  // For now, show all agents as "available" (none "assigned") until the hook lands.
-  const assignedAgents: typeof allAgents = [];
-  const availableAgents = allAgents;
+  // Platform R5.1 Task I: pull the real assigned-member list off the RESTful
+  // queue-members endpoint. The Queue aggregate never carried membership —
+  // prior code read a phantom field and always rendered an empty list.
+  const assignedIds = new Set(assignedMembers.map((m) => m.agentId));
+  const availableAgents = allAgents.filter((a) => !assignedIds.has(a.id));
 
   const handleAddMember = () => {
     if (!addAgentId || !queueId) return;
-    addMember.mutate({ queueId, agentId: addAgentId }, { onSuccess: () => setAddAgentId('') });
+    const penalty = Number.parseInt(addPenalty, 10);
+    addMember.mutate(
+      {
+        queueId,
+        agentId: addAgentId,
+        penalty: Number.isFinite(penalty) ? Math.min(10, Math.max(0, penalty)) : 0,
+      },
+      {
+        onSuccess: () => {
+          setAddAgentId('');
+          setAddPenalty('0');
+        },
+      },
+    );
   };
 
-  const handleRemoveMember = (agentId: string) => {
+  const handleConfirmRemove = () => {
+    if (!queueId || !removeTargetAgentId) return;
+    const agentId = removeTargetAgentId;
+    removeMember.mutate(
+      { queueId, agentId },
+      { onSettled: () => setRemoveTargetAgentId(null) },
+    );
+  };
+
+  const handleConfirmPause = () => {
+    if (!queueId || !pauseTargetAgentId) return;
+    const agentId = pauseTargetAgentId;
+    const reason = pauseReason.trim() || undefined;
+    pauseMember.mutate(
+      { queueId, agentId, reason },
+      {
+        onSettled: () => {
+          setPauseTargetAgentId(null);
+          setPauseReason('');
+        },
+      },
+    );
+  };
+
+  const handleResume = (agentId: string) => {
     if (!queueId) return;
-    removeMember.mutate({ queueId, agentId });
+    resumeMember.mutate({ queueId, agentId });
   };
 
   const editDefaults = {
@@ -216,24 +268,63 @@ export default function QueueDetailPage() {
       </div>
 
       {/* Agent membership */}
-      <div className="rounded-lg border bg-card p-6">
-        <h3 className="font-heading text-sm font-semibold">{t('admin:queues.agents')}</h3>
+      <div data-testid="queue-members-card" className="rounded-lg border bg-card p-6">
+        <h3 className="font-heading text-sm font-semibold">
+          {t('admin:queue-members.assigned')}
+        </h3>
         <Separator className="my-3" />
-        {assignedAgents.length > 0 ? (
-          <div className="space-y-2">
-            {assignedAgents.map((agent) => (
+        {assignedMembers.length > 0 ? (
+          <div className="space-y-2" data-testid="queue-members-list">
+            {assignedMembers.map((member) => (
               <div
-                key={agent.id}
+                key={member.agentId}
+                data-testid={`queue-member-row-${member.agentId}`}
                 className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
               >
-                <span className="font-medium">{agent.displayName}</span>
+                <div className="flex flex-col">
+                  <span className="font-medium">{member.displayName}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t('admin:queue-members.penalty')}: {member.penalty} · {member.source}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">{agent.state}</Badge>
+                  {member.isPaused ? (
+                    <Badge variant="destructive" data-testid="paused-badge">
+                      {t('admin:queue-members.paused')}
+                    </Badge>
+                  ) : null}
+                  {member.isPaused ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      title={t('admin:queue-members.resume')}
+                      aria-label={t('admin:queue-members.resume')}
+                      onClick={() => handleResume(member.agentId)}
+                      disabled={resumeMember.isPending}
+                    >
+                      <Play className="h-3.5 w-3.5" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      title={t('admin:queue-members.pause')}
+                      aria-label={t('admin:queue-members.pause')}
+                      onClick={() => setPauseTargetAgentId(member.agentId)}
+                      disabled={pauseMember.isPending}
+                    >
+                      <Pause className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                    onClick={() => handleRemoveMember(agent.id)}
+                    title={t('admin:queue-members.remove')}
+                    aria-label={t('admin:queue-members.remove')}
+                    onClick={() => setRemoveTargetAgentId(member.agentId)}
                     disabled={removeMember.isPending}
                   >
                     <X className="h-3.5 w-3.5" />
@@ -248,10 +339,10 @@ export default function QueueDetailPage() {
 
         {/* Add agent */}
         {availableAgents.length > 0 && (
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <Select value={addAgentId} onValueChange={(v) => setAddAgentId(v ?? '')}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Select agent to add..." />
+              <SelectTrigger className="flex-1" data-testid="add-member-agent-select">
+                <SelectValue placeholder={t('admin:queue-members.add')} />
               </SelectTrigger>
               <SelectContent>
                 {availableAgents.map((a) => (
@@ -261,16 +352,67 @@ export default function QueueDetailPage() {
                 ))}
               </SelectContent>
             </Select>
+            <Input
+              type="number"
+              min={0}
+              max={10}
+              value={addPenalty}
+              onChange={(e) => setAddPenalty(e.target.value)}
+              aria-label={t('admin:queue-members.penalty')}
+              className="w-24"
+              data-testid="add-member-penalty-input"
+            />
             <Button
               size="sm"
               onClick={handleAddMember}
               disabled={!addAgentId || addMember.isPending}
+              data-testid="add-member-submit"
+              aria-label={t('admin:queue-members.add')}
             >
               <UserPlus className="h-4 w-4" />
             </Button>
           </div>
         )}
       </div>
+
+      {/* Remove member confirmation */}
+      <ConfirmDialog
+        open={removeTargetAgentId !== null}
+        onOpenChange={(open) => {
+          if (!open) setRemoveTargetAgentId(null);
+        }}
+        title={t('admin:queue-members.remove')}
+        description={t('admin:queue-members.confirm-remove')}
+        onConfirm={handleConfirmRemove}
+        confirmLabel={t('admin:queue-members.remove')}
+        variant="destructive"
+      />
+
+      {/* Pause member dialog — reuses ConfirmDialog with a reason input above */}
+      <ConfirmDialog
+        open={pauseTargetAgentId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPauseTargetAgentId(null);
+            setPauseReason('');
+          }
+        }}
+        title={t('admin:queue-members.pause')}
+        description={
+          <div className="space-y-2">
+            <p>{t('admin:queue-members.pause-reason')}</p>
+            <Input
+              type="text"
+              value={pauseReason}
+              onChange={(e) => setPauseReason(e.target.value)}
+              placeholder={t('admin:queue-members.pause-reason')}
+              data-testid="pause-reason-input"
+            />
+          </div>
+        }
+        onConfirm={handleConfirmPause}
+        confirmLabel={t('admin:queue-members.pause')}
+      />
 
       {/* Edit sheet */}
       <QueueForm
