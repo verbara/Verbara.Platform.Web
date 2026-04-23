@@ -42,6 +42,12 @@
       "halfopen": "Semi-aberto",
       "open": "Aberto"
     },
+    "webhook-delivery": {
+      "delivered": "Entregue",
+      "pending": "Pendente",
+      "failed": "Falha",
+      "deadletter": "Fila de falhas"
+    },
     "mfa": {
       "enrolled": "Ativado",
       "notenrolled": "Não ativado",

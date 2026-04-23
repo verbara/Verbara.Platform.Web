@@ -43,6 +43,7 @@ export type StatusBadgeVariant =
   | 'license'
   | 'api-key'
   | 'webhook-circuit'
+  | 'webhook-delivery'
   | 'mfa'
   | 'generic';
 
@@ -76,6 +77,13 @@ const WEBHOOK_CIRCUIT_MAP: VariantMap = {
   open: 'red',
 };
 
+const WEBHOOK_DELIVERY_MAP: VariantMap = {
+  delivered: 'green',
+  pending: 'amber',
+  failed: 'red',
+  deadletter: 'red',
+};
+
 const MFA_MAP: VariantMap = {
   enrolled: 'green',
   notenrolled: 'gray',
@@ -87,6 +95,7 @@ const VARIANT_MAPS: Record<Exclude<StatusBadgeVariant, 'generic'>, VariantMap> =
   license: LICENSE_MAP,
   'api-key': API_KEY_MAP,
   'webhook-circuit': WEBHOOK_CIRCUIT_MAP,
+  'webhook-delivery': WEBHOOK_DELIVERY_MAP,
   mfa: MFA_MAP,
 };
 

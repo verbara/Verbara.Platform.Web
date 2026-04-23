@@ -42,6 +42,12 @@
       "halfopen": "Half-Open",
       "open": "Open"
     },
+    "webhook-delivery": {
+      "delivered": "Delivered",
+      "pending": "Pending",
+      "failed": "Failed",
+      "deadletter": "Dead Letter"
+    },
     "mfa": {
       "enrolled": "Enrolled",
       "notenrolled": "Not enrolled",
