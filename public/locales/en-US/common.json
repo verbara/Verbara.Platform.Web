@@ -8,6 +8,7 @@
   },
   "nav": { "admin": "Admin", "operations": "Operations", "analytics": "Analytics", "agent": "Agent", "notifications": "Notifications" },
   "code-block": { "show-more": "Show more", "show-less": "Show less" },
+  "audit-trail-mini": { "no-events": "No audit events yet.", "loading": "Loading events..." },
   "actions": { "save": "Save", "cancel": "Cancel", "delete": "Delete", "create": "Create", "edit": "Edit", "search": "Search", "confirm": "Confirm", "close": "Close", "back": "Back", "clear_all": "Clear all", "copy": "Copy", "download": "Download", "done": "Done", "next": "Next" },
   "status": {
     "loading": "Loading...",

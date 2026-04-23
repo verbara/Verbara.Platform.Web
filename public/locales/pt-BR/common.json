@@ -8,6 +8,7 @@
   },
   "nav": { "admin": "Administração", "operations": "Operações", "analytics": "Análise", "agent": "Agente", "notifications": "Notificações" },
   "code-block": { "show-more": "Ver mais", "show-less": "Ver menos" },
+  "audit-trail-mini": { "no-events": "Ainda não há eventos de auditoria.", "loading": "Carregando eventos..." },
   "actions": { "save": "Salvar", "cancel": "Cancelar", "delete": "Excluir", "create": "Criar", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Fechar", "back": "Voltar", "clear_all": "Limpar tudo", "copy": "Copiar", "download": "Baixar", "done": "Conclu\u00eddo", "next": "Pr\u00f3ximo" },
   "status": {
     "loading": "Carregando...",

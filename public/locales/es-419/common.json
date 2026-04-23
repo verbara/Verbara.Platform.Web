@@ -8,6 +8,7 @@
   },
   "nav": { "admin": "Administración", "operations": "Operaciones", "analytics": "Analítica", "agent": "Agente", "notifications": "Notificaciones" },
   "code-block": { "show-more": "Ver más", "show-less": "Ver menos" },
+  "audit-trail-mini": { "no-events": "Aún no hay eventos de auditoría.", "loading": "Cargando eventos..." },
   "actions": { "save": "Guardar", "cancel": "Cancelar", "delete": "Eliminar", "create": "Crear", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Cerrar", "back": "Volver", "clear_all": "Limpiar todo", "copy": "Copiar", "download": "Descargar", "done": "Listo", "next": "Siguiente" },
   "status": {
     "loading": "Cargando...",
