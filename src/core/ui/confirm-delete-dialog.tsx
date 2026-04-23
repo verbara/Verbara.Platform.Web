@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/core/ui/button';
+import { Input } from '@/core/ui/input';
+import { Label } from '@/core/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +20,14 @@ export interface ConfirmDeleteDialogProps {
   entityName: string;
   entityType: string;
   isPending?: boolean;
+  /**
+   * When set, the user must type this literal word (case-sensitive) into a
+   * text input instead of waiting out the countdown. Useful for destructive
+   * actions where a specific keyword — e.g. "FORCE" — signals intent more
+   * deliberately than a typed entity name.
+   * When unset, the default 3-second countdown gate applies.
+   */
+  confirmationWord?: string;
 }
 
 export function ConfirmDeleteDialog({
@@ -27,15 +37,20 @@ export function ConfirmDeleteDialog({
   entityName,
   entityType,
   isPending = false,
+  confirmationWord,
 }: ConfirmDeleteDialogProps) {
+  const useWord = typeof confirmationWord === 'string' && confirmationWord.length > 0;
   const [countdown, setCountdown] = useState(3);
+  const [typed, setTyped] = useState('');
 
   useEffect(() => {
     if (!open) {
       setCountdown(3);
+      setTyped('');
       return;
     }
 
+    if (useWord) return; // word-gate path, no timer
     if (countdown <= 0) return;
 
     const timer = setTimeout(() => {
@@ -43,14 +58,28 @@ export function ConfirmDeleteDialog({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [open, countdown]);
+  }, [open, countdown, useWord]);
+
+  const wordMatches = useWord && typed === confirmationWord;
 
   const handleConfirm = useCallback(() => {
-    if (countdown > 0 || isPending) return;
+    if (isPending) return;
+    if (useWord) {
+      if (!wordMatches) return;
+    } else if (countdown > 0) {
+      return;
+    }
     onConfirm();
-  }, [countdown, isPending, onConfirm]);
+  }, [countdown, isPending, onConfirm, useWord, wordMatches]);
 
-  const deleteDisabled = countdown > 0 || isPending;
+  const deleteDisabled = isPending || (useWord ? !wordMatches : countdown > 0);
+
+  const computeButtonLabel = (): string => {
+    if (isPending) return 'Deleting...';
+    if (!useWord && countdown > 0) return `Wait ${countdown}s...`;
+    return 'Delete';
+  };
+  const buttonLabel = computeButtonLabel();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -67,6 +96,27 @@ export function ConfirmDeleteDialog({
             cannot be undone.
           </DialogDescription>
         </DialogHeader>
+        {useWord && (
+          <div className="space-y-2">
+            <Label htmlFor="confirm-delete-word-input" className="text-xs">
+              Type{' '}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                {confirmationWord}
+              </code>{' '}
+              to confirm.
+            </Label>
+            <Input
+              id="confirm-delete-word-input"
+              data-testid="confirm-delete-word-input"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              aria-invalid={typed.length > 0 && !wordMatches}
+            />
+          </div>
+        )}
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
           <Button
@@ -75,11 +125,7 @@ export function ConfirmDeleteDialog({
             onClick={handleConfirm}
             disabled={deleteDisabled}
           >
-            {isPending
-              ? 'Deleting...'
-              : countdown > 0
-                ? `Wait ${countdown}s...`
-                : 'Delete'}
+            {buttonLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
