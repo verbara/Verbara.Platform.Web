@@ -55,6 +55,14 @@ export function CodeBlock({
   const prismTheme = resolvedTheme === 'dark' ? prismThemes.vsDark : prismThemes.github;
 
   const isCollapsed = collapsible && !expanded;
+  // `maxHeight` must apply in two cases:
+  //   1. collapsible + collapsed → cap height and hide overflow so the fade
+  //      gradient reads as "there's more content below, click to expand".
+  //   2. non-collapsible → cap height and allow vertical scroll so huge
+  //      payloads (audit events, webhook bodies) don't blow out the page.
+  // When collapsible + expanded, no constraint — user opted into full content.
+  const shouldConstrain = isCollapsed || !collapsible;
+  const overflowClass = isCollapsed ? 'overflow-hidden' : 'overflow-y-auto';
   const showMoreLabel = t('code-block.show-more', 'Show more');
   const showLessLabel = t('code-block.show-less', 'Show less');
 
@@ -67,8 +75,8 @@ export function CodeBlock({
       )}
 
       <div
-        className="relative overflow-hidden"
-        style={isCollapsed ? { maxHeight } : undefined}
+        className={cn('relative', shouldConstrain && overflowClass)}
+        style={shouldConstrain ? { maxHeight } : undefined}
       >
         <Highlight code={code} language={prismLanguage} theme={prismTheme}>
           {({ className, style, tokens, getLineProps, getTokenProps }) => (

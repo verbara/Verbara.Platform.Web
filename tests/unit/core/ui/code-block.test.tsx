@@ -85,4 +85,20 @@ describe('CodeBlock', () => {
     expect(scrollPre!.className).toMatch(/overflow-x-auto/);
     expect(scrollPre!.className).not.toMatch(/whitespace-pre-wrap/);
   });
+
+  it('MaxHeight_ShouldConstrainContainer_WhenNonCollapsible', () => {
+    const { container } = render(
+      <CodeBlock code={'line1\nline2\nline3'} maxHeight="10rem" copyable={false} />
+    );
+    // Assert the inner container carries an inline max-height style even
+    // though `collapsible` is false. This pins the contract that a consumer
+    // passing `maxHeight` to a non-collapsible <CodeBlock> gets a bounded,
+    // scrollable surface — not a container that grows to fit the payload.
+    const inner = container.querySelector('[style*="max-height"]');
+    expect(inner).not.toBeNull();
+    expect((inner as HTMLElement).style.maxHeight).toBe('10rem');
+    // Non-collapsible containers scroll within their bounds; collapsed
+    // containers use overflow-hidden so the gradient fade reads correctly.
+    expect((inner as HTMLElement).className).toMatch(/overflow-y-auto/);
+  });
 });
