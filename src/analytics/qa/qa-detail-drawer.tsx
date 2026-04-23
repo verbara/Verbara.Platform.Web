@@ -37,7 +37,7 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
 
         {isLoading && (
           <div className="flex items-center justify-center py-12 text-muted-foreground">
-            {t('common.loading', 'Loading…')}
+            {t('loading', { ns: 'common' })}
           </div>
         )}
 

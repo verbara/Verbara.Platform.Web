@@ -45,8 +45,8 @@ export function CopyButton({
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const resolvedLabel = label ?? t('common.copy', 'Copy');
-  const resolvedSuccessLabel = successLabel ?? t('common.copied', 'Copied');
+  const resolvedLabel = label ?? t('copy', 'Copy');
+  const resolvedSuccessLabel = successLabel ?? t('copied', 'Copied');
 
   useEffect(() => {
     return () => {
@@ -60,7 +60,7 @@ export function CopyButton({
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
-      toast.success(t('common.copied', 'Copied'));
+      toast.success(t('copied', 'Copied'));
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current);
       }
@@ -114,5 +114,3 @@ export function CopyButton({
     </Button>
   );
 }
-
-export default CopyButton;

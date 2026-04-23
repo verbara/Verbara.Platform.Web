@@ -205,7 +205,7 @@ export default function SurveyResultsPage() {
 
       {selectedSurveyId !== undefined && (summaryLoading || responsesLoading) && (
         <div className="flex items-center justify-center py-12 text-muted-foreground">
-          {t('common.loading', 'Loading…')}
+          {t('loading', { ns: 'common' })}
         </div>
       )}
 

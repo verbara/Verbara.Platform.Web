@@ -179,5 +179,3 @@ export function DrawerDetail({
     </Sheet>
   );
 }
-
-export default DrawerDetail;

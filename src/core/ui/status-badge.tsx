@@ -17,8 +17,11 @@ const COLOR_CLASSES: Record<StatusBadgeColor, string> = {
   blue: 'bg-blue-500/20 text-blue-700 dark:text-blue-400',
 };
 
+// Size mapping only carries the 'md' override — the underlying Badge component
+// already emits `text-xs px-2 py-0.5` as its baseline, so mapping 'sm' to the
+// same classes would be dead weight. An empty string for 'sm' keeps the default.
 const SIZE_CLASSES: Record<'sm' | 'md', string> = {
-  sm: 'text-xs px-2 py-0.5',
+  sm: '',
   md: 'text-sm px-2.5 py-0.5',
 };
 
@@ -26,6 +29,15 @@ const SIZE_CLASSES: Record<'sm' | 'md', string> = {
 // Each variant is a namespace of canonical status strings. Status lookups are
 // case-insensitive (we normalize to lowercase before lookup).
 
+/**
+ * Variant namespace the badge pulls its i18n key + color mapping from.
+ *
+ * Note: the `'generic'` variant intentionally has NO i18n entries — it's an
+ * escape hatch for ad-hoc status strings that aren't part of a curated
+ * namespace. Labels fall back to the raw status string the caller passes in,
+ * and the color always resolves to `gray`. DEV builds log a warning so
+ * unexpected generic usage surfaces during integration.
+ */
 export type StatusBadgeVariant =
   | 'cluster-node'
   | 'license'
@@ -134,5 +146,3 @@ export function StatusBadge({ status, variant, size = 'sm' }: StatusBadgeProps) 
     </Badge>
   );
 }
-
-export default StatusBadge;
