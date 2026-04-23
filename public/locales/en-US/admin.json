@@ -37,7 +37,49 @@
     "partnerRevenue": "Revenue",
     "partnerSettings": "Settings",
     "features": "Features",
-    "featureAgentAssist": "Agent Assist"
+    "featureAgentAssist": "Agent Assist",
+    "apiKeys": "API Keys"
+  },
+  "api-keys": {
+    "title": "API Keys",
+    "description": "Issue, rotate, and revoke Management API keys for machine-to-machine access. Keys carry platform-wide scope and should be treated as secrets.",
+    "create": "New key",
+    "create_title": "Create API key",
+    "create_description": "The new key will be shown once after creation. Store it in a secrets manager — it cannot be retrieved later.",
+    "creating": "Creating...",
+    "cancel": "Cancel",
+    "name_label": "Name",
+    "name_placeholder": "e.g. CI deploy bot",
+    "expiration_label": "Expiration",
+    "expiration": {
+      "30_days": "30 days",
+      "90_days": "90 days",
+      "365_days": "1 year",
+      "never": "Never expires"
+    },
+    "reveal_title": "Copy your new API key",
+    "reveal_description": "\"{{name}}\" has been created. Copy the key now — this is the only time it will be shown.",
+    "reveal_warning": "This is the only time you'll see this key. Close this dialog only after you've stored it somewhere safe.",
+    "reveal_dismiss": "I've copied the key",
+    "key_label": "API key",
+    "copy": "Copy key",
+    "columns": {
+      "name": "Name",
+      "status": "Status",
+      "last_used": "Last used",
+      "expires": "Expires",
+      "created": "Created"
+    },
+    "search_placeholder": "Search keys...",
+    "loading": "Loading keys...",
+    "empty": "No API keys yet. Create one to enable machine-to-machine access.",
+    "last_used_pending": "Last-used tracking pending (R5.2).",
+    "actions": {
+      "rotate": "Rotate key",
+      "revoke": "Revoke key"
+    },
+    "rotate_entity_type": "API key (rotation revokes the current secret)",
+    "revoke_entity_type": "API key"
   },
   "features": {
     "agent-assist": {

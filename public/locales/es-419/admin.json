@@ -53,7 +53,49 @@
     "partnerRevenue": "Ingresos",
     "partnerSettings": "Configuración",
     "features": "Funciones",
-    "featureAgentAssist": "Agent Assist"
+    "featureAgentAssist": "Agent Assist",
+    "apiKeys": "API Keys"
+  },
+  "api-keys": {
+    "title": "API Keys",
+    "description": "Emita, rote y revoque API keys de Management para acceso máquina-a-máquina. Las keys tienen alcance platform-wide y deben tratarse como secretos.",
+    "create": "Nueva key",
+    "create_title": "Crear API key",
+    "create_description": "La nueva key se mostrará una sola vez después de crearla. Guárdela en un gestor de secretos — no puede recuperarse luego.",
+    "creating": "Creando...",
+    "cancel": "Cancelar",
+    "name_label": "Nombre",
+    "name_placeholder": "ej. Bot de despliegue CI",
+    "expiration_label": "Expiración",
+    "expiration": {
+      "30_days": "30 días",
+      "90_days": "90 días",
+      "365_days": "1 año",
+      "never": "Sin expiración"
+    },
+    "reveal_title": "Copie su nueva API key",
+    "reveal_description": "\"{{name}}\" ha sido creada. Copie la key ahora — esta es la única vez que se mostrará.",
+    "reveal_warning": "Esta es la única vez que verá esta key. Cierre este diálogo solo después de haberla guardado en un lugar seguro.",
+    "reveal_dismiss": "He copiado la key",
+    "key_label": "API key",
+    "copy": "Copiar key",
+    "columns": {
+      "name": "Nombre",
+      "status": "Estado",
+      "last_used": "Último uso",
+      "expires": "Expira",
+      "created": "Creada"
+    },
+    "search_placeholder": "Buscar keys...",
+    "loading": "Cargando keys...",
+    "empty": "Aún no hay API keys. Cree una para habilitar el acceso máquina-a-máquina.",
+    "last_used_pending": "Rastreo de último uso pendiente (R5.2).",
+    "actions": {
+      "rotate": "Rotar key",
+      "revoke": "Revocar key"
+    },
+    "rotate_entity_type": "API key (la rotación revoca el secreto actual)",
+    "revoke_entity_type": "API key"
   },
   "features": {
     "agent-assist": {

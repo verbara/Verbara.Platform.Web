@@ -169,6 +169,7 @@ const groups: SidebarGroup[] = [
     items: [
       { key: 'system', labelKey: 'admin:sidebar.system', to: '/admin/system', icon: Server, requiredPermission: 'system:integration:manage' },
       { key: 'license', labelKey: 'admin:sidebar.license', to: '/admin/license', icon: ShieldCheck, requiredPermission: 'platform:license:manage' },
+      { key: 'api-keys', labelKey: 'admin:sidebar.apiKeys', to: '/admin/api-keys', icon: KeyRound, requiredPermission: 'platform:tenant:manage' },
       { key: 'diagnostics', labelKey: 'admin:sidebar.diagnostics', to: '/admin/system/diagnostics', icon: Activity, requiredPermission: 'system:integration:manage' },
       { key: 'cluster', labelKey: 'admin:sidebar.cluster', to: '/admin/cluster', icon: Network, requiredPermission: 'platform:cluster:manage' },
       { key: 'tenants', labelKey: 'admin:sidebar.tenants', to: '/admin/tenants', icon: Building2, requiredPermission: 'system:tenant:configure' },

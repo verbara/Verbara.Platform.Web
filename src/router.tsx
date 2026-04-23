@@ -43,6 +43,7 @@ const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const DiagnosticsPage = lazy(() => import('@/admin/system/diagnostics-page'));
 const LicensePage = lazy(() => import('@/admin/license/license-page'));
+const ApiKeysPage = lazy(() => import('@/admin/api-keys/api-keys-page'));
 const ClusterPage = lazy(() => import('@/admin/cluster/cluster-page'));
 const RealtimePage = lazy(() => import('@/admin/realtime/realtime-page'));
 const AuditPage = lazy(() => import('@/admin/audit/audit-page'));
@@ -446,6 +447,22 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="platform:license:manage" redirect>
                 <LazyLoad>
                   <LicensePage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            // Management API keys are PlatformAdmin-only server-side
+            // (`PlatformAdminOnly` auth policy). We reuse the existing
+            // `platform:tenant:manage` permission — the same gate applied
+            // to /admin/tenants — so operators who already administer the
+            // host tenant can issue / rotate / revoke keys without a new
+            // permission being minted.
+            path: 'api-keys',
+            element: (
+              <PermissionGuard requires="platform:tenant:manage" redirect>
+                <LazyLoad>
+                  <ApiKeysPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

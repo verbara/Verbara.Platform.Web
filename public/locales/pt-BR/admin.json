@@ -37,7 +37,49 @@
     "partnerRevenue": "Receita",
     "partnerSettings": "Configurações",
     "features": "Funcionalidades",
-    "featureAgentAssist": "Agent Assist"
+    "featureAgentAssist": "Agent Assist",
+    "apiKeys": "API Keys"
+  },
+  "api-keys": {
+    "title": "API Keys",
+    "description": "Emita, gire e revogue API keys de Management para acesso máquina-a-máquina. As keys têm escopo platform-wide e devem ser tratadas como segredos.",
+    "create": "Nova key",
+    "create_title": "Criar API key",
+    "create_description": "A nova key será exibida uma única vez após a criação. Guarde-a em um gerenciador de segredos — não pode ser recuperada depois.",
+    "creating": "Criando...",
+    "cancel": "Cancelar",
+    "name_label": "Nome",
+    "name_placeholder": "ex. Bot de deploy CI",
+    "expiration_label": "Expiração",
+    "expiration": {
+      "30_days": "30 dias",
+      "90_days": "90 dias",
+      "365_days": "1 ano",
+      "never": "Sem expiração"
+    },
+    "reveal_title": "Copie sua nova API key",
+    "reveal_description": "\"{{name}}\" foi criada. Copie a key agora — esta é a única vez que será exibida.",
+    "reveal_warning": "Esta é a única vez que você verá esta key. Feche este diálogo somente após tê-la guardado em um local seguro.",
+    "reveal_dismiss": "Já copiei a key",
+    "key_label": "API key",
+    "copy": "Copiar key",
+    "columns": {
+      "name": "Nome",
+      "status": "Estado",
+      "last_used": "Último uso",
+      "expires": "Expira",
+      "created": "Criada"
+    },
+    "search_placeholder": "Buscar keys...",
+    "loading": "Carregando keys...",
+    "empty": "Ainda não há API keys. Crie uma para habilitar o acesso máquina-a-máquina.",
+    "last_used_pending": "Rastreamento de último uso pendente (R5.2).",
+    "actions": {
+      "rotate": "Girar key",
+      "revoke": "Revogar key"
+    },
+    "rotate_entity_type": "API key (a rotação revoga o segredo atual)",
+    "revoke_entity_type": "API key"
   },
   "features": {
     "agent-assist": {
