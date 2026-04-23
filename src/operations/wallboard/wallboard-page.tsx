@@ -23,7 +23,9 @@ export default function WallboardPage() {
       const aBreach = a.slaPercent < 60 ? 0 : 1;
       const bBreach = b.slaPercent < 60 ? 0 : 1;
       if (aBreach !== bBreach) return aBreach - bBreach;
-      return b.waiting - a.waiting;
+      // Null waiting values (Pro.Analytics.Live provider unavailable) sort
+      // after known values (treat as 0 for comparison purposes).
+      return (b.waiting ?? 0) - (a.waiting ?? 0);
     });
   }, [queues]);
 

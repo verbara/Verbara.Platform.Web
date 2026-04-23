@@ -3,8 +3,18 @@ import { create } from 'zustand';
 export interface QueueMetrics {
   queueId: string;
   queueName: string;
-  waiting: number;
-  avgWaitSeconds: number;
+  /**
+   * Calls currently waiting in the queue. `null` when the Pro.Analytics.Live
+   * provider is unavailable (unregistered) or has no snapshot for this queue
+   * yet (R5.1 Task H). UI renders an em-dash placeholder with a "Metrics
+   * unavailable" tooltip when null.
+   */
+  waiting: number | null;
+  /**
+   * Average wait time (seconds) for the current interval. `null` under the
+   * same conditions as {@link waiting} above.
+   */
+  avgWaitSeconds: number | null;
   slaPercent: number;
   agentsAvailable: number;
   agentsBusy: number;
@@ -21,7 +31,7 @@ interface QueueMetricsState {
 }
 
 function computeGlobals(queues: QueueMetrics[]) {
-  const totalActive = queues.reduce((sum, q) => sum + q.waiting, 0);
+  const totalActive = queues.reduce((sum, q) => sum + (q.waiting ?? 0), 0);
   const totalAgents = queues.reduce(
     (sum, q) => sum + q.agentsAvailable + q.agentsBusy + q.agentsAway,
     0,

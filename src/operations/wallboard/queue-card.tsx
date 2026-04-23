@@ -1,6 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import type { QueueMetrics } from '@/operations/stores/queue-metrics-store';
 import { useLiveState } from '@/core/api/hooks/use-analytics';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/core/ui/tooltip';
 
 function slaColor(sla: number): string {
   if (sla >= 80) return 'border-emerald-400 dark:border-emerald-600';
@@ -27,13 +33,23 @@ interface QueueCardProps {
 
 export function QueueCard({ queue }: QueueCardProps) {
   const { t } = useTranslation('operations');
+  const { t: tCommon } = useTranslation('common');
   const { data: liveState } = useLiveState(queue.queueName);
 
-  const waiting = liveState?.callsWaiting ?? queue.waiting;
-  const longestWaitSec = liveState ? Math.round(liveState.longestWaitMs / 1000) : queue.avgWaitSeconds;
+  // Null-safe merge: SignalR live state always wins; falling back to the
+  // Pro.Analytics.Live snapshot from the API (R5.1 Task H). Both can be
+  // absent, in which case we render an em-dash placeholder with a tooltip
+  // that explains the unavailability (`common.notAvailable`).
+  const waiting: number | null = liveState?.callsWaiting ?? queue.waiting ?? null;
+  const longestWaitSec: number | null = liveState
+    ? Math.round(liveState.longestWaitMs / 1000)
+    : (queue.avgWaitSeconds ?? null);
   const agentsAvailable = liveState?.agentsAvailable ?? queue.agentsAvailable;
   const agentsBusy = liveState?.agentsOnCall ?? queue.agentsBusy;
   const agentsAway = liveState?.agentsPaused ?? queue.agentsAway;
+
+  const metricsUnavailableLabel = tCommon('notAvailable.tooltip');
+  const emDash = tCommon('notAvailable.value');
 
   return (
     <div
@@ -43,13 +59,46 @@ export function QueueCard({ queue }: QueueCardProps) {
 
       <div className="mt-3 flex items-end justify-between">
         <div>
-          <p className="text-3xl font-bold text-slate-900 dark:text-white">{waiting}</p>
+          {waiting === null ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  data-testid="queue-card-waiting-unavailable"
+                  className="cursor-help text-3xl font-bold text-slate-400 dark:text-slate-500"
+                >
+                  {emDash}
+                </TooltipTrigger>
+                <TooltipContent>{metricsUnavailableLabel}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <p
+              data-testid="queue-card-waiting-value"
+              className="text-3xl font-bold text-slate-900 dark:text-white"
+            >
+              {waiting}
+            </p>
+          )}
           <p className="text-xs text-slate-500 dark:text-slate-400">{t('wallboard.waiting')}</p>
         </div>
         <div className="text-right">
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {formatWait(longestWaitSec)}
-          </p>
+          {longestWaitSec === null ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  data-testid="queue-card-wait-unavailable"
+                  className="cursor-help text-sm font-medium text-slate-400 dark:text-slate-500"
+                >
+                  {emDash}
+                </TooltipTrigger>
+                <TooltipContent>{metricsUnavailableLabel}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              {formatWait(longestWaitSec)}
+            </p>
+          )}
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {liveState ? t('wallboard.longest_wait') : t('wallboard.avg_wait')}
           </p>
