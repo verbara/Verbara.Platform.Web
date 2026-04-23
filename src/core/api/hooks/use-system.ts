@@ -75,3 +75,34 @@ export function useUpdateSystemSettings() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export interface UpdateLicenseRequest {
+  licenseKey: string;
+}
+
+export interface UpdateLicenseResponse {
+  message: string;
+}
+
+// Submits a new license key to the platform.
+//
+// The backend endpoint (PUT /api/v1/management/system/license) currently
+// acknowledges receipt and returns an informational message — runtime license
+// hot-swap is tracked as a future Pro.Licensing item. The UI still exposes the
+// flow so operators can submit keys once the backend wires up activation.
+export function useUpdateLicense() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateLicenseRequest) =>
+      customFetch<UpdateLicenseResponse>({
+        url: '/api/v1/management/system/license',
+        method: 'PUT',
+        data,
+      }),
+    onSuccess: (response) => {
+      qc.invalidateQueries({ queryKey: ['system', 'license'] });
+      toast.success(response.message || 'License submitted');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
