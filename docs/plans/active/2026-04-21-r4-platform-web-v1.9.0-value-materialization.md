@@ -367,3 +367,26 @@ npm run dev                      # local Web server
 - **Frente B → pivoted to Ω** (Ω-1 + Ω-1b + Ω-2 shipped; Ω-3 pending)
 - **Frente C / D / E / F** — pending
 - **R4 release (v1.9.0 Web)** — will bundle Ω-3 completion + any subset of C/D/E/F desired
+
+---
+
+## 2026-04-22 — Absorbed into R5 Production Readiness Release Train
+
+R4 pending scope is absorbed into the broader cross-repo release train R5. See authoritative spec in Platform repo: [`docs/plans/active/2026-04-22-r5-production-readiness-release-train.md`](../../../../../Asterisk.Platform/docs/plans/active/2026-04-22-r5-production-readiness-release-train.md).
+
+Mapping of pending R4 items to R5:
+
+| R4 pending item | R5 destination |
+|---|---|
+| Ω-3 drill-down (qa-detail-drawer enrichment) | R5.3 S4.6 |
+| Ω-3 Playwright E2E T27 bridge | R5.3 S4.7 |
+| Frente C — Retention admin | R5.2 S3.5 |
+| Frente D — EventStore/Audit UI expansion | R5.2 S3.2 |
+| Frente E — P0 security UI (MFA wizard) | R5.2 S3.4 (co-shipped with MFA admin S3.1 for UX coherence) |
+| Frente F — Sub-B Web Sync | R5.3 S4.8 (scope-guarded) |
+
+Rationale for absorption: R4 was Web-only in scope but the pending items all interlock with backend work (Platform audit enrichment, Retention per-tenant viewer, MFA admin view) and with Ops Toolkit UI (Phase 0 shared primitives consolidation benefits all subsequent UI work). Execution as one coordinated release train is more coherent than splitting R4 Web from a parallel Platform effort.
+
+R4 release bump (was v1.9.0 Web) replaced by R5 staggered bumps: R5.2 ships Web 1.10.0 (absorbs Frentes C/D/E), R5.3 ships Web 1.11.0 (absorbs Ω-3 + Frente F + R4 closure criteria).
+
+**This file remains in `plans/active/` until R5.3 ships the last absorbed R4 items; on R5.3 ship it moves to `plans/completed/` together with the R5 spec.**
