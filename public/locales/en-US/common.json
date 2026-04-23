@@ -4,7 +4,44 @@
   "copied": "Copied",
   "nav": { "admin": "Admin", "operations": "Operations", "analytics": "Analytics", "agent": "Agent", "notifications": "Notifications" },
   "actions": { "save": "Save", "cancel": "Cancel", "delete": "Delete", "create": "Create", "edit": "Edit", "search": "Search", "confirm": "Confirm", "close": "Close", "back": "Back", "clear_all": "Clear all", "copy": "Copy", "download": "Download", "done": "Done", "next": "Next" },
-  "status": { "loading": "Loading...", "error": "Error", "success": "Success", "no_results": "No results", "reconnecting": "Reconnecting...", "enabled": "Enabled", "disabled": "Disabled" },
+  "status": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "no_results": "No results",
+    "reconnecting": "Reconnecting...",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "cluster-node": {
+      "healthy": "Healthy",
+      "degraded": "Degraded",
+      "unhealthy": "Unhealthy",
+      "draining": "Draining",
+      "offline": "Offline",
+      "unknown": "Unknown"
+    },
+    "license": {
+      "active": "Active",
+      "grace": "Grace period",
+      "expired": "Expired",
+      "invalid": "Invalid"
+    },
+    "api-key": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "webhook-circuit": {
+      "closed": "Closed",
+      "halfopen": "Half-Open",
+      "open": "Open"
+    },
+    "mfa": {
+      "enrolled": "Enrolled",
+      "notenrolled": "Not enrolled",
+      "locked": "Locked"
+    }
+  },
   "auth": {
     "login": "Sign in",
     "logout": "Sign out",

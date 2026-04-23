@@ -4,7 +4,44 @@
   "copied": "Copiado",
   "nav": { "admin": "Administração", "operations": "Operações", "analytics": "Análise", "agent": "Agente", "notifications": "Notificações" },
   "actions": { "save": "Salvar", "cancel": "Cancelar", "delete": "Excluir", "create": "Criar", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Fechar", "back": "Voltar", "clear_all": "Limpar tudo", "copy": "Copiar", "download": "Baixar", "done": "Conclu\u00eddo", "next": "Pr\u00f3ximo" },
-  "status": { "loading": "Carregando...", "error": "Erro", "success": "Sucesso", "no_results": "Sem resultados", "reconnecting": "Reconectando...", "enabled": "Habilitado", "disabled": "Desabilitado" },
+  "status": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "no_results": "Sem resultados",
+    "reconnecting": "Reconectando...",
+    "enabled": "Habilitado",
+    "disabled": "Desabilitado",
+    "cluster-node": {
+      "healthy": "Saudável",
+      "degraded": "Degradado",
+      "unhealthy": "Não saudável",
+      "draining": "Drenando",
+      "offline": "Offline",
+      "unknown": "Desconhecido"
+    },
+    "license": {
+      "active": "Ativa",
+      "grace": "Período de carência",
+      "expired": "Expirada",
+      "invalid": "Inválida"
+    },
+    "api-key": {
+      "active": "Ativa",
+      "expired": "Expirada",
+      "revoked": "Revogada"
+    },
+    "webhook-circuit": {
+      "closed": "Fechado",
+      "halfopen": "Semi-aberto",
+      "open": "Aberto"
+    },
+    "mfa": {
+      "enrolled": "Ativado",
+      "notenrolled": "Não ativado",
+      "locked": "Bloqueado"
+    }
+  },
   "auth": {
     "login": "Entrar",
     "logout": "Sair",

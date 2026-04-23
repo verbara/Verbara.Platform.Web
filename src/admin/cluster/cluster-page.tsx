@@ -21,6 +21,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
+import { StatusBadge } from '@/core/ui/status-badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
@@ -63,26 +64,12 @@ import {
   type UpdateNodeInput,
 } from '@/core/api/hooks/use-cluster';
 
-// ── State badge config ──
-
-const STATE_BADGE: Record<string, { variant: 'default' | 'destructive' | 'outline' | 'secondary'; className?: string }> = {
-  Healthy: { variant: 'default' },
-  Degraded: { variant: 'outline', className: 'border-amber-400 text-amber-600 dark:text-amber-400' },
-  Unhealthy: { variant: 'destructive' },
-  Draining: { variant: 'outline', className: 'border-amber-400 text-amber-600 dark:text-amber-400' },
-  Offline: { variant: 'secondary' },
-  Unknown: { variant: 'secondary' },
-};
-
-const DEFAULT_BADGE = { variant: 'secondary' as const, className: undefined };
+// ── State badge ──
+// Delegates to the shared StatusBadge primitive (variant="cluster-node")
+// so color + label mapping lives in a single canonical place.
 
 function NodeStateBadge({ state }: Readonly<{ state: string }>) {
-  const cfg = STATE_BADGE[state] ?? DEFAULT_BADGE;
-  return (
-    <Badge variant={cfg.variant} className={cfg.className}>
-      {state}
-    </Badge>
-  );
+  return <StatusBadge variant="cluster-node" status={state} />;
 }
 
 // ── Schemas ──
@@ -548,7 +535,7 @@ export default function ClusterPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="border-amber-400 text-amber-600 dark:text-amber-400">{drain.state}</Badge>
+                  <StatusBadge variant="cluster-node" status={drain.state} />
                   <Button
                     variant="outline"
                     size="sm"
