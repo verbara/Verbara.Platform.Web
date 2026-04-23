@@ -155,6 +155,14 @@ const groups: SidebarGroup[] = [
     ],
   },
   {
+    key: 'features',
+    labelKey: 'admin:sidebar.features',
+    requiredPermission: 'features:agent-assist:manage',
+    items: [
+      { key: 'feature-agent-assist', labelKey: 'admin:sidebar.featureAgentAssist', to: '/admin/features/agent-assist', icon: Zap, requiredPermission: 'features:agent-assist:manage' },
+    ],
+  },
+  {
     key: 'system',
     labelKey: 'admin:sidebar.system',
     requiredAnyPermission: ['system:tenant:configure', 'system:auth:configure', 'system:audit:view', 'system:integration:manage'],

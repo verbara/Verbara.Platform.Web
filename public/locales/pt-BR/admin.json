@@ -35,7 +35,34 @@
     "partnerCustomers": "Clientes",
     "partnerRateCards": "Tarifários",
     "partnerRevenue": "Receita",
-    "partnerSettings": "Configurações"
+    "partnerSettings": "Configurações",
+    "features": "Funcionalidades",
+    "featureAgentAssist": "Agent Assist"
+  },
+  "features": {
+    "agent-assist": {
+      "title": "Agent Assist",
+      "description": "Ative transcrição em tempo real + sugestões + compliance para chamadas ao vivo. Gire credenciais do provedor em tempo de execução sem reiniciar a plataforma.",
+      "enabled": "Habilitar Agent Assist",
+      "provider": {
+        "label": "Provedor",
+        "deepgram": "Deepgram (streaming WebSocket)",
+        "whisper": "OpenAI Whisper",
+        "azure-whisper": "Azure Whisper",
+        "google": "Google Cloud Speech-to-Text"
+      },
+      "api-key": "API key",
+      "endpoint": "Endpoint",
+      "base-url": "URL base (opcional)",
+      "credentials-json": "JSON da conta de serviço",
+      "save": "Salvar alterações",
+      "updated-by": "Atualizado por {{user}} em {{at}}",
+      "warning-credentials-masked": "Credenciais são armazenadas criptografadas e nunca são retornadas após salvar. Cole novos valores para substituí-las.",
+      "validation": {
+        "provider-required": "Selecione um provedor para habilitar o Agent Assist.",
+        "credentials-required": "As credenciais do provedor são obrigatórias."
+      }
+    }
   },
   "users": { "title": "Usuários", "create": "Criar usuário", "email": "E-mail", "name": "Nome", "role": "Função", "status": "Status" },
   "agents": { "title": "Agentes", "create": "Criar agente", "edit": "Editar agente", "skills": "Habilidades", "team": "Equipe", "displayName": "Nome", "user": "Usu\u00e1rio", "state": "Estado", "queueCount": "Filas", "searchPlaceholder": "Buscar agentes...", "selectUser": "Selecionar usu\u00e1rio", "noTeam": "Sem equipe", "addSkill": "Adicionar habilidade", "skillName": "Nome da habilidade", "noSkills": "Nenhuma habilidade atribu\u00edda.", "save": "Salvar altera\u00e7\u00f5es", "createDescription": "Criar um novo agente a partir de um usu\u00e1rio existente.", "editDescription": "Atualizar dados do agente.", "deleteTitle": "Excluir agente", "queues": "Filas atribu\u00eddas", "noQueues": "N\u00e3o atribu\u00eddo a nenhuma fila.", "queuesNote": "A atribui\u00e7\u00e3o de filas \u00e9 gerenciada na configura\u00e7\u00e3o de filas." },

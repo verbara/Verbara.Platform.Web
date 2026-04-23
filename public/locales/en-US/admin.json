@@ -35,7 +35,34 @@
     "partnerCustomers": "Customers",
     "partnerRateCards": "Rate Cards",
     "partnerRevenue": "Revenue",
-    "partnerSettings": "Settings"
+    "partnerSettings": "Settings",
+    "features": "Features",
+    "featureAgentAssist": "Agent Assist"
+  },
+  "features": {
+    "agent-assist": {
+      "title": "Agent Assist",
+      "description": "Enable real-time transcription + suggestions + compliance for live calls. Rotate provider credentials at runtime without restarting the platform.",
+      "enabled": "Enable Agent Assist",
+      "provider": {
+        "label": "Provider",
+        "deepgram": "Deepgram (WebSocket streaming)",
+        "whisper": "OpenAI Whisper",
+        "azure-whisper": "Azure Whisper",
+        "google": "Google Cloud Speech-to-Text"
+      },
+      "api-key": "API key",
+      "endpoint": "Endpoint",
+      "base-url": "Base URL (optional)",
+      "credentials-json": "Service account JSON",
+      "save": "Save changes",
+      "updated-by": "Updated by {{user}} at {{at}}",
+      "warning-credentials-masked": "Credentials are stored encrypted and never returned after saving. Paste new values to replace.",
+      "validation": {
+        "provider-required": "Select a provider to enable Agent Assist.",
+        "credentials-required": "Provider credentials are required."
+      }
+    }
   },
   "users": { "title": "Users", "create": "Create user", "email": "Email", "name": "Name", "role": "Role", "status": "Status" },
   "agents": { "title": "Agents", "create": "Create agent", "edit": "Edit agent", "skills": "Skills", "team": "Team", "displayName": "Display Name", "user": "User", "state": "State", "queueCount": "Queues", "searchPlaceholder": "Search agents...", "selectUser": "Select a user", "noTeam": "No team", "addSkill": "Add skill", "skillName": "Skill name", "noSkills": "No skills assigned yet.", "save": "Save changes", "createDescription": "Create a new agent from an existing user.", "editDescription": "Update agent details.", "deleteTitle": "Delete agent", "queues": "Queue Memberships", "noQueues": "Not assigned to any queues.", "queuesNote": "Queue assignment is managed from queue configuration." },

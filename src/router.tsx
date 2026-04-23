@@ -36,6 +36,7 @@ const BotListPage = lazy(() => import('@/admin/bots/bot-list-page'));
 const KbListPage = lazy(() => import('@/admin/knowledge-base/kb-list-page'));
 const SkillsPage = lazy(() => import('@/admin/skills/skills-page'));
 const AgentAssistConfigPage = lazy(() => import('@/admin/agent-assist/agent-assist-config-page'));
+const AgentAssistFeaturePage = lazy(() => import('@/admin/features/agent-assist-page'));
 const SurveyListPage = lazy(() => import('@/admin/surveys/survey-list-page'));
 const ReportsPage = lazy(() => import('@/admin/reports/reports-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
@@ -394,6 +395,16 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="agentassist:config:manage" redirect>
                 <LazyLoad>
                   <AgentAssistConfigPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'features/agent-assist',
+            element: (
+              <PermissionGuard requires="features:agent-assist:manage" redirect>
+                <LazyLoad>
+                  <AgentAssistFeaturePage />
                 </LazyLoad>
               </PermissionGuard>
             ),

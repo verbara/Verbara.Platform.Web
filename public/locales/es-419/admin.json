@@ -51,7 +51,34 @@
     "partnerCustomers": "Clientes",
     "partnerRateCards": "Tarifarios",
     "partnerRevenue": "Ingresos",
-    "partnerSettings": "Configuración"
+    "partnerSettings": "Configuración",
+    "features": "Funciones",
+    "featureAgentAssist": "Agent Assist"
+  },
+  "features": {
+    "agent-assist": {
+      "title": "Agent Assist",
+      "description": "Active transcripción en tiempo real + sugerencias + cumplimiento para llamadas en vivo. Rote credenciales de proveedor en tiempo de ejecución sin reiniciar la plataforma.",
+      "enabled": "Habilitar Agent Assist",
+      "provider": {
+        "label": "Proveedor",
+        "deepgram": "Deepgram (streaming WebSocket)",
+        "whisper": "OpenAI Whisper",
+        "azure-whisper": "Azure Whisper",
+        "google": "Google Cloud Speech-to-Text"
+      },
+      "api-key": "API key",
+      "endpoint": "Endpoint",
+      "base-url": "URL base (opcional)",
+      "credentials-json": "JSON de la cuenta de servicio",
+      "save": "Guardar cambios",
+      "updated-by": "Actualizado por {{user}} el {{at}}",
+      "warning-credentials-masked": "Las credenciales se almacenan cifradas y nunca se devuelven después de guardar. Pegue nuevos valores para reemplazarlas.",
+      "validation": {
+        "provider-required": "Seleccione un proveedor para habilitar Agent Assist.",
+        "credentials-required": "Se requieren las credenciales del proveedor."
+      }
+    }
   },
   "users": { "title": "Usuarios", "create": "Crear usuario", "email": "Correo", "name": "Nombre", "role": "Rol", "status": "Estado" },
   "agents": { "title": "Agentes", "create": "Crear agente", "edit": "Editar agente", "skills": "Habilidades", "team": "Equipo", "displayName": "Nombre", "user": "Usuario", "state": "Estado", "queueCount": "Colas", "searchPlaceholder": "Buscar agentes...", "selectUser": "Seleccionar usuario", "noTeam": "Sin equipo", "addSkill": "Agregar habilidad", "skillName": "Nombre de habilidad", "noSkills": "Sin habilidades asignadas.", "save": "Guardar cambios", "createDescription": "Crear un nuevo agente a partir de un usuario existente.", "editDescription": "Actualizar datos del agente.", "deleteTitle": "Eliminar agente", "queues": "Colas asignadas", "noQueues": "No asignado a ninguna cola.", "queuesNote": "La asignaci\u00f3n de colas se gestiona desde la configuraci\u00f3n de colas." },
