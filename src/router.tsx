@@ -42,6 +42,7 @@ const ReportsPage = lazy(() => import('@/admin/reports/reports-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const DiagnosticsPage = lazy(() => import('@/admin/system/diagnostics-page'));
+const LicensePage = lazy(() => import('@/admin/license/license-page'));
 const ClusterPage = lazy(() => import('@/admin/cluster/cluster-page'));
 const RealtimePage = lazy(() => import('@/admin/realtime/realtime-page'));
 const AuditPage = lazy(() => import('@/admin/audit/audit-page'));
@@ -435,6 +436,16 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <SystemPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'license',
+            element: (
+              <PermissionGuard requires="platform:license:manage" redirect>
+                <LazyLoad>
+                  <LicensePage />
                 </LazyLoad>
               </PermissionGuard>
             ),
