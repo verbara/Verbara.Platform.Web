@@ -1,17 +1,21 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { KeyRound, Play } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { DrawerDetail, type DrawerDetailAction } from '@/core/ui/drawer-detail';
+import { StatusBadge } from '@/core/ui/status-badge';
 import {
   useWebhookDeliveries,
   useTestWebhookSubscription,
   useRotateWebhookSecret,
   useCircuitStatus,
   useResetCircuit,
+  type WebhookDelivery,
   type WebhookSubscription,
 } from '@/core/api/hooks/use-webhooks';
+import { WebhookDeliveryDetailDrawer } from './webhook-delivery-detail-drawer';
 
 interface WebhookDetailSheetProps {
   subscription: WebhookSubscription | null;
@@ -21,33 +25,10 @@ interface WebhookDetailSheetProps {
 
 const DELIVERY_PAGE_SIZE = 10;
 
-function DeliveryStatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case 'Delivered':
-      return (
-        <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-          Delivered
-        </Badge>
-      );
-    case 'Failed':
-      return <Badge variant="destructive">Failed</Badge>;
-    case 'DeadLetter':
-      return (
-        <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-          Dead Letter
-        </Badge>
-      );
-    default:
-      return (
-        <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-          Pending
-        </Badge>
-      );
-  }
-}
-
-export function WebhookDetailSheet({ subscription, open, onOpenChange }: WebhookDetailSheetProps) {
+export function WebhookDetailSheet({ subscription, open, onOpenChange }: Readonly<WebhookDetailSheetProps>) {
+  const { t } = useTranslation(['admin']);
   const [page, setPage] = useState(1);
+  const [selectedDelivery, setSelectedDelivery] = useState<WebhookDelivery | null>(null);
 
   const { data: deliveriesPage } = useWebhookDeliveries(
     subscription?.subscriptionId ?? '',
@@ -77,7 +58,9 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
   const actions: DrawerDetailAction[] = [
     {
       key: 'rotate',
-      label: rotateSecret.isPending ? 'Rotating...' : 'Rotate Secret',
+      label: rotateSecret.isPending
+        ? t('admin:webhooks.detail.rotating', 'Rotating...')
+        : t('admin:webhooks.detail.rotateSecret', 'Rotate Secret'),
       icon: <KeyRound className="h-3.5 w-3.5" />,
       variant: 'outline',
       onAction: handleRotate,
@@ -86,7 +69,9 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
     },
     {
       key: 'test',
-      label: testWebhook.isPending ? 'Sending...' : 'Send Test',
+      label: testWebhook.isPending
+        ? t('admin:webhooks.detail.sending', 'Sending...')
+        : t('admin:webhooks.detail.sendTest', 'Send Test'),
       icon: <Play className="h-3.5 w-3.5" />,
       variant: 'outline',
       onAction: handleTest,
@@ -100,54 +85,70 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
       open={open}
       onOpenChange={onOpenChange}
       title={subscription.name}
-      subtitle="Webhook subscription details and delivery log."
+      subtitle={t(
+        'admin:webhooks.detail.subtitle',
+        'Webhook subscription details and delivery log.',
+      )}
       width="lg"
       actions={actions}
     >
       <div data-testid="webhook-detail-sheet" className="flex flex-col gap-6">
         {/* Info section */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground">Details</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">
+            {t('admin:webhooks.detail.details', 'Details')}
+          </h3>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-            <dt className="text-muted-foreground">Name</dt>
+            <dt className="text-muted-foreground">
+              {t('admin:webhooks.detail.name', 'Name')}
+            </dt>
             <dd className="font-medium">{subscription.name}</dd>
 
-            <dt className="text-muted-foreground">Endpoint URL</dt>
+            <dt className="text-muted-foreground">
+              {t('admin:webhooks.detail.endpointUrl', 'Endpoint URL')}
+            </dt>
             <dd className="break-all font-mono text-xs">{subscription.endpointUrl}</dd>
 
-            <dt className="text-muted-foreground">Secret</dt>
+            <dt className="text-muted-foreground">
+              {t('admin:webhooks.detail.secret', 'Secret')}
+            </dt>
             <dd className="font-mono text-xs text-muted-foreground">
               {'*'.repeat(32)}
             </dd>
 
-            <dt className="text-muted-foreground">Event Types</dt>
+            <dt className="text-muted-foreground">
+              {t('admin:webhooks.detail.eventTypes', 'Event Types')}
+            </dt>
             <dd className="flex flex-wrap gap-1">
               {subscription.eventTypes.map((et) => (
                 <Badge key={et} variant="secondary">{et}</Badge>
               ))}
             </dd>
 
-            <dt className="text-muted-foreground">Status</dt>
+            <dt className="text-muted-foreground">
+              {t('admin:webhooks.detail.status', 'Status')}
+            </dt>
             <dd>
               {subscription.isActive ? (
                 <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                  Active
+                  {t('admin:webhooks.status.active', 'Active')}
                 </Badge>
               ) : (
-                <Badge variant="secondary">Inactive</Badge>
+                <Badge variant="secondary">
+                  {t('admin:webhooks.status.inactive', 'Inactive')}
+                </Badge>
               )}
             </dd>
 
             {circuit && (
               <>
-                <dt className="text-muted-foreground">Circuit</dt>
+                <dt className="text-muted-foreground">
+                  {t('admin:webhooks.detail.circuit', 'Circuit')}
+                </dt>
                 <dd className="flex items-center gap-2">
-                  <Badge
-                    data-testid="webhook-circuit-status"
-                    variant={circuit.state === 'Closed' ? 'default' : circuit.state === 'Open' ? ('destructive' as const) : 'secondary'}
-                  >
-                    {circuit.state}
-                  </Badge>
+                  <span data-testid="webhook-circuit-status">
+                    <StatusBadge variant="webhook-circuit" status={circuit.state} />
+                  </span>
                   {circuit.state === 'Open' && (
                     <Button
                       variant="outline"
@@ -156,20 +157,28 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
                       data-testid="webhook-reset-circuit"
                       onClick={() => resetCircuit.mutate(subscription.subscriptionId)}
                     >
-                      Reset Circuit
+                      {t('admin:webhooks.detail.resetCircuit', 'Reset Circuit')}
                     </Button>
                   )}
                   {circuit.failureCount > 0 && (
-                    <span className="text-xs text-muted-foreground">{circuit.failureCount} failures</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('admin:webhooks.detail.failureCount', '{{count}} failures', {
+                        count: circuit.failureCount,
+                      })}
+                    </span>
                   )}
                 </dd>
               </>
             )}
 
-            <dt className="text-muted-foreground">Created</dt>
+            <dt className="text-muted-foreground">
+              {t('admin:webhooks.detail.created', 'Created')}
+            </dt>
             <dd>{format(new Date(subscription.createdAt), 'MMM d, yyyy HH:mm')}</dd>
 
-            <dt className="text-muted-foreground">Updated</dt>
+            <dt className="text-muted-foreground">
+              {t('admin:webhooks.detail.updated', 'Updated')}
+            </dt>
             <dd>{format(new Date(subscription.updatedAt), 'MMM d, yyyy HH:mm')}</dd>
           </dl>
         </div>
@@ -177,11 +186,13 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
         {/* Delivery log */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-muted-foreground">
-            Delivery Log ({totalCount})
+            {t('admin:webhooks.detail.deliveryLog', 'Delivery Log')} ({totalCount})
           </h3>
 
           {deliveries.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No deliveries yet.</p>
+            <p className="text-sm text-muted-foreground">
+              {t('admin:webhooks.detail.noDeliveries', 'No deliveries yet.')}
+            </p>
           ) : (
             <>
               <div className="overflow-hidden rounded-lg border">
@@ -189,28 +200,33 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
                   <thead className="border-b bg-muted/50">
                     <tr>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                        Event Type
+                        {t('admin:webhooks.detail.eventTypeCol', 'Event Type')}
                       </th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                        Status
+                        {t('admin:webhooks.detail.statusCol', 'Status')}
                       </th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                        Attempts
+                        {t('admin:webhooks.detail.attemptsCol', 'Attempts')}
                       </th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                        Response
+                        {t('admin:webhooks.detail.responseCol', 'Response')}
                       </th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                        Created
+                        {t('admin:webhooks.detail.createdCol', 'Created')}
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {deliveries.map((d) => (
-                      <tr key={d.deliveryId} className="transition-colors hover:bg-muted/50">
+                      <tr
+                        key={d.deliveryId}
+                        className="cursor-pointer transition-colors hover:bg-muted/50"
+                        onClick={() => setSelectedDelivery(d)}
+                        data-testid={`delivery-row-${d.deliveryId}`}
+                      >
                         <td className="px-3 py-2 font-mono text-xs">{d.eventType}</td>
                         <td className="px-3 py-2">
-                          <DeliveryStatusBadge status={d.status} />
+                          <StatusBadge variant="webhook-delivery" status={d.status} />
                         </td>
                         <td className="px-3 py-2 text-muted-foreground">
                           {d.attempts}/{d.maxAttempts}
@@ -230,7 +246,10 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
               {/* Pagination */}
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">
-                  Page {page} of {totalPages}
+                  {t('admin:webhooks.detail.pageInfo', 'Page {{page}} of {{totalPages}}', {
+                    page,
+                    totalPages,
+                  })}
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -239,7 +258,7 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
                   >
-                    Previous
+                    {t('admin:webhooks.detail.previous', 'Previous')}
                   </Button>
                   <Button
                     variant="outline"
@@ -247,7 +266,7 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
                   >
-                    Next
+                    {t('admin:webhooks.detail.next', 'Next')}
                   </Button>
                 </div>
               </div>
@@ -255,6 +274,14 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Webhook
           )}
         </div>
       </div>
+
+      <WebhookDeliveryDetailDrawer
+        delivery={selectedDelivery}
+        open={selectedDelivery !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setSelectedDelivery(null);
+        }}
+      />
     </DrawerDetail>
   );
 }

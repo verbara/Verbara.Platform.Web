@@ -9,11 +9,13 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { StatusBadge } from '@/core/ui/status-badge';
 import {
   useWebhookDeadLetter,
   useRetryDeadLetter,
   type WebhookDelivery,
 } from '@/core/api/hooks/use-webhooks';
+import { WebhookDeliveryDetailDrawer } from './webhook-delivery-detail-drawer';
 
 const col = createColumnHelper<WebhookDelivery>();
 
@@ -23,6 +25,7 @@ export default function DeadLetterPage() {
   const [tenantId, setTenantId] = useState('');
   const [searchTenantId, setSearchTenantId] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedDelivery, setSelectedDelivery] = useState<WebhookDelivery | null>(null);
   const pageSize = 20;
 
   const { data, isFetching } = useWebhookDeadLetter(searchTenantId, page, pageSize);
@@ -60,6 +63,12 @@ export default function DeadLetterPage() {
       col.accessor('eventType', {
         header: () => t('admin:deadLetter.eventType', 'Event Type'),
         cell: (info) => <Badge variant="secondary">{info.getValue()}</Badge>,
+      }),
+      col.accessor('status', {
+        header: () => t('admin:deadLetter.status', 'Status'),
+        cell: (info) => (
+          <StatusBadge variant="webhook-delivery" status={info.getValue()} />
+        ),
       }),
       col.accessor('attempts', {
         header: () => t('admin:deadLetter.attempts', 'Attempts'),
@@ -100,19 +109,35 @@ export default function DeadLetterPage() {
       col.display({
         id: 'actions',
         cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            disabled={retryDeadLetter.isPending}
-            onClick={(e) => {
-              e.stopPropagation();
-              retryDeadLetter.mutate(row.original.deliveryId);
-            }}
-            title={t('admin:deadLetter.retry', 'Retry delivery')}
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedDelivery(row.original);
+              }}
+              title={t('admin:deadLetter.view', 'View payload')}
+              data-testid={`dead-letter-view-${row.original.deliveryId}`}
+            >
+              {t('admin:deadLetter.view', 'View')}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              disabled={retryDeadLetter.isPending}
+              onClick={(e) => {
+                e.stopPropagation();
+                retryDeadLetter.mutate(row.original.deliveryId);
+              }}
+              title={t('admin:deadLetter.retry', 'Retry delivery')}
+              data-testid={`dead-letter-retry-${row.original.deliveryId}`}
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         ),
       }),
     ],
@@ -221,6 +246,14 @@ export default function DeadLetterPage() {
           )}
         </>
       )}
+
+      <WebhookDeliveryDetailDrawer
+        delivery={selectedDelivery}
+        open={selectedDelivery !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedDelivery(null);
+        }}
+      />
     </div>
   );
 }

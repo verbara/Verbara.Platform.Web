@@ -363,5 +363,60 @@
       "grafana-dashboard": "Abrir no Grafana",
       "force-confirm-word": "FORÇAR"
     }
+  },
+  "webhooks": {
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
+    "detail": {
+      "subtitle": "Detalhes da assinatura de webhook e registro de entregas.",
+      "details": "Detalhes",
+      "name": "Nome",
+      "endpointUrl": "URL do endpoint",
+      "secret": "Segredo",
+      "eventTypes": "Tipos de evento",
+      "status": "Status",
+      "circuit": "Circuito",
+      "resetCircuit": "Redefinir circuito",
+      "failureCount": "{{count}} falhas",
+      "created": "Criado",
+      "updated": "Atualizado",
+      "rotateSecret": "Rotacionar segredo",
+      "rotating": "Rotacionando...",
+      "sendTest": "Enviar teste",
+      "sending": "Enviando...",
+      "deliveryLog": "Registro de entregas",
+      "noDeliveries": "Ainda não há entregas.",
+      "eventTypeCol": "Tipo de evento",
+      "statusCol": "Status",
+      "attemptsCol": "Tentativas",
+      "responseCol": "Resposta",
+      "createdCol": "Criado",
+      "pageInfo": "Página {{page}} de {{totalPages}}",
+      "previous": "Anterior",
+      "next": "Próximo"
+    }
+  },
+  "deadLetter": {
+    "view": "Ver",
+    "retrying": "Tentando novamente...",
+    "detail": {
+      "title": "Entrega {{id}}",
+      "subtitle": "Tentativa de entrega de webhook — payload, status e controles de retry.",
+      "metadata": "Metadados da entrega",
+      "deliveryId": "ID da entrega",
+      "subscriptionId": "ID da assinatura",
+      "eventType": "Tipo de evento",
+      "status": "Status",
+      "attempts": "Tentativas",
+      "responseCode": "Código de resposta",
+      "createdAt": "Criado em",
+      "deliveredAt": "Entregue em",
+      "nextRetryAt": "Próxima tentativa em",
+      "lastError": "Último erro",
+      "payload": "Payload",
+      "payloadEmpty": "Sem payload registrado."
+    }
   }
 }

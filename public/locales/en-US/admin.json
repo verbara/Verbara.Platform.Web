@@ -363,5 +363,60 @@
       "grafana-dashboard": "Open in Grafana",
       "force-confirm-word": "FORCE"
     }
+  },
+  "webhooks": {
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "detail": {
+      "subtitle": "Webhook subscription details and delivery log.",
+      "details": "Details",
+      "name": "Name",
+      "endpointUrl": "Endpoint URL",
+      "secret": "Secret",
+      "eventTypes": "Event Types",
+      "status": "Status",
+      "circuit": "Circuit",
+      "resetCircuit": "Reset Circuit",
+      "failureCount": "{{count}} failures",
+      "created": "Created",
+      "updated": "Updated",
+      "rotateSecret": "Rotate Secret",
+      "rotating": "Rotating...",
+      "sendTest": "Send Test",
+      "sending": "Sending...",
+      "deliveryLog": "Delivery Log",
+      "noDeliveries": "No deliveries yet.",
+      "eventTypeCol": "Event Type",
+      "statusCol": "Status",
+      "attemptsCol": "Attempts",
+      "responseCol": "Response",
+      "createdCol": "Created",
+      "pageInfo": "Page {{page}} of {{totalPages}}",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "deadLetter": {
+    "view": "View",
+    "retrying": "Retrying...",
+    "detail": {
+      "title": "Delivery {{id}}",
+      "subtitle": "Webhook delivery attempt — payload, status, and retry controls.",
+      "metadata": "Delivery metadata",
+      "deliveryId": "Delivery ID",
+      "subscriptionId": "Subscription ID",
+      "eventType": "Event type",
+      "status": "Status",
+      "attempts": "Attempts",
+      "responseCode": "Response code",
+      "createdAt": "Created at",
+      "deliveredAt": "Delivered at",
+      "nextRetryAt": "Next retry at",
+      "lastError": "Last error",
+      "payload": "Payload",
+      "payloadEmpty": "No payload captured."
+    }
   }
 }
