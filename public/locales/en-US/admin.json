@@ -38,7 +38,12 @@
     "partnerSettings": "Settings",
     "features": "Features",
     "featureAgentAssist": "Agent Assist",
-    "apiKeys": "API Keys"
+    "apiKeys": "API Keys",
+    "securityAdmin": "Security Admin",
+    "securityMfa": "MFA",
+    "securityAudit": "Audit",
+    "securityImpersonation": "Impersonation",
+    "retention": "Retention"
   },
   "api-keys": {
     "title": "API Keys",
@@ -487,6 +492,42 @@
       "lastError": "Last error",
       "payload": "Payload",
       "payloadEmpty": "No payload captured."
+    }
+  },
+  "security_admin": {
+    "mfa": {
+      "title": "MFA Administration",
+      "nav": "MFA"
+    },
+    "audit": {
+      "title": "Audit Log",
+      "nav": "Audit"
+    },
+    "impersonation": {
+      "title": "Impersonation Sessions",
+      "nav": "Impersonation"
+    }
+  },
+  "retention": {
+    "title": "Retention Policy",
+    "nav": "Retention"
+  },
+  "profile_security": {
+    "mfa": {
+      "enroll": {
+        "title": "Enroll Multi-Factor Authentication",
+        "nav": "Enroll MFA"
+      }
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "nav": "Sessions"
+    },
+    "recovery_codes": {
+      "regenerate": {
+        "title": "Regenerate Recovery Codes",
+        "nav": "Recovery Codes"
+      }
     }
   }
 }

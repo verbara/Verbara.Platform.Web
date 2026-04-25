@@ -51,6 +51,14 @@ const TenantsPage = lazy(() => import('@/admin/tenants/tenants-page'));
 const RolesPage = lazy(() => import('@/admin/roles/roles-page'));
 const RoleDetailPage = lazy(() => import('@/admin/roles/role-detail-page'));
 const SecurityPage = lazy(() => import('@/admin/profile/security-page'));
+// R5.2 Phase 0 placeholders — implemented by Phase A/B/C subagents.
+const MfaAdminPage = lazy(() => import('@/admin/security/mfa/mfa-admin-page'));
+const AuditViewerPage = lazy(() => import('@/admin/security/audit/audit-viewer-page'));
+const ImpersonationAdminPage = lazy(() => import('@/admin/security/impersonation/impersonation-admin-page'));
+const RetentionAdminPage = lazy(() => import('@/admin/retention/retention-admin-page'));
+const MfaEnrollWizard = lazy(() => import('@/profile/security/mfa/mfa-enroll-wizard'));
+const UserSessionsPage = lazy(() => import('@/profile/security/sessions/user-sessions-page'));
+const RegeneratePage = lazy(() => import('@/profile/security/recovery-codes/regenerate-page'));
 const AuthConfigPage = lazy(() => import('@/admin/system/auth-config-page'));
 const AuthEventsPage = lazy(() => import('@/admin/system/auth-events-page'));
 const AuthSessionsPage = lazy(() => import('@/admin/system/auth-sessions-page'));
@@ -625,6 +633,50 @@ export const router = createBrowserRouter([
               </LazyLoad>
             ),
           },
+          // R5.2 Phase 0 placeholders — Phase A/B/C subagents replace
+          // these with real components and may tighten the permission gate
+          // (auth.read / security.mfa.admin / security.impersonation.manage)
+          // once the corresponding Platform permissions land.
+          {
+            path: 'security/mfa',
+            element: (
+              <PermissionGuard requires="system:auth:configure" redirect>
+                <LazyLoad>
+                  <MfaAdminPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'security/audit',
+            element: (
+              <PermissionGuard requires="system:audit:view" redirect>
+                <LazyLoad>
+                  <AuditViewerPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'security/impersonation',
+            element: (
+              <PermissionGuard requires="system:auth:configure" redirect>
+                <LazyLoad>
+                  <ImpersonationAdminPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'retention',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <RetentionAdminPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
           {
             path: 'auth-config',
             element: (
@@ -866,6 +918,37 @@ export const router = createBrowserRouter([
             ),
           },
         ],
+      },
+      // R5.2 Phase 0 — `/profile/security/*` placeholders. AppShell wraps
+      // them with the standard AuthGuard, so they require an authenticated
+      // session but no extra permission. Phase A/B/C subagents replace
+      // each with the real component.
+      {
+        path: 'profile/security/mfa/enroll',
+        errorElement: <RouteErrorBoundary />,
+        element: (
+          <LazyLoad>
+            <MfaEnrollWizard />
+          </LazyLoad>
+        ),
+      },
+      {
+        path: 'profile/security/sessions',
+        errorElement: <RouteErrorBoundary />,
+        element: (
+          <LazyLoad>
+            <UserSessionsPage />
+          </LazyLoad>
+        ),
+      },
+      {
+        path: 'profile/security/recovery-codes/regenerate',
+        errorElement: <RouteErrorBoundary />,
+        element: (
+          <LazyLoad>
+            <RegeneratePage />
+          </LazyLoad>
+        ),
       },
       {
         path: 'agent',

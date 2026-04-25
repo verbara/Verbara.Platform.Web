@@ -38,7 +38,12 @@
     "partnerSettings": "Configurações",
     "features": "Funcionalidades",
     "featureAgentAssist": "Agent Assist",
-    "apiKeys": "API Keys"
+    "apiKeys": "API Keys",
+    "securityAdmin": "Administração de Segurança",
+    "securityMfa": "MFA",
+    "securityAudit": "Auditoria",
+    "securityImpersonation": "Personificação",
+    "retention": "Retenção"
   },
   "api-keys": {
     "title": "API Keys",
@@ -487,6 +492,42 @@
       "lastError": "Último erro",
       "payload": "Payload",
       "payloadEmpty": "Sem payload registrado."
+    }
+  },
+  "security_admin": {
+    "mfa": {
+      "title": "Administração de MFA",
+      "nav": "MFA"
+    },
+    "audit": {
+      "title": "Registro de Auditoria",
+      "nav": "Auditoria"
+    },
+    "impersonation": {
+      "title": "Sessões de Personificação",
+      "nav": "Personificação"
+    }
+  },
+  "retention": {
+    "title": "Política de Retenção",
+    "nav": "Retenção"
+  },
+  "profile_security": {
+    "mfa": {
+      "enroll": {
+        "title": "Habilitar Autenticação Multifator",
+        "nav": "Habilitar MFA"
+      }
+    },
+    "sessions": {
+      "title": "Sessões Ativas",
+      "nav": "Sessões"
+    },
+    "recovery_codes": {
+      "regenerate": {
+        "title": "Regerar Códigos de Recuperação",
+        "nav": "Códigos de Recuperação"
+      }
     }
   }
 }

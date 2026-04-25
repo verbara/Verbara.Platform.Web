@@ -42,6 +42,9 @@ import {
   UsersRound,
   TrendingUp,
   Handshake,
+  ShieldAlert,
+  UserCog,
+  Database,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -160,6 +163,19 @@ const groups: SidebarGroup[] = [
     requiredPermission: 'features:agent-assist:manage',
     items: [
       { key: 'feature-agent-assist', labelKey: 'admin:sidebar.featureAgentAssist', to: '/admin/features/agent-assist', icon: Zap, requiredPermission: 'features:agent-assist:manage' },
+    ],
+  },
+  {
+    // R5.2 Phase 0 — Security Admin group. Items currently point at
+    // placeholder pages; Phase A/B/C subagents replace the targets.
+    key: 'security-admin',
+    labelKey: 'admin:sidebar.securityAdmin',
+    requiredAnyPermission: ['system:auth:configure', 'system:audit:view', 'system:tenant:configure'],
+    items: [
+      { key: 'security-mfa', labelKey: 'admin:sidebar.securityMfa', to: '/admin/security/mfa', icon: ShieldAlert, requiredPermission: 'system:auth:configure' },
+      { key: 'security-audit', labelKey: 'admin:sidebar.securityAudit', to: '/admin/security/audit', icon: FileSearch, requiredPermission: 'system:audit:view' },
+      { key: 'security-impersonation', labelKey: 'admin:sidebar.securityImpersonation', to: '/admin/security/impersonation', icon: UserCog, requiredPermission: 'system:auth:configure' },
+      { key: 'retention', labelKey: 'admin:sidebar.retention', to: '/admin/retention', icon: Database, requiredPermission: 'system:tenant:configure' },
     ],
   },
   {
