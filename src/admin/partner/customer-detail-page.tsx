@@ -38,6 +38,7 @@ import {
   useGeneratePartnerInvoice,
   useCustomerUsage,
 } from '@/core/api/hooks/use-partner';
+import { useDunningStatus, useUpdateDunningStatus } from '@/core/api/hooks/use-billing';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   Active: 'default',
@@ -67,6 +68,30 @@ export default function PartnerCustomerDetailPage() {
   const [suspendOpen, setSuspendOpen] = useState(false);
   const [suspendWord, setSuspendWord] = useState('');
   const [suspendReason, setSuspendReason] = useState('');
+
+  // R5.3 S4.2 — dunning pause/resume toggle
+  const dunningStatus = useDunningStatus(id);
+  const updateDunning = useUpdateDunningStatus(id);
+  const dunningPaused = dunningStatus.data?.isPaused ?? false;
+  const [dunningOpen, setDunningOpen] = useState(false);
+  const [dunningReason, setDunningReason] = useState('');
+
+  function handleDunningToggleClick() {
+    if (dunningPaused) {
+      // Already paused → resume immediately (no reason required on resume per UX)
+      updateDunning.mutate({ paused: false });
+      return;
+    }
+    // Currently active → open dialog to capture reason before pausing
+    setDunningReason('');
+    setDunningOpen(true);
+  }
+
+  function handleDunningConfirm() {
+    const reason = dunningReason.trim();
+    updateDunning.mutate({ paused: true, reason });
+    setDunningOpen(false);
+  }
 
   function openSuspend() {
     setSuspendWord('');
@@ -164,7 +189,74 @@ export default function PartnerCustomerDetailPage() {
             Suspend
           </Button>
         )}
+        <label className="flex items-center gap-2 text-sm">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={dunningPaused}
+            disabled={updateDunning.isPending}
+            onClick={handleDunningToggleClick}
+            data-testid="dunning-toggle"
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+              dunningPaused ? 'bg-amber-600' : 'bg-input'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 rounded-full bg-background shadow transition-transform ${
+                dunningPaused ? 'translate-x-4' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+          <span className="text-muted-foreground">
+            {dunningPaused
+              ? t('partner.dunning.statusPaused', 'Dunning paused')
+              : t('partner.dunning.statusActive', 'Dunning active')}
+          </span>
+        </label>
       </PageHeader>
+
+      <Dialog open={dunningOpen} onOpenChange={setDunningOpen}>
+        <DialogContent className="sm:max-w-md" data-testid="dunning-confirm-dialog">
+          <DialogHeader>
+            <DialogTitle>
+              {t('partner.dunning.pauseTitle', 'Pause dunning?')}
+            </DialogTitle>
+            <DialogDescription>
+              {t(
+                'partner.dunning.pauseBody',
+                'Pausing dunning halts automated collection workflows for this customer. Provide a reason for the audit log.',
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="dunning-reason">
+              {t('partner.dunning.reasonLabel', 'Reason')}
+            </Label>
+            <Textarea
+              id="dunning-reason"
+              value={dunningReason}
+              onChange={(e) => setDunningReason(e.target.value)}
+              data-testid="dunning-reason-input"
+              placeholder={t(
+                'partner.dunning.reasonPlaceholder',
+                'e.g., Customer dispute under review',
+              )}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDunningOpen(false)}>
+              {t('common.cancel', 'Cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDunningConfirm}
+              data-testid="dunning-confirm"
+            >
+              {t('partner.dunning.pauseConfirm', 'Pause dunning')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={suspendOpen} onOpenChange={setSuspendOpen}>
         <DialogContent className="sm:max-w-md" data-testid="suspend-confirm-dialog">

@@ -643,6 +643,15 @@
       "cancel": "Cancelar",
       "confirm": "Suspender",
       "submitting": "Suspendendo..."
+    },
+    "dunning": {
+      "statusActive": "Cobrança ativa",
+      "statusPaused": "Cobrança pausada",
+      "pauseTitle": "Pausar cobrança?",
+      "pauseBody": "Pausar a cobrança interrompe os fluxos automatizados de cobrança para este cliente. Forneça um motivo para o log de auditoria.",
+      "reasonLabel": "Motivo",
+      "reasonPlaceholder": "ex., Disputa do cliente em análise",
+      "pauseConfirm": "Pausar cobrança"
     }
   }
 }

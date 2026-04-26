@@ -688,6 +688,15 @@
       "cancel": "Cancel",
       "confirm": "Suspend",
       "submitting": "Suspending..."
+    },
+    "dunning": {
+      "statusActive": "Dunning active",
+      "statusPaused": "Dunning paused",
+      "pauseTitle": "Pause dunning?",
+      "pauseBody": "Pausing dunning halts automated collection workflows for this customer. Provide a reason for the audit log.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "e.g., Customer dispute under review",
+      "pauseConfirm": "Pause dunning"
     }
   }
 }

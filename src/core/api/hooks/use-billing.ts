@@ -301,6 +301,7 @@ export interface DunningStatus {
   daysOverdue: number;
   overdueAmount: number;
   invoiceId: string | null;
+  isPaused?: boolean;
 }
 
 export function useDunningStatus(tenantId: string | undefined) {
@@ -312,6 +313,35 @@ export function useDunningStatus(tenantId: string | undefined) {
         method: 'GET',
       }),
     enabled: !!tenantId,
+  });
+}
+
+// R5.3 S4.2 — pause/resume dunning toggle. Backend: existing POST /dunning/pause + R5.3 A.7 POST /dunning/resume.
+export interface DunningStatusUpdate {
+  paused: boolean;
+  reason?: string;
+}
+
+export function useUpdateDunningStatus(tenantId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (update: DunningStatusUpdate) =>
+      customFetch<void>({
+        url: update.paused
+          ? `/api/v1/management/tenants/${tenantId}/dunning/pause`
+          : `/api/v1/management/tenants/${tenantId}/dunning/resume`,
+        method: 'POST',
+        data: update.paused ? { reason: update.reason ?? '' } : undefined,
+      }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['billing', 'dunning', tenantId] });
+      toast.success(
+        variables.paused
+          ? `Dunning paused${variables.reason ? `: ${variables.reason}` : ''}`
+          : 'Dunning resumed',
+      );
+    },
+    onError: (err: Error) => toast.error(err.message),
   });
 }
 
