@@ -678,7 +678,7 @@ export const router = createBrowserRouter([
           {
             path: 'retention',
             element: (
-              <PermissionGuard requires="system:tenant:configure" redirect>
+              <PermissionGuard requires="retention.read" redirect>
                 <LazyLoad>
                   <RetentionAdminPage />
                 </LazyLoad>
