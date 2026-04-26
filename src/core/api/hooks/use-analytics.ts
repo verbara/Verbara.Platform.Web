@@ -95,6 +95,7 @@ export interface QaDetail {
   sentimentScore?: number;
   primaryTopic?: string;
   allTopics: TopicInfo[];
+  sentimentTimeline: TurnSentimentInfo[];
   agentTalkRatio?: number;
   silenceCount?: number;
   interruptionCount?: number;
@@ -102,6 +103,7 @@ export interface QaDetail {
 export interface QaCriterion { category: string; score: number; weight: number; passed: boolean; feedback?: string; }
 export interface ComplianceViolationInfo { ruleName: string; severity: string; description: string; evidence?: string; }
 export interface TopicInfo { name: string; confidence: number; }
+export interface TurnSentimentInfo { turnIndex: number; speaker: string; score: number; label: string; }
 
 // Transcript
 export interface TranscriptSegment {
