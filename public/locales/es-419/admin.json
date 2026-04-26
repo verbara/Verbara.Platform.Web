@@ -668,6 +668,99 @@
       "reasonLabel": "Motivo",
       "reasonPlaceholder": "ej., Disputa del cliente en revisión",
       "pauseConfirm": "Pausar cobranza"
+    },
+    "revenue": {
+      "title": "Ingresos",
+      "description": "Sigue los ingresos y el margen entre todos tus clientes.",
+      "from": "Desde",
+      "until": "Hasta",
+      "apply": "Aplicar",
+      "clear": "Limpiar",
+      "exportCsv": "Exportar CSV",
+      "detailsHeading": "Detalle de ingresos",
+      "empty": "No hay ingresos registrados en el periodo seleccionado.",
+      "searchPlaceholder": "Buscar por cliente o factura...",
+      "summary": {
+        "totalRevenue": "Ingresos totales",
+        "platformCost": "Costo de plataforma",
+        "yourMargin": "Tu margen",
+        "customersInvoices": "Clientes / facturas"
+      },
+      "col": {
+        "customer": "Cliente",
+        "invoice": "Factura",
+        "gross": "Bruto",
+        "cost": "Costo",
+        "margin": "Margen",
+        "marginPct": "% Margen",
+        "period": "Periodo"
+      },
+      "chart": {
+        "title": "Tendencia de ingresos y margen",
+        "revenue": "Ingresos",
+        "margin": "Margen",
+        "empty": "No hay datos de tendencia en el periodo seleccionado."
+      }
+    }
+  },
+  "tenants": {
+    "detail": {
+      "back": "Volver a tenants",
+      "subtitle": "Configuración del tenant: seguridad, funcionalidades y cuotas.",
+      "tabs": {
+        "general": "General",
+        "operational": "Operativo",
+        "security": "Seguridad",
+        "features": "Funcionalidades",
+        "billing": "Sobrescrituras de facturación",
+        "retention": "Retención"
+      },
+      "fields": {
+        "tenantId": "ID del tenant",
+        "name": "Nombre",
+        "status": "Estado",
+        "type": "Tipo",
+        "plan": "Plan",
+        "rateLimitTier": "Nivel de límite de tasa"
+      },
+      "features": {
+        "enabled": "Funcionalidades habilitadas",
+        "empty": "Sin funcionalidades habilitadas.",
+        "addOns": "Complementos",
+        "addOnsEmpty": "Sin complementos."
+      }
+    },
+    "settings": {
+      "loading": "Cargando configuración...",
+      "save": "Guardar cambios",
+      "submitting": "Guardando...",
+      "fields": {
+        "maxConcurrentChannels": "Canales concurrentes máximos",
+        "maxActiveCampaigns": "Campañas activas máximas",
+        "dialplanContextPrefix": "Prefijo de contexto de dialplan",
+        "mfaPolicy": "Política de MFA",
+        "passwordMinLength": "Longitud mínima de contraseña",
+        "oidcEnabled": "Habilitar inicio de sesión OIDC",
+        "maxMonthlyVoiceMinutes": "Minutos de voz / mes",
+        "maxMonthlyMessages": "Mensajes / mes",
+        "quotaAction": "Acción al exceder cuota",
+        "conversationRetentionDays": "Retención de conversaciones (días)",
+        "authEventRetentionDays": "Retención de eventos de autenticación (días)"
+      },
+      "placeholders": {
+        "dialplanContextPrefix": "prefijo-tenant (opcional)",
+        "unlimited": "Dejar vacío para ilimitado",
+        "useDefault": "Usar valor predeterminado"
+      },
+      "errors": {
+        "maxConcurrentChannelsRequired": "Debe ser 1 o mayor",
+        "maxActiveCampaignsRequired": "Debe ser 0 o mayor",
+        "passwordMinLength": "La longitud mínima debe ser 8 o mayor"
+      },
+      "toasts": {
+        "saved": "Configuración del tenant guardada",
+        "error": "No se pudo guardar la configuración del tenant"
+      }
     }
   }
 }

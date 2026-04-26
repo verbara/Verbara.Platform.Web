@@ -48,6 +48,7 @@ const ClusterPage = lazy(() => import('@/admin/cluster/cluster-page'));
 const RealtimePage = lazy(() => import('@/admin/realtime/realtime-page'));
 const AuditPage = lazy(() => import('@/admin/audit/audit-page'));
 const TenantsPage = lazy(() => import('@/admin/tenants/tenants-page'));
+const TenantDetailPage = lazy(() => import('@/admin/tenants/tenant-detail-page'));
 const RolesPage = lazy(() => import('@/admin/roles/roles-page'));
 const RoleDetailPage = lazy(() => import('@/admin/roles/role-detail-page'));
 const SecurityPage = lazy(() => import('@/admin/profile/security-page'));
@@ -481,6 +482,21 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:tenant:configure" redirect>
                 <LazyLoad>
                   <TenantsPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            // R5.3 Phase B Task B.1 — Tenant settings editor (S4.1).
+            // Reuses the same `system:tenant:configure` gate as the list
+            // page. The detail page hosts Tabs for General/Operational/
+            // Security/Features/Billing/Retention sections; B.5 will wire
+            // the canonical RetentionPolicySection into the Retention slot.
+            path: 'tenants/:tenantId/settings',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <TenantDetailPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

@@ -697,6 +697,99 @@
       "reasonLabel": "Reason",
       "reasonPlaceholder": "e.g., Customer dispute under review",
       "pauseConfirm": "Pause dunning"
+    },
+    "revenue": {
+      "title": "Revenue",
+      "description": "Track revenue and margin across all your customers.",
+      "from": "From",
+      "until": "Until",
+      "apply": "Apply",
+      "clear": "Clear",
+      "exportCsv": "Export CSV",
+      "detailsHeading": "Revenue details",
+      "empty": "No revenue records for the selected period.",
+      "searchPlaceholder": "Search by customer or invoice...",
+      "summary": {
+        "totalRevenue": "Total revenue",
+        "platformCost": "Platform cost",
+        "yourMargin": "Your margin",
+        "customersInvoices": "Customers / invoices"
+      },
+      "col": {
+        "customer": "Customer",
+        "invoice": "Invoice",
+        "gross": "Gross",
+        "cost": "Cost",
+        "margin": "Margin",
+        "marginPct": "Margin %",
+        "period": "Period"
+      },
+      "chart": {
+        "title": "Revenue & margin trend",
+        "revenue": "Revenue",
+        "margin": "Margin",
+        "empty": "No trend data for the selected period."
+      }
+    }
+  },
+  "tenants": {
+    "detail": {
+      "back": "Back to tenants",
+      "subtitle": "Tenant settings, security, features and quotas.",
+      "tabs": {
+        "general": "General",
+        "operational": "Operational",
+        "security": "Security",
+        "features": "Features",
+        "billing": "Billing overrides",
+        "retention": "Retention"
+      },
+      "fields": {
+        "tenantId": "Tenant ID",
+        "name": "Display name",
+        "status": "Status",
+        "type": "Type",
+        "plan": "Plan",
+        "rateLimitTier": "Rate-limit tier"
+      },
+      "features": {
+        "enabled": "Enabled features",
+        "empty": "No features enabled.",
+        "addOns": "Add-ons",
+        "addOnsEmpty": "No add-ons."
+      }
+    },
+    "settings": {
+      "loading": "Loading settings...",
+      "save": "Save changes",
+      "submitting": "Saving...",
+      "fields": {
+        "maxConcurrentChannels": "Max concurrent channels",
+        "maxActiveCampaigns": "Max active campaigns",
+        "dialplanContextPrefix": "Dialplan context prefix",
+        "mfaPolicy": "MFA policy",
+        "passwordMinLength": "Minimum password length",
+        "oidcEnabled": "Enable OIDC sign-in",
+        "maxMonthlyVoiceMinutes": "Max voice minutes / month",
+        "maxMonthlyMessages": "Max messages / month",
+        "quotaAction": "Quota exceeded action",
+        "conversationRetentionDays": "Conversation retention (days)",
+        "authEventRetentionDays": "Auth event retention (days)"
+      },
+      "placeholders": {
+        "dialplanContextPrefix": "tenant-prefix (optional)",
+        "unlimited": "Leave empty for unlimited",
+        "useDefault": "Use platform default"
+      },
+      "errors": {
+        "maxConcurrentChannelsRequired": "Must be 1 or greater",
+        "maxActiveCampaignsRequired": "Must be 0 or greater",
+        "passwordMinLength": "Minimum length must be 8 or greater"
+      },
+      "toasts": {
+        "saved": "Tenant settings saved",
+        "error": "Failed to save tenant settings"
+      }
     }
   }
 }
