@@ -676,5 +676,18 @@
         "acknowledge_saved": "I have saved my new recovery codes."
       }
     }
+  },
+  "partner": {
+    "suspend": {
+      "title": "Suspend customer?",
+      "body": "Suspending this customer will block their access until reactivated. This action is reversible but will interrupt service.",
+      "wordLabel": "Type the customer name to confirm",
+      "reasonLabel": "Reason (required)",
+      "reasonPlaceholder": "e.g. Non-payment 30 days overdue",
+      "reasonRequired": "Reason is required to suspend a customer.",
+      "cancel": "Cancel",
+      "confirm": "Suspend",
+      "submitting": "Suspending..."
+    }
   }
 }

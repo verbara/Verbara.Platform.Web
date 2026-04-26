@@ -631,5 +631,18 @@
         "acknowledge_saved": "Salvei meus novos códigos de recuperação."
       }
     }
+  },
+  "partner": {
+    "suspend": {
+      "title": "Suspender cliente?",
+      "body": "Suspender este cliente bloqueará o acesso até a reativação. Esta ação é reversível mas interromperá o serviço.",
+      "wordLabel": "Digite o nome do cliente para confirmar",
+      "reasonLabel": "Motivo (obrigatório)",
+      "reasonPlaceholder": "ex. Inadimplência de 30 dias",
+      "reasonRequired": "O motivo é obrigatório para suspender um cliente.",
+      "cancel": "Cancelar",
+      "confirm": "Suspender",
+      "submitting": "Suspendendo..."
+    }
   }
 }

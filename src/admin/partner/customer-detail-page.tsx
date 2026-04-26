@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { ArrowLeft, Pause, Play, Pencil, FileText } from 'lucide-react';
 import { PageHeader } from '@/admin/shared/page-header';
@@ -7,6 +8,7 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { Textarea } from '@/core/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
 import {
   Sheet,
@@ -24,6 +26,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/core/ui/dialog';
+import { toast } from 'sonner';
 import {
   usePartnerCustomer,
   useUpdatePartnerCustomer,
@@ -50,6 +53,7 @@ function formatCurrency(amount: number, currency = 'USD') {
 export default function PartnerCustomerDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation('admin');
   const { data: customer } = usePartnerCustomer(id);
   const updateCustomer = useUpdatePartnerCustomer();
   const suspendCustomer = useSuspendCustomer();
@@ -59,6 +63,30 @@ export default function PartnerCustomerDetailPage() {
   const [editName, setEditName] = useState('');
   const [editMaxChannels, setEditMaxChannels] = useState('');
   const [editMaxCampaigns, setEditMaxCampaigns] = useState('');
+
+  const [suspendOpen, setSuspendOpen] = useState(false);
+  const [suspendWord, setSuspendWord] = useState('');
+  const [suspendReason, setSuspendReason] = useState('');
+
+  function openSuspend() {
+    setSuspendWord('');
+    setSuspendReason('');
+    setSuspendOpen(true);
+  }
+
+  function handleSuspendConfirm() {
+    if (!customer) return;
+    if (suspendWord !== customer.name) return;
+    const reason = suspendReason.trim();
+    if (!reason) {
+      toast.error(
+        t('partner.suspend.reasonRequired', 'Reason is required to suspend a customer.'),
+      );
+      return;
+    }
+    suspendCustomer.mutate({ id, reason });
+    setSuspendOpen(false);
+  }
 
   function openEdit() {
     if (!customer) return;
@@ -129,7 +157,7 @@ export default function PartnerCustomerDetailPage() {
           <Button
             variant="outline"
             className="text-amber-600"
-            onClick={() => suspendCustomer.mutate(id)}
+            onClick={openSuspend}
             data-testid="suspend-customer"
           >
             <Pause className="mr-1.5 h-4 w-4" />
@@ -137,6 +165,81 @@ export default function PartnerCustomerDetailPage() {
           </Button>
         )}
       </PageHeader>
+
+      <Dialog open={suspendOpen} onOpenChange={setSuspendOpen}>
+        <DialogContent className="sm:max-w-md" data-testid="suspend-confirm-dialog">
+          <DialogHeader>
+            <DialogTitle>
+              {t('partner.suspend.title', 'Suspend customer?')}
+            </DialogTitle>
+            <DialogDescription>
+              {t(
+                'partner.suspend.body',
+                'Suspending this customer will block their access until reactivated. This action is reversible but will interrupt service.',
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="suspend-confirm-word" className="text-xs">
+                {t('partner.suspend.wordLabel', 'Type the customer name to confirm')}{' '}
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                  {customer.name}
+                </code>
+              </Label>
+              <Input
+                id="suspend-confirm-word"
+                data-testid="suspend-confirm-word"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                value={suspendWord}
+                onChange={(e) => setSuspendWord(e.target.value)}
+                aria-invalid={suspendWord.length > 0 && suspendWord !== customer.name}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="suspend-confirm-reason" className="text-xs">
+                {t('partner.suspend.reasonLabel', 'Reason (required)')}
+              </Label>
+              <Textarea
+                id="suspend-confirm-reason"
+                data-testid="suspend-confirm-reason"
+                rows={3}
+                placeholder={t(
+                  'partner.suspend.reasonPlaceholder',
+                  'e.g. Non-payment 30 days overdue',
+                )}
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSuspendOpen(false)}
+              data-testid="suspend-confirm-cancel"
+            >
+              {t('partner.suspend.cancel', 'Cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              data-testid="suspend-confirm-submit"
+              onClick={handleSuspendConfirm}
+              disabled={
+                suspendCustomer.isPending ||
+                suspendWord !== customer.name ||
+                suspendReason.trim().length === 0
+              }
+            >
+              {suspendCustomer.isPending
+                ? t('partner.suspend.submitting', 'Suspending...')
+                : t('partner.suspend.confirm', 'Suspend')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Tabs defaultValue="overview">
         <TabsList>

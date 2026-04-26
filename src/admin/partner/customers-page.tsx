@@ -36,7 +36,6 @@ import {
   usePartnerCustomers,
   useCreatePartnerCustomer,
   useUpdatePartnerCustomer,
-  useSuspendCustomer,
   useActivateCustomer,
   PARTNER_PLAN_OPTIONS,
   PARTNER_TEMPLATE_OPTIONS,
@@ -65,7 +64,6 @@ export default function PartnerCustomersPage() {
   const { data: customers = [] } = usePartnerCustomers();
   const createCustomer = useCreatePartnerCustomer();
   const updateCustomer = useUpdatePartnerCustomer();
-  const suspendCustomer = useSuspendCustomer();
   const activateCustomer = useActivateCustomer();
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -209,8 +207,11 @@ export default function PartnerCustomersPage() {
                   className="h-7 w-7 p-0 text-amber-600 hover:text-amber-700"
                   data-testid={`suspend-customer-${c.tenantId}`}
                   onClick={(e) => {
+                    // Suspend now requires a reason — route to detail page
+                    // where the ConfirmDialog enforces word-gate + reason
+                    // (R5.3 Phase B B.3 / S4.3).
                     e.stopPropagation();
-                    suspendCustomer.mutate(c.tenantId);
+                    navigate(`/admin/partner/customers/${c.tenantId}`);
                   }}
                 >
                   <Pause className="h-3.5 w-3.5" />
@@ -221,7 +222,7 @@ export default function PartnerCustomersPage() {
         },
       }),
     ],
-    [navigate, suspendCustomer, activateCustomer],
+    [navigate, activateCustomer],
   );
 
   return (

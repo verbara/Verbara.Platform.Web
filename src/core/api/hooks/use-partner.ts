@@ -135,18 +135,32 @@ export function useUpdatePartnerCustomer() {
   });
 }
 
+export interface SuspendCustomerInput {
+  id: string;
+  /**
+   * Free-text reason captured client-side. The backend currently does not
+   * accept a payload on POST /suspend — see TODO(R5.3 B.3.b): backend should
+   * accept reason payload. Until the backend follow-up lands, the reason is
+   * surfaced in the success toast and not persisted server-side.
+   */
+  reason: string;
+}
+
 export function useSuspendCustomer() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
+    // TODO(R5.3 B.3.b): backend should accept reason payload. For now we send
+    // an empty body and surface the reason in the client-side success toast.
+    mutationFn: ({ id }: SuspendCustomerInput) =>
       customFetch<StatusUpdateResponse>({
         url: `/api/v1/partner/customers/${id}/suspend`,
         method: 'POST',
       }),
-    onSuccess: (_data, id) => {
+    onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['partner-customers'] });
-      qc.invalidateQueries({ queryKey: ['partner-customer', id] });
-      toast.success('Customer suspended');
+      qc.invalidateQueries({ queryKey: ['partner-customer', vars.id] });
+      const reason = vars.reason.trim();
+      toast.success(reason ? `Customer suspended — reason: ${reason}` : 'Customer suspended');
     },
     onError: (err: Error) => toast.error(err.message),
   });
