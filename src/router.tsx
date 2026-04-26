@@ -637,10 +637,15 @@ export const router = createBrowserRouter([
           // these with real components and may tighten the permission gate
           // (auth.read / security.mfa.admin / security.impersonation.manage)
           // once the corresponding Platform permissions land.
+          //
+          // R5.2 PA.1 (shipped): MFA admin gate tightened from the P0.10
+          // fallback (`system:auth:configure`) to the new
+          // `security.mfa.admin` permission seeded by P0.9 — matches the
+          // backend `/management/mfa/*` policy.
           {
             path: 'security/mfa',
             element: (
-              <PermissionGuard requires="system:auth:configure" redirect>
+              <PermissionGuard requires="security.mfa.admin" redirect>
                 <LazyLoad>
                   <MfaAdminPage />
                 </LazyLoad>

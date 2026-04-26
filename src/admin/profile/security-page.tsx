@@ -12,7 +12,7 @@ import { Badge } from '@/core/ui/badge';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose,
 } from '@/core/ui/dialog';
-import { useMe, isLockedOut, type Me } from '@/core/api/hooks/use-me';
+import { useMe, isLockedOut, isMfaEnforcedByTenant, type Me } from '@/core/api/hooks/use-me';
 import {
   useSetupMfa, useConfirmMfa, useDisableMfa,
   useChangePassword,
@@ -90,9 +90,12 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
   const [regeneratePassword, setRegeneratePassword] = useState('');
   const [newCodes, setNewCodes] = useState<string[] | null>(null);
 
-  // TODO(v1.7.0): add MfaPolicy to /users/me response so UI can hide Disable proactively.
-  // For v1.6.0, we rely on the backend 403 response when tenant policy blocks disable.
-  const mfaRequired = false;
+  // R5.2 E.2 — `/users/me` now ships an `mfaPolicy` snapshot (Enforced +
+  // PolicySource). When the tenant policy enforces MFA we hide "Disable MFA"
+  // proactively instead of waiting for the backend 403 round-trip. Older
+  // backends that haven't shipped the addition return undefined → mfaRequired
+  // falls back to false (existing v1.6.0 behavior preserved).
+  const mfaRequired = isMfaEnforcedByTenant(me);
 
   async function handleSetup() {
     const data = await setupMfa.mutateAsync();

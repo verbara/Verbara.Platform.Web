@@ -497,7 +497,37 @@
   "security_admin": {
     "mfa": {
       "title": "MFA Administration",
-      "nav": "MFA"
+      "nav": "MFA",
+      "description": "Manage user MFA enrollment across the platform: list users, force-reset MFA, revoke active sessions.",
+      "loading": "Loading users…",
+      "empty": "No users match the current filters.",
+      "search_placeholder": "Search users…",
+      "columns": {
+        "user": "User",
+        "tenant": "Tenant",
+        "status": "Status",
+        "enrolled_at": "Enrolled",
+        "last_used": "Last login"
+      },
+      "status": {
+        "enrolled": "Enrolled",
+        "not_enrolled": "Not enrolled",
+        "locked": "Locked"
+      },
+      "filter": {
+        "status": "Status",
+        "status_all": "All statuses",
+        "tenant": "Tenant",
+        "tenant_placeholder": "Filter by tenant id"
+      },
+      "actions": {
+        "reset": "Reset MFA",
+        "revoke_sessions": "Revoke sessions"
+      },
+      "confirm": {
+        "reset_entity": "MFA enrollment",
+        "revoke_entity": "active sessions"
+      }
     },
     "audit": {
       "title": "Audit Log",

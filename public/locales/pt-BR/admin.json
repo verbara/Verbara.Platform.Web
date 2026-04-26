@@ -497,7 +497,37 @@
   "security_admin": {
     "mfa": {
       "title": "Administração de MFA",
-      "nav": "MFA"
+      "nav": "MFA",
+      "description": "Gerencie a inscrição MFA dos usuários: liste, force a redefinição e revogue sessões ativas.",
+      "loading": "Carregando usuários…",
+      "empty": "Nenhum usuário corresponde aos filtros atuais.",
+      "search_placeholder": "Buscar usuários…",
+      "columns": {
+        "user": "Usuário",
+        "tenant": "Tenant",
+        "status": "Status",
+        "enrolled_at": "Inscrito em",
+        "last_used": "Último acesso"
+      },
+      "status": {
+        "enrolled": "Inscrito",
+        "not_enrolled": "Não inscrito",
+        "locked": "Bloqueado"
+      },
+      "filter": {
+        "status": "Status",
+        "status_all": "Todos os status",
+        "tenant": "Tenant",
+        "tenant_placeholder": "Filtrar por id de tenant"
+      },
+      "actions": {
+        "reset": "Redefinir MFA",
+        "revoke_sessions": "Revogar sessões"
+      },
+      "confirm": {
+        "reset_entity": "inscrição MFA",
+        "revoke_entity": "sessões ativas"
+      }
     },
     "audit": {
       "title": "Registro de Auditoria",
