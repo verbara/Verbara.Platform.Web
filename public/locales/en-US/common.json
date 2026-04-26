@@ -9,7 +9,7 @@
   "nav": { "admin": "Admin", "operations": "Operations", "analytics": "Analytics", "agent": "Agent", "notifications": "Notifications" },
   "code-block": { "show-more": "Show more", "show-less": "Show less" },
   "audit-trail-mini": { "no-events": "No audit events yet.", "loading": "Loading events..." },
-  "actions": { "save": "Save", "cancel": "Cancel", "delete": "Delete", "create": "Create", "edit": "Edit", "search": "Search", "confirm": "Confirm", "close": "Close", "back": "Back", "clear_all": "Clear all", "copy": "Copy", "download": "Download", "done": "Done", "next": "Next" },
+  "actions": { "save": "Save", "cancel": "Cancel", "delete": "Delete", "create": "Create", "edit": "Edit", "search": "Search", "confirm": "Confirm", "close": "Close", "back": "Back", "clear_all": "Clear all", "copy": "Copy", "download": "Download", "done": "Done", "next": "Next", "revoke": "Revoke" },
   "status": {
     "loading": "Loading...",
     "error": "Error",
@@ -94,6 +94,7 @@
     "mfa_recovery_prompt": "Enter one of your recovery codes.",
     "mfa_recovery_placeholder": "Recovery code",
     "mfa_verify": "Verify",
+    "totp_code": "Authenticator code",
     "mfa_invalid_code": "Invalid code. Please try again.",
     "mfa_error": "Verification failed. Please try again.",
     "mfa_rate_limited": "Too many attempts. Please wait a few minutes and try again.",

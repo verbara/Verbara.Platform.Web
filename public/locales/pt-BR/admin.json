@@ -546,17 +546,45 @@
     "mfa": {
       "enroll": {
         "title": "Habilitar Autenticação Multifator",
-        "nav": "Habilitar MFA"
+        "nav": "Habilitar MFA",
+        "description": "Adicione uma segunda etapa de verificação ao seu login para manter sua conta segura.",
+        "steps": {
+          "qr": "Escanear QR",
+          "verify": "Verificar código",
+          "codes": "Salvar códigos de recuperação"
+        },
+        "qr_instructions": "Escaneie o QR code com um aplicativo autenticador como Google Authenticator, Authy ou 1Password.",
+        "manual_code": "Ou insira este código manualmente",
+        "recommended_apps": "Compatível com Google Authenticator, Authy, 1Password, Microsoft Authenticator e a maioria dos aplicativos TOTP.",
+        "verify_instructions": "Insira o código de 6 dígitos que seu aplicativo autenticador mostra agora.",
+        "save_codes_warning": "Salve estes códigos de recuperação em um local seguro. Eles são a única forma de entrar se você perder acesso ao seu autenticador.",
+        "acknowledge_saved": "Salvei estes códigos de recuperação em um local seguro."
       }
     },
     "sessions": {
       "title": "Sessões Ativas",
-      "nav": "Sessões"
+      "nav": "Sessões",
+      "description": "Dispositivos que estão atualmente conectados à sua conta.",
+      "load_error": "Não foi possível carregar suas sessões ativas. Tente novamente.",
+      "empty": "Nenhuma outra sessão ativa.",
+      "current": "Atual",
+      "entity_type": "sessão",
+      "col_device": "Dispositivo",
+      "col_ip": "Endereço IP",
+      "col_created": "Conectado em",
+      "col_last_activity": "Última atividade"
     },
     "recovery_codes": {
       "regenerate": {
         "title": "Regerar Códigos de Recuperação",
-        "nav": "Códigos de Recuperação"
+        "nav": "Códigos de Recuperação",
+        "description": "Substitua seus códigos de recuperação atuais por um novo conjunto. Os antigos pararão de funcionar imediatamente.",
+        "warning_title": "Isto invalidará seus códigos de recuperação atuais.",
+        "warning_body": "Qualquer pessoa com seus códigos antigos não poderá mais usá-los. Salve os novos antes de sair desta página.",
+        "totp_hint": "Abra seu aplicativo autenticador e insira o código de 6 dígitos exibido neste momento.",
+        "action": "Regerar",
+        "save_warning": "Salve estes novos códigos de recuperação em um local seguro. Eles não serão exibidos novamente.",
+        "acknowledge_saved": "Salvei meus novos códigos de recuperação."
       }
     }
   }

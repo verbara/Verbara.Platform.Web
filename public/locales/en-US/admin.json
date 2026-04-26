@@ -546,17 +546,45 @@
     "mfa": {
       "enroll": {
         "title": "Enroll Multi-Factor Authentication",
-        "nav": "Enroll MFA"
+        "nav": "Enroll MFA",
+        "description": "Add a second verification step to your sign-in to keep your account safe.",
+        "steps": {
+          "qr": "Scan QR",
+          "verify": "Verify code",
+          "codes": "Save recovery codes"
+        },
+        "qr_instructions": "Scan the QR code with an authenticator app such as Google Authenticator, Authy, or 1Password.",
+        "manual_code": "Or enter this code manually",
+        "recommended_apps": "Compatible with Google Authenticator, Authy, 1Password, Microsoft Authenticator, and most TOTP-compatible apps.",
+        "verify_instructions": "Enter the 6-digit code your authenticator app shows now.",
+        "save_codes_warning": "Save these recovery codes somewhere safe. They are the only way to sign in if you lose access to your authenticator.",
+        "acknowledge_saved": "I have saved these recovery codes in a safe place."
       }
     },
     "sessions": {
       "title": "Active Sessions",
-      "nav": "Sessions"
+      "nav": "Sessions",
+      "description": "Devices that are currently signed in to your account.",
+      "load_error": "Unable to load your active sessions. Please try again.",
+      "empty": "No other active sessions.",
+      "current": "Current",
+      "entity_type": "session",
+      "col_device": "Device",
+      "col_ip": "IP address",
+      "col_created": "Signed in",
+      "col_last_activity": "Last activity"
     },
     "recovery_codes": {
       "regenerate": {
         "title": "Regenerate Recovery Codes",
-        "nav": "Recovery Codes"
+        "nav": "Recovery Codes",
+        "description": "Replace your existing recovery codes with a fresh set. Old codes will stop working immediately.",
+        "warning_title": "This will invalidate your current recovery codes.",
+        "warning_body": "Anyone with your old codes will no longer be able to use them. Make sure you save the new codes before you exit this page.",
+        "totp_hint": "Open your authenticator app and enter the 6-digit code shown right now.",
+        "action": "Regenerate",
+        "save_warning": "Save these new recovery codes somewhere safe. They will not be shown again.",
+        "acknowledge_saved": "I have saved my new recovery codes."
       }
     }
   }
