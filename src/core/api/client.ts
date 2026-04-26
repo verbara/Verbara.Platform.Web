@@ -60,7 +60,18 @@ async function refreshAccessToken(): Promise<boolean> {
   return _refreshPromise;
 }
 
-async function executeRequest<T>(config: RequestConfig): Promise<T> {
+/**
+ * Result envelope returned by {@link customFetchWithHeaders}. Exposes the
+ * decoded body alongside the raw `Headers` object so callers can inspect
+ * response metadata (e.g. `X-Metrics-Available` from the queue metrics
+ * endpoint — see R5.2 PC.2 / B.2).
+ */
+export interface FetchResult<T> {
+  readonly data: T;
+  readonly headers: Headers;
+}
+
+async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<T>> {
   const { accessToken } = useAuthStore.getState();
   const { activeTenantId } = useTenantStore.getState();
   const tenantId = activeTenantId ?? useAuthStore.getState().tenantId;
@@ -87,14 +98,22 @@ async function executeRequest<T>(config: RequestConfig): Promise<T> {
     throw new UnauthorizedError();
   }
 
-  if (response.status === 204) return undefined as T;
+  if (response.status === 204) {
+    return { data: undefined as T, headers: response.headers };
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: response.statusText }));
     throw new Error(error.detail ?? `API error: ${response.status}`);
   }
 
-  return response.json();
+  const data = (await response.json()) as T;
+  return { data, headers: response.headers };
+}
+
+async function executeRequest<T>(config: RequestConfig): Promise<T> {
+  const result = await executeRequestRaw<T>(config);
+  return result.data;
 }
 
 export async function customFetch<T>(config: RequestConfig): Promise<T> {
@@ -116,6 +135,42 @@ export async function customFetch<T>(config: RequestConfig): Promise<T> {
       const refreshed = await refreshAccessToken();
       if (refreshed) {
         return executeRequest<T>(config);
+      }
+
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
+    }
+
+    throw err;
+  }
+}
+
+/**
+ * Header-aware variant of {@link customFetch}. Returns the parsed body and
+ * the raw `Headers` object so callers can inspect response metadata (e.g.
+ * `X-Metrics-Available`). Same auth refresh + 401 retry semantics as
+ * {@link customFetch}; existing call-sites should keep using `customFetch`
+ * unless they need to read response headers.
+ */
+export async function customFetchWithHeaders<T>(
+  config: RequestConfig,
+): Promise<FetchResult<T>> {
+  if (useAuthStore.getState().isTokenExpired() && useAuthStore.getState().accessToken) {
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) {
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
+  }
+
+  try {
+    return await executeRequestRaw<T>(config);
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        return executeRequestRaw<T>(config);
       }
 
       useAuthStore.getState().logout();

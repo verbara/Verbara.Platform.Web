@@ -19,7 +19,8 @@
     "longest_wait": "Mayor espera",
     "wrap_up": "Post-llamada",
     "kiosk_enter": "Modo kiosco",
-    "kiosk_exit": "Salir (Esc)"
+    "kiosk_exit": "Salir (Esc)",
+    "metrics_unavailable": "Metricas en vivo no disponibles — los datos historicos pueden estar desactualizados."
   },
   "agent_states": {
     "title": "Estados de agentes",

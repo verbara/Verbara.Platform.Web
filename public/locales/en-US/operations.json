@@ -19,7 +19,8 @@
     "longest_wait": "Longest Wait",
     "wrap_up": "Wrap-up",
     "kiosk_enter": "Kiosk Mode",
-    "kiosk_exit": "Exit (Esc)"
+    "kiosk_exit": "Exit (Esc)",
+    "metrics_unavailable": "Live metrics unavailable — historical data may be stale."
   },
   "agent_states": {
     "title": "Agent States",

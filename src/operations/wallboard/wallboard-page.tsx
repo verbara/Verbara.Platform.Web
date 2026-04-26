@@ -5,15 +5,21 @@ import { useAllLiveStates } from '@/core/api/hooks/use-analytics';
 import { GlobalKpis } from '@/operations/wallboard/global-kpis';
 import { QueueCard } from '@/operations/wallboard/queue-card';
 import { KioskWrapper } from '@/operations/wallboard/kiosk-wrapper';
+import { MetricsAvailabilityBanner } from '@/core/ui/metrics-availability-banner';
 
 export default function WallboardPage() {
   const { queues, totalActive, totalAgents, globalSla, setQueues } = useQueueMetricsStore();
   const { data: apiMetrics } = useQueueMetrics();
   const { data: liveStates = [] } = useAllLiveStates();
 
+  // `isMetricsAvailable` reflects the backend `X-Metrics-Available` response
+  // header (R5.1 Pro.Analytics.Live). Defaults to `true` until the first
+  // successful fetch returns the header value.
+  const isMetricsAvailable = apiMetrics?.isMetricsAvailable ?? true;
+
   useEffect(() => {
     if (apiMetrics) {
-      setQueues(apiMetrics);
+      setQueues([...apiMetrics.metrics]);
     }
   }, [apiMetrics, setQueues]);
 
@@ -31,6 +37,7 @@ export default function WallboardPage() {
 
   const content = (
     <div className="space-y-6" data-testid="wallboard-page">
+      <MetricsAvailabilityBanner isAvailable={isMetricsAvailable} />
       <GlobalKpis totalActive={totalActive} totalAgents={totalAgents} globalSla={globalSla} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="wallboard-queue-cards">
         {sortedQueues.length === 0 ? (
