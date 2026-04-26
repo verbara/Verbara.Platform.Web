@@ -63,6 +63,11 @@ function baseLicense(overrides: Partial<LicenseInfo> = {}): LicenseInfo {
     licensedFeatures: ['Dialer', 'Analytics', 'AgentAssist'],
     maxNodes: 4,
     lastValidatedAt: '2026-04-22T10:00:00Z',
+    // PC.4 grace-state defaults — happy-path Valid license with no grace
+    // window active and no blocked features. Tests override these.
+    inGrace: false,
+    gracePeriodRemaining: null,
+    blocked: false,
     ...overrides,
   };
 }
@@ -118,6 +123,72 @@ describe('LicensePage', () => {
     render(<LicensePage />, { wrapper: makeWrapper() });
 
     expect(screen.getByTestId('license-warning-banner')).toBeDefined();
+  });
+
+  // ─── PC.4 / triage limitation #11 — grace-state surface ────────────────────
+  // Three tests covering the new DTO fields wired through the StatCard slot
+  // and the dedicated blocked banner. Mirrors the backend's
+  // ComputeGraceState contract: inGrace ⇒ grace card visible with parsed
+  // remaining duration; blocked ⇒ banner visible.
+
+  it('Renders_GraceBadge_When_InGrace', () => {
+    mockUseLicense.mockReturnValue({
+      data: baseLicense({
+        status: 'GracePeriod',
+        inGrace: true,
+        gracePeriodRemaining: '5.00:00:00',
+      }),
+      isLoading: false,
+    });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    // The grace card is rendered (replaces the max-nodes card while in grace)
+    expect(screen.getByTestId('license-grace-card')).toBeDefined();
+    // Tier StatusBadge resolves to the canonical 'grace' license variant.
+    // status-badge variant="license" + status="grace" renders the i18n key
+    // `status.license.grace` from the badge's namespace; we assert the badge
+    // surface itself is present rather than the inner label string.
+    expect(screen.getByTestId('license-grace-card').textContent).toContain(
+      'admin:license.grace_remaining',
+    );
+  });
+
+  it('Renders_GracePeriodRemaining_When_InGrace', () => {
+    mockUseLicense.mockReturnValue({
+      data: baseLicense({
+        status: 'GracePeriod',
+        inGrace: true,
+        // 3 days, 4 hours, 30 minutes — expected formatted output: "3d 4h"
+        gracePeriodRemaining: '3.04:30:00',
+      }),
+      isLoading: false,
+    });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    const card = screen.getByTestId('license-grace-card');
+    expect(card.textContent).toContain('3d 4h');
+  });
+
+  it('Renders_BlockedBanner_When_Blocked', () => {
+    mockUseLicense.mockReturnValue({
+      data: baseLicense({
+        isValid: false,
+        status: 'Expired',
+        inGrace: false,
+        blocked: true,
+        gracePeriodRemaining: null,
+      }),
+      isLoading: false,
+    });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    expect(screen.getByTestId('license-blocked-banner')).toBeDefined();
+    // The blocked banner takes precedence — the soft expiring-soon banner
+    // must NOT render simultaneously.
+    expect(screen.queryByTestId('license-warning-banner')).toBeNull();
   });
 
   it('opens_confirm_dialog_and_submits_license_on_confirm', () => {

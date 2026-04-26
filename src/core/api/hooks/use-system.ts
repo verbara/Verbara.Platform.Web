@@ -18,6 +18,15 @@ export interface LicenseInfo {
   licensedFeatures: string[];
   maxNodes: number;
   lastValidatedAt: string;
+  // R5.2 PC.4 / triage limitation #11 — backend grace-period state surface.
+  // `gracePeriodRemaining` is the System.Text.Json default TimeSpan format
+  // — "d.hh:mm:ss" (e.g. "5.00:00:00" for 5 days) — when InGrace; null
+  // otherwise. `inGrace` and `blocked` are mutually exclusive booleans
+  // driven by `LicenseValidationResult` server-side. `parseGraceDuration`
+  // in @/admin/license/license-page is the canonical parser.
+  inGrace: boolean;
+  gracePeriodRemaining: string | null;
+  blocked: boolean;
 }
 
 export interface SystemSettings {

@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { differenceInDays, parseISO } from 'date-fns';
-import { AlertTriangle, Shield, Upload } from 'lucide-react';
+import { AlertTriangle, Clock, Shield, ShieldX, Upload } from 'lucide-react';
 
 import { Button } from '@/core/ui/button';
 import { Textarea } from '@/core/ui/textarea';
@@ -36,13 +36,20 @@ import {
 // ─── Status mapping ──────────────────────────────────────────────────────────
 
 // The backend emits `LicenseValidationResult` values (Valid / Expired /
-// Invalid / NotFound). StatusBadge variant="license" uses the canonical
-// `active / grace / expired / invalid` set. This small adapter bridges the
-// two so we don't push backend rename churn into the UI layer.
-function toBadgeStatus(status: string): string {
+// Invalid / NotFound / GracePeriod). StatusBadge variant="license" uses the
+// canonical `active / grace / expired / invalid` set. This small adapter
+// bridges the two so we don't push backend rename churn into the UI layer.
+// PC.4 (R5.2): `inGrace` from the new DTO field overrides the raw status to
+// favour the canonical `grace` badge whenever the LicenseGuard reports the
+// system is currently in the post-expiry grace window.
+function toBadgeStatus(status: string, inGrace: boolean): string {
+  if (inGrace) return 'grace';
   switch (status.toLowerCase()) {
     case 'valid':
       return 'active';
+    case 'graceperiod':
+    case 'grace_period':
+      return 'grace';
     case 'expired':
       return 'expired';
     case 'invalid':
@@ -54,6 +61,40 @@ function toBadgeStatus(status: string): string {
     default:
       return status;
   }
+}
+
+// Parses System.Text.Json's default TimeSpan format ("d.hh:mm:ss" or
+// "hh:mm:ss" for sub-day spans) into a total-seconds number. Returns null
+// for malformed/empty input so callers can treat missing values gracefully.
+// Exported for the StatCard test harness.
+export function parseGraceDuration(value: string | null | undefined): number | null {
+  if (!value) return null;
+  // System.Text.Json emits hh:mm:ss with optional leading "d." for days and
+  // a trailing ".fffffff" for sub-second precision. We only care about whole
+  // seconds for display, so a single regex captures the relevant groups.
+  const match = /^(?:(\d+)\.)?(\d{1,2}):(\d{2}):(\d{2})(?:\.\d+)?$/.exec(value);
+  if (!match) return null;
+  const [, days, hours, minutes, seconds] = match;
+  const d = days ? Number.parseInt(days, 10) : 0;
+  const h = Number.parseInt(hours, 10);
+  const m = Number.parseInt(minutes, 10);
+  const s = Number.parseInt(seconds, 10);
+  return d * 86_400 + h * 3_600 + m * 60 + s;
+}
+
+// Renders a grace-window remaining duration as the largest sensible unit:
+// `5d 4h` for multi-day, `4h 30m` under 24h, `30m` under an hour. Falls
+// back to `--` when the input is null/unparseable.
+function formatGraceRemaining(value: string | null | undefined): string {
+  const totalSeconds = parseGraceDuration(value);
+  if (totalSeconds === null || totalSeconds < 0) return '--';
+  if (totalSeconds === 0) return '0m';
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3_600);
+  const minutes = Math.floor((totalSeconds % 3_600) / 60);
+  if (days > 0) return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+  if (hours > 0) return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  return `${minutes}m`;
 }
 
 // Converts enum-style feature keys ("Dialer", "CallAnalytics", "AgentAssist")
@@ -102,7 +143,7 @@ export default function LicensePage() {
     );
   }
 
-  const badgeStatus = toBadgeStatus(license.status);
+  const badgeStatus = toBadgeStatus(license.status, license.inGrace);
 
   const tierValue = license.licensee ?? t('admin:license.tier_unknown');
   const expiryDescription = license.expiresAt
@@ -114,6 +155,12 @@ export default function LicensePage() {
       return t('admin:license.expires_in_days', { days: daysLeft });
     return '';
   })();
+
+  // R5.2 PC.4 / triage limitation #11 — grace state derived from new DTO
+  // fields. The card is rendered with a grace badge + remaining duration
+  // when the LicenseGuard reports we're inside the post-expiry window;
+  // the blocked banner takes precedence when grace has been exhausted.
+  const graceRemainingLabel = formatGraceRemaining(license.gracePeriodRemaining);
 
   return (
     <div className="space-y-8" data-testid="license-page">
@@ -127,7 +174,12 @@ export default function LicensePage() {
         </p>
       </div>
 
-      {/* Summary row: tier + expiration + nodes */}
+      {/* Summary row: tier + expiration + nodes/grace.
+       *
+       * PC.4: when `inGrace` is true the third StatCard pivots from
+       * "Max Nodes" to a Grace card so the operator sees the remaining
+       * window first; max-nodes information is still reachable via the
+       * standard system page. */}
       <section className="grid gap-4 md:grid-cols-3" data-testid="license-summary">
         <StatCard
           icon={<Shield className="h-4 w-4" aria-hidden="true" />}
@@ -143,17 +195,44 @@ export default function LicensePage() {
           value={expiryDescription}
           description={expiryExtra}
         />
-        <StatCard
-          label={t('admin:license.max_nodes')}
-          value={license.maxNodes}
-          description={t('admin:license.last_validated', {
-            at: formatRelative(license.lastValidatedAt),
-          })}
-        />
+        {license.inGrace ? (
+          // StatCard does not surface an extra wrapper element for testid,
+          // so we wrap it in a sentinel div for the test harness to query.
+          <div data-testid="license-grace-card">
+            <StatCard
+              icon={<Clock className="h-4 w-4" aria-hidden="true" />}
+              label={t('admin:license.grace_remaining')}
+              value={graceRemainingLabel}
+              description={t('admin:license.grace_description')}
+              statusBadge={<StatusBadge status="grace" variant="license" />}
+            />
+          </div>
+        ) : (
+          <StatCard
+            label={t('admin:license.max_nodes')}
+            value={license.maxNodes}
+            description={t('admin:license.last_validated', {
+              at: formatRelative(license.lastValidatedAt),
+            })}
+          />
+        )}
       </section>
 
+      {/* Blocked banner — PC.4: takes precedence over expiring-soon styling
+          when LicenseGuard reports the grace window is fully exhausted and
+          features can no longer authorize. */}
+      {license.blocked && (
+        <div
+          data-testid="license-blocked-banner"
+          className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive"
+        >
+          <ShieldX className="h-4 w-4 shrink-0" aria-hidden="true" />
+          {t('admin:license.warning_blocked')}
+        </div>
+      )}
+
       {/* Expiration warning banner */}
-      {(isExpiringSoon || isExpired) && (
+      {!license.blocked && (isExpiringSoon || isExpired) && (
         <div
           data-testid="license-warning-banner"
           className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
