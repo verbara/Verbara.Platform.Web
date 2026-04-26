@@ -580,7 +580,48 @@
     },
     "impersonation": {
       "title": "Impersonation Sessions",
-      "nav": "Impersonation"
+      "nav": "Impersonation",
+      "description": "List active impersonation sessions, revoke them on demand, and review past sessions including auto-timeout outcomes.",
+      "tabs": {
+        "active": "Active sessions",
+        "history": "History"
+      },
+      "loading": "Loading sessions…",
+      "empty_active": "No active impersonation sessions right now.",
+      "empty_history": "No historical sessions match these filters.",
+      "columns": {
+        "actor": "Actor",
+        "target": "Target tenant",
+        "started": "Started",
+        "reason": "Reason",
+        "time_remaining": "Time remaining",
+        "ended": "Ended",
+        "duration": "Duration",
+        "outcome": "Outcome",
+        "actions": "Actions"
+      },
+      "actions": {
+        "revoke": "Revoke"
+      },
+      "outcome": {
+        "manually_revoked": "Manually revoked",
+        "auto_timed_out": "Auto-timeout",
+        "completed": "Completed"
+      },
+      "confirm": {
+        "revoke_entity": "impersonation session",
+        "reason_label": "Reason (logged in audit trail)",
+        "reason_placeholder": "Investigation complete"
+      },
+      "live": {
+        "expired": "Expired",
+        "minutes_remaining": "{{minutes}}m remaining",
+        "seconds_remaining": "{{seconds}}s remaining"
+      },
+      "toast": {
+        "revoked": "Session revoked.",
+        "revoke_failed": "Revoke failed."
+      }
     }
   },
   "retention": {

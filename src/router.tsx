@@ -664,8 +664,11 @@ export const router = createBrowserRouter([
           },
           {
             path: 'security/impersonation',
+            // R5.2 PB.2 — replace P0.10 fallback gate with the seeded
+            // dot-notation permission (`security.impersonation.manage`,
+            // P0.9 commit f20892e).
             element: (
-              <PermissionGuard requires="system:auth:configure" redirect>
+              <PermissionGuard requires="security.impersonation.manage" redirect>
                 <LazyLoad>
                   <ImpersonationAdminPage />
                 </LazyLoad>

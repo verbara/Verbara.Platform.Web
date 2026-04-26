@@ -535,7 +535,48 @@
     },
     "impersonation": {
       "title": "Sessões de Personificação",
-      "nav": "Personificação"
+      "nav": "Personificação",
+      "description": "Liste sessões ativas de personificação, revogue-as sob demanda e revise o histórico incluindo encerramentos por timeout automático.",
+      "tabs": {
+        "active": "Sessões ativas",
+        "history": "Histórico"
+      },
+      "loading": "Carregando sessões…",
+      "empty_active": "Nenhuma sessão ativa de personificação no momento.",
+      "empty_history": "Nenhuma sessão histórica corresponde aos filtros.",
+      "columns": {
+        "actor": "Ator",
+        "target": "Tenant alvo",
+        "started": "Início",
+        "reason": "Motivo",
+        "time_remaining": "Tempo restante",
+        "ended": "Fim",
+        "duration": "Duração",
+        "outcome": "Resultado",
+        "actions": "Ações"
+      },
+      "actions": {
+        "revoke": "Revogar"
+      },
+      "outcome": {
+        "manually_revoked": "Revogada manualmente",
+        "auto_timed_out": "Timeout automático",
+        "completed": "Concluída"
+      },
+      "confirm": {
+        "revoke_entity": "sessão de personificação",
+        "reason_label": "Motivo (registrado na auditoria)",
+        "reason_placeholder": "Investigação concluída"
+      },
+      "live": {
+        "expired": "Expirada",
+        "minutes_remaining": "{{minutes}} m restantes",
+        "seconds_remaining": "{{seconds}} s restantes"
+      },
+      "toast": {
+        "revoked": "Sessão revogada.",
+        "revoke_failed": "Falha ao revogar a sessão."
+      }
     }
   },
   "retention": {

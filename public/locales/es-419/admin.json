@@ -551,7 +551,48 @@
     },
     "impersonation": {
       "title": "Sesiones de Suplantación",
-      "nav": "Suplantación"
+      "nav": "Suplantación",
+      "description": "Lista las sesiones activas de suplantación, revócalas a demanda y revisa el historial incluyendo cierres por timeout automático.",
+      "tabs": {
+        "active": "Sesiones activas",
+        "history": "Historial"
+      },
+      "loading": "Cargando sesiones…",
+      "empty_active": "No hay sesiones de suplantación activas en este momento.",
+      "empty_history": "Ninguna sesión histórica coincide con los filtros.",
+      "columns": {
+        "actor": "Actor",
+        "target": "Tenant objetivo",
+        "started": "Inicio",
+        "reason": "Motivo",
+        "time_remaining": "Tiempo restante",
+        "ended": "Fin",
+        "duration": "Duración",
+        "outcome": "Resultado",
+        "actions": "Acciones"
+      },
+      "actions": {
+        "revoke": "Revocar"
+      },
+      "outcome": {
+        "manually_revoked": "Revocada manualmente",
+        "auto_timed_out": "Timeout automático",
+        "completed": "Completada"
+      },
+      "confirm": {
+        "revoke_entity": "sesión de suplantación",
+        "reason_label": "Motivo (queda registrado en auditoría)",
+        "reason_placeholder": "Investigación finalizada"
+      },
+      "live": {
+        "expired": "Expirada",
+        "minutes_remaining": "{{minutes}} m restantes",
+        "seconds_remaining": "{{seconds}} s restantes"
+      },
+      "toast": {
+        "revoked": "Sesión revocada.",
+        "revoke_failed": "No se pudo revocar la sesión."
+      }
     }
   },
   "retention": {
