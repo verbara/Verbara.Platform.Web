@@ -224,7 +224,7 @@ export default function ImpersonationAdminPage() {
   const activeSessions = active.data?.items ?? [];
   const historySessions = history.data?.items ?? [];
 
-  const activeColumns = useMemo<ColumnDef<ImpersonationSessionDto, unknown>[]>(
+  const activeColumns = useMemo<ColumnDef<ImpersonationSessionDto>[]>(
     () => [
       col.accessor('actorUserId', {
         header: () => t('admin:security_admin.impersonation.columns.actor'),
@@ -288,11 +288,11 @@ export default function ImpersonationAdminPage() {
           </Button>
         ),
       }),
-    ],
+    ] as unknown as ColumnDef<ImpersonationSessionDto>[],
     [t, nowMs, formatDate, formatRelative],
   );
 
-  const historyColumns = useMemo<ColumnDef<ImpersonationSessionDto, unknown>[]>(
+  const historyColumns = useMemo<ColumnDef<ImpersonationSessionDto>[]>(
     () => [
       col.accessor('actorUserId', {
         header: () => t('admin:security_admin.impersonation.columns.actor'),
@@ -340,7 +340,7 @@ export default function ImpersonationAdminPage() {
         header: () => t('admin:security_admin.impersonation.columns.outcome'),
         cell: (info) => <OutcomeBadge status={info.getValue()} t={t} />,
       }),
-    ],
+    ] as unknown as ColumnDef<ImpersonationSessionDto>[],
     [t, formatDate, formatRelative],
   );
 
@@ -420,7 +420,7 @@ export default function ImpersonationAdminPage() {
 interface SectionProps {
   readonly isLoading: boolean;
   readonly sessions: ReadonlyArray<ImpersonationSessionDto>;
-  readonly columns: ColumnDef<ImpersonationSessionDto, unknown>[];
+  readonly columns: ColumnDef<ImpersonationSessionDto>[];
   readonly t: TFunction;
 }
 

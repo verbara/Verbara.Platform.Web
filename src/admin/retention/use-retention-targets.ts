@@ -53,39 +53,39 @@ export const retentionKeys = {
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
 export function useRetentionTargets() {
-  const token = useAuthStore((s) => s.token);
+  const accessToken = useAuthStore((s) => s.accessToken);
   return useQuery({
     queryKey: retentionKeys.targets(),
     queryFn: async (): Promise<ReadonlyArray<RetentionTargetDto>> => {
       const res = await fetch('/api/v1/management/retention/targets', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       if (!res.ok) throw new Error(`Failed to load retention targets: ${res.status}`);
       return (await res.json()) as ReadonlyArray<RetentionTargetDto>;
     },
-    enabled: !!token,
+    enabled: !!accessToken,
   });
 }
 
 export function useRetentionConfig() {
-  const token = useAuthStore((s) => s.token);
+  const accessToken = useAuthStore((s) => s.accessToken);
   return useQuery({
     queryKey: retentionKeys.config(),
     queryFn: async (): Promise<RetentionConfigDto> => {
       const res = await fetch('/api/v1/management/retention/config', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       if (!res.ok) throw new Error(`Failed to load retention config: ${res.status}`);
       return (await res.json()) as RetentionConfigDto;
     },
-    enabled: !!token,
+    enabled: !!accessToken,
   });
 }
 
 // ─── Mutations ───────────────────────────────────────────────────────────────
 
 export function useRunRetentionNow() {
-  const token = useAuthStore((s) => s.token);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -100,7 +100,7 @@ export function useRunRetentionNow() {
       if (target) url.searchParams.set('target', target);
       const res = await fetch(url.toString(), {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       if (!res.ok) throw new Error(`Failed to run retention: ${res.status}`);
       return (await res.json()) as RetentionRunResultDto;
@@ -112,14 +112,14 @@ export function useRunRetentionNow() {
 }
 
 export function useToggleDryRun() {
-  const token = useAuthStore((s) => s.token);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (newValue: boolean): Promise<RetentionConfigDto> => {
       const res = await fetch('/api/v1/management/retention/config', {
         method: 'PATCH',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ dryRun: newValue }),

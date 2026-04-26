@@ -21,7 +21,7 @@ const formatTimestamp = (iso: string | null): string =>
 export default function RetentionAdminPage() {
   const { t } = useTranslation(['admin']);
   const permissions = useAuthStore((s) => s.permissions);
-  const canManage = permissions.has('retention.manage');
+  const canManage = permissions.includes('retention.manage');
 
   const { data: targets, isLoading: targetsLoading, error: targetsError } = useRetentionTargets();
   const { data: config, isLoading: configLoading } = useRetentionConfig();

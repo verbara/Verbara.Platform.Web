@@ -146,7 +146,7 @@ export default function AuditViewerPage() {
     exportMutation.mutate({ format, filter: draftToFilter(applied, 1) });
   }
 
-  const columns = useMemo<ColumnDef<AuditEventDto, unknown>[]>(
+  const columns = useMemo<ColumnDef<AuditEventDto>[]>(
     () => [
       col.accessor('occurredAt', {
         header: () => t('admin:security_admin.audit.columns.timestamp'),
@@ -198,7 +198,7 @@ export default function AuditViewerPage() {
         header: () => t('admin:security_admin.audit.columns.status'),
         cell: (info) => <span className="text-sm capitalize">{info.getValue()}</span>,
       }),
-    ],
+    ] as unknown as ColumnDef<AuditEventDto>[],
     [t, formatDate, formatRelative],
   );
 
@@ -309,15 +309,17 @@ export default function AuditViewerPage() {
       >
         {canExport && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                data-testid="audit-export-button"
-                disabled={exportMutation.isPending}
-              >
-                <Download className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                {t('admin:security_admin.audit.export.label')}
-              </Button>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  data-testid="audit-export-button"
+                  disabled={exportMutation.isPending}
+                />
+              }
+            >
+              <Download className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              {t('admin:security_admin.audit.export.label')}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem

@@ -74,11 +74,14 @@ export function parseGraceDuration(value: string | null | undefined): number | n
   // seconds for display, so a single regex captures the relevant groups.
   const match = /^(?:(\d+)\.)?(\d{1,2}):(\d{2}):(\d{2})(?:\.\d+)?$/.exec(value);
   if (!match) return null;
+  // `noUncheckedIndexedAccess` widens captured groups to `string | undefined`
+  // even though groups 2-4 are guaranteed by the anchored regex; coerce with
+  // `?? '0'` so the parser stays total without sacrificing the type contract.
   const [, days, hours, minutes, seconds] = match;
   const d = days ? Number.parseInt(days, 10) : 0;
-  const h = Number.parseInt(hours, 10);
-  const m = Number.parseInt(minutes, 10);
-  const s = Number.parseInt(seconds, 10);
+  const h = Number.parseInt(hours ?? '0', 10);
+  const m = Number.parseInt(minutes ?? '0', 10);
+  const s = Number.parseInt(seconds ?? '0', 10);
   return d * 86_400 + h * 3_600 + m * 60 + s;
 }
 
