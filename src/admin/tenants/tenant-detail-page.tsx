@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import { PageHeader } from '@/admin/shared/page-header';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
@@ -8,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
 import { useTenant } from '@/core/api/hooks/use-tenants';
 import { useTenantSettings } from '@/admin/tenants/use-tenant-settings';
 import { TenantSettingsForm } from '@/admin/tenants/tenant-settings-form';
+import { RetentionPolicySection } from '@/admin/gdpr/retention-policy-section';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   active: 'default',
@@ -24,6 +26,8 @@ export default function TenantDetailPage() {
 
   const { data: tenant } = useTenant(tenantId);
   const { data: settings } = useTenantSettings(tenantId);
+
+  const [retentionOpen, setRetentionOpen] = useState(false);
 
   const displayName = tenant?.name ?? settings?.name ?? tenantId;
   const status = tenant?.status ?? settings?.status ?? 'unknown';
@@ -120,15 +124,30 @@ export default function TenantDetailPage() {
           <TenantSettingsForm tenantId={tenantId} section="quotas" />
         </TabsContent>
 
-        {/* Retention tab — B.5 will replace the slot below with the
-            shared <RetentionPolicySection /> component. Until then, fall
-            back to direct retention-day fields so settings still round-trip. */}
+        {/* Retention tab — wires the shared <RetentionPolicySection /> sheet
+            (S4.5). The inline form remains as a fallback summary view. */}
         <TabsContent value="retention" className="pt-4" data-testid="tab-content-retention">
-          <div data-testid="retention-section-slot">
+          <div className="space-y-4" data-testid="retention-section-slot">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setRetentionOpen(true)}
+              data-testid="retention-policy-trigger"
+            >
+              <Clock className="mr-1.5 h-4 w-4" />
+              {t('tenants.detail.retention.openSheet', 'Edit retention policy')}
+            </Button>
             <TenantSettingsForm tenantId={tenantId} section="retention" />
           </div>
         </TabsContent>
       </Tabs>
+
+      <RetentionPolicySection
+        tenantId={tenantId}
+        open={retentionOpen}
+        onOpenChange={setRetentionOpen}
+      />
     </div>
   );
 }
