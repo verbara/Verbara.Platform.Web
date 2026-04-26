@@ -173,7 +173,7 @@ const groups: SidebarGroup[] = [
     requiredAnyPermission: ['system:auth:configure', 'system:audit:view', 'system:tenant:configure'],
     items: [
       { key: 'security-mfa', labelKey: 'admin:sidebar.securityMfa', to: '/admin/security/mfa', icon: ShieldAlert, requiredPermission: 'system:auth:configure' },
-      { key: 'security-audit', labelKey: 'admin:sidebar.securityAudit', to: '/admin/security/audit', icon: FileSearch, requiredPermission: 'system:audit:view' },
+      { key: 'security-audit', labelKey: 'admin:sidebar.securityAudit', to: '/admin/security/audit', icon: FileSearch, requiredPermission: 'audit.read' },
       { key: 'security-impersonation', labelKey: 'admin:sidebar.securityImpersonation', to: '/admin/security/impersonation', icon: UserCog, requiredPermission: 'system:auth:configure' },
       { key: 'retention', labelKey: 'admin:sidebar.retention', to: '/admin/retention', icon: Database, requiredPermission: 'system:tenant:configure' },
     ],

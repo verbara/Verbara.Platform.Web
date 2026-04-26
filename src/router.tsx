@@ -655,7 +655,7 @@ export const router = createBrowserRouter([
           {
             path: 'security/audit',
             element: (
-              <PermissionGuard requires="system:audit:view" redirect>
+              <PermissionGuard requires="audit.read" redirect>
                 <LazyLoad>
                   <AuditViewerPage />
                 </LazyLoad>

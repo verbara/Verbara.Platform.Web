@@ -531,7 +531,52 @@
     },
     "audit": {
       "title": "Audit Log",
-      "nav": "Audit"
+      "nav": "Audit",
+      "description": "Full audit history for this tenant. Filter by action prefix, actor, target, or time range.",
+      "filters": {
+        "action_prefix": "Action prefix",
+        "action_prefix_placeholder": "e.g. mfa.admin.",
+        "actor": "Actor",
+        "actor_placeholder": "User ID or username",
+        "target": "Target",
+        "target_placeholder": "Target ID",
+        "from": "From",
+        "to": "To",
+        "tenant": "Tenant",
+        "tenant_placeholder": "Override (PlatformAdmin only)",
+        "apply": "Apply",
+        "reset": "Reset"
+      },
+      "columns": {
+        "timestamp": "Timestamp",
+        "action": "Action",
+        "actor": "Actor",
+        "target": "Target",
+        "severity": "Severity",
+        "status": "Status"
+      },
+      "drawer": {
+        "title": "Audit event",
+        "tabs": {
+          "overview": "Overview",
+          "diff": "Diff",
+          "metadata": "Metadata"
+        },
+        "before": "Before",
+        "after": "After",
+        "no_diff": "No before/after snapshot was recorded for this event.",
+        "no_metadata": "No metadata.",
+        "retention_disclosure": "View retention policy"
+      },
+      "export": {
+        "label": "Export",
+        "csv": "Export as CSV",
+        "json": "Export as JSON",
+        "pending": "Preparing export…"
+      },
+      "loading": "Loading events…",
+      "empty": "No audit events match these filters.",
+      "retention_summary": "Audit events kept for {{days}} days."
     },
     "impersonation": {
       "title": "Impersonation Sessions",
