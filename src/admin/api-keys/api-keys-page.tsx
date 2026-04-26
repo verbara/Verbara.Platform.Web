@@ -111,18 +111,26 @@ export default function ApiKeysPage() {
           <StatusBadge status={resolveApiKeyStatus(row.original)} variant="api-key" />
         ),
       }),
-      col.display({
-        id: 'last-used',
-        // Last-used tracking is a backend gap: `ApiKey` model has no
-        // `LastUsedAt` column. Render `—` until R5.2 lands the schema
-        // addition; the column stays in place so the page surface won't
-        // jitter when the data arrives.
+      col.accessor('lastUsedAt', {
+        // R5.2 PC.5 / B.12 — backend now stamps `last_used_at` (debounced)
+        // when a key authenticates successfully. Null means the key has
+        // never been used since migration 020 added the column.
         header: () => t('admin:api-keys.columns.last_used'),
-        cell: () => (
-          <span className="text-muted-foreground" aria-label={t('admin:api-keys.last_used_pending')}>
-            —
-          </span>
-        ),
+        cell: (info) => {
+          const value = info.getValue();
+          if (!value) {
+            return (
+              <span className="text-muted-foreground" data-testid={`api-key-last-used-${info.row.original.keyId}`}>
+                {t('admin:api-keys.last_used_never')}
+              </span>
+            );
+          }
+          return (
+            <span title={formatDate(value)} data-testid={`api-key-last-used-${info.row.original.keyId}`}>
+              {formatRelative(value)}
+            </span>
+          );
+        },
       }),
       col.accessor('expiresAt', {
         header: () => t('admin:api-keys.columns.expires'),

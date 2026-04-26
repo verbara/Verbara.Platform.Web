@@ -65,6 +65,7 @@ function makeKey(overrides: Partial<ManagementApiKey> = {}): ManagementApiKey {
     isRevoked: false,
     expiresAt: null,
     createdAt: '2026-04-20T10:00:00Z',
+    lastUsedAt: null,
     ...overrides,
   };
 }
@@ -137,6 +138,38 @@ describe('ApiKeysPage', () => {
     fireEvent.click(screen.getByTestId('api-keys-create-btn'));
     expect(screen.getByTestId('create-api-key-dialog')).toBeDefined();
     expect(screen.getByTestId('api-key-name-input')).toBeDefined();
+  });
+
+  // ─── R5.2 PC.5 / B.12 — last-used column rendering ─────────────────────────
+
+  it('Renders_LastUsedRelativeTime_When_KeyHasLastUsedAt', () => {
+    const lastUsed = '2026-04-25T12:34:56Z';
+    mockUseList.mockReturnValue({
+      data: [makeKey({ lastUsedAt: lastUsed })],
+      isLoading: false,
+    });
+    render(<ApiKeysPage />, { wrapper: makeWrapper() });
+
+    const cell = screen.getByTestId('api-key-last-used-k-001');
+    // The mocked formatRelative returns `rel(<iso>)` — assert the relative
+    // formatter received the column value rather than rendering `—`.
+    expect(cell.textContent).toBe(`rel(${lastUsed})`);
+    // The hover-tooltip surface (`title`) must carry the absolute date so
+    // operators can disambiguate "2 minutes ago" vs the actual timestamp.
+    expect(cell.getAttribute('title')).toBe(`fd(${lastUsed})`);
+  });
+
+  it('Renders_NeverPlaceholder_When_LastUsedAtIsNull', () => {
+    mockUseList.mockReturnValue({
+      data: [makeKey({ lastUsedAt: null })],
+      isLoading: false,
+    });
+    render(<ApiKeysPage />, { wrapper: makeWrapper() });
+
+    const cell = screen.getByTestId('api-key-last-used-k-001');
+    // The "Never" key surfaces from the i18n bundle — mocked t() returns the
+    // raw key, so the cell must contain the dictionary path verbatim.
+    expect(cell.textContent).toBe('admin:api-keys.last_used_never');
   });
 
   it('surfaces_reveal_panel_after_successful_create', () => {

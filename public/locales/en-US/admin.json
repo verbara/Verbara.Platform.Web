@@ -78,7 +78,7 @@
     "search_placeholder": "Search keys...",
     "loading": "Loading keys...",
     "empty": "No API keys yet. Create one to enable machine-to-machine access.",
-    "last_used_pending": "Last-used tracking pending (R5.2).",
+    "last_used_never": "Never",
     "actions": {
       "rotate": "Rotate key",
       "revoke": "Revoke key"

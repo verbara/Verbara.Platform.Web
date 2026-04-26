@@ -21,12 +21,18 @@ import { customFetch } from '@/core/api/client';
 // Matches backend DTO `MgmtApiKeyDto` (Id field = `KeyId`). Shape is flat —
 // platform-scope Management keys have no variable scope surface so we don't
 // ship a scope array on the list DTO.
+//
+// `lastUsedAt` was added by R5.2 PC.5 / B.12: the auth middleware stamps the
+// column whenever a key authenticates successfully (debounced ≤ 1 write/min/
+// key). `null` means the key has never been used since the column was added,
+// or the row pre-dates migration 020.
 export interface ManagementApiKey {
   readonly keyId: string;
   readonly name: string;
   readonly isRevoked: boolean;
   readonly expiresAt: string | null;
   readonly createdAt: string;
+  readonly lastUsedAt: string | null;
 }
 
 export interface CreateApiKeyRequest {

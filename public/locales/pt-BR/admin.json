@@ -78,7 +78,7 @@
     "search_placeholder": "Buscar keys...",
     "loading": "Carregando keys...",
     "empty": "Ainda não há API keys. Crie uma para habilitar o acesso máquina-a-máquina.",
-    "last_used_pending": "Rastreamento de último uso pendente (R5.2).",
+    "last_used_never": "Nunca",
     "actions": {
       "rotate": "Girar key",
       "revoke": "Revogar key"
