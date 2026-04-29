@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Plus, Radio, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { PageHeader } from '@/admin/shared/page-header';
@@ -18,6 +19,7 @@ import {
 const columnHelper = createColumnHelper<EndpointProfile>();
 
 export default function RealtimePage() {
+  const { t } = useTranslation('admin');
   const [createOpen, setCreateOpen] = useState(false);
   const [editProfile, setEditProfile] = useState<EndpointProfile | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<EndpointProfile | null>(null);
@@ -29,13 +31,13 @@ export default function RealtimePage() {
   const columns = useMemo(
     () => [
       columnHelper.accessor('name', {
-        header: 'Name',
+        header: () => t('realtime.columns.name'),
         cell: (info) => (
           <span className="font-medium text-foreground">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('type', {
-        header: 'Type',
+        header: () => t('realtime.columns.type'),
         cell: (info) => (
           <Badge variant="secondary">
             {info.getValue().charAt(0).toUpperCase() + info.getValue().slice(1)}
@@ -43,23 +45,23 @@ export default function RealtimePage() {
         ),
       }),
       columnHelper.accessor('isDefault', {
-        header: 'Default',
+        header: () => t('realtime.columns.default'),
         cell: (info) =>
           info.getValue() ? (
-            <Badge variant="default">Default</Badge>
+            <Badge variant="default">{t('realtime.default_badge')}</Badge>
           ) : null,
       }),
       columnHelper.accessor('transport', {
-        header: 'Transport',
+        header: () => t('realtime.columns.transport'),
       }),
       columnHelper.accessor('codecs', {
-        header: 'Codecs',
+        header: () => t('realtime.columns.codecs'),
         cell: (info) => (
           <span className="font-mono text-xs text-muted-foreground">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('webrtc', {
-        header: 'WebRTC',
+        header: () => t('realtime.columns.webrtc'),
         cell: (info) =>
           info.getValue() ? (
             <Badge variant="outline">WebRTC</Badge>
@@ -84,23 +86,23 @@ export default function RealtimePage() {
         ),
       }),
     ],
-    [],
+    [t],
   );
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Endpoint Profiles">
+        <PageHeader title={t('realtime.title')}>
           <Button variant="outline" onClick={() => seedDefaults.mutate()}>
-            Seed Defaults
+            {t('realtime.seed_defaults')}
           </Button>
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Create Profile
+            {t('realtime.create')}
           </Button>
         </PageHeader>
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
+          {t('realtime.loading')}
         </div>
       </div>
     );
@@ -109,33 +111,33 @@ export default function RealtimePage() {
   return (
     <div className="space-y-6" data-testid="realtime-page">
       <PageHeader
-        title="Endpoint Profiles"
-        description="Reusable PJSIP endpoint profile templates for agent and trunk provisioning."
+        title={t('realtime.title')}
+        description={t('realtime.description')}
       >
         <Button
           variant="outline"
           onClick={() => seedDefaults.mutate()}
           disabled={seedDefaults.isPending}
         >
-          Seed Defaults
+          {t('realtime.seed_defaults')}
         </Button>
         <Button onClick={() => setCreateOpen(true)} data-testid="realtime-create-btn">
           <Plus className="mr-1.5 h-4 w-4" />
-          Create Profile
+          {t('realtime.create')}
         </Button>
       </PageHeader>
 
       {profiles.length === 0 ? (
         <EmptyState
           icon={Radio}
-          message="No endpoint profiles yet — click 'Seed Defaults' to create standard profiles or add one manually."
+          message={t('realtime.empty')}
         />
       ) : (
         <DataTable
           data={profiles}
           columns={columns}
-          searchPlaceholder="Search profiles..."
-          noResultsMessage="No matching profiles found."
+          searchPlaceholder={t('realtime.search_placeholder')}
+          noResultsMessage={t('realtime.no_results')}
           onRowClick={(profile) => setEditProfile(profile)}
         />
       )}
@@ -159,9 +161,9 @@ export default function RealtimePage() {
       <ConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-        title="Delete Profile"
-        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
+        title={t('realtime.delete_dialog.title')}
+        description={t('realtime.delete_dialog.description', { name: deleteTarget?.name ?? '' })}
+        confirmLabel={t('realtime.delete_dialog.confirm')}
         onConfirm={() => {
           if (deleteTarget) {
             deleteProfile.mutate(deleteTarget.id);

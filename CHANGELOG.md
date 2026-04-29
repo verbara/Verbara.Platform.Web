@@ -13,6 +13,84 @@ _No unreleased changes._
 
 ---
 
+## [1.13.7] — 2026-04-29 — i18n Coverage Phase 4C-1 (admin ops dashboards)
+
+**Closes the platform-admin operations surfaces.** Tenants, cluster,
+system diagnostics, and endpoint profiles are the screens platform
+operators (not partners) use to provision and observe the platform —
+extracting hardcoded copy here unblocks Spanish/Portuguese rollouts
+for the platform-admin role.
+
+### Refactored to `useTranslation`
+
+**`src/admin/tenants/tenants-page.tsx`** — page header, New CTA,
+loading state, empty state, 5 column headers (ID/Name/Status/Max
+Channels/Max Campaigns), 4 row-action tooltips (Retention, Manage
+Billing, Suspend, Activate), Create sheet (title, description,
+Tenant ID + placeholder, Name + placeholder, Max channels, Max
+campaigns, Submit), Suspend confirm dialog (title + split
+prefix/suffix description with embedded tenant name), Edit dialog
+(title, 4 input labels, status select with 3 options, Cancel,
+Saving…/Update).
+
+**`src/admin/cluster/cluster-page.tsx`** — page header, Add Node
+CTA, 4 SummaryCard titles (Nodes, Capacity, Agents, Instances) +
+healthy count + capacity-of-max subtitles, search placeholder, no
+nodes state, 6 column headers (Node ID/State/Max Capacity/Weight/
+Tier/Asterisk + N/A fallback), 5 row dropdown actions (Edit, Drain,
+Cancel Drain, Force Drain, Remove), Active Drains section title +
+plural calls remaining/completed/force-disconnected + Cancel/Force
+buttons, Platform Instances section title + empty state +
+last-seen/channels/owned-nodes labels, Add Node sheet (title,
+description, 8 input labels + 2 placeholders, submit), Edit Node
+sheet (title with `{{nodeId}}` interpolation, 3 input labels,
+submit), Drain Node dialog (title, prefix/suffix description with
+embedded `{{nodeId}}`, grace period label, Cancel/Submit).
+
+**`src/admin/system/diagnostics-page.tsx`** — page header, loading
+state, 4 status pill labels (connected/error/warning/unknown), 3
+StatusCard titles (Platform/License/Cluster), 9 field labels
+across cards (Version, Tenant, Setup, Status, Max Nodes, Features,
+Nodes, Total Channels, Total Agents) + Complete/Pending badge +
+N/A fallback + Manage cluster link + auto-refresh footer.
+
+**`src/admin/realtime/realtime-page.tsx`** — page header (title +
+description), Seed Defaults + Create Profile CTAs, loading state,
+empty state, search placeholder, no-results message, 6 column
+headers (Name/Type/Default/Transport/Codecs/WebRTC) + Default
+badge, Delete confirm dialog (title, description with `{{name}}`
+interpolation, Confirm).
+
+### Locales
+
+Added under `admin.json` (3 locales):
+
+- `tenants.list.*` (new sub-section under existing `tenants.{detail,
+  settings}` block)
+- `cluster.*` (new top-level — distinct from existing
+  `cluster-nodes.detail` for the node-detail drawer)
+- `system.diagnostics.*` (new sub-section under existing `system.*`
+  block)
+- `realtime.*` (new top-level)
+
+Plural forms (`_one`/`_other`) used for cluster `drains.remaining`.
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+Admin section: 89/133 (67%) → 93/133 (70%).
+
+`entityType="tenant"` / `"node"` / `"force drain on node"` props
+on `ConfirmDeleteDialog` left untranslated — they interpolate into
+the dialog's hardcoded English `Delete {{entityType}}?` template,
+which will be addressed when `core/ui/confirm-delete-dialog`
+itself is translated (deferred phase).
+
+---
+
 ## [1.13.6] — 2026-04-29 — i18n Coverage Phase 4B (partner portal)
 
 **Closes the partner portal CRUD surfaces.** The 4 partner pages

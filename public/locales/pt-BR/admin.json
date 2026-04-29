@@ -228,7 +228,41 @@
       "descriptionPlaceholder": "ex. Agente mencionou dados de pagamento"
     }
   },
-  "system": { "title": "Sistema", "license_tier": "Nível de licença", "license_status": "Licença", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Ativo", "disabled": "Bloqueado", "license_expired": "A licença expirou. Por favor renove.", "license_expiring_soon": "A licença expira em {{days}} dias.", "last_heartbeat": "Último heartbeat", "settings": "Configurações", "platform_name": "Nome da plataforma", "default_timezone": "Fuso horário padrão", "default_language": "Idioma padrão", "save": "Salvar configurações", "loading": "Carregando..." },
+  "system": { "title": "Sistema", "license_tier": "Nível de licença", "license_status": "Licença", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Ativo", "disabled": "Bloqueado", "license_expired": "A licença expirou. Por favor renove.", "license_expiring_soon": "A licença expira em {{days}} dias.", "last_heartbeat": "Último heartbeat", "settings": "Configurações", "platform_name": "Nome da plataforma", "default_timezone": "Fuso horário padrão", "default_language": "Idioma padrão", "save": "Salvar configurações", "loading": "Carregando...",
+    "diagnostics": {
+      "title": "Diagnóstico do sistema",
+      "loading": "Carregando...",
+      "auto_refresh": "Atualização automática a cada 10 segundos",
+      "status": {
+        "connected": "conectado",
+        "error": "erro",
+        "warning": "aviso",
+        "unknown": "desconhecido"
+      },
+      "platform": {
+        "title": "Plataforma",
+        "version": "Versão",
+        "tenant": "Tenant",
+        "setup": "Configuração",
+        "complete": "Completa",
+        "pending": "Pendente"
+      },
+      "license": {
+        "title": "Licença",
+        "status": "Status",
+        "max_nodes": "Nós máx.",
+        "features": "Funcionalidades:"
+      },
+      "cluster": {
+        "title": "Cluster",
+        "nodes": "Nós",
+        "total_channels": "Canais totais",
+        "total_agents": "Agentes totais",
+        "manage": "Gerenciar cluster"
+      },
+      "na": "N/D"
+    }
+  },
   "license": {
     "title": "Licença",
     "subtitle": "Veja o nível da licença atual, a matriz de funcionalidades e envie novas chaves.",
@@ -817,6 +851,57 @@
         "saved": "Configurações do tenant salvas",
         "error": "Falha ao salvar configurações do tenant"
       }
+    },
+    "list": {
+      "title": "Tenants",
+      "create": "Novo tenant",
+      "loading": "Carregando…",
+      "search_placeholder": "Pesquisar tenants…",
+      "no_results": "Nenhum tenant encontrado.",
+      "empty": "Nenhum tenant ainda — crie o primeiro",
+      "columns": {
+        "id": "ID",
+        "name": "Nome",
+        "status": "Status",
+        "max_channels": "Canais máx.",
+        "max_campaigns": "Campanhas máx."
+      },
+      "actions": {
+        "retention": "Política de retenção",
+        "manage_billing": "Gerenciar faturamento",
+        "suspend": "Suspender",
+        "activate": "Ativar"
+      },
+      "create_sheet": {
+        "title": "Novo tenant",
+        "description": "Crie um novo tenant na plataforma. O ID do tenant não pode ser alterado após a criação.",
+        "tenant_id": "ID do tenant",
+        "tenant_id_placeholder": "acme-corp",
+        "name": "Nome",
+        "name_placeholder": "Acme Corporation",
+        "max_channels": "Máx. canais concorrentes",
+        "max_campaigns": "Máx. campanhas ativas",
+        "submit": "Criar tenant"
+      },
+      "suspend_dialog": {
+        "title": "Suspender tenant",
+        "description_prefix": "Tem certeza de que deseja suspender ",
+        "description_suffix": "? Sessões ativas serão bloqueadas.",
+        "confirm": "Suspender"
+      },
+      "edit_dialog": {
+        "title": "Editar tenant",
+        "name": "Nome",
+        "status": "Status",
+        "status_active": "Ativo",
+        "status_suspended": "Suspenso",
+        "status_disabled": "Desabilitado",
+        "max_channels": "Máx. canais concorrentes",
+        "max_campaigns": "Máx. campanhas ativas",
+        "cancel": "Cancelar",
+        "saving": "Salvando...",
+        "submit": "Atualizar"
+      }
     }
   },
   "shared": {
@@ -976,6 +1061,110 @@
         "channel": "Canal",
         "reference": "Referência"
       }
+    }
+  },
+  "cluster": {
+    "title": "Gerenciamento de Cluster",
+    "description": "Gerencie nós Asterisk, drains e instâncias da plataforma.",
+    "add_node": "Adicionar nó",
+    "search_placeholder": "Pesquisar nós...",
+    "no_results": "Nenhum nó de cluster registrado.",
+    "summary": {
+      "nodes": "Nós",
+      "healthy": "{{count}} saudáveis",
+      "capacity": "Capacidade",
+      "of_max": "de {{total}} máx.",
+      "agents": "Agentes",
+      "instances": "Instâncias"
+    },
+    "columns": {
+      "node_id": "ID do nó",
+      "state": "Estado",
+      "max_capacity": "Capacidade máx.",
+      "weight": "Peso",
+      "tier": "Tier",
+      "asterisk": "Asterisk",
+      "na": "N/D"
+    },
+    "actions": {
+      "edit": "Editar",
+      "drain": "Drenar",
+      "cancel_drain": "Cancelar drain",
+      "force_drain": "Forçar drain",
+      "remove": "Remover"
+    },
+    "drains": {
+      "title": "Drains ativos ({{count}})",
+      "remaining_one": "{{count}} chamada restante",
+      "remaining_other": "{{count}} chamadas restantes",
+      "completed": "{{count}} concluídas",
+      "force_disconnected": "{{count}} forçadas",
+      "cancel": "Cancelar",
+      "force": "Forçar"
+    },
+    "instances": {
+      "title": "Instâncias da plataforma ({{count}})",
+      "empty": "Nenhuma instância Platform.Api registrada ainda. As instâncias se autorregistram através do transporte de cluster ao iniciar.",
+      "last_seen": "Visto pela última vez: {{date}}",
+      "channels": "Canais:",
+      "owned_nodes": "Nós próprios:"
+    },
+    "add_sheet": {
+      "title": "Adicionar nó",
+      "description": "Registre um novo nó Asterisk no cluster.",
+      "node_id": "ID do nó",
+      "node_id_placeholder": "asterisk-01",
+      "ami_hostname": "AMI Hostname",
+      "ami_hostname_placeholder": "192.168.1.100",
+      "ami_port": "AMI Port",
+      "weight": "Peso",
+      "ami_username": "AMI Username",
+      "ami_password": "AMI Password",
+      "priority_tier": "Tier de prioridade",
+      "max_capacity": "Capacidade máx.",
+      "submit": "Adicionar nó"
+    },
+    "edit_sheet": {
+      "title": "Editar nó",
+      "description": "Atualizar configuração para {{nodeId}}.",
+      "weight": "Peso",
+      "priority_tier": "Tier de prioridade",
+      "max_capacity": "Capacidade máx.",
+      "submit": "Salvar"
+    },
+    "drain_dialog": {
+      "title": "Drenar nó",
+      "description_prefix": "Iniciar drain do nó ",
+      "description_suffix": ". As chamadas ativas poderão finalizar dentro do período de carência.",
+      "grace_period": "Período de carência (segundos)",
+      "cancel": "Cancelar",
+      "submit": "Iniciar drain"
+    },
+    "remove_entity": "nó",
+    "force_drain_entity": "drain forçado no nó"
+  },
+  "realtime": {
+    "title": "Perfis de Endpoint",
+    "description": "Templates reutilizáveis de perfis PJSIP para provisionamento de agentes e troncais.",
+    "seed_defaults": "Semear padrões",
+    "create": "Criar perfil",
+    "loading": "Carregando…",
+    "search_placeholder": "Pesquisar perfis...",
+    "no_results": "Nenhum perfil encontrado.",
+    "empty": "Nenhum perfil ainda — clique em 'Semear padrões' para criar perfis padrão ou adicione um manualmente.",
+    "columns": {
+      "name": "Nome",
+      "type": "Tipo",
+      "default": "Padrão",
+      "transport": "Transport",
+      "codecs": "Codecs",
+      "webrtc": "WebRTC"
+    },
+    "default_badge": "Padrão",
+    "delete_dialog": {
+      "title": "Excluir perfil",
+      "description": "Tem certeza de que deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita.",
+      "confirm": "Excluir"
     }
   }
 }

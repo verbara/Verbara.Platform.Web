@@ -17,6 +17,7 @@ import {
   Cpu,
   ChevronDown,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
@@ -124,6 +125,7 @@ function SummaryCard({ title, value, subtitle, icon: Icon, testId }: {
 // ── Add Node Sheet ──
 
 function AddNodeSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const { t } = useTranslation('admin');
   const createNode = useCreateNode();
   const {
     register,
@@ -157,54 +159,54 @@ function AddNodeSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="sm:max-w-lg" data-testid="cluster-add-node-sheet">
         <SheetHeader>
-          <SheetTitle>Add Node</SheetTitle>
-          <SheetDescription>Register a new Asterisk node in the cluster.</SheetDescription>
+          <SheetTitle>{t('cluster.add_sheet.title')}</SheetTitle>
+          <SheetDescription>{t('cluster.add_sheet.description')}</SheetDescription>
         </SheetHeader>
         <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           <div className="space-y-1.5">
-            <Label htmlFor="cn-nodeId">Node ID</Label>
-            <Input id="cn-nodeId" data-testid="cluster-node-id-input" placeholder="asterisk-01" {...register('nodeId')} />
+            <Label htmlFor="cn-nodeId">{t('cluster.add_sheet.node_id')}</Label>
+            <Input id="cn-nodeId" data-testid="cluster-node-id-input" placeholder={t('cluster.add_sheet.node_id_placeholder')} {...register('nodeId')} />
             {errors.nodeId && <p className="text-xs text-destructive">{errors.nodeId.message}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cn-hostname">AMI Hostname</Label>
-            <Input id="cn-hostname" data-testid="cluster-ami-hostname-input" placeholder="192.168.1.100" {...register('amiHostname')} />
+            <Label htmlFor="cn-hostname">{t('cluster.add_sheet.ami_hostname')}</Label>
+            <Input id="cn-hostname" data-testid="cluster-ami-hostname-input" placeholder={t('cluster.add_sheet.ami_hostname_placeholder')} {...register('amiHostname')} />
             {errors.amiHostname && <p className="text-xs text-destructive">{errors.amiHostname.message}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="cn-port">AMI Port</Label>
+              <Label htmlFor="cn-port">{t('cluster.add_sheet.ami_port')}</Label>
               <Input id="cn-port" type="number" data-testid="cluster-ami-port-input" {...register('amiPort')} />
               {errors.amiPort && <p className="text-xs text-destructive">{errors.amiPort.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cn-weight">Weight</Label>
+              <Label htmlFor="cn-weight">{t('cluster.add_sheet.weight')}</Label>
               <Input id="cn-weight" type="number" data-testid="cluster-weight-input" {...register('weight')} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cn-username">AMI Username</Label>
+            <Label htmlFor="cn-username">{t('cluster.add_sheet.ami_username')}</Label>
             <Input id="cn-username" data-testid="cluster-ami-username-input" {...register('amiUsername')} />
             {errors.amiUsername && <p className="text-xs text-destructive">{errors.amiUsername.message}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cn-password">AMI Password</Label>
+            <Label htmlFor="cn-password">{t('cluster.add_sheet.ami_password')}</Label>
             <Input id="cn-password" type="password" data-testid="cluster-ami-password-input" {...register('amiPassword')} />
             {errors.amiPassword && <p className="text-xs text-destructive">{errors.amiPassword.message}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="cn-tier">Priority Tier</Label>
+              <Label htmlFor="cn-tier">{t('cluster.add_sheet.priority_tier')}</Label>
               <Input id="cn-tier" type="number" data-testid="cluster-tier-input" {...register('priorityTier')} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cn-capacity">Max Capacity</Label>
+              <Label htmlFor="cn-capacity">{t('cluster.add_sheet.max_capacity')}</Label>
               <Input id="cn-capacity" type="number" data-testid="cluster-capacity-input" {...register('maxCapacity')} />
             </div>
           </div>
           <SheetFooter className="mt-auto px-0">
             <Button type="submit" disabled={isSubmitting || createNode.isPending} data-testid="cluster-add-node-submit">
-              Add Node
+              {t('cluster.add_sheet.submit')}
             </Button>
           </SheetFooter>
         </form>
@@ -216,6 +218,7 @@ function AddNodeSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
 // ── Edit Node Sheet ──
 
 function EditNodeSheet({ open, onOpenChange, node }: { open: boolean; onOpenChange: (v: boolean) => void; node?: ClusterNode }) {
+  const { t } = useTranslation('admin');
   const updateNode = useUpdateNode();
   const {
     register,
@@ -248,28 +251,28 @@ function EditNodeSheet({ open, onOpenChange, node }: { open: boolean; onOpenChan
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="sm:max-w-md" data-testid="cluster-edit-node-sheet">
         <SheetHeader>
-          <SheetTitle>Edit Node</SheetTitle>
-          <SheetDescription>Update configuration for {node?.nodeId ?? 'node'}.</SheetDescription>
+          <SheetTitle>{t('cluster.edit_sheet.title')}</SheetTitle>
+          <SheetDescription>{t('cluster.edit_sheet.description', { nodeId: node?.nodeId ?? 'node' })}</SheetDescription>
         </SheetHeader>
         <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           <div className="space-y-1.5">
-            <Label htmlFor="en-weight">Weight</Label>
+            <Label htmlFor="en-weight">{t('cluster.edit_sheet.weight')}</Label>
             <Input id="en-weight" type="number" data-testid="cluster-edit-weight" {...register('weight')} />
             {errors.weight && <p className="text-xs text-destructive">{errors.weight.message}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="en-tier">Priority Tier</Label>
+            <Label htmlFor="en-tier">{t('cluster.edit_sheet.priority_tier')}</Label>
             <Input id="en-tier" type="number" data-testid="cluster-edit-tier" {...register('priorityTier')} />
             {errors.priorityTier && <p className="text-xs text-destructive">{errors.priorityTier.message}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="en-capacity">Max Capacity</Label>
+            <Label htmlFor="en-capacity">{t('cluster.edit_sheet.max_capacity')}</Label>
             <Input id="en-capacity" type="number" data-testid="cluster-edit-capacity" {...register('maxCapacity')} />
             {errors.maxCapacity && <p className="text-xs text-destructive">{errors.maxCapacity.message}</p>}
           </div>
           <SheetFooter className="mt-auto px-0">
             <Button type="submit" disabled={isSubmitting || updateNode.isPending} data-testid="cluster-edit-node-submit">
-              Save
+              {t('cluster.edit_sheet.submit')}
             </Button>
           </SheetFooter>
         </form>
@@ -281,6 +284,7 @@ function EditNodeSheet({ open, onOpenChange, node }: { open: boolean; onOpenChan
 // ── Drain Dialog ──
 
 function DrainDialog({ open, onOpenChange, nodeId }: { open: boolean; onOpenChange: (v: boolean) => void; nodeId: string }) {
+  const { t } = useTranslation('admin');
   const drainNode = useDrainNode();
   const {
     register,
@@ -306,21 +310,21 @@ function DrainDialog({ open, onOpenChange, nodeId }: { open: boolean; onOpenChan
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Drain Node</DialogTitle>
+          <DialogTitle>{t('cluster.drain_dialog.title')}</DialogTitle>
           <DialogDescription>
-            Start draining node <strong>{nodeId}</strong>. Active calls will be allowed to finish within the grace period.
+            {t('cluster.drain_dialog.description_prefix')}<strong>{nodeId}</strong>{t('cluster.drain_dialog.description_suffix')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="drain-grace">Grace period (seconds)</Label>
+            <Label htmlFor="drain-grace">{t('cluster.drain_dialog.grace_period')}</Label>
             <Input id="drain-grace" type="number" data-testid="cluster-drain-grace-input" {...register('gracePeriodSeconds')} />
             {errors.gracePeriodSeconds && <p className="text-xs text-destructive">{errors.gracePeriodSeconds.message}</p>}
           </div>
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <DialogClose render={<Button variant="outline" />}>{t('cluster.drain_dialog.cancel')}</DialogClose>
             <Button type="submit" disabled={drainNode.isPending} data-testid="cluster-drain-submit">
-              Start Drain
+              {t('cluster.drain_dialog.submit')}
             </Button>
           </DialogFooter>
         </form>
@@ -359,6 +363,7 @@ function CollapsibleSection({ title, defaultOpen, children, testId, className }:
 const col = createColumnHelper<ClusterNode>();
 
 export default function ClusterPage() {
+  const { t } = useTranslation('admin');
   const { data: status } = useClusterStatus();
   const { data: nodes = [] } = useClusterNodes();
   const { data: instances = [] } = useClusterInstances();
@@ -384,28 +389,28 @@ export default function ClusterPage() {
   const columns = useMemo(
     () => [
       col.accessor('nodeId', {
-        header: () => 'Node ID',
+        header: () => t('cluster.columns.node_id'),
         cell: (info) => <span className="font-mono text-xs">{info.getValue()}</span>,
       }),
       col.accessor('state', {
-        header: () => 'State',
+        header: () => t('cluster.columns.state'),
         cell: (info) => <NodeStateBadge state={info.getValue()} />,
       }),
       col.accessor('maxCapacity', {
-        header: () => 'Max Capacity',
+        header: () => t('cluster.columns.max_capacity'),
         cell: (info) => info.getValue(),
       }),
       col.accessor('weight', {
-        header: () => 'Weight',
+        header: () => t('cluster.columns.weight'),
         cell: (info) => info.getValue(),
       }),
       col.accessor('priorityTier', {
-        header: () => 'Tier',
+        header: () => t('cluster.columns.tier'),
         cell: (info) => info.getValue(),
       }),
       col.accessor('asteriskVersion', {
-        header: () => 'Asterisk',
-        cell: (info) => <span className="font-mono text-xs">{info.getValue() ?? 'N/A'}</span>,
+        header: () => t('cluster.columns.asterisk'),
+        cell: (info) => <span className="font-mono text-xs">{info.getValue() ?? t('cluster.columns.na')}</span>,
       }),
       col.display({
         id: 'actions',
@@ -436,24 +441,24 @@ export default function ClusterPage() {
                 {canEdit && (
                   <DropdownMenuItem onClick={() => setEditNode(node)}>
                     <Pencil className="mr-2 h-3.5 w-3.5" />
-                    Edit
+                    {t('cluster.actions.edit')}
                   </DropdownMenuItem>
                 )}
                 {canDrain && (
                   <DropdownMenuItem onClick={() => setDrainNodeId(node.nodeId)}>
                     <ArrowDownToLine className="mr-2 h-3.5 w-3.5" />
-                    Drain
+                    {t('cluster.actions.drain')}
                   </DropdownMenuItem>
                 )}
                 {canCancelDrain && (
                   <>
                     <DropdownMenuItem onClick={() => handleCancelDrain(node.nodeId)}>
                       <XCircle className="mr-2 h-3.5 w-3.5" />
-                      Cancel Drain
+                      {t('cluster.actions.cancel_drain')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setForceNode(node)}>
                       <Zap className="mr-2 h-3.5 w-3.5" />
-                      Force Drain
+                      {t('cluster.actions.force_drain')}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -462,7 +467,7 @@ export default function ClusterPage() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem variant="destructive" onClick={() => setRemoveNode(node)}>
                       <Trash2 className="mr-2 h-3.5 w-3.5" />
-                      Remove
+                      {t('cluster.actions.remove')}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -473,42 +478,42 @@ export default function ClusterPage() {
         },
       }),
     ],
-    [handleCancelDrain],
+    [handleCancelDrain, t],
   );
 
   return (
     <div className="space-y-6" data-testid="cluster-page">
-      <PageHeader title="Cluster Management" description="Manage Asterisk nodes, drains, and platform instances.">
+      <PageHeader title={t('cluster.title')} description={t('cluster.description')}>
         <Button onClick={() => setAddOpen(true)} data-testid="cluster-add-node-btn">
           <Plus className="mr-1.5 h-4 w-4" />
-          Add Node
+          {t('cluster.add_node')}
         </Button>
       </PageHeader>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <SummaryCard
-          title="Nodes"
+          title={t('cluster.summary.nodes')}
           value={nodes.length}
-          subtitle={`${healthyCount} healthy`}
+          subtitle={t('cluster.summary.healthy', { count: healthyCount })}
           icon={Server}
           testId="cluster-summary-nodes"
         />
         <SummaryCard
-          title="Capacity"
+          title={t('cluster.summary.capacity')}
           value={status?.totalChannels ?? 0}
-          subtitle={`of ${totalCapacity} max`}
+          subtitle={t('cluster.summary.of_max', { total: totalCapacity })}
           icon={Radio}
           testId="cluster-summary-capacity"
         />
         <SummaryCard
-          title="Agents"
+          title={t('cluster.summary.agents')}
           value={status?.totalAgents ?? 0}
           icon={Users}
           testId="cluster-summary-agents"
         />
         <SummaryCard
-          title="Instances"
+          title={t('cluster.summary.instances')}
           value={instances.length}
           icon={Cpu}
           testId="cluster-summary-instances"
@@ -520,8 +525,8 @@ export default function ClusterPage() {
         <DataTable
           data={nodes}
           columns={columns}
-          searchPlaceholder="Search nodes..."
-          noResultsMessage="No cluster nodes registered."
+          searchPlaceholder={t('cluster.search_placeholder')}
+          noResultsMessage={t('cluster.no_results')}
           onRowClick={(row) => setDetailNode(row)}
         />
       </div>
@@ -529,7 +534,7 @@ export default function ClusterPage() {
       {/* Active Drains */}
       {activeDrains.length > 0 && (
         <CollapsibleSection
-          title={`Active Drains (${activeDrains.length})`}
+          title={t('cluster.drains.title', { count: activeDrains.length })}
           testId="cluster-active-drains"
           className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20"
         >
@@ -539,10 +544,10 @@ export default function ClusterPage() {
                 <div className="space-y-0.5">
                   <p className="font-mono text-sm font-medium">{drain.nodeId}</p>
                   <p className="text-xs text-muted-foreground">
-                    {drain.remainingCallCount} calls remaining
+                    {t('cluster.drains.remaining', { count: drain.remainingCallCount })}
                     {' / '}
-                    {drain.naturallyCompleted} completed
-                    {drain.forceDisconnected > 0 && `, ${drain.forceDisconnected} force-disconnected`}
+                    {t('cluster.drains.completed', { count: drain.naturallyCompleted })}
+                    {drain.forceDisconnected > 0 && `, ${t('cluster.drains.force_disconnected', { count: drain.forceDisconnected })}`}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -555,7 +560,7 @@ export default function ClusterPage() {
                     disabled={cancelDrain.isPending}
                   >
                     <XCircle className="mr-1 h-3.5 w-3.5" />
-                    Cancel
+                    {t('cluster.drains.cancel')}
                   </Button>
                   <Button
                     variant="destructive"
@@ -568,7 +573,7 @@ export default function ClusterPage() {
                     disabled={forceDrain.isPending}
                   >
                     <Zap className="mr-1 h-3.5 w-3.5" />
-                    Force
+                    {t('cluster.drains.force')}
                   </Button>
                 </div>
               </div>
@@ -582,7 +587,7 @@ export default function ClusterPage() {
           was previously conditional on `instances.length > 0`, which hid it on
           fresh installs where no Platform.Api replica has registered yet. */}
       <CollapsibleSection
-        title={`Platform Instances (${instances.length})`}
+        title={t('cluster.instances.title', { count: instances.length })}
         testId="cluster-instances"
       >
         {instances.length === 0 ? (
@@ -590,7 +595,7 @@ export default function ClusterPage() {
             className="rounded-lg border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground"
             data-testid="cluster-instances-empty"
           >
-            No Platform.Api instances have registered yet. Instances self-register via the cluster transport on startup.
+            {t('cluster.instances.empty')}
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
@@ -599,12 +604,12 @@ export default function ClusterPage() {
                 <div className="flex items-center justify-between">
                   <p className="font-mono text-sm font-medium">{inst.instanceId}</p>
                   <span className="text-xs text-muted-foreground">
-                    Last seen: {new Date(inst.lastSeen).toLocaleString()}
+                    {t('cluster.instances.last_seen', { date: new Date(inst.lastSeen).toLocaleString() })}
                   </span>
                 </div>
                 <div className="flex gap-4 text-xs text-muted-foreground">
-                  <span>Channels: <span className="font-medium text-foreground">{inst.activeChannels}</span></span>
-                  <span>Owned nodes: <span className="font-medium text-foreground">{inst.ownedNodes.length}</span></span>
+                  <span>{t('cluster.instances.channels')} <span className="font-medium text-foreground">{inst.activeChannels}</span></span>
+                  <span>{t('cluster.instances.owned_nodes')} <span className="font-medium text-foreground">{inst.ownedNodes.length}</span></span>
                 </div>
                 {inst.ownedNodes.length > 0 && (
                   <div className="flex flex-wrap gap-1">

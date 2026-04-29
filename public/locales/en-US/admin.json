@@ -228,7 +228,41 @@
       "descriptionPlaceholder": "e.g. Agent mentioned payment details"
     }
   },
-  "system": { "title": "System", "license_tier": "License tier", "license_status": "License", "features": "Features", "cluster": "Cluster", "max_agents": "Max agents", "expires": "Expires", "enabled": "Enabled", "disabled": "Locked", "license_expired": "License has expired. Please renew.", "license_expiring_soon": "License expires in {{days}} days.", "last_heartbeat": "Last heartbeat", "settings": "Settings", "platform_name": "Platform name", "default_timezone": "Default timezone", "default_language": "Default language", "save": "Save settings", "loading": "Loading..." },
+  "system": { "title": "System", "license_tier": "License tier", "license_status": "License", "features": "Features", "cluster": "Cluster", "max_agents": "Max agents", "expires": "Expires", "enabled": "Enabled", "disabled": "Locked", "license_expired": "License has expired. Please renew.", "license_expiring_soon": "License expires in {{days}} days.", "last_heartbeat": "Last heartbeat", "settings": "Settings", "platform_name": "Platform name", "default_timezone": "Default timezone", "default_language": "Default language", "save": "Save settings", "loading": "Loading...",
+    "diagnostics": {
+      "title": "System Diagnostics",
+      "loading": "Loading...",
+      "auto_refresh": "Auto-refreshes every 10 seconds",
+      "status": {
+        "connected": "connected",
+        "error": "error",
+        "warning": "warning",
+        "unknown": "unknown"
+      },
+      "platform": {
+        "title": "Platform",
+        "version": "Version",
+        "tenant": "Tenant",
+        "setup": "Setup",
+        "complete": "Complete",
+        "pending": "Pending"
+      },
+      "license": {
+        "title": "License",
+        "status": "Status",
+        "max_nodes": "Max Nodes",
+        "features": "Features:"
+      },
+      "cluster": {
+        "title": "Cluster",
+        "nodes": "Nodes",
+        "total_channels": "Total Channels",
+        "total_agents": "Total Agents",
+        "manage": "Manage cluster"
+      },
+      "na": "N/A"
+    }
+  },
   "license": {
     "title": "License",
     "subtitle": "View the current license tier, feature matrix, and submit new keys.",
@@ -862,6 +896,57 @@
         "saved": "Tenant settings saved",
         "error": "Failed to save tenant settings"
       }
+    },
+    "list": {
+      "title": "Tenants",
+      "create": "New Tenant",
+      "loading": "Loading…",
+      "search_placeholder": "Search tenants…",
+      "no_results": "No matching tenants found.",
+      "empty": "No tenants yet — create your first tenant",
+      "columns": {
+        "id": "ID",
+        "name": "Name",
+        "status": "Status",
+        "max_channels": "Max Channels",
+        "max_campaigns": "Max Campaigns"
+      },
+      "actions": {
+        "retention": "Retention Policy",
+        "manage_billing": "Manage Billing",
+        "suspend": "Suspend",
+        "activate": "Activate"
+      },
+      "create_sheet": {
+        "title": "New Tenant",
+        "description": "Create a new tenant in the platform. The Tenant ID cannot be changed after creation.",
+        "tenant_id": "Tenant ID",
+        "tenant_id_placeholder": "acme-corp",
+        "name": "Name",
+        "name_placeholder": "Acme Corporation",
+        "max_channels": "Max Concurrent Channels",
+        "max_campaigns": "Max Active Campaigns",
+        "submit": "Create Tenant"
+      },
+      "suspend_dialog": {
+        "title": "Suspend Tenant",
+        "description_prefix": "Are you sure you want to suspend ",
+        "description_suffix": "? Active sessions will be blocked.",
+        "confirm": "Suspend"
+      },
+      "edit_dialog": {
+        "title": "Edit Tenant",
+        "name": "Name",
+        "status": "Status",
+        "status_active": "Active",
+        "status_suspended": "Suspended",
+        "status_disabled": "Disabled",
+        "max_channels": "Max Concurrent Channels",
+        "max_campaigns": "Max Active Campaigns",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "submit": "Update"
+      }
     }
   },
   "shared": {
@@ -1021,6 +1106,110 @@
         "channel": "Channel",
         "reference": "Reference"
       }
+    }
+  },
+  "cluster": {
+    "title": "Cluster Management",
+    "description": "Manage Asterisk nodes, drains, and platform instances.",
+    "add_node": "Add Node",
+    "search_placeholder": "Search nodes...",
+    "no_results": "No cluster nodes registered.",
+    "summary": {
+      "nodes": "Nodes",
+      "healthy": "{{count}} healthy",
+      "capacity": "Capacity",
+      "of_max": "of {{total}} max",
+      "agents": "Agents",
+      "instances": "Instances"
+    },
+    "columns": {
+      "node_id": "Node ID",
+      "state": "State",
+      "max_capacity": "Max Capacity",
+      "weight": "Weight",
+      "tier": "Tier",
+      "asterisk": "Asterisk",
+      "na": "N/A"
+    },
+    "actions": {
+      "edit": "Edit",
+      "drain": "Drain",
+      "cancel_drain": "Cancel Drain",
+      "force_drain": "Force Drain",
+      "remove": "Remove"
+    },
+    "drains": {
+      "title": "Active Drains ({{count}})",
+      "remaining_one": "{{count}} call remaining",
+      "remaining_other": "{{count}} calls remaining",
+      "completed": "{{count}} completed",
+      "force_disconnected": "{{count}} force-disconnected",
+      "cancel": "Cancel",
+      "force": "Force"
+    },
+    "instances": {
+      "title": "Platform Instances ({{count}})",
+      "empty": "No Platform.Api instances have registered yet. Instances self-register via the cluster transport on startup.",
+      "last_seen": "Last seen: {{date}}",
+      "channels": "Channels:",
+      "owned_nodes": "Owned nodes:"
+    },
+    "add_sheet": {
+      "title": "Add Node",
+      "description": "Register a new Asterisk node in the cluster.",
+      "node_id": "Node ID",
+      "node_id_placeholder": "asterisk-01",
+      "ami_hostname": "AMI Hostname",
+      "ami_hostname_placeholder": "192.168.1.100",
+      "ami_port": "AMI Port",
+      "weight": "Weight",
+      "ami_username": "AMI Username",
+      "ami_password": "AMI Password",
+      "priority_tier": "Priority Tier",
+      "max_capacity": "Max Capacity",
+      "submit": "Add Node"
+    },
+    "edit_sheet": {
+      "title": "Edit Node",
+      "description": "Update configuration for {{nodeId}}.",
+      "weight": "Weight",
+      "priority_tier": "Priority Tier",
+      "max_capacity": "Max Capacity",
+      "submit": "Save"
+    },
+    "drain_dialog": {
+      "title": "Drain Node",
+      "description_prefix": "Start draining node ",
+      "description_suffix": ". Active calls will be allowed to finish within the grace period.",
+      "grace_period": "Grace period (seconds)",
+      "cancel": "Cancel",
+      "submit": "Start Drain"
+    },
+    "remove_entity": "node",
+    "force_drain_entity": "force drain on node"
+  },
+  "realtime": {
+    "title": "Endpoint Profiles",
+    "description": "Reusable PJSIP endpoint profile templates for agent and trunk provisioning.",
+    "seed_defaults": "Seed Defaults",
+    "create": "Create Profile",
+    "loading": "Loading…",
+    "search_placeholder": "Search profiles...",
+    "no_results": "No matching profiles found.",
+    "empty": "No endpoint profiles yet — click 'Seed Defaults' to create standard profiles or add one manually.",
+    "columns": {
+      "name": "Name",
+      "type": "Type",
+      "default": "Default",
+      "transport": "Transport",
+      "codecs": "Codecs",
+      "webrtc": "WebRTC"
+    },
+    "default_badge": "Default",
+    "delete_dialog": {
+      "title": "Delete Profile",
+      "description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+      "confirm": "Delete"
     }
   }
 }

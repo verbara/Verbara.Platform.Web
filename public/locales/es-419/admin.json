@@ -244,7 +244,41 @@
       "descriptionPlaceholder": "ej. El agente mencionó datos de pago"
     }
   },
-  "system": { "title": "Sistema", "license_tier": "Nivel de licencia", "license_status": "Licencia", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Activo", "disabled": "Bloqueado", "license_expired": "La licencia ha expirado. Por favor renueve.", "license_expiring_soon": "La licencia expira en {{days}} días.", "last_heartbeat": "Último heartbeat", "settings": "Configuración", "platform_name": "Nombre de plataforma", "default_timezone": "Zona horaria predeterminada", "default_language": "Idioma predeterminado", "save": "Guardar configuración", "loading": "Cargando..." },
+  "system": { "title": "Sistema", "license_tier": "Nivel de licencia", "license_status": "Licencia", "features": "Funcionalidades", "cluster": "Cluster", "max_agents": "Agentes máx.", "expires": "Expira", "enabled": "Activo", "disabled": "Bloqueado", "license_expired": "La licencia ha expirado. Por favor renueve.", "license_expiring_soon": "La licencia expira en {{days}} días.", "last_heartbeat": "Último heartbeat", "settings": "Configuración", "platform_name": "Nombre de plataforma", "default_timezone": "Zona horaria predeterminada", "default_language": "Idioma predeterminado", "save": "Guardar configuración", "loading": "Cargando...",
+    "diagnostics": {
+      "title": "Diagnóstico del sistema",
+      "loading": "Cargando...",
+      "auto_refresh": "Actualización automática cada 10 segundos",
+      "status": {
+        "connected": "conectado",
+        "error": "error",
+        "warning": "advertencia",
+        "unknown": "desconocido"
+      },
+      "platform": {
+        "title": "Plataforma",
+        "version": "Versión",
+        "tenant": "Tenant",
+        "setup": "Configuración",
+        "complete": "Completa",
+        "pending": "Pendiente"
+      },
+      "license": {
+        "title": "Licencia",
+        "status": "Estado",
+        "max_nodes": "Nodos máx.",
+        "features": "Funcionalidades:"
+      },
+      "cluster": {
+        "title": "Cluster",
+        "nodes": "Nodos",
+        "total_channels": "Canales totales",
+        "total_agents": "Agentes totales",
+        "manage": "Gestionar cluster"
+      },
+      "na": "N/D"
+    }
+  },
   "license": {
     "title": "Licencia",
     "subtitle": "Consulta el nivel de licencia actual, la matriz de funcionalidades y envía claves nuevas.",
@@ -833,6 +867,57 @@
         "saved": "Configuración del tenant guardada",
         "error": "No se pudo guardar la configuración del tenant"
       }
+    },
+    "list": {
+      "title": "Tenants",
+      "create": "Nuevo tenant",
+      "loading": "Cargando…",
+      "search_placeholder": "Buscar tenants…",
+      "no_results": "No se encontraron tenants.",
+      "empty": "No hay tenants aún — cree el primero",
+      "columns": {
+        "id": "ID",
+        "name": "Nombre",
+        "status": "Estado",
+        "max_channels": "Canales máx.",
+        "max_campaigns": "Campañas máx."
+      },
+      "actions": {
+        "retention": "Política de retención",
+        "manage_billing": "Gestionar facturación",
+        "suspend": "Suspender",
+        "activate": "Activar"
+      },
+      "create_sheet": {
+        "title": "Nuevo tenant",
+        "description": "Cree un nuevo tenant en la plataforma. El ID del tenant no se puede cambiar después de la creación.",
+        "tenant_id": "ID del tenant",
+        "tenant_id_placeholder": "acme-corp",
+        "name": "Nombre",
+        "name_placeholder": "Acme Corporation",
+        "max_channels": "Máx. canales concurrentes",
+        "max_campaigns": "Máx. campañas activas",
+        "submit": "Crear tenant"
+      },
+      "suspend_dialog": {
+        "title": "Suspender tenant",
+        "description_prefix": "¿Está seguro de que desea suspender ",
+        "description_suffix": "? Las sesiones activas se bloquearán.",
+        "confirm": "Suspender"
+      },
+      "edit_dialog": {
+        "title": "Editar tenant",
+        "name": "Nombre",
+        "status": "Estado",
+        "status_active": "Activo",
+        "status_suspended": "Suspendido",
+        "status_disabled": "Deshabilitado",
+        "max_channels": "Máx. canales concurrentes",
+        "max_campaigns": "Máx. campañas activas",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "submit": "Actualizar"
+      }
     }
   },
   "shared": {
@@ -992,6 +1077,110 @@
         "channel": "Canal",
         "reference": "Referencia"
       }
+    }
+  },
+  "cluster": {
+    "title": "Gestión de Cluster",
+    "description": "Gestione nodos Asterisk, drenajes e instancias de plataforma.",
+    "add_node": "Agregar nodo",
+    "search_placeholder": "Buscar nodos...",
+    "no_results": "No hay nodos de cluster registrados.",
+    "summary": {
+      "nodes": "Nodos",
+      "healthy": "{{count}} saludables",
+      "capacity": "Capacidad",
+      "of_max": "de {{total}} máx.",
+      "agents": "Agentes",
+      "instances": "Instancias"
+    },
+    "columns": {
+      "node_id": "ID del nodo",
+      "state": "Estado",
+      "max_capacity": "Capacidad máx.",
+      "weight": "Peso",
+      "tier": "Tier",
+      "asterisk": "Asterisk",
+      "na": "N/D"
+    },
+    "actions": {
+      "edit": "Editar",
+      "drain": "Drenar",
+      "cancel_drain": "Cancelar drenaje",
+      "force_drain": "Forzar drenaje",
+      "remove": "Eliminar"
+    },
+    "drains": {
+      "title": "Drenajes activos ({{count}})",
+      "remaining_one": "{{count}} llamada restante",
+      "remaining_other": "{{count}} llamadas restantes",
+      "completed": "{{count}} completadas",
+      "force_disconnected": "{{count}} forzadas",
+      "cancel": "Cancelar",
+      "force": "Forzar"
+    },
+    "instances": {
+      "title": "Instancias de plataforma ({{count}})",
+      "empty": "No hay instancias Platform.Api registradas aún. Las instancias se autorregistran a través del transporte de cluster al iniciar.",
+      "last_seen": "Última vez visto: {{date}}",
+      "channels": "Canales:",
+      "owned_nodes": "Nodos propios:"
+    },
+    "add_sheet": {
+      "title": "Agregar nodo",
+      "description": "Registre un nuevo nodo Asterisk en el cluster.",
+      "node_id": "ID del nodo",
+      "node_id_placeholder": "asterisk-01",
+      "ami_hostname": "AMI Hostname",
+      "ami_hostname_placeholder": "192.168.1.100",
+      "ami_port": "AMI Port",
+      "weight": "Peso",
+      "ami_username": "AMI Username",
+      "ami_password": "AMI Password",
+      "priority_tier": "Tier de prioridad",
+      "max_capacity": "Capacidad máx.",
+      "submit": "Agregar nodo"
+    },
+    "edit_sheet": {
+      "title": "Editar nodo",
+      "description": "Actualizar configuración para {{nodeId}}.",
+      "weight": "Peso",
+      "priority_tier": "Tier de prioridad",
+      "max_capacity": "Capacidad máx.",
+      "submit": "Guardar"
+    },
+    "drain_dialog": {
+      "title": "Drenar nodo",
+      "description_prefix": "Iniciar drenaje del nodo ",
+      "description_suffix": ". Las llamadas activas podrán finalizar dentro del período de gracia.",
+      "grace_period": "Período de gracia (segundos)",
+      "cancel": "Cancelar",
+      "submit": "Iniciar drenaje"
+    },
+    "remove_entity": "nodo",
+    "force_drain_entity": "drenaje forzado en nodo"
+  },
+  "realtime": {
+    "title": "Perfiles de Endpoint",
+    "description": "Plantillas reutilizables de perfiles PJSIP para aprovisionar agentes y troncales.",
+    "seed_defaults": "Sembrar predeterminados",
+    "create": "Crear perfil",
+    "loading": "Cargando…",
+    "search_placeholder": "Buscar perfiles...",
+    "no_results": "No se encontraron perfiles.",
+    "empty": "No hay perfiles aún — haga clic en 'Sembrar predeterminados' para crear perfiles estándar o agregue uno manualmente.",
+    "columns": {
+      "name": "Nombre",
+      "type": "Tipo",
+      "default": "Predeterminado",
+      "transport": "Transport",
+      "codecs": "Codecs",
+      "webrtc": "WebRTC"
+    },
+    "default_badge": "Predeterminado",
+    "delete_dialog": {
+      "title": "Eliminar perfil",
+      "description": "¿Está seguro de que desea eliminar \"{{name}}\"? Esta acción no se puede deshacer.",
+      "confirm": "Eliminar"
     }
   }
 }
