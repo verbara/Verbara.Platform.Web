@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { initConversationSSE } from '@/agent/stores/conversation-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
@@ -9,6 +10,7 @@ import { AgentTour } from '@/agent/tour/agent-tour';
 import { SupervisionBanner } from '@/core/realtime';
 
 export default function AgentLayout() {
+  const { t } = useTranslation();
   const [contextOpen, setContextOpen] = useState(true);
 
   const toggleContext = useCallback(() => {
@@ -50,7 +52,7 @@ export default function AgentLayout() {
           type="button"
           onClick={toggleContext}
           className="absolute top-2 right-2 z-10 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
-          title="Toggle context panel (Ctrl+I)"
+          title={t('agent_layout.toggle_context')}
         >
           {contextOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
         </button>

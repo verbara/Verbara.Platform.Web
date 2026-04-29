@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Shield, X } from 'lucide-react';
 import { useAuthStore } from './auth-store';
 import { useEndImpersonate } from '@/core/api/hooks/use-impersonation';
@@ -12,6 +13,7 @@ function formatTimeRemaining(ms: number): string {
 }
 
 export function ImpersonationBanner() {
+  const { t } = useTranslation();
   const impersonation = useAuthStore((s) => s.impersonation);
   const endImpersonationStore = useAuthStore((s) => s.endImpersonation);
   const endImpersonate = useEndImpersonate();
@@ -51,10 +53,13 @@ export function ImpersonationBanner() {
     >
       <Shield className="h-4 w-4" />
       <span>
-        Operating as <strong>{impersonation.targetTenantName}</strong>
+        {t('impersonation.operating_as')}{' '}
+        <strong>{impersonation.targetTenantName}</strong>
       </span>
       {impersonation.readOnly && (
-        <span className="rounded bg-amber-700 px-1.5 py-0.5 text-xs">Read-Only</span>
+        <span className="rounded bg-amber-700 px-1.5 py-0.5 text-xs">
+          {t('impersonation.read_only')}
+        </span>
       )}
       <span className="font-mono">{formatTimeRemaining(remaining)}</span>
       <button
@@ -62,7 +67,7 @@ export function ImpersonationBanner() {
         className="ml-2 inline-flex items-center gap-1 rounded bg-amber-600 px-2 py-0.5 text-xs font-medium text-white hover:bg-amber-700 transition-colors"
       >
         <X className="h-3 w-3" />
-        End Impersonation
+        {t('impersonation.end')}
       </button>
     </div>
   );

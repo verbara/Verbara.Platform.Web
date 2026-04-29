@@ -13,6 +13,77 @@ _No unreleased changes._
 
 ---
 
+## [1.13.2] — 2026-04-28 — i18n Coverage Phase 1 (shell + pages + auth)
+
+**Direct follow-up to 1.13.1.** Closes the highest-visibility part of the
+i18n coverage gap documented in
+`docs/research/i18n-coverage-gap-2026-04-28.md`. Switching to `en-US` or
+`pt-BR` now produces a fully-translated experience across the parts of
+the app every user touches on every session: the notification drawer
+(seen on every page via the bell badge), the unauthorized error page
+(rendered on RBAC failure), the agent workspace shell (visible to every
+agent on every conversation), and the impersonation banner (visible to
+support staff acting on tenant context).
+
+### Refactored to `useTranslation`
+
+- `src/shell/notification-bell.tsx` — accessible label
+  (`notifications.aria_label_with_count` with `count` interpolation).
+- `src/shell/notification-drawer.tsx` — sheet title, "Mark all read",
+  "Loading…", "No notifications", "Load more", and the 5 category tabs
+  (All, Operational, System, Security, Billing) keyed under
+  `notifications.category.*`. Replaced the duplicated `CATEGORIES`
+  array with a slim `CATEGORY_VALUES` list since labels now come from
+  the translation table.
+- `src/shell/notification-item.tsx` — `formatDistanceToNow` now uses the
+  active i18next language to render `date-fns` relative time in the
+  user's locale (e.g., "hace 5 minutos" / "5 minutes ago" /
+  "há 5 minutos").
+- `src/pages/unauthorized.tsx` — 403 title, description, "Go Home"
+  button (`errors.*`).
+- `src/pages/agent/agent-layout.tsx` — context-panel toggle `title`
+  attribute.
+- `src/pages/agent/conversation-view.tsx` — empty-state "Select a
+  conversation".
+- `src/core/auth/impersonation-banner.tsx` — "Operating as", "Read-Only"
+  badge, "End Impersonation" button.
+
+### Added translation keys
+
+Under `common.json` for all 3 locales:
+
+- `notifications.{title,aria_label,aria_label_with_count,mark_all_read,load_more,loading,empty,category.*}`
+- `errors.{unauthorized_title,unauthorized_description,go_home}`
+- `agent_layout.{toggle_context,select_conversation}`
+- `impersonation.{operating_as,read_only,end}`
+
+### Out of scope (still hardcoded — follow-up)
+
+The remaining 8 files in the original Phase-1 list are pure
+composition / routing wrappers with no user-visible strings
+(`app-shell.tsx`, `rail-icon.tsx` — receives label as prop,
+`admin-layout.tsx`, `operations-layout.tsx`, `analytics-layout.tsx`,
+`auth-guard.tsx`, `permission-guard.tsx`, `role-guard.tsx`). They are
+counted in the coverage gap purely on the `useTranslation` import
+heuristic; no functional translation work is needed there.
+
+### Tests
+
+- 199/199 Vitest unchanged · 0 TS errors · 42 test files · prod build
+  717 ms. No new test files; existing tests cover the refactored code
+  (the `notification-item.test.tsx` already mocks `react-i18next`).
+
+### Coverage check
+
+7 files moved from "hardcoded" to "wired"; 138/267 `.tsx` files
+(≈52 %) now use `useTranslation` (was 131/267 ≈ 49 %). The
+visibility-weighted improvement is significantly larger than the 3-pp
+raw-count gain, because the touched files are present on every page
+view (notification bell + impersonation banner) or on the highest-
+traffic surface (agent workspace).
+
+---
+
 ## [1.13.1] — 2026-04-28 — Language Switcher + i18n Persistence
 
 **First user-facing i18n feature.** Brings the existing translation

@@ -108,5 +108,35 @@
     "es-419": "Español (Latinoamérica)",
     "en-US": "Inglés (EE.UU.)",
     "pt-BR": "Portugués (Brasil)"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "aria_label": "Notificaciones",
+    "aria_label_with_count": "Notificaciones, {{count}} sin leer",
+    "mark_all_read": "Marcar todas como leídas",
+    "load_more": "Cargar más",
+    "loading": "Cargando…",
+    "empty": "Sin notificaciones",
+    "category": {
+      "all": "Todas",
+      "Operational": "Operacional",
+      "System": "Sistema",
+      "Security": "Seguridad",
+      "Billing": "Facturación"
+    }
+  },
+  "errors": {
+    "unauthorized_title": "403 — No autorizado",
+    "unauthorized_description": "Tu rol no tiene acceso",
+    "go_home": "Ir al inicio"
+  },
+  "agent_layout": {
+    "toggle_context": "Alternar panel de contexto (Ctrl+I)",
+    "select_conversation": "Selecciona una conversación"
+  },
+  "impersonation": {
+    "operating_as": "Operando como",
+    "read_only": "Solo lectura",
+    "end": "Finalizar suplantación"
   }
 }

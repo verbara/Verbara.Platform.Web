@@ -1,13 +1,22 @@
 import { formatDistanceToNow } from 'date-fns';
+import { es, enUS, ptBR } from 'date-fns/locale';
+import type { Locale } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Info, AlertTriangle, AlertCircle } from 'lucide-react';
 import type { Notification, NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
 interface NotificationItemProps {
-  notification: Notification;
-  onClick: (notification: Notification) => void;
+  readonly notification: Notification;
+  readonly onClick: (notification: Notification) => void;
 }
 
-function SeverityIcon({ severity }: { severity: NotificationSeverity }) {
+const LOCALE_MAP: Record<string, Locale> = {
+  'es-419': es,
+  'en-US': enUS,
+  'pt-BR': ptBR,
+};
+
+function SeverityIcon({ severity }: { readonly severity: NotificationSeverity }) {
   if (severity === 'Critical') {
     return (
       <AlertCircle
@@ -33,8 +42,10 @@ function SeverityIcon({ severity }: { severity: NotificationSeverity }) {
 }
 
 export function NotificationItem({ notification, onClick }: NotificationItemProps) {
+  const { i18n } = useTranslation();
   const { title, body, severity, isRead, createdAt } = notification;
-  const relativeTime = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
+  const locale = LOCALE_MAP[i18n.resolvedLanguage ?? i18n.language] ?? es;
+  const relativeTime = formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale });
 
   return (
     <button

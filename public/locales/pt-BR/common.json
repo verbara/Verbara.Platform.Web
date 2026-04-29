@@ -108,5 +108,35 @@
     "es-419": "Espanhol (América Latina)",
     "en-US": "Inglês (EUA)",
     "pt-BR": "Português (Brasil)"
+  },
+  "notifications": {
+    "title": "Notificações",
+    "aria_label": "Notificações",
+    "aria_label_with_count": "Notificações, {{count}} não lidas",
+    "mark_all_read": "Marcar todas como lidas",
+    "load_more": "Carregar mais",
+    "loading": "Carregando…",
+    "empty": "Sem notificações",
+    "category": {
+      "all": "Todas",
+      "Operational": "Operacional",
+      "System": "Sistema",
+      "Security": "Segurança",
+      "Billing": "Faturamento"
+    }
+  },
+  "errors": {
+    "unauthorized_title": "403 — Não autorizado",
+    "unauthorized_description": "Sua função não tem acesso",
+    "go_home": "Ir para o início"
+  },
+  "agent_layout": {
+    "toggle_context": "Alternar painel de contexto (Ctrl+I)",
+    "select_conversation": "Selecione uma conversa"
+  },
+  "impersonation": {
+    "operating_as": "Operando como",
+    "read_only": "Somente leitura",
+    "end": "Encerrar personificação"
   }
 }

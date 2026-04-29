@@ -108,5 +108,35 @@
     "es-419": "Spanish (Latin America)",
     "en-US": "English (US)",
     "pt-BR": "Portuguese (Brazil)"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "aria_label": "Notifications",
+    "aria_label_with_count": "Notifications, {{count}} unread",
+    "mark_all_read": "Mark all read",
+    "load_more": "Load more",
+    "loading": "Loading…",
+    "empty": "No notifications",
+    "category": {
+      "all": "All",
+      "Operational": "Operational",
+      "System": "System",
+      "Security": "Security",
+      "Billing": "Billing"
+    }
+  },
+  "errors": {
+    "unauthorized_title": "403 — Unauthorized",
+    "unauthorized_description": "Your role doesn't have access",
+    "go_home": "Go Home"
+  },
+  "agent_layout": {
+    "toggle_context": "Toggle context panel (Ctrl+I)",
+    "select_conversation": "Select a conversation"
+  },
+  "impersonation": {
+    "operating_as": "Operating as",
+    "read_only": "Read-Only",
+    "end": "End Impersonation"
   }
 }
