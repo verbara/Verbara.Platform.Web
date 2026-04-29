@@ -89,7 +89,40 @@
   },
   "canned": {
     "search_placeholder": "Search canned response...",
-    "no_results": "No results"
+    "no_results": "No results",
+    "search_hint": "Start typing to search canned responses",
+    "loading": "Loading..."
+  },
+  "composer": {
+    "attach_file": "Attach file",
+    "send": "Send",
+    "send_shortcut": "Ctrl+Enter",
+    "remove_attachment": "Remove {{name}}"
+  },
+  "messages": {
+    "image_alt": "Image",
+    "file_fallback": "File"
+  },
+  "new_conversation": {
+    "title": "New Conversation",
+    "contact": "Contact",
+    "channel": "Channel",
+    "initial_message": "Initial Message (optional)",
+    "message_placeholder": "Type a message...",
+    "search_placeholder": "Search contacts (min 2 characters)...",
+    "change": "Change",
+    "submit": "Start Conversation",
+    "unnamed_contact": "Unnamed contact"
+  },
+  "agent_status": {
+    "available": "Available",
+    "busy": "Busy",
+    "on_break": "Break",
+    "lunch": "Lunch",
+    "training": "Training",
+    "dnd": "DND",
+    "acw": "ACW",
+    "offline": "Offline"
   },
   "tour": {
     "inbox": "Your Inbox",

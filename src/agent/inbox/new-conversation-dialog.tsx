@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -33,13 +34,15 @@ interface NewConversationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function contactDisplayName(c: Contact): string {
-  const name = [c.firstName, c.lastName].filter(Boolean).join(' ').trim();
-  return name || 'Unnamed contact';
-}
-
 export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConversationDialogProps>) {
+  const { t } = useTranslation('agent');
   const [contactSearch, setContactSearch] = useState('');
+
+  function contactDisplayName(c: Contact): string {
+    const name = [c.firstName, c.lastName].filter(Boolean).join(' ').trim();
+    return name || t('new_conversation.unnamed_contact');
+  }
+
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [channel, setChannel] = useState('WhatsApp');
   const [initialMessage, setInitialMessage] = useState('');
@@ -82,12 +85,12 @@ export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConver
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Conversation</DialogTitle>
+          <DialogTitle>{t('new_conversation.title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4" data-testid="new-conversation-form">
           {/* Contact search */}
           <div>
-            <Label>Contact</Label>
+            <Label>{t('new_conversation.contact')}</Label>
             {selectedContact ? (
               <div className="flex items-center justify-between rounded-md border border-input px-3 py-2">
                 <span className="text-sm">{contactDisplayName(selectedContact)}</span>
@@ -98,7 +101,7 @@ export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConver
                   onClick={() => setSelectedContact(null)}
                   data-testid="new-conv-change-contact-btn"
                 >
-                  Change
+                  {t('new_conversation.change')}
                 </Button>
               </div>
             ) : (
@@ -106,7 +109,7 @@ export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConver
                 <Input
                   value={contactSearch}
                   onChange={(e) => setContactSearch(e.target.value)}
-                  placeholder="Search contacts (min 2 characters)..."
+                  placeholder={t('new_conversation.search_placeholder')}
                   data-testid="new-conv-contact-search"
                 />
                 {contacts.length > 0 && (
@@ -142,7 +145,7 @@ export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConver
 
           {/* Channel */}
           <div>
-            <Label>Channel</Label>
+            <Label>{t('new_conversation.channel')}</Label>
             <Select value={channel} onValueChange={(v) => v && setChannel(v)}>
               <SelectTrigger className="w-full" data-testid="new-conv-channel-select">
                 <SelectValue />
@@ -159,11 +162,11 @@ export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConver
 
           {/* Initial message */}
           <div>
-            <Label>Initial Message (optional)</Label>
+            <Label>{t('new_conversation.initial_message')}</Label>
             <Textarea
               value={initialMessage}
               onChange={(e) => setInitialMessage(e.target.value)}
-              placeholder="Type a message..."
+              placeholder={t('new_conversation.message_placeholder')}
               rows={3}
               data-testid="new-conv-message-input"
             />
@@ -175,7 +178,7 @@ export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConver
             disabled={!selectedContact || createMutation.isPending}
             data-testid="new-conv-submit-btn"
           >
-            Start Conversation
+            {t('new_conversation.submit')}
           </Button>
         </form>
       </DialogContent>

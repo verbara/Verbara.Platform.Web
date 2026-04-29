@@ -89,7 +89,40 @@
   },
   "canned": {
     "search_placeholder": "Buscar respuesta r\u00e1pida...",
-    "no_results": "Sin resultados"
+    "no_results": "Sin resultados",
+    "search_hint": "Comienza a escribir para buscar respuestas guardadas",
+    "loading": "Cargando..."
+  },
+  "composer": {
+    "attach_file": "Adjuntar archivo",
+    "send": "Enviar",
+    "send_shortcut": "Ctrl+Enter",
+    "remove_attachment": "Quitar {{name}}"
+  },
+  "messages": {
+    "image_alt": "Imagen",
+    "file_fallback": "Archivo"
+  },
+  "new_conversation": {
+    "title": "Nueva conversaci\u00f3n",
+    "contact": "Contacto",
+    "channel": "Canal",
+    "initial_message": "Mensaje inicial (opcional)",
+    "message_placeholder": "Escribe un mensaje...",
+    "search_placeholder": "Buscar contactos (m\u00edn. 2 caracteres)...",
+    "change": "Cambiar",
+    "submit": "Iniciar conversaci\u00f3n",
+    "unnamed_contact": "Contacto sin nombre"
+  },
+  "agent_status": {
+    "available": "Disponible",
+    "busy": "Ocupado",
+    "on_break": "Descanso",
+    "lunch": "Almuerzo",
+    "training": "Capacitaci\u00f3n",
+    "dnd": "No molestar",
+    "acw": "Post-llamada",
+    "offline": "Desconectado"
   },
   "tour": {
     "inbox": "Tu bandeja de entrada",

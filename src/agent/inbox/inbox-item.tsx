@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { es, enUS, ptBR } from 'date-fns/locale';
+import type { Locale } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import {
   MessageSquare,
   Mail,
@@ -13,6 +16,12 @@ import {
 } from 'lucide-react';
 import { useConversationStore, type Conversation } from '@/agent/stores/conversation-store';
 import { cn } from '@/lib/utils';
+
+const LOCALE_MAP: Record<string, Locale> = {
+  'es-419': es,
+  'en-US': enUS,
+  'pt-BR': ptBR,
+};
 
 const channelIcons: Record<string, LucideIcon> = {
   whatsapp: MessageSquare,
@@ -36,7 +45,8 @@ const stateColors: Record<Conversation['state'], string> = {
   wrap_up: 'bg-rose-400',
 };
 
-export function InboxItem({ conversation }: { conversation: Conversation }) {
+export function InboxItem({ conversation }: { readonly conversation: Conversation }) {
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const select = useConversationStore((s) => s.select);
   const markRead = useConversationStore((s) => s.markRead);
@@ -51,8 +61,10 @@ export function InboxItem({ conversation }: { conversation: Conversation }) {
     navigate(`/agent/conversation/${conversation.id}`);
   }
 
+  const locale = LOCALE_MAP[i18n.resolvedLanguage ?? i18n.language] ?? es;
   const relativeTime = formatDistanceToNow(new Date(conversation.lastMessageAt), {
     addSuffix: false,
+    locale,
   });
 
   return (

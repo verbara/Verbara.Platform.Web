@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Paperclip, Send, X, FileIcon } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
 import { useDraftStore } from '@/agent/stores/draft-store';
@@ -26,6 +27,7 @@ interface ReplyComposerProps {
 }
 
 export function ReplyComposer({ conversationId, contactName }: ReplyComposerProps) {
+  const { t } = useTranslation('agent');
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [cannedOpen, setCannedOpen] = useState(false);
@@ -239,7 +241,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
                 type="button"
                 onClick={() => removeAttachment(idx)}
                 className="ml-1 rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-600 dark:hover:text-slate-200"
-                aria-label={`Remove ${att.file.name}`}
+                aria-label={t('composer.remove_attachment', { name: att.file.name })}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -267,13 +269,13 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="mb-1.5 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
-                  aria-label="Attach file"
+                  aria-label={t('composer.attach_file')}
                 />
               }
             >
               <Paperclip className="h-4.5 w-4.5" />
             </TooltipTrigger>
-            <TooltipContent side="top">Attach file</TooltipContent>
+            <TooltipContent side="top">{t('composer.attach_file')}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
@@ -293,7 +295,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="Write your reply..."
+          placeholder={t('conversation.reply_placeholder')}
           rows={1}
           className="max-h-40 min-h-[40px] flex-1 resize-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/20"
         />
@@ -308,16 +310,16 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
                   onClick={handleSend}
                   disabled={!canSend}
                   className="mb-1.5 shrink-0 rounded-lg bg-teal-600 p-2 text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-teal-500 dark:hover:bg-teal-600"
-                  aria-label="Send"
+                  aria-label={t('composer.send')}
                 />
               }
             >
               <Send className="h-4 w-4" />
             </TooltipTrigger>
             <TooltipContent side="top">
-              Send
+              {t('composer.send')}
               <kbd className="ml-1.5 rounded bg-white/20 px-1 py-0.5 text-[10px]">
-                Ctrl+Enter
+                {t('composer.send_shortcut')}
               </kbd>
             </TooltipContent>
           </Tooltip>

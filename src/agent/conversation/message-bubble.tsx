@@ -1,10 +1,19 @@
 import { format, isToday } from 'date-fns';
+import { es, enUS, ptBR } from 'date-fns/locale';
+import type { Locale } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { Check, CheckCheck, FileIcon, AlertCircle } from 'lucide-react';
 import type { Message } from '@/agent/stores/conversation-store';
 import { cn } from '@/lib/utils';
 
-function DeliveryStatus({ status }: { status: Message['status'] }) {
+const LOCALE_MAP: Record<string, Locale> = {
+  'es-419': es,
+  'en-US': enUS,
+  'pt-BR': ptBR,
+};
+
+function DeliveryStatus({ status }: { readonly status: Message['status'] }) {
   if (!status) return null;
 
   switch (status) {
@@ -23,18 +32,20 @@ function DeliveryStatus({ status }: { status: Message['status'] }) {
   }
 }
 
-function formatTimestamp(iso: string): string {
+function formatTimestamp(iso: string, locale: Locale): string {
   const date = new Date(iso);
-  if (isToday(date)) return format(date, 'h:mm a');
-  return format(date, 'MMM d, h:mm a');
+  if (isToday(date)) return format(date, 'p', { locale });
+  return format(date, 'PP p', { locale });
 }
 
 interface MessageBubbleProps {
-  message: Message;
-  showSender: boolean;
+  readonly message: Message;
+  readonly showSender: boolean;
 }
 
 export function MessageBubble({ message, showSender }: MessageBubbleProps) {
+  const { t, i18n } = useTranslation('agent');
+  const locale = LOCALE_MAP[i18n.resolvedLanguage ?? i18n.language] ?? es;
   const isAgent = message.sender === 'agent';
   const isEmail = message.metadata?.contentType === 'html';
 
@@ -64,7 +75,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
         {message.type === 'image' && typeof message.metadata?.url === 'string' && (
           <img
             src={message.metadata.url as string}
-            alt={message.text || 'Image'}
+            alt={message.text || t('messages.image_alt')}
             className="mb-1.5 max-h-48 rounded-lg object-cover"
           />
         )}
@@ -73,7 +84,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
           <div className="mb-1.5 flex items-center gap-2">
             <FileIcon className="h-4 w-4 shrink-0" />
             <span className="truncate text-sm underline">
-              {(message.metadata?.fileName as string) ?? 'File'}
+              {(message.metadata?.fileName as string) ?? t('messages.file_fallback')}
             </span>
           </div>
         )}
@@ -99,7 +110,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
               isAgent ? 'text-white/60' : 'text-slate-400 dark:text-slate-500',
             )}
           >
-            {formatTimestamp(message.timestamp)}
+            {formatTimestamp(message.timestamp, locale)}
           </span>
           {isAgent && <DeliveryStatus status={message.status} />}
         </div>

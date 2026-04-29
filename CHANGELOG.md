@@ -13,6 +13,74 @@ _No unreleased changes._
 
 ---
 
+## [1.13.3] — 2026-04-28 — i18n Coverage Phase 2 (agent workspace)
+
+**Closes the agent workspace gap.** The agent UI is the highest-traffic
+surface in production tenants — every conversation touches it. Phase 2
+extracts the remaining hardcoded strings so toggling to `en-US` /
+`pt-BR` produces a fully-translated experience for the agent role,
+including date-fns relative time in the user's locale.
+
+### Refactored to `useTranslation`
+
+**`src/agent/conversation/`**
+
+- `reply-composer.tsx` — `Write your reply…` placeholder, attach-file
+  tooltip + aria-label, send tooltip + aria-label, `Ctrl+Enter` shortcut
+  hint, attachment remove `aria-label` with `{{name}}` interpolation.
+- `canned-responses.tsx` — search placeholder, search hint
+  ("Start typing…"), loading state, empty state.
+- `message-bubble.tsx` — image `alt` fallback, file fallback, plus
+  `formatTimestamp` now uses the active i18next language for
+  `date-fns` (was hardcoded `'h:mm a'` / `'MMM d, h:mm a'`; now `'p'` /
+  `'PP p'` with the locale).
+
+**`src/agent/inbox/`**
+
+- `new-conversation-dialog.tsx` — title, contact label, search
+  placeholder, change button, channel label, initial-message label +
+  placeholder, submit button, "Unnamed contact" fallback.
+- `inbox-item.tsx` — `formatDistanceToNow` now uses the active
+  i18next-resolved `date-fns` locale.
+- `agent-status-selector.tsx` — replaced the `label` field on each
+  `AGENT_STATUSES` entry with a `labelKey` (`agent_status.*`), so all 8
+  states (Available, Busy, Break, Lunch, Training, DND, ACW, Offline)
+  translate.
+
+### Skipped (no user strings)
+
+- `message-thread.tsx` — pure composition.
+- `system-event.tsx` — message text comes from backend data; only the
+  icon is selected client-side.
+- `sentiment-gauge.tsx` — speaker / label come from backend AI output.
+
+### Added translation keys (under `agent.json`, all 3 locales)
+
+- `composer.{attach_file,send,send_shortcut,remove_attachment}` (the
+  last with `{{name}}` interpolation).
+- `messages.{image_alt,file_fallback}`.
+- `new_conversation.{title,contact,channel,initial_message,message_placeholder,search_placeholder,change,submit,unnamed_contact}`.
+- `agent_status.{available,busy,on_break,lunch,training,dnd,acw,offline}`.
+- `canned.{search_hint,loading}` (alongside existing
+  `canned.search_placeholder` and `canned.no_results`).
+
+### Tests
+
+- 199/199 Vitest unchanged · 0 TS errors · 42 test files · prod build
+  703 ms.
+
+### Coverage check
+
+agent/ moved from 15/24 (62 %) to **21/24 (88 %)**. The remaining 3
+files (`message-thread`, `system-event`, `sentiment-gauge`) have no
+user-facing strings — only data render and composition — so they are
+effectively complete. Combined repo-wide coverage:
+**144/267 ≈ 54 %** (was 138/267 ≈ 52 %); visibility-weighted gain is
+again significantly larger because the agent workspace is the
+highest-frequency surface for active users.
+
+---
+
 ## [1.13.2] — 2026-04-28 — i18n Coverage Phase 1 (shell + pages + auth)
 
 **Direct follow-up to 1.13.1.** Closes the highest-visibility part of the

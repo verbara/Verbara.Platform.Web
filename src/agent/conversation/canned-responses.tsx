@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Command,
   CommandInput,
@@ -22,6 +23,7 @@ function resolveTemplateVars(text: string, contactName: string): string {
 }
 
 export function CannedResponses({ open, onSelect, onClose, contactName }: CannedResponsesProps) {
+  const { t } = useTranslation('agent');
   const [search, setSearch] = useState('');
   const { data: responses, isLoading } = useSearchCannedResponses(search);
 
@@ -61,20 +63,20 @@ export function CannedResponses({ open, onSelect, onClose, contactName }: Canned
         shouldFilter={false}
       >
         <CommandInput
-          placeholder="Search quick reply..."
+          placeholder={t('canned.search_placeholder')}
           value={search}
           onValueChange={setSearch}
         />
         <CommandList>
           {search.length === 0 ? (
             <p className="py-4 text-center text-xs text-slate-400">
-              Start typing to search canned responses
+              {t('canned.search_hint')}
             </p>
           ) : isLoading ? (
-            <p className="py-4 text-center text-xs text-slate-400">Loading...</p>
+            <p className="py-4 text-center text-xs text-slate-400">{t('canned.loading')}</p>
           ) : (
             <>
-              <CommandEmpty>No results</CommandEmpty>
+              <CommandEmpty>{t('canned.no_results')}</CommandEmpty>
               {responses && responses.length > 0 && (
                 <CommandGroup>
                   {responses.map((r) => (
