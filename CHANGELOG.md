@@ -13,6 +13,94 @@ _No unreleased changes._
 
 ---
 
+## [1.13.5] — 2026-04-29 — i18n Coverage Phase 4A (admin shared + billing)
+
+**Closes the billing surface and shared admin building blocks.** Rate
+cards, invoices, quotas, and usage are the screens billing operators
+and tenant admins use daily; the admin shared components (data-table,
+confirm-dialog, contact-search-panel, placeholder-page) propagate
+translated copy across every CRUD surface that consumes them.
+
+### Refactored to `useTranslation`
+
+**`src/admin/shared/`**
+
+- `placeholder-page.tsx` — `Pending implementation` body label.
+- `data-table.tsx` — search placeholder default, no-results default,
+  pagination footer (`Page X of Y`, Previous, Next). Default props for
+  `searchPlaceholder` / `noResultsMessage` are now derived from i18n
+  when the caller omits them, preserving call-site overrides.
+- `confirm-dialog.tsx` — Cancel and Confirm button defaults; caller
+  may still override `confirmLabel`.
+- `contact-search-panel.tsx` — search placeholder, searching/empty
+  states, min-chars hint, Unknown name fallback.
+
+**`src/admin/billing/`**
+
+- `rate-cards-page.tsx` — page header title/description, New rate
+  card CTA, table column headers (Name, Currency, Default, Effective
+  from/to, Rates), `{count} entries` plural cell, search placeholder,
+  Default badge, no-tenant message via `<Trans>` (Tenants page link).
+- `rate-card-form.tsx` — sheet title/description (create vs edit),
+  form labels (Name, Currency, Effective from/to, Default rate card),
+  rate-entries list (Rate #, Add rate, no-entries hint, Unit price,
+  Included qty, Select usage type), submit button label.
+- `invoices-page.tsx` — page header, Generate invoice CTA, table
+  column headers (Invoice, Period, Total, Status, Generated), search
+  placeholder, no-tenant message, Generate dialog (title, description,
+  Period start/end, Cancel, Generating…/Generate), Invoice detail
+  sheet (Subtotal, Tax, Total, Issued/Due dates, Line items + per-row
+  `{type} · {qty} units @ {price}` summary).
+- `quotas-page.tsx` — page header, Edit quotas CTA, dunning banner
+  (Account overdue, `{count} day(s) overdue`, overdue amount, View
+  Invoice), no-quota empty state, Enforcement label, all 6 QuotaRow
+  labels, edit dialog title/description, all 7 input labels, save
+  button (Saving…/Save), no-tenant message via `<Trans>`.
+- `usage-page.tsx` — page header, filter labels (From, Until, Type,
+  All types), Usage by type chart heading, summary cards `{count}
+  records` plural, Detailed records heading, search placeholder, all
+  6 table column headers (Time, Type, Quantity, Unit, Channel,
+  Reference), no-tenant message via `<Trans>`.
+
+### Locales
+
+Added under `admin.json` (3 locales: es-419, en-US, pt-BR):
+
+- `shared.{placeholder_pending, data_table.*, confirm_dialog.*,
+  contact_search.*}`
+- `billing.{select_tenant_*_prefix/suffix, tenants_link, rate_cards.*,
+  invoices.*, quotas.*, usage.*}`
+
+Plural forms (`_one` / `_other`) used for `entries_count`,
+`records_count`, and dunning `days`.
+
+### Test mocks
+
+`tests/unit/admin/partner/revenue-{chart,csv}.test.tsx` —
+`react-i18next` mock now interpolates `{{key}}` placeholders when
+the second argument is an object (was previously treating it as a
+default-string fallback). Required because these tests render
+`PartnerRevenuePage` → `DataTable`, which now uses interpolation for
+`Page {{current}} of {{total}}`. Also added a `Trans` stub.
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean · lint:
+167 pre-existing errors, no new errors introduced.
+
+### Coverage
+
+Admin section: 76/133 (57%) → 85/133 (64%).
+
+Skipped (no user-facing strings): `page-header.tsx`, `empty-state.tsx`
+(both accept all text via props).
+
+Deferred to a follow-up phase: `core/ui/confirm-delete-dialog.tsx` —
+shared dialog used by every CRUD delete; needs coordinated update of
+all callers and a `common`-namespace keyset.
+
+---
+
 ## [1.13.4] — 2026-04-28 — i18n Coverage Phase 3 (analytics + operations)
 
 **Closes the highest-traffic supervisor surfaces.** The wallboard,

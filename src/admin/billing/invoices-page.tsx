@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { FileText, Send, Eye, CheckCircle } from 'lucide-react';
+import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
@@ -47,6 +48,7 @@ function formatCurrency(amount: number, currency: string) {
 }
 
 export default function InvoicesPage() {
+  const { t } = useTranslation('admin');
   const activeTenantId = useTenantStore((s) => s.activeTenantId);
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
@@ -64,20 +66,20 @@ export default function InvoicesPage() {
   const columns = useMemo(
     () => [
       col.accessor('invoiceId', {
-        header: () => 'Invoice',
+        header: () => t('billing.invoices.columns.invoice'),
         cell: (info) => (
           <span className="font-mono text-xs">{info.getValue().slice(0, 8)}...</span>
         ),
       }),
       col.accessor('periodStart', {
-        header: () => 'Period',
+        header: () => t('billing.invoices.columns.period'),
         cell: (info) => {
           const inv = info.row.original;
           return `${format(new Date(inv.periodStart), 'MMM d')} — ${format(new Date(inv.periodEnd), 'MMM d, yyyy')}`;
         },
       }),
       col.accessor('total', {
-        header: () => 'Total',
+        header: () => t('billing.invoices.columns.total'),
         cell: (info) => (
           <span className="font-medium">
             {formatCurrency(info.getValue(), info.row.original.currency)}
@@ -85,7 +87,7 @@ export default function InvoicesPage() {
         ),
       }),
       col.accessor('status', {
-        header: () => 'Status',
+        header: () => t('billing.invoices.columns.status'),
         cell: (info) => (
           <Badge variant={STATUS_COLORS[info.getValue()] ?? 'outline'}>
             {info.getValue()}
@@ -93,7 +95,7 @@ export default function InvoicesPage() {
         ),
       }),
       col.accessor('generatedAt', {
-        header: () => 'Generated',
+        header: () => t('billing.invoices.columns.generated'),
         cell: (info) => format(new Date(info.getValue()), 'MMM d, yyyy HH:mm'),
       }),
       col.display({
@@ -144,7 +146,7 @@ export default function InvoicesPage() {
         ),
       }),
     ],
-    [issueInvoice, payInvoice],
+    [issueInvoice, payInvoice, t],
   );
 
   const handleGenerate = () => {
@@ -162,7 +164,9 @@ export default function InvoicesPage() {
     return (
       <div className="flex h-64 items-center justify-center">
         <p className="text-sm text-muted-foreground" data-testid="no-tenant-message">
-          Select a tenant from the <a href="/admin/tenants" className="text-brand underline">Tenants page</a> to manage invoices.
+          <Trans i18nKey="billing.select_tenant_invoices_prefix" ns="admin" />
+          <a href="/admin/tenants" className="text-brand underline">{t('billing.tenants_link')}</a>
+          <Trans i18nKey="billing.select_tenant_invoices_suffix" ns="admin" />
         </p>
       </div>
     );
@@ -170,31 +174,31 @@ export default function InvoicesPage() {
 
   return (
     <div className="space-y-6" data-testid="invoices-page">
-      <PageHeader title="Invoices" description="Generate and manage billing invoices.">
+      <PageHeader title={t('billing.invoices.title')} description={t('billing.invoices.description')}>
         <Button onClick={() => setGenerateOpen(true)} data-testid="generate-invoice">
           <FileText className="mr-1.5 h-4 w-4" />
-          Generate invoice
+          {t('billing.invoices.generate')}
         </Button>
       </PageHeader>
 
       <DataTable
         data={invoices}
         columns={columns}
-        searchPlaceholder="Search invoices..."
+        searchPlaceholder={t('billing.invoices.search_placeholder')}
       />
 
       {/* Generate Invoice Dialog */}
       <Dialog open={generateOpen} onOpenChange={setGenerateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Generate invoice</DialogTitle>
+            <DialogTitle>{t('billing.invoices.generate_dialog.title')}</DialogTitle>
             <DialogDescription>
-              Select the billing period to generate an invoice.
+              {t('billing.invoices.generate_dialog.description')}
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3 py-4">
             <div className="space-y-1.5">
-              <Label htmlFor="gen-start">Period start</Label>
+              <Label htmlFor="gen-start">{t('billing.invoices.generate_dialog.period_start')}</Label>
               <Input
                 id="gen-start"
                 type="datetime-local"
@@ -204,7 +208,7 @@ export default function InvoicesPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="gen-end">Period end</Label>
+              <Label htmlFor="gen-end">{t('billing.invoices.generate_dialog.period_end')}</Label>
               <Input
                 id="gen-end"
                 type="datetime-local"
@@ -215,13 +219,13 @@ export default function InvoicesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setGenerateOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setGenerateOpen(false)}>{t('billing.invoices.generate_dialog.cancel')}</Button>
             <Button
               onClick={handleGenerate}
               disabled={!periodStart || !periodEnd || generateInvoice.isPending}
               data-testid="generate-invoice-submit"
             >
-              {generateInvoice.isPending ? 'Generating...' : 'Generate'}
+              {generateInvoice.isPending ? t('billing.invoices.generate_dialog.generating') : t('billing.invoices.generate_dialog.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -231,7 +235,7 @@ export default function InvoicesPage() {
       <Sheet open={!!detailInvoice} onOpenChange={(open) => { if (!open) setDetailInvoice(undefined); }}>
         <SheetContent side="right" className="sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>Invoice detail</SheetTitle>
+            <SheetTitle>{t('billing.invoices.detail.title')}</SheetTitle>
             <SheetDescription>
               {detailInvoice && `${format(new Date(detailInvoice.periodStart), 'MMM d')} — ${format(new Date(detailInvoice.periodEnd), 'MMM d, yyyy')}`}
             </SheetDescription>
@@ -241,15 +245,15 @@ export default function InvoicesPage() {
             <div className="space-y-4 px-4" data-testid="invoice-detail">
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <p className="text-xs text-muted-foreground">Subtotal</p>
+                  <p className="text-xs text-muted-foreground">{t('billing.invoices.detail.subtotal')}</p>
                   <p className="text-sm font-medium">{formatCurrency(detailInvoice.subtotal, detailInvoice.currency)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Tax</p>
+                  <p className="text-xs text-muted-foreground">{t('billing.invoices.detail.tax')}</p>
                   <p className="text-sm font-medium">{formatCurrency(detailInvoice.tax, detailInvoice.currency)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Total</p>
+                  <p className="text-xs text-muted-foreground">{t('billing.invoices.detail.total')}</p>
                   <p className="text-sm font-semibold">{formatCurrency(detailInvoice.total, detailInvoice.currency)}</p>
                 </div>
               </div>
@@ -265,18 +269,18 @@ export default function InvoicesPage() {
                 )}
                 {detailInvoice.issuedAt && (
                   <span className="text-xs text-muted-foreground">
-                    Issued {format(new Date(detailInvoice.issuedAt), 'MMM d, yyyy')}
+                    {t('billing.invoices.detail.issued_at', { date: format(new Date(detailInvoice.issuedAt), 'MMM d, yyyy') })}
                   </span>
                 )}
                 {detailInvoice.dueDate && (
                   <span className="text-xs text-muted-foreground" data-testid="invoice-due-date">
-                    Due {format(new Date(detailInvoice.dueDate), 'MMM d, yyyy')}
+                    {t('billing.invoices.detail.due_date', { date: format(new Date(detailInvoice.dueDate), 'MMM d, yyyy') })}
                   </span>
                 )}
               </div>
 
               <div className="space-y-2">
-                <p className="text-sm font-medium">Line items</p>
+                <p className="text-sm font-medium">{t('billing.invoices.detail.line_items')}</p>
                 <div className="space-y-1">
                   {detailInvoice.lineItems.map((li, idx) => (
                     <div
@@ -287,7 +291,11 @@ export default function InvoicesPage() {
                       <div>
                         <p className="font-medium">{li.description}</p>
                         <p className="text-xs text-muted-foreground">
-                          {li.usageType} · {li.quantity} units @ {formatCurrency(li.unitPrice, detailInvoice.currency)}
+                          {t('billing.invoices.detail.line_summary', {
+                            usageType: li.usageType,
+                            quantity: li.quantity,
+                            unitPrice: formatCurrency(li.unitPrice, detailInvoice.currency),
+                          })}
                         </p>
                       </div>
                       <span className="font-medium">{formatCurrency(li.amount, detailInvoice.currency)}</span>

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
@@ -19,6 +20,7 @@ import { useAuthStore } from '@/core/auth/auth-store';
 const col = createColumnHelper<RateCard>();
 
 export default function RateCardsPage() {
+  const { t } = useTranslation('admin');
   const activeTenantId = useTenantStore((s) => s.activeTenantId);
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
@@ -32,33 +34,35 @@ export default function RateCardsPage() {
   const columns = useMemo(
     () => [
       col.accessor('name', {
-        header: () => 'Name',
+        header: () => t('billing.rate_cards.columns.name'),
         cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
       col.accessor('currency', {
-        header: () => 'Currency',
+        header: () => t('billing.rate_cards.columns.currency'),
         cell: (info) => info.getValue(),
       }),
       col.accessor('isDefault', {
-        header: () => 'Default',
+        header: () => t('billing.rate_cards.columns.default'),
         cell: (info) =>
           info.getValue() ? (
-            <Badge variant="default">Default</Badge>
+            <Badge variant="default">{t('billing.rate_cards.default_badge')}</Badge>
           ) : null,
       }),
       col.accessor('effectiveFrom', {
-        header: () => 'Effective from',
+        header: () => t('billing.rate_cards.columns.effective_from'),
         cell: (info) => format(new Date(info.getValue()), 'MMM d, yyyy'),
       }),
       col.accessor('effectiveTo', {
-        header: () => 'Effective to',
+        header: () => t('billing.rate_cards.columns.effective_to'),
         cell: (info) =>
           info.getValue() ? format(new Date(info.getValue()!), 'MMM d, yyyy') : '—',
       }),
       col.accessor('rates', {
-        header: () => 'Rates',
+        header: () => t('billing.rate_cards.columns.rates'),
         cell: (info) => (
-          <span className="text-muted-foreground">{info.getValue().length} entries</span>
+          <span className="text-muted-foreground">
+            {t('billing.rate_cards.entries_count', { count: info.getValue().length })}
+          </span>
         ),
       }),
       col.display({
@@ -93,14 +97,22 @@ export default function RateCardsPage() {
         ),
       }),
     ],
-    [],
+    [t],
   );
 
   if (!tenantId) {
     return (
       <div className="flex h-64 items-center justify-center">
         <p className="text-sm text-muted-foreground" data-testid="no-tenant-message">
-          Select a tenant from the <a href="/admin/tenants" className="text-brand underline">Tenants page</a> to manage rate cards.
+          <Trans
+            i18nKey="billing.select_tenant_rate_cards_prefix"
+            ns="admin"
+          />
+          <a href="/admin/tenants" className="text-brand underline">{t('billing.tenants_link')}</a>
+          <Trans
+            i18nKey="billing.select_tenant_rate_cards_suffix"
+            ns="admin"
+          />
         </p>
       </div>
     );
@@ -108,17 +120,17 @@ export default function RateCardsPage() {
 
   return (
     <div className="space-y-6" data-testid="rate-cards-page">
-      <PageHeader title="Rate Cards" description="Manage pricing rate cards for this tenant.">
+      <PageHeader title={t('billing.rate_cards.title')} description={t('billing.rate_cards.description')}>
         <Button onClick={() => setCreateOpen(true)} data-testid="create-rate-card">
           <Plus className="mr-1.5 h-4 w-4" />
-          New rate card
+          {t('billing.rate_cards.new')}
         </Button>
       </PageHeader>
 
       <DataTable
         data={rateCards}
         columns={columns}
-        searchPlaceholder="Search rate cards..."
+        searchPlaceholder={t('billing.rate_cards.search_placeholder')}
       />
 
       <RateCardForm

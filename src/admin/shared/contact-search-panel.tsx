@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Search, User, Phone, Mail, Building2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Badge } from '@/core/ui/badge';
 import { useSearchContacts, type Contact } from '@/core/api/hooks/use-contacts';
 
 export function ContactSearchPanel() {
+  const { t } = useTranslation('admin');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -20,7 +22,7 @@ export function ContactSearchPanel() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search contacts (min 2 characters)..."
+          placeholder={t('shared.contact_search.placeholder')}
           className="pl-9"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -30,11 +32,11 @@ export function ContactSearchPanel() {
       {debouncedQuery.length >= 2 && (
         <div className="space-y-2">
           {searching && (
-            <p className="py-4 text-sm text-muted-foreground">Searching...</p>
+            <p className="py-4 text-sm text-muted-foreground">{t('shared.contact_search.searching')}</p>
           )}
           {!searching && searchResults.length === 0 && (
             <p className="py-4 text-sm text-muted-foreground">
-              No contacts found for &quot;{debouncedQuery}&quot;.
+              {t('shared.contact_search.no_results', { query: debouncedQuery })}
             </p>
           )}
           {searchResults.map((contact) => (
@@ -44,14 +46,15 @@ export function ContactSearchPanel() {
       )}
 
       {debouncedQuery.length > 0 && debouncedQuery.length < 2 && (
-        <p className="text-xs text-muted-foreground">Type at least 2 characters to search.</p>
+        <p className="text-xs text-muted-foreground">{t('shared.contact_search.min_chars_hint')}</p>
       )}
     </div>
   );
 }
 
 function ContactRow({ contact }: { contact: Contact }) {
-  const displayName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || 'Unknown';
+  const { t } = useTranslation('admin');
+  const displayName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || t('shared.contact_search.unknown');
   const phone = contact.addresses.find((a) => a.channel === 'voice' || a.channel === 'sms')?.address;
   const email = contact.addresses.find((a) => a.channel === 'email')?.address;
 

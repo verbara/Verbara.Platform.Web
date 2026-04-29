@@ -8,6 +8,7 @@ import {
   type ColumnDef,
 } from '@tanstack/react-table';
 import { Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 
@@ -24,11 +25,14 @@ export interface DataTableProps<T> {
 export function DataTable<T>({
   data,
   columns,
-  searchPlaceholder = 'Search...',
-  noResultsMessage = 'No matching results found.',
+  searchPlaceholder,
+  noResultsMessage,
   pageSize = 10,
   onRowClick,
 }: DataTableProps<T>) {
+  const { t } = useTranslation('admin');
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t('shared.data_table.search_placeholder');
+  const resolvedNoResults = noResultsMessage ?? t('shared.data_table.no_results');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -54,7 +58,7 @@ export function DataTable<T>({
       <div className="relative max-w-sm">
         <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder={searchPlaceholder}
+          placeholder={resolvedSearchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-8"
@@ -101,7 +105,7 @@ export function DataTable<T>({
                   colSpan={columns.length}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
-                  {noResultsMessage}
+                  {resolvedNoResults}
                 </td>
               </tr>
             )}
@@ -112,8 +116,10 @@ export function DataTable<T>({
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground" data-testid="data-table-page-info">
-          Page {table.getState().pagination.pageIndex + 1} of{' '}
-          {table.getPageCount()}
+          {t('shared.data_table.page_info', {
+            current: table.getState().pagination.pageIndex + 1,
+            total: table.getPageCount(),
+          })}
         </p>
         <div className="flex gap-2">
           <Button
@@ -123,7 +129,7 @@ export function DataTable<T>({
             disabled={!table.getCanPreviousPage()}
             data-testid="data-table-prev"
           >
-            Previous
+            {t('shared.data_table.previous')}
           </Button>
           <Button
             variant="outline"
@@ -132,7 +138,7 @@ export function DataTable<T>({
             disabled={!table.getCanNextPage()}
             data-testid="data-table-next"
           >
-            Next
+            {t('shared.data_table.next')}
           </Button>
         </div>
       </div>

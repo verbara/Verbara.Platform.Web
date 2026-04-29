@@ -5,9 +5,19 @@ import { MemoryRouter } from 'react-router-dom';
 // ─── Mock i18n ───────────────────────────────────────────────────────────────
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (_key: string, defaultValue?: string) => defaultValue ?? _key,
+    t: (key: string, opts?: unknown) => {
+      if (typeof opts === 'string') return opts;
+      if (opts && typeof opts === 'object') {
+        return Object.entries(opts as Record<string, unknown>).reduce(
+          (s, [k, v]) => s.replace(`{{${k}}}`, String(v)),
+          key,
+        );
+      }
+      return key;
+    },
     i18n: { changeLanguage: vi.fn() },
   }),
+  Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
 }));
 
 // ─── Mock partner revenue hooks ─────────────────────────────────────────────

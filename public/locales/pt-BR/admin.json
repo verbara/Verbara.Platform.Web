@@ -746,5 +746,164 @@
         "error": "Falha ao salvar configurações do tenant"
       }
     }
+  },
+  "shared": {
+    "placeholder_pending": "Implementação pendente",
+    "data_table": {
+      "search_placeholder": "Pesquisar...",
+      "no_results": "Nenhum resultado encontrado.",
+      "page_info": "Página {{current}} de {{total}}",
+      "previous": "Anterior",
+      "next": "Próximo"
+    },
+    "confirm_dialog": {
+      "confirm": "Confirmar",
+      "cancel": "Cancelar"
+    },
+    "contact_search": {
+      "placeholder": "Pesquisar contatos (mín. 2 caracteres)...",
+      "searching": "Pesquisando...",
+      "no_results": "Nenhum contato encontrado para \"{{query}}\".",
+      "min_chars_hint": "Digite pelo menos 2 caracteres para pesquisar.",
+      "unknown": "Desconhecido"
+    }
+  },
+  "billing": {
+    "select_tenant_rate_cards_prefix": "Selecione um tenant na ",
+    "select_tenant_rate_cards_suffix": " para gerenciar tarifários.",
+    "select_tenant_invoices_prefix": "Selecione um tenant na ",
+    "select_tenant_invoices_suffix": " para gerenciar faturas.",
+    "select_tenant_quotas_prefix": "Selecione um tenant na ",
+    "select_tenant_quotas_suffix": " para gerenciar cotas.",
+    "select_tenant_usage_prefix": "Selecione um tenant na ",
+    "select_tenant_usage_suffix": " para ver o uso.",
+    "tenants_link": "página de Tenants",
+    "rate_cards": {
+      "title": "Tarifários",
+      "description": "Gerencie os tarifários deste tenant.",
+      "new": "Novo tarifário",
+      "search_placeholder": "Pesquisar tarifários...",
+      "default_badge": "Padrão",
+      "entries_count_one": "{{count}} entrada",
+      "entries_count_other": "{{count}} entradas",
+      "columns": {
+        "name": "Nome",
+        "currency": "Moeda",
+        "default": "Padrão",
+        "effective_from": "Vigente desde",
+        "effective_to": "Vigente até",
+        "rates": "Tarifas"
+      },
+      "form": {
+        "create_title": "Criar tarifário",
+        "edit_title": "Editar tarifário",
+        "create_description": "Defina as tarifas para os tipos de uso.",
+        "edit_description": "Atualize a configuração do tarifário.",
+        "name": "Nome",
+        "name_placeholder": "Tarifa padrão",
+        "currency": "Moeda",
+        "currency_placeholder": "USD",
+        "effective_from": "Vigente desde",
+        "effective_to": "Vigente até",
+        "default_label": "Tarifário padrão",
+        "rate_entries": "Entradas de tarifa",
+        "add_rate": "Adicionar tarifa",
+        "no_entries": "Nenhuma entrada ainda. Adicione pelo menos uma.",
+        "rate_number": "Tarifa #{{n}}",
+        "select_usage_type": "Selecionar tipo de uso",
+        "unit_price": "Preço unitário",
+        "included_qty": "Qtd. incluída",
+        "create": "Criar",
+        "save": "Salvar"
+      }
+    },
+    "invoices": {
+      "title": "Faturas",
+      "description": "Gere e gerencie faturas.",
+      "generate": "Gerar fatura",
+      "search_placeholder": "Pesquisar faturas...",
+      "columns": {
+        "invoice": "Fatura",
+        "period": "Período",
+        "total": "Total",
+        "status": "Status",
+        "generated": "Gerada"
+      },
+      "generate_dialog": {
+        "title": "Gerar fatura",
+        "description": "Selecione o período de faturamento.",
+        "period_start": "Início do período",
+        "period_end": "Fim do período",
+        "cancel": "Cancelar",
+        "generating": "Gerando...",
+        "submit": "Gerar"
+      },
+      "detail": {
+        "title": "Detalhes da fatura",
+        "subtotal": "Subtotal",
+        "tax": "Imposto",
+        "total": "Total",
+        "issued_at": "Emitida {{date}}",
+        "due_date": "Vence {{date}}",
+        "line_items": "Itens",
+        "line_summary": "{{usageType}} · {{quantity}} unidades @ {{unitPrice}}"
+      }
+    },
+    "quotas": {
+      "title": "Cotas",
+      "description": "Veja e configure os limites de uso do tenant.",
+      "edit": "Editar cotas",
+      "no_quota": "Nenhuma cota configurada para este tenant.",
+      "enforcement": "Aplicação:",
+      "rows": {
+        "concurrent_channels": "Canais concorrentes",
+        "active_campaigns": "Campanhas ativas",
+        "monthly_voice_minutes": "Minutos de voz mensais",
+        "monthly_messages": "Mensagens mensais",
+        "storage": "Armazenamento",
+        "active_agents": "Agentes ativos"
+      },
+      "dunning": {
+        "overdue": "Conta em atraso",
+        "days_one": "{{count}} dia em atraso",
+        "days_other": "{{count}} dias em atraso",
+        "amount": "valor em atraso: {{amount}}",
+        "view_invoice": "Ver fatura"
+      },
+      "edit_dialog": {
+        "title": "Editar cotas",
+        "description": "Atualize os limites de uso deste tenant.",
+        "max_concurrent_channels": "Máx. canais concorrentes",
+        "max_active_campaigns": "Máx. campanhas ativas",
+        "max_monthly_voice_minutes": "Máx. minutos de voz mensais",
+        "max_monthly_messages": "Máx. mensagens mensais",
+        "max_storage_bytes": "Máx. armazenamento (bytes)",
+        "max_active_agents": "Máx. agentes ativos",
+        "enforcement_action": "Ação de aplicação",
+        "saving": "Salvando...",
+        "save": "Salvar"
+      }
+    },
+    "usage": {
+      "title": "Uso",
+      "description": "Veja o resumo de uso medido e os registros detalhados.",
+      "filters_from": "De",
+      "filters_until": "Até",
+      "type": "Tipo",
+      "all_types": "Todos os tipos",
+      "by_type": "Uso por tipo",
+      "records_count_one": "{{count}} registro",
+      "records_count_other": "{{count}} registros",
+      "detailed_records": "Registros detalhados",
+      "search_placeholder": "Pesquisar registros...",
+      "columns": {
+        "time": "Hora",
+        "type": "Tipo",
+        "quantity": "Quantidade",
+        "unit": "Unidade",
+        "channel": "Canal",
+        "reference": "Referência"
+      }
+    }
   }
 }

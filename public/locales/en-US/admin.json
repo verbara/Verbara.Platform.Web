@@ -791,5 +791,164 @@
         "error": "Failed to save tenant settings"
       }
     }
+  },
+  "shared": {
+    "placeholder_pending": "Pending implementation",
+    "data_table": {
+      "search_placeholder": "Search...",
+      "no_results": "No matching results found.",
+      "page_info": "Page {{current}} of {{total}}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "confirm_dialog": {
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "contact_search": {
+      "placeholder": "Search contacts (min 2 characters)...",
+      "searching": "Searching...",
+      "no_results": "No contacts found for \"{{query}}\".",
+      "min_chars_hint": "Type at least 2 characters to search.",
+      "unknown": "Unknown"
+    }
+  },
+  "billing": {
+    "select_tenant_rate_cards_prefix": "Select a tenant from the ",
+    "select_tenant_rate_cards_suffix": " to manage rate cards.",
+    "select_tenant_invoices_prefix": "Select a tenant from the ",
+    "select_tenant_invoices_suffix": " to manage invoices.",
+    "select_tenant_quotas_prefix": "Select a tenant from the ",
+    "select_tenant_quotas_suffix": " to manage quotas.",
+    "select_tenant_usage_prefix": "Select a tenant from the ",
+    "select_tenant_usage_suffix": " to view usage.",
+    "tenants_link": "Tenants page",
+    "rate_cards": {
+      "title": "Rate Cards",
+      "description": "Manage pricing rate cards for this tenant.",
+      "new": "New rate card",
+      "search_placeholder": "Search rate cards...",
+      "default_badge": "Default",
+      "entries_count_one": "{{count}} entry",
+      "entries_count_other": "{{count}} entries",
+      "columns": {
+        "name": "Name",
+        "currency": "Currency",
+        "default": "Default",
+        "effective_from": "Effective from",
+        "effective_to": "Effective to",
+        "rates": "Rates"
+      },
+      "form": {
+        "create_title": "Create rate card",
+        "edit_title": "Edit rate card",
+        "create_description": "Define pricing rates for usage types.",
+        "edit_description": "Update rate card configuration.",
+        "name": "Name",
+        "name_placeholder": "Standard pricing",
+        "currency": "Currency",
+        "currency_placeholder": "USD",
+        "effective_from": "Effective from",
+        "effective_to": "Effective to",
+        "default_label": "Default rate card",
+        "rate_entries": "Rate entries",
+        "add_rate": "Add rate",
+        "no_entries": "No rate entries yet. Add at least one.",
+        "rate_number": "Rate #{{n}}",
+        "select_usage_type": "Select usage type",
+        "unit_price": "Unit price",
+        "included_qty": "Included qty",
+        "create": "Create",
+        "save": "Save"
+      }
+    },
+    "invoices": {
+      "title": "Invoices",
+      "description": "Generate and manage billing invoices.",
+      "generate": "Generate invoice",
+      "search_placeholder": "Search invoices...",
+      "columns": {
+        "invoice": "Invoice",
+        "period": "Period",
+        "total": "Total",
+        "status": "Status",
+        "generated": "Generated"
+      },
+      "generate_dialog": {
+        "title": "Generate invoice",
+        "description": "Select the billing period to generate an invoice.",
+        "period_start": "Period start",
+        "period_end": "Period end",
+        "cancel": "Cancel",
+        "generating": "Generating...",
+        "submit": "Generate"
+      },
+      "detail": {
+        "title": "Invoice detail",
+        "subtotal": "Subtotal",
+        "tax": "Tax",
+        "total": "Total",
+        "issued_at": "Issued {{date}}",
+        "due_date": "Due {{date}}",
+        "line_items": "Line items",
+        "line_summary": "{{usageType}} · {{quantity}} units @ {{unitPrice}}"
+      }
+    },
+    "quotas": {
+      "title": "Quotas",
+      "description": "View and configure tenant usage limits.",
+      "edit": "Edit quotas",
+      "no_quota": "No quota configured for this tenant.",
+      "enforcement": "Enforcement:",
+      "rows": {
+        "concurrent_channels": "Concurrent channels",
+        "active_campaigns": "Active campaigns",
+        "monthly_voice_minutes": "Monthly voice minutes",
+        "monthly_messages": "Monthly messages",
+        "storage": "Storage",
+        "active_agents": "Active agents"
+      },
+      "dunning": {
+        "overdue": "Account overdue",
+        "days_one": "{{count}} day overdue",
+        "days_other": "{{count}} days overdue",
+        "amount": "overdue amount: {{amount}}",
+        "view_invoice": "View Invoice"
+      },
+      "edit_dialog": {
+        "title": "Edit quotas",
+        "description": "Update usage limits for this tenant.",
+        "max_concurrent_channels": "Max concurrent channels",
+        "max_active_campaigns": "Max active campaigns",
+        "max_monthly_voice_minutes": "Max monthly voice minutes",
+        "max_monthly_messages": "Max monthly messages",
+        "max_storage_bytes": "Max storage (bytes)",
+        "max_active_agents": "Max active agents",
+        "enforcement_action": "Enforcement action",
+        "saving": "Saving...",
+        "save": "Save"
+      }
+    },
+    "usage": {
+      "title": "Usage",
+      "description": "View metered usage summary and detailed records.",
+      "filters_from": "From",
+      "filters_until": "Until",
+      "type": "Type",
+      "all_types": "All types",
+      "by_type": "Usage by type",
+      "records_count_one": "{{count}} record",
+      "records_count_other": "{{count}} records",
+      "detailed_records": "Detailed records",
+      "search_placeholder": "Search records...",
+      "columns": {
+        "time": "Time",
+        "type": "Type",
+        "quantity": "Quantity",
+        "unit": "Unit",
+        "channel": "Channel",
+        "reference": "Reference"
+      }
+    }
   }
 }

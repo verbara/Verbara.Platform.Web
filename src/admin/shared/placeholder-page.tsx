@@ -1,4 +1,5 @@
 import { Construction } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 
 export interface PlaceholderPageProps {
@@ -25,13 +26,14 @@ export interface PlaceholderPageProps {
  * in `router.tsx` to point at the real page component.
  */
 export function PlaceholderPage({ title, featureName, description }: Readonly<PlaceholderPageProps>) {
+  const { t } = useTranslation('admin');
   return (
     <div className="space-y-6 p-2" data-testid="placeholder-page">
       <PageHeader title={title} description={description} />
       <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-12 text-center dark:border-slate-700 dark:bg-slate-900">
         <Construction className="h-10 w-10 text-slate-400" aria-hidden />
         <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-          Pending implementation
+          {t('shared.placeholder_pending')}
         </p>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           <code className="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[11px] dark:bg-slate-800">

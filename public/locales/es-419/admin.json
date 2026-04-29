@@ -762,5 +762,164 @@
         "error": "No se pudo guardar la configuración del tenant"
       }
     }
+  },
+  "shared": {
+    "placeholder_pending": "Implementación pendiente",
+    "data_table": {
+      "search_placeholder": "Buscar...",
+      "no_results": "No se encontraron resultados.",
+      "page_info": "Página {{current}} de {{total}}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "confirm_dialog": {
+      "confirm": "Confirmar",
+      "cancel": "Cancelar"
+    },
+    "contact_search": {
+      "placeholder": "Buscar contactos (mín. 2 caracteres)...",
+      "searching": "Buscando...",
+      "no_results": "No se encontraron contactos para \"{{query}}\".",
+      "min_chars_hint": "Escriba al menos 2 caracteres para buscar.",
+      "unknown": "Desconocido"
+    }
+  },
+  "billing": {
+    "select_tenant_rate_cards_prefix": "Seleccione un tenant desde la ",
+    "select_tenant_rate_cards_suffix": " para gestionar tarjetas de tarifa.",
+    "select_tenant_invoices_prefix": "Seleccione un tenant desde la ",
+    "select_tenant_invoices_suffix": " para gestionar facturas.",
+    "select_tenant_quotas_prefix": "Seleccione un tenant desde la ",
+    "select_tenant_quotas_suffix": " para gestionar cuotas.",
+    "select_tenant_usage_prefix": "Seleccione un tenant desde la ",
+    "select_tenant_usage_suffix": " para ver el uso.",
+    "tenants_link": "página de Tenants",
+    "rate_cards": {
+      "title": "Tarjetas de tarifa",
+      "description": "Gestione tarjetas de tarifa para este tenant.",
+      "new": "Nueva tarjeta de tarifa",
+      "search_placeholder": "Buscar tarjetas de tarifa...",
+      "default_badge": "Por defecto",
+      "entries_count_one": "{{count}} entrada",
+      "entries_count_other": "{{count}} entradas",
+      "columns": {
+        "name": "Nombre",
+        "currency": "Moneda",
+        "default": "Por defecto",
+        "effective_from": "Vigente desde",
+        "effective_to": "Vigente hasta",
+        "rates": "Tarifas"
+      },
+      "form": {
+        "create_title": "Crear tarjeta de tarifa",
+        "edit_title": "Editar tarjeta de tarifa",
+        "create_description": "Defina tarifas de precio para tipos de uso.",
+        "edit_description": "Actualice la configuración de la tarjeta.",
+        "name": "Nombre",
+        "name_placeholder": "Tarifa estándar",
+        "currency": "Moneda",
+        "currency_placeholder": "USD",
+        "effective_from": "Vigente desde",
+        "effective_to": "Vigente hasta",
+        "default_label": "Tarjeta por defecto",
+        "rate_entries": "Entradas de tarifa",
+        "add_rate": "Agregar tarifa",
+        "no_entries": "Aún no hay entradas. Agregue al menos una.",
+        "rate_number": "Tarifa #{{n}}",
+        "select_usage_type": "Seleccionar tipo de uso",
+        "unit_price": "Precio unitario",
+        "included_qty": "Cantidad incluida",
+        "create": "Crear",
+        "save": "Guardar"
+      }
+    },
+    "invoices": {
+      "title": "Facturas",
+      "description": "Genere y gestione facturas.",
+      "generate": "Generar factura",
+      "search_placeholder": "Buscar facturas...",
+      "columns": {
+        "invoice": "Factura",
+        "period": "Período",
+        "total": "Total",
+        "status": "Estado",
+        "generated": "Generada"
+      },
+      "generate_dialog": {
+        "title": "Generar factura",
+        "description": "Seleccione el período de facturación.",
+        "period_start": "Inicio del período",
+        "period_end": "Fin del período",
+        "cancel": "Cancelar",
+        "generating": "Generando...",
+        "submit": "Generar"
+      },
+      "detail": {
+        "title": "Detalle de factura",
+        "subtotal": "Subtotal",
+        "tax": "Impuesto",
+        "total": "Total",
+        "issued_at": "Emitida {{date}}",
+        "due_date": "Vence {{date}}",
+        "line_items": "Líneas",
+        "line_summary": "{{usageType}} · {{quantity}} unidades @ {{unitPrice}}"
+      }
+    },
+    "quotas": {
+      "title": "Cuotas",
+      "description": "Vea y configure los límites de uso del tenant.",
+      "edit": "Editar cuotas",
+      "no_quota": "No hay cuota configurada para este tenant.",
+      "enforcement": "Aplicación:",
+      "rows": {
+        "concurrent_channels": "Canales concurrentes",
+        "active_campaigns": "Campañas activas",
+        "monthly_voice_minutes": "Minutos de voz mensuales",
+        "monthly_messages": "Mensajes mensuales",
+        "storage": "Almacenamiento",
+        "active_agents": "Agentes activos"
+      },
+      "dunning": {
+        "overdue": "Cuenta vencida",
+        "days_one": "{{count}} día vencido",
+        "days_other": "{{count}} días vencidos",
+        "amount": "monto adeudado: {{amount}}",
+        "view_invoice": "Ver factura"
+      },
+      "edit_dialog": {
+        "title": "Editar cuotas",
+        "description": "Actualice los límites de uso de este tenant.",
+        "max_concurrent_channels": "Máx. canales concurrentes",
+        "max_active_campaigns": "Máx. campañas activas",
+        "max_monthly_voice_minutes": "Máx. minutos de voz mensuales",
+        "max_monthly_messages": "Máx. mensajes mensuales",
+        "max_storage_bytes": "Máx. almacenamiento (bytes)",
+        "max_active_agents": "Máx. agentes activos",
+        "enforcement_action": "Acción de aplicación",
+        "saving": "Guardando...",
+        "save": "Guardar"
+      }
+    },
+    "usage": {
+      "title": "Uso",
+      "description": "Vea el resumen de uso medido y los registros detallados.",
+      "filters_from": "Desde",
+      "filters_until": "Hasta",
+      "type": "Tipo",
+      "all_types": "Todos los tipos",
+      "by_type": "Uso por tipo",
+      "records_count_one": "{{count}} registro",
+      "records_count_other": "{{count}} registros",
+      "detailed_records": "Registros detallados",
+      "search_placeholder": "Buscar registros...",
+      "columns": {
+        "time": "Hora",
+        "type": "Tipo",
+        "quantity": "Cantidad",
+        "unit": "Unidad",
+        "channel": "Canal",
+        "reference": "Referencia"
+      }
+    }
   }
 }

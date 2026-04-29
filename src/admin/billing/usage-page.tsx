@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format, startOfMonth } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Input } from '@/core/ui/input';
@@ -25,6 +26,7 @@ import { useAuthStore } from '@/core/auth/auth-store';
 const col = createColumnHelper<UsageRecord>();
 
 export default function UsagePage() {
+  const { t } = useTranslation('admin');
   const activeTenantId = useTenantStore((s) => s.activeTenantId);
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
@@ -60,27 +62,27 @@ export default function UsagePage() {
   const columns = useMemo(
     () => [
       col.accessor('recordedAt', {
-        header: () => 'Time',
+        header: () => t('billing.usage.columns.time'),
         cell: (info) => format(new Date(info.getValue()), 'MMM d, HH:mm:ss'),
       }),
       col.accessor('usageType', {
-        header: () => 'Type',
+        header: () => t('billing.usage.columns.type'),
         cell: (info) => info.getValue(),
       }),
       col.accessor('quantity', {
-        header: () => 'Quantity',
+        header: () => t('billing.usage.columns.quantity'),
         cell: (info) => info.getValue().toLocaleString(),
       }),
       col.accessor('unit', {
-        header: () => 'Unit',
+        header: () => t('billing.usage.columns.unit'),
         cell: (info) => info.getValue(),
       }),
       col.accessor('channel', {
-        header: () => 'Channel',
+        header: () => t('billing.usage.columns.channel'),
         cell: (info) => info.getValue() ?? '—',
       }),
       col.accessor('referenceId', {
-        header: () => 'Reference',
+        header: () => t('billing.usage.columns.reference'),
         cell: (info) =>
           info.getValue() ? (
             <span className="font-mono text-xs">{info.getValue()!.slice(0, 12)}...</span>
@@ -89,14 +91,16 @@ export default function UsagePage() {
           ),
       }),
     ],
-    [],
+    [t],
   );
 
   if (!tenantId) {
     return (
       <div className="flex h-64 items-center justify-center">
         <p className="text-sm text-muted-foreground" data-testid="no-tenant-message">
-          Select a tenant from the <a href="/admin/tenants" className="text-brand underline">Tenants page</a> to view usage.
+          <Trans i18nKey="billing.select_tenant_usage_prefix" ns="admin" />
+          <a href="/admin/tenants" className="text-brand underline">{t('billing.tenants_link')}</a>
+          <Trans i18nKey="billing.select_tenant_usage_suffix" ns="admin" />
         </p>
       </div>
     );
@@ -104,12 +108,12 @@ export default function UsagePage() {
 
   return (
     <div className="space-y-6" data-testid="usage-page">
-      <PageHeader title="Usage" description="View metered usage summary and detailed records." />
+      <PageHeader title={t('billing.usage.title')} description={t('billing.usage.description')} />
 
       {/* Filters */}
       <div className="flex flex-wrap items-end gap-3 rounded-md border bg-card p-4" data-testid="usage-filters">
         <div className="space-y-1.5">
-          <Label htmlFor="usage-from">From</Label>
+          <Label htmlFor="usage-from">{t('billing.usage.filters_from')}</Label>
           <Input
             id="usage-from"
             type="datetime-local"
@@ -119,7 +123,7 @@ export default function UsagePage() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="usage-until">Until</Label>
+          <Label htmlFor="usage-until">{t('billing.usage.filters_until')}</Label>
           <Input
             id="usage-until"
             type="datetime-local"
@@ -129,13 +133,13 @@ export default function UsagePage() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Type</Label>
+          <Label>{t('billing.usage.type')}</Label>
           <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v ?? 'all'); setDetailPage(1); }}>
             <SelectTrigger className="w-48" data-testid="usage-type-filter">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
+              <SelectItem value="all">{t('billing.usage.all_types')}</SelectItem>
               {USAGE_TYPES.map((ut) => (
                 <SelectItem key={ut} value={ut}>{ut}</SelectItem>
               ))}
@@ -147,7 +151,7 @@ export default function UsagePage() {
       {/* Summary Chart */}
       {summaries.length > 0 && (
         <div className="rounded-md border bg-card p-4" data-testid="usage-chart">
-          <h3 className="mb-3 text-sm font-medium">Usage by type</h3>
+          <h3 className="mb-3 text-sm font-medium">{t('billing.usage.by_type')}</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={chartData} margin={{ top: 5, right: 20, bottom: 60, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -173,7 +177,7 @@ export default function UsagePage() {
             <div key={s.usageType} className="rounded-md border bg-card p-3">
               <p className="text-xs text-muted-foreground">{s.usageType}</p>
               <p className="text-lg font-semibold">{s.totalQuantity.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">{s.recordCount} records</p>
+              <p className="text-xs text-muted-foreground">{t('billing.usage.records_count', { count: s.recordCount })}</p>
             </div>
           ))}
         </div>
@@ -181,11 +185,11 @@ export default function UsagePage() {
 
       {/* Detailed Records */}
       <div data-testid="usage-records-section">
-        <h3 className="mb-3 text-sm font-medium">Detailed records</h3>
+        <h3 className="mb-3 text-sm font-medium">{t('billing.usage.detailed_records')}</h3>
         <DataTable
           data={records}
           columns={columns}
-          searchPlaceholder="Search records..."
+          searchPlaceholder={t('billing.usage.search_placeholder')}
         />
       </div>
     </div>

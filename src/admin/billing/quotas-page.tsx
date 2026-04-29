@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router';
 import { Pencil, ShieldAlert, ShieldCheck, ShieldX, AlertTriangle } from 'lucide-react';
+import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
@@ -103,6 +104,7 @@ function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
 }
 
 export default function QuotasPage() {
+  const { t } = useTranslation('admin');
   const activeTenantId = useTenantStore((s) => s.activeTenantId);
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
@@ -162,7 +164,9 @@ export default function QuotasPage() {
     return (
       <div className="flex h-64 items-center justify-center">
         <p className="text-sm text-muted-foreground" data-testid="no-tenant-message">
-          Select a tenant from the <a href="/admin/tenants" className="text-brand underline">Tenants page</a> to manage quotas.
+          <Trans i18nKey="billing.select_tenant_quotas_prefix" ns="admin" />
+          <a href="/admin/tenants" className="text-brand underline">{t('billing.tenants_link')}</a>
+          <Trans i18nKey="billing.select_tenant_quotas_suffix" ns="admin" />
         </p>
       </div>
     );
@@ -172,10 +176,10 @@ export default function QuotasPage() {
 
   return (
     <div className="space-y-6" data-testid="quotas-page">
-      <PageHeader title="Quotas" description="View and configure tenant usage limits.">
+      <PageHeader title={t('billing.quotas.title')} description={t('billing.quotas.description')}>
         <Button onClick={() => setEditOpen(true)} data-testid="edit-quota" disabled={!quota}>
           <Pencil className="mr-1.5 h-4 w-4" />
-          Edit quotas
+          {t('billing.quotas.edit')}
         </Button>
       </PageHeader>
 
@@ -187,7 +191,7 @@ export default function QuotasPage() {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="flex-1 space-y-1">
             <p className="font-medium text-amber-900 dark:text-amber-100">
-              Account overdue
+              {t('billing.quotas.dunning.overdue')}
               {dunning.phase && (
                 <span className="ml-2 inline-flex items-center rounded-full bg-amber-200 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-800 dark:text-amber-100">
                   {dunning.phase}
@@ -195,9 +199,9 @@ export default function QuotasPage() {
               )}
             </p>
             <p className="text-amber-800 dark:text-amber-200">
-              {dunning.daysOverdue} {dunning.daysOverdue === 1 ? 'day' : 'days'} overdue
+              {t('billing.quotas.dunning.days', { count: dunning.daysOverdue })}
               {dunning.overdueAmount > 0 && (
-                <> &mdash; overdue amount: <span className="font-medium">${dunning.overdueAmount.toFixed(2)}</span></>
+                <> &mdash; {t('billing.quotas.dunning.amount', { amount: `$${dunning.overdueAmount.toFixed(2)}` })}</>
               )}
             </p>
           </div>
@@ -206,20 +210,20 @@ export default function QuotasPage() {
             className="shrink-0 text-xs font-medium text-amber-700 underline hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100"
             data-testid="dunning-view-invoice"
           >
-            View Invoice
+            {t('billing.quotas.dunning.view_invoice')}
           </Link>
         </div>
       )}
 
       {!quota ? (
         <div className="flex h-40 items-center justify-center rounded-md border bg-card">
-          <p className="text-sm text-muted-foreground">No quota configured for this tenant.</p>
+          <p className="text-sm text-muted-foreground">{t('billing.quotas.no_quota')}</p>
         </div>
       ) : (
         <>
           <div className="flex items-center gap-2 rounded-md border bg-card p-4" data-testid="quota-action-badge">
             <ActionIcon className={`h-5 w-5 ${ACTION_COLORS[quota.quotaAction] ?? ''}`} />
-            <span className="text-sm font-medium">Enforcement:</span>
+            <span className="text-sm font-medium">{t('billing.quotas.enforcement')}</span>
             <Badge variant={quota.quotaAction === 'HardBlock' ? 'destructive' : 'outline'}>
               {quota.quotaAction}
             </Badge>
@@ -227,31 +231,31 @@ export default function QuotasPage() {
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="quota-limits">
             <QuotaRow
-              label="Concurrent channels"
+              label={t('billing.quotas.rows.concurrent_channels')}
               limit={quota.maxConcurrentChannels}
             />
             <QuotaRow
-              label="Active campaigns"
+              label={t('billing.quotas.rows.active_campaigns')}
               limit={quota.maxActiveCampaigns}
             />
             <QuotaRow
-              label="Monthly voice minutes"
+              label={t('billing.quotas.rows.monthly_voice_minutes')}
               limit={quota.maxMonthlyVoiceMinutes}
               usage={usageFor('Voice')}
             />
             <QuotaRow
-              label="Monthly messages"
+              label={t('billing.quotas.rows.monthly_messages')}
               limit={quota.maxMonthlyMessages}
               usage={usageFor('Sms', 'WhatsApp', 'Email', 'Telegram', 'WebChat')}
             />
             <QuotaRow
-              label="Storage"
+              label={t('billing.quotas.rows.storage')}
               limit={quota.maxStorageBytes}
               usage={usageFor('Storage')}
               formatter={formatBytes}
             />
             <QuotaRow
-              label="Active agents"
+              label={t('billing.quotas.rows.active_agents')}
               limit={quota.maxActiveAgents}
             />
           </div>
@@ -261,45 +265,45 @@ export default function QuotasPage() {
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent side="right" className="sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Edit quotas</SheetTitle>
-            <SheetDescription>Update usage limits for this tenant.</SheetDescription>
+            <SheetTitle>{t('billing.quotas.edit_dialog.title')}</SheetTitle>
+            <SheetDescription>{t('billing.quotas.edit_dialog.description')}</SheetDescription>
           </SheetHeader>
 
           <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
             <div className="space-y-1.5">
-              <Label htmlFor="q-channels">Max concurrent channels</Label>
+              <Label htmlFor="q-channels">{t('billing.quotas.edit_dialog.max_concurrent_channels')}</Label>
               <Input id="q-channels" type="number" data-testid="quota-channels" {...register('maxConcurrentChannels')} />
               {errors.maxConcurrentChannels && <p className="text-xs text-destructive">{errors.maxConcurrentChannels.message}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="q-campaigns">Max active campaigns</Label>
+              <Label htmlFor="q-campaigns">{t('billing.quotas.edit_dialog.max_active_campaigns')}</Label>
               <Input id="q-campaigns" type="number" data-testid="quota-campaigns" {...register('maxActiveCampaigns')} />
               {errors.maxActiveCampaigns && <p className="text-xs text-destructive">{errors.maxActiveCampaigns.message}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="q-voice">Max monthly voice minutes</Label>
+              <Label htmlFor="q-voice">{t('billing.quotas.edit_dialog.max_monthly_voice_minutes')}</Label>
               <Input id="q-voice" type="number" data-testid="quota-voice" {...register('maxMonthlyVoiceMinutes')} />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="q-messages">Max monthly messages</Label>
+              <Label htmlFor="q-messages">{t('billing.quotas.edit_dialog.max_monthly_messages')}</Label>
               <Input id="q-messages" type="number" data-testid="quota-messages" {...register('maxMonthlyMessages')} />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="q-storage">Max storage (bytes)</Label>
+              <Label htmlFor="q-storage">{t('billing.quotas.edit_dialog.max_storage_bytes')}</Label>
               <Input id="q-storage" type="number" data-testid="quota-storage" {...register('maxStorageBytes')} />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="q-agents">Max active agents</Label>
+              <Label htmlFor="q-agents">{t('billing.quotas.edit_dialog.max_active_agents')}</Label>
               <Input id="q-agents" type="number" data-testid="quota-agents" {...register('maxActiveAgents')} />
             </div>
 
             <div className="space-y-1.5">
-              <Label>Enforcement action</Label>
+              <Label>{t('billing.quotas.edit_dialog.enforcement_action')}</Label>
               <Controller
                 name="quotaAction"
                 control={control}
@@ -320,7 +324,7 @@ export default function QuotasPage() {
 
             <SheetFooter className="mt-auto px-0">
               <Button type="submit" disabled={isSubmitting} data-testid="quota-submit">
-                {isSubmitting ? 'Saving...' : 'Save'}
+                {isSubmitting ? t('billing.quotas.edit_dialog.saving') : t('billing.quotas.edit_dialog.save')}
               </Button>
             </SheetFooter>
           </form>

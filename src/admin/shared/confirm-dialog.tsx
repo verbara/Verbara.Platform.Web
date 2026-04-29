@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import {
   Dialog,
@@ -27,10 +28,11 @@ export function ConfirmDialog({
   title,
   description,
   onConfirm,
-  confirmLabel = 'Confirm',
+  confirmLabel,
   variant = 'destructive',
   'data-testid': dataTestId = 'confirm-dialog',
 }: ConfirmDialogProps) {
+  const { t } = useTranslation('admin');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid={dataTestId}>
@@ -39,9 +41,11 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" data-testid="confirm-dialog-cancel" />}>Cancel</DialogClose>
+          <DialogClose render={<Button variant="outline" data-testid="confirm-dialog-cancel" />}>
+            {t('shared.confirm_dialog.cancel')}
+          </DialogClose>
           <Button variant={variant} onClick={onConfirm} data-testid="confirm-dialog-confirm">
-            {confirmLabel}
+            {confirmLabel ?? t('shared.confirm_dialog.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>
