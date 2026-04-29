@@ -102,5 +102,11 @@
     "mfa_use_code": "Usar código de autenticador",
     "mfa_use_recovery": "Usar código de recuperación"
   },
-  "theme": { "light": "Claro", "dark": "Oscuro", "system": "Sistema" }
+  "theme": { "label": "Tema", "light": "Claro", "dark": "Oscuro", "system": "Sistema" },
+  "language": {
+    "label": "Idioma",
+    "es-419": "Español (Latinoamérica)",
+    "en-US": "Inglés (EE.UU.)",
+    "pt-BR": "Portugués (Brasil)"
+  }
 }

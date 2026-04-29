@@ -8,6 +8,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Checkbox } from '@/core/ui/checkbox';
+import { LanguageSwitcher } from '@/core/i18n/language-switcher';
 import { MfaVerify } from './mfa-verify';
 import { ChevronDown } from 'lucide-react';
 import type { UserProfile, Features } from './auth-store';
@@ -204,7 +205,10 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
+      <div className="absolute right-4 top-4">
+        <LanguageSwitcher variant="icon" />
+      </div>
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">

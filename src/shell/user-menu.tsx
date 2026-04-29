@@ -15,14 +15,22 @@ import {
   DropdownMenuTrigger,
 } from '@/core/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/core/ui/avatar';
-import { Lock, LogOut, Sun, Moon, Monitor } from 'lucide-react';
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/core/i18n/i18n';
+import { Lock, LogOut, Sun, Moon, Monitor, Languages, Check } from 'lucide-react';
+
+const LANGUAGE_SHORT: Record<SupportedLanguage, string> = {
+  'es-419': 'ES',
+  'en-US': 'EN',
+  'pt-BR': 'PT',
+};
 
 export function UserMenu() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const setTheme = useUiStore((s) => s.setTheme);
+  const currentLang = (i18n.resolvedLanguage ?? i18n.language) as SupportedLanguage;
 
   const initials =
     user?.displayName
@@ -63,7 +71,7 @@ export function UserMenu() {
           <DropdownMenuSubTrigger>
             <Sun className="mr-2 h-4 w-4 dark:hidden" />
             <Moon className="mr-2 hidden h-4 w-4 dark:block" />
-            Theme
+            {t('theme.label', 'Theme')}
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuItem onClick={() => setTheme('light')}>
@@ -75,6 +83,27 @@ export function UserMenu() {
             <DropdownMenuItem onClick={() => setTheme('system')}>
               <Monitor className="mr-2 h-4 w-4" /> {t('theme.system')}
             </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger data-testid="user-menu-language-trigger">
+            <Languages className="mr-2 h-4 w-4" />
+            {t('language.label')}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {SUPPORTED_LANGUAGES.map((lng) => (
+              <DropdownMenuItem
+                key={lng}
+                onClick={() => void i18n.changeLanguage(lng)}
+                data-testid={`user-menu-language-${lng}`}
+              >
+                <span className="mr-2 inline-flex w-6 justify-center text-xs font-semibold text-muted-foreground">
+                  {LANGUAGE_SHORT[lng]}
+                </span>
+                <span className="flex-1">{t(`language.${lng}`)}</span>
+                {currentLang === lng && <Check className="ml-2 h-4 w-4" />}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuItem onClick={() => navigate('/admin/security')}>
