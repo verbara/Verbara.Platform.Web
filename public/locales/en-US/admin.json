@@ -730,6 +730,78 @@
         "margin": "Margin",
         "empty": "No trend data for the selected period."
       }
+    },
+    "customers": {
+      "title": "Customers",
+      "description": "Manage your partner customer accounts.",
+      "add": "Add customer",
+      "search_placeholder": "Search customers...",
+      "columns": {
+        "name": "Name",
+        "tenant_id": "Tenant ID",
+        "status": "Status",
+        "plan": "Plan",
+        "created": "Created"
+      },
+      "create_dialog": {
+        "title": "Add customer",
+        "description": "Provision a new customer tenant under your partner account.",
+        "tenant_id": "Tenant ID",
+        "tenant_id_placeholder": "acme-corp",
+        "display_name": "Display name",
+        "display_name_placeholder": "Acme Corp",
+        "plan": "Plan",
+        "template": "Template (optional)",
+        "template_none": "None",
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "create": "Create"
+      },
+      "edit_sheet": {
+        "title": "Edit customer",
+        "description": "Update customer settings and quotas.",
+        "name": "Name",
+        "max_channels": "Max concurrent channels",
+        "max_campaigns": "Max active campaigns",
+        "keep_current_placeholder": "Leave empty to keep current",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save changes"
+      }
+    },
+    "rate_cards": {
+      "title": "Rate Cards",
+      "description": "Define pricing for your customers.",
+      "new": "New rate card",
+      "search_placeholder": "Search rate cards...",
+      "form": {
+        "create_description": "Define partner pricing rates for usage types.",
+        "edit_description": "Update partner rate card.",
+        "name_placeholder": "Standard partner pricing"
+      }
+    },
+    "settings": {
+      "title": "Partner Settings",
+      "description": "Manage your partner account configuration.",
+      "edit": "Edit settings",
+      "loading": "Loading settings...",
+      "operational": "Operational settings",
+      "platform_name": "Platform name",
+      "default_timezone": "Default timezone",
+      "default_language": "Default language",
+      "managed_note": "Plan, quotas and rate limit tier are managed by the platform administrator.",
+      "edit_dialog": {
+        "title": "Edit partner settings",
+        "description": "Update operational settings for your partner account.",
+        "platform_name": "Platform name",
+        "default_timezone": "Default timezone",
+        "default_language": "Default language",
+        "tz_placeholder": "America/Bogota",
+        "lang_placeholder": "es-CO",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      }
     }
   },
   "tenants": {

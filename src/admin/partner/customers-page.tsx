@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus, Eye, Pause, Play, Pencil } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
@@ -60,6 +61,7 @@ const PLAN_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
 };
 
 export default function PartnerCustomersPage() {
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const { data: customers = [] } = usePartnerCustomers();
   const createCustomer = useCreatePartnerCustomer();
@@ -126,15 +128,15 @@ export default function PartnerCustomersPage() {
   const columns = useMemo(
     () => [
       col.accessor('name', {
-        header: () => 'Name',
+        header: () => t('partner.customers.columns.name'),
         cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
       col.accessor('tenantId', {
-        header: () => 'Tenant ID',
+        header: () => t('partner.customers.columns.tenant_id'),
         cell: (info) => <span className="font-mono text-xs">{info.getValue()}</span>,
       }),
       col.accessor('status', {
-        header: () => 'Status',
+        header: () => t('partner.customers.columns.status'),
         cell: (info) => (
           <Badge
             variant={STATUS_VARIANT[info.getValue()] ?? 'outline'}
@@ -145,7 +147,7 @@ export default function PartnerCustomersPage() {
         ),
       }),
       col.accessor('plan', {
-        header: () => 'Plan',
+        header: () => t('partner.customers.columns.plan'),
         cell: (info) => (
           <Badge variant={PLAN_VARIANT[info.getValue()] ?? 'outline'}>
             {info.getValue()}
@@ -153,7 +155,7 @@ export default function PartnerCustomersPage() {
         ),
       }),
       col.accessor('createdAt', {
-        header: () => 'Created',
+        header: () => t('partner.customers.columns.created'),
         cell: (info) => format(new Date(info.getValue()), 'MMM d, yyyy'),
       }),
       col.display({
@@ -222,50 +224,50 @@ export default function PartnerCustomersPage() {
         },
       }),
     ],
-    [navigate, activateCustomer],
+    [navigate, activateCustomer, t],
   );
 
   return (
     <div className="space-y-6" data-testid="partner-customers-page">
-      <PageHeader title="Customers" description="Manage your partner customer accounts.">
+      <PageHeader title={t('partner.customers.title')} description={t('partner.customers.description')}>
         <Button onClick={() => setCreateOpen(true)} data-testid="create-customer">
           <Plus className="mr-1.5 h-4 w-4" />
-          Add customer
+          {t('partner.customers.add')}
         </Button>
       </PageHeader>
 
-      <DataTable data={customers} columns={columns} searchPlaceholder="Search customers..." />
+      <DataTable data={customers} columns={columns} searchPlaceholder={t('partner.customers.search_placeholder')} />
 
       {/* Create Customer Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add customer</DialogTitle>
-            <DialogDescription>Provision a new customer tenant under your partner account.</DialogDescription>
+            <DialogTitle>{t('partner.customers.create_dialog.title')}</DialogTitle>
+            <DialogDescription>{t('partner.customers.create_dialog.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-4">
             <div className="space-y-1.5">
-              <Label htmlFor="cust-tid">Tenant ID</Label>
+              <Label htmlFor="cust-tid">{t('partner.customers.create_dialog.tenant_id')}</Label>
               <Input
                 id="cust-tid"
                 data-testid="customer-tenant-id"
                 value={formTenantId}
                 onChange={(e) => setFormTenantId(e.target.value)}
-                placeholder="acme-corp"
+                placeholder={t('partner.customers.create_dialog.tenant_id_placeholder')}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cust-name">Display name</Label>
+              <Label htmlFor="cust-name">{t('partner.customers.create_dialog.display_name')}</Label>
               <Input
                 id="cust-name"
                 data-testid="customer-name"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="Acme Corp"
+                placeholder={t('partner.customers.create_dialog.display_name_placeholder')}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Plan</Label>
+              <Label>{t('partner.customers.create_dialog.plan')}</Label>
               <Select value={formPlan} onValueChange={(v) => setFormPlan(v ?? 'Starter')}>
                 <SelectTrigger data-testid="customer-plan">
                   <SelectValue />
@@ -278,28 +280,28 @@ export default function PartnerCustomersPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Template (optional)</Label>
+              <Label>{t('partner.customers.create_dialog.template')}</Label>
               <Select value={formTemplate} onValueChange={(v) => setFormTemplate(v ?? 'none')}>
                 <SelectTrigger data-testid="customer-template">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {PARTNER_TEMPLATE_OPTIONS.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  <SelectItem value="none">{t('partner.customers.create_dialog.template_none')}</SelectItem>
+                  {PARTNER_TEMPLATE_OPTIONS.map((tmpl) => (
+                    <SelectItem key={tmpl} value={tmpl}>{tmpl}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>{t('partner.customers.create_dialog.cancel')}</Button>
             <Button
               onClick={handleCreate}
               disabled={!formTenantId.trim() || !formName.trim() || createCustomer.isPending}
               data-testid="customer-submit"
             >
-              {createCustomer.isPending ? 'Creating...' : 'Create'}
+              {createCustomer.isPending ? t('partner.customers.create_dialog.creating') : t('partner.customers.create_dialog.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -309,13 +311,13 @@ export default function PartnerCustomersPage() {
       <Sheet open={!!editing} onOpenChange={(open) => { if (!open) setEditing(undefined); }}>
         <SheetContent side="right" className="sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>Edit customer</SheetTitle>
-            <SheetDescription>Update customer settings and quotas.</SheetDescription>
+            <SheetTitle>{t('partner.customers.edit_sheet.title')}</SheetTitle>
+            <SheetDescription>{t('partner.customers.edit_sheet.description')}</SheetDescription>
           </SheetHeader>
           {editing && (
             <div className="space-y-3 px-4">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-name">Name</Label>
+                <Label htmlFor="edit-name">{t('partner.customers.edit_sheet.name')}</Label>
                 <Input
                   id="edit-name"
                   data-testid="edit-customer-name"
@@ -324,7 +326,7 @@ export default function PartnerCustomersPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-channels">Max concurrent channels</Label>
+                <Label htmlFor="edit-channels">{t('partner.customers.edit_sheet.max_channels')}</Label>
                 <Input
                   id="edit-channels"
                   type="number"
@@ -332,11 +334,11 @@ export default function PartnerCustomersPage() {
                   data-testid="edit-customer-max-channels"
                   value={editMaxChannels}
                   onChange={(e) => setEditMaxChannels(e.target.value)}
-                  placeholder="Leave empty to keep current"
+                  placeholder={t('partner.customers.edit_sheet.keep_current_placeholder')}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-campaigns">Max active campaigns</Label>
+                <Label htmlFor="edit-campaigns">{t('partner.customers.edit_sheet.max_campaigns')}</Label>
                 <Input
                   id="edit-campaigns"
                   type="number"
@@ -344,19 +346,19 @@ export default function PartnerCustomersPage() {
                   data-testid="edit-customer-max-campaigns"
                   value={editMaxCampaigns}
                   onChange={(e) => setEditMaxCampaigns(e.target.value)}
-                  placeholder="Leave empty to keep current"
+                  placeholder={t('partner.customers.edit_sheet.keep_current_placeholder')}
                 />
               </div>
             </div>
           )}
           <SheetFooter className="px-4">
-            <Button variant="outline" onClick={() => setEditing(undefined)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditing(undefined)}>{t('partner.customers.edit_sheet.cancel')}</Button>
             <Button
               onClick={handleEdit}
               disabled={updateCustomer.isPending}
               data-testid="edit-customer-submit"
             >
-              {updateCustomer.isPending ? 'Saving...' : 'Save changes'}
+              {updateCustomer.isPending ? t('partner.customers.edit_sheet.saving') : t('partner.customers.edit_sheet.save')}
             </Button>
           </SheetFooter>
         </SheetContent>

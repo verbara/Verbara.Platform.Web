@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
@@ -14,6 +15,7 @@ import type { RateCard } from '@/core/api/hooks/use-billing';
 const col = createColumnHelper<RateCard>();
 
 export default function PartnerRateCardsPage() {
+  const { t } = useTranslation('admin');
   const { data: rateCards = [] } = usePartnerRateCards();
   const deleteRc = useDeletePartnerRateCard();
 
@@ -24,30 +26,30 @@ export default function PartnerRateCardsPage() {
   const columns = useMemo(
     () => [
       col.accessor('name', {
-        header: () => 'Name',
+        header: () => t('billing.rate_cards.columns.name'),
         cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
       col.accessor('currency', {
-        header: () => 'Currency',
+        header: () => t('billing.rate_cards.columns.currency'),
         cell: (info) => info.getValue(),
       }),
       col.accessor('isDefault', {
-        header: () => 'Default',
-        cell: (info) => (info.getValue() ? <Badge variant="default">Default</Badge> : null),
+        header: () => t('billing.rate_cards.columns.default'),
+        cell: (info) => (info.getValue() ? <Badge variant="default">{t('billing.rate_cards.default_badge')}</Badge> : null),
       }),
       col.accessor('effectiveFrom', {
-        header: () => 'Effective from',
+        header: () => t('billing.rate_cards.columns.effective_from'),
         cell: (info) => format(new Date(info.getValue()), 'MMM d, yyyy'),
       }),
       col.accessor('effectiveTo', {
-        header: () => 'Effective to',
+        header: () => t('billing.rate_cards.columns.effective_to'),
         cell: (info) =>
           info.getValue() ? format(new Date(info.getValue()!), 'MMM d, yyyy') : '—',
       }),
       col.accessor('rates', {
-        header: () => 'Rates',
+        header: () => t('billing.rate_cards.columns.rates'),
         cell: (info) => (
-          <span className="text-muted-foreground">{info.getValue().length} entries</span>
+          <span className="text-muted-foreground">{t('billing.rate_cards.entries_count', { count: info.getValue().length })}</span>
         ),
       }),
       col.display({
@@ -82,19 +84,19 @@ export default function PartnerRateCardsPage() {
         ),
       }),
     ],
-    [],
+    [t],
   );
 
   return (
     <div className="space-y-6" data-testid="partner-rate-cards-page">
-      <PageHeader title="Rate Cards" description="Define pricing for your customers.">
+      <PageHeader title={t('partner.rate_cards.title')} description={t('partner.rate_cards.description')}>
         <Button onClick={() => setCreateOpen(true)} data-testid="create-partner-rate-card">
           <Plus className="mr-1.5 h-4 w-4" />
-          New rate card
+          {t('partner.rate_cards.new')}
         </Button>
       </PageHeader>
 
-      <DataTable data={rateCards} columns={columns} searchPlaceholder="Search rate cards..." />
+      <DataTable data={rateCards} columns={columns} searchPlaceholder={t('partner.rate_cards.search_placeholder')} />
 
       <PartnerRateCardForm open={createOpen} onOpenChange={setCreateOpen} mode="create" />
 

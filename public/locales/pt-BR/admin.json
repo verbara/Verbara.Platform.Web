@@ -685,6 +685,78 @@
         "margin": "Margem",
         "empty": "Sem dados de tendência no período selecionado."
       }
+    },
+    "customers": {
+      "title": "Clientes",
+      "description": "Gerencie as contas de seus clientes parceiros.",
+      "add": "Adicionar cliente",
+      "search_placeholder": "Pesquisar clientes...",
+      "columns": {
+        "name": "Nome",
+        "tenant_id": "ID do tenant",
+        "status": "Status",
+        "plan": "Plano",
+        "created": "Criado"
+      },
+      "create_dialog": {
+        "title": "Adicionar cliente",
+        "description": "Provisione um novo tenant cliente sob sua conta de parceiro.",
+        "tenant_id": "ID do tenant",
+        "tenant_id_placeholder": "acme-corp",
+        "display_name": "Nome de exibição",
+        "display_name_placeholder": "Acme Corp",
+        "plan": "Plano",
+        "template": "Template (opcional)",
+        "template_none": "Nenhum",
+        "cancel": "Cancelar",
+        "creating": "Criando...",
+        "create": "Criar"
+      },
+      "edit_sheet": {
+        "title": "Editar cliente",
+        "description": "Atualize as configurações e cotas do cliente.",
+        "name": "Nome",
+        "max_channels": "Máx. canais concorrentes",
+        "max_campaigns": "Máx. campanhas ativas",
+        "keep_current_placeholder": "Vazio para manter atual",
+        "cancel": "Cancelar",
+        "saving": "Salvando...",
+        "save": "Salvar alterações"
+      }
+    },
+    "rate_cards": {
+      "title": "Tarifários",
+      "description": "Defina os preços para seus clientes.",
+      "new": "Novo tarifário",
+      "search_placeholder": "Pesquisar tarifários...",
+      "form": {
+        "create_description": "Defina as tarifas de parceiro para os tipos de uso.",
+        "edit_description": "Atualize o tarifário de parceiro.",
+        "name_placeholder": "Tarifa padrão de parceiro"
+      }
+    },
+    "settings": {
+      "title": "Configurações de Parceiro",
+      "description": "Gerencie as configurações da sua conta de parceiro.",
+      "edit": "Editar configurações",
+      "loading": "Carregando configurações...",
+      "operational": "Configurações operacionais",
+      "platform_name": "Nome da plataforma",
+      "default_timezone": "Fuso horário padrão",
+      "default_language": "Idioma padrão",
+      "managed_note": "Plano, cotas e tier de rate limit são gerenciados pelo administrador da plataforma.",
+      "edit_dialog": {
+        "title": "Editar configurações de parceiro",
+        "description": "Atualize as configurações operacionais da sua conta de parceiro.",
+        "platform_name": "Nome da plataforma",
+        "default_timezone": "Fuso horário padrão",
+        "default_language": "Idioma padrão",
+        "tz_placeholder": "America/Sao_Paulo",
+        "lang_placeholder": "pt-BR",
+        "cancel": "Cancelar",
+        "saving": "Salvando...",
+        "save": "Salvar"
+      }
     }
   },
   "tenants": {

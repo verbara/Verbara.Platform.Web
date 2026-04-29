@@ -701,6 +701,78 @@
         "margin": "Margen",
         "empty": "No hay datos de tendencia en el periodo seleccionado."
       }
+    },
+    "customers": {
+      "title": "Clientes",
+      "description": "Gestione las cuentas de sus clientes partner.",
+      "add": "Agregar cliente",
+      "search_placeholder": "Buscar clientes...",
+      "columns": {
+        "name": "Nombre",
+        "tenant_id": "ID de tenant",
+        "status": "Estado",
+        "plan": "Plan",
+        "created": "Creado"
+      },
+      "create_dialog": {
+        "title": "Agregar cliente",
+        "description": "Aprovisione un nuevo tenant cliente bajo su cuenta partner.",
+        "tenant_id": "ID de tenant",
+        "tenant_id_placeholder": "acme-corp",
+        "display_name": "Nombre visible",
+        "display_name_placeholder": "Acme Corp",
+        "plan": "Plan",
+        "template": "Plantilla (opcional)",
+        "template_none": "Ninguna",
+        "cancel": "Cancelar",
+        "creating": "Creando...",
+        "create": "Crear"
+      },
+      "edit_sheet": {
+        "title": "Editar cliente",
+        "description": "Actualice la configuración y cuotas del cliente.",
+        "name": "Nombre",
+        "max_channels": "Máx. canales concurrentes",
+        "max_campaigns": "Máx. campañas activas",
+        "keep_current_placeholder": "Vacío para conservar actual",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Guardar cambios"
+      }
+    },
+    "rate_cards": {
+      "title": "Tarjetas de tarifa",
+      "description": "Defina los precios para sus clientes.",
+      "new": "Nueva tarjeta de tarifa",
+      "search_placeholder": "Buscar tarjetas de tarifa...",
+      "form": {
+        "create_description": "Defina tarifas de partner para tipos de uso.",
+        "edit_description": "Actualice la tarjeta de partner.",
+        "name_placeholder": "Tarifa estándar de partner"
+      }
+    },
+    "settings": {
+      "title": "Configuración de Partner",
+      "description": "Gestione la configuración de su cuenta partner.",
+      "edit": "Editar configuración",
+      "loading": "Cargando configuración...",
+      "operational": "Configuración operativa",
+      "platform_name": "Nombre de plataforma",
+      "default_timezone": "Zona horaria predeterminada",
+      "default_language": "Idioma predeterminado",
+      "managed_note": "El plan, las cuotas y el tier de rate limit los gestiona el administrador de la plataforma.",
+      "edit_dialog": {
+        "title": "Editar configuración de partner",
+        "description": "Actualice la configuración operativa de su cuenta partner.",
+        "platform_name": "Nombre de plataforma",
+        "default_timezone": "Zona horaria predeterminada",
+        "default_language": "Idioma predeterminado",
+        "tz_placeholder": "America/Bogota",
+        "lang_placeholder": "es-CO",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Guardar"
+      }
     }
   },
   "tenants": {

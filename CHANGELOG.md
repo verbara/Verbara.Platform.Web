@@ -13,6 +13,60 @@ _No unreleased changes._
 
 ---
 
+## [1.13.6] — 2026-04-29 — i18n Coverage Phase 4B (partner portal)
+
+**Closes the partner portal CRUD surfaces.** The 4 partner pages
+(customers, rate cards + form, settings) are how partner managers
+provision and price their downstream tenants — extracting hardcoded
+copy here unblocks Spanish/Portuguese partner deployments.
+
+### Refactored to `useTranslation`
+
+**`src/admin/partner/`**
+
+- `customers-page.tsx` — page header, Add customer CTA, 5 column
+  headers (Name, Tenant ID, Status, Plan, Created), search
+  placeholder, Create Customer dialog (full: title, description,
+  Tenant ID + placeholder, Display name + placeholder, Plan,
+  Template + None option, Cancel/Creating…/Create), Edit Customer
+  sheet (title, description, Name, Max channels/campaigns + shared
+  "Leave empty to keep current" placeholder, Cancel/Saving…/Save).
+- `partner-rate-cards-page.tsx` — page header, New CTA, search
+  placeholder. Column headers + Default badge + plural entries cell
+  reuse `billing.rate_cards.*` keys (identical copy).
+- `partner-rate-card-form.tsx` — sheet titles reuse
+  `billing.rate_cards.form.{create_title,edit_title}`; descriptions
+  and name placeholder are partner-specific (partner pricing /
+  Standard partner pricing). All other form labels (Name, Currency,
+  Effective from/to, Default rate card, Rate entries, Add rate,
+  Rate #, Unit price, Included qty, Select usage type, Create/Save)
+  reuse `billing.rate_cards.form.*` to avoid duplication.
+- `partner-settings-page.tsx` — page header, Edit settings CTA,
+  loading state, Operational settings heading, 3 Field labels
+  (Platform name, Default timezone, Default language), platform-
+  managed-by-admin note, Edit dialog (title/description, 3 input
+  labels with locale-aware tz/lang placeholders, Cancel/Saving…/
+  Save).
+
+### Locales
+
+Added under `admin.json` → `partner.{customers, rate_cards, settings}`
+(3 locales: es-419, en-US, pt-BR).
+
+`partner.rate_cards.form.{create_description, edit_description,
+name_placeholder}` are intentionally narrow — only partner-specific
+overrides; other rate-card form keys are shared with billing.
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+Admin section: 85/133 (64%) → 89/133 (67%).
+
+---
+
 ## [1.13.5] — 2026-04-29 — i18n Coverage Phase 4A (admin shared + billing)
 
 **Closes the billing surface and shared admin building blocks.** Rate
