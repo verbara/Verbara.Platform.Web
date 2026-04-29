@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   MessageSquare,
   Mail,
@@ -35,9 +36,9 @@ const stateColors: Record<string, string> = {
 };
 
 interface ConversationCardProps {
-  conversation: SupervisorConversation;
-  isSelected: boolean;
-  onClick: () => void;
+  readonly conversation: SupervisorConversation;
+  readonly isSelected: boolean;
+  readonly onClick: () => void;
 }
 
 function ConversationCard({ conversation, isSelected, onClick }: ConversationCardProps) {
@@ -69,6 +70,7 @@ function ConversationCard({ conversation, isSelected, onClick }: ConversationCar
 }
 
 export function DigitalMonitorTab() {
+  const { t } = useTranslation('operations');
   const { data } = useSupervisorConversations();
   const conversations = data?.items ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -80,7 +82,7 @@ export function DigitalMonitorTab() {
       <div className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto" data-testid="digital-conversations-list">
         {conversations.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No digital conversations
+            {t('monitor.no_digital_sessions')}
           </p>
         ) : (
           conversations.map((conv) => (
@@ -102,8 +104,8 @@ export function DigitalMonitorTab() {
           <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-border">
             <p className="text-sm text-muted-foreground">
               {conversations.length === 0
-                ? 'No digital conversations'
-                : 'Select a conversation to monitor.'}
+                ? t('monitor.no_digital_sessions')
+                : t('monitor.select_to_monitor')}
             </p>
           </div>
         )}

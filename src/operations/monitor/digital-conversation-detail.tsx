@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserCheck, X, MessageCircle, Send } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Textarea } from '@/core/ui/textarea';
@@ -12,10 +13,11 @@ import {
 } from '@/core/api/hooks/use-supervisor';
 
 interface DigitalConversationDetailProps {
-  conversation: SupervisorConversation;
+  readonly conversation: SupervisorConversation;
 }
 
 export function DigitalConversationDetail({ conversation }: DigitalConversationDetailProps) {
+  const { t } = useTranslation('operations');
   const { data: messages = [] } = useSupervisorMessages(conversation.id);
   const takeoverMutation = useTakeoverConversation();
   const closeMutation = useCloseDigitalConversation();
@@ -53,7 +55,7 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
             data-testid="digital-takeover-btn"
           >
             <UserCheck className="h-3.5 w-3.5" data-icon="inline-start" />
-            Takeover
+            {t('monitor.takeover')}
           </Button>
           <Button
             size="sm"
@@ -63,7 +65,7 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
             data-testid="digital-close-btn"
           >
             <X className="h-3.5 w-3.5" data-icon="inline-start" />
-            Close
+            {t('monitor.close')}
           </Button>
         </div>
       </div>
@@ -71,7 +73,7 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
       {/* Messages (read-only) */}
       <div className="flex-1 space-y-2 overflow-y-auto p-4" data-testid="digital-messages">
         {messages.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">No messages yet</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{t('monitor.no_messages_yet')}</p>
         ) : (
           messages.map((msg) => {
             const isAgent = msg.sender === 'agent';
@@ -105,13 +107,13 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
       <div className="border-t p-3">
         <div className="flex items-center gap-1 text-xs text-amber-600">
           <MessageCircle className="h-3.5 w-3.5" />
-          Coaching Note
+          {t('monitor.coaching_note_label')}
         </div>
         <div className="mt-1 flex gap-2">
           <Textarea
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
-            placeholder="Send a coaching note to the agent..."
+            placeholder={t('monitor.coaching_note_placeholder')}
             rows={2}
             className="flex-1"
             data-testid="digital-note-input"
@@ -131,26 +133,26 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
       <ConfirmDialog
         open={takeoverOpen}
         onOpenChange={setTakeoverOpen}
-        title="Takeover Conversation"
-        description="This will reassign the conversation to you. The current agent will be notified."
+        title={t('monitor.takeover_dialog_title')}
+        description={t('monitor.takeover_dialog_desc')}
         onConfirm={() => {
           takeoverMutation.mutate(conversation.id);
           setTakeoverOpen(false);
         }}
-        confirmLabel="Takeover"
+        confirmLabel={t('monitor.takeover')}
         variant="default"
       />
 
       <ConfirmDialog
         open={closeOpen}
         onOpenChange={setCloseOpen}
-        title="Close Conversation"
-        description="Close this conversation as supervisor?"
+        title={t('monitor.close_dialog_title')}
+        description={t('monitor.close_dialog_desc')}
         onConfirm={() => {
           closeMutation.mutate({ conversationId: conversation.id });
           setCloseOpen(false);
         }}
-        confirmLabel="Close"
+        confirmLabel={t('monitor.close')}
         variant="destructive"
       />
     </div>

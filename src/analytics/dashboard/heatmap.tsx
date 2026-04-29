@@ -1,33 +1,44 @@
+import { useTranslation } from 'react-i18next';
+
 export interface HeatmapCell {
-  dayOfWeek: number; // 0 = Monday … 6 = Sunday
-  hour: number;      // 0 – 23
+  dayOfWeek: number;
+  hour: number;
   value: number;
 }
 
 interface HeatmapProps {
-  title: string;
-  data: HeatmapCell[];
-  dayLabels?: string[];
-  emptyLabel?: string;
+  readonly title: string;
+  readonly data: HeatmapCell[];
+  readonly dayLabels?: string[];
+  readonly emptyLabel?: string;
 }
 
-const DEFAULT_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAY_KEYS = [
+  'dashboard.day_mon',
+  'dashboard.day_tue',
+  'dashboard.day_wed',
+  'dashboard.day_thu',
+  'dashboard.day_fri',
+  'dashboard.day_sat',
+  'dashboard.day_sun',
+];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 function interpolateBlue(ratio: number): string {
-  // Transparent → primary color using CSS opacity so dark mode adapts automatically
   return `hsl(var(--primary) / ${Math.round(ratio * 90 + 5)}%)`;
 }
 
 export function Heatmap({
   title,
   data,
-  dayLabels = DEFAULT_DAY_LABELS,
-  emptyLabel = 'No data available',
+  dayLabels,
+  emptyLabel,
 }: HeatmapProps) {
+  const { t } = useTranslation('analytics');
+  const resolvedDayLabels = dayLabels ?? DAY_KEYS.map((k) => t(k));
+  const resolvedEmptyLabel = emptyLabel ?? t('dashboard.no_data');
   const maxValue = data.length > 0 ? Math.max(...data.map((d) => d.value)) : 0;
 
-  // Build lookup: dayOfWeek → hour → value
   const lookup = new Map<number, Map<number, number>>();
   for (const cell of data) {
     if (!lookup.has(cell.dayOfWeek)) lookup.set(cell.dayOfWeek, new Map());
@@ -42,14 +53,13 @@ export function Heatmap({
 
       {isEmpty ? (
         <div className="flex h-44 items-center justify-center text-sm text-slate-400 dark:text-slate-500">
-          {emptyLabel}
+          {resolvedEmptyLabel}
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="border-separate border-spacing-[2px] text-xs">
             <thead>
               <tr>
-                {/* Corner spacer */}
                 <th className="w-10" />
                 {HOURS.map((h) => (
                   <th
@@ -62,7 +72,7 @@ export function Heatmap({
               </tr>
             </thead>
             <tbody>
-              {dayLabels.map((dayLabel, dayIndex) => (
+              {resolvedDayLabels.map((dayLabel, dayIndex) => (
                 <tr key={dayIndex}>
                   <td className="pr-2 text-right font-normal text-slate-500 dark:text-slate-400 whitespace-nowrap">
                     {dayLabel}

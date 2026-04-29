@@ -1,4 +1,5 @@
 import { useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQueueMetricsStore } from '@/operations/stores/queue-metrics-store';
 import { useQueueMetrics } from '@/core/api/hooks/use-queue-metrics';
 import { useAllLiveStates } from '@/core/api/hooks/use-analytics';
@@ -8,6 +9,7 @@ import { KioskWrapper } from '@/operations/wallboard/kiosk-wrapper';
 import { MetricsAvailabilityBanner } from '@/core/ui/metrics-availability-banner';
 
 export default function WallboardPage() {
+  const { t } = useTranslation('operations');
   const { queues, totalActive, totalAgents, globalSla, setQueues } = useQueueMetricsStore();
   const { data: apiMetrics } = useQueueMetrics();
   const { data: liveStates = [] } = useAllLiveStates();
@@ -43,7 +45,7 @@ export default function WallboardPage() {
         {sortedQueues.length === 0 ? (
           <div className="col-span-full rounded-lg border border-dashed p-8 text-center">
             <p className="text-sm text-muted-foreground">
-              No queue metrics yet. Cards will appear once calls are routed.
+              {t('wallboard.empty')}
             </p>
           </div>
         ) : (
@@ -54,7 +56,7 @@ export default function WallboardPage() {
       {liveStates.length > 0 && (
         <div className="space-y-3" data-testid="wallboard-live-states">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Live Queue States
+            {t('wallboard.live_queue_states')}
           </h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {liveStates.map((state) => (
@@ -62,32 +64,32 @@ export default function WallboardPage() {
                 <p className="text-sm font-semibold truncate">{state.queueName}</p>
                 <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-muted-foreground">Waiting</span>
+                    <span className="text-muted-foreground">{t('wallboard.waiting')}</span>
                     <p className={`text-lg font-bold ${state.callsWaiting > 5 ? 'text-red-500' : 'text-foreground'}`}>
                       {state.callsWaiting}
                     </p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Longest Wait</span>
+                    <span className="text-muted-foreground">{t('wallboard.longest_wait')}</span>
                     <p className="text-lg font-bold">
                       {Math.round(state.longestWaitMs / 1000)}s
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-muted-foreground">Available: {state.agentsAvailable}</span>
+                    <span className="text-muted-foreground">{t('wallboard.available')}: {state.agentsAvailable}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-red-500" />
-                    <span className="text-muted-foreground">On Call: {state.agentsOnCall}</span>
+                    <span className="text-muted-foreground">{t('wallboard.on_call')}: {state.agentsOnCall}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-amber-500" />
-                    <span className="text-muted-foreground">Paused: {state.agentsPaused}</span>
+                    <span className="text-muted-foreground">{t('wallboard.paused')}: {state.agentsPaused}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-purple-500" />
-                    <span className="text-muted-foreground">Wrap-Up: {state.agentsInWrapUp}</span>
+                    <span className="text-muted-foreground">{t('wallboard.wrap_up')}: {state.agentsInWrapUp}</span>
                   </div>
                 </div>
               </div>

@@ -18,6 +18,10 @@
     "away": "Away",
     "longest_wait": "Longest Wait",
     "wrap_up": "Wrap-up",
+    "on_call": "On Call",
+    "paused": "Paused",
+    "live_queue_states": "Live Queue States",
+    "empty": "No queue metrics yet. Cards will appear once calls are routed.",
     "kiosk_enter": "Kiosk Mode",
     "kiosk_exit": "Exit (Esc)",
     "metrics_unavailable": "Live metrics unavailable — historical data may be stale."
@@ -37,7 +41,18 @@
     "noSessions": "No active AI-assisted calls",
     "whisperPlaceholder": "Type whisper message...",
     "send": "Send Whisper",
-    "listening": "Listening"
+    "listening": "Listening",
+    "no_digital_sessions": "No digital conversations",
+    "select_to_monitor": "Select a conversation to monitor.",
+    "no_messages_yet": "No messages yet",
+    "takeover": "Takeover",
+    "close": "Close",
+    "coaching_note_label": "Coaching Note",
+    "coaching_note_placeholder": "Send a coaching note to the agent...",
+    "takeover_dialog_title": "Takeover Conversation",
+    "takeover_dialog_desc": "This will reassign the conversation to the supervisor and replace the current agent.",
+    "close_dialog_title": "Close Conversation",
+    "close_dialog_desc": "Close this conversation as supervisor?"
   },
   "campaigns": {
     "title": "Campaign Monitor",

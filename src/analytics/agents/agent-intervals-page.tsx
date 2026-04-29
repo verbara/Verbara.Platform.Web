@@ -1,12 +1,14 @@
+import { useTranslation } from 'react-i18next';
 import { useAgentIntervals } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 import { PageHeader } from '@/admin/shared/page-header';
 
 function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof useAgentIntervals>['data'] & object[] }) {
+  const { t } = useTranslation('analytics');
   if (intervals.length === 0) {
     return (
       <div data-testid="agent-intervals-table" className="rounded-lg border border-dashed p-8 text-center">
-        <p className="text-sm text-muted-foreground">No agent interval data for this period.</p>
+        <p className="text-sm text-muted-foreground">{t('agent_intervals.empty')}</p>
       </div>
     );
   }
@@ -15,13 +17,13 @@ function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof us
       <table className="w-full text-sm">
         <thead className="border-b bg-muted/50">
           <tr>
-            <th className="px-4 py-2 text-left font-medium">Agent</th>
-            <th className="px-4 py-2 text-left font-medium">Interval</th>
-            <th className="px-4 py-2 text-right font-medium">Handled</th>
-            <th className="px-4 py-2 text-right font-medium">AHT</th>
-            <th className="px-4 py-2 text-right font-medium">Occupancy</th>
-            <th className="px-4 py-2 text-right font-medium">RNA</th>
-            <th className="px-4 py-2 text-right font-medium">Transfers</th>
+            <th className="px-4 py-2 text-left font-medium">{t('agent_intervals.col_agent')}</th>
+            <th className="px-4 py-2 text-left font-medium">{t('agent_intervals.col_interval')}</th>
+            <th className="px-4 py-2 text-right font-medium">{t('agent_intervals.col_handled')}</th>
+            <th className="px-4 py-2 text-right font-medium">{t('agent_intervals.col_aht')}</th>
+            <th className="px-4 py-2 text-right font-medium">{t('agent_intervals.col_occupancy')}</th>
+            <th className="px-4 py-2 text-right font-medium">{t('agent_intervals.col_rna')}</th>
+            <th className="px-4 py-2 text-right font-medium">{t('agent_intervals.col_transfers')}</th>
           </tr>
         </thead>
         <tbody>
@@ -43,14 +45,15 @@ function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof us
 }
 
 export default function AgentIntervalsPage() {
+  const { t } = useTranslation('analytics');
   const { from, to } = useAnalyticsFilterStore();
   const { data: intervals = [], isLoading } = useAgentIntervals({ from, to });
 
   return (
     <div className="space-y-6" data-testid="agent-intervals-page">
-      <PageHeader title="Agent Intervals" />
+      <PageHeader title={t('agent_intervals.title')} />
       {isLoading
-        ? <p className="text-sm text-muted-foreground">Loading...</p>
+        ? <p className="text-sm text-muted-foreground">{t('intervals.loading')}</p>
         : <IntervalTable intervals={intervals} />
       }
     </div>

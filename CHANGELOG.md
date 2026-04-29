@@ -13,6 +13,80 @@ _No unreleased changes._
 
 ---
 
+## [1.13.4] — 2026-04-28 — i18n Coverage Phase 3 (analytics + operations)
+
+**Closes the highest-traffic supervisor surfaces.** The wallboard,
+digital monitor, and analytics dashboards are the screens supervisors
+and managers spend the most time on. Phase 3 extracts hardcoded strings
+across the analytics dashboard, agent intervals, CDR transcript, and
+operations digital-monitor + wallboard live states.
+
+### Refactored to `useTranslation`
+
+**`src/analytics/`**
+
+- `agents/agent-intervals-page.tsx` — page title (`Agent Intervals`),
+  table headers (Agent, Interval, Handled, AHT, Occupancy, RNA,
+  Transfers), empty state, loading state.
+- `dashboard/overlay-chart.tsx` — `volumeLabel` / `slaLabel` /
+  `emptyLabel` props now fall back to translated `dashboard.volume_label`
+  / `dashboard.sla_label` / `dashboard.no_data` instead of hardcoded
+  English defaults.
+- `dashboard/current-interval-card.tsx` — title + 4 metric labels
+  (Offered, Answered, SLA, AHT).
+- `dashboard/bot-analytics-card.tsx` — card title (`Bot Performance`),
+  4 KPI labels, 3 progress-bar tooltip prefixes, 3 legend labels.
+- `dashboard/heatmap.tsx` — `dayLabels` prop now defaults to translated
+  `dashboard.day_*` keys; `emptyLabel` falls back to `dashboard.no_data`.
+- `cdr/synced-transcript.tsx` — speaker badges (Agent / Caller).
+
+**`src/operations/`**
+
+- `monitor/digital-conversation-detail.tsx` — Takeover / Close buttons,
+  empty state ("No messages yet"), Coaching Note label + placeholder,
+  Takeover dialog title + description, Close dialog title + description.
+- `monitor/digital-monitor-tab.tsx` — empty list message, "Select a
+  conversation to monitor" instruction.
+- `wallboard/wallboard-page.tsx` — empty state, "Live Queue States"
+  heading, plus 4 inline labels (Available, On Call, Paused, Wrap-Up)
+  on each live-state card.
+
+### Skipped (no user strings)
+
+- `analytics/dashboard/kpi-card.tsx`, `trend-chart.tsx` — pure
+  prop-renderers / composition.
+- `analytics/cdr/waveform-player.tsx`, `audio-player.tsx` — only
+  numeric speed selectors and timer formatting.
+- `analytics/qa/score-gauge.tsx` — pure numeric data display.
+- `operations/monitor/session-card.tsx` — pure data render.
+
+### Added translation keys
+
+**`analytics.json`** (3 locales):
+- `agent_intervals.{title,col_agent,col_interval,col_handled,col_aht,col_occupancy,col_rna,col_transfers,empty}`
+- `current_interval.{title,offered,answered,sla,aht}`
+- `bot_analytics.{title,conversations,resolution,handoff,avg_turns,resolved_prefix,handed_off_prefix,failed_prefix,resolved_label,handoff_label,failed_label}`
+- `transcript.{agent,caller}`
+
+**`operations.json`** (3 locales):
+- `monitor.{no_digital_sessions,select_to_monitor,no_messages_yet,takeover,close,coaching_note_label,coaching_note_placeholder,takeover_dialog_title,takeover_dialog_desc,close_dialog_title,close_dialog_desc}`
+- `wallboard.{on_call,paused,live_queue_states,empty}`
+
+### Tests
+
+- 199/199 Vitest unchanged · 0 TS errors · 42 test files.
+
+### Coverage check
+
+analytics/ moved from 12/24 (50 %) to **18/24 (75 %)**; operations/
+moved from 10/14 (71 %) to **13/14 (93 %)**. The remaining 6 files
+across both areas are pure data-display / composition with no user
+strings. Repo-wide: **153/267 ≈ 57 %** (was 144/267 ≈ 54 %).
+Visibility-weighted gain is again significantly larger because the
+wallboard + digital monitor are the supervisor's daily home screens.
+
+---
+
 ## [1.13.3] — 2026-04-28 — i18n Coverage Phase 2 (agent workspace)
 
 **Closes the agent workspace gap.** The agent UI is the highest-traffic

@@ -18,6 +18,10 @@
     "away": "Ausentes",
     "longest_wait": "Maior espera",
     "wrap_up": "Pos-atendimento",
+    "on_call": "Em chamada",
+    "paused": "Pausados",
+    "live_queue_states": "Estados de filas em tempo real",
+    "empty": "Sem métricas de fila ainda. Os cartões aparecerão quando as chamadas forem encaminhadas.",
     "kiosk_enter": "Modo quiosque",
     "kiosk_exit": "Sair (Esc)",
     "metrics_unavailable": "Metricas ao vivo indisponiveis — dados historicos podem estar desatualizados."
@@ -37,7 +41,18 @@
     "noSessions": "Nenhuma chamada ativa com assistencia de IA",
     "whisperPlaceholder": "Digite uma mensagem de sussurro...",
     "send": "Enviar sussurro",
-    "listening": "Ouvindo"
+    "listening": "Ouvindo",
+    "no_digital_sessions": "Sem conversas digitais",
+    "select_to_monitor": "Selecione uma conversa para monitorar.",
+    "no_messages_yet": "Sem mensagens ainda",
+    "takeover": "Assumir",
+    "close": "Fechar",
+    "coaching_note_label": "Nota de coaching",
+    "coaching_note_placeholder": "Envie uma nota de coaching ao agente...",
+    "takeover_dialog_title": "Assumir conversa",
+    "takeover_dialog_desc": "Isso reatribuirá a conversa ao supervisor e substituirá o agente atual.",
+    "close_dialog_title": "Fechar conversa",
+    "close_dialog_desc": "Fechar esta conversa como supervisor?"
   },
   "campaigns": {
     "title": "Monitor de campanhas",

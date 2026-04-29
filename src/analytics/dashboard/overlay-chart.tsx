@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   ComposedChart,
   Bar,
@@ -17,26 +18,31 @@ export interface OverlayChartPoint {
 }
 
 interface OverlayChartProps {
-  title: string;
-  data: OverlayChartPoint[];
-  volumeLabel?: string;
-  slaLabel?: string;
-  emptyLabel?: string;
+  readonly title: string;
+  readonly data: OverlayChartPoint[];
+  readonly volumeLabel?: string;
+  readonly slaLabel?: string;
+  readonly emptyLabel?: string;
 }
 
 export function OverlayChart({
   title,
   data,
-  volumeLabel = 'Volume',
-  slaLabel = 'SLA %',
-  emptyLabel = 'No data available',
+  volumeLabel,
+  slaLabel,
+  emptyLabel,
 }: OverlayChartProps) {
+  const { t } = useTranslation('analytics');
+  const resolvedVolumeLabel = volumeLabel ?? t('dashboard.volume_label');
+  const resolvedSlaLabel = slaLabel ?? t('dashboard.sla_label');
+  const resolvedEmptyLabel = emptyLabel ?? t('dashboard.no_data');
+
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
       <p className="mb-4 text-sm font-medium text-slate-700 dark:text-slate-300">{title}</p>
       {data.length === 0 ? (
         <div className="flex h-[300px] items-center justify-center text-sm text-slate-400 dark:text-slate-500">
-          {emptyLabel}
+          {resolvedEmptyLabel}
         </div>
       ) : (
         <div className="h-[300px]">
@@ -62,7 +68,7 @@ export function OverlayChart({
               <Tooltip
                 formatter={(value, name) => {
                   const num = typeof value === 'number' ? value : Number(value);
-                  return String(name) === slaLabel
+                  return String(name) === resolvedSlaLabel
                     ? [`${num.toFixed(1)}%`, name]
                     : [num, name];
                 }}
@@ -71,7 +77,7 @@ export function OverlayChart({
               <Bar
                 yAxisId="left"
                 dataKey="volume"
-                name={volumeLabel}
+                name={resolvedVolumeLabel}
                 fill="hsl(var(--chart-1))"
                 radius={[3, 3, 0, 0]}
                 maxBarSize={40}
@@ -80,7 +86,7 @@ export function OverlayChart({
                 yAxisId="right"
                 type="monotone"
                 dataKey="slaPercent"
-                name={slaLabel}
+                name={resolvedSlaLabel}
                 stroke="hsl(var(--chart-2))"
                 strokeWidth={2}
                 dot={{ r: 3, fill: 'hsl(var(--chart-2))' }}

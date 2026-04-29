@@ -34,6 +34,41 @@
     "prev": "Prev",
     "next": "Next"
   },
+  "agent_intervals": {
+    "title": "Agent Intervals",
+    "col_agent": "Agent",
+    "col_interval": "Interval",
+    "col_handled": "Handled",
+    "col_aht": "AHT",
+    "col_occupancy": "Occupancy",
+    "col_rna": "RNA",
+    "col_transfers": "Transfers",
+    "empty": "No agent interval data for this period."
+  },
+  "current_interval": {
+    "title": "Current Interval",
+    "offered": "Offered",
+    "answered": "Answered",
+    "sla": "SLA",
+    "aht": "AHT"
+  },
+  "bot_analytics": {
+    "title": "Bot Performance",
+    "conversations": "Conversations",
+    "resolution": "Resolution",
+    "handoff": "Handoff",
+    "avg_turns": "Avg Turns",
+    "resolved_prefix": "Resolved: ",
+    "handed_off_prefix": "Handed off: ",
+    "failed_prefix": "Failed: ",
+    "resolved_label": "Resolved (",
+    "handoff_label": "Handoff (",
+    "failed_label": "Failed ("
+  },
+  "transcript": {
+    "agent": "Agent",
+    "caller": "Caller"
+  },
   "export": { "csv": "Export CSV" },
   "speechAnalytics": {
     "title": "Speech Analytics",

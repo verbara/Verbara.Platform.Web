@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { TranscriptSegment } from '@/core/api/hooks/use-analytics';
 
 function formatTimestamp(seconds: number): string {
@@ -8,12 +9,13 @@ function formatTimestamp(seconds: number): string {
 }
 
 interface SyncedTranscriptProps {
-  segments: TranscriptSegment[];
-  currentTime: number;
-  onSeek: (time: number) => void;
+  readonly segments: TranscriptSegment[];
+  readonly currentTime: number;
+  readonly onSeek: (time: number) => void;
 }
 
 export function SyncedTranscript({ segments, currentTime, onSeek }: SyncedTranscriptProps) {
+  const { t } = useTranslation('analytics');
   const activeIndex = segments.findIndex(
     (seg) => currentTime >= seg.startTime && currentTime < seg.endTime,
   );
@@ -56,7 +58,7 @@ export function SyncedTranscript({ segments, currentTime, onSeek }: SyncedTransc
                   : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
               ].join(' ')}
             >
-              {isAgent ? 'Agent' : 'Caller'}
+              {isAgent ? t('transcript.agent') : t('transcript.caller')}
             </span>
             <span className="flex-1 text-xs leading-relaxed text-foreground">{seg.text}</span>
           </button>
