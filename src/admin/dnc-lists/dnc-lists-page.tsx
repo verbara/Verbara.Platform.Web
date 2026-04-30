@@ -160,7 +160,7 @@ export default function DncListsPage() {
           });
         }}
         entityName={deletingList?.name ?? ''}
-        entityType="DNC List"
+        entityType={t('dnc-lists.entity_type')}
         isPending={deleteDncList.isPending}
       />
 

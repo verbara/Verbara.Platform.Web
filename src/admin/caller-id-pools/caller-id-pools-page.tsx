@@ -134,7 +134,7 @@ export default function CallerIdPoolsPage() {
           });
         }}
         entityName={deletingPool?.name ?? ''}
-        entityType="Caller ID Pool"
+        entityType={t('caller-id-pools.entity_type')}
         isPending={deletePool.isPending}
       />
 

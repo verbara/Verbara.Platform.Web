@@ -994,7 +994,8 @@
         "create_description": "Define partner pricing rates for usage types.",
         "edit_description": "Update partner rate card.",
         "name_placeholder": "Standard partner pricing"
-      }
+      },
+      "entity_type": "partner rate card"
     },
     "settings": {
       "title": "Partner Settings",
@@ -1128,7 +1129,8 @@
         "cancel": "Cancel",
         "saving": "Saving...",
         "submit": "Update"
-      }
+      },
+      "entity_type": "tenant"
     }
   },
   "shared": {
@@ -1199,7 +1201,8 @@
         "included_qty": "Included qty",
         "create": "Create",
         "save": "Save"
-      }
+      },
+      "entity_label": "rate card"
     },
     "invoices": {
       "title": "Invoices",
@@ -1704,7 +1707,9 @@
       "purge_user_heading": "Purge User Data",
       "result_heading": "Purge Complete",
       "result_purge_id": "Purge ID: <0>{{id}}</0>",
-      "result_entity_line": "{{entity}}: {{count}} deleted"
+      "result_entity_line": "{{entity}}: {{count}} deleted",
+      "contact_entity_type": "contact data",
+      "user_entity_type": "user data"
     }
   },
   "purge-log": {

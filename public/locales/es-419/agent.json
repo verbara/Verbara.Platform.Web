@@ -78,7 +78,8 @@
     "copied": "Copiado al portapapeles",
     "notes_placeholder": "Agregar una nota...",
     "save_note": "Guardar nota",
-    "delete_note": "Eliminar nota"
+    "delete_note": "Eliminar nota",
+    "contact_entity_type": "contacto"
   },
   "ai": {
     "suggestion": "Sugerencia",

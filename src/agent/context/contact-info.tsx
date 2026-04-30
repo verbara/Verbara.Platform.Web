@@ -172,7 +172,7 @@ export function ContactInfo() {
           });
         }}
         entityName={[contact.firstName, contact.lastName].filter(Boolean).join(' ') || contact.id}
-        entityType="Contact"
+        entityType={t('context.contact_entity_type')}
         isPending={deleteContact.isPending}
       />
 

@@ -78,7 +78,8 @@
     "copied": "Copiado para a área de transferência",
     "notes_placeholder": "Adicionar uma nota...",
     "save_note": "Salvar nota",
-    "delete_note": "Excluir nota"
+    "delete_note": "Excluir nota",
+    "contact_entity_type": "contato"
   },
   "ai": {
     "suggestion": "Sugestão",

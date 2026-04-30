@@ -1,6 +1,40 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 
+// ─── Mock i18n ───────────────────────────────────────────────────────────────
+// Serves the few keys this dialog reads with their English values so test
+// assertions remain string-readable (`'Delete'`, `/Wait/`) rather than coupled
+// to internal key names.
+vi.mock('react-i18next', () => {
+  const TABLE: Record<string, string> = {
+    'confirm_delete_dialog.title': 'Delete {{entityType}}?',
+    'confirm_delete_dialog.description_prefix': 'Are you sure you want to delete ',
+    'confirm_delete_dialog.description_suffix': '? This action cannot be undone.',
+    'confirm_delete_dialog.type_to_confirm_prefix': 'Type ',
+    'confirm_delete_dialog.type_to_confirm_suffix': ' to confirm.',
+    'confirm_delete_dialog.cancel': 'Cancel',
+    'confirm_delete_dialog.delete': 'Delete',
+    'confirm_delete_dialog.deleting': 'Deleting...',
+    'confirm_delete_dialog.wait_seconds': 'Wait {{seconds}}s...',
+  };
+  return {
+    useTranslation: () => ({
+      t: (key: string, opts?: unknown) => {
+        const tpl = TABLE[key] ?? key;
+        if (opts && typeof opts === 'object') {
+          return Object.entries(opts as Record<string, unknown>).reduce(
+            (s, [k, v]) => s.replace(`{{${k}}}`, String(v)),
+            tpl,
+          );
+        }
+        return tpl;
+      },
+      i18n: { changeLanguage: vi.fn() },
+    }),
+    Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
+  };
+});
+
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 
 describe('ConfirmDeleteDialog — confirmationWord prop', () => {

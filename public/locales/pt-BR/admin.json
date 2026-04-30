@@ -949,7 +949,8 @@
         "create_description": "Defina as tarifas de parceiro para os tipos de uso.",
         "edit_description": "Atualize o tarifário de parceiro.",
         "name_placeholder": "Tarifa padrão de parceiro"
-      }
+      },
+      "entity_type": "tarifário de parceiro"
     },
     "settings": {
       "title": "Configurações de Parceiro",
@@ -1083,7 +1084,8 @@
         "cancel": "Cancelar",
         "saving": "Salvando...",
         "submit": "Atualizar"
-      }
+      },
+      "entity_type": "tenant"
     }
   },
   "shared": {
@@ -1154,7 +1156,8 @@
         "included_qty": "Qtd. incluída",
         "create": "Criar",
         "save": "Salvar"
-      }
+      },
+      "entity_label": "tarifário"
     },
     "invoices": {
       "title": "Faturas",
@@ -1659,7 +1662,9 @@
       "purge_user_heading": "Purgar dados de usuário",
       "result_heading": "Purga concluída",
       "result_purge_id": "ID de purga: <0>{{id}}</0>",
-      "result_entity_line": "{{entity}}: {{count}} excluídos"
+      "result_entity_line": "{{entity}}: {{count}} excluídos",
+      "contact_entity_type": "dados do contato",
+      "user_entity_type": "dados do usuário"
     }
   },
   "purge-log": {

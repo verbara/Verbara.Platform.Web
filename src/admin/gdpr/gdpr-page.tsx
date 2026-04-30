@@ -354,7 +354,7 @@ export default function GdprPage() {
         onOpenChange={setShowConfirm}
         onConfirm={handlePurgeConfirm}
         entityName={contactIdPurge}
-        entityType="contact data"
+        entityType={t('gdpr.purge.contact_entity_type')}
         isPending={gdprPurge.isPending}
       />
 
@@ -363,7 +363,7 @@ export default function GdprPage() {
         onOpenChange={setShowUserConfirm}
         onConfirm={handleUserPurgeConfirm}
         entityName={userIdPurge}
-        entityType="user data"
+        entityType={t('gdpr.purge.user_entity_type')}
         isPending={gdprPurgeUser.isPending}
       />
     </div>

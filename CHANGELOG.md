@@ -13,6 +13,90 @@ _No unreleased changes._
 
 ---
 
+## [1.13.12] — 2026-04-30 — i18n Coverage Phase 4G (confirm-delete-dialog + 9 callers)
+
+**Translates the shared deletion dialog and migrates 9 already-i18n'd
+callers to pass localized `entityType` props.** Until now those
+callers were passing English nouns (e.g. `"rate card"`,
+`"Caller ID Pool"`) into a hardcoded English template, producing
+broken Spanglish like "Delete tarjeta de tarifa?" once the rest of
+the page was translated. This phase closes that loop for the 9
+callers whose containing pages are already localized; the remaining
+~10 callers (bots, surveys, reports, etc.) will be migrated when
+their respective pages are i18n'd in later phases.
+
+### Refactored to `useTranslation`
+
+**`src/core/ui/confirm-delete-dialog.tsx`** — sources all dialog
+strings from `common.confirm_delete_dialog.*`. Title interpolates
+the caller-provided `entityType`. Description uses split prefix /
+suffix around the bolded entity name. The confirmation-word path
+(used for high-stakes deletes like cluster force-drain) translates
+the "Type X to confirm." instruction. Button label cycles through
+`Wait {{seconds}}s...` → `Delete` → `Deleting...`.
+
+### Migrated callers (9 files, 10 dialog instances)
+
+- `src/agent/context/contact-info.tsx` — "Contact" →
+  `agent.context.contact_entity_type`.
+- `src/admin/billing/rate-cards-page.tsx` — "rate card" →
+  `admin.billing.rate_cards.entity_label` (re-introduced after
+  Phase 4A pruning, now with a real consumer).
+- `src/admin/partner/partner-rate-cards-page.tsx` — "rate card" →
+  `admin.partner.rate_cards.entity_type` (partner-specific so
+  Spanish can read "tarjeta de tarifa de partner" vs. plain
+  "tarjeta de tarifa").
+- `src/admin/caller-id-pools/caller-id-pools-page.tsx` — "Caller
+  ID Pool" → existing `admin.caller-id-pools.entity_type`.
+- `src/admin/holiday-calendars/holiday-calendars-page.tsx` →
+  existing `admin.holiday-calendars.entity_type`.
+- `src/admin/dnc-lists/dnc-lists-page.tsx` → existing
+  `admin.dnc-lists.entity_type`.
+- `src/admin/tenants/tenants-page.tsx` — "tenant" →
+  `admin.tenants.list.entity_type`.
+- `src/admin/cluster/cluster-page.tsx` — TWO instances: regular
+  remove (`admin.cluster.remove_entity`) and force-drain
+  (`admin.cluster.force_drain_entity`, also keeps the literal
+  `confirmationWord="FORCE"` typed-gate, untranslated by design).
+- `src/admin/gdpr/gdpr-page.tsx` — TWO instances: contact-data
+  (`admin.gdpr.purge.contact_entity_type`) and user-data
+  (`admin.gdpr.purge.user_entity_type`).
+
+### Locales
+
+- `common.confirm_delete_dialog.{title, description_prefix,
+  description_suffix, type_to_confirm_prefix,
+  type_to_confirm_suffix, cancel, delete, deleting, wait_seconds}`
+  added in 3 locales.
+- New entity nouns: `agent.context.contact_entity_type`,
+  `admin.billing.rate_cards.entity_label`,
+  `admin.partner.rate_cards.entity_type`,
+  `admin.tenants.list.entity_type`,
+  `admin.gdpr.purge.contact_entity_type`,
+  `admin.gdpr.purge.user_entity_type`.
+
+### Test mocks
+
+`tests/unit/core/ui/confirm-delete-dialog.test.tsx` — adds a
+`react-i18next` mock with a small lookup table mapping the dialog's
+9 keys back to their English values. This keeps existing
+assertions (`expect(btn.textContent).toBe('Delete')` and
+`/Wait/`) passing without coupling the test to internal key names.
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+`core/ui/confirm-delete-dialog` (1 file) is now translated;
+9 callers migrated. The remaining ~10 untranslated callers will
+be migrated as their respective pages get i18n'd (bots, surveys,
+reports, roles, routes, trunks, webhooks, canned-responses,
+campaigns/campaign-detail).
+
+---
+
 ## [1.13.11] — 2026-04-29 — i18n Coverage Phase 4E-2 (DNC lists + GDPR)
 
 **Closes the compliance surfaces.** DNC list management (CRUD +

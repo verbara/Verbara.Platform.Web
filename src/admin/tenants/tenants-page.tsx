@@ -377,7 +377,7 @@ export default function TenantsPage() {
         onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
         onConfirm={handleDeleteConfirm}
         entityName={deleteTarget?.name ?? ''}
-        entityType="tenant"
+        entityType={t('tenants.list.entity_type')}
       />
 
       {/* Suspend confirm dialog */}

@@ -138,5 +138,16 @@
     "operating_as": "Operando como",
     "read_only": "Somente leitura",
     "end": "Encerrar personificação"
+  },
+  "confirm_delete_dialog": {
+    "title": "Excluir {{entityType}}?",
+    "description_prefix": "Tem certeza de que deseja excluir ",
+    "description_suffix": "? Esta ação não pode ser desfeita.",
+    "type_to_confirm_prefix": "Digite ",
+    "type_to_confirm_suffix": " para confirmar.",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "deleting": "Excluindo...",
+    "wait_seconds": "Aguarde {{seconds}}s..."
   }
 }

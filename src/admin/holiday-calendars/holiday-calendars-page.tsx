@@ -136,7 +136,7 @@ export default function HolidayCalendarsPage() {
           });
         }}
         entityName={deletingCalendar?.name ?? ''}
-        entityType="Holiday Calendar"
+        entityType={t('holiday-calendars.entity_type')}
         isPending={deleteCalendar.isPending}
       />
 

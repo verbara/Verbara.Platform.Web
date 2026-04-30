@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -39,6 +40,7 @@ export function ConfirmDeleteDialog({
   isPending = false,
   confirmationWord,
 }: ConfirmDeleteDialogProps) {
+  const { t } = useTranslation('common');
   const useWord = typeof confirmationWord === 'string' && confirmationWord.length > 0;
   const [countdown, setCountdown] = useState(3);
   const [typed, setTyped] = useState('');
@@ -75,9 +77,9 @@ export function ConfirmDeleteDialog({
   const deleteDisabled = isPending || (useWord ? !wordMatches : countdown > 0);
 
   const computeButtonLabel = (): string => {
-    if (isPending) return 'Deleting...';
-    if (!useWord && countdown > 0) return `Wait ${countdown}s...`;
-    return 'Delete';
+    if (isPending) return t('confirm_delete_dialog.deleting');
+    if (!useWord && countdown > 0) return t('confirm_delete_dialog.wait_seconds', { seconds: countdown });
+    return t('confirm_delete_dialog.delete');
   };
   const buttonLabel = computeButtonLabel();
 
@@ -89,21 +91,20 @@ export function ConfirmDeleteDialog({
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
               <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
             </div>
-            <DialogTitle>Delete {entityType}?</DialogTitle>
+            <DialogTitle>{t('confirm_delete_dialog.title', { entityType })}</DialogTitle>
           </div>
           <DialogDescription>
-            Are you sure you want to delete <strong>&ldquo;{entityName}&rdquo;</strong>? This action
-            cannot be undone.
+            {t('confirm_delete_dialog.description_prefix')}<strong>&ldquo;{entityName}&rdquo;</strong>{t('confirm_delete_dialog.description_suffix')}
           </DialogDescription>
         </DialogHeader>
         {useWord && (
           <div className="space-y-2">
             <Label htmlFor="confirm-delete-word-input" className="text-xs">
-              Type{' '}
+              {t('confirm_delete_dialog.type_to_confirm_prefix')}
               <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
                 {confirmationWord}
-              </code>{' '}
-              to confirm.
+              </code>
+              {t('confirm_delete_dialog.type_to_confirm_suffix')}
             </Label>
             <Input
               id="confirm-delete-word-input"
@@ -118,7 +119,7 @@ export function ConfirmDeleteDialog({
           </div>
         )}
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>{t('confirm_delete_dialog.cancel')}</DialogClose>
           <Button
             variant="destructive"
             data-testid="confirm-delete-btn"

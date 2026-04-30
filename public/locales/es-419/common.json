@@ -138,5 +138,16 @@
     "operating_as": "Operando como",
     "read_only": "Solo lectura",
     "end": "Finalizar suplantación"
+  },
+  "confirm_delete_dialog": {
+    "title": "¿Eliminar {{entityType}}?",
+    "description_prefix": "¿Está seguro de que desea eliminar ",
+    "description_suffix": "? Esta acción no se puede deshacer.",
+    "type_to_confirm_prefix": "Escriba ",
+    "type_to_confirm_suffix": " para confirmar.",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "wait_seconds": "Espere {{seconds}}s..."
   }
 }

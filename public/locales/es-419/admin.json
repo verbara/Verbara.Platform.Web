@@ -965,7 +965,8 @@
         "create_description": "Defina tarifas de partner para tipos de uso.",
         "edit_description": "Actualice la tarjeta de partner.",
         "name_placeholder": "Tarifa estándar de partner"
-      }
+      },
+      "entity_type": "tarjeta de tarifa de partner"
     },
     "settings": {
       "title": "Configuración de Partner",
@@ -1099,7 +1100,8 @@
         "cancel": "Cancelar",
         "saving": "Guardando...",
         "submit": "Actualizar"
-      }
+      },
+      "entity_type": "tenant"
     }
   },
   "shared": {
@@ -1170,7 +1172,8 @@
         "included_qty": "Cantidad incluida",
         "create": "Crear",
         "save": "Guardar"
-      }
+      },
+      "entity_label": "tarjeta de tarifa"
     },
     "invoices": {
       "title": "Facturas",
@@ -1675,7 +1678,9 @@
       "purge_user_heading": "Purgar datos de usuario",
       "result_heading": "Purga completa",
       "result_purge_id": "ID de purga: <0>{{id}}</0>",
-      "result_entity_line": "{{entity}}: {{count}} eliminados"
+      "result_entity_line": "{{entity}}: {{count}} eliminados",
+      "contact_entity_type": "datos de contacto",
+      "user_entity_type": "datos de usuario"
     }
   },
   "purge-log": {

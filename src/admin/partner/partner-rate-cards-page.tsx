@@ -115,7 +115,7 @@ export default function PartnerRateCardsPage() {
           setDeleteCard(undefined);
         }}
         entityName={deleteCard?.name ?? ''}
-        entityType="rate card"
+        entityType={t('partner.rate_cards.entity_type')}
         isPending={deleteRc.isPending}
       />
     </div>

@@ -647,7 +647,7 @@ export default function ClusterPage() {
           setRemoveNode(undefined);
         }}
         entityName={removeNode?.nodeId ?? ''}
-        entityType="node"
+        entityType={t('cluster.remove_entity')}
         isPending={deleteNode.isPending}
       />
 
@@ -659,7 +659,7 @@ export default function ClusterPage() {
           setForceNode(undefined);
         }}
         entityName={forceNode?.nodeId ?? ''}
-        entityType="force drain on node"
+        entityType={t('cluster.force_drain_entity')}
         isPending={forceDrain.isPending}
         confirmationWord="FORCE"
       />

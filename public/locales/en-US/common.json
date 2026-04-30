@@ -138,5 +138,16 @@
     "operating_as": "Operating as",
     "read_only": "Read-Only",
     "end": "End Impersonation"
+  },
+  "confirm_delete_dialog": {
+    "title": "Delete {{entityType}}?",
+    "description_prefix": "Are you sure you want to delete ",
+    "description_suffix": "? This action cannot be undone.",
+    "type_to_confirm_prefix": "Type ",
+    "type_to_confirm_suffix": " to confirm.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "wait_seconds": "Wait {{seconds}}s..."
   }
 }
