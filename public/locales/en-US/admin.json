@@ -733,7 +733,18 @@
         "done": "Done"
       }
     },
-    "entity_type": "webhook subscription"
+    "entity_type": "webhook subscription",
+    "title": "Webhook Subscriptions",
+    "description": "Manage outbound webhook subscriptions for event delivery.",
+    "create": "New Subscription",
+    "searchPlaceholder": "Search subscriptions...",
+    "columns": {
+      "name": "Name",
+      "endpointUrl": "Endpoint URL",
+      "eventTypes": "Event Types",
+      "status": "Status",
+      "created": "Created"
+    }
   },
   "deadLetter": {
     "view": "View",
@@ -1804,9 +1815,35 @@
     }
   },
   "cannedResponses": {
-    "entity_type": "Canned Response"
+    "entity_type": "Canned Response",
+    "title": "Canned Responses",
+    "create": "Create Response",
+    "shortcut": "Shortcut",
+    "titleColumn": "Title",
+    "body": "Body",
+    "category": "Category",
+    "tags": "Tags",
+    "searchPlaceholder": "Search responses...",
+    "noResults": "No matching responses found.",
+    "empty": "No canned responses yet."
   },
   "roles": {
-    "entity_type": "role"
+    "entity_type": "role",
+    "title": "Roles",
+    "description": "Manage roles and their permissions",
+    "create": "Create Role",
+    "name": "Name",
+    "name_placeholder": "e.g. Team Lead",
+    "description_label": "Description",
+    "description_placeholder": "Optional description",
+    "template": "Template",
+    "no_template": "No template",
+    "clone": "Clone Role",
+    "clone_name": "New role name",
+    "default": "Default",
+    "custom": "Custom",
+    "source": "Source",
+    "permissions": "Permissions",
+    "users": "Users"
   }
 }

@@ -749,7 +749,18 @@
         "done": "Listo"
       }
     },
-    "entity_type": "suscripción de webhook"
+    "entity_type": "suscripción de webhook",
+    "title": "Suscripciones de webhook",
+    "description": "Gestione las suscripciones de webhook salientes para entrega de eventos.",
+    "create": "Nueva suscripción",
+    "searchPlaceholder": "Buscar suscripciones...",
+    "columns": {
+      "name": "Nombre",
+      "endpointUrl": "URL del endpoint",
+      "eventTypes": "Tipos de evento",
+      "status": "Estado",
+      "created": "Creada"
+    }
   },
   "deadLetter": {
     "view": "Ver",
@@ -1775,9 +1786,35 @@
     }
   },
   "cannedResponses": {
-    "entity_type": "respuesta predefinida"
+    "entity_type": "respuesta predefinida",
+    "title": "Respuestas predefinidas",
+    "create": "Crear respuesta",
+    "shortcut": "Atajo",
+    "titleColumn": "Título",
+    "body": "Cuerpo",
+    "category": "Categoría",
+    "tags": "Etiquetas",
+    "searchPlaceholder": "Buscar respuestas...",
+    "noResults": "No se encontraron respuestas.",
+    "empty": "Aún no hay respuestas predefinidas."
   },
   "roles": {
-    "entity_type": "rol"
+    "entity_type": "rol",
+    "title": "Roles",
+    "description": "Gestione roles y sus permisos",
+    "create": "Crear rol",
+    "name": "Nombre",
+    "name_placeholder": "ej. Líder de equipo",
+    "description_label": "Descripción",
+    "description_placeholder": "Descripción opcional",
+    "template": "Plantilla",
+    "no_template": "Sin plantilla",
+    "clone": "Clonar rol",
+    "clone_name": "Nombre del nuevo rol",
+    "default": "Por defecto",
+    "custom": "Personalizado",
+    "source": "Origen",
+    "permissions": "Permisos",
+    "users": "Usuarios"
   }
 }

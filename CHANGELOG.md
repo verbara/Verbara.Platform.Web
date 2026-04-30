@@ -13,6 +13,56 @@ _No unreleased changes._
 
 ---
 
+## [1.13.15] — 2026-04-30 — i18n Coverage Phase 4I (fill missing JSON keys for canned-responses + roles + webhooks)
+
+**Closes the inline-fallback gap.** Three admin pages
+(`canned-responses-page`, `roles-page`, `webhooks-page`) were
+already calling `t('admin:…')` for every user-facing string but
+had no matching JSON keys. Two of them (roles, webhooks) used
+the inline-default-value pattern (`t(key, 'English fallback')`)
+so the English UI worked but Spanish/Portuguese fell through to
+the same English. Canned-responses had no fallbacks at all and
+was rendering raw key strings (e.g. `cannedResponses.shortcut`)
+in the column headers.
+
+This phase adds the 35 missing JSON keys across 3 locales —
+no TSX changes required. Switching languages now actually
+translates these surfaces.
+
+### Locales
+
+`admin.json` (3 locales):
+
+- **`cannedResponses`** — `title`, `create`, `shortcut`,
+  `titleColumn`, `body`, `category`, `tags`, `searchPlaceholder`,
+  `noResults`, `empty` (10 keys; section previously held only
+  `entity_type`).
+- **`roles`** — `title`, `description`, `create`, `name`,
+  `name_placeholder`, `description_label`,
+  `description_placeholder`, `template`, `no_template`, `clone`,
+  `clone_name`, `default`, `custom`, `source`, `permissions`,
+  `users` (16 keys; section previously held only `entity_type`).
+- **`webhooks`** — `title`, `description`, `create`,
+  `searchPlaceholder`, plus a new `columns` sub-section with
+  `name`, `endpointUrl`, `eventTypes`, `status`, `created`
+  (9 keys total under existing `webhooks.{status, detail, form,
+  entity_type}`).
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+Post-merge audit confirms zero missing-key gaps in these 3
+files (40 total keys called, 40 found in es-419).
+
+### Coverage
+
+Three full pages move from "calls `t()` but renders English
+everywhere" to fully localized. The remaining hardcoded strings
+in these pages are limited to a `Loading…` literal in
+canned-responses (cosmetic, deferred to a future polish pass).
+
+---
+
 ## [1.13.14] — 2026-04-30 — i18n Coverage Phase 4H (remaining ConfirmDeleteDialog callers)
 
 **Closes the entityType migration loop.** All 9 remaining

@@ -733,7 +733,18 @@
         "done": "Concluído"
       }
     },
-    "entity_type": "inscrição de webhook"
+    "entity_type": "inscrição de webhook",
+    "title": "Inscrições de webhook",
+    "description": "Gerencie as inscrições de webhook de saída para entrega de eventos.",
+    "create": "Nova inscrição",
+    "searchPlaceholder": "Pesquisar inscrições...",
+    "columns": {
+      "name": "Nome",
+      "endpointUrl": "URL do endpoint",
+      "eventTypes": "Tipos de evento",
+      "status": "Status",
+      "created": "Criada"
+    }
   },
   "deadLetter": {
     "view": "Ver",
@@ -1759,9 +1770,35 @@
     }
   },
   "cannedResponses": {
-    "entity_type": "resposta predefinida"
+    "entity_type": "resposta predefinida",
+    "title": "Respostas predefinidas",
+    "create": "Criar resposta",
+    "shortcut": "Atalho",
+    "titleColumn": "Título",
+    "body": "Corpo",
+    "category": "Categoria",
+    "tags": "Tags",
+    "searchPlaceholder": "Pesquisar respostas...",
+    "noResults": "Nenhuma resposta encontrada.",
+    "empty": "Nenhuma resposta predefinida ainda."
   },
   "roles": {
-    "entity_type": "papel"
+    "entity_type": "papel",
+    "title": "Papéis",
+    "description": "Gerencie papéis e suas permissões",
+    "create": "Criar papel",
+    "name": "Nome",
+    "name_placeholder": "ex. Líder de equipe",
+    "description_label": "Descrição",
+    "description_placeholder": "Descrição opcional",
+    "template": "Template",
+    "no_template": "Sem template",
+    "clone": "Clonar papel",
+    "clone_name": "Nome do novo papel",
+    "default": "Padrão",
+    "custom": "Personalizado",
+    "source": "Origem",
+    "permissions": "Permissões",
+    "users": "Usuários"
   }
 }
