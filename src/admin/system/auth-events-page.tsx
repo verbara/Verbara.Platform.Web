@@ -134,7 +134,7 @@ export default function AuthEventsPage() {
           onChange={(e) => setEndDate(e.target.value)}
         />
         {isFetching && (
-          <span className="text-sm text-muted-foreground animate-pulse">Loading...</span>
+          <span className="text-sm text-muted-foreground animate-pulse">{t('common:status.loading')}</span>
         )}
       </div>
 

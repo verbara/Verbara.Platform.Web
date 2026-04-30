@@ -99,9 +99,7 @@ export default function TrunksPage() {
             {t('admin:trunks.create')}
           </Button>
         </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
-        </div>
+        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
       </div>
     );
   }

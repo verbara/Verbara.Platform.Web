@@ -116,9 +116,7 @@ export default function SkillsPage() {
             {t('admin:skills.createSkill')}
           </Button>
         </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
-        </div>
+        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
       </div>
     );
   }

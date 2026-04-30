@@ -1,15 +1,45 @@
 {
-  "app": { "name": "Asterisk Platform" },
+  "app": {
+    "name": "Asterisk Platform"
+  },
   "copy": "Copiar",
   "copied": "Copiado",
   "notAvailable": {
     "value": "—",
     "tooltip": "Métricas indisponíveis"
   },
-  "nav": { "admin": "Administração", "operations": "Operações", "analytics": "Análise", "agent": "Agente", "notifications": "Notificações" },
-  "code-block": { "show-more": "Ver mais", "show-less": "Ver menos" },
-  "audit-trail-mini": { "no-events": "Ainda não há eventos de auditoria.", "loading": "Carregando eventos..." },
-  "actions": { "save": "Salvar", "cancel": "Cancelar", "delete": "Excluir", "create": "Criar", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Fechar", "back": "Voltar", "clear_all": "Limpar tudo", "copy": "Copiar", "download": "Baixar", "done": "Conclu\u00eddo", "next": "Pr\u00f3ximo", "revoke": "Revogar" },
+  "nav": {
+    "admin": "Administração",
+    "operations": "Operações",
+    "analytics": "Análise",
+    "agent": "Agente",
+    "notifications": "Notificações"
+  },
+  "code-block": {
+    "show-more": "Ver mais",
+    "show-less": "Ver menos"
+  },
+  "audit-trail-mini": {
+    "no-events": "Ainda não há eventos de auditoria.",
+    "loading": "Carregando eventos..."
+  },
+  "actions": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "create": "Criar",
+    "edit": "Editar",
+    "search": "Buscar",
+    "confirm": "Confirmar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "clear_all": "Limpar tudo",
+    "copy": "Copiar",
+    "download": "Baixar",
+    "done": "Concluído",
+    "next": "Próximo",
+    "revoke": "Revogar"
+  },
   "status": {
     "loading": "Carregando...",
     "error": "Erro",
@@ -102,7 +132,12 @@
     "mfa_use_code": "Usar código do autenticador",
     "mfa_use_recovery": "Usar código de recuperação"
   },
-  "theme": { "label": "Tema", "light": "Claro", "dark": "Escuro", "system": "Sistema" },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
   "language": {
     "label": "Idioma",
     "es-419": "Espanhol (América Latina)",
@@ -149,5 +184,6 @@
     "delete": "Excluir",
     "deleting": "Excluindo...",
     "wait_seconds": "Aguarde {{seconds}}s..."
-  }
+  },
+  "cancel": "Cancelar"
 }

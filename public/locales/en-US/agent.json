@@ -79,7 +79,8 @@
     "notes_placeholder": "Add a note...",
     "save_note": "Save note",
     "delete_note": "Delete note",
-    "contact_entity_type": "contact"
+    "contact_entity_type": "contact",
+    "knowledge": "Knowledge"
   },
   "ai": {
     "suggestion": "Suggestion",
@@ -135,5 +136,10 @@
     "next": "Next",
     "gotIt": "Got it!",
     "skipTour": "Skip tour"
+  },
+  "knowledge": {
+    "empty_state": "No knowledge articles available.",
+    "no_results": "No articles match your search.",
+    "search_placeholder": "Search knowledge base..."
   }
 }

@@ -112,7 +112,7 @@ export default function AgentAssistFeaturePage() {
 
       <div className="rounded-lg border bg-card p-6 shadow-sm">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <p className="text-sm text-muted-foreground">{t('common:status.loading')}</p>
         ) : (
           <div className="space-y-6">
             <div className="flex items-center justify-between rounded-lg border p-4">

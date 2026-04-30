@@ -31,7 +31,7 @@ export default function SecurityPage() {
         <h1 className="font-heading text-2xl font-semibold">
           {t('admin:security.title')}
         </h1>
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-muted-foreground">{t('common:status.loading')}</p>
       </div>
     );
   }

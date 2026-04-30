@@ -224,7 +224,7 @@ function KeywordRulesSection() {
   };
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
+    return <p className="text-sm text-muted-foreground">{t('common:status.loading')}</p>;
   }
 
   return (
@@ -562,7 +562,7 @@ function ComplianceRulesSection() {
   };
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
+    return <p className="text-sm text-muted-foreground">{t('common:status.loading')}</p>;
   }
 
   return (
@@ -932,9 +932,7 @@ export default function AgentAssistConfigPage() {
             </p>
           </div>
         </div>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
-        </div>
+        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
       </div>
     );
   }

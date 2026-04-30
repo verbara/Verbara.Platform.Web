@@ -1,15 +1,45 @@
 {
-  "app": { "name": "Asterisk Platform" },
+  "app": {
+    "name": "Asterisk Platform"
+  },
   "copy": "Copiar",
   "copied": "Copiado",
   "notAvailable": {
     "value": "—",
     "tooltip": "Métricas no disponibles"
   },
-  "nav": { "admin": "Administración", "operations": "Operaciones", "analytics": "Analítica", "agent": "Agente", "notifications": "Notificaciones" },
-  "code-block": { "show-more": "Ver más", "show-less": "Ver menos" },
-  "audit-trail-mini": { "no-events": "Aún no hay eventos de auditoría.", "loading": "Cargando eventos..." },
-  "actions": { "save": "Guardar", "cancel": "Cancelar", "delete": "Eliminar", "create": "Crear", "edit": "Editar", "search": "Buscar", "confirm": "Confirmar", "close": "Cerrar", "back": "Volver", "clear_all": "Limpiar todo", "copy": "Copiar", "download": "Descargar", "done": "Listo", "next": "Siguiente", "revoke": "Revocar" },
+  "nav": {
+    "admin": "Administración",
+    "operations": "Operaciones",
+    "analytics": "Analítica",
+    "agent": "Agente",
+    "notifications": "Notificaciones"
+  },
+  "code-block": {
+    "show-more": "Ver más",
+    "show-less": "Ver menos"
+  },
+  "audit-trail-mini": {
+    "no-events": "Aún no hay eventos de auditoría.",
+    "loading": "Cargando eventos..."
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "create": "Crear",
+    "edit": "Editar",
+    "search": "Buscar",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "clear_all": "Limpiar todo",
+    "copy": "Copiar",
+    "download": "Descargar",
+    "done": "Listo",
+    "next": "Siguiente",
+    "revoke": "Revocar"
+  },
   "status": {
     "loading": "Cargando...",
     "error": "Error",
@@ -102,7 +132,12 @@
     "mfa_use_code": "Usar código de autenticador",
     "mfa_use_recovery": "Usar código de recuperación"
   },
-  "theme": { "label": "Tema", "light": "Claro", "dark": "Oscuro", "system": "Sistema" },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
   "language": {
     "label": "Idioma",
     "es-419": "Español (Latinoamérica)",
@@ -149,5 +184,6 @@
     "delete": "Eliminar",
     "deleting": "Eliminando...",
     "wait_seconds": "Espere {{seconds}}s..."
-  }
+  },
+  "cancel": "Cancelar"
 }

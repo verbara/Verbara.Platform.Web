@@ -79,7 +79,8 @@
     "notes_placeholder": "Agregar una nota...",
     "save_note": "Guardar nota",
     "delete_note": "Eliminar nota",
-    "contact_entity_type": "contacto"
+    "contact_entity_type": "contacto",
+    "knowledge": "Conocimiento"
   },
   "ai": {
     "suggestion": "Sugerencia",
@@ -89,7 +90,7 @@
     "copy_copied": "¡Copiado!"
   },
   "canned": {
-    "search_placeholder": "Buscar respuesta r\u00e1pida...",
+    "search_placeholder": "Buscar respuesta rápida...",
     "no_results": "Sin resultados",
     "search_hint": "Comienza a escribir para buscar respuestas guardadas",
     "loading": "Cargando..."
@@ -105,14 +106,14 @@
     "file_fallback": "Archivo"
   },
   "new_conversation": {
-    "title": "Nueva conversaci\u00f3n",
+    "title": "Nueva conversación",
     "contact": "Contacto",
     "channel": "Canal",
     "initial_message": "Mensaje inicial (opcional)",
     "message_placeholder": "Escribe un mensaje...",
-    "search_placeholder": "Buscar contactos (m\u00edn. 2 caracteres)...",
+    "search_placeholder": "Buscar contactos (mín. 2 caracteres)...",
     "change": "Cambiar",
-    "submit": "Iniciar conversaci\u00f3n",
+    "submit": "Iniciar conversación",
     "unnamed_contact": "Contacto sin nombre"
   },
   "agent_status": {
@@ -120,20 +121,25 @@
     "busy": "Ocupado",
     "on_break": "Descanso",
     "lunch": "Almuerzo",
-    "training": "Capacitaci\u00f3n",
+    "training": "Capacitación",
     "dnd": "No molestar",
     "acw": "Post-llamada",
     "offline": "Desconectado"
   },
   "tour": {
     "inbox": "Tu bandeja de entrada",
-    "inboxDesc": "Las conversaciones aparecen aqu\u00ed. Las nuevas se resaltan arriba.",
-    "chat": "\u00c1rea de chat",
-    "chatDesc": "Chatea con clientes aqu\u00ed. Usa respuestas r\u00e1pidas con /.",
+    "inboxDesc": "Las conversaciones aparecen aquí. Las nuevas se resaltan arriba.",
+    "chat": "Área de chat",
+    "chatDesc": "Chatea con clientes aquí. Usa respuestas rápidas con /.",
     "context": "Contexto del cliente",
-    "contextDesc": "Informaci\u00f3n del cliente, historial y tus notas est\u00e1n aqu\u00ed.",
+    "contextDesc": "Información del cliente, historial y tus notas están aquí.",
     "next": "Siguiente",
-    "gotIt": "\u00a1Entendido!",
+    "gotIt": "¡Entendido!",
     "skipTour": "Omitir tour"
+  },
+  "knowledge": {
+    "empty_state": "No hay artículos de conocimiento disponibles.",
+    "no_results": "Ningún artículo coincide con su búsqueda.",
+    "search_placeholder": "Buscar base de conocimiento..."
   }
 }

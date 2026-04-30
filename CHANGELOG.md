@@ -13,6 +13,92 @@ _No unreleased changes._
 
 ---
 
+## [1.13.16] — 2026-04-30 — i18n Coverage Phase 4J (cross-namespace audit + Loading literals)
+
+**Two systematic cleanups in one commit.** A repo-wide audit found
+177 `t()` calls referencing keys missing from the JSON; 13 pages
+also had bare `Loading…` literals slipping past the existing
+i18n wiring. Both gaps are closed.
+
+### Audit-driven JSON fills (177 keys across 3 namespaces)
+
+A Python audit walked every `t('ns:key')` call in `src/`,
+cross-referenced against `es-419/{admin,agent,common}.json`,
+and flagged 177 missing keys. Filling these means switching
+languages now actually translates these surfaces; previously
+they fell through to inline English defaults (or rendered raw
+key strings where no default was provided).
+
+**`admin.json`** (172 keys added):
+
+- `agents.extension` (1)
+- `auth.*` (43): full auth-config, auth-events, auth-sessions
+  pages — password policy, MFA policy, session timeouts, OIDC
+  config, lockout, all event/session columns + relative-time
+  formatters (`{{count}} min ago` / `{{count}} hr ago`).
+- `campaigns.{launching, saving}` (2): launch + save in-flight
+  states for the campaign wizard.
+- `deadLetter.*` (22): full webhook DLQ page — title,
+  description, all column headers, search, retry, pagination,
+  empty state.
+- `knowledge.*` (21): full KB form + list — title/content/tags/
+  language/published fields with placeholders, hints, columns,
+  empty/no-results, create/edit/delete confirmations.
+- `retention.*` (22): retention-admin-page — all column
+  headers, dry-run mode toggle, run-now buttons, confirm-purge
+  dialog, error/empty states.
+- `security_admin.audit.*` (34): full audit-viewer-page —
+  6 columns, 11 filters with placeholders, 4 drawer tabs +
+  before/after/no-diff/no-metadata + retention disclosure,
+  3 export options.
+- `setup.*` (22): full setup wizard — agent/queue/channel/test
+  steps, validation messages, test-message bubbles, step
+  instructions.
+- `users.*` (10): user-detail — assign role, auth provider,
+  force logout (with `{{name}}` interpolation), MFA status,
+  last login, role list.
+
+**`agent.json`** (4 keys): `context.knowledge`,
+`knowledge.{empty_state, no_results, search_placeholder}`.
+
+**`common.json`** (1 key): `cancel`.
+
+### Loading literal sweep (13 files)
+
+Replaced bare `Loading…` / `Loading...` JSX text in 13 pages
+with `{t('common:status.loading')}`:
+
+- admin: `bots`, `campaigns/list`, `campaigns/detail`,
+  `canned-responses`, `features/agent-assist`, `reports`,
+  `routes`, `skills`, `surveys`, `system/auth-events`,
+  `trunks`, `agent-assist/config` (3 instances),
+  `profile/security`.
+
+`auth-config-page` and `role-detail-page` already used
+`t('status.loading')` (resolves via `defaultNS=common`) and
+were left untouched.
+
+### Verification
+
+- Re-running the audit shows **0 missing keys** across all
+  scanned namespaces (admin, common, agent, analytics,
+  operations).
+- Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+- Side note: this commit reformats the 3 admin.json files
+  (~172 deep insertions made the textual-append approach
+  impractical). The reformat normalizes a few inline-style
+  objects to multi-line; locale content is unchanged for any
+  pre-existing key.
+
+### Coverage
+
+This brings every `t()` call site in the codebase to a
+fully-resolvable key. Future i18n work can focus on
+extracting *more* hardcoded strings rather than backfilling
+already-extracted-but-unmapped ones.
+
+---
+
 ## [1.13.15] — 2026-04-30 — i18n Coverage Phase 4I (fill missing JSON keys for canned-responses + roles + webhooks)
 
 **Closes the inline-fallback gap.** Three admin pages

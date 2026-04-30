@@ -1,15 +1,45 @@
 {
-  "app": { "name": "Asterisk Platform" },
+  "app": {
+    "name": "Asterisk Platform"
+  },
   "copy": "Copy",
   "copied": "Copied",
   "notAvailable": {
     "value": "—",
     "tooltip": "Metrics unavailable"
   },
-  "nav": { "admin": "Admin", "operations": "Operations", "analytics": "Analytics", "agent": "Agent", "notifications": "Notifications" },
-  "code-block": { "show-more": "Show more", "show-less": "Show less" },
-  "audit-trail-mini": { "no-events": "No audit events yet.", "loading": "Loading events..." },
-  "actions": { "save": "Save", "cancel": "Cancel", "delete": "Delete", "create": "Create", "edit": "Edit", "search": "Search", "confirm": "Confirm", "close": "Close", "back": "Back", "clear_all": "Clear all", "copy": "Copy", "download": "Download", "done": "Done", "next": "Next", "revoke": "Revoke" },
+  "nav": {
+    "admin": "Admin",
+    "operations": "Operations",
+    "analytics": "Analytics",
+    "agent": "Agent",
+    "notifications": "Notifications"
+  },
+  "code-block": {
+    "show-more": "Show more",
+    "show-less": "Show less"
+  },
+  "audit-trail-mini": {
+    "no-events": "No audit events yet.",
+    "loading": "Loading events..."
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "create": "Create",
+    "edit": "Edit",
+    "search": "Search",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "clear_all": "Clear all",
+    "copy": "Copy",
+    "download": "Download",
+    "done": "Done",
+    "next": "Next",
+    "revoke": "Revoke"
+  },
   "status": {
     "loading": "Loading...",
     "error": "Error",
@@ -102,7 +132,12 @@
     "mfa_use_code": "Use authenticator code",
     "mfa_use_recovery": "Use a recovery code"
   },
-  "theme": { "label": "Theme", "light": "Light", "dark": "Dark", "system": "System" },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
   "language": {
     "label": "Language",
     "es-419": "Spanish (Latin America)",
@@ -149,5 +184,6 @@
     "delete": "Delete",
     "deleting": "Deleting...",
     "wait_seconds": "Wait {{seconds}}s..."
-  }
+  },
+  "cancel": "Cancel"
 }
