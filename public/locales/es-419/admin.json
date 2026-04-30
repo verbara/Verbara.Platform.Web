@@ -301,7 +301,8 @@
       "cancel": "Cancelar",
       "scheduling": "Agendando...",
       "confirm": "Agendar"
-    }
+    },
+    "entity_type": "campaña"
   },
   "setup": {
     "welcomeTitle": "Bienvenido a Asterisk Platform",
@@ -354,7 +355,8 @@
       "active": "Activa",
       "submit_create": "Agregar troncal",
       "submit_edit": "Guardar cambios"
-    }
+    },
+    "entity_type": "troncal"
   },
   "routes": { "title": "Rutas salientes", "create": "Agregar ruta", "edit": "Editar ruta", "priority": "Prioridad", "pattern": "Patrón", "patternType": "Tipo", "trunk": "Troncal", "dialPrefix": "Prefijo de marcación", "searchPlaceholder": "Buscar rutas...", "save": "Guardar cambios",
     "form": {
@@ -369,9 +371,12 @@
       "dial_prefix_optional": "Prefijo de marcación (opcional)",
       "submit_create": "Agregar ruta",
       "submit_edit": "Guardar cambios"
-    }
+    },
+    "entity_type": "ruta"
   },
-  "bots": { "title": "Bots", "create": "Agregar bot", "edit": "Editar bot", "name": "Nombre", "defaultFlow": "Flujo predeterminado", "fallbackQueue": "Cola de respaldo", "confidenceThreshold": "Umbral de confianza", "maxTurns": "Turnos máximos", "active": "Activo", "status": "Estado", "activeLabel": "Activo", "inactiveLabel": "Inactivo", "selectFlow": "Seleccionar flujo", "noFlow": "Sin flujo", "selectQueue": "Seleccionar cola", "noQueue": "Sin cola", "searchPlaceholder": "Buscar bots...", "noResults": "No se encontraron bots.", "empty": "Sin bots aún — Agregue su primer bot", "save": "Guardar cambios", "createDescription": "Configurar un nuevo bot conversacional.", "editDescription": "Actualizar configuración del bot." },
+  "bots": { "title": "Bots", "create": "Agregar bot", "edit": "Editar bot", "name": "Nombre", "defaultFlow": "Flujo predeterminado", "fallbackQueue": "Cola de respaldo", "confidenceThreshold": "Umbral de confianza", "maxTurns": "Turnos máximos", "active": "Activo", "status": "Estado", "activeLabel": "Activo", "inactiveLabel": "Inactivo", "selectFlow": "Seleccionar flujo", "noFlow": "Sin flujo", "selectQueue": "Seleccionar cola", "noQueue": "Sin cola", "searchPlaceholder": "Buscar bots...", "noResults": "No se encontraron bots.", "empty": "Sin bots aún — Agregue su primer bot", "save": "Guardar cambios", "createDescription": "Configurar un nuevo bot conversacional.", "editDescription": "Actualizar configuración del bot.",
+    "entity_type": "bot"
+  },
   "agentAssist": {
     "title": "Asistente de Agente",
     "description": "Configure la asistencia de IA en tiempo real para agentes durante llamadas en vivo.",
@@ -614,7 +619,8 @@
     "noResults": "No se encontraron informes.",
     "empty": "Sin informes programados — Crea tu primer informe",
     "createDescription": "Configura un nuevo informe programado.",
-    "editDescription": "Actualiza la configuración del informe programado."
+    "editDescription": "Actualiza la configuración del informe programado.",
+    "entity_type": "informe"
   },
   "security": {
     "title": "Seguridad",
@@ -674,7 +680,8 @@
     "noResults": "No se encontraron encuestas.",
     "empty": "Sin encuestas — Crea tu primera encuesta",
     "createDescription": "Crea una nueva encuesta de satisfacción.",
-    "editDescription": "Actualiza la configuración y preguntas de la encuesta."
+    "editDescription": "Actualiza la configuración y preguntas de la encuesta.",
+    "entity_type": "encuesta"
   },
   "cluster-nodes": {
     "detail": {
@@ -741,7 +748,8 @@
         "warning": "Este secreto se usa para verificar los payloads del webhook vía HMAC-SHA256. Guárdelo de forma segura.",
         "done": "Listo"
       }
-    }
+    },
+    "entity_type": "suscripción de webhook"
   },
   "deadLetter": {
     "view": "Ver",
@@ -1765,5 +1773,11 @@
       "entities_deleted": "Entidades eliminadas",
       "purged_at": "Purgada en"
     }
+  },
+  "cannedResponses": {
+    "entity_type": "respuesta predefinida"
+  },
+  "roles": {
+    "entity_type": "rol"
   }
 }

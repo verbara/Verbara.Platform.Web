@@ -285,7 +285,8 @@
       "cancel": "Cancel",
       "scheduling": "Scheduling...",
       "confirm": "Schedule"
-    }
+    },
+    "entity_type": "Campaign"
   },
   "setup": {
     "welcomeTitle": "Welcome to Asterisk Platform",
@@ -338,7 +339,8 @@
       "active": "Active",
       "submit_create": "Add Trunk",
       "submit_edit": "Save Changes"
-    }
+    },
+    "entity_type": "Trunk"
   },
   "routes": { "title": "Outbound Routes", "create": "Add Route", "edit": "Edit Route", "priority": "Priority", "pattern": "Pattern", "patternType": "Type", "trunk": "Trunk", "dialPrefix": "Dial Prefix", "searchPlaceholder": "Search routes...", "save": "Save Changes",
     "form": {
@@ -353,9 +355,12 @@
       "dial_prefix_optional": "Dial Prefix (optional)",
       "submit_create": "Add Route",
       "submit_edit": "Save Changes"
-    }
+    },
+    "entity_type": "Route"
   },
-  "bots": { "title": "Bots", "create": "Add Bot", "edit": "Edit Bot", "name": "Name", "defaultFlow": "Default Flow", "fallbackQueue": "Fallback Queue", "confidenceThreshold": "Confidence Threshold", "maxTurns": "Max Turns", "active": "Active", "status": "Status", "activeLabel": "Active", "inactiveLabel": "Inactive", "selectFlow": "Select flow", "noFlow": "No flow", "selectQueue": "Select queue", "noQueue": "No queue", "searchPlaceholder": "Search bots...", "noResults": "No matching bots found.", "empty": "No bots yet — Add your first bot", "save": "Save Changes", "createDescription": "Configure a new conversational bot.", "editDescription": "Update bot configuration." },
+  "bots": { "title": "Bots", "create": "Add Bot", "edit": "Edit Bot", "name": "Name", "defaultFlow": "Default Flow", "fallbackQueue": "Fallback Queue", "confidenceThreshold": "Confidence Threshold", "maxTurns": "Max Turns", "active": "Active", "status": "Status", "activeLabel": "Active", "inactiveLabel": "Inactive", "selectFlow": "Select flow", "noFlow": "No flow", "selectQueue": "Select queue", "noQueue": "No queue", "searchPlaceholder": "Search bots...", "noResults": "No matching bots found.", "empty": "No bots yet — Add your first bot", "save": "Save Changes", "createDescription": "Configure a new conversational bot.", "editDescription": "Update bot configuration.",
+    "entity_type": "Bot"
+  },
   "agentAssist": {
     "title": "Agent Assist",
     "description": "Configure real-time AI assistance for agents during live calls.",
@@ -598,7 +603,8 @@
     "noResults": "No matching reports found.",
     "empty": "No scheduled reports yet — Add your first report",
     "createDescription": "Configure a new scheduled report.",
-    "editDescription": "Update scheduled report settings."
+    "editDescription": "Update scheduled report settings.",
+    "entity_type": "Report"
   },
   "security": {
     "title": "Security",
@@ -658,7 +664,8 @@
     "noResults": "No matching surveys found.",
     "empty": "No surveys yet — Add your first survey",
     "createDescription": "Build a new customer feedback survey.",
-    "editDescription": "Update survey configuration and questions."
+    "editDescription": "Update survey configuration and questions.",
+    "entity_type": "Survey"
   },
   "cluster-nodes": {
     "detail": {
@@ -725,7 +732,8 @@
         "warning": "This secret is used to verify webhook payloads via HMAC-SHA256. Store it securely.",
         "done": "Done"
       }
-    }
+    },
+    "entity_type": "webhook subscription"
   },
   "deadLetter": {
     "view": "View",
@@ -1794,5 +1802,11 @@
       "entities_deleted": "Entities Deleted",
       "purged_at": "Purged At"
     }
+  },
+  "cannedResponses": {
+    "entity_type": "Canned Response"
+  },
+  "roles": {
+    "entity_type": "role"
   }
 }

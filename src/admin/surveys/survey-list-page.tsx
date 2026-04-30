@@ -168,7 +168,7 @@ export default function SurveyListPage() {
           });
         }}
         entityName={deletingSurvey?.name ?? ''}
-        entityType="Survey"
+        entityType={t('admin:surveys.entity_type')}
         isPending={deleteSurvey.isPending}
       />
     </div>

@@ -294,7 +294,7 @@ export default function CannedResponsesPage() {
           });
         }}
         entityName={deleting?.title ?? ''}
-        entityType="Canned Response"
+        entityType={t('admin:cannedResponses.entity_type')}
         isPending={deleteMutation.isPending}
       />
     </div>

@@ -164,7 +164,7 @@ export default function WebhooksPage() {
           setDeleteSub(null);
         }}
         entityName={deleteSub?.name ?? ''}
-        entityType="webhook subscription"
+        entityType={t('admin:webhooks.entity_type')}
         isPending={deleteSubscription.isPending}
       />
     </div>

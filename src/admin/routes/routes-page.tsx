@@ -324,7 +324,7 @@ export default function RoutesPage() {
           });
         }}
         entityName={deletingRoute?.pattern ?? ''}
-        entityType="Route"
+        entityType={t('admin:routes.entity_type')}
         isPending={deleteRoute.isPending}
       />
     </div>

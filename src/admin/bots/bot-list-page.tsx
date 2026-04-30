@@ -162,7 +162,7 @@ export default function BotListPage() {
           });
         }}
         entityName={deletingBot?.name ?? ''}
-        entityType="Bot"
+        entityType={t('admin:bots.entity_type')}
         isPending={deleteBot.isPending}
       />
     </div>

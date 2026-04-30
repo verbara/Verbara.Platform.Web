@@ -711,7 +711,7 @@ export default function CampaignDetailPage() {
         onOpenChange={setDeleteOpen}
         onConfirm={handleDeleteCampaign}
         entityName={campaign.name}
-        entityType="Campaign"
+        entityType={t('admin:campaigns.entity_type')}
         isPending={deleteCampaign.isPending}
       />
     </div>

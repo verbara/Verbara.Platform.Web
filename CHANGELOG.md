@@ -13,6 +13,61 @@ _No unreleased changes._
 
 ---
 
+## [1.13.14] — 2026-04-30 — i18n Coverage Phase 4H (remaining ConfirmDeleteDialog callers)
+
+**Closes the entityType migration loop.** All 9 remaining
+`ConfirmDeleteDialog` callers that were still passing English
+literals into the now-localized template (which would render
+as broken Spanglish like "Delete Bot?" inside an otherwise
+Spanish UI) now read their entity noun from i18n.
+
+### Migrated callers
+
+| File | Before | After (key) |
+|---|---|---|
+| `admin/bots/bot-list-page.tsx` | `"Bot"` | `admin:bots.entity_type` |
+| `admin/canned-responses/canned-responses-page.tsx` | `"Canned Response"` | `admin:cannedResponses.entity_type` |
+| `admin/campaigns/campaign-detail-page.tsx` | `"Campaign"` | `admin:campaigns.entity_type` |
+| `admin/reports/reports-page.tsx` | `"Report"` | `admin:reports.entity_type` |
+| `admin/roles/roles-page.tsx` | `"role"` | `admin:roles.entity_type` |
+| `admin/routes/routes-page.tsx` | `"Route"` | `admin:routes.entity_type` |
+| `admin/surveys/survey-list-page.tsx` | `"Survey"` | `admin:surveys.entity_type` |
+| `admin/trunks/trunks-page.tsx` | `"Trunk"` | `admin:trunks.entity_type` |
+| `admin/webhooks/webhooks-page.tsx` | `"webhook subscription"` | `admin:webhooks.entity_type` |
+
+### Locales
+
+`admin.json` (3 locales):
+- Added `entity_type` to existing sections: `bots`, `campaigns`,
+  `reports`, `routes`, `surveys`, `trunks`, `webhooks`.
+- Created new minimal sections: `cannedResponses.entity_type`
+  and `roles.entity_type`. The full canned-responses and roles
+  page i18n is a separate follow-up — those pages already call
+  `t('admin:cannedResponses.*' / 'admin:roles.*')` keys with
+  inline default-value fallbacks, so the existing display does
+  not change.
+
+`AuditTimeline entityType="user" / "campaign"` props are
+intentionally **not** migrated — those are domain identifiers
+sent to the audit log API, not display strings.
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+ConfirmDeleteDialog migration is now 100%: every literal-string
+caller has been moved to `t()`. The remaining ~9 admin pages
+themselves still have hardcoded copy (column headers, button
+labels, etc.), but their delete dialogs now render correctly
+in Spanish/Portuguese.
+
+This concludes the broader Phase 4 i18n batch (4A → 4H, 9
+sub-phases shipped 2026-04-29 / 2026-04-30).
+
+---
+
 ## [1.13.13] — 2026-04-30 — i18n Coverage Phase 4F (flow designer + 11 node types)
 
 **Closes the visual flow editor.** The XYFlow-based flow designer

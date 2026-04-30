@@ -229,7 +229,7 @@ export default function ReportsPage() {
           });
         }}
         entityName={deletingReport?.name ?? ''}
-        entityType="Report"
+        entityType={t('admin:reports.entity_type')}
         isPending={deleteReport.isPending}
       />
 

@@ -252,7 +252,7 @@ export default function RolesPage() {
           }
         }}
         entityName={deleteTarget?.name ?? ''}
-        entityType="role"
+        entityType={t('admin:roles.entity_type')}
         isPending={deleteRole.isPending}
       />
     </div>

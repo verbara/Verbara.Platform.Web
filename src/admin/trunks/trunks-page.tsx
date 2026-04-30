@@ -174,7 +174,7 @@ export default function TrunksPage() {
           });
         }}
         entityName={deletingTrunk?.name ?? ''}
-        entityType="Trunk"
+        entityType={t('admin:trunks.entity_type')}
         isPending={deleteTrunk.isPending}
       />
     </div>
