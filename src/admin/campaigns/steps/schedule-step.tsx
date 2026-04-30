@@ -1,5 +1,6 @@
 import { useFormContext, useFieldArray } from 'react-hook-form';
 import { Plus, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Button } from '@/core/ui/button';
@@ -27,6 +28,7 @@ const TIMEZONES = [
 ];
 
 export default function ScheduleStep() {
+  const { t } = useTranslation('admin');
   const { register, control, watch, setValue, formState: { errors } } = useFormContext<CampaignFormValues>();
   const holidays = watch('holidays') ?? [];
   const holidayCalendarId = watch('holidayCalendarId');
@@ -52,7 +54,7 @@ export default function ScheduleStep() {
     <div className="space-y-6">
       {/* Calling Windows */}
       <div className="space-y-3">
-        <Label>Calling Windows</Label>
+        <Label>{t('campaigns.schedule_step.calling_windows')}</Label>
         <div className="space-y-2">
           {scheduleFields.map((field, idx) => {
             const day = schedule?.[idx];
@@ -72,7 +74,7 @@ export default function ScheduleStep() {
                   disabled={!day?.enabled}
                   {...register(`schedule.${idx}.start` as const)}
                 />
-                <span className="text-sm text-muted-foreground">to</span>
+                <span className="text-sm text-muted-foreground">{t('campaigns.schedule_step.to')}</span>
                 <Input
                   type="time"
                   className="w-32"
@@ -87,7 +89,7 @@ export default function ScheduleStep() {
 
       {/* Timezone */}
       <div className="space-y-1.5">
-        <Label htmlFor="timezone">Timezone</Label>
+        <Label htmlFor="timezone">{t('campaigns.schedule_step.timezone')}</Label>
         <select
           id="timezone"
           className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
@@ -103,21 +105,21 @@ export default function ScheduleStep() {
       {/* Campaign Dates */}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="campaignStart">Start Date</Label>
+          <Label htmlFor="campaignStart">{t('campaigns.schedule_step.start_date')}</Label>
           <Input id="campaignStart" type="date" {...register('campaignStart')} />
           {errors.campaignStart && <p className="text-sm text-destructive">{errors.campaignStart.message}</p>}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="campaignEnd">End Date</Label>
+          <Label htmlFor="campaignEnd">{t('campaigns.schedule_step.end_date')}</Label>
           <Input id="campaignEnd" type="date" {...register('campaignEnd')} />
         </div>
       </div>
 
       {/* Holiday Calendar */}
       <div className="space-y-1.5">
-        <Label>Holiday Calendar</Label>
+        <Label>{t('campaigns.schedule_step.holiday_calendar')}</Label>
         <p className="text-xs text-muted-foreground">
-          Dialing will be paused on dates defined in the selected calendar. Select "None" to use manual exclusions only.
+          {t('campaigns.schedule_step.holiday_calendar_help')}
         </p>
         <Select
           value={holidayCalendarId !== null ? String(holidayCalendarId) : 'none'}
@@ -126,10 +128,10 @@ export default function ScheduleStep() {
           }
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a holiday calendar..." />
+            <SelectValue placeholder={t('campaigns.schedule_step.select_calendar_placeholder')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None</SelectItem>
+            <SelectItem value="none">{t('campaigns.schedule_step.calendar_none')}</SelectItem>
             {calendars.map((cal) => (
               <SelectItem key={cal.id} value={String(cal.id)}>
                 {cal.name}
@@ -141,12 +143,12 @@ export default function ScheduleStep() {
 
       {/* Holiday Exclusions */}
       <div className="space-y-3">
-        <Label>Manual Holiday Exclusions</Label>
+        <Label>{t('campaigns.schedule_step.manual_exclusions')}</Label>
         <div className="flex gap-2">
           <Input id="holiday-input" type="date" className="w-48" />
           <Button type="button" variant="outline" size="sm" onClick={addHoliday}>
             <Plus className="mr-1 h-3.5 w-3.5" />
-            Add
+            {t('campaigns.schedule_step.add')}
           </Button>
         </div>
         {holidays.length > 0 && (

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Upload, FileText, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Label } from '@/core/ui/label';
 import type { CampaignFormValues } from '../campaign-wizard';
@@ -121,6 +122,7 @@ function computeValidation(rows: Record<string, string>[], mapping: Record<strin
 }
 
 export default function ContactsStep() {
+  const { t } = useTranslation('admin');
   const { watch, setValue } = useFormContext<CampaignFormValues>();
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -193,7 +195,7 @@ export default function ContactsStep() {
   if (!uploaded) {
     return (
       <div className="space-y-4">
-        <Label>Upload Contact List</Label>
+        <Label>{t('campaigns.contacts_step.upload_label')}</Label>
         <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
@@ -204,7 +206,7 @@ export default function ContactsStep() {
         >
           <Upload className="h-10 w-10 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            Drag and drop a CSV file here, or click to browse
+            {t('campaigns.contacts_step.drop_hint')}
           </p>
           <Button
             type="button"
@@ -213,7 +215,7 @@ export default function ContactsStep() {
             onClick={() => fileInputRef.current?.click()}
           >
             <FileText className="mr-1.5 h-4 w-4" />
-            Select File
+            {t('campaigns.contacts_step.select_file')}
           </Button>
           <input
             ref={fileInputRef}
@@ -230,6 +232,7 @@ export default function ContactsStep() {
   const validation = computeValidation(parseResult.rows, columnMapping);
   const previewRows = parseResult.rows.slice(0, 10);
   const previewCols = parseResult.columns.slice(0, 6); // cap columns for readability
+  const previewCount = Math.min(10, parseResult.rows.length);
 
   return (
     <div className="space-y-6">
@@ -237,15 +240,15 @@ export default function ContactsStep() {
       <div className="flex items-start gap-3 rounded-lg border bg-muted/50 p-4">
         <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-500" />
         <div className="flex-1 text-sm">
-          <p className="font-medium">File processed: {contactFile}</p>
+          <p className="font-medium">{t('campaigns.contacts_step.file_processed', { name: contactFile })}</p>
           <p className="mt-1 text-muted-foreground">
-            <span className="font-medium text-foreground">{validation.loaded}</span> contacts loaded
+            <span className="font-medium text-foreground">{t('campaigns.contacts_step.loaded_count', { count: validation.loaded })}</span>
             {' '}&middot;{' '}
-            <span className="text-amber-600">{validation.skipped} skipped</span> (no phone)
+            <span className="text-amber-600">{t('campaigns.contacts_step.skipped_count', { count: validation.skipped })}</span>
             {' '}&middot;{' '}
-            <span className="text-amber-600">{validation.duplicates} duplicates</span>
+            <span className="text-amber-600">{t('campaigns.contacts_step.duplicates_count', { count: validation.duplicates })}</span>
             {' '}&middot;{' '}
-            <span className="text-muted-foreground">{parseResult.totalRows} total rows</span>
+            <span className="text-muted-foreground">{t('campaigns.contacts_step.total_rows', { count: parseResult.totalRows })}</span>
           </p>
         </div>
         <Button type="button" variant="ghost" size="sm" onClick={handleReset} className="h-7 w-7 p-0">
@@ -255,7 +258,7 @@ export default function ContactsStep() {
 
       {/* Column Mapping */}
       <div className="space-y-3">
-        <Label>Column Mapping</Label>
+        <Label>{t('campaigns.contacts_step.column_mapping')}</Label>
         <div className="space-y-2">
           {parseResult.columns.map((col) => (
             <div key={col} className="flex items-center gap-3">
@@ -266,7 +269,7 @@ export default function ContactsStep() {
                 onChange={(e) => updateMapping(col, e.target.value)}
                 className="h-8 w-52 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
               >
-                <option value="">-- skip --</option>
+                <option value="">{t('campaigns.contacts_step.skip_option')}</option>
                 {CONTACT_FIELDS.map((f) => (
                   <option key={f} value={f}>{f}</option>
                 ))}
@@ -278,7 +281,7 @@ export default function ContactsStep() {
 
       {/* Preview Table */}
       <div className="space-y-3">
-        <Label>Contact Preview (first {Math.min(10, parseResult.rows.length)} rows)</Label>
+        <Label>{t('campaigns.contacts_step.preview_label', { count: previewCount })}</Label>
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
@@ -290,7 +293,7 @@ export default function ContactsStep() {
                 ))}
                 {parseResult.columns.length > 6 && (
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    +{parseResult.columns.length - 6} more
+                    {t('campaigns.contacts_step.more_columns', { count: parseResult.columns.length - 6 })}
                   </th>
                 )}
               </tr>
@@ -300,7 +303,7 @@ export default function ContactsStep() {
                 <tr key={i} className="border-t">
                   {previewCols.map((col) => (
                     <td key={col} className="px-3 py-1.5 text-muted-foreground">
-                      {row[col] || <span className="italic text-muted-foreground/50">empty</span>}
+                      {row[col] || <span className="italic text-muted-foreground/50">{t('campaigns.contacts_step.empty')}</span>}
                     </td>
                   ))}
                   {parseResult.columns.length > 6 && <td className="px-3 py-1.5" />}
@@ -314,7 +317,7 @@ export default function ContactsStep() {
       {/* Re-upload */}
       <Button type="button" variant="outline" size="sm" onClick={handleReset}>
         <Upload className="mr-1.5 h-4 w-4" />
-        Upload Different File
+        {t('campaigns.contacts_step.upload_different')}
       </Button>
     </div>
   );

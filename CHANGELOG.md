@@ -13,6 +13,72 @@ _No unreleased changes._
 
 ---
 
+## [1.13.9] — 2026-04-29 — i18n Coverage Phase 4D (campaigns wizard + callbacks)
+
+**Closes the campaigns wizard.** The 5-step campaign creation wizard
+(Basic / Dialing / Schedule / Compliance / Contacts) is the most
+visible long-form UX in admin — partner managers and tenant admins
+walk through it whenever they spin up a new outbound campaign.
+Plus the callbacks tab on campaign detail.
+
+### Refactored to `useTranslation`
+
+**`src/admin/campaigns/steps/basic-step.tsx`** — 4 input labels +
+4 placeholders (Campaign Name, Description, Queue, Agent Team).
+
+**`src/admin/campaigns/steps/dialing-step.tsx`** — Mode + Pacing
+fieldset legends, 5 dialing-mode option labels + descriptions
+(Preview/Progressive/Predictive/Power/Agentless), 3 pacing-strategy
+option labels + descriptions (Fixed/Adaptive/Time-Based), Use
+Global Defaults switch label + help, 3 global-readonly field
+labels (Max Global Channels, Ring Timeout, Max Concurrent
+Campaigns), 3 custom-pacing field labels (Lines per Agent, Target
+Wait, Max Channels), Caller ID Pool label + help + select
+placeholder + None option. Removed local `DIALING_MODES` /
+`PACING_STRATEGIES` arrays-of-objects in favor of t-keyed lookups
+on bare value arrays.
+
+**`src/admin/campaigns/steps/schedule-step.tsx`** — Calling
+Windows label, "to" connector, Timezone label, Start/End Date
+labels, Holiday Calendar label + help + select placeholder + None
+option, Manual Holiday Exclusions label + Add button.
+
+**`src/admin/campaigns/steps/compliance-step.tsx`** — DNC List
+label + help + select placeholder + None option + plural entry
+count badge, 3 attempt-limit field labels (Max Attempts, Retry
+Interval, Time Between Attempts), Compliance Rule Summary label
++ placeholder.
+
+**`src/admin/campaigns/steps/contacts-step.tsx`** — Upload Contact
+List label, drop hint, Select File button, validation report
+(File processed: {{name}}, plural counts for loaded/skipped/
+duplicates/total_rows), Column Mapping label + skip option,
+Preview header with `{{count}}` plural, +N more columns header,
+empty cell placeholder, Upload Different File button.
+
+**`src/admin/campaigns/callbacks-tab.tsx`** — Loading state,
+Pending Callbacks heading, Schedule Callback CTA + dialog title,
+empty state, contact label with `{{id}}` interpolation, 4 input
+labels (Phone Number, Contact ID, Scheduled Time, Agent ID),
+phone/agent placeholders, Cancel + Scheduling…/Schedule footer.
+
+### Locales
+
+Added under `admin.json` → `campaigns.{basic_step, dialing_step,
+schedule_step, compliance_step, contacts_step, callbacks}`
+(3 locales). Plural forms used for `compliance_step.dnc_entries`
+and `contacts_step.preview_label`.
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+Admin section: 98/133 (74%) → 104/133 (78%).
+
+---
+
 ## [1.13.8] — 2026-04-29 — i18n Coverage Phase 4C-2 (admin forms)
 
 **Closes the 5 admin CRUD form sheets.** Webhooks, trunks, routes,

@@ -1,4 +1,5 @@
 import { useFormContext } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Textarea } from '@/core/ui/textarea';
@@ -13,6 +14,7 @@ import { useDncLists } from '@/core/api/hooks/use-dnc-lists';
 import type { CampaignFormValues } from '../campaign-wizard';
 
 export default function ComplianceStep() {
+  const { t } = useTranslation('admin');
   const { register, watch, setValue } = useFormContext<CampaignFormValues>();
   const dncListId = watch('dncListId');
   const { data: dncLists = [] } = useDncLists();
@@ -21,9 +23,9 @@ export default function ComplianceStep() {
     <div className="space-y-6">
       {/* DNC List */}
       <div className="space-y-1.5">
-        <Label htmlFor="dncListId">Do-Not-Call (DNC) List</Label>
+        <Label htmlFor="dncListId">{t('campaigns.compliance_step.dnc_list')}</Label>
         <p className="text-xs text-muted-foreground">
-          Contacts will be verified against the selected DNC list before dialing. Select "None" to skip DNC checking.
+          {t('campaigns.compliance_step.dnc_help')}
         </p>
         <Select
           value={dncListId !== null ? String(dncListId) : 'none'}
@@ -32,15 +34,15 @@ export default function ComplianceStep() {
           }
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a DNC list..." />
+            <SelectValue placeholder={t('campaigns.compliance_step.select_dnc_placeholder')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None (skip DNC check)</SelectItem>
+            <SelectItem value="none">{t('campaigns.compliance_step.dnc_none')}</SelectItem>
             {dncLists.map((list) => (
               <SelectItem key={list.id} value={String(list.id)}>
                 {list.name}
                 <span className="ml-1.5 text-xs text-muted-foreground">
-                  ({list.entryCount.toLocaleString()} entries)
+                  {t('campaigns.compliance_step.dnc_entries', { count: list.entryCount })}
                 </span>
               </SelectItem>
             ))}
@@ -51,7 +53,7 @@ export default function ComplianceStep() {
       {/* Attempt Limits */}
       <div className="grid gap-5 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <Label htmlFor="maxAttempts">Max Attempts per Contact</Label>
+          <Label htmlFor="maxAttempts">{t('campaigns.compliance_step.max_attempts')}</Label>
           <Input
             id="maxAttempts"
             type="number"
@@ -62,7 +64,7 @@ export default function ComplianceStep() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="retryIntervalMinutes">Retry Interval (minutes)</Label>
+          <Label htmlFor="retryIntervalMinutes">{t('campaigns.compliance_step.retry_interval')}</Label>
           <Input
             id="retryIntervalMinutes"
             type="number"
@@ -73,7 +75,7 @@ export default function ComplianceStep() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="timeBetweenAttempts">Time Between Attempts (min)</Label>
+          <Label htmlFor="timeBetweenAttempts">{t('campaigns.compliance_step.time_between_attempts')}</Label>
           <Input
             id="timeBetweenAttempts"
             type="number"
@@ -86,10 +88,10 @@ export default function ComplianceStep() {
 
       {/* Compliance Notes */}
       <div className="space-y-1.5">
-        <Label htmlFor="complianceNotes">Compliance Rule Summary</Label>
+        <Label htmlFor="complianceNotes">{t('campaigns.compliance_step.compliance_notes')}</Label>
         <Textarea
           id="complianceNotes"
-          placeholder="Describe any additional compliance rules or notes for this campaign..."
+          placeholder={t('campaigns.compliance_step.compliance_notes_placeholder')}
           rows={4}
           {...register('complianceNotes')}
         />

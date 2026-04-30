@@ -1,4 +1,5 @@
 import { useFormContext } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
@@ -13,21 +14,11 @@ import { useCallerIdPools } from '@/core/api/hooks/use-caller-id-pools';
 import { useDialerSettings } from '@/core/api/hooks/use-dialer-settings';
 import type { CampaignFormValues, DialingMode, PacingStrategy } from '../campaign-wizard';
 
-const DIALING_MODES: { value: DialingMode; label: string; description: string }[] = [
-  { value: 'preview', label: 'Preview', description: 'Agent sees contact info before dialing and decides when to call.' },
-  { value: 'progressive', label: 'Progressive', description: 'System dials automatically when an agent becomes available. One call per agent.' },
-  { value: 'predictive', label: 'Predictive', description: 'System dials multiple numbers ahead of agent availability using statistical pacing.' },
-  { value: 'power', label: 'Power', description: 'Dials a fixed ratio of calls per available agent. Simpler than predictive.' },
-  { value: 'agentless', label: 'Agentless', description: 'Fully automated dialing with no live agents. Uses IVR or recorded messages.' },
-];
-
-const PACING_STRATEGIES: { value: PacingStrategy; label: string; description: string }[] = [
-  { value: 'fixed', label: 'Fixed Ratio', description: 'Dial a fixed number of lines per available agent.' },
-  { value: 'adaptive', label: 'Adaptive', description: 'Automatically adjusts pacing to meet a target agent wait time.' },
-  { value: 'timeBased', label: 'Time-Based', description: 'Adjusts pacing based on time-of-day patterns.' },
-];
+const DIALING_MODE_VALUES: DialingMode[] = ['preview', 'progressive', 'predictive', 'power', 'agentless'];
+const PACING_STRATEGY_VALUES: PacingStrategy[] = ['fixed', 'adaptive', 'timeBased'];
 
 export default function DialingStep() {
+  const { t } = useTranslation('admin');
   const { register, watch, setValue, formState: { errors } } = useFormContext<CampaignFormValues>();
   const selectedMode = watch('mode');
   const selectedPacing = watch('pacingStrategy');
@@ -41,25 +32,25 @@ export default function DialingStep() {
     <div className="space-y-6">
       {/* Dialing Mode */}
       <fieldset className="space-y-3">
-        <span className="text-sm font-medium">Dialing Mode</span>
+        <span className="text-sm font-medium">{t('campaigns.dialing_step.mode_label')}</span>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {DIALING_MODES.map((mode) => (
+          {DIALING_MODE_VALUES.map((mode) => (
             <label
-              key={mode.value}
+              key={mode}
               className={`cursor-pointer rounded-lg border p-3 transition-colors ${
-                selectedMode === mode.value
+                selectedMode === mode
                   ? 'border-primary bg-primary/5'
                   : 'border-input hover:border-primary/50'
               }`}
             >
               <input
                 type="radio"
-                value={mode.value}
+                value={mode}
                 className="sr-only"
                 {...register('mode')}
               />
-              <span className="text-sm font-medium">{mode.label}</span>
-              <p className="mt-1 text-xs text-muted-foreground">{mode.description}</p>
+              <span className="text-sm font-medium">{t(`campaigns.dialing_step.modes.${mode}`)}</span>
+              <p className="mt-1 text-xs text-muted-foreground">{t(`campaigns.dialing_step.modes.${mode}_desc`)}</p>
             </label>
           ))}
         </div>
@@ -67,25 +58,25 @@ export default function DialingStep() {
 
       {/* Pacing Strategy */}
       <fieldset className="space-y-3">
-        <span className="text-sm font-medium">Pacing Strategy</span>
+        <span className="text-sm font-medium">{t('campaigns.dialing_step.pacing_label')}</span>
         <div className="grid gap-2 sm:grid-cols-3">
-          {PACING_STRATEGIES.map((ps) => (
+          {PACING_STRATEGY_VALUES.map((ps) => (
             <label
-              key={ps.value}
+              key={ps}
               className={`cursor-pointer rounded-lg border p-3 transition-colors ${
-                selectedPacing === ps.value
+                selectedPacing === ps
                   ? 'border-primary bg-primary/5'
                   : 'border-input hover:border-primary/50'
               }`}
             >
               <input
                 type="radio"
-                value={ps.value}
+                value={ps}
                 className="sr-only"
                 {...register('pacingStrategy')}
               />
-              <span className="text-sm font-medium">{ps.label}</span>
-              <p className="mt-1 text-xs text-muted-foreground">{ps.description}</p>
+              <span className="text-sm font-medium">{t(`campaigns.dialing_step.pacings.${ps}`)}</span>
+              <p className="mt-1 text-xs text-muted-foreground">{t(`campaigns.dialing_step.pacings.${ps}_desc`)}</p>
             </label>
           ))}
         </div>
@@ -94,9 +85,9 @@ export default function DialingStep() {
       {/* Global Defaults Toggle */}
       <div className="flex items-center justify-between rounded-lg border p-4">
         <div>
-          <p className="text-sm font-medium">Use Global Dialer Defaults</p>
+          <p className="text-sm font-medium">{t('campaigns.dialing_step.use_global_label')}</p>
           <p className="text-xs text-muted-foreground">
-            Inherit pacing parameters from the global dialer configuration instead of setting custom values.
+            {t('campaigns.dialing_step.use_global_help')}
           </p>
         </div>
         <Switch
@@ -110,15 +101,15 @@ export default function DialingStep() {
         globalSettings && (
           <div className="grid gap-5 sm:grid-cols-3 rounded-lg border border-dashed p-4 opacity-70">
             <div className="space-y-1.5">
-              <Label>Max Global Channels</Label>
+              <Label>{t('campaigns.dialing_step.max_global_channels')}</Label>
               <p className="text-sm font-medium text-muted-foreground">{globalSettings.maxGlobalChannels}</p>
             </div>
             <div className="space-y-1.5">
-              <Label>Ring Timeout (seconds)</Label>
+              <Label>{t('campaigns.dialing_step.ring_timeout')}</Label>
               <p className="text-sm font-medium text-muted-foreground">{globalSettings.defaultRingTimeoutSeconds}</p>
             </div>
             <div className="space-y-1.5">
-              <Label>Max Concurrent Campaigns</Label>
+              <Label>{t('campaigns.dialing_step.max_concurrent_campaigns')}</Label>
               <p className="text-sm font-medium text-muted-foreground">{globalSettings.maxConcurrentCampaigns}</p>
             </div>
           </div>
@@ -127,7 +118,7 @@ export default function DialingStep() {
         <div className="grid gap-5 sm:grid-cols-3">
           {selectedPacing === 'fixed' && (
             <div className="space-y-1.5">
-              <Label htmlFor="pacingRatio">Lines per Agent</Label>
+              <Label htmlFor="pacingRatio">{t('campaigns.dialing_step.lines_per_agent')}</Label>
               <Input
                 id="pacingRatio"
                 type="number"
@@ -140,7 +131,7 @@ export default function DialingStep() {
 
           {selectedPacing === 'adaptive' && (
             <div className="space-y-1.5">
-              <Label htmlFor="pacingTargetWait">Target Wait (seconds)</Label>
+              <Label htmlFor="pacingTargetWait">{t('campaigns.dialing_step.target_wait')}</Label>
               <Input
                 id="pacingTargetWait"
                 type="number"
@@ -152,7 +143,7 @@ export default function DialingStep() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="maxChannels">Max Channels</Label>
+            <Label htmlFor="maxChannels">{t('campaigns.dialing_step.max_channels')}</Label>
             <Input
               id="maxChannels"
               type="number"
@@ -167,9 +158,9 @@ export default function DialingStep() {
 
       {/* Caller ID Pool */}
       <div className="space-y-1.5">
-        <Label>Caller ID Pool</Label>
+        <Label>{t('campaigns.dialing_step.caller_id_pool')}</Label>
         <p className="text-xs text-muted-foreground">
-          Outbound calls will rotate through numbers in the selected pool. Select "None" to use the trunk default.
+          {t('campaigns.dialing_step.caller_id_pool_help')}
         </p>
         <Select
           value={callerIdPoolId !== null ? String(callerIdPoolId) : 'none'}
@@ -178,10 +169,10 @@ export default function DialingStep() {
           }
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a caller ID pool..." />
+            <SelectValue placeholder={t('campaigns.dialing_step.select_pool_placeholder')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None (use trunk default)</SelectItem>
+            <SelectItem value="none">{t('campaigns.dialing_step.pool_none')}</SelectItem>
             {pools.map((pool) => (
               <SelectItem key={pool.id} value={String(pool.id)}>
                 {pool.name}
