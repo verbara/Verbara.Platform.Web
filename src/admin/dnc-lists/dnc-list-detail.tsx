@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Upload, CheckCircle2, XCircle } from 'lucide-react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -39,6 +40,7 @@ function parsePhonesFromCsv(text: string): string[] {
 }
 
 export default function DncListDetail() {
+  const { t } = useTranslation('admin');
   const { listId } = useParams<{ listId: string }>();
   const navigate = useNavigate();
 
@@ -111,7 +113,7 @@ export default function DncListDetail() {
   if (listLoading) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
-        Loading…
+        {t('dnc-lists.detail.loading')}
       </div>
     );
   }
@@ -119,7 +121,7 @@ export default function DncListDetail() {
   if (!list) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
-        DNC list not found.
+        {t('dnc-lists.detail.not_found')}
       </div>
     );
   }
@@ -133,7 +135,7 @@ export default function DncListDetail() {
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin/dnc-lists')}>
           <ArrowLeft className="mr-1.5 h-4 w-4" />
-          DNC Lists
+          {t('dnc-lists.detail.back')}
         </Button>
       </div>
 
@@ -141,13 +143,13 @@ export default function DncListDetail() {
         <div>
           <h2 className="font-heading text-xl font-semibold">{list.name}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground capitalize">
-            Scope: {list.scope} &middot; {list.entryCount.toLocaleString()} entries
+            {t('dnc-lists.detail.scope_summary', { scope: list.scope, count: list.entryCount })}
           </p>
         </div>
         <PermissionGuard requires="campaigns:dnc:manage">
           <Button size="sm" variant="outline" onClick={() => setImportWizardOpen(true)}>
             <Upload className="mr-1.5 h-4 w-4" />
-            Import Numbers
+            {t('dnc-lists.detail.import_numbers')}
           </Button>
         </PermissionGuard>
       </div>
@@ -155,24 +157,24 @@ export default function DncListDetail() {
       {/* Add Number */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Add Number
+          {t('dnc-lists.detail.add_number')}
         </p>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex-1 space-y-1.5">
-            <Label htmlFor="add-phone">Phone number</Label>
+            <Label htmlFor="add-phone">{t('dnc-lists.detail.phone_label')}</Label>
             <Input
               id="add-phone"
-              placeholder="+1 555 000 0000"
+              placeholder={t('dnc-lists.detail.phone_placeholder')}
               value={addPhone}
               onChange={(e) => setAddPhone(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddEntry(); }}
             />
           </div>
           <div className="flex-1 space-y-1.5">
-            <Label htmlFor="add-reason">Reason (optional)</Label>
+            <Label htmlFor="add-reason">{t('dnc-lists.detail.reason_label')}</Label>
             <Input
               id="add-reason"
-              placeholder="e.g. Customer opt-out"
+              placeholder={t('dnc-lists.detail.reason_placeholder')}
               value={addReason}
               onChange={(e) => setAddReason(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddEntry(); }}
@@ -183,7 +185,7 @@ export default function DncListDetail() {
             disabled={!addPhone.trim() || addEntry.isPending}
           >
             <Plus className="mr-1.5 h-4 w-4" />
-            Add
+            {t('dnc-lists.detail.add')}
           </Button>
         </div>
       </div>
@@ -191,11 +193,11 @@ export default function DncListDetail() {
       {/* Check Number */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Check Number
+          {t('dnc-lists.detail.check_number')}
         </p>
         <div className="flex gap-2">
           <Input
-            placeholder="+1 555 000 0000"
+            placeholder={t('dnc-lists.detail.phone_placeholder')}
             value={checkPhone}
             onChange={(e) => setCheckPhone(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleCheck(); }}
@@ -205,7 +207,7 @@ export default function DncListDetail() {
             onClick={handleCheck}
             disabled={!checkPhone.trim() || checkNumber.isPending}
           >
-            Check
+            {t('dnc-lists.detail.check')}
           </Button>
         </div>
 
@@ -221,15 +223,25 @@ export default function DncListDetail() {
               <>
                 <XCircle className="h-4 w-4 shrink-0" />
                 <span>
-                  <strong>{checkResult.phoneNumber}</strong> is blocked
-                  {checkResult.matchedListName && ` by list "${checkResult.matchedListName}"`}.
+                  <Trans
+                    i18nKey="dnc-lists.detail.blocked_message"
+                    ns="admin"
+                    values={{ phone: checkResult.phoneNumber }}
+                    components={[<strong key="phone" />]}
+                  />
+                  {checkResult.matchedListName && t('dnc-lists.detail.blocked_by_list', { list: checkResult.matchedListName })}.
                 </span>
               </>
             ) : (
               <>
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
                 <span>
-                  <strong>{checkResult.phoneNumber}</strong> is not on any DNC list.
+                  <Trans
+                    i18nKey="dnc-lists.detail.not_blocked"
+                    ns="admin"
+                    values={{ phone: checkResult.phoneNumber }}
+                    components={[<strong key="phone" />]}
+                  />
                 </span>
               </>
             )}
@@ -241,7 +253,7 @@ export default function DncListDetail() {
       <div className="rounded-lg border bg-card p-6 space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Entries
+            {t('dnc-lists.detail.entries')}
           </p>
           <Button
             variant="outline"
@@ -250,7 +262,7 @@ export default function DncListDetail() {
             disabled={importEntries.isPending}
           >
             <Upload className="mr-1.5 h-4 w-4" />
-            {importEntries.isPending ? 'Importing…' : 'Import CSV'}
+            {importEntries.isPending ? t('dnc-lists.detail.importing') : t('dnc-lists.detail.import_csv')}
           </Button>
           <input
             ref={fileInputRef}
@@ -263,11 +275,11 @@ export default function DncListDetail() {
 
         {entriesLoading ? (
           <div className="flex h-32 items-center justify-center text-muted-foreground">
-            Loading entries…
+            {t('dnc-lists.detail.loading_entries')}
           </div>
         ) : entries.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No entries yet. Add numbers individually or import a CSV.
+            {t('dnc-lists.detail.no_entries')}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
@@ -275,13 +287,13 @@ export default function DncListDetail() {
               <thead className="bg-muted/50">
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Phone Number
+                    {t('dnc-lists.detail.col_phone')}
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Reason
+                    {t('dnc-lists.detail.col_reason')}
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Expires
+                    {t('dnc-lists.detail.col_expires')}
                   </th>
                   <th className="px-3 py-2" />
                 </tr>
@@ -296,7 +308,7 @@ export default function DncListDetail() {
                     <td className="px-3 py-2 text-muted-foreground">
                       {entry.expiresAt
                         ? new Date(entry.expiresAt).toLocaleDateString()
-                        : <span className="italic text-muted-foreground/50">Never</span>}
+                        : <span className="italic text-muted-foreground/50">{t('dnc-lists.detail.expires_never')}</span>}
                     </td>
                     <td className="px-3 py-2">
                       <Button
@@ -324,16 +336,16 @@ export default function DncListDetail() {
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
             >
-              Previous
+              {t('dnc-lists.detail.previous')}
             </Button>
-            <span>Page {page + 1}</span>
+            <span>{t('dnc-lists.detail.page_n', { n: page + 1 })}</span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setPage((p) => p + 1)}
               disabled={!hasNextPage}
             >
-              Next
+              {t('dnc-lists.detail.next')}
             </Button>
           </div>
         )}
@@ -343,10 +355,10 @@ export default function DncListDetail() {
       <ConfirmDialog
         open={deletingEntryId !== null}
         onOpenChange={(o) => { if (!o) setDeletingEntryId(null); }}
-        title="Remove DNC Entry"
-        description="Are you sure you want to remove this number from the list? It may be dialed again."
+        title={t('dnc-lists.detail.remove_dialog.title')}
+        description={t('dnc-lists.detail.remove_dialog.description')}
         onConfirm={handleConfirmDelete}
-        confirmLabel="Remove"
+        confirmLabel={t('dnc-lists.detail.remove_dialog.confirm')}
         variant="destructive"
       />
 

@@ -13,6 +13,89 @@ _No unreleased changes._
 
 ---
 
+## [1.13.11] — 2026-04-29 — i18n Coverage Phase 4E-2 (DNC lists + GDPR)
+
+**Closes the compliance surfaces.** DNC list management (CRUD +
+detail with phone-add/check + CSV import wizard) and GDPR data
+ops (export, contact/user purge with preview, retention policy
+sheet, and purge log) — the screens compliance officers and DPO-
+designate admins use daily.
+
+### Refactored to `useTranslation`
+
+**`src/admin/dnc-lists/dnc-lists-page.tsx`** — page header, Create
+CTA, loading/empty/no-results, 4 column headers (Name/Scope/
+Entries/Created), localized scope badge (Global/Campaign),
+Create/Edit dialog (title, name + scope labels, scope options,
+Cancel/Saving.../Update/Create).
+
+**`src/admin/dnc-lists/dnc-list-detail.tsx`** — loading + not-
+found states, Back button, scope_summary header with `{{scope}}`
++ `{{count}}`, Import Numbers CTA, Add Number section + 2 input
+labels (phone/reason) + placeholders + Add button, Check Number
+section + button + result messages via `<Trans>` with `<strong>`
+component for `{{phone}}`, blocked-by-list suffix with `{{list}}`,
+not-blocked variant, Entries section + Importing.../Import CSV
+toggle, loading-entries, no-entries, 3 column headers, never
+expiry placeholder, Previous/`Page {{n}}`/Next pagination, remove
+ConfirmDialog (title/description/confirm).
+
+**`src/admin/dnc-lists/dnc-import-wizard.tsx`** — dialog title,
+3 step descriptions (upload/preview/result), drop hint + Browse
+button, preview count `{{total}}/{{shown}}`, 2 column-mapping
+labels + None option, imported count `{{count}}`, Back/Importing.../
+Import/Done buttons.
+
+**`src/admin/gdpr/gdpr-page.tsx`** — page header + description,
+2 tab labels (By Contact / By User), Data Export card (heading,
+contact-id label + placeholder, Exporting.../Export Data button,
+summary heading + 5 lines with `{{count}}` interpolation +
+Found/Not-found token, Download JSON), Data Purge card (heading,
+2 warning paragraphs for contact vs user, contact-id/user-id
+labels + placeholders, reason label + placeholder + length-
+validation message, Purge Contact Data + Purge User Data buttons),
+Preview button + heading + 4 preview-line labels, Purge Complete
+result heading + Purge ID via `<Trans>` with mono `<span>` + per-
+entity line.
+
+**`src/admin/gdpr/purge-log-page.tsx`** — page header +
+description, 7 column headers (Purge ID/Tenant ID/Subject/
+Performed By/Reason/Entities Deleted/Purged At), filter labels
+(Tenant ID + placeholder, From, To), Apply/Clear buttons, search
+placeholder + no-results.
+
+**`src/admin/gdpr/retention-policy-section.tsx`** — sheet title,
+description split with embedded `<span>` for `{{tenantId}}`,
+4 retention fields (label + description per entity type:
+conversation/auth_event/audit/usage), Saving.../Save button,
+days input placeholder + suffix. Refactored `RetentionFieldConfig`
+to use `i18nKey: 'conversation' | 'auth_event' | 'audit' | 'usage'`
+instead of hardcoded label/description strings.
+
+### Locales
+
+Added under `admin.json` (3 locales):
+
+- `dnc-lists.*` (incl. `.detail.*` + `.import_wizard.*`)
+- `gdpr.*` (incl. `.tabs.*`, `.export.*`, `.purge.*` shared
+  between contact + user variants)
+- `purge-log.*` (new top-level)
+- `retention.policy.*` (extends existing `retention.{title, nav}`)
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+Admin section: 109/133 (82%) → 115/133 (86%).
+
+This closes Phase 4E. Remaining: 4F (flows + 12 nodes — ~15
+files) and 4G (`core/ui/confirm-delete-dialog` with caller
+migration).
+
+---
+
 ## [1.13.10] — 2026-04-29 — i18n Coverage Phase 4E-1 (webchat + cases + telephony admin)
 
 **Closes 5 mid-tier admin features.** WebChat widget config, cases

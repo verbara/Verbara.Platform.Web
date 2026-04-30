@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import { ShieldBan, Trash2, Plus, Pencil } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
@@ -36,6 +37,7 @@ import {
 const columnHelper = createColumnHelper<DncListSummary>();
 
 export default function DncListsPage() {
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const [deletingList, setDeletingList] = useState<DncListSummary | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -51,25 +53,25 @@ export default function DncListsPage() {
   const columns = useMemo(
     () => [
       columnHelper.accessor('name', {
-        header: () => 'Name',
+        header: () => t('dnc-lists.columns.name'),
         cell: (info) => (
           <span className="font-medium text-foreground">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('scope', {
-        header: () => 'Scope',
+        header: () => t('dnc-lists.columns.scope'),
         cell: (info) => (
           <Badge variant={info.getValue() === 'global' ? 'default' : 'secondary'}>
-            {info.getValue()}
+            {t(`dnc-lists.scope.${info.getValue()}`)}
           </Badge>
         ),
       }),
       columnHelper.accessor('entryCount', {
-        header: () => 'Entries',
+        header: () => t('dnc-lists.columns.entries'),
         cell: (info) => info.getValue().toLocaleString(),
       }),
       columnHelper.accessor('createdAt', {
-        header: () => 'Created',
+        header: () => t('dnc-lists.columns.created'),
         cell: (info) => new Date(info.getValue()).toLocaleDateString(),
       }),
       columnHelper.display({
@@ -109,15 +111,15 @@ export default function DncListsPage() {
         ),
       }),
     ],
-    [],
+    [t],
   );
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="DNC Lists" />
+        <PageHeader title={t('dnc-lists.title')} />
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
+          {t('dnc-lists.loading')}
         </div>
       </div>
     );
@@ -127,23 +129,23 @@ export default function DncListsPage() {
 
   return (
     <div className="space-y-6" data-testid="dnc-lists-page">
-      <PageHeader title="DNC Lists">
+      <PageHeader title={t('dnc-lists.title')}>
         <PermissionGuard requires="campaigns:dnc:manage">
           <Button data-testid="dnc-lists-create-btn" size="sm" onClick={() => { setEditingList(null); setFormData({ name: '', scope: 'global' }); setFormOpen(true); }}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Create DNC List
+            {t('dnc-lists.create')}
           </Button>
         </PermissionGuard>
       </PageHeader>
 
       {isEmpty ? (
-        <EmptyState icon={ShieldBan} message="No DNC lists yet." />
+        <EmptyState icon={ShieldBan} message={t('dnc-lists.empty')} />
       ) : (
         <DataTable
           data={lists}
           columns={columns}
-          searchPlaceholder="Search DNC lists…"
-          noResultsMessage="No matching DNC lists found."
+          searchPlaceholder={t('dnc-lists.search_placeholder')}
+          noResultsMessage={t('dnc-lists.no_results')}
           onRowClick={(list) => navigate(`/admin/dnc-lists/${list.id}`)}
         />
       )}
@@ -165,11 +167,11 @@ export default function DncListsPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingList ? 'Edit DNC List' : 'Create DNC List'}</DialogTitle>
+            <DialogTitle>{editingList ? t('dnc-lists.form.edit_title') : t('dnc-lists.form.create_title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="dnc-name">Name</Label>
+              <Label htmlFor="dnc-name">{t('dnc-lists.form.name')}</Label>
               <Input
                 data-testid="dnc-form-name"
                 id="dnc-name"
@@ -178,18 +180,18 @@ export default function DncListsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="dnc-scope">Scope</Label>
+              <Label htmlFor="dnc-scope">{t('dnc-lists.form.scope')}</Label>
               <Select value={formData.scope} onValueChange={(v) => setFormData((f) => ({ ...f, scope: v ?? f.scope }))}>
                 <SelectTrigger id="dnc-scope"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="global">Global</SelectItem>
-                  <SelectItem value="campaign">Campaign</SelectItem>
+                  <SelectItem value="global">{t('dnc-lists.scope.global')}</SelectItem>
+                  <SelectItem value="campaign">{t('dnc-lists.scope.campaign')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>{t('dnc-lists.form.cancel')}</Button>
             <Button
               data-testid="dnc-form-submit"
               disabled={!formData.name.trim() || createDnc.isPending || updateDnc.isPending}
@@ -201,7 +203,7 @@ export default function DncListsPage() {
                 }
               }}
             >
-              {createDnc.isPending || updateDnc.isPending ? 'Saving...' : editingList ? 'Update' : 'Create'}
+              {createDnc.isPending || updateDnc.isPending ? t('dnc-lists.form.saving') : editingList ? t('dnc-lists.form.update') : t('dnc-lists.form.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

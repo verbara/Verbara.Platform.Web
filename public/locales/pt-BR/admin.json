@@ -773,7 +773,34 @@
   },
   "retention": {
     "title": "Política de Retenção",
-    "nav": "Retenção"
+    "nav": "Retenção",
+    "policy": {
+      "title": "Política de retenção",
+      "description_prefix": "Configure os limites automáticos de retenção de dados para o tenant ",
+      "description_suffix": ".",
+      "saving": "Salvando...",
+      "save": "Salvar",
+      "fields": {
+        "conversation": {
+          "label": "Retenção de conversas",
+          "description": "Purgar automaticamente conversas mais antigas que estes dias."
+        },
+        "auth_event": {
+          "label": "Retenção de eventos de auth",
+          "description": "Purgar automaticamente eventos de autenticação mais antigos que estes dias."
+        },
+        "audit": {
+          "label": "Retenção de auditoria",
+          "description": "Purgar automaticamente registros de auditoria mais antigos que estes dias."
+        },
+        "usage": {
+          "label": "Retenção de uso",
+          "description": "Purgar automaticamente registros de uso mais antigos que estes dias."
+        }
+      },
+      "days_placeholder": "Dias",
+      "days_suffix": "dias"
+    }
   },
   "profile_security": {
     "mfa": {
@@ -1505,5 +1532,155 @@
       "update": "Atualizar"
     },
     "unnamed_contact": "Contato sem nome"
+  },
+  "dnc-lists": {
+    "title": "Listas DNC",
+    "create": "Criar lista DNC",
+    "loading": "Carregando…",
+    "search_placeholder": "Pesquisar listas DNC…",
+    "no_results": "Nenhuma lista DNC encontrada.",
+    "empty": "Nenhuma lista DNC ainda.",
+    "columns": {
+      "name": "Nome",
+      "scope": "Escopo",
+      "entries": "Entradas",
+      "created": "Criada"
+    },
+    "scope": {
+      "global": "Global",
+      "campaign": "Campanha"
+    },
+    "form": {
+      "create_title": "Criar lista DNC",
+      "edit_title": "Editar lista DNC",
+      "name": "Nome",
+      "scope": "Escopo",
+      "cancel": "Cancelar",
+      "saving": "Salvando...",
+      "create": "Criar",
+      "update": "Atualizar"
+    },
+    "entity_type": "lista DNC",
+    "detail": {
+      "loading": "Carregando…",
+      "not_found": "Lista DNC não encontrada.",
+      "back": "Listas DNC",
+      "scope_summary": "Escopo: {{scope}} · {{count}} entradas",
+      "import_numbers": "Importar números",
+      "add_number": "Adicionar número",
+      "phone_label": "Número de telefone",
+      "phone_placeholder": "+55 11 00000 0000",
+      "reason_label": "Motivo (opcional)",
+      "reason_placeholder": "ex. Cliente solicitou opt-out",
+      "add": "Adicionar",
+      "check_number": "Verificar número",
+      "check": "Verificar",
+      "blocked_message": "<0>{{phone}}</0> está bloqueado",
+      "blocked_by_list": " pela lista \"{{list}}\"",
+      "not_blocked": "<0>{{phone}}</0> não está em nenhuma lista DNC.",
+      "entries": "Entradas",
+      "import_csv": "Importar CSV",
+      "importing": "Importando…",
+      "loading_entries": "Carregando entradas…",
+      "no_entries": "Nenhuma entrada ainda. Adicione números individualmente ou importe um CSV.",
+      "col_phone": "Número de telefone",
+      "col_reason": "Motivo",
+      "col_expires": "Expira",
+      "expires_never": "Nunca",
+      "previous": "Anterior",
+      "next": "Próximo",
+      "page_n": "Página {{n}}",
+      "remove_dialog": {
+        "title": "Remover entrada DNC",
+        "description": "Tem certeza de que deseja remover este número da lista? Ele pode ser discado novamente.",
+        "confirm": "Remover"
+      }
+    },
+    "import_wizard": {
+      "title": "Importar números DNC",
+      "step_upload": "Carregue um arquivo CSV ou TXT com números de telefone.",
+      "step_preview": "Pré-visualize e mapeie colunas antes de importar.",
+      "step_result": "Importação concluída.",
+      "drop_hint": "Arraste um arquivo CSV ou TXT, ou",
+      "browse": "Procurar arquivos",
+      "preview_count": "({{total}} linhas no total, {{shown}} mostradas)",
+      "phone_column": "Coluna de telefone",
+      "reason_column": "Coluna de motivo (opcional)",
+      "none_option": "Nenhum",
+      "imported_count": "{{count}} números importados",
+      "back": "Voltar",
+      "importing": "Importando...",
+      "import": "Importar",
+      "done": "Concluído"
+    }
+  },
+  "gdpr": {
+    "title": "Gestão de dados GDPR",
+    "description": "Exporte ou purgue dados pessoais para compliance GDPR.",
+    "tabs": {
+      "by_contact": "Por contato",
+      "by_user": "Por usuário"
+    },
+    "export": {
+      "heading": "Exportação de dados",
+      "contact_id": "ID de contato",
+      "contact_id_placeholder": "Digite o ID do contato a exportar",
+      "exporting": "Exportando...",
+      "export_btn": "Exportar dados",
+      "summary": "Resumo da exportação",
+      "summary_contact": "Contato: {{value}}",
+      "summary_found": "Encontrado",
+      "summary_not_found": "Não encontrado",
+      "summary_conversations": "Conversas: {{count}}",
+      "summary_messages": "Mensagens: {{count}}",
+      "summary_auth_events": "Eventos de auth: {{count}}",
+      "summary_audit_entries": "Entradas de auditoria: {{count}}",
+      "download_json": "Baixar JSON"
+    },
+    "purge": {
+      "heading": "Purga de dados",
+      "warning_contact": "Esta ação é irreversível. Todos os dados pessoais deste contato serão excluídos permanentemente.",
+      "warning_user": "Isso exclui permanentemente todos os dados associados a uma conta de usuário (eventos de auth, entradas de auditoria, sessões).",
+      "contact_id": "ID de contato",
+      "contact_id_placeholder": "Digite o ID do contato a purgar",
+      "user_id": "ID de usuário",
+      "user_id_placeholder": "Digite o ID do usuário a purgar",
+      "preview": "Pré-visualizar",
+      "preview_heading": "Dados a purgar:",
+      "preview_conversations": "Conversas: {{count}}",
+      "preview_messages": "Mensagens: {{count}}",
+      "preview_auth_events": "Eventos de auth: {{count}}",
+      "preview_audit_entries": "Entradas de auditoria: {{count}}",
+      "reason": "Motivo",
+      "reason_placeholder": "Forneça um motivo para a purga de dados (mín. 10 caracteres)",
+      "reason_too_short": "O motivo deve ter pelo menos 10 caracteres.",
+      "purge_contact_btn": "Purgar dados do contato",
+      "purge_user_btn": "Purgar dados do usuário",
+      "purge_user_heading": "Purgar dados de usuário",
+      "result_heading": "Purga concluída",
+      "result_purge_id": "ID de purga: <0>{{id}}</0>",
+      "result_entity_line": "{{entity}}: {{count}} excluídos"
+    }
+  },
+  "purge-log": {
+    "title": "Registro de purgas",
+    "description": "Veja o histórico de operações de purga GDPR em todos os tenants.",
+    "filter_tenant": "ID de tenant",
+    "filter_tenant_placeholder": "Filtrar por tenant",
+    "filter_from": "De",
+    "filter_to": "Até",
+    "apply": "Aplicar",
+    "clear": "Limpar",
+    "search_placeholder": "Pesquisar registro de purgas...",
+    "no_results": "Nenhum registro de purga encontrado.",
+    "columns": {
+      "purge_id": "ID de purga",
+      "tenant_id": "ID de tenant",
+      "subject": "Sujeito",
+      "performed_by": "Realizada por",
+      "reason": "Motivo",
+      "entities_deleted": "Entidades excluídas",
+      "purged_at": "Purgada em"
+    }
   }
 }

@@ -818,7 +818,34 @@
   },
   "retention": {
     "title": "Retention Policy",
-    "nav": "Retention"
+    "nav": "Retention",
+    "policy": {
+      "title": "Retention Policy",
+      "description_prefix": "Configure automatic data retention limits for tenant ",
+      "description_suffix": ".",
+      "saving": "Saving...",
+      "save": "Save",
+      "fields": {
+        "conversation": {
+          "label": "Conversation Retention",
+          "description": "Automatically purge conversations older than this many days."
+        },
+        "auth_event": {
+          "label": "Auth Event Retention",
+          "description": "Automatically purge authentication events older than this many days."
+        },
+        "audit": {
+          "label": "Audit Record Retention",
+          "description": "Automatically purge audit records older than this many days."
+        },
+        "usage": {
+          "label": "Usage Record Retention",
+          "description": "Automatically purge usage records older than this many days."
+        }
+      },
+      "days_placeholder": "Days",
+      "days_suffix": "days"
+    }
   },
   "profile_security": {
     "mfa": {
@@ -1550,5 +1577,155 @@
       "update": "Update"
     },
     "unnamed_contact": "Unnamed contact"
+  },
+  "dnc-lists": {
+    "title": "DNC Lists",
+    "create": "Create DNC List",
+    "loading": "Loading…",
+    "search_placeholder": "Search DNC lists…",
+    "no_results": "No matching DNC lists found.",
+    "empty": "No DNC lists yet.",
+    "columns": {
+      "name": "Name",
+      "scope": "Scope",
+      "entries": "Entries",
+      "created": "Created"
+    },
+    "scope": {
+      "global": "Global",
+      "campaign": "Campaign"
+    },
+    "form": {
+      "create_title": "Create DNC List",
+      "edit_title": "Edit DNC List",
+      "name": "Name",
+      "scope": "Scope",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "create": "Create",
+      "update": "Update"
+    },
+    "entity_type": "DNC List",
+    "detail": {
+      "loading": "Loading…",
+      "not_found": "DNC list not found.",
+      "back": "DNC Lists",
+      "scope_summary": "Scope: {{scope}} · {{count}} entries",
+      "import_numbers": "Import Numbers",
+      "add_number": "Add Number",
+      "phone_label": "Phone number",
+      "phone_placeholder": "+1 555 000 0000",
+      "reason_label": "Reason (optional)",
+      "reason_placeholder": "e.g. Customer opt-out",
+      "add": "Add",
+      "check_number": "Check Number",
+      "check": "Check",
+      "blocked_message": "<0>{{phone}}</0> is blocked",
+      "blocked_by_list": " by list \"{{list}}\"",
+      "not_blocked": "<0>{{phone}}</0> is not on any DNC list.",
+      "entries": "Entries",
+      "import_csv": "Import CSV",
+      "importing": "Importing…",
+      "loading_entries": "Loading entries…",
+      "no_entries": "No entries yet. Add numbers individually or import a CSV.",
+      "col_phone": "Phone Number",
+      "col_reason": "Reason",
+      "col_expires": "Expires",
+      "expires_never": "Never",
+      "previous": "Previous",
+      "next": "Next",
+      "page_n": "Page {{n}}",
+      "remove_dialog": {
+        "title": "Remove DNC Entry",
+        "description": "Are you sure you want to remove this number from the list? It may be dialed again.",
+        "confirm": "Remove"
+      }
+    },
+    "import_wizard": {
+      "title": "Import DNC Numbers",
+      "step_upload": "Upload a CSV or TXT file with phone numbers.",
+      "step_preview": "Preview and map columns before importing.",
+      "step_result": "Import complete.",
+      "drop_hint": "Drag & drop a CSV or TXT file, or",
+      "browse": "Browse Files",
+      "preview_count": "({{total}} total rows, {{shown}} previewed)",
+      "phone_column": "Phone Number Column",
+      "reason_column": "Reason Column (optional)",
+      "none_option": "None",
+      "imported_count": "Imported {{count}} numbers",
+      "back": "Back",
+      "importing": "Importing...",
+      "import": "Import",
+      "done": "Done"
+    }
+  },
+  "gdpr": {
+    "title": "GDPR Data Management",
+    "description": "Export or purge personal data for GDPR compliance.",
+    "tabs": {
+      "by_contact": "By Contact",
+      "by_user": "By User"
+    },
+    "export": {
+      "heading": "Data Export",
+      "contact_id": "Contact ID",
+      "contact_id_placeholder": "Enter contact ID to export",
+      "exporting": "Exporting...",
+      "export_btn": "Export Data",
+      "summary": "Export Summary",
+      "summary_contact": "Contact: {{value}}",
+      "summary_found": "Found",
+      "summary_not_found": "Not found",
+      "summary_conversations": "Conversations: {{count}}",
+      "summary_messages": "Messages: {{count}}",
+      "summary_auth_events": "Auth events: {{count}}",
+      "summary_audit_entries": "Audit entries: {{count}}",
+      "download_json": "Download JSON"
+    },
+    "purge": {
+      "heading": "Data Purge",
+      "warning_contact": "This action is irreversible. All personal data for this contact will be permanently deleted.",
+      "warning_user": "This permanently deletes all data associated with a user account (auth events, audit entries, sessions).",
+      "contact_id": "Contact ID",
+      "contact_id_placeholder": "Enter contact ID to purge",
+      "user_id": "User ID",
+      "user_id_placeholder": "Enter user ID to purge",
+      "preview": "Preview",
+      "preview_heading": "Data to be purged:",
+      "preview_conversations": "Conversations: {{count}}",
+      "preview_messages": "Messages: {{count}}",
+      "preview_auth_events": "Auth events: {{count}}",
+      "preview_audit_entries": "Audit entries: {{count}}",
+      "reason": "Reason",
+      "reason_placeholder": "Provide a reason for the data purge (min 10 characters)",
+      "reason_too_short": "Reason must be at least 10 characters.",
+      "purge_contact_btn": "Purge Contact Data",
+      "purge_user_btn": "Purge User Data",
+      "purge_user_heading": "Purge User Data",
+      "result_heading": "Purge Complete",
+      "result_purge_id": "Purge ID: <0>{{id}}</0>",
+      "result_entity_line": "{{entity}}: {{count}} deleted"
+    }
+  },
+  "purge-log": {
+    "title": "Purge Log",
+    "description": "View history of GDPR data purge operations across all tenants.",
+    "filter_tenant": "Tenant ID",
+    "filter_tenant_placeholder": "Filter by tenant",
+    "filter_from": "From",
+    "filter_to": "To",
+    "apply": "Apply",
+    "clear": "Clear",
+    "search_placeholder": "Search purge log...",
+    "no_results": "No purge records found.",
+    "columns": {
+      "purge_id": "Purge ID",
+      "tenant_id": "Tenant ID",
+      "subject": "Subject",
+      "performed_by": "Performed By",
+      "reason": "Reason",
+      "entities_deleted": "Entities Deleted",
+      "purged_at": "Purged At"
+    }
   }
 }

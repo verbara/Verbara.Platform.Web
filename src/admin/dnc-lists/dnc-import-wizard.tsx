@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import {
   Dialog,
@@ -28,6 +29,7 @@ interface DncImportWizardProps {
 type Step = 'upload' | 'preview' | 'result';
 
 export function DncImportWizard({ listId, open, onOpenChange }: DncImportWizardProps) {
+  const { t } = useTranslation('admin');
   const [step, setStep] = useState<Step>('upload');
   const [fileName, setFileName] = useState('');
   const [phoneColumn, setPhoneColumn] = useState('0');
@@ -113,11 +115,11 @@ export function DncImportWizard({ listId, open, onOpenChange }: DncImportWizardP
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Import DNC Numbers</DialogTitle>
+          <DialogTitle>{t('dnc-lists.import_wizard.title')}</DialogTitle>
           <DialogDescription>
-            {step === 'upload' && 'Upload a CSV or TXT file with phone numbers.'}
-            {step === 'preview' && 'Preview and map columns before importing.'}
-            {step === 'result' && 'Import complete.'}
+            {step === 'upload' && t('dnc-lists.import_wizard.step_upload')}
+            {step === 'preview' && t('dnc-lists.import_wizard.step_preview')}
+            {step === 'result' && t('dnc-lists.import_wizard.step_result')}
           </DialogDescription>
         </DialogHeader>
 
@@ -129,14 +131,14 @@ export function DncImportWizard({ listId, open, onOpenChange }: DncImportWizardP
           >
             <Upload className="h-8 w-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Drag & drop a CSV or TXT file, or
+              {t('dnc-lists.import_wizard.drop_hint')}
             </p>
             <Button
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
             >
-              Browse Files
+              {t('dnc-lists.import_wizard.browse')}
             </Button>
             <input
               ref={fileInputRef}
@@ -157,13 +159,13 @@ export function DncImportWizard({ listId, open, onOpenChange }: DncImportWizardP
               <FileText className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">{fileName}</span>
               <span className="text-muted-foreground">
-                ({allDataRows.length} total rows, {previewRows.length} previewed)
+                {t('dnc-lists.import_wizard.preview_count', { total: allDataRows.length, shown: previewRows.length })}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Phone Number Column</Label>
+                <Label>{t('dnc-lists.import_wizard.phone_column')}</Label>
                 <Select value={phoneColumn} onValueChange={(v) => setPhoneColumn(v ?? '0')}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -174,11 +176,11 @@ export function DncImportWizard({ listId, open, onOpenChange }: DncImportWizardP
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Reason Column (optional)</Label>
+                <Label>{t('dnc-lists.import_wizard.reason_column')}</Label>
                 <Select value={reasonColumn ?? ''} onValueChange={(v) => setReasonColumn(v || undefined)}>
-                  <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('dnc-lists.import_wizard.none_option')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="">{t('dnc-lists.import_wizard.none_option')}</SelectItem>
                     {rawHeaders.map((h, i) => (
                       <SelectItem key={i} value={String(i)}>{h}</SelectItem>
                     ))}
@@ -214,7 +216,7 @@ export function DncImportWizard({ listId, open, onOpenChange }: DncImportWizardP
           <div className="flex flex-col items-center gap-3 py-4">
             <CheckCircle2 className="h-10 w-10 text-emerald-500" />
             <p className="text-sm font-medium">
-              Imported {importResult.imported.toLocaleString()} numbers
+              {t('dnc-lists.import_wizard.imported_count', { count: importResult.imported })}
             </p>
           </div>
         )}
@@ -222,14 +224,14 @@ export function DncImportWizard({ listId, open, onOpenChange }: DncImportWizardP
         <DialogFooter>
           {step === 'preview' && (
             <>
-              <Button variant="outline" onClick={() => setStep('upload')}>Back</Button>
+              <Button variant="outline" onClick={() => setStep('upload')}>{t('dnc-lists.import_wizard.back')}</Button>
               <Button onClick={handleImport} disabled={importEntries.isPending}>
-                {importEntries.isPending ? 'Importing...' : 'Import'}
+                {importEntries.isPending ? t('dnc-lists.import_wizard.importing') : t('dnc-lists.import_wizard.import')}
               </Button>
             </>
           )}
           {step === 'result' && (
-            <Button onClick={() => handleOpenChange(false)}>Done</Button>
+            <Button onClick={() => handleOpenChange(false)}>{t('dnc-lists.import_wizard.done')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

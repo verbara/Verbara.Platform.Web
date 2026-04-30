@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FileDown, Trash2, Download, AlertTriangle, Search } from 'lucide-react';
+import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -18,6 +19,7 @@ import {
 } from '@/core/api/hooks/use-gdpr';
 
 export default function GdprPage() {
+  const { t } = useTranslation('admin');
   // Export state
   const [contactIdExport, setContactIdExport] = useState('');
   const [exportResult, setExportResult] = useState<GdprExportResult | null>(null);
@@ -94,15 +96,15 @@ export default function GdprPage() {
   return (
     <div data-testid="gdpr-page" className="space-y-6">
       <PageHeader
-        title="GDPR Data Management"
-        description="Export or purge personal data for GDPR compliance."
+        title={t('gdpr.title')}
+        description={t('gdpr.description')}
       />
 
       <div className="mx-auto max-w-2xl space-y-6">
         <Tabs defaultValue="contact">
           <TabsList>
-            <TabsTrigger value="contact">By Contact</TabsTrigger>
-            <TabsTrigger value="user">By User</TabsTrigger>
+            <TabsTrigger value="contact">{t('gdpr.tabs.by_contact')}</TabsTrigger>
+            <TabsTrigger value="user">{t('gdpr.tabs.by_user')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="contact" className="space-y-6 mt-4">
@@ -110,16 +112,16 @@ export default function GdprPage() {
         <div className="rounded-lg border bg-card p-6">
           <div className="flex items-center gap-2 mb-4">
             <FileDown className="h-5 w-5 text-brand" />
-            <h2 className="text-lg font-semibold">Data Export</h2>
+            <h2 className="text-lg font-semibold">{t('gdpr.export.heading')}</h2>
           </div>
           <Separator className="mb-4" />
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="export-contact-id">Contact ID</Label>
+              <Label htmlFor="export-contact-id">{t('gdpr.export.contact_id')}</Label>
               <Input
                 id="export-contact-id"
-                placeholder="Enter contact ID to export"
+                placeholder={t('gdpr.export.contact_id_placeholder')}
                 value={contactIdExport}
                 onChange={(e) => setContactIdExport(e.target.value)}
                 data-testid="gdpr-export-contactId"
@@ -132,20 +134,20 @@ export default function GdprPage() {
               data-testid="gdpr-export-btn"
             >
               <Download className="mr-1.5 h-4 w-4" />
-              {gdprExport.isPending ? 'Exporting...' : 'Export Data'}
+              {gdprExport.isPending ? t('gdpr.export.exporting') : t('gdpr.export.export_btn')}
             </Button>
 
             {exportResult && (
               <div className="space-y-3 rounded-md border bg-muted/50 p-4">
-                <h3 className="text-sm font-medium">Export Summary</h3>
+                <h3 className="text-sm font-medium">{t('gdpr.export.summary')}</h3>
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>
-                    Contact: {exportResult.contact ? 'Found' : 'Not found'}
+                    {t('gdpr.export.summary_contact', { value: exportResult.contact ? t('gdpr.export.summary_found') : t('gdpr.export.summary_not_found') })}
                   </li>
-                  <li>Conversations: {exportResult.conversations.length}</li>
-                  <li>Messages: {exportResult.messages.length}</li>
-                  <li>Auth events: {exportResult.authEvents.length}</li>
-                  <li>Audit entries: {exportResult.auditEntries.length}</li>
+                  <li>{t('gdpr.export.summary_conversations', { count: exportResult.conversations.length })}</li>
+                  <li>{t('gdpr.export.summary_messages', { count: exportResult.messages.length })}</li>
+                  <li>{t('gdpr.export.summary_auth_events', { count: exportResult.authEvents.length })}</li>
+                  <li>{t('gdpr.export.summary_audit_entries', { count: exportResult.auditEntries.length })}</li>
                 </ul>
                 <Button
                   variant="outline"
@@ -154,7 +156,7 @@ export default function GdprPage() {
                   data-testid="gdpr-export-download"
                 >
                   <Download className="mr-1.5 h-3.5 w-3.5" />
-                  Download JSON
+                  {t('gdpr.export.download_json')}
                 </Button>
               </div>
             )}
@@ -165,7 +167,7 @@ export default function GdprPage() {
         <div className="rounded-lg border border-destructive/30 bg-card p-6">
           <div className="flex items-center gap-2 mb-4">
             <Trash2 className="h-5 w-5 text-destructive" />
-            <h2 className="text-lg font-semibold">Data Purge</h2>
+            <h2 className="text-lg font-semibold">{t('gdpr.purge.heading')}</h2>
           </div>
           <Separator className="mb-4" />
 
@@ -173,16 +175,15 @@ export default function GdprPage() {
             <div className="flex items-start gap-3 rounded-md bg-amber-50 p-3 dark:bg-amber-950/30">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                This action is irreversible. All personal data for this contact
-                will be permanently deleted.
+                {t('gdpr.purge.warning_contact')}
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="purge-contact-id">Contact ID</Label>
+              <Label htmlFor="purge-contact-id">{t('gdpr.purge.contact_id')}</Label>
               <Input
                 id="purge-contact-id"
-                placeholder="Enter contact ID to purge"
+                placeholder={t('gdpr.purge.contact_id_placeholder')}
                 value={contactIdPurge}
                 onChange={(e) => setContactIdPurge(e.target.value)}
                 data-testid="gdpr-purge-contactId"
@@ -190,17 +191,17 @@ export default function GdprPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="purge-reason">Reason</Label>
+              <Label htmlFor="purge-reason">{t('gdpr.purge.reason')}</Label>
               <Textarea
                 id="purge-reason"
-                placeholder="Provide a reason for the data purge (min 10 characters)"
+                placeholder={t('gdpr.purge.reason_placeholder')}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 data-testid="gdpr-purge-reason"
               />
               {reason.length > 0 && reason.length < 10 && (
                 <p className="text-xs text-destructive">
-                  Reason must be at least 10 characters.
+                  {t('gdpr.purge.reason_too_short')}
                 </p>
               )}
             </div>
@@ -216,7 +217,7 @@ export default function GdprPage() {
               data-testid="gdpr-purge-btn"
             >
               <Trash2 className="mr-1.5 h-4 w-4" />
-              Purge Contact Data
+              {t('gdpr.purge.purge_contact_btn')}
             </Button>
 
             {purgeResult && (
@@ -224,18 +225,20 @@ export default function GdprPage() {
                 className="space-y-3 rounded-md border bg-muted/50 p-4"
                 data-testid="gdpr-purge-result"
               >
-                <h3 className="text-sm font-medium">Purge Complete</h3>
+                <h3 className="text-sm font-medium">{t('gdpr.purge.result_heading')}</h3>
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>
-                    Purge ID:{' '}
-                    <span className="font-mono text-xs">
-                      {purgeResult.purgeId}
-                    </span>
+                    <Trans
+                      i18nKey="gdpr.purge.result_purge_id"
+                      ns="admin"
+                      values={{ id: purgeResult.purgeId }}
+                      components={[<span key="id" className="font-mono text-xs" />]}
+                    />
                   </li>
                   {Object.entries(purgeResult.entitiesDeleted).map(
                     ([entity, count]) => (
                       <li key={entity}>
-                        {entity}: {count} deleted
+                        {t('gdpr.purge.result_entity_line', { entity, count })}
                       </li>
                     ),
                   )}
@@ -250,7 +253,7 @@ export default function GdprPage() {
             <div className="rounded-lg border border-destructive/30 bg-card p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Trash2 className="h-5 w-5 text-destructive" />
-                <h2 className="text-lg font-semibold">Purge User Data</h2>
+                <h2 className="text-lg font-semibold">{t('gdpr.purge.purge_user_heading')}</h2>
               </div>
               <Separator className="mb-4" />
 
@@ -258,16 +261,16 @@ export default function GdprPage() {
                 <div className="flex items-start gap-3 rounded-md bg-amber-50 p-3 dark:bg-amber-950/30">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
                   <p className="text-sm text-amber-800 dark:text-amber-200">
-                    This permanently deletes all data associated with a user account (auth events, audit entries, sessions).
+                    {t('gdpr.purge.warning_user')}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="purge-user-id">User ID</Label>
+                  <Label htmlFor="purge-user-id">{t('gdpr.purge.user_id')}</Label>
                   <div className="flex gap-2">
                     <Input
                       id="purge-user-id"
-                      placeholder="Enter user ID to purge"
+                      placeholder={t('gdpr.purge.user_id_placeholder')}
                       value={userIdPurge}
                       onChange={(e) => setUserIdPurge(e.target.value)}
                       data-testid="gdpr-purge-userId"
@@ -279,35 +282,35 @@ export default function GdprPage() {
                       data-testid="gdpr-preview-btn"
                     >
                       <Search className="mr-1.5 h-4 w-4" />
-                      Preview
+                      {t('gdpr.purge.preview')}
                     </Button>
                   </div>
                 </div>
 
                 {preview && (
                   <div className="space-y-2 rounded-md border bg-muted/50 p-4" data-testid="gdpr-preview-result">
-                    <h3 className="text-sm font-medium">Data to be purged:</h3>
+                    <h3 className="text-sm font-medium">{t('gdpr.purge.preview_heading')}</h3>
                     <ul className="space-y-1 text-sm text-muted-foreground">
-                      <li>Conversations: {preview.conversations}</li>
-                      <li>Messages: {preview.messages}</li>
-                      <li>Auth events: {preview.authEvents}</li>
-                      <li>Audit entries: {preview.auditEntries}</li>
+                      <li>{t('gdpr.purge.preview_conversations', { count: preview.conversations })}</li>
+                      <li>{t('gdpr.purge.preview_messages', { count: preview.messages })}</li>
+                      <li>{t('gdpr.purge.preview_auth_events', { count: preview.authEvents })}</li>
+                      <li>{t('gdpr.purge.preview_audit_entries', { count: preview.auditEntries })}</li>
                     </ul>
                   </div>
                 )}
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="purge-user-reason">Reason</Label>
+                  <Label htmlFor="purge-user-reason">{t('gdpr.purge.reason')}</Label>
                   <Textarea
                     id="purge-user-reason"
-                    placeholder="Provide a reason for the data purge (min 10 characters)"
+                    placeholder={t('gdpr.purge.reason_placeholder')}
                     value={userReason}
                     onChange={(e) => setUserReason(e.target.value)}
                     data-testid="gdpr-purge-userReason"
                   />
                   {userReason.length > 0 && userReason.length < 10 && (
                     <p className="text-xs text-destructive">
-                      Reason must be at least 10 characters.
+                      {t('gdpr.purge.reason_too_short')}
                     </p>
                   )}
                 </div>
@@ -319,16 +322,23 @@ export default function GdprPage() {
                   data-testid="gdpr-purge-user-btn"
                 >
                   <Trash2 className="mr-1.5 h-4 w-4" />
-                  Purge User Data
+                  {t('gdpr.purge.purge_user_btn')}
                 </Button>
 
                 {userPurgeResult && (
                   <div className="space-y-3 rounded-md border bg-muted/50 p-4" data-testid="gdpr-purge-user-result">
-                    <h3 className="text-sm font-medium">Purge Complete</h3>
+                    <h3 className="text-sm font-medium">{t('gdpr.purge.result_heading')}</h3>
                     <ul className="space-y-1 text-sm text-muted-foreground">
-                      <li>Purge ID: <span className="font-mono text-xs">{userPurgeResult.purgeId}</span></li>
+                      <li>
+                        <Trans
+                          i18nKey="gdpr.purge.result_purge_id"
+                          ns="admin"
+                          values={{ id: userPurgeResult.purgeId }}
+                          components={[<span key="id" className="font-mono text-xs" />]}
+                        />
+                      </li>
                       {Object.entries(userPurgeResult.entitiesDeleted).map(([entity, count]) => (
-                        <li key={entity}>{entity}: {count} deleted</li>
+                        <li key={entity}>{t('gdpr.purge.result_entity_line', { entity, count })}</li>
                       ))}
                     </ul>
                   </div>

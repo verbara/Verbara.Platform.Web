@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Search, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
@@ -19,6 +20,7 @@ function formatEntitiesDeleted(entities: Record<string, number>): string {
 }
 
 export default function PurgeLogPage() {
+  const { t } = useTranslation('admin');
   const [tenantId, setTenantId] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -51,7 +53,7 @@ export default function PurgeLogPage() {
   const columns = useMemo(
     () => [
       col.accessor('purgeId', {
-        header: () => 'Purge ID',
+        header: () => t('purge-log.columns.purge_id'),
         cell: (info) => (
           <span className="font-mono text-xs" title={info.getValue()}>
             {info.getValue().slice(0, 12)}
@@ -59,14 +61,14 @@ export default function PurgeLogPage() {
         ),
       }),
       col.accessor('tenantId', {
-        header: () => 'Tenant ID',
+        header: () => t('purge-log.columns.tenant_id'),
         cell: (info) => (
           <span className="text-sm">{info.getValue()}</span>
         ),
       }),
       col.display({
         id: 'subject',
-        header: () => 'Subject',
+        header: () => t('purge-log.columns.subject'),
         cell: ({ row }) => (
           <span className="text-sm">
             {row.original.subjectType}: {row.original.subjectId}
@@ -74,13 +76,13 @@ export default function PurgeLogPage() {
         ),
       }),
       col.accessor('performedBy', {
-        header: () => 'Performed By',
+        header: () => t('purge-log.columns.performed_by'),
         cell: (info) => (
           <span className="text-sm">{info.getValue()}</span>
         ),
       }),
       col.accessor('reason', {
-        header: () => 'Reason',
+        header: () => t('purge-log.columns.reason'),
         cell: (info) => {
           const value = info.getValue();
           const truncated = value.length > 50 ? `${value.slice(0, 50)}...` : value;
@@ -92,7 +94,7 @@ export default function PurgeLogPage() {
         },
       }),
       col.accessor('entitiesDeleted', {
-        header: () => 'Entities Deleted',
+        header: () => t('purge-log.columns.entities_deleted'),
         cell: (info) => (
           <span className="text-sm text-muted-foreground">
             {formatEntitiesDeleted(info.getValue())}
@@ -100,7 +102,7 @@ export default function PurgeLogPage() {
         ),
       }),
       col.accessor('purgedAt', {
-        header: () => 'Purged At',
+        header: () => t('purge-log.columns.purged_at'),
         cell: (info) => (
           <span className="text-sm">
             {format(new Date(info.getValue()), 'MMM d, yyyy HH:mm')}
@@ -108,23 +110,23 @@ export default function PurgeLogPage() {
         ),
       }),
     ],
-    [],
+    [t],
   );
 
   return (
     <div className="space-y-6" data-testid="purge-log-page">
       <PageHeader
-        title="Purge Log"
-        description="View history of GDPR data purge operations across all tenants."
+        title={t('purge-log.title')}
+        description={t('purge-log.description')}
       />
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-end gap-4">
         <div className="space-y-1.5">
-          <Label htmlFor="filter-tenant">Tenant ID</Label>
+          <Label htmlFor="filter-tenant">{t('purge-log.filter_tenant')}</Label>
           <Input
             id="filter-tenant"
-            placeholder="Filter by tenant"
+            placeholder={t('purge-log.filter_tenant_placeholder')}
             value={tenantId}
             onChange={(e) => setTenantId(e.target.value)}
             className="w-48"
@@ -132,7 +134,7 @@ export default function PurgeLogPage() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="filter-from">From</Label>
+          <Label htmlFor="filter-from">{t('purge-log.filter_from')}</Label>
           <Input
             id="filter-from"
             type="date"
@@ -143,7 +145,7 @@ export default function PurgeLogPage() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="filter-to">To</Label>
+          <Label htmlFor="filter-to">{t('purge-log.filter_to')}</Label>
           <Input
             id="filter-to"
             type="date"
@@ -155,12 +157,12 @@ export default function PurgeLogPage() {
         </div>
         <Button onClick={applyFilters} size="sm">
           <Search className="mr-1.5 h-3.5 w-3.5" />
-          Apply
+          {t('purge-log.apply')}
         </Button>
         {hasFilters && (
           <Button onClick={clearFilters} variant="ghost" size="sm">
             <X className="mr-1.5 h-3.5 w-3.5" />
-            Clear
+            {t('purge-log.clear')}
           </Button>
         )}
       </div>
@@ -168,8 +170,8 @@ export default function PurgeLogPage() {
       <DataTable
         data={entries}
         columns={columns}
-        searchPlaceholder="Search purge log..."
-        noResultsMessage="No purge records found."
+        searchPlaceholder={t('purge-log.search_placeholder')}
+        noResultsMessage={t('purge-log.no_results')}
       />
     </div>
   );

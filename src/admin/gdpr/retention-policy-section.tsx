@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Save, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -32,31 +33,14 @@ type RetentionFormValues = z.infer<typeof retentionSchema>;
 
 interface RetentionFieldConfig {
   name: keyof RetentionFormValues;
-  label: string;
-  description: string;
+  i18nKey: string;
 }
 
 const RETENTION_FIELDS: RetentionFieldConfig[] = [
-  {
-    name: 'conversationRetentionDays',
-    label: 'Conversation Retention',
-    description: 'Automatically purge conversations older than this many days.',
-  },
-  {
-    name: 'authEventRetentionDays',
-    label: 'Auth Event Retention',
-    description: 'Automatically purge authentication events older than this many days.',
-  },
-  {
-    name: 'auditRetentionDays',
-    label: 'Audit Record Retention',
-    description: 'Automatically purge audit records older than this many days.',
-  },
-  {
-    name: 'usageRecordRetentionDays',
-    label: 'Usage Record Retention',
-    description: 'Automatically purge usage records older than this many days.',
-  },
+  { name: 'conversationRetentionDays', i18nKey: 'conversation' },
+  { name: 'authEventRetentionDays', i18nKey: 'auth_event' },
+  { name: 'auditRetentionDays', i18nKey: 'audit' },
+  { name: 'usageRecordRetentionDays', i18nKey: 'usage' },
 ];
 
 export interface RetentionPolicySectionProps {
@@ -70,6 +54,7 @@ export function RetentionPolicySection({
   open,
   onOpenChange,
 }: RetentionPolicySectionProps) {
+  const { t } = useTranslation('admin');
   const { data: policy } = useRetentionPolicy(tenantId);
   const updatePolicy = useUpdateRetentionPolicy(tenantId);
 
@@ -113,11 +98,12 @@ export function RetentionPolicySection({
         <SheetHeader>
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-brand" />
-            <SheetTitle>Retention Policy</SheetTitle>
+            <SheetTitle>{t('retention.policy.title')}</SheetTitle>
           </div>
           <SheetDescription>
-            Configure automatic data retention limits for tenant{' '}
-            <span className="font-mono text-xs">{tenantId}</span>.
+            {t('retention.policy.description_prefix')}
+            <span className="font-mono text-xs">{tenantId}</span>
+            {t('retention.policy.description_suffix')}
           </SheetDescription>
         </SheetHeader>
 
@@ -139,7 +125,7 @@ export function RetentionPolicySection({
               data-testid="retention-save"
             >
               <Save className="mr-1.5 h-4 w-4" />
-              {updatePolicy.isPending ? 'Saving...' : 'Save'}
+              {updatePolicy.isPending ? t('retention.policy.saving') : t('retention.policy.save')}
             </Button>
           </SheetFooter>
         </form>
@@ -156,6 +142,7 @@ interface RetentionFieldRowProps {
 }
 
 function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldRowProps) {
+  const { t } = useTranslation('admin');
   const value = watch(config.name);
   const enabled = value !== null;
 
@@ -167,8 +154,8 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
     <div className="space-y-3 rounded-md border bg-card p-4">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label className="text-sm font-medium">{config.label}</Label>
-          <p className="text-xs text-muted-foreground">{config.description}</p>
+          <Label className="text-sm font-medium">{t(`retention.policy.fields.${config.i18nKey}.label`)}</Label>
+          <p className="text-xs text-muted-foreground">{t(`retention.policy.fields.${config.i18nKey}.description`)}</p>
         </div>
         <Switch checked={enabled} onCheckedChange={handleToggle} />
       </div>
@@ -191,7 +178,7 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
                       const num = e.target.value === '' ? null : Number(e.target.value);
                       field.onChange(num);
                     }}
-                    placeholder="Days"
+                    placeholder={t('retention.policy.days_placeholder')}
                   />
                   {fieldState.error && (
                     <p className="text-xs text-destructive">
@@ -201,7 +188,7 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
                 </div>
               )}
             />
-            <span className="text-sm text-muted-foreground">days</span>
+            <span className="text-sm text-muted-foreground">{t('retention.policy.days_suffix')}</span>
           </div>
         </>
       )}
