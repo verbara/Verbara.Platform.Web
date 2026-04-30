@@ -13,6 +13,97 @@ _No unreleased changes._
 
 ---
 
+## [1.13.13] — 2026-04-30 — i18n Coverage Phase 4F (flow designer + 11 node types)
+
+**Closes the visual flow editor.** The XYFlow-based flow designer
+is the most visual surface in admin — operators drag node types
+from a palette, drop them on a canvas, and edit per-node
+properties in a side panel. Every label, header, group title,
+field label, and placeholder fallback is now translated.
+
+### Refactored to `useTranslation`
+
+**`src/admin/flows/node-palette.tsx`** — "Nodes" header, 4 group
+titles (Standard / Routing / Integration / AI), 11 draggable item
+labels (Send Message / Collect Input / Condition / Set Variable /
+Wait / End / Enqueue / HTTP Request / Knowledge Search / AI
+Classify / AI Generate). Refactored `PaletteItem.label` →
+`labelKey` and `PaletteGroup.title` → `titleKey` so the data
+shape carries i18n keys instead of frozen English strings.
+
+**`src/admin/flows/property-panel.tsx`** — "Properties" header,
+"No configurable properties." empty state, 14 unique field labels
++ 2 disambiguating keys (`collect_input_variable` for "Save to
+Variable", `set_variable_name` for "Variable") so the same `data`
+key can carry different labels across node types. "Queue ID"
+input placeholder. Refactored `PropertyField.label` → `labelKey`
+under `flows.fields.*`.
+
+**`src/admin/flows/flow-designer.tsx`** — default `flowName`
+state value reads `flows.untitled` instead of hardcoded "Untitled
+Flow".
+
+**`src/admin/flows/flow-list-page.tsx`** — `handleCreate` payload
+also uses `flows.untitled` so newly-created flows ship with a
+locale-correct default name.
+
+**11 node components in `src/admin/flows/nodes/`** — each pulls
+its title from `flows.node_types.*` and any in-card fallback text
+from `flows.node_body.*`:
+
+- `send-message-node`: title + "No message" fallback.
+- `collect-input-node`: title + "Ask..." prompt + "?" variable
+  fallback.
+- `condition-node`: title + "if ..." expression placeholder +
+  "True"/"False" handle labels.
+- `set-variable-node`: title + "var" / `""` fallbacks.
+- `wait-node`: title + "0s" duration fallback.
+- `end-node`: title + "hangup" disposition fallback.
+- `enqueue-node`: title + "Queue" name fallback.
+- `http-request-node`: title + "https://..." url placeholder
+  (HTTP method `GET` left literal — it's a protocol token).
+- `knowledge-search-node`: title + "input" query default + "query:"
+  prefix label.
+- `ai-classify-node`: title + 2 default categories ("Category 1",
+  "Category 2") shown when none configured.
+- `ai-generate-node`: title + "Generate..." prompt fallback.
+
+`base-node.tsx` is a layout wrapper with no user-facing strings.
+
+### Locales
+
+Added under `admin.json` → `flows.*` (extends existing `flows.{title,
+create, name, version, status, lastModified, publishedLabel, draft,
+saveDraft, publish, ...}`):
+
+- `flows.untitled`, `flows.nodes_header`, `flows.properties_header`,
+  `flows.no_properties`, `flows.queue_id_placeholder`
+- `flows.palette_groups.{standard, routing, integration, ai}`
+- `flows.node_types.*` (11 keys)
+- `flows.fields.*` (16 keys including the 2 variable-disambiguators)
+- `flows.node_body.*` (16 keys for default placeholders, true/false
+  handle labels, query prefix, etc.)
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+The 14 admin flow files (designer + list + toolbar + palette +
+property-panel + 11 nodes) are now all translated. base-node
+counts as scaffolding (no strings). Combined with prior phases,
+admin coverage continues climbing.
+
+This wraps the originally-planned Phase 4 i18n batch (4A → 4G).
+The remaining ~10 untranslated admin files (bots, surveys,
+reports, roles, routes-page, trunks-page, webhooks-page,
+canned-responses, campaigns/campaign-detail) are smaller
+follow-ups; their `entityType` callers will migrate as each
+page is i18n'd.
+
+---
+
 ## [1.13.12] — 2026-04-30 — i18n Coverage Phase 4G (confirm-delete-dialog + 9 callers)
 
 **Translates the shared deletion dialog and migrates 9 already-i18n'd

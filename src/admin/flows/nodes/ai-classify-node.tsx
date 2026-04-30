@@ -1,16 +1,18 @@
 import type { NodeProps } from '@xyflow/react';
 import { Handle, Position } from '@xyflow/react';
+import { useTranslation } from 'react-i18next';
 import BaseNode from './base-node';
 
 export default function AiClassifyNode({ data, selected }: NodeProps) {
+  const { t } = useTranslation('admin');
   const raw = (data.categories as string) || '';
   const categories = raw
     ? raw.split(',').map((c) => c.trim()).filter(Boolean)
-    : ['Category 1', 'Category 2'];
+    : [t('flows.node_body.category_default_one'), t('flows.node_body.category_default_two')];
 
   return (
     <BaseNode
-      title="AI Classify"
+      title={t('flows.node_types.ai_classify')}
       headerColor="bg-violet-500"
       selected={selected}
       showOutput={false}

@@ -1,11 +1,13 @@
 import type { NodeProps } from '@xyflow/react';
+import { useTranslation } from 'react-i18next';
 import BaseNode from './base-node';
 
 export default function HttpRequestNode({ data, selected }: NodeProps) {
+  const { t } = useTranslation('admin');
   const method = (data.method as string) || 'GET';
-  const url = (data.url as string) || 'https://...';
+  const url = (data.url as string) || t('flows.node_body.https_url_placeholder');
   return (
-    <BaseNode title="HTTP Request" headerColor="bg-purple-500" selected={selected}>
+    <BaseNode title={t('flows.node_types.http_request')} headerColor="bg-purple-500" selected={selected}>
       <p className="font-mono text-[10px]">
         <span className="font-bold text-purple-600">{method}</span>{' '}
         <span className="line-clamp-1 text-muted-foreground">{url}</span>

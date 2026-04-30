@@ -52,7 +52,7 @@ export default function FlowListPage() {
 
   const handleCreate = () => {
     createFlow.mutate(
-      { name: 'Untitled Flow', entryNodeId: '', nodes: [] },
+      { name: t('admin:flows.untitled'), entryNodeId: '', nodes: [] },
       {
         onSuccess: (newFlow) => {
           navigate(`/admin/flows/${newFlow.flowId}`);

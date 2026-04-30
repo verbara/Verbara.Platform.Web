@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type DragEvent } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ReactFlow,
   Background,
@@ -30,11 +31,12 @@ function generateId() {
 }
 
 export default function FlowDesigner() {
+  const { t } = useTranslation('admin');
   const { flowId } = useParams<{ flowId: string }>();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([] as Edge[]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [flowName, setFlowName] = useState('Untitled Flow');
+  const [flowName, setFlowName] = useState(t('flows.untitled'));
   const [version, setVersion] = useState(1);
   const [isPublished, setIsPublished] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);

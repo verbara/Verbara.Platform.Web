@@ -1,12 +1,14 @@
 import type { NodeProps } from '@xyflow/react';
 import { Handle, Position } from '@xyflow/react';
+import { useTranslation } from 'react-i18next';
 import BaseNode from './base-node';
 
 export default function ConditionNode({ data, selected }: NodeProps) {
-  const expression = (data.expression as string) || 'if ...';
+  const { t } = useTranslation('admin');
+  const expression = (data.expression as string) || t('flows.node_body.if_placeholder');
   return (
     <BaseNode
-      title="Condition"
+      title={t('flows.node_types.condition')}
       headerColor="bg-amber-500"
       selected={selected}
       showOutput={false}
@@ -15,8 +17,8 @@ export default function ConditionNode({ data, selected }: NodeProps) {
 
       {/* Two output handles: true (left), false (right) */}
       <div className="mt-1 flex justify-between text-[9px] text-muted-foreground">
-        <span>True</span>
-        <span>False</span>
+        <span>{t('flows.node_body.true_label')}</span>
+        <span>{t('flows.node_body.false_label')}</span>
       </div>
 
       <Handle

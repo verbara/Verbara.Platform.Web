@@ -1,4 +1,5 @@
 import type { DragEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // ---------------------------------------------------------------------------
 // Node Palette — draggable node type cards grouped by category
@@ -6,46 +7,48 @@ import type { DragEvent } from 'react';
 
 interface PaletteItem {
   type: string;
-  label: string;
+  /** i18n key under flows.node_types.* */
+  labelKey: string;
   /** Tailwind bg class matching the node header color */
   color: string;
 }
 
 interface PaletteGroup {
-  title: string;
+  /** i18n key under flows.palette_groups.* */
+  titleKey: string;
   items: PaletteItem[];
 }
 
 const groups: PaletteGroup[] = [
   {
-    title: 'Standard',
+    titleKey: 'standard',
     items: [
-      { type: 'SendMessage', label: 'Send Message', color: 'bg-blue-500' },
-      { type: 'CollectInput', label: 'Collect Input', color: 'bg-green-500' },
-      { type: 'Condition', label: 'Condition', color: 'bg-amber-500' },
-      { type: 'SetVariable', label: 'Set Variable', color: 'bg-slate-500' },
-      { type: 'Wait', label: 'Wait', color: 'bg-slate-500' },
-      { type: 'End', label: 'End', color: 'bg-red-500' },
+      { type: 'SendMessage', labelKey: 'send_message', color: 'bg-blue-500' },
+      { type: 'CollectInput', labelKey: 'collect_input', color: 'bg-green-500' },
+      { type: 'Condition', labelKey: 'condition', color: 'bg-amber-500' },
+      { type: 'SetVariable', labelKey: 'set_variable', color: 'bg-slate-500' },
+      { type: 'Wait', labelKey: 'wait', color: 'bg-slate-500' },
+      { type: 'End', labelKey: 'end', color: 'bg-red-500' },
     ],
   },
   {
-    title: 'Routing',
+    titleKey: 'routing',
     items: [
-      { type: 'Enqueue', label: 'Enqueue', color: 'bg-teal-500' },
+      { type: 'Enqueue', labelKey: 'enqueue', color: 'bg-teal-500' },
     ],
   },
   {
-    title: 'Integration',
+    titleKey: 'integration',
     items: [
-      { type: 'HttpRequest', label: 'HTTP Request', color: 'bg-purple-500' },
-      { type: 'KnowledgeSearch', label: 'Knowledge Search', color: 'bg-purple-500' },
+      { type: 'HttpRequest', labelKey: 'http_request', color: 'bg-purple-500' },
+      { type: 'KnowledgeSearch', labelKey: 'knowledge_search', color: 'bg-purple-500' },
     ],
   },
   {
-    title: 'AI',
+    titleKey: 'ai',
     items: [
-      { type: 'AiClassify', label: 'AI Classify', color: 'bg-violet-500' },
-      { type: 'AiGenerate', label: 'AI Generate', color: 'bg-violet-500' },
+      { type: 'AiClassify', labelKey: 'ai_classify', color: 'bg-violet-500' },
+      { type: 'AiGenerate', labelKey: 'ai_generate', color: 'bg-violet-500' },
     ],
   },
 ];
@@ -56,17 +59,18 @@ function onDragStart(event: DragEvent, nodeType: string) {
 }
 
 export default function NodePalette() {
+  const { t } = useTranslation('admin');
   return (
     <aside className="flex w-[200px] shrink-0 flex-col border-r border-border bg-muted/30 p-4 overflow-y-auto">
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Nodes
+        {t('flows.nodes_header')}
       </h3>
 
       <div className="space-y-4">
         {groups.map((group) => (
-          <div key={group.title}>
+          <div key={group.titleKey}>
             <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              {group.title}
+              {t(`flows.palette_groups.${group.titleKey}`)}
             </p>
             <div className="space-y-1">
               {group.items.map((item) => (
@@ -79,7 +83,7 @@ export default function NodePalette() {
                   <span
                     className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${item.color}`}
                   />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{t(`flows.node_types.${item.labelKey}`)}</span>
                 </div>
               ))}
             </div>
