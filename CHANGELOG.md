@@ -13,6 +13,67 @@ _No unreleased changes._
 
 ---
 
+## [1.13.17] — 2026-04-30 — i18n Coverage Phase 4K (campaign-detail extraction)
+
+**Extracts the largest remaining hardcoded-string concentration.**
+The hardcoded-strings audit flagged `campaign-detail-page.tsx` as
+the top file with 43 untranslated UI strings — info-card section
+labels, the disposition CRUD dialog, the dispositions table, the
+contact-lists section, the stop confirmation, and the disposition
+delete confirmation. All extracted in one pass.
+
+### Refactored to `useTranslation`
+
+**`src/admin/campaigns/campaign-detail-page.tsx`** — added
+`useTranslation` to the inner `DispositionDialog` sub-component
+and wired the main `CampaignDetailPage` body.
+
+- **Header / actions**: "Campaign not found." fallback, Cancel /
+  Saving... / Save / Edit / Delete buttons, Description (optional)
+  placeholder.
+- **Info card** (5 sections): Basic / Dialing / Schedule /
+  Compliance / Contacts headers + 18 row labels (Queue, Team,
+  Mode, Max Concurrent Calls, Power Ratio, Target Abandon Rate,
+  Timezone, Campaign Period, Weekly Schedule, Closed,
+  Holidays (No Dialing), DNC List Enabled, Yes/No, Max Attempts,
+  Retry Interval, Time Between Attempts, Notes, Total Contacts,
+  Contacts Dialed). `min` minutes-suffix shared.
+- **Dispositions table**: heading, Add Disposition CTA, empty
+  state, 6 column headers, 3 aria-labels, Edit row button.
+- **DispositionDialog**: dialog title (add vs. edit), Code +
+  Label fields with localized placeholders ("e.g. SALE" /
+  "e.g. Sale Made"), Category select with 7 localized options
+  (Success/Failure/Callback/No Answer/Busy/DNC/Other), Trigger
+  Retry checkbox + Retry Delay (minutes), Trigger Callback
+  checkbox, Cancel + Saving.../Update/Add submit.
+- **Contact Lists**: heading, empty state, plural counts
+  (`{{count}} total/pending/completed`).
+- **Pending Callbacks** + **History** section headings.
+- **Stop dialog**: prefix/suffix split around `<strong>{name}</strong>`,
+  Stop Campaign confirm label.
+- **Disposition delete dialog**: title, description, confirm.
+
+### Locales
+
+`admin.json` (3 locales) — 80 keys added under
+`admin.campaigns.{detail,dispositions}.*`. Plural forms
+(`{{count}}`) used for contact-list summaries.
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+Post-pass scan of campaign-detail-page reports zero remaining
+JSX text or `placeholder/title/aria-label/label` props.
+
+### Coverage
+
+Top hardcoded-strings file (43 hits) reduced to **0**. The
+remaining audit findings are concentrated in
+`partner/customer-detail-page` (29), `agent-assist-config-page`
+(13), and a long tail of smaller files.
+
+---
+
 ## [1.13.16] — 2026-04-30 — i18n Coverage Phase 4J (cross-namespace audit + Loading literals)
 
 **Two systematic cleanups in one commit.** A repo-wide audit found

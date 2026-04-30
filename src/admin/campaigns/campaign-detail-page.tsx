@@ -120,6 +120,7 @@ interface DispositionDialogProps {
 }
 
 function DispositionDialog({ campaignId, editing, open, onOpenChange }: DispositionDialogProps) {
+  const { t } = useTranslation(['admin']);
   const [form, setForm] = useState<DispositionFormState>(
     editing
       ? {
@@ -157,32 +158,32 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{editing ? 'Edit Disposition Code' : 'Add Disposition Code'}</DialogTitle>
+          <DialogTitle>{editing ? t('admin:campaigns.dispositions.dialog_edit_title') : t('admin:campaigns.dispositions.dialog_add_title')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="dispo-code">Code</Label>
+              <Label htmlFor="dispo-code">{t('admin:campaigns.dispositions.field_code')}</Label>
               <Input
                 id="dispo-code"
                 value={form.code}
                 onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                placeholder="e.g. SALE"
+                placeholder={t('admin:campaigns.dispositions.field_code_placeholder')}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="dispo-label">Label</Label>
+              <Label htmlFor="dispo-label">{t('admin:campaigns.dispositions.field_label')}</Label>
               <Input
                 id="dispo-label"
                 value={form.label}
                 onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-                placeholder="e.g. Sale Made"
+                placeholder={t('admin:campaigns.dispositions.field_label_placeholder')}
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="dispo-category">Category</Label>
+            <Label htmlFor="dispo-category">{t('admin:campaigns.dispositions.field_category')}</Label>
             <Select
               value={form.category}
               onValueChange={(v) => setForm((f) => ({ ...f, category: v ?? f.category }))}
@@ -191,13 +192,13 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="success">Success</SelectItem>
-                <SelectItem value="failure">Failure</SelectItem>
-                <SelectItem value="callback">Callback</SelectItem>
-                <SelectItem value="no_answer">No Answer</SelectItem>
-                <SelectItem value="busy">Busy</SelectItem>
-                <SelectItem value="dnc">DNC</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="success">{t('admin:campaigns.dispositions.cat_success')}</SelectItem>
+                <SelectItem value="failure">{t('admin:campaigns.dispositions.cat_failure')}</SelectItem>
+                <SelectItem value="callback">{t('admin:campaigns.dispositions.cat_callback')}</SelectItem>
+                <SelectItem value="no_answer">{t('admin:campaigns.dispositions.cat_no_answer')}</SelectItem>
+                <SelectItem value="busy">{t('admin:campaigns.dispositions.cat_busy')}</SelectItem>
+                <SelectItem value="dnc">{t('admin:campaigns.dispositions.cat_dnc')}</SelectItem>
+                <SelectItem value="other">{t('admin:campaigns.dispositions.cat_other')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -209,11 +210,11 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
                 checked={form.triggerRetry}
                 onCheckedChange={(v) => setForm((f) => ({ ...f, triggerRetry: !!v }))}
               />
-              <Label htmlFor="dispo-retry" className="cursor-pointer">Trigger Retry</Label>
+              <Label htmlFor="dispo-retry" className="cursor-pointer">{t('admin:campaigns.dispositions.toggle_retry')}</Label>
             </div>
             {form.triggerRetry && (
               <div className="ml-6 space-y-1.5">
-                <Label htmlFor="dispo-retry-delay">Retry Delay (minutes)</Label>
+                <Label htmlFor="dispo-retry-delay">{t('admin:campaigns.dispositions.retry_delay')}</Label>
                 <Input
                   id="dispo-retry-delay"
                   type="number"
@@ -229,14 +230,14 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
                 checked={form.triggerCallback}
                 onCheckedChange={(v) => setForm((f) => ({ ...f, triggerCallback: !!v }))}
               />
-              <Label htmlFor="dispo-callback" className="cursor-pointer">Trigger Callback</Label>
+              <Label htmlFor="dispo-callback" className="cursor-pointer">{t('admin:campaigns.dispositions.toggle_callback')}</Label>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('admin:campaigns.dispositions.dialog_cancel')}</Button>
           <Button onClick={handleSave} disabled={isPending || !form.code.trim() || !form.label.trim()}>
-            {isPending ? 'Saving…' : editing ? 'Update' : 'Add'}
+            {isPending ? t('admin:campaigns.dispositions.dialog_saving') : editing ? t('admin:campaigns.dispositions.dialog_update') : t('admin:campaigns.dispositions.dialog_add')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -279,7 +280,7 @@ export default function CampaignDetailPage() {
   if (!campaign) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
-        Campaign not found.
+        {t('admin:campaigns.detail.not_found')}
       </div>
     );
   }
@@ -361,7 +362,7 @@ export default function CampaignDetailPage() {
           <PermissionGuard requires="campaigns:campaign:delete">
             <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
               <Trash2 className="mr-1.5 h-4 w-4" />
-              Delete
+              {t('admin:campaigns.detail.delete_btn')}
             </Button>
           </PermissionGuard>
         </div>
@@ -387,13 +388,13 @@ export default function CampaignDetailPage() {
           <PermissionGuard requires="campaigns:campaign:edit">
             {isEditing ? (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>{t('admin:campaigns.detail.cancel_btn')}</Button>
                 <Button size="sm" disabled={updateCampaign.isPending} onClick={() => {
                   updateCampaign.mutate({ id: campaignIdNum, name: editName, description: editDescription }, {
                     onSuccess: () => setIsEditing(false),
                   });
                 }}>
-                  {updateCampaign.isPending ? 'Saving...' : 'Save'}
+                  {updateCampaign.isPending ? t('admin:campaigns.detail.saving_btn') : t('admin:campaigns.detail.save_btn')}
                 </Button>
               </div>
             ) : (
@@ -403,7 +404,7 @@ export default function CampaignDetailPage() {
                 setIsEditing(true);
               }}>
                 <Pencil className="mr-1.5 h-4 w-4" />
-                Edit
+                {t('admin:campaigns.detail.edit_btn')}
               </Button>
             )}
           </PermissionGuard>
@@ -412,7 +413,7 @@ export default function CampaignDetailPage() {
           <Input
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value)}
-            placeholder="Description (optional)"
+            placeholder={t('admin:campaigns.detail.description_placeholder')}
             className="mt-2"
           />
         ) : campaign.description ? (
@@ -437,48 +438,48 @@ export default function CampaignDetailPage() {
       {/* Basic Info */}
       <div className="rounded-lg border bg-card p-6">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Basic
+          {t('admin:campaigns.detail.basic')}
         </p>
-        <InfoRow icon={Settings} label="Queue">
+        <InfoRow icon={Settings} label={t('admin:campaigns.detail.queue')}>
           {campaign.queueName}
         </InfoRow>
         {campaign.teamName && (
-          <InfoRow icon={Users} label="Team">
+          <InfoRow icon={Users} label={t('admin:campaigns.detail.team')}>
             {campaign.teamName}
           </InfoRow>
         )}
 
         {/* Dialing */}
-        <SectionHeader title="Dialing" />
-        <InfoRow icon={Phone} label="Mode">
+        <SectionHeader title={t('admin:campaigns.detail.dialing')} />
+        <InfoRow icon={Phone} label={t('admin:campaigns.detail.mode')}>
           <span className="capitalize">{campaign.mode}</span>
         </InfoRow>
-        <InfoRow icon={Phone} label="Max Concurrent Calls">
+        <InfoRow icon={Phone} label={t('admin:campaigns.detail.max_concurrent_calls')}>
           {campaign.maxConcurrentCalls}
         </InfoRow>
         {campaign.powerRatio !== undefined && (
-          <InfoRow icon={Settings} label="Power Ratio">
+          <InfoRow icon={Settings} label={t('admin:campaigns.detail.power_ratio')}>
             {campaign.powerRatio}
           </InfoRow>
         )}
         {campaign.targetAbandonRate !== undefined && (
-          <InfoRow icon={Timer} label="Target Abandon Rate">
+          <InfoRow icon={Timer} label={t('admin:campaigns.detail.target_abandon_rate')}>
             {campaign.targetAbandonRate}%
           </InfoRow>
         )}
 
         {/* Schedule */}
-        <SectionHeader title="Schedule" />
-        <InfoRow icon={MapPin} label="Timezone">
+        <SectionHeader title={t('admin:campaigns.detail.schedule')} />
+        <InfoRow icon={MapPin} label={t('admin:campaigns.detail.timezone')}>
           {campaign.timezone}
         </InfoRow>
         {(campaign.campaignStart || campaign.campaignEnd) && (
-          <InfoRow icon={Calendar} label="Campaign Period">
+          <InfoRow icon={Calendar} label={t('admin:campaigns.detail.campaign_period')}>
             {campaign.campaignStart} &mdash; {campaign.campaignEnd}
           </InfoRow>
         )}
         {campaign.schedule && campaign.schedule.length > 0 && (
-          <InfoRow icon={Calendar} label="Weekly Schedule">
+          <InfoRow icon={Calendar} label={t('admin:campaigns.detail.weekly_schedule')}>
             <div className="space-y-0.5">
               {campaign.schedule.map((entry) => (
                 <div key={entry.day} className="flex items-center gap-2 text-xs">
@@ -486,7 +487,7 @@ export default function CampaignDetailPage() {
                   {entry.enabled ? (
                     <span>{entry.start} &ndash; {entry.end}</span>
                   ) : (
-                    <span className="text-muted-foreground">Closed</span>
+                    <span className="text-muted-foreground">{t('admin:campaigns.detail.day_closed')}</span>
                   )}
                 </div>
               ))}
@@ -494,7 +495,7 @@ export default function CampaignDetailPage() {
           </InfoRow>
         )}
         {campaign.holidays && campaign.holidays.length > 0 && (
-          <InfoRow icon={AlertTriangle} label="Holidays (No Dialing)">
+          <InfoRow icon={AlertTriangle} label={t('admin:campaigns.detail.holidays_no_dialing')}>
             <div className="flex flex-wrap gap-1">
               {campaign.holidays.map((h) => (
                 <Badge key={h} variant="outline">{h}</Badge>
@@ -504,31 +505,31 @@ export default function CampaignDetailPage() {
         )}
 
         {/* Compliance */}
-        <SectionHeader title="Compliance" />
-        <InfoRow icon={Shield} label="DNC List Enabled">
-          {campaign.dncEnabled ? 'Yes' : 'No'}
+        <SectionHeader title={t('admin:campaigns.detail.compliance')} />
+        <InfoRow icon={Shield} label={t('admin:campaigns.detail.dnc_enabled')}>
+          {campaign.dncEnabled ? t('admin:campaigns.detail.yes') : t('admin:campaigns.detail.no')}
         </InfoRow>
-        <InfoRow icon={RotateCcw} label="Max Attempts">
+        <InfoRow icon={RotateCcw} label={t('admin:campaigns.detail.max_attempts')}>
           {campaign.maxAttemptsPerContact}
         </InfoRow>
-        <InfoRow icon={Clock} label="Retry Interval">
-          {campaign.retryIntervalMinutes} min
+        <InfoRow icon={Clock} label={t('admin:campaigns.detail.retry_interval')}>
+          {campaign.retryIntervalMinutes} {t('admin:campaigns.detail.minutes_short')}
         </InfoRow>
-        <InfoRow icon={Timer} label="Time Between Attempts">
-          {campaign.timeBetweenAttemptsMinutes} min
+        <InfoRow icon={Timer} label={t('admin:campaigns.detail.time_between_attempts')}>
+          {campaign.timeBetweenAttemptsMinutes} {t('admin:campaigns.detail.minutes_short')}
         </InfoRow>
         {campaign.complianceNotes && (
-          <InfoRow icon={FileText} label="Notes">
+          <InfoRow icon={FileText} label={t('admin:campaigns.detail.notes')}>
             {campaign.complianceNotes}
           </InfoRow>
         )}
 
         {/* Contacts */}
-        <SectionHeader title="Contacts" />
-        <InfoRow icon={Users} label="Total Contacts">
+        <SectionHeader title={t('admin:campaigns.detail.contacts')} />
+        <InfoRow icon={Users} label={t('admin:campaigns.detail.total_contacts')}>
           {campaign.totalContacts.toLocaleString()}
         </InfoRow>
-        <InfoRow icon={Phone} label="Contacts Dialed">
+        <InfoRow icon={Phone} label={t('admin:campaigns.detail.contacts_dialed')}>
           {campaign.contactsDialed.toLocaleString()}
         </InfoRow>
       </div>
@@ -537,29 +538,29 @@ export default function CampaignDetailPage() {
       <div className="rounded-lg border bg-card p-6">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Disposition Codes
+            {t('admin:campaigns.dispositions.heading')}
           </p>
           <Button size="sm" variant="outline" onClick={handleOpenAddDispo}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Add Disposition
+            {t('admin:campaigns.dispositions.add_btn')}
           </Button>
         </div>
 
         {dispositions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No disposition codes defined. Add codes to categorize call outcomes.
+            {t('admin:campaigns.dispositions.empty')}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Code</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Label</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Category</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">Retry</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">Callback</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">Active</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_code')}</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_label')}</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_category')}</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_retry')}</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_callback')}</th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_active')}</th>
                   <th className="px-3 py-2" />
                 </tr>
               </thead>
@@ -575,21 +576,21 @@ export default function CampaignDetailPage() {
                       <Switch
                         checked={d.triggerRetry}
                         disabled
-                        aria-label="Trigger retry"
+                        aria-label={t('admin:campaigns.dispositions.aria_trigger_retry')}
                       />
                     </td>
                     <td className="px-3 py-2 text-center">
                       <Switch
                         checked={d.triggerCallback}
                         disabled
-                        aria-label="Trigger callback"
+                        aria-label={t('admin:campaigns.dispositions.aria_trigger_callback')}
                       />
                     </td>
                     <td className="px-3 py-2 text-center">
                       <Switch
                         checked={d.isActive}
                         disabled
-                        aria-label="Is active"
+                        aria-label={t('admin:campaigns.dispositions.aria_is_active')}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -600,7 +601,7 @@ export default function CampaignDetailPage() {
                           className="h-7 px-2 text-xs"
                           onClick={() => handleOpenEditDispo(d)}
                         >
-                          Edit
+                          {t('admin:campaigns.dispositions.row_edit')}
                         </Button>
                         <Button
                           size="sm"
@@ -623,7 +624,7 @@ export default function CampaignDetailPage() {
       {/* Pending Callbacks */}
       <div className="rounded-lg border bg-card p-6">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Pending Callbacks
+          {t('admin:campaigns.detail.pending_callbacks')}
         </p>
         <CallbacksTab campaignId={campaignIdNum} />
       </div>
@@ -632,11 +633,11 @@ export default function CampaignDetailPage() {
       <div className="rounded-lg border bg-card p-6">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Contact Lists
+            {t('admin:campaigns.detail.contact_lists')}
           </p>
         </div>
         {contactLists.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No contact lists assigned.</p>
+          <p className="text-sm text-muted-foreground">{t('admin:campaigns.detail.contact_lists_empty')}</p>
         ) : (
           <div className="space-y-2">
             {contactLists.map((list) => (
@@ -648,9 +649,9 @@ export default function CampaignDetailPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>{list.totalContacts.toLocaleString()} total</span>
-                  <span>{list.pendingContacts.toLocaleString()} pending</span>
-                  <span>{list.completedContacts.toLocaleString()} completed</span>
+                  <span>{t('admin:campaigns.detail.list_total', { count: list.totalContacts })}</span>
+                  <span>{t('admin:campaigns.detail.list_pending', { count: list.pendingContacts })}</span>
+                  <span>{t('admin:campaigns.detail.list_completed', { count: list.completedContacts })}</span>
                 </div>
               </div>
             ))}
@@ -662,7 +663,7 @@ export default function CampaignDetailPage() {
       <PermissionGuard requires="system:audit:view">
         <div className="rounded-lg border bg-card p-6">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            History
+            {t('admin:campaigns.detail.history')}
           </p>
           <AuditTimeline entityType="campaign" entityId={String(campaignIdNum)} />
         </div>
@@ -675,12 +676,11 @@ export default function CampaignDetailPage() {
         title={t('admin:campaigns.stopTitle')}
         description={
           <>
-            Are you sure you want to stop <strong>{campaign.name}</strong>? This action
-            cannot be undone.
+            {t('admin:campaigns.detail.stop_description_prefix')}<strong>{campaign.name}</strong>{t('admin:campaigns.detail.stop_description_suffix')}
           </>
         }
         onConfirm={handleStop}
-        confirmLabel="Stop Campaign"
+        confirmLabel={t('admin:campaigns.detail.stop_confirm')}
         variant="destructive"
       />
 
@@ -696,10 +696,10 @@ export default function CampaignDetailPage() {
       <ConfirmDialog
         open={deletingDispoId !== null}
         onOpenChange={(o) => { if (!o) setDeletingDispoId(null); }}
-        title="Delete Disposition Code"
-        description="Are you sure you want to delete this disposition code? This action cannot be undone."
+        title={t('admin:campaigns.dispositions.delete_title')}
+        description={t('admin:campaigns.dispositions.delete_description')}
         onConfirm={handleConfirmDelete}
-        confirmLabel="Delete"
+        confirmLabel={t('admin:campaigns.dispositions.delete_confirm')}
         variant="destructive"
       />
 
