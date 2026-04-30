@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import type { FormEvent } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Plus, Briefcase, Pencil } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
@@ -49,12 +50,14 @@ const statusColors: Record<CaseStatus, string> = {
 
 const columnHelper = createColumnHelper<Case>();
 
-function contactDisplayName(c: Contact): string {
+function contactDisplayName(c: Contact, fallback: string): string {
   const name = [c.firstName, c.lastName].filter(Boolean).join(' ').trim();
-  return name || 'Unnamed contact';
+  return name || fallback;
 }
 
 export default function CasesPage() {
+  const { t } = useTranslation('admin');
+  const unnamedContact = t('cases.unnamed_contact');
   const { data, isLoading } = useCases();
   const cases = data?.items ?? [];
   const { data: agents = [] } = useAgents();
@@ -122,43 +125,43 @@ export default function CasesPage() {
   const columns = useMemo(
     () => [
       columnHelper.accessor('caseNumber', {
-        header: () => 'Case #',
+        header: () => t('cases.columns.case_number'),
         cell: (info) => (
           <code className="text-xs font-medium">{info.getValue()}</code>
         ),
       }),
       columnHelper.accessor('subject', {
-        header: () => 'Subject',
+        header: () => t('cases.columns.subject'),
         cell: (info) => (
           <span className="font-medium text-foreground">{info.getValue()}</span>
         ),
       }),
       columnHelper.accessor('priority', {
-        header: () => 'Priority',
+        header: () => t('cases.columns.priority'),
         cell: (info) => (
           <span
             className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${priorityColors[info.getValue()]}`}
           >
-            {info.getValue()}
+            {t(`cases.priority.${info.getValue()}`)}
           </span>
         ),
       }),
       columnHelper.accessor('status', {
-        header: () => 'Status',
+        header: () => t('cases.columns.status'),
         cell: (info) => (
           <span
             className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[info.getValue()]}`}
           >
-            {info.getValue()}
+            {t(`cases.status.${info.getValue()}`)}
           </span>
         ),
       }),
       columnHelper.accessor('conversationIds', {
-        header: () => 'Conversations',
+        header: () => t('cases.columns.conversations'),
         cell: (info) => <Badge variant="secondary">{info.getValue().length}</Badge>,
       }),
       columnHelper.accessor('createdAt', {
-        header: () => 'Created',
+        header: () => t('cases.columns.created'),
         cell: (info) => new Date(info.getValue()).toLocaleDateString(),
       }),
       columnHelper.display({
@@ -180,20 +183,20 @@ export default function CasesPage() {
         ),
       }),
     ],
-    [],
+    [t],
   );
 
   if (isLoading) {
     return (
       <div className="space-y-6" data-testid="cases-page">
-        <PageHeader title="Cases">
+        <PageHeader title={t('cases.title')}>
           <Button data-testid="cases-create-btn" onClick={openCreate}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Create
+            {t('cases.create')}
           </Button>
         </PageHeader>
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
+          {t('cases.loading')}
         </div>
       </div>
     );
@@ -203,26 +206,26 @@ export default function CasesPage() {
 
   return (
     <div className="space-y-6" data-testid="cases-page">
-      <PageHeader title="Cases">
+      <PageHeader title={t('cases.title')}>
         <Button data-testid="cases-create-btn" onClick={openCreate}>
           <Plus className="mr-1.5 h-4 w-4" />
-          Create
+          {t('cases.create')}
         </Button>
       </PageHeader>
 
       {isEmpty ? (
         <EmptyState
           icon={Briefcase}
-          message="No cases yet"
-          actionLabel="Create"
+          message={t('cases.empty')}
+          actionLabel={t('cases.create')}
           onAction={openCreate}
         />
       ) : (
         <DataTable
           data={cases}
           columns={columns}
-          searchPlaceholder="Search cases..."
-          noResultsMessage="No matching cases"
+          searchPlaceholder={t('cases.search_placeholder')}
+          noResultsMessage={t('cases.no_results')}
           onRowClick={openEdit}
         />
       )}
@@ -231,24 +234,24 @@ export default function CasesPage() {
         <SheetContent>
           <SheetHeader>
             <SheetTitle>
-              {editing ? `Edit ${editing.caseNumber}` : 'Create Case'}
+              {editing ? t('cases.form.edit_title', { number: editing.caseNumber }) : t('cases.form.create_title')}
             </SheetTitle>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4 px-4 pb-4">
             <div>
-              <Label htmlFor="case-subject">Subject</Label>
+              <Label htmlFor="case-subject">{t('cases.form.subject')}</Label>
               <Input
                 id="case-subject"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                placeholder="Customer issue description"
+                placeholder={t('cases.form.subject_placeholder')}
                 required
                 data-testid="case-subject-input"
               />
             </div>
 
             <div>
-              <Label>Priority</Label>
+              <Label>{t('cases.form.priority')}</Label>
               <Select
                 value={priority}
                 onValueChange={(v) => {
@@ -261,7 +264,7 @@ export default function CasesPage() {
                 <SelectContent>
                   {PRIORITIES.map((p) => (
                     <SelectItem key={p} value={p}>
-                      {p}
+                      {t(`cases.priority.${p}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -270,7 +273,7 @@ export default function CasesPage() {
 
             {editing && (
               <div>
-                <Label>Status</Label>
+                <Label>{t('cases.form.status')}</Label>
                 <Select
                   value={status}
                   onValueChange={(v) => {
@@ -283,7 +286,7 @@ export default function CasesPage() {
                   <SelectContent>
                     {STATUSES.map((s) => (
                       <SelectItem key={s} value={s}>
-                        {s}
+                        {t(`cases.status.${s}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -293,10 +296,10 @@ export default function CasesPage() {
 
             {!editing && (
               <div>
-                <Label>Contact</Label>
+                <Label>{t('cases.form.contact')}</Label>
                 {selectedContact ? (
                   <div className="flex items-center justify-between rounded-md border border-input px-3 py-2">
-                    <span className="text-sm">{contactDisplayName(selectedContact)}</span>
+                    <span className="text-sm">{contactDisplayName(selectedContact, unnamedContact)}</span>
                     <Button
                       type="button"
                       size="sm"
@@ -304,7 +307,7 @@ export default function CasesPage() {
                       onClick={() => setSelectedContact(null)}
                       data-testid="case-change-contact-btn"
                     >
-                      Change
+                      {t('cases.form.change_contact')}
                     </Button>
                   </div>
                 ) : (
@@ -312,7 +315,7 @@ export default function CasesPage() {
                     <Input
                       value={contactSearch}
                       onChange={(e) => setContactSearch(e.target.value)}
-                      placeholder="Search contacts (min 2 characters)..."
+                      placeholder={t('cases.form.contact_search_placeholder')}
                       data-testid="case-contact-search"
                     />
                     {contacts.length > 0 && (
@@ -328,7 +331,7 @@ export default function CasesPage() {
                               }}
                               data-testid={`case-contact-option-${c.id}`}
                             >
-                              {contactDisplayName(c)}
+                              {contactDisplayName(c, unnamedContact)}
                             </button>
                           </li>
                         ))}
@@ -340,7 +343,7 @@ export default function CasesPage() {
             )}
 
             <div>
-              <Label>Assigned Agent (optional)</Label>
+              <Label>{t('cases.form.assigned_agent')}</Label>
               <Select
                 value={assignedAgentId || 'unassigned'}
                 onValueChange={(v) => {
@@ -352,7 +355,7 @@ export default function CasesPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">{t('cases.form.unassigned')}</SelectItem>
                   {agents.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
                       {a.displayName}
@@ -372,7 +375,7 @@ export default function CasesPage() {
               }
               data-testid="case-submit-btn"
             >
-              {editing ? 'Update' : 'Create'}
+              {editing ? t('cases.form.update') : t('cases.form.create')}
             </Button>
           </form>
         </SheetContent>

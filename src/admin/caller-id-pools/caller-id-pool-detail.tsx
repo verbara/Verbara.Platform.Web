@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -21,6 +22,7 @@ interface AddEntryForm {
 const DEFAULT_FORM: AddEntryForm = { phoneNumber: '', areaCode: '' };
 
 export default function CallerIdPoolDetailPage() {
+  const { t } = useTranslation('admin');
   const { poolId } = useParams<{ poolId: string }>();
   const navigate = useNavigate();
   const poolIdNum = Number(poolId);
@@ -38,7 +40,7 @@ export default function CallerIdPoolDetailPage() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
-        Loading…
+        {t('caller-id-pools.detail.loading')}
       </div>
     );
   }
@@ -46,7 +48,7 @@ export default function CallerIdPoolDetailPage() {
   if (!pool) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
-        Caller ID pool not found.
+        {t('caller-id-pools.detail.not_found')}
       </div>
     );
   }
@@ -64,20 +66,20 @@ export default function CallerIdPoolDetailPage() {
       {/* Back button */}
       <Button variant="ghost" size="sm" onClick={() => navigate('/admin/caller-id-pools')}>
         <ArrowLeft className="mr-1.5 h-4 w-4" />
-        Back to Caller ID Pools
+        {t('caller-id-pools.detail.back')}
       </Button>
 
       {/* Header */}
-      <PageHeader title={pool.name} description="Manage phone number entries in this pool." />
+      <PageHeader title={pool.name} description={t('caller-id-pools.detail.description')} />
 
       {/* Add entry form */}
       <div className="rounded-lg border bg-card p-6">
         <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Add Entry
+          {t('caller-id-pools.detail.add_entry')}
         </p>
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex-1 min-w-[160px] space-y-1.5">
-            <Label htmlFor="phoneNumber">Phone Number</Label>
+            <Label htmlFor="phoneNumber">{t('caller-id-pools.detail.phone_number')}</Label>
             <Input
               id="phoneNumber"
               value={form.phoneNumber}
@@ -86,7 +88,7 @@ export default function CallerIdPoolDetailPage() {
             />
           </div>
           <div className="w-32 space-y-1.5">
-            <Label htmlFor="areaCode">Area Code</Label>
+            <Label htmlFor="areaCode">{t('caller-id-pools.detail.area_code')}</Label>
             <Input
               id="areaCode"
               value={form.areaCode}
@@ -99,7 +101,7 @@ export default function CallerIdPoolDetailPage() {
             disabled={addEntry.isPending || !form.phoneNumber.trim()}
           >
             <Plus className="mr-1.5 h-4 w-4" />
-            {addEntry.isPending ? 'Adding…' : 'Add'}
+            {addEntry.isPending ? t('caller-id-pools.detail.adding') : t('caller-id-pools.detail.add')}
           </Button>
         </div>
       </div>
@@ -107,12 +109,12 @@ export default function CallerIdPoolDetailPage() {
       {/* Entries table */}
       <div className="rounded-lg border bg-card p-6">
         <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Entries ({entries.length})
+          {t('caller-id-pools.detail.entries_title', { count: entries.length })}
         </p>
 
         {entries.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No entries yet. Add phone numbers above.
+            {t('caller-id-pools.detail.no_entries')}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
@@ -120,13 +122,13 @@ export default function CallerIdPoolDetailPage() {
               <thead className="bg-muted/50">
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Phone Number
+                    {t('caller-id-pools.detail.col_phone')}
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Area Code
+                    {t('caller-id-pools.detail.col_area_code')}
                   </th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
-                    Active
+                    {t('caller-id-pools.detail.col_active')}
                   </th>
                   <th className="px-3 py-2" />
                 </tr>
@@ -140,7 +142,7 @@ export default function CallerIdPoolDetailPage() {
                       <Switch
                         checked={entry.isActive}
                         disabled
-                        aria-label="Is active"
+                        aria-label={t('caller-id-pools.detail.active_aria')}
                       />
                     </td>
                     <td className="px-3 py-2">

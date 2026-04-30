@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -27,6 +28,7 @@ const DEFAULT_FORM: AddHolidayForm = {
 };
 
 export default function HolidayCalendarDetailPage() {
+  const { t } = useTranslation('admin');
   const { calendarId } = useParams<{ calendarId: string }>();
   const navigate = useNavigate();
   const calendarIdNum = Number(calendarId);
@@ -45,7 +47,7 @@ export default function HolidayCalendarDetailPage() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
-        Loading…
+        {t('holiday-calendars.detail.loading')}
       </div>
     );
   }
@@ -53,7 +55,7 @@ export default function HolidayCalendarDetailPage() {
   if (!calendar) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
-        Holiday calendar not found.
+        {t('holiday-calendars.detail.not_found')}
       </div>
     );
   }
@@ -77,30 +79,30 @@ export default function HolidayCalendarDetailPage() {
       {/* Back button */}
       <Button variant="ghost" size="sm" onClick={() => navigate('/admin/holiday-calendars')}>
         <ArrowLeft className="mr-1.5 h-4 w-4" />
-        Back to Holiday Calendars
+        {t('holiday-calendars.detail.back')}
       </Button>
 
       {/* Header */}
-      <PageHeader title={calendar.name} description="Manage holidays in this calendar." />
+      <PageHeader title={calendar.name} description={t('holiday-calendars.detail.description')} />
 
       {/* Add holiday form */}
       <div className="rounded-lg border bg-card p-6">
         <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Add Holiday
+          {t('holiday-calendars.detail.add_holiday')}
         </p>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="holidayName">Name</Label>
+              <Label htmlFor="holidayName">{t('holiday-calendars.detail.name')}</Label>
               <Input
                 id="holidayName"
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. Christmas Day"
+                placeholder={t('holiday-calendars.detail.name_placeholder')}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="holidayDate">Date</Label>
+              <Label htmlFor="holidayDate">{t('holiday-calendars.detail.date')}</Label>
               <Input
                 id="holidayDate"
                 type="date"
@@ -112,7 +114,7 @@ export default function HolidayCalendarDetailPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="allowedStart">Allowed Start Time (optional)</Label>
+              <Label htmlFor="allowedStart">{t('holiday-calendars.detail.allowed_start')}</Label>
               <Input
                 id="allowedStart"
                 type="time"
@@ -121,7 +123,7 @@ export default function HolidayCalendarDetailPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="allowedEnd">Allowed End Time (optional)</Label>
+              <Label htmlFor="allowedEnd">{t('holiday-calendars.detail.allowed_end')}</Label>
               <Input
                 id="allowedEnd"
                 type="time"
@@ -137,7 +139,7 @@ export default function HolidayCalendarDetailPage() {
               disabled={addHoliday.isPending || !form.name.trim() || !form.date}
             >
               <Plus className="mr-1.5 h-4 w-4" />
-              {addHoliday.isPending ? 'Adding…' : 'Add Holiday'}
+              {addHoliday.isPending ? t('holiday-calendars.detail.adding') : t('holiday-calendars.detail.add')}
             </Button>
           </div>
         </div>
@@ -146,12 +148,12 @@ export default function HolidayCalendarDetailPage() {
       {/* Holidays table */}
       <div className="rounded-lg border bg-card p-6">
         <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Holidays ({holidays.length})
+          {t('holiday-calendars.detail.holidays_title', { count: holidays.length })}
         </p>
 
         {holidays.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No holidays yet. Add dates above.
+            {t('holiday-calendars.detail.no_holidays')}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
@@ -159,16 +161,16 @@ export default function HolidayCalendarDetailPage() {
               <thead className="bg-muted/50">
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Name
+                    {t('holiday-calendars.detail.col_name')}
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Date
+                    {t('holiday-calendars.detail.col_date')}
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Allowed Start
+                    {t('holiday-calendars.detail.col_allowed_start')}
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    Allowed End
+                    {t('holiday-calendars.detail.col_allowed_end')}
                   </th>
                   <th className="px-3 py-2" />
                 </tr>

@@ -1369,5 +1369,141 @@
     "blend_mode_label": "Habilitar modo blend",
     "blend_mode_help": "Permite que os agentes lidem com chamadas de entrada e saída simultaneamente.",
     "blend_mode_aria": "Modo blend habilitado"
+  },
+  "webchat": {
+    "title": "Widget de WebChat",
+    "description": "Insira o widget de chat em seu site para que os visitantes iniciem conversas.",
+    "embed_snippet": "Snippet de inserção",
+    "html": "HTML",
+    "instructions_prefix": "Copie este snippet e cole antes da tag de fechamento ",
+    "instructions_suffix": " do seu site.",
+    "configuration": "Configuração",
+    "api_url": "URL da API",
+    "ws_url": "URL do WebSocket"
+  },
+  "caller-id-pools": {
+    "title": "Pools de Caller ID",
+    "description": "Gerencie os pools de números de Caller ID de saída.",
+    "create": "Criar pool",
+    "loading": "Carregando…",
+    "search_placeholder": "Pesquisar pools…",
+    "no_results": "Nenhum pool encontrado.",
+    "empty": "Nenhum pool de Caller ID configurado ainda.",
+    "columns": {
+      "name": "Nome"
+    },
+    "form": {
+      "create_title": "Criar pool de Caller ID",
+      "edit_title": "Editar pool de Caller ID",
+      "name": "Nome",
+      "cancel": "Cancelar",
+      "saving": "Salvando...",
+      "create": "Criar",
+      "update": "Atualizar"
+    },
+    "entity_type": "pool de Caller ID",
+    "detail": {
+      "back": "Voltar para Pools de Caller ID",
+      "loading": "Carregando…",
+      "not_found": "Pool de Caller ID não encontrado.",
+      "description": "Gerencie as entradas de números de telefone neste pool.",
+      "add_entry": "Adicionar entrada",
+      "phone_number": "Número de telefone",
+      "area_code": "Código de área",
+      "adding": "Adicionando…",
+      "add": "Adicionar",
+      "entries_title": "Entradas ({{count}})",
+      "no_entries": "Nenhuma entrada ainda. Adicione números de telefone acima.",
+      "col_phone": "Número de telefone",
+      "col_area_code": "Código de área",
+      "col_active": "Ativa",
+      "active_aria": "Está ativa"
+    }
+  },
+  "holiday-calendars": {
+    "title": "Calendários de feriados",
+    "description": "Defina datas de feriados para bloquear a discagem de saída.",
+    "create": "Criar calendário",
+    "loading": "Carregando…",
+    "search_placeholder": "Pesquisar calendários…",
+    "no_results": "Nenhum calendário encontrado.",
+    "empty": "Nenhum calendário de feriados configurado ainda.",
+    "columns": {
+      "name": "Nome"
+    },
+    "form": {
+      "create_title": "Criar calendário de feriados",
+      "edit_title": "Editar calendário de feriados",
+      "name": "Nome",
+      "cancel": "Cancelar",
+      "saving": "Salvando...",
+      "create": "Criar",
+      "update": "Atualizar"
+    },
+    "entity_type": "calendário de feriados",
+    "detail": {
+      "back": "Voltar para Calendários de feriados",
+      "loading": "Carregando…",
+      "not_found": "Calendário de feriados não encontrado.",
+      "description": "Gerencie os feriados neste calendário.",
+      "add_holiday": "Adicionar feriado",
+      "name": "Nome",
+      "name_placeholder": "ex. Dia de Natal",
+      "date": "Data",
+      "allowed_start": "Início permitido (opcional)",
+      "allowed_end": "Fim permitido (opcional)",
+      "adding": "Adicionando…",
+      "add": "Adicionar feriado",
+      "holidays_title": "Feriados ({{count}})",
+      "no_holidays": "Nenhum feriado ainda. Adicione datas acima.",
+      "col_name": "Nome",
+      "col_date": "Data",
+      "col_allowed_start": "Início permitido",
+      "col_allowed_end": "Fim permitido"
+    }
+  },
+  "cases": {
+    "title": "Casos",
+    "create": "Criar",
+    "loading": "Carregando…",
+    "search_placeholder": "Pesquisar casos...",
+    "no_results": "Nenhum caso encontrado",
+    "empty": "Nenhum caso ainda",
+    "columns": {
+      "case_number": "Caso #",
+      "subject": "Assunto",
+      "priority": "Prioridade",
+      "status": "Status",
+      "conversations": "Conversas",
+      "created": "Criado"
+    },
+    "priority": {
+      "Low": "Baixa",
+      "Normal": "Normal",
+      "High": "Alta",
+      "Urgent": "Urgente"
+    },
+    "status": {
+      "Open": "Aberto",
+      "Pending": "Pendente",
+      "Resolved": "Resolvido",
+      "Closed": "Fechado"
+    },
+    "form": {
+      "create_title": "Criar caso",
+      "edit_title": "Editar {{number}}",
+      "subject": "Assunto",
+      "subject_placeholder": "Descrição do problema do cliente",
+      "priority": "Prioridade",
+      "status": "Status",
+      "contact": "Contato",
+      "change_contact": "Alterar",
+      "contact_search_placeholder": "Pesquisar contatos (mín. 2 caracteres)...",
+      "assigned_agent": "Agente atribuído (opcional)",
+      "unassigned": "Não atribuído",
+      "create": "Criar",
+      "update": "Atualizar"
+    },
+    "unnamed_contact": "Contato sem nome"
   }
 }

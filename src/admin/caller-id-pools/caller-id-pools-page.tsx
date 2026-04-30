@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Phone, Trash2, Plus, Pencil } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -28,6 +29,7 @@ import {
 const columnHelper = createColumnHelper<CallerIdPoolSummary>();
 
 export default function CallerIdPoolsPage() {
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const [deletingPool, setDeletingPool] = useState<CallerIdPoolSummary | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -42,7 +44,7 @@ export default function CallerIdPoolsPage() {
   const columns = useMemo(
     () => [
       columnHelper.accessor('name', {
-        header: () => 'Name',
+        header: () => t('caller-id-pools.columns.name'),
         cell: (info) => (
           <span className="font-medium text-foreground">{info.getValue()}</span>
         ),
@@ -85,15 +87,15 @@ export default function CallerIdPoolsPage() {
         ),
       }),
     ],
-    [],
+    [t],
   );
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Caller ID Pools" />
+        <PageHeader title={t('caller-id-pools.title')} />
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
+          {t('caller-id-pools.loading')}
         </div>
       </div>
     );
@@ -101,23 +103,23 @@ export default function CallerIdPoolsPage() {
 
   return (
     <div className="space-y-6" data-testid="caller-id-pools-page">
-      <PageHeader title="Caller ID Pools" description="Manage outbound caller ID number pools.">
+      <PageHeader title={t('caller-id-pools.title')} description={t('caller-id-pools.description')}>
         <PermissionGuard requires="campaigns:callerid:manage">
           <Button size="sm" data-testid="caller-id-pools-create-btn" onClick={() => { setEditingPool(null); setFormData({ name: '' }); setFormOpen(true); }}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Create Pool
+            {t('caller-id-pools.create')}
           </Button>
         </PermissionGuard>
       </PageHeader>
 
       {pools.length === 0 ? (
-        <EmptyState icon={Phone} message="No caller ID pools configured yet." />
+        <EmptyState icon={Phone} message={t('caller-id-pools.empty')} />
       ) : (
         <DataTable
           data={pools}
           columns={columns}
-          searchPlaceholder="Search pools…"
-          noResultsMessage="No matching pools found."
+          searchPlaceholder={t('caller-id-pools.search_placeholder')}
+          noResultsMessage={t('caller-id-pools.no_results')}
           onRowClick={(pool) => navigate(`/admin/caller-id-pools/${pool.id}`)}
         />
       )}
@@ -139,11 +141,11 @@ export default function CallerIdPoolsPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingPool ? 'Edit Caller ID Pool' : 'Create Caller ID Pool'}</DialogTitle>
+            <DialogTitle>{editingPool ? t('caller-id-pools.form.edit_title') : t('caller-id-pools.form.create_title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="pool-name">Name</Label>
+              <Label htmlFor="pool-name">{t('caller-id-pools.form.name')}</Label>
               <Input
                 id="pool-name"
                 data-testid="pool-form-name"
@@ -153,7 +155,7 @@ export default function CallerIdPoolsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>{t('caller-id-pools.form.cancel')}</Button>
             <Button
               data-testid="pool-form-submit"
               disabled={!formData.name.trim() || createPool.isPending || updatePool.isPending}
@@ -165,7 +167,7 @@ export default function CallerIdPoolsPage() {
                 }
               }}
             >
-              {createPool.isPending || updatePool.isPending ? 'Saving...' : editingPool ? 'Update' : 'Create'}
+              {createPool.isPending || updatePool.isPending ? t('caller-id-pools.form.saving') : editingPool ? t('caller-id-pools.form.update') : t('caller-id-pools.form.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

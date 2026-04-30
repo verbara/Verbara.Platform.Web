@@ -1414,5 +1414,141 @@
     "blend_mode_label": "Enable Blend Mode",
     "blend_mode_help": "Allow agents to handle both inbound and outbound calls simultaneously.",
     "blend_mode_aria": "Blend mode enabled"
+  },
+  "webchat": {
+    "title": "WebChat Widget",
+    "description": "Embed the chat widget on your website to let visitors start conversations.",
+    "embed_snippet": "Embed Snippet",
+    "html": "HTML",
+    "instructions_prefix": "Copy this snippet and paste it before the closing ",
+    "instructions_suffix": " tag of your website.",
+    "configuration": "Configuration",
+    "api_url": "API URL",
+    "ws_url": "WebSocket URL"
+  },
+  "caller-id-pools": {
+    "title": "Caller ID Pools",
+    "description": "Manage outbound caller ID number pools.",
+    "create": "Create Pool",
+    "loading": "Loading…",
+    "search_placeholder": "Search pools…",
+    "no_results": "No matching pools found.",
+    "empty": "No caller ID pools configured yet.",
+    "columns": {
+      "name": "Name"
+    },
+    "form": {
+      "create_title": "Create Caller ID Pool",
+      "edit_title": "Edit Caller ID Pool",
+      "name": "Name",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "create": "Create",
+      "update": "Update"
+    },
+    "entity_type": "Caller ID Pool",
+    "detail": {
+      "back": "Back to Caller ID Pools",
+      "loading": "Loading…",
+      "not_found": "Caller ID pool not found.",
+      "description": "Manage phone number entries in this pool.",
+      "add_entry": "Add Entry",
+      "phone_number": "Phone Number",
+      "area_code": "Area Code",
+      "adding": "Adding…",
+      "add": "Add",
+      "entries_title": "Entries ({{count}})",
+      "no_entries": "No entries yet. Add phone numbers above.",
+      "col_phone": "Phone Number",
+      "col_area_code": "Area Code",
+      "col_active": "Active",
+      "active_aria": "Is active"
+    }
+  },
+  "holiday-calendars": {
+    "title": "Holiday Calendars",
+    "description": "Define holiday dates to block outbound dialing.",
+    "create": "Create Calendar",
+    "loading": "Loading…",
+    "search_placeholder": "Search calendars…",
+    "no_results": "No matching calendars found.",
+    "empty": "No holiday calendars configured yet.",
+    "columns": {
+      "name": "Name"
+    },
+    "form": {
+      "create_title": "Create Holiday Calendar",
+      "edit_title": "Edit Holiday Calendar",
+      "name": "Name",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "create": "Create",
+      "update": "Update"
+    },
+    "entity_type": "Holiday Calendar",
+    "detail": {
+      "back": "Back to Holiday Calendars",
+      "loading": "Loading…",
+      "not_found": "Holiday calendar not found.",
+      "description": "Manage holidays in this calendar.",
+      "add_holiday": "Add Holiday",
+      "name": "Name",
+      "name_placeholder": "e.g. Christmas Day",
+      "date": "Date",
+      "allowed_start": "Allowed Start Time (optional)",
+      "allowed_end": "Allowed End Time (optional)",
+      "adding": "Adding…",
+      "add": "Add Holiday",
+      "holidays_title": "Holidays ({{count}})",
+      "no_holidays": "No holidays yet. Add dates above.",
+      "col_name": "Name",
+      "col_date": "Date",
+      "col_allowed_start": "Allowed Start",
+      "col_allowed_end": "Allowed End"
+    }
+  },
+  "cases": {
+    "title": "Cases",
+    "create": "Create",
+    "loading": "Loading…",
+    "search_placeholder": "Search cases...",
+    "no_results": "No matching cases",
+    "empty": "No cases yet",
+    "columns": {
+      "case_number": "Case #",
+      "subject": "Subject",
+      "priority": "Priority",
+      "status": "Status",
+      "conversations": "Conversations",
+      "created": "Created"
+    },
+    "priority": {
+      "Low": "Low",
+      "Normal": "Normal",
+      "High": "High",
+      "Urgent": "Urgent"
+    },
+    "status": {
+      "Open": "Open",
+      "Pending": "Pending",
+      "Resolved": "Resolved",
+      "Closed": "Closed"
+    },
+    "form": {
+      "create_title": "Create Case",
+      "edit_title": "Edit {{number}}",
+      "subject": "Subject",
+      "subject_placeholder": "Customer issue description",
+      "priority": "Priority",
+      "status": "Status",
+      "contact": "Contact",
+      "change_contact": "Change",
+      "contact_search_placeholder": "Search contacts (min 2 characters)...",
+      "assigned_agent": "Assigned Agent (optional)",
+      "unassigned": "Unassigned",
+      "create": "Create",
+      "update": "Update"
+    },
+    "unnamed_contact": "Unnamed contact"
   }
 }

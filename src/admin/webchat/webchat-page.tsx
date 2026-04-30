@@ -1,10 +1,12 @@
 import { MessageCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
 
 export default function WebChatPage() {
+  const { t } = useTranslation('admin');
   const apiBase = window.location.origin;
   const snippet = `<!-- Asterisk Platform WebChat Widget -->
 <script>
@@ -27,20 +29,20 @@ export default function WebChatPage() {
       <div className="flex items-center gap-3">
         <MessageCircle className="h-6 w-6 text-primary" />
         <div>
-          <h1 className="font-heading text-xl font-semibold">WebChat Widget</h1>
+          <h1 className="font-heading text-xl font-semibold">{t('webchat.title')}</h1>
           <p className="text-sm text-muted-foreground">
-            Embed the chat widget on your website to let visitors start conversations.
+            {t('webchat.description')}
           </p>
         </div>
       </div>
 
       <div className="rounded-lg border bg-card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium">Embed Snippet</h3>
-          <Badge variant="secondary">HTML</Badge>
+          <h3 className="font-medium">{t('webchat.embed_snippet')}</h3>
+          <Badge variant="secondary">{t('webchat.html')}</Badge>
         </div>
         <p className="text-sm text-muted-foreground">
-          Copy this snippet and paste it before the closing <code className="text-xs bg-muted px-1 py-0.5 rounded">&lt;/body&gt;</code> tag of your website.
+          {t('webchat.instructions_prefix')}<code className="text-xs bg-muted px-1 py-0.5 rounded">&lt;/body&gt;</code>{t('webchat.instructions_suffix')}
         </p>
         <div className="relative">
           <pre
@@ -56,14 +58,14 @@ export default function WebChatPage() {
       </div>
 
       <div className="rounded-lg border bg-card p-6 space-y-4">
-        <h3 className="font-medium">Configuration</h3>
+        <h3 className="font-medium">{t('webchat.configuration')}</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>API URL</Label>
+            <Label>{t('webchat.api_url')}</Label>
             <Input readOnly value={`${apiBase}/api/v1/webchat`} className="font-mono text-xs" />
           </div>
           <div className="space-y-2">
-            <Label>WebSocket URL</Label>
+            <Label>{t('webchat.ws_url')}</Label>
             <Input readOnly value={`${apiBase.replace(/^http/, 'ws')}/ws/webchat`} className="font-mono text-xs" />
           </div>
         </div>

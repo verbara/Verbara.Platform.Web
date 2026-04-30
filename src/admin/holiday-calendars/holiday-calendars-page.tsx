@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import { CalendarOff, Trash2, Plus, Pencil } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -28,6 +29,7 @@ import {
 const columnHelper = createColumnHelper<HolidayCalendarSummary>();
 
 export default function HolidayCalendarsPage() {
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const [deletingCalendar, setDeletingCalendar] = useState<HolidayCalendarSummary | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -42,7 +44,7 @@ export default function HolidayCalendarsPage() {
   const columns = useMemo(
     () => [
       columnHelper.accessor('name', {
-        header: () => 'Name',
+        header: () => t('holiday-calendars.columns.name'),
         cell: (info) => (
           <span className="font-medium text-foreground">{info.getValue()}</span>
         ),
@@ -84,15 +86,15 @@ export default function HolidayCalendarsPage() {
         ),
       }),
     ],
-    [],
+    [t],
   );
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Holiday Calendars" />
+        <PageHeader title={t('holiday-calendars.title')} />
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
+          {t('holiday-calendars.loading')}
         </div>
       </div>
     );
@@ -101,25 +103,25 @@ export default function HolidayCalendarsPage() {
   return (
     <div className="space-y-6" data-testid="holiday-calendars-page">
       <PageHeader
-        title="Holiday Calendars"
-        description="Define holiday dates to block outbound dialing."
+        title={t('holiday-calendars.title')}
+        description={t('holiday-calendars.description')}
       >
         <PermissionGuard requires="campaigns:calendar:manage">
           <Button data-testid="holiday-calendars-create-btn" size="sm" onClick={() => { setEditingCalendar(null); setFormData({ name: '' }); setFormOpen(true); }}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Create Calendar
+            {t('holiday-calendars.create')}
           </Button>
         </PermissionGuard>
       </PageHeader>
 
       {calendars.length === 0 ? (
-        <EmptyState icon={CalendarOff} message="No holiday calendars configured yet." />
+        <EmptyState icon={CalendarOff} message={t('holiday-calendars.empty')} />
       ) : (
         <DataTable
           data={calendars}
           columns={columns}
-          searchPlaceholder="Search calendars…"
-          noResultsMessage="No matching calendars found."
+          searchPlaceholder={t('holiday-calendars.search_placeholder')}
+          noResultsMessage={t('holiday-calendars.no_results')}
           onRowClick={(calendar) => navigate(`/admin/holiday-calendars/${calendar.id}`)}
         />
       )}
@@ -141,11 +143,11 @@ export default function HolidayCalendarsPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingCalendar ? 'Edit Holiday Calendar' : 'Create Holiday Calendar'}</DialogTitle>
+            <DialogTitle>{editingCalendar ? t('holiday-calendars.form.edit_title') : t('holiday-calendars.form.create_title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="cal-name">Name</Label>
+              <Label htmlFor="cal-name">{t('holiday-calendars.form.name')}</Label>
               <Input
                 data-testid="calendar-form-name"
                 id="cal-name"
@@ -155,7 +157,7 @@ export default function HolidayCalendarsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>{t('holiday-calendars.form.cancel')}</Button>
             <Button
               data-testid="calendar-form-submit"
               disabled={!formData.name.trim() || createCalendar.isPending || updateCalendar.isPending}
@@ -167,7 +169,7 @@ export default function HolidayCalendarsPage() {
                 }
               }}
             >
-              {createCalendar.isPending || updateCalendar.isPending ? 'Saving...' : editingCalendar ? 'Update' : 'Create'}
+              {createCalendar.isPending || updateCalendar.isPending ? t('holiday-calendars.form.saving') : editingCalendar ? t('holiday-calendars.form.update') : t('holiday-calendars.form.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

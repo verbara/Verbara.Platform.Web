@@ -13,6 +13,80 @@ _No unreleased changes._
 
 ---
 
+## [1.13.10] — 2026-04-29 — i18n Coverage Phase 4E-1 (webchat + cases + telephony admin)
+
+**Closes 5 mid-tier admin features.** WebChat widget config, cases
+CRUD, caller-ID pool management (list + detail), and holiday
+calendar management (list + detail) — admin features used by
+tenant managers configuring outbound dialing and customer
+ticketing.
+
+### Refactored to `useTranslation`
+
+**`src/admin/webchat/webchat-page.tsx`** — page header + description,
+Embed Snippet section heading + HTML badge + insertion instructions
+(split prefix/suffix around `<code>`), Configuration section + 2
+field labels (API URL, WebSocket URL).
+
+**`src/admin/caller-id-pools/caller-id-pools-page.tsx`** — page
+header + description, Create CTA, loading/empty/no-results, Name
+column header, Create/Edit dialog (titles, name label, Cancel,
+Saving.../Update/Create).
+
+**`src/admin/caller-id-pools/caller-id-pool-detail.tsx`** — loading
+state, not-found state, Back button, page description, Add Entry
+section + 2 input labels, Adding.../Add button, Entries section
+title with `{{count}}`, no-entries empty state, 3 column headers
+(Phone Number, Area Code, Active), aria-label for Active switch.
+
+**`src/admin/holiday-calendars/holiday-calendars-page.tsx`** — page
+header + description, Create CTA, loading/empty/no-results, Name
+column header, Create/Edit dialog (titles, name label, Cancel,
+Saving.../Update/Create).
+
+**`src/admin/holiday-calendars/holiday-calendar-detail.tsx`** —
+loading/not-found states, Back button, page description, Add
+Holiday section + 4 input labels (Name + placeholder, Date,
+Allowed Start/End), Adding.../Add Holiday button, Holidays
+section title with `{{count}}`, no-holidays empty, 4 column
+headers.
+
+**`src/admin/cases/cases-page.tsx`** — page header, Create CTA,
+loading/empty/no-results, 6 column headers (Case #, Subject,
+Priority, Status, Conversations, Created), localized priority
+(Low/Normal/High/Urgent) + status (Open/Pending/Resolved/Closed)
+labels in cells AND select options, Create/Edit case sheet (title
+with `{{number}}` interpolation when editing, Subject + placeholder,
+Priority + Status selects, Contact label + Change button + search
+placeholder + min-chars hint, Assigned Agent label + Unassigned
+option, Create/Update submit). `contactDisplayName` helper now
+takes a fallback string parameter so the unnamed-contact label
+stays translatable.
+
+### Locales
+
+Added top-level under `admin.json` (3 locales):
+
+- `webchat.*`
+- `caller-id-pools.*` (incl. `.detail.*` sub-section)
+- `holiday-calendars.*` (incl. `.detail.*` sub-section)
+- `cases.*` (incl. `.priority.*`, `.status.*`, `.form.*`)
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+Admin section: 104/133 (78%) → 109/133 (82%).
+
+`entityType="Caller ID Pool"` / `"Holiday Calendar"` props on
+ConfirmDeleteDialog left untranslated (interpolate into the
+dialog's hardcoded English template — addressed when the dialog
+itself is translated).
+
+---
+
 ## [1.13.9] — 2026-04-29 — i18n Coverage Phase 4D (campaigns wizard + callbacks)
 
 **Closes the campaigns wizard.** The 5-step campaign creation wizard
