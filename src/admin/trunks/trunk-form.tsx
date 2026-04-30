@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -43,6 +44,7 @@ interface TrunkFormProps {
 }
 
 export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
+  const { t } = useTranslation('admin');
   const createTrunk = useCreateTrunk();
   const updateTrunk = useUpdateTrunk();
 
@@ -94,7 +96,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
     onOpenChange(false);
   });
 
-  const title = mode === 'create' ? 'Add Trunk' : 'Edit Trunk';
+  const title = mode === 'create' ? t('trunks.form.create_title') : t('trunks.form.edit_title');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -103,18 +105,18 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>
             {mode === 'create'
-              ? 'Configure a new SIP/PJSIP/IAX2/DAHDI trunk.'
-              : 'Update trunk configuration.'}
+              ? t('trunks.form.create_description')
+              : t('trunks.form.edit_description')}
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="trunk-name">Name</Label>
+            <Label htmlFor="trunk-name">{t('trunks.name')}</Label>
             <Input
               id="trunk-name"
-              placeholder="my-trunk"
+              placeholder={t('trunks.form.name_placeholder')}
               aria-invalid={!!errors.name}
               data-testid="trunk-form-name"
               {...register('name')}
@@ -126,10 +128,10 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
 
           {/* Display Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="trunk-displayName">Display Name</Label>
+            <Label htmlFor="trunk-displayName">{t('trunks.displayName')}</Label>
             <Input
               id="trunk-displayName"
-              placeholder="My Primary Trunk"
+              placeholder={t('trunks.form.display_name_placeholder')}
               aria-invalid={!!errors.displayName}
               data-testid="trunk-form-displayName"
               {...register('displayName')}
@@ -141,19 +143,19 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
 
           {/* Type */}
           <div className="space-y-1.5">
-            <Label>Type</Label>
+            <Label>{t('trunks.type')}</Label>
             <Controller
               name="type"
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="w-full" data-testid="trunk-form-type">
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('trunks.form.select_type')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {TRUNK_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t}
+                    {TRUNK_TYPES.map((tt) => (
+                      <SelectItem key={tt} value={tt}>
+                        {tt}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -164,7 +166,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
 
           {/* Max Channels */}
           <div className="space-y-1.5">
-            <Label htmlFor="trunk-maxChannels">Max Channels</Label>
+            <Label htmlFor="trunk-maxChannels">{t('trunks.maxChannels')}</Label>
             <Input
               id="trunk-maxChannels"
               type="number"
@@ -193,12 +195,12 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
                 />
               )}
             />
-            <Label htmlFor="trunk-isActive">Active</Label>
+            <Label htmlFor="trunk-isActive">{t('trunks.form.active')}</Label>
           </div>
 
           <SheetFooter className="mt-auto px-0">
             <Button type="submit" disabled={isSubmitting} data-testid="trunk-form-submit">
-              {mode === 'create' ? 'Add Trunk' : 'Save Changes'}
+              {mode === 'create' ? t('trunks.form.submit_create') : t('trunks.form.submit_edit')}
             </Button>
           </SheetFooter>
         </form>

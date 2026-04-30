@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
@@ -63,6 +64,7 @@ function mapToForm(sub: WebhookSubscription): WebhookFormValues {
 }
 
 export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormProps) {
+  const { t } = useTranslation('admin');
   const isEdit = !!subscription;
   const createSubscription = useCreateWebhookSubscription();
   const updateSubscription = useUpdateWebhookSubscription();
@@ -123,32 +125,32 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="right" className="sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>{isEdit ? 'Edit subscription' : 'Create subscription'}</SheetTitle>
+            <SheetTitle>{isEdit ? t('webhooks.form.edit_title') : t('webhooks.form.create_title')}</SheetTitle>
             <SheetDescription>
               {isEdit
-                ? 'Update webhook subscription settings.'
-                : 'Configure a new webhook endpoint to receive events.'}
+                ? t('webhooks.form.edit_description')
+                : t('webhooks.form.create_description')}
             </SheetDescription>
           </SheetHeader>
 
           <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
             <div className="space-y-1.5">
-              <Label htmlFor="wh-name">Name</Label>
+              <Label htmlFor="wh-name">{t('webhooks.form.name')}</Label>
               <Input
                 id="wh-name"
                 data-testid="webhook-form-name"
-                placeholder="My webhook"
+                placeholder={t('webhooks.form.name_placeholder')}
                 {...register('name')}
               />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="wh-url">Endpoint URL</Label>
+              <Label htmlFor="wh-url">{t('webhooks.form.endpoint_url')}</Label>
               <Input
                 id="wh-url"
                 data-testid="webhook-form-url"
-                placeholder="https://example.com/webhook"
+                placeholder={t('webhooks.form.endpoint_url_placeholder')}
                 {...register('endpointUrl')}
               />
               {errors.endpointUrl && (
@@ -169,22 +171,22 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                     />
                   )}
                 />
-                <Label htmlFor="wh-active">Active</Label>
+                <Label htmlFor="wh-active">{t('webhooks.form.active')}</Label>
               </div>
             )}
 
             <div className="space-y-3">
-              <Label>Event types</Label>
+              <Label>{t('webhooks.form.event_types')}</Label>
               {errors.eventTypes && (
                 <p className="text-xs text-destructive">
                   {typeof errors.eventTypes.message === 'string'
                     ? errors.eventTypes.message
-                    : 'Select at least one event type'}
+                    : t('webhooks.form.event_types_required')}
                 </p>
               )}
 
               {eventTypes.length === 0 && (
-                <p className="text-sm text-muted-foreground">Loading event types...</p>
+                <p className="text-sm text-muted-foreground">{t('webhooks.form.event_types_loading')}</p>
               )}
 
               <Controller
@@ -225,7 +227,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
 
             <SheetFooter className="mt-auto px-0">
               <Button type="submit" disabled={isSubmitting} data-testid="webhook-form-submit">
-                {isEdit ? 'Save' : 'Create'}
+                {isEdit ? t('webhooks.form.save') : t('webhooks.form.create')}
               </Button>
             </SheetFooter>
           </form>
@@ -243,9 +245,9 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Webhook secret</DialogTitle>
+            <DialogTitle>{t('webhooks.form.secret_dialog.title')}</DialogTitle>
             <DialogDescription>
-              Copy your signing secret now. It will not be shown again.
+              {t('webhooks.form.secret_dialog.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -257,11 +259,11 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
           </div>
 
           <p className="text-xs text-amber-600 dark:text-amber-400">
-            This secret is used to verify webhook payloads via HMAC-SHA256. Store it securely.
+            {t('webhooks.form.secret_dialog.warning')}
           </p>
 
           <DialogFooter>
-            <Button onClick={() => setSecretDialog(false)}>Done</Button>
+            <Button onClick={() => setSecretDialog(false)}>{t('webhooks.form.secret_dialog.done')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

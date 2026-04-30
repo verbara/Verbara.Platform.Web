@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Save, SlidersHorizontal } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -40,6 +41,7 @@ const DEFAULT_VALUES: DialerSettingsFormValues = {
 };
 
 export default function DialerSettingsPage() {
+  const { t } = useTranslation('admin');
   const { data: settings, isLoading } = useDialerSettings();
   const updateSettings = useUpdateDialerSettings();
 
@@ -70,9 +72,9 @@ export default function DialerSettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <h1 className="font-heading text-2xl font-semibold">Dialer Settings</h1>
+        <h1 className="font-heading text-2xl font-semibold">{t('dialer-settings.title')}</h1>
         <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading…
+          {t('dialer-settings.loading')}
         </div>
       </div>
     );
@@ -86,9 +88,9 @@ export default function DialerSettingsPage() {
           <SlidersHorizontal className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="font-heading text-2xl font-semibold">Dialer Settings</h1>
+          <h1 className="font-heading text-2xl font-semibold">{t('dialer-settings.title')}</h1>
           <p className="text-sm text-muted-foreground">
-            Global configuration for the outbound dialer engine.
+            {t('dialer-settings.description')}
           </p>
         </div>
       </div>
@@ -97,10 +99,10 @@ export default function DialerSettingsPage() {
         {/* Capacity */}
         <section className="space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Capacity
+            {t('dialer-settings.sections.capacity')}
           </h2>
           <div className="space-y-1.5">
-            <Label htmlFor="maxGlobalChannels">Max Global Channels</Label>
+            <Label htmlFor="maxGlobalChannels">{t('dialer-settings.fields.max_global_channels')}</Label>
             <Input
               id="maxGlobalChannels"
               type="number"
@@ -114,7 +116,7 @@ export default function DialerSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="maxConcurrentCampaigns">Max Concurrent Campaigns</Label>
+            <Label htmlFor="maxConcurrentCampaigns">{t('dialer-settings.fields.max_concurrent_campaigns')}</Label>
             <Input
               id="maxConcurrentCampaigns"
               type="number"
@@ -133,10 +135,10 @@ export default function DialerSettingsPage() {
         {/* Timing */}
         <section className="space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Timing
+            {t('dialer-settings.sections.timing')}
           </h2>
           <div className="space-y-1.5">
-            <Label htmlFor="defaultRingTimeoutSeconds">Default Ring Timeout (seconds)</Label>
+            <Label htmlFor="defaultRingTimeoutSeconds">{t('dialer-settings.fields.default_ring_timeout')}</Label>
             <Input
               id="defaultRingTimeoutSeconds"
               type="number"
@@ -150,7 +152,7 @@ export default function DialerSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="campaignPollIntervalSeconds">Campaign Poll Interval (seconds)</Label>
+            <Label htmlFor="campaignPollIntervalSeconds">{t('dialer-settings.fields.campaign_poll_interval')}</Label>
             <Input
               id="campaignPollIntervalSeconds"
               type="number"
@@ -164,7 +166,7 @@ export default function DialerSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="scheduledCallbackPollSeconds">Scheduled Callback Poll (seconds)</Label>
+            <Label htmlFor="scheduledCallbackPollSeconds">{t('dialer-settings.fields.scheduled_callback_poll')}</Label>
             <Input
               id="scheduledCallbackPollSeconds"
               type="number"
@@ -178,7 +180,7 @@ export default function DialerSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="ahtCacheDurationSeconds">AHT Cache Duration (seconds)</Label>
+            <Label htmlFor="ahtCacheDurationSeconds">{t('dialer-settings.fields.aht_cache_duration')}</Label>
             <Input
               id="ahtCacheDurationSeconds"
               type="number"
@@ -197,14 +199,14 @@ export default function DialerSettingsPage() {
         {/* Jitter */}
         <section className="space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Jitter
+            {t('dialer-settings.sections.jitter')}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Random delay added between originate attempts to avoid thundering-herd patterns.
+            {t('dialer-settings.jitter_help')}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="jitterMinMs">Min Jitter (ms)</Label>
+              <Label htmlFor="jitterMinMs">{t('dialer-settings.fields.min_jitter')}</Label>
               <Input
                 id="jitterMinMs"
                 type="number"
@@ -217,7 +219,7 @@ export default function DialerSettingsPage() {
               )}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="jitterMaxMs">Max Jitter (ms)</Label>
+              <Label htmlFor="jitterMaxMs">{t('dialer-settings.fields.max_jitter')}</Label>
               <Input
                 id="jitterMaxMs"
                 type="number"
@@ -237,13 +239,13 @@ export default function DialerSettingsPage() {
         {/* Blend mode */}
         <section className="space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Blend Mode
+            {t('dialer-settings.sections.blend_mode')}
           </h2>
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Enable Blend Mode</p>
+              <p className="text-sm font-medium">{t('dialer-settings.blend_mode_label')}</p>
               <p className="text-xs text-muted-foreground">
-                Allow agents to handle both inbound and outbound calls simultaneously.
+                {t('dialer-settings.blend_mode_help')}
               </p>
             </div>
             <Switch
@@ -251,14 +253,14 @@ export default function DialerSettingsPage() {
               onCheckedChange={(checked) =>
                 setValue('blendModeEnabled', checked, { shouldDirty: true })
               }
-              aria-label="Blend mode enabled"
+              aria-label={t('dialer-settings.blend_mode_aria')}
             />
           </div>
         </section>
 
         <Button type="submit" disabled={!isDirty || updateSettings.isPending} data-testid="dialer-settings-save-btn">
           <Save className="mr-2 h-4 w-4" />
-          {updateSettings.isPending ? 'Saving…' : 'Save Settings'}
+          {updateSettings.isPending ? t('dialer-settings.saving') : t('dialer-settings.save')}
         </Button>
       </form>
     </div>

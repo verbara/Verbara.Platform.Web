@@ -13,6 +13,73 @@ _No unreleased changes._
 
 ---
 
+## [1.13.8] — 2026-04-29 — i18n Coverage Phase 4C-2 (admin forms)
+
+**Closes the 5 admin CRUD form sheets.** Webhooks, trunks, routes,
+endpoint profiles, and dialer settings — the configuration entry
+points platform admins use to provision the platform's plumbing.
+Reuses existing `trunks.*`, `routes.*`, `realtime.*` field labels
+from prior phases; new `*.form.*` sub-sections add only the
+form-specific overrides (titles, descriptions, placeholders,
+submit copy).
+
+### Refactored to `useTranslation`
+
+**`src/admin/webhooks/webhook-form.tsx`** — sheet title (create vs
+edit), description, Name + placeholder, Endpoint URL + placeholder,
+Active switch label (edit only), Event types group (label + error
+fallback + loading state), submit button (Create/Save), Webhook
+secret post-create dialog (title, description, HMAC warning, Done
+button).
+
+**`src/admin/trunks/trunk-form.tsx`** — sheet title (create vs
+edit) + description, Name + placeholder, Display Name +
+placeholder, Type label (reuses `trunks.type`) + select-type
+placeholder, Max Channels label, Active switch label, submit
+(Add/Save).
+
+**`src/admin/routes/route-form.tsx`** — sheet title + description,
+6 input labels (reuses `routes.{priority,pattern,patternType,
+trunk}`), select-type/select-trunk/no-overflow/dial-prefix-optional
+placeholders, submit (Add/Save).
+
+**`src/admin/realtime/profile-form.tsx`** — sheet title + 9 input
+labels (Name + placeholder, Type with Agent/Trunk options,
+Transport, Codecs, Max Contacts, Context, Qualify Frequency,
+WebRTC switch, Direct Media switch), submit (Add/Save).
+
+**`src/admin/dialer-settings/dialer-settings-page.tsx`** — page
+header (title + description), loading state, 4 section headings
+(Capacity / Timing / Jitter / Blend Mode), 8 input field labels,
+jitter help text, blend-mode label + help + aria, save button
+(Saving…/Save Settings).
+
+### Locales
+
+Added under `admin.json` (3 locales):
+
+- `webhooks.form.*` (new sub-section under existing `webhooks.*`)
+- `trunks.form.*` (new sub-section)
+- `routes.form.*` (new sub-section)
+- `realtime.form.*` (new sub-section under realtime added in 4C-1)
+- `dialer-settings.*` (new top-level, kebab-case to match URL)
+
+### Verification
+
+Tests: 199/199 Vitest · 0 TS errors · prod build clean.
+
+### Coverage
+
+Admin section: 93/133 (70%) → 98/133 (74%).
+
+This wraps Phase 4C — all admin ops dashboards + forms now
+i18n-ready. Next batches: 4D (campaigns/cases/holidays/dnc/
+caller-id-pools/webchat/gdpr — ~14 files), 4E (flows + 12 nodes —
+~15 files), 4F (`core/ui/confirm-delete-dialog` with caller
+migration).
+
+---
+
 ## [1.13.7] — 2026-04-29 — i18n Coverage Phase 4C-1 (admin ops dashboards)
 
 **Closes the platform-admin operations surfaces.** Tenants, cluster,

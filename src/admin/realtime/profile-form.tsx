@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -51,6 +52,7 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormProps) {
+  const { t } = useTranslation('admin');
   const createProfile = useCreateEndpointProfile();
   const updateProfile = useUpdateEndpointProfile();
 
@@ -114,7 +116,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
     onOpenChange(false);
   });
 
-  const title = mode === 'create' ? 'Add Endpoint Profile' : 'Edit Endpoint Profile';
+  const title = mode === 'create' ? t('realtime.form.create_title') : t('realtime.form.edit_title');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -123,18 +125,18 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>
             {mode === 'create'
-              ? 'Configure a new PJSIP endpoint profile template.'
-              : 'Update endpoint profile configuration.'}
+              ? t('realtime.form.create_description')
+              : t('realtime.form.edit_description')}
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-name">Name</Label>
+            <Label htmlFor="profile-name">{t('realtime.form.name')}</Label>
             <Input
               id="profile-name"
-              placeholder="SIP Agent"
+              placeholder={t('realtime.form.name_placeholder')}
               aria-invalid={!!errors.name}
               {...register('name')}
             />
@@ -145,19 +147,19 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           {/* Type */}
           <div className="space-y-1.5">
-            <Label>Type</Label>
+            <Label>{t('realtime.form.type')}</Label>
             <Controller
               name="type"
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('realtime.form.select_type')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {PROFILE_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                    {PROFILE_TYPES.map((pt) => (
+                      <SelectItem key={pt} value={pt}>
+                        {pt === 'agent' ? t('realtime.form.type_agent') : t('realtime.form.type_trunk')}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -168,7 +170,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           {/* Transport */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-transport">Transport</Label>
+            <Label htmlFor="profile-transport">{t('realtime.form.transport')}</Label>
             <Input
               id="profile-transport"
               placeholder="transport-udp"
@@ -182,7 +184,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           {/* Codecs */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-codecs">Codecs</Label>
+            <Label htmlFor="profile-codecs">{t('realtime.form.codecs')}</Label>
             <Input
               id="profile-codecs"
               placeholder="ulaw,alaw,g722"
@@ -196,7 +198,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           {/* Max Contacts */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-maxContacts">Max Contacts</Label>
+            <Label htmlFor="profile-maxContacts">{t('realtime.form.max_contacts')}</Label>
             <Input
               id="profile-maxContacts"
               type="number"
@@ -212,7 +214,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           {/* Context */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-context">Context</Label>
+            <Label htmlFor="profile-context">{t('realtime.form.context')}</Label>
             <Input
               id="profile-context"
               placeholder="from-internal"
@@ -226,7 +228,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           {/* Qualify Frequency */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-qualifyFrequency">Qualify Frequency (s)</Label>
+            <Label htmlFor="profile-qualifyFrequency">{t('realtime.form.qualify_frequency')}</Label>
             <Input
               id="profile-qualifyFrequency"
               type="number"
@@ -253,7 +255,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
                 />
               )}
             />
-            <Label htmlFor="profile-webrtc">WebRTC</Label>
+            <Label htmlFor="profile-webrtc">{t('realtime.form.webrtc')}</Label>
           </div>
 
           {/* Direct Media */}
@@ -269,12 +271,12 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
                 />
               )}
             />
-            <Label htmlFor="profile-directMedia">Direct Media</Label>
+            <Label htmlFor="profile-directMedia">{t('realtime.form.direct_media')}</Label>
           </div>
 
           <SheetFooter className="mt-auto px-0">
             <Button type="submit" disabled={isSubmitting}>
-              {mode === 'create' ? 'Add Profile' : 'Save Changes'}
+              {mode === 'create' ? t('realtime.form.submit_create') : t('realtime.form.submit_edit')}
             </Button>
           </SheetFooter>
         </form>

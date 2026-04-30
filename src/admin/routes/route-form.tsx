@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -44,6 +45,7 @@ interface RouteFormProps {
 }
 
 export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
+  const { t } = useTranslation('admin');
   const createRoute = useCreateRoute();
   const updateRoute = useUpdateRoute();
   const { data: trunks = [] } = useTrunks();
@@ -108,7 +110,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
     onOpenChange(false);
   });
 
-  const title = mode === 'create' ? 'Add Route' : 'Edit Route';
+  const title = mode === 'create' ? t('routes.form.create_title') : t('routes.form.edit_title');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -117,15 +119,15 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>
             {mode === 'create'
-              ? 'Define a new outbound route rule.'
-              : 'Update outbound route configuration.'}
+              ? t('routes.form.create_description')
+              : t('routes.form.edit_description')}
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           {/* Priority */}
           <div className="space-y-1.5">
-            <Label htmlFor="route-priority">Priority</Label>
+            <Label htmlFor="route-priority">{t('routes.priority')}</Label>
             <Input
               id="route-priority"
               type="number"
@@ -142,7 +144,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
 
           {/* Pattern */}
           <div className="space-y-1.5">
-            <Label htmlFor="route-pattern">Pattern</Label>
+            <Label htmlFor="route-pattern">{t('routes.pattern')}</Label>
             <Input
               id="route-pattern"
               placeholder="+1"
@@ -157,14 +159,14 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
 
           {/* Pattern Type */}
           <div className="space-y-1.5">
-            <Label>Pattern Type</Label>
+            <Label>{t('routes.patternType')}</Label>
             <Controller
               name="patternType"
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger className="w-full" data-testid="route-form-patternType">
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('routes.form.select_type')} />
                   </SelectTrigger>
                   <SelectContent>
                     {PATTERN_TYPES.map((pt) => (
@@ -180,7 +182,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
 
           {/* Trunk */}
           <div className="space-y-1.5">
-            <Label>Trunk</Label>
+            <Label>{t('routes.trunk')}</Label>
             <Controller
               name="trunkId"
               control={control}
@@ -190,7 +192,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
                   onValueChange={(v) => field.onChange(Number(v))}
                 >
                   <SelectTrigger className="w-full" data-testid="route-form-trunkId">
-                    <SelectValue placeholder="Select trunk" />
+                    <SelectValue placeholder={t('routes.form.select_trunk')} />
                   </SelectTrigger>
                   <SelectContent>
                     {trunks.map((trunk) => (
@@ -209,7 +211,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
 
           {/* Overflow Trunk (optional) */}
           <div className="space-y-1.5">
-            <Label>Overflow Trunk (optional)</Label>
+            <Label>{t('routes.form.overflow_trunk')}</Label>
             <Controller
               name="overflowTrunkId"
               control={control}
@@ -219,10 +221,10 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
                   onValueChange={(v) => field.onChange(v ? Number(v) : '')}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="No overflow" />
+                    <SelectValue placeholder={t('routes.form.no_overflow')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No overflow</SelectItem>
+                    <SelectItem value="">{t('routes.form.no_overflow')}</SelectItem>
                     {trunks.map((trunk) => (
                       <SelectItem key={trunk.id} value={String(trunk.id)}>
                         {trunk.displayName}
@@ -236,7 +238,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
 
           {/* Dial Prefix */}
           <div className="space-y-1.5">
-            <Label htmlFor="route-dialPrefix">Dial Prefix (optional)</Label>
+            <Label htmlFor="route-dialPrefix">{t('routes.form.dial_prefix_optional')}</Label>
             <Input
               id="route-dialPrefix"
               placeholder="9"
@@ -246,7 +248,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
 
           <SheetFooter className="mt-auto px-0">
             <Button type="submit" disabled={isSubmitting} data-testid="route-form-submit">
-              {mode === 'create' ? 'Add Route' : 'Save Changes'}
+              {mode === 'create' ? t('routes.form.submit_create') : t('routes.form.submit_edit')}
             </Button>
           </SheetFooter>
         </form>

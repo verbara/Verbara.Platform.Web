@@ -174,8 +174,35 @@
     "bannerResume": "Continuar configuraci\u00f3n",
     "bannerDismiss": "Descartar"
   },
-  "trunks": { "title": "Troncales", "create": "Agregar troncal", "edit": "Editar troncal", "name": "Nombre", "displayName": "Nombre visible", "type": "Tipo", "maxChannels": "Canales máx.", "status": "Estado", "searchPlaceholder": "Buscar troncales...", "save": "Guardar cambios" },
-  "routes": { "title": "Rutas salientes", "create": "Agregar ruta", "edit": "Editar ruta", "priority": "Prioridad", "pattern": "Patrón", "patternType": "Tipo", "trunk": "Troncal", "dialPrefix": "Prefijo de marcación", "searchPlaceholder": "Buscar rutas...", "save": "Guardar cambios" },
+  "trunks": { "title": "Troncales", "create": "Agregar troncal", "edit": "Editar troncal", "name": "Nombre", "displayName": "Nombre visible", "type": "Tipo", "maxChannels": "Canales máx.", "status": "Estado", "searchPlaceholder": "Buscar troncales...", "save": "Guardar cambios",
+    "form": {
+      "create_title": "Agregar troncal",
+      "edit_title": "Editar troncal",
+      "create_description": "Configure una nueva troncal SIP/PJSIP/IAX2/DAHDI.",
+      "edit_description": "Actualice la configuración de la troncal.",
+      "name_placeholder": "mi-troncal",
+      "display_name_placeholder": "Mi troncal principal",
+      "select_type": "Seleccionar tipo",
+      "active": "Activa",
+      "submit_create": "Agregar troncal",
+      "submit_edit": "Guardar cambios"
+    }
+  },
+  "routes": { "title": "Rutas salientes", "create": "Agregar ruta", "edit": "Editar ruta", "priority": "Prioridad", "pattern": "Patrón", "patternType": "Tipo", "trunk": "Troncal", "dialPrefix": "Prefijo de marcación", "searchPlaceholder": "Buscar rutas...", "save": "Guardar cambios",
+    "form": {
+      "create_title": "Agregar ruta",
+      "edit_title": "Editar ruta",
+      "create_description": "Defina una nueva regla de ruta saliente.",
+      "edit_description": "Actualice la configuración de la ruta saliente.",
+      "select_type": "Seleccionar tipo",
+      "select_trunk": "Seleccionar troncal",
+      "no_overflow": "Sin desbordamiento",
+      "overflow_trunk": "Troncal de desbordamiento (opcional)",
+      "dial_prefix_optional": "Prefijo de marcación (opcional)",
+      "submit_create": "Agregar ruta",
+      "submit_edit": "Guardar cambios"
+    }
+  },
   "bots": { "title": "Bots", "create": "Agregar bot", "edit": "Editar bot", "name": "Nombre", "defaultFlow": "Flujo predeterminado", "fallbackQueue": "Cola de respaldo", "confidenceThreshold": "Umbral de confianza", "maxTurns": "Turnos máximos", "active": "Activo", "status": "Estado", "activeLabel": "Activo", "inactiveLabel": "Inactivo", "selectFlow": "Seleccionar flujo", "noFlow": "Sin flujo", "selectQueue": "Seleccionar cola", "noQueue": "Sin cola", "searchPlaceholder": "Buscar bots...", "noResults": "No se encontraron bots.", "empty": "Sin bots aún — Agregue su primer bot", "save": "Guardar cambios", "createDescription": "Configurar un nuevo bot conversacional.", "editDescription": "Actualizar configuración del bot." },
   "agentAssist": {
     "title": "Asistente de Agente",
@@ -524,6 +551,28 @@
       "pageInfo": "Página {{page}} de {{totalPages}}",
       "previous": "Anterior",
       "next": "Siguiente"
+    },
+    "form": {
+      "create_title": "Crear suscripción",
+      "edit_title": "Editar suscripción",
+      "create_description": "Configure un nuevo endpoint webhook para recibir eventos.",
+      "edit_description": "Actualice la configuración de la suscripción webhook.",
+      "name": "Nombre",
+      "name_placeholder": "Mi webhook",
+      "endpoint_url": "URL del endpoint",
+      "endpoint_url_placeholder": "https://example.com/webhook",
+      "active": "Activo",
+      "event_types": "Tipos de evento",
+      "event_types_required": "Seleccione al menos un tipo de evento",
+      "event_types_loading": "Cargando tipos de evento...",
+      "create": "Crear",
+      "save": "Guardar",
+      "secret_dialog": {
+        "title": "Secreto del webhook",
+        "description": "Copie su clave de firma ahora. No se mostrará de nuevo.",
+        "warning": "Este secreto se usa para verificar los payloads del webhook vía HMAC-SHA256. Guárdelo de forma segura.",
+        "done": "Listo"
+      }
     }
   },
   "deadLetter": {
@@ -1181,6 +1230,54 @@
       "title": "Eliminar perfil",
       "description": "¿Está seguro de que desea eliminar \"{{name}}\"? Esta acción no se puede deshacer.",
       "confirm": "Eliminar"
+    },
+    "form": {
+      "create_title": "Agregar perfil de endpoint",
+      "edit_title": "Editar perfil de endpoint",
+      "create_description": "Configure una nueva plantilla de perfil PJSIP.",
+      "edit_description": "Actualice la configuración del perfil.",
+      "name": "Nombre",
+      "name_placeholder": "Agente SIP",
+      "type": "Tipo",
+      "type_agent": "Agente",
+      "type_trunk": "Troncal",
+      "select_type": "Seleccionar tipo",
+      "transport": "Transport",
+      "codecs": "Codecs",
+      "max_contacts": "Contactos máx.",
+      "context": "Contexto",
+      "qualify_frequency": "Frecuencia de qualify (s)",
+      "webrtc": "WebRTC",
+      "direct_media": "Direct Media",
+      "submit_create": "Agregar perfil",
+      "submit_edit": "Guardar cambios"
     }
+  },
+  "dialer-settings": {
+    "title": "Configuración del marcador",
+    "description": "Configuración global del motor del marcador saliente.",
+    "loading": "Cargando…",
+    "saving": "Guardando…",
+    "save": "Guardar configuración",
+    "sections": {
+      "capacity": "Capacidad",
+      "timing": "Tiempos",
+      "jitter": "Jitter",
+      "blend_mode": "Modo blend"
+    },
+    "fields": {
+      "max_global_channels": "Máx. canales globales",
+      "max_concurrent_campaigns": "Máx. campañas concurrentes",
+      "default_ring_timeout": "Timeout de timbrado por defecto (segundos)",
+      "campaign_poll_interval": "Intervalo de poll de campaña (segundos)",
+      "scheduled_callback_poll": "Poll de callbacks programados (segundos)",
+      "aht_cache_duration": "Duración del caché de AHT (segundos)",
+      "min_jitter": "Jitter mín. (ms)",
+      "max_jitter": "Jitter máx. (ms)"
+    },
+    "jitter_help": "Retraso aleatorio entre intentos de originate para evitar patrones de thundering herd.",
+    "blend_mode_label": "Habilitar modo blend",
+    "blend_mode_help": "Permite a los agentes manejar llamadas entrantes y salientes simultáneamente.",
+    "blend_mode_aria": "Modo blend habilitado"
   }
 }

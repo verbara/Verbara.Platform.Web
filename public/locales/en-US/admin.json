@@ -158,8 +158,35 @@
     "bannerResume": "Resume setup",
     "bannerDismiss": "Dismiss"
   },
-  "trunks": { "title": "Trunks", "create": "Add Trunk", "edit": "Edit Trunk", "name": "Name", "displayName": "Display Name", "type": "Type", "maxChannels": "Max Channels", "status": "Status", "searchPlaceholder": "Search trunks...", "save": "Save Changes" },
-  "routes": { "title": "Outbound Routes", "create": "Add Route", "edit": "Edit Route", "priority": "Priority", "pattern": "Pattern", "patternType": "Type", "trunk": "Trunk", "dialPrefix": "Dial Prefix", "searchPlaceholder": "Search routes...", "save": "Save Changes" },
+  "trunks": { "title": "Trunks", "create": "Add Trunk", "edit": "Edit Trunk", "name": "Name", "displayName": "Display Name", "type": "Type", "maxChannels": "Max Channels", "status": "Status", "searchPlaceholder": "Search trunks...", "save": "Save Changes",
+    "form": {
+      "create_title": "Add Trunk",
+      "edit_title": "Edit Trunk",
+      "create_description": "Configure a new SIP/PJSIP/IAX2/DAHDI trunk.",
+      "edit_description": "Update trunk configuration.",
+      "name_placeholder": "my-trunk",
+      "display_name_placeholder": "My Primary Trunk",
+      "select_type": "Select type",
+      "active": "Active",
+      "submit_create": "Add Trunk",
+      "submit_edit": "Save Changes"
+    }
+  },
+  "routes": { "title": "Outbound Routes", "create": "Add Route", "edit": "Edit Route", "priority": "Priority", "pattern": "Pattern", "patternType": "Type", "trunk": "Trunk", "dialPrefix": "Dial Prefix", "searchPlaceholder": "Search routes...", "save": "Save Changes",
+    "form": {
+      "create_title": "Add Route",
+      "edit_title": "Edit Route",
+      "create_description": "Define a new outbound route rule.",
+      "edit_description": "Update outbound route configuration.",
+      "select_type": "Select type",
+      "select_trunk": "Select trunk",
+      "no_overflow": "No overflow",
+      "overflow_trunk": "Overflow Trunk (optional)",
+      "dial_prefix_optional": "Dial Prefix (optional)",
+      "submit_create": "Add Route",
+      "submit_edit": "Save Changes"
+    }
+  },
   "bots": { "title": "Bots", "create": "Add Bot", "edit": "Edit Bot", "name": "Name", "defaultFlow": "Default Flow", "fallbackQueue": "Fallback Queue", "confidenceThreshold": "Confidence Threshold", "maxTurns": "Max Turns", "active": "Active", "status": "Status", "activeLabel": "Active", "inactiveLabel": "Inactive", "selectFlow": "Select flow", "noFlow": "No flow", "selectQueue": "Select queue", "noQueue": "No queue", "searchPlaceholder": "Search bots...", "noResults": "No matching bots found.", "empty": "No bots yet — Add your first bot", "save": "Save Changes", "createDescription": "Configure a new conversational bot.", "editDescription": "Update bot configuration." },
   "agentAssist": {
     "title": "Agent Assist",
@@ -508,6 +535,28 @@
       "pageInfo": "Page {{page}} of {{totalPages}}",
       "previous": "Previous",
       "next": "Next"
+    },
+    "form": {
+      "create_title": "Create subscription",
+      "edit_title": "Edit subscription",
+      "create_description": "Configure a new webhook endpoint to receive events.",
+      "edit_description": "Update webhook subscription settings.",
+      "name": "Name",
+      "name_placeholder": "My webhook",
+      "endpoint_url": "Endpoint URL",
+      "endpoint_url_placeholder": "https://example.com/webhook",
+      "active": "Active",
+      "event_types": "Event types",
+      "event_types_required": "Select at least one event type",
+      "event_types_loading": "Loading event types...",
+      "create": "Create",
+      "save": "Save",
+      "secret_dialog": {
+        "title": "Webhook secret",
+        "description": "Copy your signing secret now. It will not be shown again.",
+        "warning": "This secret is used to verify webhook payloads via HMAC-SHA256. Store it securely.",
+        "done": "Done"
+      }
     }
   },
   "deadLetter": {
@@ -1210,6 +1259,54 @@
       "title": "Delete Profile",
       "description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "confirm": "Delete"
+    },
+    "form": {
+      "create_title": "Add Endpoint Profile",
+      "edit_title": "Edit Endpoint Profile",
+      "create_description": "Configure a new PJSIP endpoint profile template.",
+      "edit_description": "Update endpoint profile configuration.",
+      "name": "Name",
+      "name_placeholder": "SIP Agent",
+      "type": "Type",
+      "type_agent": "Agent",
+      "type_trunk": "Trunk",
+      "select_type": "Select type",
+      "transport": "Transport",
+      "codecs": "Codecs",
+      "max_contacts": "Max Contacts",
+      "context": "Context",
+      "qualify_frequency": "Qualify Frequency (s)",
+      "webrtc": "WebRTC",
+      "direct_media": "Direct Media",
+      "submit_create": "Add Profile",
+      "submit_edit": "Save Changes"
     }
+  },
+  "dialer-settings": {
+    "title": "Dialer Settings",
+    "description": "Global configuration for the outbound dialer engine.",
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "save": "Save Settings",
+    "sections": {
+      "capacity": "Capacity",
+      "timing": "Timing",
+      "jitter": "Jitter",
+      "blend_mode": "Blend Mode"
+    },
+    "fields": {
+      "max_global_channels": "Max Global Channels",
+      "max_concurrent_campaigns": "Max Concurrent Campaigns",
+      "default_ring_timeout": "Default Ring Timeout (seconds)",
+      "campaign_poll_interval": "Campaign Poll Interval (seconds)",
+      "scheduled_callback_poll": "Scheduled Callback Poll (seconds)",
+      "aht_cache_duration": "AHT Cache Duration (seconds)",
+      "min_jitter": "Min Jitter (ms)",
+      "max_jitter": "Max Jitter (ms)"
+    },
+    "jitter_help": "Random delay added between originate attempts to avoid thundering-herd patterns.",
+    "blend_mode_label": "Enable Blend Mode",
+    "blend_mode_help": "Allow agents to handle both inbound and outbound calls simultaneously.",
+    "blend_mode_aria": "Blend mode enabled"
   }
 }
