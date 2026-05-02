@@ -185,5 +185,12 @@
     "deleting": "Eliminando...",
     "wait_seconds": "Espere {{seconds}}s..."
   },
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+  "toasts": {
+    "trunks": {
+      "created": "Trunk creado",
+      "updated": "Trunk actualizado",
+      "deleted": "Trunk eliminado"
+    }
+  }
 }

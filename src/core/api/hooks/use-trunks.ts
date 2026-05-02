@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { customFetch } from '@/core/api/client';
 import { toast } from 'sonner';
 
@@ -30,12 +31,13 @@ export function useTrunk(id: number) {
 
 export function useCreateTrunk() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<TrunkSummary, 'id'>>) =>
       customFetch<TrunkSummary>({ url: '/api/v1/admin/trunks', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['trunks'] });
-      toast.success('Trunk created');
+      toast.success(t('toasts.trunks.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -43,13 +45,14 @@ export function useCreateTrunk() {
 
 export function useUpdateTrunk() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: number } & Partial<Omit<TrunkSummary, 'id'>>) =>
       customFetch<TrunkSummary>({ url: `/api/v1/admin/trunks/${id}`, method: 'PUT', data }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['trunks'] });
       qc.invalidateQueries({ queryKey: ['trunk', variables.id] });
-      toast.success('Trunk updated');
+      toast.success(t('toasts.trunks.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -57,12 +60,13 @@ export function useUpdateTrunk() {
 
 export function useDeleteTrunk() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/trunks/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['trunks'] });
-      toast.success('Trunk deleted');
+      toast.success(t('toasts.trunks.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
