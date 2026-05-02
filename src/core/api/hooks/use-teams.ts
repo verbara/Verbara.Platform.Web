@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface Team {
@@ -41,12 +42,13 @@ export function useTeam(id: string | undefined) {
 
 export function useCreateTeam() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { name: string }) =>
       customFetch<Team>({ url: '/api/v1/admin/teams', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Team created');
+      toast.success(t('toasts.teams.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -54,6 +56,7 @@ export function useCreateTeam() {
 
 export function useUpdateTeam() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string; name: string }) =>
       customFetch<Team>({
@@ -63,7 +66,7 @@ export function useUpdateTeam() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Team updated');
+      toast.success(t('toasts.teams.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -71,12 +74,13 @@ export function useUpdateTeam() {
 
 export function useDeleteTeam() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/teams/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams'] });
-      toast.success('Team deleted');
+      toast.success(t('toasts.teams.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

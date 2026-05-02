@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { customFetch } from '@/core/api/client';
 import { toast } from 'sonner';
 
@@ -43,6 +44,7 @@ export function useFlow(id: string | undefined) {
 
 export function useCreateFlow() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: {
       name: string;
@@ -56,7 +58,7 @@ export function useCreateFlow() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['flows'] });
-      toast.success('Flow created');
+      toast.success(t('toasts.flows.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -64,6 +66,7 @@ export function useCreateFlow() {
 
 export function useUpdateFlow() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -81,7 +84,7 @@ export function useUpdateFlow() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['flows'] });
-      toast.success('Flow updated');
+      toast.success(t('toasts.flows.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -89,6 +92,7 @@ export function useUpdateFlow() {
 
 export function usePublishFlow() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -97,7 +101,7 @@ export function usePublishFlow() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['flows'] });
-      toast.success('Flow published');
+      toast.success(t('toasts.flows.published'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

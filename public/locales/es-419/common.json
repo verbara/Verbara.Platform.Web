@@ -191,6 +191,39 @@
       "created": "Trunk creado",
       "updated": "Trunk actualizado",
       "deleted": "Trunk eliminado"
+    },
+    "flows": {
+      "created": "Flujo creado",
+      "updated": "Flujo actualizado",
+      "published": "Flujo publicado"
+    },
+    "knowledge": {
+      "created": "Artículo creado",
+      "updated": "Artículo actualizado",
+      "deleted": "Artículo eliminado"
+    },
+    "queues": {
+      "created": "Cola creada",
+      "updated": "Cola actualizada",
+      "deleted": "Cola eliminada"
+    },
+    "surveys": {
+      "created": "Encuesta creada",
+      "updated": "Encuesta actualizada",
+      "deleted": "Encuesta eliminada"
+    },
+    "teams": {
+      "created": "Equipo creado",
+      "updated": "Equipo actualizado",
+      "deleted": "Equipo eliminado"
+    },
+    "bots": {
+      "created": "Bot creado",
+      "updated": "Bot actualizado",
+      "deleted": "Bot eliminado"
+    },
+    "channels": {
+      "updated": "Canal actualizado"
     }
   }
 }

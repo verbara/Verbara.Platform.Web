@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface Bot {
@@ -32,12 +33,13 @@ export function useBot(id: string | undefined) {
 
 export function useCreateBot() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<Bot, 'id' | 'createdAt'>>) =>
       customFetch<Bot>({ url: '/api/v1/admin/bots', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bots'] });
-      toast.success('Bot created');
+      toast.success(t('toasts.bots.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -45,6 +47,7 @@ export function useCreateBot() {
 
 export function useUpdateBot() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -57,7 +60,7 @@ export function useUpdateBot() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bots'] });
-      toast.success('Bot updated');
+      toast.success(t('toasts.bots.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -65,12 +68,13 @@ export function useUpdateBot() {
 
 export function useDeleteBot() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/bots/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['bots'] });
-      toast.success('Bot deleted');
+      toast.success(t('toasts.bots.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

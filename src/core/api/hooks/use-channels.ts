@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface ChannelConfig {
@@ -22,6 +23,7 @@ export function useChannel(channelId: string | undefined) {
 
 export function useUpdateChannel() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       channelId,
@@ -40,7 +42,7 @@ export function useUpdateChannel() {
       qc.invalidateQueries({
         queryKey: ['channels', variables.channelId],
       });
-      toast.success('Channel updated');
+      toast.success(t('toasts.channels.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

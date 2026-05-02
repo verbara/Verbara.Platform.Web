@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface Article {
@@ -45,12 +46,13 @@ export function useArticles() {
 
 export function useCreateArticle() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) =>
       customFetch<Article>({ url: '/api/v1/admin/articles', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] });
-      toast.success('Article created');
+      toast.success(t('toasts.knowledge.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -58,12 +60,13 @@ export function useCreateArticle() {
 
 export function useUpdateArticle() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) =>
       customFetch<Article>({ url: `/api/v1/admin/articles/${id}`, method: 'PUT', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] });
-      toast.success('Article updated');
+      toast.success(t('toasts.knowledge.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -71,12 +74,13 @@ export function useUpdateArticle() {
 
 export function useDeleteArticle() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/articles/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] });
-      toast.success('Article deleted');
+      toast.success(t('toasts.knowledge.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

@@ -191,6 +191,39 @@
       "created": "Trunk criado",
       "updated": "Trunk atualizado",
       "deleted": "Trunk excluído"
+    },
+    "flows": {
+      "created": "Fluxo criado",
+      "updated": "Fluxo atualizado",
+      "published": "Fluxo publicado"
+    },
+    "knowledge": {
+      "created": "Artigo criado",
+      "updated": "Artigo atualizado",
+      "deleted": "Artigo excluído"
+    },
+    "queues": {
+      "created": "Fila criada",
+      "updated": "Fila atualizada",
+      "deleted": "Fila excluída"
+    },
+    "surveys": {
+      "created": "Pesquisa criada",
+      "updated": "Pesquisa atualizada",
+      "deleted": "Pesquisa excluída"
+    },
+    "teams": {
+      "created": "Equipe criada",
+      "updated": "Equipe atualizada",
+      "deleted": "Equipe excluída"
+    },
+    "bots": {
+      "created": "Bot criado",
+      "updated": "Bot atualizado",
+      "deleted": "Bot excluído"
+    },
+    "channels": {
+      "updated": "Canal atualizado"
     }
   }
 }

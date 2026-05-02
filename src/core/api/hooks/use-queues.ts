@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // NOTE: `timezone`, `schedule`, `dispositionCodes`, and `agentIds` were previously
@@ -62,12 +63,13 @@ export function useQueue(id: string | undefined) {
 
 export function useCreateQueue() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<Queue, 'id' | 'createdAt'>>) =>
       customFetch<Queue>({ url: '/api/v1/admin/queues', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queues'] });
-      toast.success('Queue created');
+      toast.success(t('toasts.queues.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -75,6 +77,7 @@ export function useCreateQueue() {
 
 export function useUpdateQueue() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -87,7 +90,7 @@ export function useUpdateQueue() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queues'] });
-      toast.success('Queue updated');
+      toast.success(t('toasts.queues.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -95,12 +98,13 @@ export function useUpdateQueue() {
 
 export function useDeleteQueue() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/queues/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['queues'] });
-      toast.success('Queue deleted');
+      toast.success(t('toasts.queues.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export type SurveyType = 'Csat' | 'Nps' | 'Custom' | 'CSAT' | 'NPS';
@@ -62,12 +63,13 @@ export function useSurvey(id: string | undefined) {
 
 export function useCreateSurvey() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<Survey, 'id' | 'createdAt' | 'responseCount'>>) =>
       customFetch<Survey>({ url: '/api/v1/admin/surveys', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['surveys'] });
-      toast.success('Survey created');
+      toast.success(t('toasts.surveys.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -75,6 +77,7 @@ export function useCreateSurvey() {
 
 export function useUpdateSurvey() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -88,7 +91,7 @@ export function useUpdateSurvey() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['surveys'] });
       qc.invalidateQueries({ queryKey: ['survey', variables.id] });
-      toast.success('Survey updated');
+      toast.success(t('toasts.surveys.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -96,12 +99,13 @@ export function useUpdateSurvey() {
 
 export function useDeleteSurvey() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/surveys/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['surveys'] });
-      toast.success('Survey deleted');
+      toast.success(t('toasts.surveys.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
