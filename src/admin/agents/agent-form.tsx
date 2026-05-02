@@ -27,12 +27,12 @@ import { useAgents } from '@/core/api/hooks/use-agents';
 import { useTeams } from '@/core/api/hooks/use-teams';
 
 const skillSchema = z.object({
-  name: z.string().min(1, 'Skill name is required'),
+  name: z.string().min(1, 'admin:agents.validation.skillNameRequired'),
   proficiency: z.number().min(1).max(10),
 });
 
 const agentSchema = z.object({
-  userId: z.string().min(1, 'User is required'),
+  userId: z.string().min(1, 'admin:agents.validation.userRequired'),
   displayName: z.string().min(2),
   teamId: z.string().optional(),
   skills: z.array(skillSchema),
@@ -137,7 +137,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
               )}
             />
             {errors.userId && (
-              <p className="text-xs text-destructive">{errors.userId.message}</p>
+              <p className="text-xs text-destructive">{t(errors.userId.message ?? '')}</p>
             )}
           </div>
 

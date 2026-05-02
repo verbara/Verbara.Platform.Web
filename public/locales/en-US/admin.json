@@ -153,7 +153,11 @@
     "queues": "Queue Memberships",
     "noQueues": "Not assigned to any queues.",
     "queuesNote": "Queue assignment is managed from queue configuration.",
-    "extension": "Extension"
+    "extension": "Extension",
+    "validation": {
+      "skillNameRequired": "Skill name is required",
+      "userRequired": "User is required"
+    }
   },
   "teams": {
     "title": "Teams",
@@ -640,7 +644,12 @@
       "submit_create": "Add Trunk",
       "submit_edit": "Save Changes"
     },
-    "entity_type": "Trunk"
+    "entity_type": "Trunk",
+    "validation": {
+      "nameRequired": "Name is required",
+      "displayNameRequired": "Display name is required",
+      "maxChannelsAtLeastOne": "Must be at least 1"
+    }
   },
   "routes": {
     "title": "Outbound Routes",
@@ -666,7 +675,12 @@
       "submit_create": "Add Route",
       "submit_edit": "Save Changes"
     },
-    "entity_type": "Route"
+    "entity_type": "Route",
+    "validation": {
+      "priorityAtLeastZero": "Priority must be 0 or greater",
+      "patternRequired": "Pattern is required",
+      "trunkRequired": "Trunk is required"
+    }
   },
   "bots": {
     "title": "Bots",
@@ -1108,6 +1122,12 @@
       "eventTypes": "Event Types",
       "status": "Status",
       "created": "Created"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "urlInvalid": "Must be a valid URL",
+      "urlMustHttps": "Must use HTTPS",
+      "eventTypesRequired": "Select at least one event type"
     }
   },
   "deadLetter": {
@@ -1917,6 +1937,14 @@
       "direct_media": "Direct Media",
       "submit_create": "Add Profile",
       "submit_edit": "Save Changes"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "transportRequired": "Transport is required",
+      "codecsRequired": "Codecs are required",
+      "maxContactsAtLeastOne": "Must be at least 1",
+      "contextRequired": "Context is required",
+      "qualifyFrequencyAtLeastZero": "Must be 0 or greater"
     }
   },
   "dialer-settings": {
@@ -2332,6 +2360,10 @@
     "editArticle": "Edit Article",
     "createDescription": "Create a new knowledge base article.",
     "editDescription": "Update knowledge base article.",
-    "deleteConfirm": "Delete this article?"
+    "deleteConfirm": "Delete this article?",
+    "validation": {
+      "titleRequired": "Title is required",
+      "contentRequired": "Content is required"
+    }
   }
 }

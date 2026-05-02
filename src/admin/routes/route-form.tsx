@@ -27,10 +27,10 @@ import { useTrunks } from '@/core/api/hooks/use-trunks';
 const PATTERN_TYPES = ['prefix', 'exact', 'regex'] as const;
 
 const routeSchema = z.object({
-  priority: z.coerce.number().int().min(0, 'Priority must be 0 or greater'),
-  pattern: z.string().min(1, 'Pattern is required'),
+  priority: z.coerce.number().int().min(0, 'admin:routes.validation.priorityAtLeastZero'),
+  pattern: z.string().min(1, 'admin:routes.validation.patternRequired'),
   patternType: z.enum(['prefix', 'exact', 'regex']),
-  trunkId: z.coerce.number().int().min(1, 'Trunk is required'),
+  trunkId: z.coerce.number().int().min(1, 'admin:routes.validation.trunkRequired'),
   overflowTrunkId: z.coerce.number().int().min(1).optional().or(z.literal('')),
   dialPrefix: z.string().optional(),
 });
@@ -138,7 +138,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
               {...register('priority')}
             />
             {errors.priority && (
-              <p className="text-xs text-destructive">{errors.priority.message}</p>
+              <p className="text-xs text-destructive">{t(errors.priority.message ?? '')}</p>
             )}
           </div>
 
@@ -153,7 +153,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
               {...register('pattern')}
             />
             {errors.pattern && (
-              <p className="text-xs text-destructive">{errors.pattern.message}</p>
+              <p className="text-xs text-destructive">{t(errors.pattern.message ?? '')}</p>
             )}
           </div>
 
@@ -205,7 +205,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
               )}
             />
             {errors.trunkId && (
-              <p className="text-xs text-destructive">{errors.trunkId.message}</p>
+              <p className="text-xs text-destructive">{t(errors.trunkId.message ?? '')}</p>
             )}
           </div>
 

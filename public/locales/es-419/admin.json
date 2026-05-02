@@ -169,7 +169,11 @@
     "queues": "Colas asignadas",
     "noQueues": "No asignado a ninguna cola.",
     "queuesNote": "La asignación de colas se gestiona desde la configuración de colas.",
-    "extension": "Extensión"
+    "extension": "Extensión",
+    "validation": {
+      "skillNameRequired": "El nombre de la habilidad es obligatorio",
+      "userRequired": "El usuario es obligatorio"
+    }
   },
   "teams": {
     "title": "Equipos",
@@ -656,7 +660,12 @@
       "submit_create": "Agregar troncal",
       "submit_edit": "Guardar cambios"
     },
-    "entity_type": "troncal"
+    "entity_type": "troncal",
+    "validation": {
+      "nameRequired": "El nombre es obligatorio",
+      "displayNameRequired": "El nombre para mostrar es obligatorio",
+      "maxChannelsAtLeastOne": "Debe ser al menos 1"
+    }
   },
   "routes": {
     "title": "Rutas salientes",
@@ -682,7 +691,12 @@
       "submit_create": "Agregar ruta",
       "submit_edit": "Guardar cambios"
     },
-    "entity_type": "ruta"
+    "entity_type": "ruta",
+    "validation": {
+      "priorityAtLeastZero": "La prioridad debe ser 0 o mayor",
+      "patternRequired": "El patrón es obligatorio",
+      "trunkRequired": "El trunk es obligatorio"
+    }
   },
   "bots": {
     "title": "Bots",
@@ -1124,6 +1138,12 @@
       "eventTypes": "Tipos de evento",
       "status": "Estado",
       "created": "Creada"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio",
+      "urlInvalid": "Debe ser una URL válida",
+      "urlMustHttps": "Debe usar HTTPS",
+      "eventTypesRequired": "Seleccione al menos un tipo de evento"
     }
   },
   "deadLetter": {
@@ -1932,6 +1952,14 @@
       "direct_media": "Direct Media",
       "submit_create": "Agregar perfil",
       "submit_edit": "Guardar cambios"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio",
+      "transportRequired": "El transporte es obligatorio",
+      "codecsRequired": "Los códecs son obligatorios",
+      "maxContactsAtLeastOne": "Debe ser al menos 1",
+      "contextRequired": "El contexto es obligatorio",
+      "qualifyFrequencyAtLeastZero": "Debe ser 0 o mayor"
     }
   },
   "dialer-settings": {
@@ -2347,6 +2375,10 @@
     "editArticle": "Editar artículo",
     "createDescription": "Cree un nuevo artículo en la base de conocimiento.",
     "editDescription": "Actualice el artículo de la base de conocimiento.",
-    "deleteConfirm": "¿Eliminar este artículo?"
+    "deleteConfirm": "¿Eliminar este artículo?",
+    "validation": {
+      "titleRequired": "El título es obligatorio",
+      "contentRequired": "El contenido es obligatorio"
+    }
   }
 }

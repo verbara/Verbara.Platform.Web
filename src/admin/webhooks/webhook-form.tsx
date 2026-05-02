@@ -33,9 +33,9 @@ import {
 } from '@/core/api/hooks/use-webhooks';
 
 const webhookSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  endpointUrl: z.string().url('Must be a valid URL').refine((v) => v.startsWith('https://'), 'Must use HTTPS'),
-  eventTypes: z.array(z.string()).min(1, 'Select at least one event type'),
+  name: z.string().min(1, 'admin:webhooks.validation.nameRequired'),
+  endpointUrl: z.string().url('admin:webhooks.validation.urlInvalid').refine((v) => v.startsWith('https://'), 'admin:webhooks.validation.urlMustHttps'),
+  eventTypes: z.array(z.string()).min(1, 'admin:webhooks.validation.eventTypesRequired'),
   isActive: z.boolean(),
 });
 
@@ -142,7 +142,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                 placeholder={t('webhooks.form.name_placeholder')}
                 {...register('name')}
               />
-              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+              {errors.name && <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>}
             </div>
 
             <div className="space-y-1.5">
@@ -154,7 +154,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                 {...register('endpointUrl')}
               />
               {errors.endpointUrl && (
-                <p data-testid="webhook-form-url-error" className="text-xs text-destructive">{errors.endpointUrl.message}</p>
+                <p data-testid="webhook-form-url-error" className="text-xs text-destructive">{t(errors.endpointUrl.message ?? '')}</p>
               )}
             </div>
 
@@ -180,7 +180,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
               {errors.eventTypes && (
                 <p className="text-xs text-destructive">
                   {typeof errors.eventTypes.message === 'string'
-                    ? errors.eventTypes.message
+                    ? t(errors.eventTypes.message)
                     : t('webhooks.form.event_types_required')}
                 </p>
               )}

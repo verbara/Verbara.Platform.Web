@@ -153,7 +153,11 @@
     "queues": "Filas atribuídas",
     "noQueues": "Não atribuído a nenhuma fila.",
     "queuesNote": "A atribuição de filas é gerenciada na configuração de filas.",
-    "extension": "Ramal"
+    "extension": "Ramal",
+    "validation": {
+      "skillNameRequired": "Nome da habilidade é obrigatório",
+      "userRequired": "Usuário é obrigatório"
+    }
   },
   "teams": {
     "title": "Equipes",
@@ -640,7 +644,12 @@
       "submit_create": "Adicionar troncal",
       "submit_edit": "Salvar alterações"
     },
-    "entity_type": "troncal"
+    "entity_type": "troncal",
+    "validation": {
+      "nameRequired": "Nome é obrigatório",
+      "displayNameRequired": "Nome de exibição é obrigatório",
+      "maxChannelsAtLeastOne": "Deve ser pelo menos 1"
+    }
   },
   "routes": {
     "title": "Rotas de saída",
@@ -666,7 +675,12 @@
       "submit_create": "Adicionar rota",
       "submit_edit": "Salvar alterações"
     },
-    "entity_type": "rota"
+    "entity_type": "rota",
+    "validation": {
+      "priorityAtLeastZero": "A prioridade deve ser 0 ou maior",
+      "patternRequired": "Padrão é obrigatório",
+      "trunkRequired": "Trunk é obrigatório"
+    }
   },
   "bots": {
     "title": "Bots",
@@ -1108,6 +1122,12 @@
       "eventTypes": "Tipos de evento",
       "status": "Status",
       "created": "Criada"
+    },
+    "validation": {
+      "nameRequired": "Nome é obrigatório",
+      "urlInvalid": "Deve ser uma URL válida",
+      "urlMustHttps": "Deve usar HTTPS",
+      "eventTypesRequired": "Selecione pelo menos um tipo de evento"
     }
   },
   "deadLetter": {
@@ -1916,6 +1936,14 @@
       "direct_media": "Direct Media",
       "submit_create": "Adicionar perfil",
       "submit_edit": "Salvar alterações"
+    },
+    "validation": {
+      "nameRequired": "Nome é obrigatório",
+      "transportRequired": "Transporte é obrigatório",
+      "codecsRequired": "Códecs são obrigatórios",
+      "maxContactsAtLeastOne": "Deve ser pelo menos 1",
+      "contextRequired": "Contexto é obrigatório",
+      "qualifyFrequencyAtLeastZero": "Deve ser 0 ou maior"
     }
   },
   "dialer-settings": {
@@ -2331,6 +2359,10 @@
     "editArticle": "Editar artigo",
     "createDescription": "Crie um novo artigo na base de conhecimento.",
     "editDescription": "Atualize o artigo da base de conhecimento.",
-    "deleteConfirm": "Excluir este artigo?"
+    "deleteConfirm": "Excluir este artigo?",
+    "validation": {
+      "titleRequired": "Título é obrigatório",
+      "contentRequired": "Conteúdo é obrigatório"
+    }
   }
 }

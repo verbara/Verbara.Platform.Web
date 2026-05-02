@@ -31,15 +31,15 @@ import {
 const PROFILE_TYPES = ['agent', 'trunk'] as const;
 
 const profileSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'admin:realtime.validation.nameRequired'),
   type: z.enum(['agent', 'trunk']),
-  transport: z.string().min(1, 'Transport is required'),
-  codecs: z.string().min(1, 'Codecs are required'),
-  maxContacts: z.coerce.number().int().min(1, 'Must be at least 1'),
+  transport: z.string().min(1, 'admin:realtime.validation.transportRequired'),
+  codecs: z.string().min(1, 'admin:realtime.validation.codecsRequired'),
+  maxContacts: z.coerce.number().int().min(1, 'admin:realtime.validation.maxContactsAtLeastOne'),
   webrtc: z.boolean(),
   directMedia: z.boolean(),
-  context: z.string().min(1, 'Context is required'),
-  qualifyFrequency: z.coerce.number().int().min(0, 'Must be 0 or greater'),
+  context: z.string().min(1, 'admin:realtime.validation.contextRequired'),
+  qualifyFrequency: z.coerce.number().int().min(0, 'admin:realtime.validation.qualifyFrequencyAtLeastZero'),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -141,7 +141,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
               {...register('name')}
             />
             {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
             )}
           </div>
 
@@ -178,7 +178,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
               {...register('transport')}
             />
             {errors.transport && (
-              <p className="text-xs text-destructive">{errors.transport.message}</p>
+              <p className="text-xs text-destructive">{t(errors.transport.message ?? '')}</p>
             )}
           </div>
 
@@ -192,7 +192,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
               {...register('codecs')}
             />
             {errors.codecs && (
-              <p className="text-xs text-destructive">{errors.codecs.message}</p>
+              <p className="text-xs text-destructive">{t(errors.codecs.message ?? '')}</p>
             )}
           </div>
 
@@ -208,7 +208,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
               {...register('maxContacts')}
             />
             {errors.maxContacts && (
-              <p className="text-xs text-destructive">{errors.maxContacts.message}</p>
+              <p className="text-xs text-destructive">{t(errors.maxContacts.message ?? '')}</p>
             )}
           </div>
 
@@ -222,7 +222,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
               {...register('context')}
             />
             {errors.context && (
-              <p className="text-xs text-destructive">{errors.context.message}</p>
+              <p className="text-xs text-destructive">{t(errors.context.message ?? '')}</p>
             )}
           </div>
 
@@ -238,7 +238,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
               {...register('qualifyFrequency')}
             />
             {errors.qualifyFrequency && (
-              <p className="text-xs text-destructive">{errors.qualifyFrequency.message}</p>
+              <p className="text-xs text-destructive">{t(errors.qualifyFrequency.message ?? '')}</p>
             )}
           </div>
 

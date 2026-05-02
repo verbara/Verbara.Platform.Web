@@ -27,10 +27,10 @@ import { useCreateTrunk, useUpdateTrunk, type TrunkSummary } from '@/core/api/ho
 const TRUNK_TYPES = ['SIP', 'PJSIP', 'IAX2', 'DAHDI'] as const;
 
 const trunkSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  displayName: z.string().min(1, 'Display name is required'),
+  name: z.string().min(1, 'admin:trunks.validation.nameRequired'),
+  displayName: z.string().min(1, 'admin:trunks.validation.displayNameRequired'),
   type: z.enum(['SIP', 'PJSIP', 'IAX2', 'DAHDI']),
-  maxChannels: z.coerce.number().int().min(1, 'Must be at least 1'),
+  maxChannels: z.coerce.number().int().min(1, 'admin:trunks.validation.maxChannelsAtLeastOne'),
   isActive: z.boolean(),
 });
 
@@ -122,7 +122,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               {...register('name')}
             />
             {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
             )}
           </div>
 
@@ -137,7 +137,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               {...register('displayName')}
             />
             {errors.displayName && (
-              <p className="text-xs text-destructive">{errors.displayName.message}</p>
+              <p className="text-xs text-destructive">{t(errors.displayName.message ?? '')}</p>
             )}
           </div>
 
@@ -177,7 +177,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               {...register('maxChannels')}
             />
             {errors.maxChannels && (
-              <p className="text-xs text-destructive">{errors.maxChannels.message}</p>
+              <p className="text-xs text-destructive">{t(errors.maxChannels.message ?? '')}</p>
             )}
           </div>
 

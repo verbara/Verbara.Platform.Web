@@ -24,8 +24,8 @@ import {
 import type { Article } from '@/core/api/hooks/use-knowledge';
 
 const articleSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  content: z.string().min(1, 'Content is required'),
+  title: z.string().min(1, 'admin:knowledge.validation.titleRequired'),
+  content: z.string().min(1, 'admin:knowledge.validation.contentRequired'),
   tags: z.string(),
   language: z.enum(['en', 'es', 'pt-br']),
   published: z.boolean(),
@@ -126,7 +126,7 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
               {...register('title')}
             />
             {errors.title && (
-              <p className="text-xs text-destructive">{errors.title.message}</p>
+              <p className="text-xs text-destructive">{t(errors.title.message ?? '')}</p>
             )}
           </div>
 
@@ -143,7 +143,7 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
               {...register('content')}
             />
             {errors.content && (
-              <p className="text-xs text-destructive">{errors.content.message}</p>
+              <p className="text-xs text-destructive">{t(errors.content.message ?? '')}</p>
             )}
           </div>
 
