@@ -27,18 +27,18 @@ import { USAGE_TYPES, type RateCard, type CreateRateCardInput } from '@/core/api
 import { useCreatePartnerRateCard, useUpdatePartnerRateCard } from '@/core/api/hooks/use-partner';
 
 const rateEntrySchema = z.object({
-  usageType: z.string().min(1, 'Required'),
+  usageType: z.string().min(1, 'admin:partner.validation.usageTypeRequired'),
   unitPrice: z.coerce.number().min(0),
   includedQuantity: z.coerce.number().min(0),
 });
 
 const rateCardSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  currency: z.string().min(1, 'Currency is required'),
-  effectiveFrom: z.string().min(1, 'Start date required'),
+  name: z.string().min(1, 'admin:partner.validation.nameRequired'),
+  currency: z.string().min(1, 'admin:partner.validation.currencyRequired'),
+  effectiveFrom: z.string().min(1, 'admin:partner.validation.startDateRequired'),
   effectiveTo: z.string().optional(),
   isDefault: z.boolean(),
-  rates: z.array(rateEntrySchema).min(1, 'At least one rate entry is required'),
+  rates: z.array(rateEntrySchema).min(1, 'admin:partner.validation.atLeastOneRate'),
 });
 
 type RateCardFormValues = z.infer<typeof rateCardSchema>;
@@ -139,20 +139,20 @@ export function PartnerRateCardForm({ open, onOpenChange, mode, rateCard }: Read
           <div className="space-y-1.5">
             <Label htmlFor="prc-name">{t('billing.rate_cards.form.name')}</Label>
             <Input id="prc-name" data-testid="partner-rate-card-name" placeholder={t('partner.rate_cards.form.name_placeholder')} {...register('name')} />
-            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+            {errors.name && <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>}
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="prc-currency">{t('billing.rate_cards.form.currency')}</Label>
             <Input id="prc-currency" data-testid="partner-rate-card-currency" placeholder={t('billing.rate_cards.form.currency_placeholder')} {...register('currency')} />
-            {errors.currency && <p className="text-xs text-destructive">{errors.currency.message}</p>}
+            {errors.currency && <p className="text-xs text-destructive">{t(errors.currency.message ?? '')}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="prc-from">{t('billing.rate_cards.form.effective_from')}</Label>
               <Input id="prc-from" type="datetime-local" data-testid="partner-rate-card-from" {...register('effectiveFrom')} />
-              {errors.effectiveFrom && <p className="text-xs text-destructive">{errors.effectiveFrom.message}</p>}
+              {errors.effectiveFrom && <p className="text-xs text-destructive">{t(errors.effectiveFrom.message ?? '')}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="prc-to">{t('billing.rate_cards.form.effective_to')}</Label>
@@ -181,7 +181,7 @@ export function PartnerRateCardForm({ open, onOpenChange, mode, rateCard }: Read
             </div>
 
             {errors.rates?.root && (
-              <p className="text-xs text-destructive">{errors.rates.root.message}</p>
+              <p className="text-xs text-destructive">{t(errors.rates.root.message ?? '')}</p>
             )}
 
             {fields.length === 0 && (

@@ -151,7 +151,7 @@ export default function DialingStep() {
               max={500}
               {...register('maxChannels', { valueAsNumber: true })}
             />
-            {errors.maxChannels && <p className="text-sm text-destructive">{errors.maxChannels.message}</p>}
+            {errors.maxChannels && <p className="text-sm text-destructive">{t(errors.maxChannels.message ?? '')}</p>}
           </div>
         </div>
       )}

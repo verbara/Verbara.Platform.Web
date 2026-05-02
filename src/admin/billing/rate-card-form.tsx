@@ -32,18 +32,18 @@ import {
 } from '@/core/api/hooks/use-billing';
 
 const rateEntrySchema = z.object({
-  usageType: z.string().min(1, 'Required'),
+  usageType: z.string().min(1, 'admin:billing.validation.usageTypeRequired'),
   unitPrice: z.coerce.number().min(0),
   includedQuantity: z.coerce.number().min(0),
 });
 
 const rateCardSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  currency: z.string().min(1, 'Currency is required'),
-  effectiveFrom: z.string().min(1, 'Start date required'),
+  name: z.string().min(1, 'admin:billing.validation.nameRequired'),
+  currency: z.string().min(1, 'admin:billing.validation.currencyRequired'),
+  effectiveFrom: z.string().min(1, 'admin:billing.validation.startDateRequired'),
   effectiveTo: z.string().optional(),
   isDefault: z.boolean(),
-  rates: z.array(rateEntrySchema).min(1, 'At least one rate entry is required'),
+  rates: z.array(rateEntrySchema).min(1, 'admin:billing.validation.atLeastOneRate'),
 });
 
 type RateCardFormValues = z.infer<typeof rateCardSchema>;
@@ -146,20 +146,20 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
           <div className="space-y-1.5">
             <Label htmlFor="rc-name">{t('billing.rate_cards.form.name')}</Label>
             <Input id="rc-name" data-testid="rate-card-name" placeholder={t('billing.rate_cards.form.name_placeholder')} {...register('name')} />
-            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+            {errors.name && <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>}
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="rc-currency">{t('billing.rate_cards.form.currency')}</Label>
             <Input id="rc-currency" data-testid="rate-card-currency" placeholder={t('billing.rate_cards.form.currency_placeholder')} {...register('currency')} />
-            {errors.currency && <p className="text-xs text-destructive">{errors.currency.message}</p>}
+            {errors.currency && <p className="text-xs text-destructive">{t(errors.currency.message ?? '')}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="rc-from">{t('billing.rate_cards.form.effective_from')}</Label>
               <Input id="rc-from" type="datetime-local" data-testid="rate-card-from" {...register('effectiveFrom')} />
-              {errors.effectiveFrom && <p className="text-xs text-destructive">{errors.effectiveFrom.message}</p>}
+              {errors.effectiveFrom && <p className="text-xs text-destructive">{t(errors.effectiveFrom.message ?? '')}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="rc-to">{t('billing.rate_cards.form.effective_to')}</Label>
@@ -188,7 +188,7 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
             </div>
 
             {errors.rates?.root && (
-              <p className="text-xs text-destructive">{errors.rates.root.message}</p>
+              <p className="text-xs text-destructive">{t(errors.rates.root.message ?? '')}</p>
             )}
 
             {fields.length === 0 && (

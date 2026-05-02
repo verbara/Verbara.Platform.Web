@@ -23,8 +23,8 @@ import {
 } from '@/core/ui/sheet';
 
 const userSchema = z.object({
-  email: z.string().email(),
-  displayName: z.string().min(2),
+  email: z.string().email('admin:users.validation.emailInvalid'),
+  displayName: z.string().min(2, 'admin:users.validation.displayNameMinLength'),
   role: z.enum(['admin', 'supervisor', 'agent', 'readonly']),
   status: z.enum(['active', 'inactive']).optional(),
 });
@@ -106,7 +106,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
               {...register('email')}
             />
             {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
+              <p className="text-xs text-destructive">{t(errors.email.message ?? '')}</p>
             )}
           </div>
 
@@ -121,7 +121,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
               {...register('displayName')}
             />
             {errors.displayName && (
-              <p className="text-xs text-destructive">{errors.displayName.message}</p>
+              <p className="text-xs text-destructive">{t(errors.displayName.message ?? '')}</p>
             )}
           </div>
 
@@ -147,7 +147,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
               )}
             />
             {errors.role && (
-              <p className="text-xs text-destructive">{errors.role.message}</p>
+              <p className="text-xs text-destructive">{t(errors.role.message ?? '')}</p>
             )}
           </div>
 

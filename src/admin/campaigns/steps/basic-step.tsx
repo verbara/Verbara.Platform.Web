@@ -18,7 +18,7 @@ export default function BasicStep() {
       <div className="space-y-1.5">
         <Label htmlFor="name">{t('campaigns.basic_step.name')}</Label>
         <Input id="name" placeholder={t('campaigns.basic_step.name_placeholder')} {...register('name')} />
-        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+        {errors.name && <p className="text-sm text-destructive">{t(errors.name.message ?? '')}</p>}
       </div>
 
       <div className="space-y-1.5">
@@ -46,7 +46,7 @@ export default function BasicStep() {
               </option>
             ))}
           </select>
-          {errors.queueId && <p className="text-sm text-destructive">{errors.queueId.message}</p>}
+          {errors.queueId && <p className="text-sm text-destructive">{t(errors.queueId.message ?? '')}</p>}
         </div>
 
         <div className="space-y-1.5">

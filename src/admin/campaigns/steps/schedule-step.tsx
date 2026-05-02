@@ -99,7 +99,7 @@ export default function ScheduleStep() {
             <option key={tz} value={tz}>{tz}</option>
           ))}
         </select>
-        {errors.timezone && <p className="text-sm text-destructive">{errors.timezone.message}</p>}
+        {errors.timezone && <p className="text-sm text-destructive">{t(errors.timezone.message ?? '')}</p>}
       </div>
 
       {/* Campaign Dates */}
@@ -107,7 +107,7 @@ export default function ScheduleStep() {
         <div className="space-y-1.5">
           <Label htmlFor="campaignStart">{t('campaigns.schedule_step.start_date')}</Label>
           <Input id="campaignStart" type="date" {...register('campaignStart')} />
-          {errors.campaignStart && <p className="text-sm text-destructive">{errors.campaignStart.message}</p>}
+          {errors.campaignStart && <p className="text-sm text-destructive">{t(errors.campaignStart.message ?? '')}</p>}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="campaignEnd">{t('campaigns.schedule_step.end_date')}</Label>

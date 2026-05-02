@@ -20,16 +20,16 @@ type StepKey = (typeof STEP_KEYS)[number];
 
 const stepSchemas: Partial<Record<StepKey, z.ZodType>> = {
   basic: z.object({
-    name: z.string().min(2, 'Campaign name must be at least 2 characters'),
-    queueId: z.string().min(1, 'Queue is required'),
+    name: z.string().min(2, 'admin:campaigns.validation.nameMinLength'),
+    queueId: z.string().min(1, 'admin:campaigns.validation.queueRequired'),
   }),
   dialing: z.object({
-    dialingMode: z.string().min(1, 'Dialing mode is required'),
-    maxChannels: z.coerce.number().int().positive('Must be a positive number'),
+    dialingMode: z.string().min(1, 'admin:campaigns.validation.dialingModeRequired'),
+    maxChannels: z.coerce.number().int().positive('admin:campaigns.validation.maxChannelsPositive'),
   }),
   schedule: z.object({
-    timezone: z.string().min(1, 'Timezone is required'),
-    startDate: z.string().min(1, 'Start date is required'),
+    timezone: z.string().min(1, 'admin:campaigns.validation.timezoneRequired'),
+    startDate: z.string().min(1, 'admin:campaigns.validation.startDateRequired'),
   }),
 };
 

@@ -34,14 +34,14 @@ import {
 
 const questionSchema = z.object({
   id: z.string(),
-  text: z.string().min(1, 'Question text is required'),
+  text: z.string().min(1, 'admin:surveys.validation.questionTextRequired'),
   type: z.enum(['Scale', 'FreeText', 'Choice'] as const),
   options: z.string().optional(),
   order: z.number(),
 });
 
 const surveySchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'admin:surveys.validation.nameRequired'),
   type: z.enum(['CSAT', 'NPS', 'Custom'] as const),
   isActive: z.boolean(),
   questions: z.array(questionSchema),
@@ -182,7 +182,7 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
               {...register('name')}
             />
             {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
             )}
           </div>
 

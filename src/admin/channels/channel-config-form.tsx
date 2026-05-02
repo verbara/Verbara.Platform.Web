@@ -84,7 +84,7 @@ export const channelFields: Record<string, FieldDef[]> = {
 export function buildSchema(fields: FieldDef[]) {
   const shape: Record<string, z.ZodType> = { isActive: z.boolean() };
   for (const field of fields) {
-    shape[field.key] = z.string().min(1, `${field.label} is required`);
+    shape[field.key] = z.string().min(1, 'admin:channels.validation.fieldRequired');
   }
   return z.object(shape);
 }
@@ -173,7 +173,7 @@ export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConf
               />
               {errors[field.key] && (
                 <p className="text-xs text-destructive">
-                  {String(errors[field.key]?.message ?? '')}
+                  {t(String(errors[field.key]?.message ?? ''), { field: field.label })}
                 </p>
               )}
             </div>

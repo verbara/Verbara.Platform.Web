@@ -144,7 +144,11 @@
     "mfa_status": "MFA",
     "no_roles": "Sin roles asignados",
     "roles": "Roles",
-    "select_role": "Seleccionar rol..."
+    "select_role": "Seleccionar rol...",
+    "validation": {
+      "emailInvalid": "Debe ser un correo electrónico válido",
+      "displayNameMinLength": "El nombre para mostrar debe tener al menos 2 caracteres"
+    }
   },
   "agents": {
     "title": "Agentes",
@@ -257,7 +261,10 @@
     "configDescription": "Configurar credenciales y ajustes de este canal.",
     "save": "Guardar",
     "test_success": "Conexión exitosa!",
-    "test_failure": "Error de conexión. Verifique sus credenciales."
+    "test_failure": "Error de conexión. Verifique sus credenciales.",
+    "validation": {
+      "fieldRequired": "{{field}} es obligatorio"
+    }
   },
   "flows": {
     "title": "Flujos",
@@ -567,6 +574,14 @@
       "delete_title": "Eliminar código de disposición",
       "delete_description": "¿Está seguro de que desea eliminar este código de disposición? Esta acción no se puede deshacer.",
       "delete_confirm": "Eliminar"
+    },
+    "validation": {
+      "nameMinLength": "El nombre de la campaña debe tener al menos 2 caracteres",
+      "queueRequired": "La cola es obligatoria",
+      "dialingModeRequired": "El modo de marcación es obligatorio",
+      "maxChannelsPositive": "Debe ser un número positivo",
+      "timezoneRequired": "La zona horaria es obligatoria",
+      "startDateRequired": "La fecha de inicio es obligatoria"
     }
   },
   "setup": {
@@ -1059,7 +1074,11 @@
     "empty": "Sin encuestas — Crea tu primera encuesta",
     "createDescription": "Crea una nueva encuesta de satisfacción.",
     "editDescription": "Actualiza la configuración y preguntas de la encuesta.",
-    "entity_type": "encuesta"
+    "entity_type": "encuesta",
+    "validation": {
+      "questionTextRequired": "El texto de la pregunta es obligatorio",
+      "nameRequired": "El nombre es obligatorio"
+    }
   },
   "cluster-nodes": {
     "detail": {
@@ -1544,6 +1563,13 @@
         "saving": "Guardando...",
         "save": "Guardar"
       }
+    },
+    "validation": {
+      "usageTypeRequired": "Obligatorio",
+      "nameRequired": "El nombre es obligatorio",
+      "currencyRequired": "La moneda es obligatoria",
+      "startDateRequired": "La fecha de inicio es obligatoria",
+      "atLeastOneRate": "Se requiere al menos una entrada de tarifa"
     }
   },
   "tenants": {
@@ -1821,6 +1847,13 @@
         "channel": "Canal",
         "reference": "Referencia"
       }
+    },
+    "validation": {
+      "usageTypeRequired": "Obligatorio",
+      "nameRequired": "El nombre es obligatorio",
+      "currencyRequired": "La moneda es obligatoria",
+      "startDateRequired": "La fecha de inicio es obligatoria",
+      "atLeastOneRate": "Se requiere al menos una entrada de tarifa"
     }
   },
   "cluster": {
