@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // --- Types ---
@@ -65,6 +66,7 @@ export function useAuthConfig() {
 
 export function useUpdateAuthConfig() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<AuthConfig>) =>
       customFetch<AuthConfig>({
@@ -74,7 +76,7 @@ export function useUpdateAuthConfig() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['auth-config'] });
-      toast.success('Auth configuration updated');
+      toast.success(t('toasts.auth.configUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -108,6 +110,7 @@ export function useActiveSessions() {
 
 export function useForceLogout() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (sessionId: string) =>
       customFetch<void>({
@@ -116,7 +119,7 @@ export function useForceLogout() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['auth-sessions'] });
-      toast.success('Session revoked');
+      toast.success(t('toasts.auth.sessionRevoked'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -124,6 +127,7 @@ export function useForceLogout() {
 
 export function useForceLogoutUser() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (userId: string) =>
       customFetch<void>({
@@ -132,7 +136,7 @@ export function useForceLogoutUser() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['auth-sessions'] });
-      toast.success('All sessions revoked for user');
+      toast.success(t('toasts.auth.allSessionsRevokedForUser'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -159,6 +163,7 @@ export function useSetupMfa() {
 
 export function useConfirmMfa() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (code: string) =>
       customFetch<void>({
@@ -168,7 +173,7 @@ export function useConfirmMfa() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['me'] });
-      toast.success('MFA enabled');
+      toast.success(t('toasts.auth.mfaEnabled'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -176,6 +181,7 @@ export function useConfirmMfa() {
 
 export function useDisableMfa() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (password: string) =>
       customFetch<void>({
@@ -185,7 +191,7 @@ export function useDisableMfa() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['me'] });
-      toast.success('MFA disabled');
+      toast.success(t('toasts.auth.mfaDisabled'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -197,6 +203,7 @@ export interface ChangePasswordRequest {
 }
 
 export function useChangePassword() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: ChangePasswordRequest) =>
       customFetch<void>({
@@ -204,7 +211,7 @@ export function useChangePassword() {
         method: 'POST',
         data,
       }),
-    onSuccess: () => toast.success('Password changed'),
+    onSuccess: () => toast.success(t('toasts.auth.passwordChanged')),
     onError: (err: Error) => toast.error(err.message),
   });
 }
@@ -231,6 +238,7 @@ export function useMySessions() {
 
 export function useRevokeSession() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (tokenId: string) =>
       customFetch<void>({
@@ -239,7 +247,7 @@ export function useRevokeSession() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['auth', 'sessions', 'me'] });
-      toast.success('Session revoked');
+      toast.success(t('toasts.auth.sessionRevoked'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -247,6 +255,7 @@ export function useRevokeSession() {
 
 export function useRevokeOtherSessions() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: () =>
       customFetch<void>({
@@ -255,7 +264,7 @@ export function useRevokeOtherSessions() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['auth', 'sessions', 'me'] });
-      toast.success('All other sessions signed out');
+      toast.success(t('toasts.auth.allOtherSessionsSignedOut'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -266,6 +275,7 @@ export interface RecoveryCodesResponse {
 }
 
 export function useRegenerateRecoveryCodes() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (password: string) =>
       customFetch<RecoveryCodesResponse>({
@@ -273,7 +283,7 @@ export function useRegenerateRecoveryCodes() {
         method: 'POST',
         data: { password },
       }),
-    onSuccess: () => toast.success('Recovery codes regenerated'),
+    onSuccess: () => toast.success(t('toasts.auth.recoveryCodesRegenerated')),
     onError: (err: Error) => toast.error(err.message),
   });
 }

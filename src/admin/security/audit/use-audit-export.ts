@@ -7,6 +7,7 @@
 // header (some embedded webviews).
 
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { useAuthStore } from '@/core/auth/auth-store';
@@ -70,9 +71,10 @@ async function exportAuditEvents(args: AuditExportArgs): Promise<void> {
 }
 
 export function useAuditExport() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: exportAuditEvents,
-    onSuccess: () => toast.success('Audit export downloaded.'),
+    onSuccess: () => toast.success(t('toasts.audit.exportDownloaded')),
     onError: (err: Error) => toast.error(err.message),
   });
 }

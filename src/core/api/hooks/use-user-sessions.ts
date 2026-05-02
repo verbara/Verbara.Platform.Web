@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { customFetch } from '@/core/api/client';
 
@@ -37,6 +38,7 @@ export function useUserSessions() {
 
 export function useRevokeUserSession() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (sessionId: string) =>
       customFetch<void>({
@@ -45,7 +47,7 @@ export function useRevokeUserSession() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: sessionsQueryKey });
-      toast.success('Session revoked');
+      toast.success(t('toasts.auth.sessionRevoked'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

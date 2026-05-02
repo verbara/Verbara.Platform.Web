@@ -9,6 +9,7 @@
 // return 204; the page reflects the new status by invalidating the list query.
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { customFetch } from '@/core/api/client';
@@ -73,6 +74,7 @@ export function useMfaUsers(filter: MfaUserListFilter = {}) {
 
 export function useResetMfa() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (userId: string) =>
       customFetch<void>({
@@ -81,7 +83,7 @@ export function useResetMfa() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: LIST_KEY });
-      toast.success('MFA reset.');
+      toast.success(t('toasts.mfa.reset'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -89,6 +91,7 @@ export function useResetMfa() {
 
 export function useRevokeMfaSessions() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (userId: string) =>
       customFetch<void>({
@@ -97,7 +100,7 @@ export function useRevokeMfaSessions() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: LIST_KEY });
-      toast.success('Sessions revoked.');
+      toast.success(t('toasts.mfa.sessionsRevoked'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

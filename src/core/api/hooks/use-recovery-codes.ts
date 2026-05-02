@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { customFetch } from '@/core/api/client';
 
@@ -25,6 +26,7 @@ export interface RecoveryCodesPayload {
 }
 
 export function useRegenerateRecoveryCodes() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (req: RegenerateRecoveryCodesRequest) =>
       customFetch<RecoveryCodesPayload>({
@@ -32,7 +34,7 @@ export function useRegenerateRecoveryCodes() {
         method: 'POST',
         data: req,
       }),
-    onSuccess: () => toast.success('Recovery codes regenerated'),
+    onSuccess: () => toast.success(t('toasts.auth.recoveryCodesRegenerated')),
     onError: (err: Error) => toast.error(err.message),
   });
 }

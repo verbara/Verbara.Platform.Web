@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 interface ImpersonateResponse {
@@ -12,6 +13,7 @@ interface ImpersonateResponse {
 }
 
 export function useImpersonate() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: async ({ targetTenantId, readOnly }: { targetTenantId: string; readOnly?: boolean }) => {
       const { accessToken, tenantId } = useAuthStore.getState();
@@ -23,12 +25,13 @@ export function useImpersonate() {
       useAuthStore.getState().startImpersonation(response, accessToken!, tenantId!);
       return response;
     },
-    onSuccess: (data) => toast.success(`Now operating as ${data.targetTenantName}`),
-    onError: () => toast.error('Failed to start impersonation'),
+    onSuccess: (data) => toast.success(t('toasts.impersonation.startedAs', { tenant: data.targetTenantName })),
+    onError: () => toast.error(t('toasts.impersonation.startFailed')),
   });
 }
 
 export function useEndImpersonate() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: async () => {
       await customFetch<void>({
@@ -37,6 +40,6 @@ export function useEndImpersonate() {
       });
       useAuthStore.getState().endImpersonation();
     },
-    onSuccess: () => toast.success('Impersonation ended'),
+    onSuccess: () => toast.success(t('toasts.impersonation.ended')),
   });
 }

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // --- Types ---
@@ -102,6 +103,7 @@ export function useRoleTemplates() {
 
 export function useCreateRole() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: {
       name: string;
@@ -111,7 +113,7 @@ export function useCreateRole() {
     }) => customFetch<TenantRole>({ url: '/api/v1/admin/roles', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['roles'] });
-      toast.success('Role created');
+      toast.success(t('toasts.rbac.roleCreated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -119,6 +121,7 @@ export function useCreateRole() {
 
 export function useUpdateRole() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -132,7 +135,7 @@ export function useUpdateRole() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['roles'] });
       qc.invalidateQueries({ queryKey: ['roles', variables.id] });
-      toast.success('Role updated');
+      toast.success(t('toasts.rbac.roleUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -140,12 +143,13 @@ export function useUpdateRole() {
 
 export function useDeleteRole() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/roles/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['roles'] });
-      toast.success('Role deleted');
+      toast.success(t('toasts.rbac.roleDeleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -153,6 +157,7 @@ export function useDeleteRole() {
 
 export function useCloneRole() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) =>
       customFetch<TenantRole>({
@@ -162,7 +167,7 @@ export function useCloneRole() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['roles'] });
-      toast.success('Role cloned');
+      toast.success(t('toasts.rbac.roleCloned'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -198,6 +203,7 @@ export function useUserPermissions(userId: string | undefined) {
 
 export function useAssignRole() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ userId, roleId }: { userId: string; roleId: string }) =>
       customFetch<void>({
@@ -207,7 +213,7 @@ export function useAssignRole() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['users', variables.userId, 'roles'] });
       qc.invalidateQueries({ queryKey: ['users', variables.userId, 'permissions'] });
-      toast.success('Role assigned');
+      toast.success(t('toasts.rbac.roleAssigned'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -215,6 +221,7 @@ export function useAssignRole() {
 
 export function useRemoveRole() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ userId, roleId }: { userId: string; roleId: string }) =>
       customFetch<void>({
@@ -224,7 +231,7 @@ export function useRemoveRole() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['users', variables.userId, 'roles'] });
       qc.invalidateQueries({ queryKey: ['users', variables.userId, 'permissions'] });
-      toast.success('Role removed');
+      toast.success(t('toasts.rbac.roleRemoved'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

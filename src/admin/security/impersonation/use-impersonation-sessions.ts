@@ -10,6 +10,7 @@
 // required). Revoke takes a free-text reason that lands in the audit trail.
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { customFetch } from '@/core/api/client';
@@ -130,6 +131,7 @@ export function useImpersonationSessionHistory(filter: SessionHistoryFilter = {}
 
 export function useRevokeImpersonationSession() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, reason }: RevokeImpersonationSessionInput) =>
       customFetch<void>({
@@ -140,7 +142,7 @@ export function useRevokeImpersonationSession() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ACTIVE_KEY });
       qc.invalidateQueries({ queryKey: HISTORY_KEY });
-      toast.success('Session revoked.');
+      toast.success(t('toasts.auth.sessionRevoked'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

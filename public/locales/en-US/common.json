@@ -291,6 +291,44 @@
     "dispositions": {
       "created": "Disposition created",
       "deleted": "Disposition deleted"
+    },
+    "auth": {
+      "configUpdated": "Auth configuration updated",
+      "sessionRevoked": "Session revoked",
+      "allSessionsRevokedForUser": "All sessions revoked for user",
+      "mfaEnabled": "MFA enabled",
+      "mfaDisabled": "MFA disabled",
+      "passwordChanged": "Password changed",
+      "allOtherSessionsSignedOut": "All other sessions signed out",
+      "recoveryCodesRegenerated": "Recovery codes regenerated"
+    },
+    "mfa": {
+      "reset": "MFA reset",
+      "sessionsRevoked": "Sessions revoked"
+    },
+    "impersonation": {
+      "startFailed": "Failed to start impersonation",
+      "ended": "Impersonation ended",
+      "startedAs": "Now operating as {{tenant}}"
+    },
+    "apiKeys": {
+      "revoked": "API key revoked"
+    },
+    "rbac": {
+      "roleCreated": "Role created",
+      "roleUpdated": "Role updated",
+      "roleDeleted": "Role deleted",
+      "roleCloned": "Role cloned",
+      "roleAssigned": "Role assigned",
+      "roleRemoved": "Role removed"
+    },
+    "users": {
+      "created": "User created",
+      "updated": "User updated",
+      "deleted": "User deleted"
+    },
+    "audit": {
+      "exportDownloaded": "Audit export downloaded"
     }
   }
 }

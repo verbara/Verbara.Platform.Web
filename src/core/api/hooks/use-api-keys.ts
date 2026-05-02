@@ -12,6 +12,7 @@
 // mutation response, not on a refetch.
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { customFetch } from '@/core/api/client';
@@ -103,6 +104,7 @@ export function useRotateApiKey() {
 
 export function useRevokeApiKey() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (keyId: string) =>
       customFetch<void>({
@@ -111,7 +113,7 @@ export function useRevokeApiKey() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: LIST_KEY });
-      toast.success('API key revoked');
+      toast.success(t('toasts.apiKeys.revoked'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

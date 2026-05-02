@@ -291,6 +291,44 @@
     "dispositions": {
       "created": "Disposición creada",
       "deleted": "Disposición eliminada"
+    },
+    "auth": {
+      "configUpdated": "Configuración de autenticación actualizada",
+      "sessionRevoked": "Sesión revocada",
+      "allSessionsRevokedForUser": "Todas las sesiones del usuario revocadas",
+      "mfaEnabled": "MFA habilitado",
+      "mfaDisabled": "MFA deshabilitado",
+      "passwordChanged": "Contraseña cambiada",
+      "allOtherSessionsSignedOut": "Todas las demás sesiones cerradas",
+      "recoveryCodesRegenerated": "Códigos de recuperación regenerados"
+    },
+    "mfa": {
+      "reset": "MFA restablecido",
+      "sessionsRevoked": "Sesiones revocadas"
+    },
+    "impersonation": {
+      "startFailed": "Error al iniciar suplantación",
+      "ended": "Suplantación finalizada",
+      "startedAs": "Operando ahora como {{tenant}}"
+    },
+    "apiKeys": {
+      "revoked": "Clave de API revocada"
+    },
+    "rbac": {
+      "roleCreated": "Rol creado",
+      "roleUpdated": "Rol actualizado",
+      "roleDeleted": "Rol eliminado",
+      "roleCloned": "Rol clonado",
+      "roleAssigned": "Rol asignado",
+      "roleRemoved": "Rol removido"
+    },
+    "users": {
+      "created": "Usuario creado",
+      "updated": "Usuario actualizado",
+      "deleted": "Usuario eliminado"
+    },
+    "audit": {
+      "exportDownloaded": "Exportación de auditoría descargada"
     }
   }
 }

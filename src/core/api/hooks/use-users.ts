@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface User {
@@ -43,12 +44,13 @@ export function useUser(id: string | undefined) {
 
 export function useCreateUser() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { email: string; displayName: string; role: string }) =>
       customFetch<User>({ url: '/api/v1/admin/users', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
-      toast.success('User created');
+      toast.success(t('toasts.users.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -56,6 +58,7 @@ export function useCreateUser() {
 
 export function useUpdateUser() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -73,7 +76,7 @@ export function useUpdateUser() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
-      toast.success('User updated');
+      toast.success(t('toasts.users.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -81,12 +84,13 @@ export function useUpdateUser() {
 
 export function useDeleteUser() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/users/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
-      toast.success('User deleted');
+      toast.success(t('toasts.users.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
