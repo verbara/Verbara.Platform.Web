@@ -263,6 +263,34 @@
       "updated": "Perfil atualizado",
       "deleted": "Perfil excluído",
       "defaultsSeeded": "Perfis padrão semeados"
+    },
+    "dncLists": {
+      "created": "Lista DNC criada",
+      "updated": "Lista DNC atualizada",
+      "deleted": "Lista DNC excluída",
+      "entryAdded": "Entrada DNC adicionada",
+      "entryRemoved": "Entrada DNC removida",
+      "entriesImported": "Entradas DNC importadas"
+    },
+    "holidayCalendars": {
+      "created": "Calendário de feriados criado",
+      "updated": "Calendário de feriados atualizado",
+      "deleted": "Calendário de feriados excluído",
+      "holidayAdded": "Feriado adicionado",
+      "holidayRemoved": "Feriado removido"
+    },
+    "webhooks": {
+      "subscriptionCreated": "Assinatura de webhook criada",
+      "subscriptionUpdated": "Assinatura de webhook atualizada",
+      "subscriptionDeleted": "Assinatura de webhook excluída",
+      "testEventQueued": "Evento de teste enfileirado",
+      "secretRotated": "Segredo rotacionado",
+      "deliveryReEnqueued": "Entrega reenfileirada",
+      "circuitBreakerReset": "Circuit breaker resetado"
+    },
+    "dispositions": {
+      "created": "Disposição criada",
+      "deleted": "Disposição excluída"
     }
   }
 }

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface Disposition {
@@ -21,6 +22,7 @@ export function useDispositions() {
 
 export function useCreateDisposition() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { name: string; category: string }) =>
       customFetch<Disposition>({
@@ -30,7 +32,7 @@ export function useCreateDisposition() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dispositions'] });
-      toast.success('Disposition created');
+      toast.success(t('toasts.dispositions.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -38,6 +40,7 @@ export function useCreateDisposition() {
 
 export function useDeleteDisposition() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -46,7 +49,7 @@ export function useDeleteDisposition() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dispositions'] });
-      toast.success('Disposition deleted');
+      toast.success(t('toasts.dispositions.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

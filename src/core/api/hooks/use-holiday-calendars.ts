@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface HolidayCalendarSummary {
@@ -52,6 +53,7 @@ export function useHolidayCalendarHolidays(calendarId: number) {
 
 export function useCreateCalendar() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<HolidayCalendarSummary, 'id'>>) =>
       customFetch<HolidayCalendarSummary>({
@@ -61,7 +63,7 @@ export function useCreateCalendar() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['holiday-calendars'] });
-      toast.success('Holiday calendar created');
+      toast.success(t('toasts.holidayCalendars.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -69,6 +71,7 @@ export function useCreateCalendar() {
 
 export function useUpdateCalendar() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -82,7 +85,7 @@ export function useUpdateCalendar() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['holiday-calendars'] });
       qc.invalidateQueries({ queryKey: ['holiday-calendar', variables.id] });
-      toast.success('Holiday calendar updated');
+      toast.success(t('toasts.holidayCalendars.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -90,12 +93,13 @@ export function useUpdateCalendar() {
 
 export function useDeleteCalendar() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/holiday-calendars/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['holiday-calendars'] });
-      toast.success('Holiday calendar deleted');
+      toast.success(t('toasts.holidayCalendars.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -103,6 +107,7 @@ export function useDeleteCalendar() {
 
 export function useAddHoliday() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       calendarId,
@@ -115,7 +120,7 @@ export function useAddHoliday() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['holiday-calendar-holidays', variables.calendarId] });
-      toast.success('Holiday added');
+      toast.success(t('toasts.holidayCalendars.holidayAdded'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -123,6 +128,7 @@ export function useAddHoliday() {
 
 export function useRemoveHoliday() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ calendarId, holidayId }: { calendarId: number; holidayId: number }) =>
       customFetch<void>({
@@ -131,7 +137,7 @@ export function useRemoveHoliday() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['holiday-calendar-holidays', variables.calendarId] });
-      toast.success('Holiday removed');
+      toast.success(t('toasts.holidayCalendars.holidayRemoved'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

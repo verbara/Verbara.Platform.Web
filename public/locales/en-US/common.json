@@ -263,6 +263,34 @@
       "updated": "Profile updated",
       "deleted": "Profile deleted",
       "defaultsSeeded": "Default profiles seeded"
+    },
+    "dncLists": {
+      "created": "DNC list created",
+      "updated": "DNC list updated",
+      "deleted": "DNC list deleted",
+      "entryAdded": "DNC entry added",
+      "entryRemoved": "DNC entry removed",
+      "entriesImported": "DNC entries imported"
+    },
+    "holidayCalendars": {
+      "created": "Holiday calendar created",
+      "updated": "Holiday calendar updated",
+      "deleted": "Holiday calendar deleted",
+      "holidayAdded": "Holiday added",
+      "holidayRemoved": "Holiday removed"
+    },
+    "webhooks": {
+      "subscriptionCreated": "Webhook subscription created",
+      "subscriptionUpdated": "Webhook subscription updated",
+      "subscriptionDeleted": "Webhook subscription deleted",
+      "testEventQueued": "Test event queued",
+      "secretRotated": "Secret rotated",
+      "deliveryReEnqueued": "Delivery re-enqueued",
+      "circuitBreakerReset": "Circuit breaker reset"
+    },
+    "dispositions": {
+      "created": "Disposition created",
+      "deleted": "Disposition deleted"
     }
   }
 }

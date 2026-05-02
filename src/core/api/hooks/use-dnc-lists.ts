@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface DncListSummary {
@@ -57,12 +58,13 @@ export function useDncEntries(listId: number, offset = 0, limit = 100) {
 
 export function useCreateDncList() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<DncListSummary, 'id' | 'entryCount' | 'createdAt'>>) =>
       customFetch<DncListSummary>({ url: '/api/v1/admin/dnc-lists', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
-      toast.success('DNC list created');
+      toast.success(t('toasts.dncLists.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -70,6 +72,7 @@ export function useCreateDncList() {
 
 export function useUpdateDncList() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -79,7 +82,7 @@ export function useUpdateDncList() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
       qc.invalidateQueries({ queryKey: ['dnc-list', variables.id] });
-      toast.success('DNC list updated');
+      toast.success(t('toasts.dncLists.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -87,12 +90,13 @@ export function useUpdateDncList() {
 
 export function useDeleteDncList() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/dnc-lists/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
-      toast.success('DNC list deleted');
+      toast.success(t('toasts.dncLists.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -100,6 +104,7 @@ export function useDeleteDncList() {
 
 export function useAddDncEntry() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       listId,
@@ -113,7 +118,7 @@ export function useAddDncEntry() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['dnc-entries', variables.listId] });
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
-      toast.success('DNC entry added');
+      toast.success(t('toasts.dncLists.entryAdded'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -121,6 +126,7 @@ export function useAddDncEntry() {
 
 export function useRemoveDncEntry() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ listId, entryId }: { listId: number; entryId: number }) =>
       customFetch<void>({
@@ -130,7 +136,7 @@ export function useRemoveDncEntry() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['dnc-entries', variables.listId] });
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
-      toast.success('DNC entry removed');
+      toast.success(t('toasts.dncLists.entryRemoved'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -138,6 +144,7 @@ export function useRemoveDncEntry() {
 
 export function useImportDncEntries() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       listId,
@@ -154,7 +161,7 @@ export function useImportDncEntries() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['dnc-entries', variables.listId] });
       qc.invalidateQueries({ queryKey: ['dnc-lists'] });
-      toast.success('DNC entries imported');
+      toast.success(t('toasts.dncLists.entriesImported'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

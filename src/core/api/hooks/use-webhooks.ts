@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // --- Types ---
@@ -84,6 +85,7 @@ export function useWebhookSubscription(id: string) {
 
 export function useCreateWebhookSubscription() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: CreateWebhookSubscriptionRequest) =>
       customFetch<WebhookSubscription>({
@@ -93,7 +95,7 @@ export function useCreateWebhookSubscription() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['webhooks'] });
-      toast.success('Webhook subscription created');
+      toast.success(t('toasts.webhooks.subscriptionCreated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -101,6 +103,7 @@ export function useCreateWebhookSubscription() {
 
 export function useUpdateWebhookSubscription() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateWebhookSubscriptionRequest }) =>
       customFetch<WebhookSubscription>({
@@ -111,7 +114,7 @@ export function useUpdateWebhookSubscription() {
     onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: ['webhooks'] });
       qc.invalidateQueries({ queryKey: ['webhook', id] });
-      toast.success('Webhook subscription updated');
+      toast.success(t('toasts.webhooks.subscriptionUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -119,6 +122,7 @@ export function useUpdateWebhookSubscription() {
 
 export function useDeleteWebhookSubscription() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -127,13 +131,14 @@ export function useDeleteWebhookSubscription() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['webhooks'] });
-      toast.success('Webhook subscription deleted');
+      toast.success(t('toasts.webhooks.subscriptionDeleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
 }
 
 export function useTestWebhookSubscription() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -141,7 +146,7 @@ export function useTestWebhookSubscription() {
         method: 'POST',
       }),
     onSuccess: () => {
-      toast.success('Test event queued');
+      toast.success(t('toasts.webhooks.testEventQueued'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -149,6 +154,7 @@ export function useTestWebhookSubscription() {
 
 export function useRotateWebhookSecret() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<WebhookSubscription>({
@@ -158,7 +164,7 @@ export function useRotateWebhookSecret() {
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['webhook', id] });
       qc.invalidateQueries({ queryKey: ['webhooks'] });
-      toast.success('Secret rotated');
+      toast.success(t('toasts.webhooks.secretRotated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -212,6 +218,7 @@ export function useWebhookDeadLetter(tenantId: string, page = 1, pageSize = 20) 
 
 export function useRetryDeadLetter() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -220,7 +227,7 @@ export function useRetryDeadLetter() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['webhook-dead-letter'] });
-      toast.success('Delivery re-enqueued');
+      toast.success(t('toasts.webhooks.deliveryReEnqueued'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -249,6 +256,7 @@ export function useCircuitStatus(subscriptionId: string | undefined) {
 
 export function useResetCircuit() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (subscriptionId: string) =>
       customFetch<void>({
@@ -257,7 +265,7 @@ export function useResetCircuit() {
       }),
     onSuccess: (_data, subscriptionId) => {
       qc.invalidateQueries({ queryKey: ['webhook-circuit', subscriptionId] });
-      toast.success('Circuit breaker reset');
+      toast.success(t('toasts.webhooks.circuitBreakerReset'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
