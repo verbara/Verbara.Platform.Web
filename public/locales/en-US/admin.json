@@ -1582,7 +1582,49 @@
       "atLeastOneRate": "At least one rate entry is required"
     },
     "leaveEmptyPlaceholder": "Leave empty to keep current",
-    "timezonePlaceholder": "America/Bogota"
+    "timezonePlaceholder": "America/Bogota",
+    "customerDetail": {
+      "tabs": {
+        "overview": "Overview",
+        "settings": "Settings",
+        "invoices": "Invoices",
+        "usage": "Usage"
+      },
+      "editDialog": {
+        "title": "Edit customer",
+        "description": "Update customer settings and quotas.",
+        "name": "Name",
+        "maxChannels": "Max concurrent channels",
+        "maxCampaigns": "Max active campaigns"
+      },
+      "settingsDialog": {
+        "title": "Edit settings",
+        "description": "Update operational settings for this customer.",
+        "platformName": "Platform name",
+        "defaultTimezone": "Default timezone",
+        "defaultLanguage": "Default language"
+      },
+      "generateDialog": {
+        "title": "Generate invoice",
+        "description": "Select the billing period to invoice this customer.",
+        "from": "From",
+        "to": "To",
+        "generate": "Generate",
+        "generating": "Generating...",
+        "generateInvoice": "Generate invoice"
+      },
+      "actions": {
+        "save": "Save",
+        "saving": "Saving..."
+      },
+      "margin": {
+        "latestInvoice": "Latest invoice generated",
+        "gross": "Gross",
+        "platformCost": "Platform cost",
+        "yourMargin": "Your margin"
+      },
+      "invoiceEmpty": "No invoices yet. Generate one to bill this customer."
+    }
   },
   "tenants": {
     "detail": {

@@ -1597,7 +1597,49 @@
       "atLeastOneRate": "Se requiere al menos una entrada de tarifa"
     },
     "leaveEmptyPlaceholder": "Dejar vacío para mantener el actual",
-    "timezonePlaceholder": "America/Bogota"
+    "timezonePlaceholder": "America/Bogota",
+    "customerDetail": {
+      "tabs": {
+        "overview": "Resumen",
+        "settings": "Configuración",
+        "invoices": "Facturas",
+        "usage": "Uso"
+      },
+      "editDialog": {
+        "title": "Editar cliente",
+        "description": "Actualizar configuración y cuotas del cliente.",
+        "name": "Nombre",
+        "maxChannels": "Canales concurrentes máximos",
+        "maxCampaigns": "Campañas activas máximas"
+      },
+      "settingsDialog": {
+        "title": "Editar configuración",
+        "description": "Actualizar configuración operacional para este cliente.",
+        "platformName": "Nombre de la plataforma",
+        "defaultTimezone": "Zona horaria predeterminada",
+        "defaultLanguage": "Idioma predeterminado"
+      },
+      "generateDialog": {
+        "title": "Generar factura",
+        "description": "Seleccione el período de facturación para este cliente.",
+        "from": "Desde",
+        "to": "Hasta",
+        "generate": "Generar",
+        "generating": "Generando...",
+        "generateInvoice": "Generar factura"
+      },
+      "actions": {
+        "save": "Guardar",
+        "saving": "Guardando..."
+      },
+      "margin": {
+        "latestInvoice": "Última factura generada",
+        "gross": "Bruto",
+        "platformCost": "Costo de plataforma",
+        "yourMargin": "Su margen"
+      },
+      "invoiceEmpty": "Aún no hay facturas. Genere una para facturar a este cliente."
+    }
   },
   "tenants": {
     "detail": {
