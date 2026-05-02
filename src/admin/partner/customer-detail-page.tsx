@@ -384,7 +384,7 @@ export default function PartnerCustomerDetailPage() {
                 data-testid="cd-edit-max-channels"
                 value={editMaxChannels}
                 onChange={(e) => setEditMaxChannels(e.target.value)}
-                placeholder="Leave empty to keep current"
+                placeholder={t('admin:partner.leaveEmptyPlaceholder')}
               />
             </div>
             <div className="space-y-1.5">
@@ -396,7 +396,7 @@ export default function PartnerCustomerDetailPage() {
                 data-testid="cd-edit-max-campaigns"
                 value={editMaxCampaigns}
                 onChange={(e) => setEditMaxCampaigns(e.target.value)}
-                placeholder="Leave empty to keep current"
+                placeholder={t('admin:partner.leaveEmptyPlaceholder')}
               />
             </div>
           </div>
@@ -422,6 +422,7 @@ function InfoRow({ label, value, mono = false }: Readonly<{ label: string; value
 }
 
 function CustomerSettingsTab({ customerId }: Readonly<{ customerId: string }>) {
+  const { t } = useTranslation('admin');
   const { data: settings, isLoading } = useCustomerSettings(customerId);
   const update = useUpdateCustomerSettings();
   const [editOpen, setEditOpen] = useState(false);
@@ -477,7 +478,7 @@ function CustomerSettingsTab({ customerId }: Readonly<{ customerId: string }>) {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cs-tz">Default timezone</Label>
-              <Input id="cs-tz" data-testid="cs-timezone" value={defaultTimezone} onChange={(e) => setDefaultTimezone(e.target.value)} placeholder="America/Bogota" />
+              <Input id="cs-tz" data-testid="cs-timezone" value={defaultTimezone} onChange={(e) => setDefaultTimezone(e.target.value)} placeholder={t('admin:partner.timezonePlaceholder')} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cs-lang">Default language</Label>

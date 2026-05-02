@@ -108,6 +108,9 @@
       "validation": {
         "provider-required": "Selecione um provedor para habilitar o Agent Assist.",
         "credentials-required": "As credenciais do provedor são obrigatórias."
+      },
+      "aria": {
+        "enableAgentAssist": "Habilitar Agent Assist"
       }
     }
   },
@@ -132,7 +135,8 @@
     "validation": {
       "emailInvalid": "Deve ser um e-mail válido",
       "displayNameMinLength": "Nome de exibição deve ter pelo menos 2 caracteres"
-    }
+    },
+    "namePlaceholder": "Jane Doe"
   },
   "agents": {
     "title": "Agentes",
@@ -161,7 +165,8 @@
     "validation": {
       "skillNameRequired": "Nome da habilidade é obrigatório",
       "userRequired": "Usuário é obrigatório"
-    }
+    },
+    "displayNamePlaceholder": "João Silva"
   },
   "teams": {
     "title": "Equipes",
@@ -219,7 +224,8 @@
     "editDescription": "Atualizar configuração da fila.",
     "validation": {
       "nameRequired": "Nome é obrigatório"
-    }
+    },
+    "namePlaceholder": "Suporte"
   },
   "queue-members": {
     "add": "Adicionar agente",
@@ -664,7 +670,8 @@
       "nameRequired": "Nome é obrigatório",
       "displayNameRequired": "Nome de exibição é obrigatório",
       "maxChannelsAtLeastOne": "Deve ser pelo menos 1"
-    }
+    },
+    "searchByNamePlaceholder": "Buscar trunk por nome..."
   },
   "routes": {
     "title": "Rotas de saída",
@@ -789,6 +796,16 @@
       "deleteConfirm": "Excluir esta regra de conformidade?",
       "patternPlaceholder": "ex. cartão de crédito",
       "descriptionPlaceholder": "ex. Agente mencionou dados de pagamento"
+    },
+    "aria": {
+      "confirmEdit": "Confirmar edição",
+      "cancelEdit": "Cancelar edição",
+      "editRule": "Editar regra",
+      "deleteRule": "Excluir regra",
+      "addRule": "Adicionar regra",
+      "cancel": "Cancelar",
+      "engineEnabled": "Motor habilitado",
+      "whisperEnabled": "Whisper habilitado"
     }
   },
   "system": {
@@ -1554,7 +1571,9 @@
       "currencyRequired": "Moeda é obrigatória",
       "startDateRequired": "Data de início obrigatória",
       "atLeastOneRate": "Pelo menos uma entrada de tarifa é obrigatória"
-    }
+    },
+    "leaveEmptyPlaceholder": "Deixe vazio para manter o atual",
+    "timezonePlaceholder": "America/Bogota"
   },
   "tenants": {
     "detail": {
@@ -1671,7 +1690,9 @@
       "tenantIdRequired": "ID do tenant é obrigatório",
       "tenantIdFormat": "Use apenas letras minúsculas, números e hífens",
       "nameRequired": "Nome é obrigatório"
-    }
+    },
+    "consentPolicyPlaceholder": "Optional / Required / RequiredForRoles",
+    "recordingActionPlaceholder": "Warn / Block / Throttle"
   },
   "shared": {
     "placeholder_pending": "Implementação pendente",
@@ -2305,7 +2326,9 @@
     "tags": "Tags",
     "searchPlaceholder": "Pesquisar respostas...",
     "noResults": "Nenhuma resposta encontrada.",
-    "empty": "Nenhuma resposta predefinida ainda."
+    "empty": "Nenhuma resposta predefinida ainda.",
+    "titlePlaceholder": "Saudação",
+    "bodyPlaceholder": "Olá {{customer.name}}! Como posso ajudar?"
   },
   "roles": {
     "entity_type": "papel",

@@ -115,7 +115,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
             <Label htmlFor="displayName">{t('admin:users.name')}</Label>
             <Input
               id="displayName"
-              placeholder="Jane Doe"
+              placeholder={t('admin:users.namePlaceholder')}
               aria-invalid={!!errors.displayName}
               data-testid="user-form-displayName"
               {...register('displayName')}

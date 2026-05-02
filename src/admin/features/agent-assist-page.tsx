@@ -125,7 +125,7 @@ export default function AgentAssistFeaturePage() {
               <Switch
                 checked={form.enabled}
                 onCheckedChange={(v) => patchForm('enabled', v)}
-                aria-label="Enable Agent Assist"
+                aria-label={t('admin:features.agent-assist.aria.enableAgentAssist')}
                 data-testid="agent-assist-enable-toggle"
               />
             </div>

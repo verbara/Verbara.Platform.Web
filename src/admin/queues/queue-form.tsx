@@ -162,7 +162,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                 <Input
                   id="name"
                   data-testid="queue-form-name"
-                  placeholder="Support"
+                  placeholder={t('admin:queues.namePlaceholder')}
                   aria-invalid={!!errors.name}
                   {...register('name')}
                 />

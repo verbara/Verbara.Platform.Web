@@ -5,7 +5,10 @@
     "filter_waiting": "En espera",
     "filter_wrapup": "Post-atención",
     "empty": "Sin conversaciones. ¡Todo al día!",
-    "new_conversation": "Nueva conversación asignada"
+    "new_conversation": "Nueva conversación asignada",
+    "aria": {
+      "newConversation": "Nueva conversación"
+    }
   },
   "conversation": {
     "reply_placeholder": "Escribe tu respuesta...",

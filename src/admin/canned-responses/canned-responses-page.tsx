@@ -230,7 +230,7 @@ export default function CannedResponsesPage() {
               <Input
                 id="title"
                 data-testid="canned-title-input"
-                placeholder="Greeting"
+                placeholder={t('admin:cannedResponses.titlePlaceholder')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -241,7 +241,7 @@ export default function CannedResponsesPage() {
               <Textarea
                 id="body"
                 data-testid="canned-body-input"
-                placeholder="Hello {{customer.name}}! How can I help?"
+                placeholder={t('admin:cannedResponses.bodyPlaceholder')}
                 rows={4}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}

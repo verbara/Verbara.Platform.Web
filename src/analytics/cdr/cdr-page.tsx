@@ -88,8 +88,9 @@ function DispositionCellRenderer({ value }: ICellRendererParams<CdrRow, string>)
 
 // Recording icon cell renderer
 function RecordingCellRenderer({ data }: ICellRendererParams<CdrRow>) {
+  const { t } = useTranslation('analytics');
   if (!data?.hasRecording) return null;
-  return <Play className="h-3.5 w-3.5 text-blue-500" aria-label="Has recording" />;
+  return <Play className="h-3.5 w-3.5 text-blue-500" aria-label={t('cdr.aria.hasRecording')} />;
 }
 
 // QA score badge cell renderer

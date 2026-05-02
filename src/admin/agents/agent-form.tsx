@@ -146,7 +146,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
             <Label htmlFor="displayName">{t('admin:agents.displayName')}</Label>
             <Input
               id="displayName"
-              placeholder="John Smith"
+              placeholder={t('admin:agents.displayNamePlaceholder')}
               aria-invalid={!!errors.displayName}
               {...register('displayName')}
             />

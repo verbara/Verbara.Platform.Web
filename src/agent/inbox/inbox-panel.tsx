@@ -40,7 +40,7 @@ export function InboxPanel() {
             variant="ghost"
             onClick={() => setNewConvOpen(true)}
             data-testid="new-conversation-btn"
-            aria-label="New conversation"
+            aria-label={t('agent:inbox.aria.newConversation')}
           >
             <Plus className="h-4 w-4" />
           </Button>

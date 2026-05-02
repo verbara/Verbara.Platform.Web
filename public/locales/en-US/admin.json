@@ -108,6 +108,9 @@
       "validation": {
         "provider-required": "Select a provider to enable Agent Assist.",
         "credentials-required": "Provider credentials are required."
+      },
+      "aria": {
+        "enableAgentAssist": "Enable Agent Assist"
       }
     }
   },
@@ -132,7 +135,8 @@
     "validation": {
       "emailInvalid": "Must be a valid email",
       "displayNameMinLength": "Display name must be at least 2 characters"
-    }
+    },
+    "namePlaceholder": "Jane Doe"
   },
   "agents": {
     "title": "Agents",
@@ -161,7 +165,8 @@
     "validation": {
       "skillNameRequired": "Skill name is required",
       "userRequired": "User is required"
-    }
+    },
+    "displayNamePlaceholder": "John Smith"
   },
   "teams": {
     "title": "Teams",
@@ -219,7 +224,8 @@
     "editDescription": "Update queue configuration.",
     "validation": {
       "nameRequired": "Name is required"
-    }
+    },
+    "namePlaceholder": "Support"
   },
   "queue-members": {
     "add": "Add agent",
@@ -664,7 +670,8 @@
       "nameRequired": "Name is required",
       "displayNameRequired": "Display name is required",
       "maxChannelsAtLeastOne": "Must be at least 1"
-    }
+    },
+    "searchByNamePlaceholder": "Search trunk by name..."
   },
   "routes": {
     "title": "Outbound Routes",
@@ -789,6 +796,16 @@
       "deleteConfirm": "Delete this compliance rule?",
       "patternPlaceholder": "e.g. credit card",
       "descriptionPlaceholder": "e.g. Agent mentioned payment details"
+    },
+    "aria": {
+      "confirmEdit": "Confirm edit",
+      "cancelEdit": "Cancel edit",
+      "editRule": "Edit rule",
+      "deleteRule": "Delete rule",
+      "addRule": "Add rule",
+      "cancel": "Cancel",
+      "engineEnabled": "Engine enabled",
+      "whisperEnabled": "Whisper enabled"
     }
   },
   "system": {
@@ -1555,7 +1572,9 @@
       "currencyRequired": "Currency is required",
       "startDateRequired": "Start date required",
       "atLeastOneRate": "At least one rate entry is required"
-    }
+    },
+    "leaveEmptyPlaceholder": "Leave empty to keep current",
+    "timezonePlaceholder": "America/Bogota"
   },
   "tenants": {
     "detail": {
@@ -1672,7 +1691,9 @@
       "tenantIdRequired": "Tenant ID is required",
       "tenantIdFormat": "Use lowercase letters, numbers, hyphens only",
       "nameRequired": "Name is required"
-    }
+    },
+    "consentPolicyPlaceholder": "Optional / Required / RequiredForRoles",
+    "recordingActionPlaceholder": "Warn / Block / Throttle"
   },
   "shared": {
     "placeholder_pending": "Pending implementation",
@@ -2306,7 +2327,9 @@
     "tags": "Tags",
     "searchPlaceholder": "Search responses...",
     "noResults": "No matching responses found.",
-    "empty": "No canned responses yet."
+    "empty": "No canned responses yet.",
+    "titlePlaceholder": "Greeting",
+    "bodyPlaceholder": "Hello {{customer.name}}! How can I help?"
   },
   "roles": {
     "entity_type": "role",

@@ -301,7 +301,7 @@ function KeywordRulesSection() {
                         size="sm"
                         onClick={saveEdit}
                         className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
-                        aria-label="Confirm edit"
+                        aria-label={t('admin:agentAssist.aria.confirmEdit')}
                       >
                         <Check className="h-4 w-4" />
                       </Button>
@@ -311,7 +311,7 @@ function KeywordRulesSection() {
                         size="sm"
                         onClick={cancelEdit}
                         className="h-7 w-7 p-0"
-                        aria-label="Cancel edit"
+                        aria-label={t('admin:agentAssist.aria.cancelEdit')}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -343,7 +343,7 @@ function KeywordRulesSection() {
                         size="sm"
                         onClick={() => startEdit(rule)}
                         className="h-7 w-7 p-0"
-                        aria-label="Edit rule"
+                        aria-label={t('admin:agentAssist.aria.editRule')}
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -353,7 +353,7 @@ function KeywordRulesSection() {
                         size="sm"
                         onClick={() => deleteRule(rule.id)}
                         className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                        aria-label="Delete rule"
+                        aria-label={t('admin:agentAssist.aria.deleteRule')}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -414,7 +414,7 @@ function KeywordRulesSection() {
                       size="sm"
                       onClick={confirmAddNew}
                       className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
-                      aria-label="Add rule"
+                      aria-label={t('admin:agentAssist.aria.addRule')}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -424,7 +424,7 @@ function KeywordRulesSection() {
                       size="sm"
                       onClick={cancelAddNew}
                       className="h-7 w-7 p-0"
-                      aria-label="Cancel"
+                      aria-label={t('admin:agentAssist.aria.cancel')}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -661,7 +661,7 @@ function ComplianceRulesSection() {
                         size="sm"
                         onClick={saveEdit}
                         className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
-                        aria-label="Confirm edit"
+                        aria-label={t('admin:agentAssist.aria.confirmEdit')}
                       >
                         <Check className="h-4 w-4" />
                       </Button>
@@ -671,7 +671,7 @@ function ComplianceRulesSection() {
                         size="sm"
                         onClick={cancelEdit}
                         className="h-7 w-7 p-0"
-                        aria-label="Cancel edit"
+                        aria-label={t('admin:agentAssist.aria.cancelEdit')}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -708,7 +708,7 @@ function ComplianceRulesSection() {
                         size="sm"
                         onClick={() => startEdit(rule)}
                         className="h-7 w-7 p-0"
-                        aria-label="Edit rule"
+                        aria-label={t('admin:agentAssist.aria.editRule')}
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -718,7 +718,7 @@ function ComplianceRulesSection() {
                         size="sm"
                         onClick={() => deleteRule(rule.ruleId)}
                         className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                        aria-label="Delete rule"
+                        aria-label={t('admin:agentAssist.aria.deleteRule')}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -798,7 +798,7 @@ function ComplianceRulesSection() {
                       size="sm"
                       onClick={confirmAddNew}
                       className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
-                      aria-label="Add rule"
+                      aria-label={t('admin:agentAssist.aria.addRule')}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -808,7 +808,7 @@ function ComplianceRulesSection() {
                       size="sm"
                       onClick={cancelAddNew}
                       className="h-7 w-7 p-0"
-                      aria-label="Cancel"
+                      aria-label={t('admin:agentAssist.aria.cancel')}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -985,7 +985,7 @@ export default function AgentAssistConfigPage() {
             <Switch
               checked={form.enabled}
               onCheckedChange={(checked) => update('enabled', checked)}
-              aria-label="Engine enabled"
+              aria-label={t('admin:agentAssist.aria.engineEnabled')}
             />
           </div>
         </div>
@@ -1103,7 +1103,7 @@ export default function AgentAssistConfigPage() {
             <Switch
               checked={form.whisperEnabled}
               onCheckedChange={(checked) => update('whisperEnabled', checked)}
-              aria-label="Whisper enabled"
+              aria-label={t('admin:agentAssist.aria.whisperEnabled')}
             />
           </div>
 

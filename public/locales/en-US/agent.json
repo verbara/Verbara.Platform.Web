@@ -5,7 +5,10 @@
     "filter_waiting": "Waiting",
     "filter_wrapup": "Wrap-up",
     "empty": "No conversations. All caught up!",
-    "new_conversation": "New conversation assigned"
+    "new_conversation": "New conversation assigned",
+    "aria": {
+      "newConversation": "New conversation"
+    }
   },
   "conversation": {
     "reply_placeholder": "Type your reply...",

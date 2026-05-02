@@ -265,7 +265,7 @@ function AuthSection({ settings, update, t }: SectionProps) {
           data-testid="field-mfaPolicy"
           value={mfaPolicy}
           onChange={(e) => setMfaPolicy(e.target.value)}
-          placeholder="Optional / Required / RequiredForRoles"
+          placeholder={t('admin:tenants.consentPolicyPlaceholder')}
         />
       </div>
 
@@ -388,7 +388,7 @@ function QuotasSection({ settings, update, t }: SectionProps) {
           data-testid="field-quotaAction"
           value={quotaAction}
           onChange={(e) => setQuotaAction(e.target.value)}
-          placeholder="Warn / Block / Throttle"
+          placeholder={t('admin:tenants.recordingActionPlaceholder')}
         />
       </div>
 
