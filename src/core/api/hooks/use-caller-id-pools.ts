@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface CallerIdPoolSummary {
@@ -48,6 +49,7 @@ export function useCallerIdPoolEntries(poolId: number) {
 
 export function useCreatePool() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<CallerIdPoolSummary, 'id'>>) =>
       customFetch<CallerIdPoolSummary>({
@@ -57,7 +59,7 @@ export function useCreatePool() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['caller-id-pools'] });
-      toast.success('Caller ID pool created');
+      toast.success(t('toasts.callerIdPools.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -65,6 +67,7 @@ export function useCreatePool() {
 
 export function useUpdatePool() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -78,7 +81,7 @@ export function useUpdatePool() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['caller-id-pools'] });
       qc.invalidateQueries({ queryKey: ['caller-id-pool', variables.id] });
-      toast.success('Caller ID pool updated');
+      toast.success(t('toasts.callerIdPools.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -86,12 +89,13 @@ export function useUpdatePool() {
 
 export function useDeletePool() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/caller-id-pools/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['caller-id-pools'] });
-      toast.success('Caller ID pool deleted');
+      toast.success(t('toasts.callerIdPools.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -99,6 +103,7 @@ export function useDeletePool() {
 
 export function useAddPoolEntry() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       poolId,
@@ -111,7 +116,7 @@ export function useAddPoolEntry() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['caller-id-pool-entries', variables.poolId] });
-      toast.success('Caller ID entry added');
+      toast.success(t('toasts.callerIdPools.entryAdded'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -119,6 +124,7 @@ export function useAddPoolEntry() {
 
 export function useRemovePoolEntry() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ poolId, entryId }: { poolId: number; entryId: number }) =>
       customFetch<void>({
@@ -127,7 +133,7 @@ export function useRemovePoolEntry() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['caller-id-pool-entries', variables.poolId] });
-      toast.success('Caller ID entry removed');
+      toast.success(t('toasts.callerIdPools.entryRemoved'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

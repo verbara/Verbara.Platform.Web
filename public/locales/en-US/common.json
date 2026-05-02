@@ -224,6 +224,45 @@
     },
     "channels": {
       "updated": "Channel updated"
+    },
+    "skills": {
+      "created": "Skill created",
+      "updated": "Skill updated",
+      "deleted": "Skill deleted",
+      "assigned": "Skill assigned",
+      "removed": "Skill removed"
+    },
+    "routes": {
+      "created": "Route created",
+      "updated": "Route updated",
+      "deleted": "Route deleted",
+      "reordered": "Routes reordered"
+    },
+    "reports": {
+      "created": "Report created",
+      "updated": "Report updated",
+      "deleted": "Report deleted",
+      "executionStarted": "Report execution started"
+    },
+    "queueMembers": {
+      "added": "Member added to queue",
+      "removed": "Member removed from queue",
+      "updated": "Member updated",
+      "paused": "Member paused",
+      "resumed": "Member resumed"
+    },
+    "callerIdPools": {
+      "created": "Caller ID pool created",
+      "updated": "Caller ID pool updated",
+      "deleted": "Caller ID pool deleted",
+      "entryAdded": "Caller ID entry added",
+      "entryRemoved": "Caller ID entry removed"
+    },
+    "endpointProfiles": {
+      "created": "Profile created",
+      "updated": "Profile updated",
+      "deleted": "Profile deleted",
+      "defaultsSeeded": "Default profiles seeded"
     }
   }
 }

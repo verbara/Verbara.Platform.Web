@@ -224,6 +224,45 @@
     },
     "channels": {
       "updated": "Canal atualizado"
+    },
+    "skills": {
+      "created": "Habilidade criada",
+      "updated": "Habilidade atualizada",
+      "deleted": "Habilidade excluída",
+      "assigned": "Habilidade atribuída",
+      "removed": "Habilidade removida"
+    },
+    "routes": {
+      "created": "Rota criada",
+      "updated": "Rota atualizada",
+      "deleted": "Rota excluída",
+      "reordered": "Rotas reordenadas"
+    },
+    "reports": {
+      "created": "Relatório criado",
+      "updated": "Relatório atualizado",
+      "deleted": "Relatório excluído",
+      "executionStarted": "Execução do relatório iniciada"
+    },
+    "queueMembers": {
+      "added": "Membro adicionado à fila",
+      "removed": "Membro removido da fila",
+      "updated": "Membro atualizado",
+      "paused": "Membro pausado",
+      "resumed": "Membro retomado"
+    },
+    "callerIdPools": {
+      "created": "Pool de Caller ID criado",
+      "updated": "Pool de Caller ID atualizado",
+      "deleted": "Pool de Caller ID excluído",
+      "entryAdded": "Entrada de Caller ID adicionada",
+      "entryRemoved": "Entrada de Caller ID removida"
+    },
+    "endpointProfiles": {
+      "created": "Perfil criado",
+      "updated": "Perfil atualizado",
+      "deleted": "Perfil excluído",
+      "defaultsSeeded": "Perfis padrão semeados"
     }
   }
 }

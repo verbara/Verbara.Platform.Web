@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface EndpointProfile {
@@ -59,12 +60,13 @@ export function useEndpointProfile(id: number) {
 
 export function useCreateEndpointProfile() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: CreateEndpointProfilePayload) =>
       customFetch<EndpointProfile>({ url: '/api/v1/admin/realtime/profiles', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['endpoint-profiles'] });
-      toast.success('Profile created');
+      toast.success(t('toasts.endpointProfiles.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -72,13 +74,14 @@ export function useCreateEndpointProfile() {
 
 export function useUpdateEndpointProfile() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: number } & UpdateEndpointProfilePayload) =>
       customFetch<EndpointProfile>({ url: `/api/v1/admin/realtime/profiles/${id}`, method: 'PUT', data }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['endpoint-profiles'] });
       qc.invalidateQueries({ queryKey: ['endpoint-profile', variables.id] });
-      toast.success('Profile updated');
+      toast.success(t('toasts.endpointProfiles.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -86,12 +89,13 @@ export function useUpdateEndpointProfile() {
 
 export function useDeleteEndpointProfile() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/realtime/profiles/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['endpoint-profiles'] });
-      toast.success('Profile deleted');
+      toast.success(t('toasts.endpointProfiles.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -99,12 +103,13 @@ export function useDeleteEndpointProfile() {
 
 export function useSeedDefaults() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: () =>
       customFetch<void>({ url: '/api/v1/admin/realtime/profiles/seed-defaults', method: 'POST' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['endpoint-profiles'] });
-      toast.success('Default profiles seeded');
+      toast.success(t('toasts.endpointProfiles.defaultsSeeded'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

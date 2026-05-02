@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface OutboundRouteSummary {
@@ -31,12 +32,13 @@ export function useRoute(id: number) {
 
 export function useCreateRoute() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<OutboundRouteSummary, 'id'>>) =>
       customFetch<OutboundRouteSummary>({ url: '/api/v1/admin/routes', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['routes'] });
-      toast.success('Route created');
+      toast.success(t('toasts.routes.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -44,6 +46,7 @@ export function useCreateRoute() {
 
 export function useUpdateRoute() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: number } & Partial<Omit<OutboundRouteSummary, 'id'>>) =>
       customFetch<OutboundRouteSummary>({
@@ -54,7 +57,7 @@ export function useUpdateRoute() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['routes'] });
       qc.invalidateQueries({ queryKey: ['route', variables.id] });
-      toast.success('Route updated');
+      toast.success(t('toasts.routes.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -62,12 +65,13 @@ export function useUpdateRoute() {
 
 export function useDeleteRoute() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/routes/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['routes'] });
-      toast.success('Route deleted');
+      toast.success(t('toasts.routes.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -75,12 +79,13 @@ export function useDeleteRoute() {
 
 export function useReorderRoutes() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (orderedIds: number[]) =>
       customFetch<void>({ url: '/api/v1/admin/routes/reorder', method: 'POST', data: orderedIds }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['routes'] });
-      toast.success('Routes reordered');
+      toast.success(t('toasts.routes.reordered'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

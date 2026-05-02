@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface Skill {
@@ -24,12 +25,13 @@ export function useSkills() {
 
 export function useCreateSkill() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Skill) =>
       customFetch<Skill>({ url: '/api/v1/admin/skills', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['skills'] });
-      toast.success('Skill created');
+      toast.success(t('toasts.skills.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -37,6 +39,7 @@ export function useCreateSkill() {
 
 export function useUpdateSkill() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ name, ...data }: Skill) =>
       customFetch<Skill>({
@@ -46,7 +49,7 @@ export function useUpdateSkill() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['skills'] });
-      toast.success('Skill updated');
+      toast.success(t('toasts.skills.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -54,12 +57,13 @@ export function useUpdateSkill() {
 
 export function useDeleteSkill() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (name: string) =>
       customFetch<void>({ url: `/api/v1/admin/skills/${name}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['skills'] });
-      toast.success('Skill deleted');
+      toast.success(t('toasts.skills.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -79,6 +83,7 @@ export function useAgentSkills(agentId: string | undefined) {
 
 export function useAssignSkill() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       agentId,
@@ -94,7 +99,7 @@ export function useAssignSkill() {
       qc.invalidateQueries({ queryKey: ['agent-skills', variables.agentId] });
       qc.invalidateQueries({ queryKey: ['agents'] });
       qc.invalidateQueries({ queryKey: ['skill-agents'] });
-      toast.success('Skill assigned');
+      toast.success(t('toasts.skills.assigned'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -102,6 +107,7 @@ export function useAssignSkill() {
 
 export function useRemoveAgentSkill() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       agentId,
@@ -118,7 +124,7 @@ export function useRemoveAgentSkill() {
       qc.invalidateQueries({ queryKey: ['agent-skills', variables.agentId] });
       qc.invalidateQueries({ queryKey: ['agents'] });
       qc.invalidateQueries({ queryKey: ['skill-agents'] });
-      toast.success('Skill removed');
+      toast.success(t('toasts.skills.removed'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

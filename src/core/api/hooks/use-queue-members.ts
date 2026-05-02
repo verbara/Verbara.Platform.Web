@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface QueueMember {
@@ -35,6 +36,7 @@ export function useQueueMembers(queueId: string | undefined) {
 
 export function useAddQueueMember() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ queueId, agentId, penalty }: { queueId: string; agentId: string; penalty?: number }) =>
       customFetch<QueueMember>({
@@ -46,7 +48,7 @@ export function useAddQueueMember() {
       qc.invalidateQueries({ queryKey: ['queue-members', variables.queueId] });
       qc.invalidateQueries({ queryKey: ['queues'] });
       qc.invalidateQueries({ queryKey: ['agents'] });
-      toast.success('Member added to queue');
+      toast.success(t('toasts.queueMembers.added'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -54,6 +56,7 @@ export function useAddQueueMember() {
 
 export function useRemoveQueueMember() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ queueId, agentId }: { queueId: string; agentId: string }) =>
       customFetch<void>({
@@ -64,7 +67,7 @@ export function useRemoveQueueMember() {
       qc.invalidateQueries({ queryKey: ['queue-members', variables.queueId] });
       qc.invalidateQueries({ queryKey: ['queues'] });
       qc.invalidateQueries({ queryKey: ['agents'] });
-      toast.success('Member removed from queue');
+      toast.success(t('toasts.queueMembers.removed'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -72,6 +75,7 @@ export function useRemoveQueueMember() {
 
 export function useUpdateQueueMemberPenalty() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       queueId,
@@ -91,7 +95,7 @@ export function useUpdateQueueMemberPenalty() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['queue-members', variables.queueId] });
-      toast.success('Member updated');
+      toast.success(t('toasts.queueMembers.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -99,6 +103,7 @@ export function useUpdateQueueMemberPenalty() {
 
 export function useQueueMemberPause() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ queueId, agentId, reason }: { queueId: string; agentId: string; reason?: string }) =>
       customFetch<unknown>({
@@ -108,7 +113,7 @@ export function useQueueMemberPause() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['queue-members', variables.queueId] });
-      toast.success('Member paused');
+      toast.success(t('toasts.queueMembers.paused'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -116,6 +121,7 @@ export function useQueueMemberPause() {
 
 export function useQueueMemberResume() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ queueId, agentId }: { queueId: string; agentId: string }) =>
       customFetch<unknown>({
@@ -124,7 +130,7 @@ export function useQueueMemberResume() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['queue-members', variables.queueId] });
-      toast.success('Member resumed');
+      toast.success(t('toasts.queueMembers.resumed'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
