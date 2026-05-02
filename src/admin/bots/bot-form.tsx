@@ -27,7 +27,7 @@ import { useFlows } from '@/core/api/hooks/use-flows';
 import { useQueues } from '@/core/api/hooks/use-queues';
 
 const botSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'admin:bots.validation.nameRequired'),
   defaultFlowId: z.string().optional(),
   fallbackQueueId: z.string().optional(),
   confidenceThreshold: z.coerce.number().min(0).max(1),
@@ -135,7 +135,7 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
               {...register('name')}
             />
             {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
             )}
           </div>
 

@@ -685,7 +685,10 @@
     "save": "Salvar alterações",
     "createDescription": "Configurar um novo bot conversacional.",
     "editDescription": "Atualizar configuração do bot.",
-    "entity_type": "bot"
+    "entity_type": "bot",
+    "validation": {
+      "nameRequired": "Nome é obrigatório"
+    }
   },
   "agentAssist": {
     "title": "Assistente de Agente",
