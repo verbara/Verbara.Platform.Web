@@ -37,7 +37,7 @@ import { useQueues } from '@/core/api/hooks/use-queues';
 // feature work that must include backend persistence (tracked in roadmap).
 
 const queueSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'admin:queues.validation.nameRequired'),
   isActive: z.boolean(),
   maxWaiting: z.string(),
   answerWithinSeconds: z.string(),
@@ -167,7 +167,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                   {...register('name')}
                 />
                 {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name.message}</p>
+                  <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
                 )}
               </div>
 

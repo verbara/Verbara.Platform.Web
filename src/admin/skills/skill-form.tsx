@@ -17,7 +17,7 @@ import {
 import type { Skill } from '@/core/api/hooks/use-skills';
 
 const skillSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'admin:skills.validation.nameRequired'),
   category: z.string(),
   description: z.string(),
 });
@@ -93,7 +93,7 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
               {...register('name')}
             />
             {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
             )}
             {mode === 'edit' && (
               <p className="text-xs text-muted-foreground">

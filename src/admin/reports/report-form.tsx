@@ -32,9 +32,9 @@ import {
 } from '@/core/api/hooks/use-reports';
 
 const reportSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'admin:reports.validation.nameRequired'),
   type: z.enum(['agent_performance', 'queue_analytics', 'conversation_summary'] as const),
-  schedule: z.string().min(1, 'Schedule is required'),
+  schedule: z.string().min(1, 'admin:reports.validation.scheduleRequired'),
   cronExpression: z.string().optional(),
   filters: z.string().optional(),
   recipients: z.string().optional(),
@@ -149,7 +149,7 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
               {...register('name')}
             />
             {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
+              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
             )}
           </div>
 

@@ -165,7 +165,10 @@
     "save": "Save changes",
     "createDescription": "Add a new team.",
     "editDescription": "Update team details.",
-    "deleteTitle": "Delete team"
+    "deleteTitle": "Delete team",
+    "validation": {
+      "nameRequired": "Team name is required"
+    }
   },
   "queues": {
     "title": "Queues",
@@ -205,7 +208,10 @@
     "save": "Save changes",
     "searchPlaceholder": "Search queues...",
     "createDescription": "Add a new queue.",
-    "editDescription": "Update queue configuration."
+    "editDescription": "Update queue configuration.",
+    "validation": {
+      "nameRequired": "Name is required"
+    }
   },
   "queue-members": {
     "add": "Add agent",
@@ -807,6 +813,11 @@
         "manage": "Manage cluster"
       },
       "na": "N/A"
+    },
+    "validation": {
+      "platformNameRequired": "Platform name is required",
+      "timezoneRequired": "Timezone is required",
+      "languageRequired": "Language is required"
     }
   },
   "license": {
@@ -864,7 +875,10 @@
     "selectAgent": "Select an agent",
     "assignedAgents": "Assigned Agents",
     "noAgents": "No agents assigned to this skill yet.",
-    "proficiency": "Proficiency"
+    "proficiency": "Proficiency",
+    "validation": {
+      "nameRequired": "Name is required"
+    }
   },
   "api": {
     "userCreated": "User created",
@@ -950,7 +964,11 @@
     "empty": "No scheduled reports yet — Add your first report",
     "createDescription": "Configure a new scheduled report.",
     "editDescription": "Update scheduled report settings.",
-    "entity_type": "Report"
+    "entity_type": "Report",
+    "validation": {
+      "nameRequired": "Name is required",
+      "scheduleRequired": "Schedule is required"
+    }
   },
   "security": {
     "title": "Security",
@@ -1603,6 +1621,11 @@
         "submit": "Update"
       },
       "entity_type": "tenant"
+    },
+    "validation": {
+      "tenantIdRequired": "Tenant ID is required",
+      "tenantIdFormat": "Use lowercase letters, numbers, hyphens only",
+      "nameRequired": "Name is required"
     }
   },
   "shared": {
@@ -1843,7 +1866,13 @@
       "submit": "Start Drain"
     },
     "remove_entity": "node",
-    "force_drain_entity": "force drain on node"
+    "force_drain_entity": "force drain on node",
+    "validation": {
+      "nodeIdRequired": "Node ID is required",
+      "hostnameRequired": "Hostname is required",
+      "usernameRequired": "Username is required",
+      "passwordRequired": "Password is required"
+    }
   },
   "realtime": {
     "title": "Endpoint Profiles",

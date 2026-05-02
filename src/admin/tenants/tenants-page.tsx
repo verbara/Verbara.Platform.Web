@@ -55,8 +55,8 @@ const columnHelper = createColumnHelper<Tenant>();
 // ─── Form schema ──────────────────────────────────────────────────────────────
 
 const createSchema = z.object({
-  tenantId: z.string().min(1, 'Tenant ID is required').regex(/^[a-z0-9-]+$/, 'Use lowercase letters, numbers, hyphens only'),
-  name: z.string().min(1, 'Name is required'),
+  tenantId: z.string().min(1, 'admin:tenants.validation.tenantIdRequired').regex(/^[a-z0-9-]+$/, 'admin:tenants.validation.tenantIdFormat'),
+  name: z.string().min(1, 'admin:tenants.validation.nameRequired'),
   maxConcurrentChannels: z.coerce.number().int().min(1).optional(),
   maxActiveCampaigns: z.coerce.number().int().min(1).optional(),
 });
@@ -322,7 +322,7 @@ export default function TenantsPage() {
                 {...register('tenantId')}
               />
               {errors.tenantId && (
-                <p className="text-xs text-destructive">{errors.tenantId.message}</p>
+                <p className="text-xs text-destructive">{t(errors.tenantId.message ?? '')}</p>
               )}
             </div>
 
@@ -336,7 +336,7 @@ export default function TenantsPage() {
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
+                <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
               )}
             </div>
 

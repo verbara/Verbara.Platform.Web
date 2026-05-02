@@ -25,7 +25,7 @@ import { useTeams, useCreateTeam, useUpdateTeam, useDeleteTeam } from '@/core/ap
 import type { Team } from '@/core/api/hooks/use-teams';
 
 const teamSchema = z.object({
-  name: z.string().min(2, 'Team name is required'),
+  name: z.string().min(2, 'admin:teams.validation.nameRequired'),
 });
 
 type TeamFormValues = z.infer<typeof teamSchema>;
@@ -198,7 +198,7 @@ export default function TeamsPage() {
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
+                <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
               )}
             </div>
             <DialogFooter>

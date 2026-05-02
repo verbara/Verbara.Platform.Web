@@ -46,9 +46,9 @@ const LANGUAGES = [
 /* ---------- Settings form schema ---------- */
 
 const settingsSchema = z.object({
-  platformName: z.string().min(1, 'Platform name is required'),
-  defaultTimezone: z.string().min(1, 'Timezone is required'),
-  defaultLanguage: z.string().min(1, 'Language is required'),
+  platformName: z.string().min(1, 'admin:system.validation.platformNameRequired'),
+  defaultTimezone: z.string().min(1, 'admin:system.validation.timezoneRequired'),
+  defaultLanguage: z.string().min(1, 'admin:system.validation.languageRequired'),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -124,7 +124,7 @@ export default function SystemPage() {
               {...register('platformName')}
             />
             {errors.platformName && (
-              <p className="text-xs text-destructive">{errors.platformName.message}</p>
+              <p className="text-xs text-destructive">{t(errors.platformName.message ?? '')}</p>
             )}
           </div>
 

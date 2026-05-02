@@ -181,7 +181,10 @@
     "save": "Guardar cambios",
     "createDescription": "Agregar un nuevo equipo.",
     "editDescription": "Actualizar datos del equipo.",
-    "deleteTitle": "Eliminar equipo"
+    "deleteTitle": "Eliminar equipo",
+    "validation": {
+      "nameRequired": "El nombre del equipo es obligatorio"
+    }
   },
   "queues": {
     "title": "Colas",
@@ -221,7 +224,10 @@
     "save": "Guardar cambios",
     "searchPlaceholder": "Buscar colas...",
     "createDescription": "Agregar una nueva cola.",
-    "editDescription": "Actualizar configuración de cola."
+    "editDescription": "Actualizar configuración de cola.",
+    "validation": {
+      "nameRequired": "El nombre es obligatorio"
+    }
   },
   "queue-members": {
     "add": "Agregar agente",
@@ -823,6 +829,11 @@
         "manage": "Gestionar cluster"
       },
       "na": "N/D"
+    },
+    "validation": {
+      "platformNameRequired": "El nombre de la plataforma es obligatorio",
+      "timezoneRequired": "La zona horaria es obligatoria",
+      "languageRequired": "El idioma es obligatorio"
     }
   },
   "license": {
@@ -880,7 +891,10 @@
     "selectAgent": "Seleccionar un agente",
     "assignedAgents": "Agentes Asignados",
     "noAgents": "Ningún agente asignado a esta habilidad todavía.",
-    "proficiency": "Competencia"
+    "proficiency": "Competencia",
+    "validation": {
+      "nameRequired": "El nombre es obligatorio"
+    }
   },
   "api": {
     "userCreated": "Usuario creado",
@@ -966,7 +980,11 @@
     "empty": "Sin informes programados — Crea tu primer informe",
     "createDescription": "Configura un nuevo informe programado.",
     "editDescription": "Actualiza la configuración del informe programado.",
-    "entity_type": "informe"
+    "entity_type": "informe",
+    "validation": {
+      "nameRequired": "El nombre es obligatorio",
+      "scheduleRequired": "La programación es obligatoria"
+    }
   },
   "security": {
     "title": "Seguridad",
@@ -1618,6 +1636,11 @@
         "submit": "Actualizar"
       },
       "entity_type": "tenant"
+    },
+    "validation": {
+      "tenantIdRequired": "El ID del inquilino es obligatorio",
+      "tenantIdFormat": "Use solo letras minúsculas, números y guiones",
+      "nameRequired": "El nombre es obligatorio"
     }
   },
   "shared": {
@@ -1858,7 +1881,13 @@
       "submit": "Iniciar drenaje"
     },
     "remove_entity": "nodo",
-    "force_drain_entity": "drenaje forzado en nodo"
+    "force_drain_entity": "drenaje forzado en nodo",
+    "validation": {
+      "nodeIdRequired": "El ID del nodo es obligatorio",
+      "hostnameRequired": "El nombre de host es obligatorio",
+      "usernameRequired": "El usuario es obligatorio",
+      "passwordRequired": "La contraseña es obligatoria"
+    }
   },
   "realtime": {
     "title": "Perfiles de Endpoint",

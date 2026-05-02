@@ -77,11 +77,11 @@ function NodeStateBadge({ state }: Readonly<{ state: string }>) {
 // ── Schemas ──
 
 const createNodeSchema = z.object({
-  nodeId: z.string().min(1, 'Node ID is required'),
-  amiHostname: z.string().min(1, 'Hostname is required'),
+  nodeId: z.string().min(1, 'admin:cluster.validation.nodeIdRequired'),
+  amiHostname: z.string().min(1, 'admin:cluster.validation.hostnameRequired'),
   amiPort: z.coerce.number().int().min(1).max(65535),
-  amiUsername: z.string().min(1, 'Username is required'),
-  amiPassword: z.string().min(1, 'Password is required'),
+  amiUsername: z.string().min(1, 'admin:cluster.validation.usernameRequired'),
+  amiPassword: z.string().min(1, 'admin:cluster.validation.passwordRequired'),
   weight: z.coerce.number().int().min(0).optional(),
   priorityTier: z.coerce.number().int().min(0).optional(),
   maxCapacity: z.coerce.number().int().min(0).optional(),
@@ -166,12 +166,12 @@ function AddNodeSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
           <div className="space-y-1.5">
             <Label htmlFor="cn-nodeId">{t('cluster.add_sheet.node_id')}</Label>
             <Input id="cn-nodeId" data-testid="cluster-node-id-input" placeholder={t('cluster.add_sheet.node_id_placeholder')} {...register('nodeId')} />
-            {errors.nodeId && <p className="text-xs text-destructive">{errors.nodeId.message}</p>}
+            {errors.nodeId && <p className="text-xs text-destructive">{t(errors.nodeId.message ?? '')}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cn-hostname">{t('cluster.add_sheet.ami_hostname')}</Label>
             <Input id="cn-hostname" data-testid="cluster-ami-hostname-input" placeholder={t('cluster.add_sheet.ami_hostname_placeholder')} {...register('amiHostname')} />
-            {errors.amiHostname && <p className="text-xs text-destructive">{errors.amiHostname.message}</p>}
+            {errors.amiHostname && <p className="text-xs text-destructive">{t(errors.amiHostname.message ?? '')}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -187,12 +187,12 @@ function AddNodeSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
           <div className="space-y-1.5">
             <Label htmlFor="cn-username">{t('cluster.add_sheet.ami_username')}</Label>
             <Input id="cn-username" data-testid="cluster-ami-username-input" {...register('amiUsername')} />
-            {errors.amiUsername && <p className="text-xs text-destructive">{errors.amiUsername.message}</p>}
+            {errors.amiUsername && <p className="text-xs text-destructive">{t(errors.amiUsername.message ?? '')}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cn-password">{t('cluster.add_sheet.ami_password')}</Label>
             <Input id="cn-password" type="password" data-testid="cluster-ami-password-input" {...register('amiPassword')} />
-            {errors.amiPassword && <p className="text-xs text-destructive">{errors.amiPassword.message}</p>}
+            {errors.amiPassword && <p className="text-xs text-destructive">{t(errors.amiPassword.message ?? '')}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
