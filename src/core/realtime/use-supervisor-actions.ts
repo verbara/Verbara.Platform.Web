@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { invokeHub } from './platform-hub';
 
@@ -12,16 +13,18 @@ export type SupervisionMode = 'Listen' | 'Whisper' | 'Barge';
  * per-action error handlers.
  */
 export function useSupervisorActions(conversationId: string | undefined) {
+  const { t } = useTranslation('common');
+
   const startSupervision = useCallback(
     async (mode: SupervisionMode) => {
       if (!conversationId) return;
       try {
         await invokeHub('StartSupervisionAsync', conversationId, mode);
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to start supervision');
+        toast.error(err instanceof Error ? err.message : t('toasts.supervisor.startSupervisionFailed'));
       }
     },
-    [conversationId],
+    [conversationId, t],
   );
 
   const whisper = useCallback(
@@ -31,12 +34,12 @@ export function useSupervisorActions(conversationId: string | undefined) {
       if (!payload) return;
       try {
         await invokeHub('WhisperToAgentAsync', conversationId, payload);
-        toast.success('Whisper sent');
+        toast.success(t('toasts.supervisor.whisperSent'));
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Whisper failed');
+        toast.error(err instanceof Error ? err.message : t('toasts.supervisor.whisperFailed'));
       }
     },
-    [conversationId],
+    [conversationId, t],
   );
 
   const stopSupervision = useCallback(async () => {
@@ -44,9 +47,9 @@ export function useSupervisorActions(conversationId: string | undefined) {
     try {
       await invokeHub('StopSupervisingAsync', conversationId);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to stop supervision');
+      toast.error(err instanceof Error ? err.message : t('toasts.supervisor.stopSupervisionFailed'));
     }
-  }, [conversationId]);
+  }, [conversationId, t]);
 
   return { startSupervision, whisper, stopSupervision };
 }

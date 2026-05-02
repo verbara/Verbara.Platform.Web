@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface Conversation {
@@ -113,6 +114,7 @@ export function useSendMessage() {
 
 export function useAcceptConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -121,7 +123,7 @@ export function useAcceptConversation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success('Conversation accepted');
+      toast.success(t('toasts.conversations.accepted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -129,6 +131,7 @@ export function useAcceptConversation() {
 
 export function useRejectConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -137,7 +140,7 @@ export function useRejectConversation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success('Conversation rejected');
+      toast.success(t('toasts.conversations.rejected'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -145,6 +148,7 @@ export function useRejectConversation() {
 
 export function useTransferConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -161,7 +165,7 @@ export function useTransferConversation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success('Conversation transferred');
+      toast.success(t('toasts.conversations.transferred'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -169,6 +173,7 @@ export function useTransferConversation() {
 
 export function useCloseConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -177,7 +182,7 @@ export function useCloseConversation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success('Conversation closed');
+      toast.success(t('toasts.conversations.closed'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -185,6 +190,7 @@ export function useCloseConversation() {
 
 export function useWrapUp() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -204,7 +210,7 @@ export function useWrapUp() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success('Wrap-up completed');
+      toast.success(t('toasts.conversations.wrapUpCompleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -212,6 +218,7 @@ export function useWrapUp() {
 
 export function useHoldConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -221,7 +228,7 @@ export function useHoldConversation() {
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       qc.invalidateQueries({ queryKey: ['conversations', id] });
-      toast.success('Conversation on hold');
+      toast.success(t('toasts.conversations.onHold'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -229,6 +236,7 @@ export function useHoldConversation() {
 
 export function useUnholdConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -238,7 +246,7 @@ export function useUnholdConversation() {
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       qc.invalidateQueries({ queryKey: ['conversations', id] });
-      toast.success('Conversation resumed');
+      toast.success(t('toasts.conversations.resumed'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -246,6 +254,7 @@ export function useUnholdConversation() {
 
 export function useCreateConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { contactId: string; channel: string; initialMessage?: string }) =>
       customFetch<Conversation>({
@@ -255,7 +264,7 @@ export function useCreateConversation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success('Conversation created');
+      toast.success(t('toasts.conversations.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

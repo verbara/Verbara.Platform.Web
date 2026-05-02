@@ -329,6 +329,39 @@
     },
     "audit": {
       "exportDownloaded": "Exportação de auditoria baixada"
+    },
+    "conversations": {
+      "accepted": "Conversa aceita",
+      "rejected": "Conversa rejeitada",
+      "transferred": "Conversa transferida",
+      "closed": "Conversa encerrada",
+      "wrapUpCompleted": "Wrap-up concluído",
+      "onHold": "Conversa em espera",
+      "resumed": "Conversa retomada",
+      "created": "Conversa criada",
+      "takenOver": "Conversa assumida"
+    },
+    "cannedResponses": {
+      "created": "Resposta predefinida criada",
+      "updated": "Resposta predefinida atualizada",
+      "deleted": "Resposta predefinida excluída"
+    },
+    "cases": {
+      "created": "Caso criado",
+      "updated": "Caso atualizado",
+      "conversationLinked": "Conversa vinculada ao caso"
+    },
+    "contacts": {
+      "created": "Contato criado",
+      "updated": "Contato atualizado",
+      "deleted": "Contato excluído"
+    },
+    "supervisor": {
+      "whisperSent": "Sussurro enviado",
+      "coachingNoteSent": "Nota de coaching enviada",
+      "startSupervisionFailed": "Falha ao iniciar supervisão",
+      "whisperFailed": "Falha no sussurro",
+      "stopSupervisionFailed": "Falha ao parar supervisão"
     }
   }
 }

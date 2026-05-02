@@ -329,6 +329,39 @@
     },
     "audit": {
       "exportDownloaded": "Audit export downloaded"
+    },
+    "conversations": {
+      "accepted": "Conversation accepted",
+      "rejected": "Conversation rejected",
+      "transferred": "Conversation transferred",
+      "closed": "Conversation closed",
+      "wrapUpCompleted": "Wrap-up completed",
+      "onHold": "Conversation on hold",
+      "resumed": "Conversation resumed",
+      "created": "Conversation created",
+      "takenOver": "Conversation taken over"
+    },
+    "cannedResponses": {
+      "created": "Canned response created",
+      "updated": "Canned response updated",
+      "deleted": "Canned response deleted"
+    },
+    "cases": {
+      "created": "Case created",
+      "updated": "Case updated",
+      "conversationLinked": "Conversation linked to case"
+    },
+    "contacts": {
+      "created": "Contact created",
+      "updated": "Contact updated",
+      "deleted": "Contact deleted"
+    },
+    "supervisor": {
+      "whisperSent": "Whisper sent",
+      "coachingNoteSent": "Coaching note sent",
+      "startSupervisionFailed": "Failed to start supervision",
+      "whisperFailed": "Whisper failed",
+      "stopSupervisionFailed": "Failed to stop supervision"
     }
   }
 }

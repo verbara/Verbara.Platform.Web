@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface CannedResponse {
@@ -55,6 +56,7 @@ export function useSearchCannedResponses(query: string) {
 
 export function useCreateCannedResponse() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: CreateCannedResponseRequest) =>
       customFetch<CannedResponse>({
@@ -64,7 +66,7 @@ export function useCreateCannedResponse() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['canned-responses', 'list'] });
-      toast.success('Canned response created');
+      toast.success(t('toasts.cannedResponses.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -72,6 +74,7 @@ export function useCreateCannedResponse() {
 
 export function useUpdateCannedResponse() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: UpdateCannedResponseRequest & { id: string }) =>
       customFetch<CannedResponse>({
@@ -81,7 +84,7 @@ export function useUpdateCannedResponse() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['canned-responses', 'list'] });
-      toast.success('Canned response updated');
+      toast.success(t('toasts.cannedResponses.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -89,6 +92,7 @@ export function useUpdateCannedResponse() {
 
 export function useDeleteCannedResponse() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -97,7 +101,7 @@ export function useDeleteCannedResponse() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['canned-responses', 'list'] });
-      toast.success('Canned response deleted');
+      toast.success(t('toasts.cannedResponses.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

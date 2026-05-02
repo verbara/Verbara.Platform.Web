@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface ActiveSession {
@@ -22,6 +23,7 @@ export function useActiveSessions() {
 }
 
 export function useSendWhisper() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ sessionId, message }: { sessionId: string; message: string }) =>
       customFetch<void>({
@@ -29,7 +31,7 @@ export function useSendWhisper() {
         method: 'POST',
         data: { message },
       }),
-    onSuccess: () => toast.success('Whisper sent'),
+    onSuccess: () => toast.success(t('toasts.supervisor.whisperSent')),
     onError: (err: Error) => toast.error(err.message),
   });
 }
@@ -124,6 +126,7 @@ export function useSupervisorMessages(conversationId: string | undefined) {
 
 export function useTakeoverConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (conversationId: string) =>
       customFetch<void>({
@@ -132,7 +135,7 @@ export function useTakeoverConversation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['supervisor', 'conversations'] });
-      toast.success('Conversation taken over');
+      toast.success(t('toasts.conversations.takenOver'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -140,6 +143,7 @@ export function useTakeoverConversation() {
 
 export function useCloseDigitalConversation() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ conversationId, reason }: { conversationId: string; reason?: string }) =>
       customFetch<void>({
@@ -149,13 +153,14 @@ export function useCloseDigitalConversation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['supervisor', 'conversations'] });
-      toast.success('Conversation closed');
+      toast.success(t('toasts.conversations.closed'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
 }
 
 export function useSendCoachingNote() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
       customFetch<void>({
@@ -163,7 +168,7 @@ export function useSendCoachingNote() {
         method: 'POST',
         data: { text },
       }),
-    onSuccess: () => toast.success('Coaching note sent'),
+    onSuccess: () => toast.success(t('toasts.supervisor.coachingNoteSent')),
     onError: (err: Error) => toast.error(err.message),
   });
 }

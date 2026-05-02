@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export type CasePriority = 'Low' | 'Normal' | 'High' | 'Urgent';
@@ -79,6 +80,7 @@ export function useCase(id: string | undefined) {
 
 export function useCreateCase() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: CreateCaseRequest) =>
       customFetch<Case>({
@@ -88,7 +90,7 @@ export function useCreateCase() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['cases', 'list'] });
-      toast.success('Case created');
+      toast.success(t('toasts.cases.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -96,6 +98,7 @@ export function useCreateCase() {
 
 export function useUpdateCase() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: UpdateCaseRequest & { id: string }) =>
       customFetch<Case>({
@@ -106,7 +109,7 @@ export function useUpdateCase() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['cases', 'list'] });
       qc.invalidateQueries({ queryKey: ['cases', 'detail', variables.id] });
-      toast.success('Case updated');
+      toast.success(t('toasts.cases.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -114,6 +117,7 @@ export function useUpdateCase() {
 
 export function useLinkConversationToCase() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ caseId, conversationId }: { caseId: string; conversationId: string }) =>
       customFetch<Case>({
@@ -123,7 +127,7 @@ export function useLinkConversationToCase() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['cases', 'list'] });
       qc.invalidateQueries({ queryKey: ['cases', 'detail', variables.caseId] });
-      toast.success('Conversation linked to case');
+      toast.success(t('toasts.cases.conversationLinked'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
