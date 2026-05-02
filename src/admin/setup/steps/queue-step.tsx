@@ -20,7 +20,7 @@ export default function QueueStep() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="queueName">Queue Name</Label>
+        <Label htmlFor="queueName">{t('admin:setup.queueNameLabel')}</Label>
         <Input
           id="queueName"
           placeholder="e.g. Support, Sales"

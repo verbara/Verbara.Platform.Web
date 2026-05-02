@@ -26,7 +26,7 @@ export default function AgentStep() {
       {hasUsers ? (
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="agentUserId">User</Label>
+            <Label htmlFor="agentUserId">{t('admin:setup.agentUserLabel')}</Label>
             <select
               id="agentUserId"
               className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -49,7 +49,7 @@ export default function AgentStep() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="agentDisplayName">Display Name</Label>
+            <Label htmlFor="agentDisplayName">{t('admin:setup.agentDisplayNameLabel')}</Label>
             <Input
               id="agentDisplayName"
               placeholder="e.g. John Smith"
@@ -67,7 +67,7 @@ export default function AgentStep() {
           </p>
 
           <div className="space-y-2">
-            <Label htmlFor="agentEmail">Email</Label>
+            <Label htmlFor="agentEmail">{t('admin:setup.agentEmailLabel')}</Label>
             <Input
               id="agentEmail"
               type="email"
@@ -82,7 +82,7 @@ export default function AgentStep() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="agentDisplayName">Display Name</Label>
+            <Label htmlFor="agentDisplayName">{t('admin:setup.agentDisplayNameLabel')}</Label>
             <Input
               id="agentDisplayName"
               placeholder="e.g. John Smith"

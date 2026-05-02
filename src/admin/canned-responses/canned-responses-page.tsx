@@ -215,7 +215,7 @@ export default function CannedResponsesPage() {
           </SheetHeader>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4 px-4 pb-4">
             <div>
-              <Label htmlFor="shortcut">Shortcut</Label>
+              <Label htmlFor="shortcut">{t('admin:cannedResponses.shortcut')}</Label>
               <Input
                 id="shortcut"
                 data-testid="canned-shortcut-input"
@@ -226,7 +226,7 @@ export default function CannedResponsesPage() {
               />
             </div>
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">{t('admin:cannedResponses.titleColumn')}</Label>
               <Input
                 id="title"
                 data-testid="canned-title-input"
@@ -237,7 +237,7 @@ export default function CannedResponsesPage() {
               />
             </div>
             <div>
-              <Label htmlFor="body">Body</Label>
+              <Label htmlFor="body">{t('admin:cannedResponses.body')}</Label>
               <Textarea
                 id="body"
                 data-testid="canned-body-input"
@@ -249,7 +249,7 @@ export default function CannedResponsesPage() {
               />
             </div>
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{t('admin:cannedResponses.category')}</Label>
               <Input
                 id="category"
                 data-testid="canned-category-input"
@@ -259,7 +259,7 @@ export default function CannedResponsesPage() {
               />
             </div>
             <div>
-              <Label htmlFor="tags">Tags</Label>
+              <Label htmlFor="tags">{t('admin:cannedResponses.tags')}</Label>
               <Input
                 id="tags"
                 data-testid="canned-tags-input"

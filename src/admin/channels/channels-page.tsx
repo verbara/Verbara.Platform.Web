@@ -141,19 +141,19 @@ export default function ChannelsPage() {
       <Dialog open={detailChannel !== null} onOpenChange={(o) => { if (!o) setDetailChannel(null); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Channel: {channelDetail?.channel ?? detailChannel}</DialogTitle>
+            <DialogTitle>{t('admin:channels.detailTitle', { channel: channelDetail?.channel ?? detailChannel })}</DialogTitle>
           </DialogHeader>
           {channelDetail && (
             <div className="space-y-4 py-2">
               <div className="flex items-center justify-between">
-                <Label>Status</Label>
+                <Label>{t('admin:channels.statusLabel')}</Label>
                 <Badge variant={channelDetail.isActive ? 'default' : 'destructive'}>
-                  {channelDetail.isActive ? 'Active' : 'Inactive'}
+                  {channelDetail.isActive ? t('admin:channels.activeStatus') : t('admin:channels.inactiveStatus')}
                 </Badge>
               </div>
               {channelDetail.credentials && Object.keys(channelDetail.credentials).length > 0 && (
                 <div>
-                  <Label className="mb-2 block">Configuration</Label>
+                  <Label className="mb-2 block">{t('admin:channels.configuration')}</Label>
                   <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-sm">
                     {Object.entries(channelDetail.credentials).map(([k, v]) => (
                       <div key={k} className="flex justify-between">
@@ -167,9 +167,9 @@ export default function ChannelsPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDetailChannel(null)}>Close</Button>
+            <Button variant="outline" onClick={() => setDetailChannel(null)}>{t('common:actions.close')}</Button>
             <Button onClick={() => { setDetailChannel(null); handleConfigure(detailChannel!); }}>
-              Configure
+              {t('admin:channels.configure')}
             </Button>
           </DialogFooter>
         </DialogContent>

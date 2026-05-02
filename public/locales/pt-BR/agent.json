@@ -83,7 +83,19 @@
     "save_note": "Salvar nota",
     "delete_note": "Excluir nota",
     "contact_entity_type": "contato",
-    "knowledge": "Conhecimento"
+    "knowledge": "Conhecimento",
+    "contactEdit": {
+      "title": "Editar contato",
+      "firstName": "Nome",
+      "lastName": "Sobrenome",
+      "company": "Empresa",
+      "segment": "Segmento",
+      "preferredChannel": "Canal preferido",
+      "preferredLanguage": "Idioma preferido",
+      "timezone": "Fuso horário",
+      "update": "Atualizar",
+      "saving": "Salvando..."
+    }
   },
   "ai": {
     "suggestion": "Sugestão",

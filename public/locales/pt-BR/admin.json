@@ -254,7 +254,11 @@
     "test_failure": "Falha na conexão. Verifique suas credenciais.",
     "validation": {
       "fieldRequired": "{{field}} é obrigatório"
-    }
+    },
+    "statusLabel": "Status",
+    "detailTitle": "Canal: {{channel}}",
+    "activeStatus": "Ativo",
+    "inactiveStatus": "Inativo"
   },
   "flows": {
     "title": "Fluxos",
@@ -640,7 +644,11 @@
     "testWebchatNote": "Em produção, insira o widget de WebChat em seu site.",
     "wizardDescription": "Configure o essencial para começar.",
     "wizardTitle": "Assistente de configuração",
-    "testDescription": "Revise sua configuração e verifique se tudo funciona."
+    "testDescription": "Revise sua configuração e verifique se tudo funciona.",
+    "agentUserLabel": "Usuário",
+    "agentDisplayNameLabel": "Nome de exibição",
+    "agentEmailLabel": "E-mail",
+    "queueNameLabel": "Nome da fila"
   },
   "trunks": {
     "title": "Troncos",

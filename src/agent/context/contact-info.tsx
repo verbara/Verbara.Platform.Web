@@ -179,42 +179,42 @@ export function ContactInfo() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Contact</DialogTitle>
+            <DialogTitle>{t('agent:context.contactEdit.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="edit-firstName">First Name</Label>
+                <Label htmlFor="edit-firstName">{t('agent:context.contactEdit.firstName')}</Label>
                 <Input id="edit-firstName" value={editForm.firstName} onChange={(e) => setEditForm((f) => ({ ...f, firstName: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-lastName">Last Name</Label>
+                <Label htmlFor="edit-lastName">{t('agent:context.contactEdit.lastName')}</Label>
                 <Input id="edit-lastName" value={editForm.lastName} onChange={(e) => setEditForm((f) => ({ ...f, lastName: e.target.value }))} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-company">Company</Label>
+              <Label htmlFor="edit-company">{t('agent:context.contactEdit.company')}</Label>
               <Input id="edit-company" value={editForm.company} onChange={(e) => setEditForm((f) => ({ ...f, company: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-segment">Segment</Label>
+              <Label htmlFor="edit-segment">{t('agent:context.contactEdit.segment')}</Label>
               <Input id="edit-segment" value={editForm.segment} onChange={(e) => setEditForm((f) => ({ ...f, segment: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-prefChannel">Preferred Channel</Label>
+              <Label htmlFor="edit-prefChannel">{t('agent:context.contactEdit.preferredChannel')}</Label>
               <Input id="edit-prefChannel" value={editForm.preferredChannel} onChange={(e) => setEditForm((f) => ({ ...f, preferredChannel: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-prefLang">Preferred Language</Label>
+              <Label htmlFor="edit-prefLang">{t('agent:context.contactEdit.preferredLanguage')}</Label>
               <Input id="edit-prefLang" value={editForm.preferredLanguage} onChange={(e) => setEditForm((f) => ({ ...f, preferredLanguage: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-tz">Timezone</Label>
+              <Label htmlFor="edit-tz">{t('agent:context.contactEdit.timezone')}</Label>
               <Input id="edit-tz" value={editForm.timezone} onChange={(e) => setEditForm((f) => ({ ...f, timezone: e.target.value }))} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>{t('common:actions.cancel')}</Button>
             <Button
               disabled={updateContact.isPending}
               onClick={() => {
@@ -233,7 +233,7 @@ export function ContactInfo() {
                 });
               }}
             >
-              {updateContact.isPending ? 'Saving...' : 'Update'}
+              {updateContact.isPending ? t('agent:context.contactEdit.saving') : t('agent:context.contactEdit.update')}
             </Button>
           </DialogFooter>
         </DialogContent>
