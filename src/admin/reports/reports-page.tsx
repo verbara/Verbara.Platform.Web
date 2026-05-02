@@ -126,7 +126,7 @@ export default function ReportsPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0"
-              title="Run now"
+              title={t('admin:reports.runNow')}
               disabled={runReport.isPending}
               data-testid={`report-run-${info.row.original.id}`}
               onClick={(e) => { e.stopPropagation(); runReport.mutate(info.row.original.id); }}
@@ -137,7 +137,7 @@ export default function ReportsPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0"
-              title="Execution history"
+              title={t('admin:reports.executionHistory')}
               data-testid={`report-history-${info.row.original.id}`}
               onClick={(e) => { e.stopPropagation(); setHistoryReportId(info.row.original.id); }}
             >
@@ -234,7 +234,7 @@ export default function ReportsPage() {
       <Sheet open={!!historyReportId} onOpenChange={(open) => { if (!open) setHistoryReportId(undefined); }}>
         <SheetContent data-testid="report-history-sheet">
           <SheetHeader>
-            <SheetTitle>Execution History</SheetTitle>
+            <SheetTitle>{t('admin:reports.historyTitle')}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-3">
             {history.map((exec) => (
@@ -257,7 +257,7 @@ export default function ReportsPage() {
               </div>
             ))}
             {history.length === 0 && (
-              <p className="text-sm text-muted-foreground">No executions yet</p>
+              <p className="text-sm text-muted-foreground">{t('admin:reports.noExecutions')}</p>
             )}
           </div>
         </SheetContent>

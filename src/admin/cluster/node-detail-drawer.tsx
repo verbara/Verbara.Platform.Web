@@ -78,32 +78,32 @@ function OverviewTab({ node }: { node: ClusterNode }) {
       {/* Meta grid */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-md border bg-card p-4 text-sm">
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Node ID</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.node-id')}</p>
           <p className="font-mono text-sm">{node.nodeId}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">State</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.state')}</p>
           <StatusBadge variant="cluster-node" status={node.state} />
         </div>
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
-            Asterisk version
+            {t('admin:cluster-nodes.detail.asterisk-version')}
           </p>
           <p className="font-mono text-sm">{node.asteriskVersion ?? '—'}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Startup time</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.startup-time')}</p>
           <p className="text-sm">{formatIso(node.startupTime)}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">AMI endpoint</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.ami-endpoint')}</p>
           <p className="font-mono text-sm">
             {node.amiHostname ? `${node.amiHostname}:${node.amiPort ?? '—'}` : '—'}
           </p>
         </div>
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
-            Priority tier
+            {t('admin:cluster-nodes.detail.priority-tier')}
           </p>
           <p className="text-sm">{node.priorityTier}</p>
         </div>
@@ -112,12 +112,12 @@ function OverviewTab({ node }: { node: ClusterNode }) {
       <div className="grid grid-cols-2 gap-3">
         <StatCard
           icon={<Server className="h-4 w-4" />}
-          label="Max Capacity"
+          label={t('admin:cluster-nodes.detail.max-capacity')}
           value={node.maxCapacity}
         />
         <StatCard
           icon={<Activity className="h-4 w-4" />}
-          label="Weight"
+          label={t('admin:cluster-nodes.detail.weight')}
           value={node.weight}
         />
       </div>
@@ -194,24 +194,24 @@ function DrainTab({
 
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div className="rounded-md border bg-card p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Deadline</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.deadline')}</p>
           <p>{formatIso(activeDrain.deadline)}</p>
         </div>
         <div className="rounded-md border bg-card p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Started</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.started')}</p>
           <p>{formatIso(activeDrain.startedAt)}</p>
         </div>
         <div className="rounded-md border bg-card p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Completed</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.completed')}</p>
           <p>
             {activeDrain.naturallyCompleted}{' '}
             <Badge variant="secondary" className="ml-1 text-[10px]">
-              natural
+              {t('admin:cluster-nodes.detail.natural-badge')}
             </Badge>
           </p>
         </div>
         <div className="rounded-md border bg-card p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Force-disconnected</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.force-disconnected')}</p>
           <p>{activeDrain.forceDisconnected}</p>
         </div>
       </div>

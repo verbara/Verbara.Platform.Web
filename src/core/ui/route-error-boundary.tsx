@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import i18n from '@/core/i18n/i18n';
 import { Button } from '@/core/ui/button';
 
 interface Props {
@@ -28,9 +29,9 @@ export class RouteErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex h-full flex-col items-center justify-center gap-4 p-8" data-testid="route-error-boundary">
-          <h2 className="text-lg font-semibold">Something went wrong on this page</h2>
+          <h2 className="text-lg font-semibold">{i18n.t('common:errors.route_error_title')}</h2>
           <p className="text-sm text-muted-foreground">
-            {this.state.error?.message ?? 'An unexpected error occurred.'}
+            {this.state.error?.message ?? i18n.t('common:errors.route_error_fallback')}
           </p>
           <div className="flex gap-2">
             <Button
@@ -38,10 +39,10 @@ export class RouteErrorBoundary extends Component<Props, State> {
               data-testid="route-error-retry"
               onClick={() => this.setState({ hasError: false, error: null })}
             >
-              Try Again
+              {i18n.t('common:errors.try_again')}
             </Button>
             <Button variant="ghost" data-testid="route-error-home" onClick={() => (window.location.href = '/admin')}>
-              Go Home
+              {i18n.t('common:errors.go_home')}
             </Button>
           </div>
         </div>

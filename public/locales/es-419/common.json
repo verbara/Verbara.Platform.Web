@@ -163,7 +163,10 @@
   "errors": {
     "unauthorized_title": "403 — No autorizado",
     "unauthorized_description": "Tu rol no tiene acceso",
-    "go_home": "Ir al inicio"
+    "go_home": "Ir al inicio",
+    "route_error_title": "Algo salió mal en esta página",
+    "route_error_fallback": "Ocurrió un error inesperado.",
+    "try_again": "Reintentar"
   },
   "agent_layout": {
     "toggle_context": "Alternar panel de contexto (Ctrl+I)",

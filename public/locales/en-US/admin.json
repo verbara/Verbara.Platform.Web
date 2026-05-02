@@ -136,7 +136,9 @@
       "emailInvalid": "Must be a valid email",
       "displayNameMinLength": "Display name must be at least 2 characters"
     },
-    "namePlaceholder": "Jane Doe"
+    "namePlaceholder": "Jane Doe",
+    "delete_title": "Delete user",
+    "delete_confirm": "Are you sure you want to delete {{name}}? This action cannot be undone."
   },
   "agents": {
     "title": "Agents",
@@ -814,7 +816,8 @@
       "cancel": "Cancel",
       "engineEnabled": "Engine enabled",
       "whisperEnabled": "Whisper enabled"
-    }
+    },
+    "noOptionsAvailable": "No options available"
   },
   "system": {
     "title": "System",
@@ -1022,7 +1025,11 @@
     "validation": {
       "nameRequired": "Name is required",
       "scheduleRequired": "Schedule is required"
-    }
+    },
+    "runNow": "Run now",
+    "executionHistory": "Execution history",
+    "historyTitle": "Execution History",
+    "noExecutions": "No executions yet"
   },
   "security": {
     "title": "Security",
@@ -1097,7 +1104,20 @@
       "not-draining": "This node is not currently draining.",
       "active-sessions": "Active sessions",
       "grafana-dashboard": "Open in Grafana",
-      "force-confirm-word": "FORCE"
+      "force-confirm-word": "FORCE",
+      "node-id": "Node ID",
+      "state": "State",
+      "asterisk-version": "Asterisk version",
+      "startup-time": "Startup time",
+      "ami-endpoint": "AMI endpoint",
+      "priority-tier": "Priority tier",
+      "max-capacity": "Max Capacity",
+      "weight": "Weight",
+      "deadline": "Deadline",
+      "started": "Started",
+      "completed": "Completed",
+      "natural-badge": "natural",
+      "force-disconnected": "Force-disconnected"
     }
   },
   "webhooks": {

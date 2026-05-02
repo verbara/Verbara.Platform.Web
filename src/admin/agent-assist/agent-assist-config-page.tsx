@@ -79,6 +79,7 @@ function MultiSelect({
   onChange: (next: string[]) => void;
   placeholder: string;
 }) {
+  const { t } = useTranslation(['admin']);
   const toggle = (value: string) => {
     if (selected.includes(value)) {
       onChange(selected.filter((v) => v !== value));
@@ -116,7 +117,7 @@ function MultiSelect({
       </div>
       <div className="max-h-48 overflow-y-auto rounded-md border bg-background p-2 space-y-1">
         {options.length === 0 ? (
-          <p className="text-sm text-muted-foreground px-1 py-0.5">No options available</p>
+          <p className="text-sm text-muted-foreground px-1 py-0.5">{t('admin:agentAssist.noOptionsAvailable')}</p>
         ) : (
           options.map((opt) => (
             <label

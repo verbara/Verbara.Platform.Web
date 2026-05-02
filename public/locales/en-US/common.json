@@ -163,7 +163,10 @@
   "errors": {
     "unauthorized_title": "403 — Unauthorized",
     "unauthorized_description": "Your role doesn't have access",
-    "go_home": "Go Home"
+    "go_home": "Go Home",
+    "route_error_title": "Something went wrong on this page",
+    "route_error_fallback": "An unexpected error occurred.",
+    "try_again": "Try Again"
   },
   "agent_layout": {
     "toggle_context": "Toggle context panel (Ctrl+I)",

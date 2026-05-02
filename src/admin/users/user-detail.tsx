@@ -257,15 +257,10 @@ export default function UserDetailPage() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Delete user"
-        description={
-          <>
-            Are you sure you want to delete <strong>{user.displayName}</strong>? This action
-            cannot be undone.
-          </>
-        }
+        title={t('admin:users.delete_title')}
+        description={t('admin:users.delete_confirm', { name: user.displayName })}
         onConfirm={handleDelete}
-        confirmLabel="Delete"
+        confirmLabel={t('common:actions.delete')}
         variant="destructive"
       />
 

@@ -152,7 +152,9 @@
       "emailInvalid": "Debe ser un correo electrónico válido",
       "displayNameMinLength": "El nombre para mostrar debe tener al menos 2 caracteres"
     },
-    "namePlaceholder": "Jane Doe"
+    "namePlaceholder": "Jane Doe",
+    "delete_title": "Eliminar usuario",
+    "delete_confirm": "¿Está seguro de que desea eliminar a {{name}}? Esta acción no se puede deshacer."
   },
   "agents": {
     "title": "Agentes",
@@ -830,7 +832,8 @@
       "cancel": "Cancelar",
       "engineEnabled": "Motor habilitado",
       "whisperEnabled": "Whisper habilitado"
-    }
+    },
+    "noOptionsAvailable": "No hay opciones disponibles"
   },
   "system": {
     "title": "Sistema",
@@ -1038,7 +1041,11 @@
     "validation": {
       "nameRequired": "El nombre es obligatorio",
       "scheduleRequired": "La programación es obligatoria"
-    }
+    },
+    "runNow": "Ejecutar ahora",
+    "executionHistory": "Historial de ejecuciones",
+    "historyTitle": "Historial de ejecuciones",
+    "noExecutions": "Aún no hay ejecuciones"
   },
   "security": {
     "title": "Seguridad",
@@ -1113,7 +1120,20 @@
       "not-draining": "Este nodo no está drenando actualmente.",
       "active-sessions": "Sesiones activas",
       "grafana-dashboard": "Abrir en Grafana",
-      "force-confirm-word": "FORZAR"
+      "force-confirm-word": "FORZAR",
+      "node-id": "ID del nodo",
+      "state": "Estado",
+      "asterisk-version": "Versión de Asterisk",
+      "startup-time": "Hora de inicio",
+      "ami-endpoint": "Endpoint AMI",
+      "priority-tier": "Nivel de prioridad",
+      "max-capacity": "Capacidad máxima",
+      "weight": "Peso",
+      "deadline": "Fecha límite",
+      "started": "Iniciado",
+      "completed": "Completado",
+      "natural-badge": "natural",
+      "force-disconnected": "Desconectado forzosamente"
     }
   },
   "webhooks": {

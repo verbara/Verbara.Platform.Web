@@ -163,7 +163,10 @@
   "errors": {
     "unauthorized_title": "403 — Não autorizado",
     "unauthorized_description": "Sua função não tem acesso",
-    "go_home": "Ir para o início"
+    "go_home": "Ir para o início",
+    "route_error_title": "Algo deu errado nesta página",
+    "route_error_fallback": "Ocorreu um erro inesperado.",
+    "try_again": "Tentar novamente"
   },
   "agent_layout": {
     "toggle_context": "Alternar painel de contexto (Ctrl+I)",
