@@ -7,6 +7,7 @@
 // Full activation spec: memory/project_agent_assist_deferred.md
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface AgentAssistConfig {
@@ -36,6 +37,7 @@ export function useAgentAssistConfig() {
 
 export function useUpdateAgentAssistConfig() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<AgentAssistConfig>) =>
       customFetch<AgentAssistConfig>({
@@ -45,7 +47,7 @@ export function useUpdateAgentAssistConfig() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agent-assist', 'config'] });
-      toast.success('Agent Assist config updated');
+      toast.success(t('toasts.agentAssist.configUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -61,6 +63,7 @@ export function useKeywordRules() {
 
 export function useUpdateKeywordRules() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: KeywordRule[]) =>
       customFetch<KeywordRule[]>({
@@ -70,7 +73,7 @@ export function useUpdateKeywordRules() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agent-assist', 'keyword-rules'] });
-      toast.success('Keyword rules updated');
+      toast.success(t('toasts.agentAssist.keywordRulesUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -97,6 +100,7 @@ export function useComplianceRules() {
 
 export function useUpdateComplianceRules() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: ComplianceRule[]) =>
       customFetch<ComplianceRule[]>({
@@ -106,7 +110,7 @@ export function useUpdateComplianceRules() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agent-assist', 'compliance-rules'] });
-      toast.success('Compliance rules updated');
+      toast.success(t('toasts.agentAssist.complianceRulesUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

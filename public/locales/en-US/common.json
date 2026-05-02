@@ -362,6 +362,85 @@
       "startSupervisionFailed": "Failed to start supervision",
       "whisperFailed": "Whisper failed",
       "stopSupervisionFailed": "Failed to stop supervision"
+    },
+    "setup": {
+      "channelEnabled": "Channel enabled successfully",
+      "channelEnableFailed": "Failed to enable channel",
+      "setupComplete": "Setup complete!"
+    },
+    "gdpr": {
+      "dataExported": "Data exported successfully",
+      "contactDataPurged": "Contact data purged",
+      "userDataPurged": "User data purged",
+      "retentionPolicyUpdated": "Retention policy updated"
+    },
+    "billing": {
+      "rateCardCreated": "Rate card created",
+      "rateCardUpdated": "Rate card updated",
+      "rateCardDeleted": "Rate card deleted",
+      "invoiceGenerated": "Invoice generated",
+      "invoiceIssued": "Invoice issued",
+      "invoiceMarkedPaid": "Invoice marked as paid",
+      "quotaUpdated": "Quota updated"
+    },
+    "agentAssist": {
+      "featureUpdated": "Agent Assist feature updated",
+      "configUpdated": "Agent Assist config updated",
+      "keywordRulesUpdated": "Keyword rules updated",
+      "complianceRulesUpdated": "Compliance rules updated"
+    },
+    "tenantSettings": {
+      "saved": "Tenant settings saved"
+    },
+    "campaigns": {
+      "created": "Campaign created",
+      "updated": "Campaign updated",
+      "deleted": "Campaign deleted",
+      "started": "Campaign started",
+      "paused": "Campaign paused",
+      "resumed": "Campaign resumed",
+      "stopped": "Campaign stopped",
+      "contactListCreated": "Contact list created",
+      "contactsImported": "Contacts imported",
+      "dispositionCreated": "Disposition code created",
+      "dispositionUpdated": "Disposition code updated",
+      "dispositionDeleted": "Disposition code deleted",
+      "callbackScheduled": "Callback scheduled"
+    },
+    "tenants": {
+      "created": "Tenant created",
+      "updated": "Tenant updated",
+      "deleted": "Tenant deleted"
+    },
+    "sse": {
+      "connectionLost": "Real-time connection lost. Refresh the page to reconnect."
+    },
+    "dialerSettings": {
+      "updated": "Dialer settings updated"
+    },
+    "system": {
+      "settingsSaved": "System settings saved"
+    },
+    "onboarding": {
+      "templateApplied": "Template applied"
+    },
+    "partner": {
+      "customerCreated": "Customer created",
+      "customerUpdated": "Customer updated",
+      "customerActivated": "Customer activated",
+      "customerSettingsUpdated": "Customer settings updated",
+      "rateCardCreated": "Rate card created",
+      "rateCardUpdated": "Rate card updated",
+      "rateCardDeleted": "Rate card deleted",
+      "invoiceGenerated": "Invoice generated",
+      "settingsUpdated": "Partner settings updated"
+    },
+    "agents": {
+      "created": "Agent created",
+      "updated": "Agent updated",
+      "deleted": "Agent deleted",
+      "stateUpdated": "State updated",
+      "agentStateUpdated": "Agent state updated"
     }
   }
 }

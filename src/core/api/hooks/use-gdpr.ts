@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // --- Types ---
@@ -59,6 +60,7 @@ interface PagedResult<T> {
 // --- Export ---
 
 export function useGdprExport() {
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { contactId: string }) =>
       customFetch<GdprExportResult>({
@@ -66,7 +68,7 @@ export function useGdprExport() {
         method: 'POST',
         data,
       }),
-    onSuccess: () => toast.success('Data exported successfully'),
+    onSuccess: () => toast.success(t('toasts.gdpr.dataExported')),
     onError: (err: Error) => toast.error(err.message),
   });
 }
@@ -75,6 +77,7 @@ export function useGdprExport() {
 
 export function useGdprPurge() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { contactId: string; reason: string }) =>
       customFetch<PurgeResult>({
@@ -84,7 +87,7 @@ export function useGdprPurge() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['purge-log'] });
-      toast.success('Contact data purged');
+      toast.success(t('toasts.gdpr.contactDataPurged'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -140,6 +143,7 @@ export function usePurgePreview(userId: string | undefined) {
 
 export function useGdprPurgeUser() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { userId: string; reason: string }) =>
       customFetch<PurgeResult>({
@@ -149,7 +153,7 @@ export function useGdprPurgeUser() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['purge-log'] });
-      toast.success('User data purged');
+      toast.success(t('toasts.gdpr.userDataPurged'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -171,6 +175,7 @@ export function useRetentionPolicy(tenantId: string) {
 
 export function useUpdateRetentionPolicy(tenantId: string) {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: UpdateRetentionPolicyRequest) =>
       customFetch<RetentionPolicy>({
@@ -180,7 +185,7 @@ export function useUpdateRetentionPolicy(tenantId: string) {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['retention-policy', tenantId] });
-      toast.success('Retention policy updated');
+      toast.success(t('toasts.gdpr.retentionPolicyUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

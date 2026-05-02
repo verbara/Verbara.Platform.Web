@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface ChecklistItem {
@@ -59,6 +60,7 @@ export function useDismissChecklist() {
 
 export function useApplyTemplate() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (template: string) =>
       customFetch<void>({
@@ -68,7 +70,7 @@ export function useApplyTemplate() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['onboarding', 'status'] });
-      toast.success('Template applied');
+      toast.success(t('toasts.onboarding.templateApplied'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

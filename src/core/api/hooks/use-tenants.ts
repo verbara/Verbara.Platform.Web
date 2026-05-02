@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface Tenant {
@@ -56,12 +57,13 @@ export function useTenant(id: string) {
 
 export function useCreateTenant() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: CreateTenantInput) =>
       customFetch<Tenant>({ url: '/api/v1/management/tenants', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenants'] });
-      toast.success('Tenant created');
+      toast.success(t('toasts.tenants.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -69,13 +71,14 @@ export function useCreateTenant() {
 
 export function useUpdateTenant() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & UpdateTenantInput) =>
       customFetch<Tenant>({ url: `/api/v1/management/tenants/${id}`, method: 'PUT', data }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['tenants'] });
       qc.invalidateQueries({ queryKey: ['tenant', variables.id] });
-      toast.success('Tenant updated');
+      toast.success(t('toasts.tenants.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -83,12 +86,13 @@ export function useUpdateTenant() {
 
 export function useDeleteTenant() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/management/tenants/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenants'] });
-      toast.success('Tenant deleted');
+      toast.success(t('toasts.tenants.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // ─── Backend DTO mirrors ─────────────────────────────────────────────────────
@@ -141,6 +142,7 @@ export function useTenantSettings(tenantId: string) {
 
 export function useUpdateTenantSettings(tenantId: string) {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: UpdateTenantSettingsPayload) =>
       customFetch<TenantSettingsDto>({
@@ -151,7 +153,7 @@ export function useUpdateTenantSettings(tenantId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: tenantSettingsQueryKey(tenantId) });
       qc.invalidateQueries({ queryKey: ['tenant', tenantId] });
-      toast.success('Tenant settings saved');
+      toast.success(t('toasts.tenantSettings.saved'));
     },
     onError: (err: Error) => toast.error(err.message ?? 'Failed to save settings'),
   });

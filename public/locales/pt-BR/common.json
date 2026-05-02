@@ -362,6 +362,85 @@
       "startSupervisionFailed": "Falha ao iniciar supervisão",
       "whisperFailed": "Falha no sussurro",
       "stopSupervisionFailed": "Falha ao parar supervisão"
+    },
+    "setup": {
+      "channelEnabled": "Canal habilitado com sucesso",
+      "channelEnableFailed": "Falha ao habilitar canal",
+      "setupComplete": "Configuração concluída!"
+    },
+    "gdpr": {
+      "dataExported": "Dados exportados com sucesso",
+      "contactDataPurged": "Dados do contato expurgados",
+      "userDataPurged": "Dados do usuário expurgados",
+      "retentionPolicyUpdated": "Política de retenção atualizada"
+    },
+    "billing": {
+      "rateCardCreated": "Cartão de tarifas criado",
+      "rateCardUpdated": "Cartão de tarifas atualizado",
+      "rateCardDeleted": "Cartão de tarifas excluído",
+      "invoiceGenerated": "Fatura gerada",
+      "invoiceIssued": "Fatura emitida",
+      "invoiceMarkedPaid": "Fatura marcada como paga",
+      "quotaUpdated": "Cota atualizada"
+    },
+    "agentAssist": {
+      "featureUpdated": "Recurso Agent Assist atualizado",
+      "configUpdated": "Configuração Agent Assist atualizada",
+      "keywordRulesUpdated": "Regras de palavras-chave atualizadas",
+      "complianceRulesUpdated": "Regras de conformidade atualizadas"
+    },
+    "tenantSettings": {
+      "saved": "Configurações do tenant salvas"
+    },
+    "campaigns": {
+      "created": "Campanha criada",
+      "updated": "Campanha atualizada",
+      "deleted": "Campanha excluída",
+      "started": "Campanha iniciada",
+      "paused": "Campanha pausada",
+      "resumed": "Campanha retomada",
+      "stopped": "Campanha parada",
+      "contactListCreated": "Lista de contatos criada",
+      "contactsImported": "Contatos importados",
+      "dispositionCreated": "Código de disposição criado",
+      "dispositionUpdated": "Código de disposição atualizado",
+      "dispositionDeleted": "Código de disposição excluído",
+      "callbackScheduled": "Callback agendado"
+    },
+    "tenants": {
+      "created": "Tenant criado",
+      "updated": "Tenant atualizado",
+      "deleted": "Tenant excluído"
+    },
+    "sse": {
+      "connectionLost": "Conexão em tempo real perdida. Atualize a página para reconectar."
+    },
+    "dialerSettings": {
+      "updated": "Configurações do discador atualizadas"
+    },
+    "system": {
+      "settingsSaved": "Configurações do sistema salvas"
+    },
+    "onboarding": {
+      "templateApplied": "Modelo aplicado"
+    },
+    "partner": {
+      "customerCreated": "Cliente criado",
+      "customerUpdated": "Cliente atualizado",
+      "customerActivated": "Cliente ativado",
+      "customerSettingsUpdated": "Configurações do cliente atualizadas",
+      "rateCardCreated": "Cartão de tarifas criado",
+      "rateCardUpdated": "Cartão de tarifas atualizado",
+      "rateCardDeleted": "Cartão de tarifas excluído",
+      "invoiceGenerated": "Fatura gerada",
+      "settingsUpdated": "Configurações de partner atualizadas"
+    },
+    "agents": {
+      "created": "Agente criado",
+      "updated": "Agente atualizado",
+      "deleted": "Agente excluído",
+      "stateUpdated": "Estado atualizado",
+      "agentStateUpdated": "Estado do agente atualizado"
     }
   }
 }

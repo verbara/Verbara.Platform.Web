@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface CampaignSummary {
@@ -154,12 +155,13 @@ export function useCampaignDispositions(campaignId: number) {
 
 export function useCreateCampaign() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<Omit<CampaignDetail, 'id' | 'createdAt'>>) =>
       customFetch<CampaignDetail>({ url: '/api/v1/admin/campaigns', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
-      toast.success('Campaign created');
+      toast.success(t('toasts.campaigns.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -167,6 +169,7 @@ export function useCreateCampaign() {
 
 export function useUpdateCampaign() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -180,7 +183,7 @@ export function useUpdateCampaign() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', variables.id] });
-      toast.success('Campaign updated');
+      toast.success(t('toasts.campaigns.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -188,12 +191,13 @@ export function useUpdateCampaign() {
 
 export function useDeleteCampaign() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/campaigns/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
-      toast.success('Campaign deleted');
+      toast.success(t('toasts.campaigns.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -201,13 +205,14 @@ export function useDeleteCampaign() {
 
 export function useStartCampaign() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/campaigns/${id}/start`, method: 'POST' }),
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', id] });
-      toast.success('Campaign started');
+      toast.success(t('toasts.campaigns.started'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -215,13 +220,14 @@ export function useStartCampaign() {
 
 export function usePauseCampaign() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/campaigns/${id}/pause`, method: 'POST' }),
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', id] });
-      toast.success('Campaign paused');
+      toast.success(t('toasts.campaigns.paused'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -229,13 +235,14 @@ export function usePauseCampaign() {
 
 export function useResumeCampaign() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/campaigns/${id}/resume`, method: 'POST' }),
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', id] });
-      toast.success('Campaign resumed');
+      toast.success(t('toasts.campaigns.resumed'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -243,13 +250,14 @@ export function useResumeCampaign() {
 
 export function useStopCampaign() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: number) =>
       customFetch<void>({ url: `/api/v1/admin/campaigns/${id}/stop`, method: 'POST' }),
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', id] });
-      toast.success('Campaign stopped');
+      toast.success(t('toasts.campaigns.stopped'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -257,6 +265,7 @@ export function useStopCampaign() {
 
 export function useCreateContactList() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       campaignId,
@@ -269,7 +278,7 @@ export function useCreateContactList() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['campaign-contact-lists', variables.campaignId] });
-      toast.success('Contact list created');
+      toast.success(t('toasts.campaigns.contactListCreated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -277,6 +286,7 @@ export function useCreateContactList() {
 
 export function useImportContacts() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       campaignId,
@@ -294,7 +304,7 @@ export function useImportContacts() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['campaign-contact-lists', variables.campaignId] });
-      toast.success('Contacts imported');
+      toast.success(t('toasts.campaigns.contactsImported'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -302,6 +312,7 @@ export function useImportContacts() {
 
 export function useCreateDispositionCode() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       campaignId,
@@ -314,7 +325,7 @@ export function useCreateDispositionCode() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['campaign-dispositions', variables.campaignId] });
-      toast.success('Disposition code created');
+      toast.success(t('toasts.campaigns.dispositionCreated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -322,6 +333,7 @@ export function useCreateDispositionCode() {
 
 export function useUpdateDispositionCode() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       campaignId,
@@ -335,7 +347,7 @@ export function useUpdateDispositionCode() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['campaign-dispositions', variables.campaignId] });
-      toast.success('Disposition code updated');
+      toast.success(t('toasts.campaigns.dispositionUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -343,6 +355,7 @@ export function useUpdateDispositionCode() {
 
 export function useDeleteDispositionCode() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ campaignId, codeId }: { campaignId: number; codeId: number }) =>
       customFetch<void>({
@@ -351,7 +364,7 @@ export function useDeleteDispositionCode() {
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['campaign-dispositions', variables.campaignId] });
-      toast.success('Disposition code deleted');
+      toast.success(t('toasts.campaigns.dispositionDeleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -371,6 +384,7 @@ export function useCallbacks(campaignId: number) {
 
 export function useCreateCallback() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ campaignId, contactId, phone, agentId, scheduledAt }: {
       campaignId: number; contactId: number; phone: string; agentId?: string; scheduledAt: string;
@@ -382,7 +396,7 @@ export function useCreateCallback() {
       }),
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['callbacks', vars.campaignId] });
-      toast.success('Callback scheduled');
+      toast.success(t('toasts.campaigns.callbackScheduled'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

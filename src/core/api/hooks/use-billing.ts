@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // --- Types ---
@@ -155,6 +156,7 @@ export function useRateCards() {
 
 export function useCreateRateCard() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   const tenantId = useBillingTenantId();
   return useMutation({
     mutationFn: (data: CreateRateCardInput) =>
@@ -166,7 +168,7 @@ export function useCreateRateCard() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rate-cards', tenantId] });
-      toast.success('Rate card created');
+      toast.success(t('toasts.billing.rateCardCreated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -174,6 +176,7 @@ export function useCreateRateCard() {
 
 export function useUpdateRateCard() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   const tenantId = useBillingTenantId();
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & CreateRateCardInput) =>
@@ -185,7 +188,7 @@ export function useUpdateRateCard() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rate-cards', tenantId] });
-      toast.success('Rate card updated');
+      toast.success(t('toasts.billing.rateCardUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -193,6 +196,7 @@ export function useUpdateRateCard() {
 
 export function useDeleteRateCard() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   const tenantId = useBillingTenantId();
   return useMutation({
     mutationFn: (id: string) =>
@@ -203,7 +207,7 @@ export function useDeleteRateCard() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rate-cards', tenantId] });
-      toast.success('Rate card deleted');
+      toast.success(t('toasts.billing.rateCardDeleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -228,6 +232,7 @@ export function useInvoices(page = 1, pageSize = 20) {
 
 export function useGenerateInvoice() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   const tenantId = useBillingTenantId();
   return useMutation({
     mutationFn: (data: GenerateInvoiceInput) =>
@@ -239,7 +244,7 @@ export function useGenerateInvoice() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['invoices', tenantId] });
-      toast.success('Invoice generated');
+      toast.success(t('toasts.billing.invoiceGenerated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -261,6 +266,7 @@ export function useInvoice(id: string) {
 
 export function useIssueInvoice() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   const tenantId = useBillingTenantId();
   return useMutation({
     mutationFn: (id: string) =>
@@ -271,7 +277,7 @@ export function useIssueInvoice() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['invoices', tenantId] });
-      toast.success('Invoice issued');
+      toast.success(t('toasts.billing.invoiceIssued'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -279,6 +285,7 @@ export function useIssueInvoice() {
 
 export function usePayInvoice() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (invoiceId: string) =>
       customFetch<void>({
@@ -287,7 +294,7 @@ export function usePayInvoice() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['billing', 'invoices'] });
-      toast.success('Invoice marked as paid');
+      toast.success(t('toasts.billing.invoiceMarkedPaid'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -408,6 +415,7 @@ export function useQuotaStatus() {
 
 export function useUpdateQuota() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   const tenantId = useBillingTenantId();
   return useMutation({
     mutationFn: (data: UpdateQuotaInput) =>
@@ -418,7 +426,7 @@ export function useUpdateQuota() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['quota-status', tenantId] });
-      toast.success('Quota updated');
+      toast.success(t('toasts.billing.quotaUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

@@ -362,6 +362,85 @@
       "startSupervisionFailed": "Error al iniciar supervisión",
       "whisperFailed": "Error al enviar susurro",
       "stopSupervisionFailed": "Error al detener supervisión"
+    },
+    "setup": {
+      "channelEnabled": "Canal habilitado correctamente",
+      "channelEnableFailed": "Error al habilitar el canal",
+      "setupComplete": "¡Configuración completa!"
+    },
+    "gdpr": {
+      "dataExported": "Datos exportados correctamente",
+      "contactDataPurged": "Datos del contacto purgados",
+      "userDataPurged": "Datos del usuario purgados",
+      "retentionPolicyUpdated": "Política de retención actualizada"
+    },
+    "billing": {
+      "rateCardCreated": "Tarjeta de tarifas creada",
+      "rateCardUpdated": "Tarjeta de tarifas actualizada",
+      "rateCardDeleted": "Tarjeta de tarifas eliminada",
+      "invoiceGenerated": "Factura generada",
+      "invoiceIssued": "Factura emitida",
+      "invoiceMarkedPaid": "Factura marcada como pagada",
+      "quotaUpdated": "Cuota actualizada"
+    },
+    "agentAssist": {
+      "featureUpdated": "Función Agent Assist actualizada",
+      "configUpdated": "Configuración Agent Assist actualizada",
+      "keywordRulesUpdated": "Reglas de palabras clave actualizadas",
+      "complianceRulesUpdated": "Reglas de cumplimiento actualizadas"
+    },
+    "tenantSettings": {
+      "saved": "Configuración de inquilino guardada"
+    },
+    "campaigns": {
+      "created": "Campaña creada",
+      "updated": "Campaña actualizada",
+      "deleted": "Campaña eliminada",
+      "started": "Campaña iniciada",
+      "paused": "Campaña pausada",
+      "resumed": "Campaña reanudada",
+      "stopped": "Campaña detenida",
+      "contactListCreated": "Lista de contactos creada",
+      "contactsImported": "Contactos importados",
+      "dispositionCreated": "Código de disposición creado",
+      "dispositionUpdated": "Código de disposición actualizado",
+      "dispositionDeleted": "Código de disposición eliminado",
+      "callbackScheduled": "Callback programado"
+    },
+    "tenants": {
+      "created": "Inquilino creado",
+      "updated": "Inquilino actualizado",
+      "deleted": "Inquilino eliminado"
+    },
+    "sse": {
+      "connectionLost": "Conexión en tiempo real perdida. Recargue la página para reconectar."
+    },
+    "dialerSettings": {
+      "updated": "Configuración del marcador actualizada"
+    },
+    "system": {
+      "settingsSaved": "Configuración del sistema guardada"
+    },
+    "onboarding": {
+      "templateApplied": "Plantilla aplicada"
+    },
+    "partner": {
+      "customerCreated": "Cliente creado",
+      "customerUpdated": "Cliente actualizado",
+      "customerActivated": "Cliente activado",
+      "customerSettingsUpdated": "Configuración del cliente actualizada",
+      "rateCardCreated": "Tarjeta de tarifas creada",
+      "rateCardUpdated": "Tarjeta de tarifas actualizada",
+      "rateCardDeleted": "Tarjeta de tarifas eliminada",
+      "invoiceGenerated": "Factura generada",
+      "settingsUpdated": "Configuración de partner actualizada"
+    },
+    "agents": {
+      "created": "Agente creado",
+      "updated": "Agente actualizado",
+      "deleted": "Agente eliminado",
+      "stateUpdated": "Estado actualizado",
+      "agentStateUpdated": "Estado del agente actualizado"
     }
   }
 }

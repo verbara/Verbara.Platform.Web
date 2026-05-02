@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { RateCard, CreateRateCardInput, Invoice, UsageSummary } from './use-billing';
 
@@ -102,6 +103,7 @@ export function usePartnerCustomer(customerId: string) {
 
 export function useCreatePartnerCustomer() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: CreatePartnerCustomerInput) =>
       customFetch<PartnerCustomer>({
@@ -111,7 +113,7 @@ export function useCreatePartnerCustomer() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['partner-customers'] });
-      toast.success('Customer created');
+      toast.success(t('toasts.partner.customerCreated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -119,6 +121,7 @@ export function useCreatePartnerCustomer() {
 
 export function useUpdatePartnerCustomer() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & UpdatePartnerCustomerInput) =>
       customFetch<PartnerCustomer>({
@@ -129,7 +132,7 @@ export function useUpdatePartnerCustomer() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['partner-customers'] });
       qc.invalidateQueries({ queryKey: ['partner-customer', vars.id] });
-      toast.success('Customer updated');
+      toast.success(t('toasts.partner.customerUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -168,6 +171,7 @@ export function useSuspendCustomer() {
 
 export function useActivateCustomer() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<StatusUpdateResponse>({
@@ -177,7 +181,7 @@ export function useActivateCustomer() {
     onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['partner-customers'] });
       qc.invalidateQueries({ queryKey: ['partner-customer', id] });
-      toast.success('Customer activated');
+      toast.success(t('toasts.partner.customerActivated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -197,6 +201,7 @@ export function useCustomerSettings(customerId: string) {
 
 export function useUpdateCustomerSettings() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & TenantSettings) =>
       customFetch<TenantSettings>({
@@ -206,7 +211,7 @@ export function useUpdateCustomerSettings() {
       }),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['partner-customer-settings', vars.id] });
-      toast.success('Customer settings updated');
+      toast.success(t('toasts.partner.customerSettingsUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -227,6 +232,7 @@ export function usePartnerRateCards() {
 
 export function useCreatePartnerRateCard() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: CreateRateCardInput) =>
       customFetch<RateCard>({
@@ -236,7 +242,7 @@ export function useCreatePartnerRateCard() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['partner-rate-cards'] });
-      toast.success('Rate card created');
+      toast.success(t('toasts.partner.rateCardCreated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -244,6 +250,7 @@ export function useCreatePartnerRateCard() {
 
 export function useUpdatePartnerRateCard() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string } & CreateRateCardInput) =>
       customFetch<RateCard>({
@@ -253,7 +260,7 @@ export function useUpdatePartnerRateCard() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['partner-rate-cards'] });
-      toast.success('Rate card updated');
+      toast.success(t('toasts.partner.rateCardUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -261,6 +268,7 @@ export function useUpdatePartnerRateCard() {
 
 export function useDeletePartnerRateCard() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({
@@ -269,7 +277,7 @@ export function useDeletePartnerRateCard() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['partner-rate-cards'] });
-      toast.success('Rate card deleted');
+      toast.success(t('toasts.partner.rateCardDeleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -293,6 +301,7 @@ export function useCustomerInvoices(customerId: string, page = 1, pageSize = 20)
 
 export function useGeneratePartnerInvoice(customerId: string) {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (range: { from?: string; to?: string }) => {
       const params: Record<string, string> = {};
@@ -308,7 +317,7 @@ export function useGeneratePartnerInvoice(customerId: string) {
       qc.invalidateQueries({ queryKey: ['partner-customer-invoices', customerId] });
       qc.invalidateQueries({ queryKey: ['partner-revenue-summary'] });
       qc.invalidateQueries({ queryKey: ['partner-revenue-details'] });
-      toast.success('Invoice generated');
+      toast.success(t('toasts.partner.invoiceGenerated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -373,6 +382,7 @@ export function usePartnerSettings() {
 
 export function useUpdatePartnerSettings() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: TenantSettings) =>
       customFetch<TenantSettings>({
@@ -382,7 +392,7 @@ export function useUpdatePartnerSettings() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['partner-settings'] });
-      toast.success('Partner settings updated');
+      toast.success(t('toasts.partner.settingsUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

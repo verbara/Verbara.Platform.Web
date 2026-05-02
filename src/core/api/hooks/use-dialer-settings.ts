@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface DialerSettings {
@@ -24,6 +25,7 @@ export function useDialerSettings() {
 
 export function useUpdateDialerSettings() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: Partial<DialerSettings>) =>
       customFetch<DialerSettings>({
@@ -33,7 +35,7 @@ export function useUpdateDialerSettings() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['dialer-settings'] });
-      toast.success('Dialer settings updated');
+      toast.success(t('toasts.dialerSettings.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

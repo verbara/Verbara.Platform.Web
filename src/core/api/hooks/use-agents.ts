@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export interface Agent {
@@ -74,12 +75,13 @@ export function useAgentMe() {
 
 export function useCreateAgent() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { userId: string; displayName: string }) =>
       customFetch<Agent>({ url: '/api/v1/admin/agents', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents'] });
-      toast.success('Agent created');
+      toast.success(t('toasts.agents.created'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -87,6 +89,7 @@ export function useCreateAgent() {
 
 export function useUpdateAgent() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({
       id,
@@ -104,7 +107,7 @@ export function useUpdateAgent() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents'] });
-      toast.success('Agent updated');
+      toast.success(t('toasts.agents.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -112,12 +115,13 @@ export function useUpdateAgent() {
 
 export function useDeleteAgent() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (id: string) =>
       customFetch<void>({ url: `/api/v1/admin/agents/${id}`, method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents'] });
-      toast.success('Agent deleted');
+      toast.success(t('toasts.agents.deleted'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -125,6 +129,7 @@ export function useDeleteAgent() {
 
 export function useUpdateAgentState() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { state: string }) =>
       customFetch<void>({
@@ -134,7 +139,7 @@ export function useUpdateAgentState() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agent-me'] });
-      toast.success('State updated');
+      toast.success(t('toasts.agents.stateUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -142,6 +147,7 @@ export function useUpdateAgentState() {
 
 export function useUpdateAgentStateAdmin() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ agentId, state }: { agentId: string; state: string }) =>
       customFetch<void>({
@@ -151,7 +157,7 @@ export function useUpdateAgentStateAdmin() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents'] });
-      toast.success('Agent state updated');
+      toast.success(t('toasts.agents.agentStateUpdated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

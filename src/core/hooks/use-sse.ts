@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
@@ -14,6 +15,7 @@ const handlers: Record<string, SseEventHandler[]> = {};
 export function useSSE() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const queryClient = useQueryClient();
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const sourceRef = useRef<EventSource | null>(null);
   const reconnectAttemptRef = useRef(0);
@@ -205,7 +207,7 @@ export function useSSE() {
 
       const attempt = reconnectAttemptRef.current;
       if (attempt >= 10) {
-        toast.error('Real-time connection lost. Refresh the page to reconnect.');
+        toast.error(t('toasts.sse.connectionLost'));
         return;
       }
       const delay = Math.min(2000 * Math.pow(2, attempt), 30000) + Math.random() * 1000;

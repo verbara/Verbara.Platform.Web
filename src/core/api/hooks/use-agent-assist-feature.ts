@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 // --- Types ---
@@ -47,6 +48,7 @@ export function useAgentAssistFeature() {
 
 export function useUpdateAgentAssistFeature() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (body: AgentAssistFeatureUpdate) =>
       customFetch<AgentAssistFeature>({
@@ -56,7 +58,7 @@ export function useUpdateAgentAssistFeature() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agent-assist-feature'] });
-      toast.success('Agent Assist feature updated');
+      toast.success(t('toasts.agentAssist.featureUpdated'));
     },
     onError: (err: Error) => toast.error(err.message || 'Failed to update Agent Assist'),
   });

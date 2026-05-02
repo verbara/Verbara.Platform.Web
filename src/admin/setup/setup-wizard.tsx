@@ -111,9 +111,9 @@ export default function SetupWizard() {
             method: 'PUT',
             data: { isActive: true, credentials: values.channelConfig },
           });
-          toast.success('Channel enabled successfully');
+          toast.success(t('toasts.setup.channelEnabled'));
         } catch {
-          toast.error('Failed to enable channel');
+          toast.error(t('toasts.setup.channelEnableFailed'));
           return;
         }
       }
@@ -131,7 +131,7 @@ export default function SetupWizard() {
       // best-effort — don't block wizard completion
     }
     useUiStore.getState().setTestCompleted(true);
-    toast.success('Setup complete!');
+    toast.success(t('toasts.setup.setupComplete'));
     navigate('/admin');
   };
 
