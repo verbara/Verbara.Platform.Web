@@ -132,3 +132,11 @@ significant progress on coverage.
   manual QA — recorded as a Playwright smoke spec.
 - `src/core/ui/` and `src/admin/` extraction is opportunistic
   (per-feature) rather than a big-bang sweep, given the long tail.
+
+## Status updates
+
+**2026-05-03 — `1.13.33` (Phase 1 of v1.13.x closure plan):**
+Locale bundle parity check ✅ enforced via `scripts/i18n-parity-check.mjs`,
+wired to `npm run lint`. Patched `admin.json` for the 16 missing
+`sidebar.*` keys in `en-US`/`pt-BR` plus `security_admin.audit.export.pending`
+parity (`es-419`/`pt-BR`).

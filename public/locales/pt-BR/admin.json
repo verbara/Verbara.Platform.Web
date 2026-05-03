@@ -30,7 +30,23 @@
     "realtime": "Perfis de Endpoint",
     "diagnostics": "Diagnósticos",
     "cluster": "Cluster",
+    "roles": "Funções",
+    "authConfig": "Configuração de Autenticação",
+    "authEvents": "Eventos de Autenticação",
+    "authSessions": "Sessões Ativas",
     "security": "Segurança",
+    "integrations": "Integrações",
+    "webhooks": "Webhooks",
+    "deadLetter": "Dead Letter",
+    "billing": "Faturamento",
+    "rateCards": "Tarifários",
+    "invoices": "Faturas",
+    "usage": "Uso",
+    "quotas": "Cotas",
+    "gdpr": "GDPR",
+    "purgeLog": "Registro de Expurgo",
+    "retentionPolicy": "Política de Retenção",
+    "knowledgeBase": "Base de Conhecimento",
     "partnerPortal": "Portal do Parceiro",
     "partnerCustomers": "Clientes",
     "partnerRateCards": "Tarifários",
@@ -1289,7 +1305,8 @@
       "export": {
         "label": "Exportar",
         "csv": "Exportar CSV",
-        "json": "Exportar JSON"
+        "json": "Exportar JSON",
+        "pending": "Preparando exportação…"
       },
       "filters": {
         "action_prefix": "Ação",

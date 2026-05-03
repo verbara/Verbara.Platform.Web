@@ -1305,7 +1305,8 @@
       "export": {
         "label": "Exportar",
         "csv": "Exportar CSV",
-        "json": "Exportar JSON"
+        "json": "Exportar JSON",
+        "pending": "Preparando exportación…"
       },
       "filters": {
         "action_prefix": "Acción",
