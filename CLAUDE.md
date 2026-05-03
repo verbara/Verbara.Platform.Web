@@ -1,14 +1,21 @@
 # CLAUDE.md
 
-> **Planning for this repo lives in Asterisk.Platform.** New plans, specs, ADRs, and research that affect this frontend are authored under `/media/Data/Source/IPcom/Asterisk.Platform/docs/` — the Platform repo is the authoritative workstream for both API + Web. This repo continues to be the source of truth for frontend **code**; the `docs/plans/completed/` history already here is preserved, but new `active/` plans should land in Platform. Decision recorded 2026-04-19.
+> **Planning split (updated 2026-05-03):**
+> - **Web-only tracks** (i18n, lint, UX, frontend features) live in this repo's `docs/plans/`. The v1.14.x Operational Foundation roadmap is the authoritative source for Web work.
+> - **Cross-cutting tracks** that span API + Web (e.g. auth-hotpath-hardening, R5.5 production validation) continue under `/media/Data/Source/IPcom/Asterisk.Platform/docs/plans/`.
+> - The previous note (2026-04-19) directing all planning to Platform is superseded for Web-only work; the v1.13.x i18n closure already shipped Web-authored plans/specs/ADRs successfully.
 
 ## Project Overview
 
 Asterisk.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~310 TS/TSX files · 60+ pages · 50+ API hooks · 25+ UI components · 12 Zustand stores · 60+ E2E specs · 193/193 Vitest · Version 1.13.0** (cosmetic-track Platform 1.14.x — Platform shipped AHH train v1.14.0→1.14.4 over 2026-04-27/28; Web 1.13.0 is byte-identical to 1.12.0, version bump only.)
+**~330 TS/TSX files · 60+ pages · 54 API hooks · 28 UI components · 12 Zustand stores · 64+ E2E specs · 205/205 Vitest · Version 1.13.37** (cosmetic-track Platform 1.14.x).
 
-See [docs/plans/completed/](docs/plans/completed/) for delivery history; earlier milestones are in `git log`.
+The v1.13.x i18n track shipped 5 closure phases on 2026-05-03 (`v1.13.33` → `v1.13.37`, tagged `v1.13.37-web` with GitHub release). The track closed all acceptance criteria from [`docs/research/i18n-coverage-gap-2026-04-28.md`](docs/research/i18n-coverage-gap-2026-04-28.md): locale parity (CI-enforced via `npm run i18n:check`), multi-locale Playwright smoke, date/number/currency consumer audit, lint priority cleanup (70 problems resolved), and per-area error boundaries.
+
+**Next track: v1.14.x Operational Foundation.** See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md). Decision recorded in [ADR-0003](docs/decisions/0003-operational-foundation-priority.md): CI/CD, error tracking, coverage and vulnerability remediation precede customer-facing features. The full roadmap covers 7 levels (24 tracks) ending at `v1.21.0` "WebChat customer widget" (~3 months calendar).
+
+See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
 ## Documentation Layout (all git-tracked, private repo)
 
@@ -131,7 +138,7 @@ Feature-scoped stores: `draft-store`, `agent-ai-store`, `agent-alerts-store`, `n
 <Dialog.Trigger asChild><Button /></Dialog.Trigger>
 ```
 
-21 components in [src/core/ui/](src/core/ui/). Styling: TailwindCSS v4 + `cva` + `tailwind-merge` + `clsx`.
+28 components in [src/core/ui/](src/core/ui/). Styling: TailwindCSS v4 + `cva` + `tailwind-merge` + `clsx`. Per-area error boundaries on each layout shell ([ADR-0002](docs/decisions/0002-area-error-boundary-pattern.md)).
 
 ## Auth & RBAC
 
@@ -165,3 +172,11 @@ Multi-stage (`Dockerfile`): build with `node:22-alpine` (`npm ci` + `npm run bui
 - Phase A: Foundation (scaffolding, models) — batch
 - Phase B: Critical components (serializers, calculators) — individual focused subagents
 - Phase C: Integration (DI, storage, wiring) — batch
+
+## Versioning
+
+[ADR-0005](docs/decisions/0005-versioning-track-end-tags.md): patches inside a track ship without git tags. Only the **last patch of a track** receives an annotated tag (`v<version>-web`) and a GitHub release whose notes summarize the whole track. The v1.13.x i18n closure (5 patches `1.13.33`..`1.13.37` → tag `v1.13.37-web`) is the canonical example.
+
+## i18n parity (CI gate)
+
+Every key in `public/locales/es-419/*.json` must exist in `public/locales/en-US/*.json` and `public/locales/pt-BR/*.json` (and vice versa). Enforced by [`scripts/i18n-parity-check.mjs`](scripts/i18n-parity-check.mjs); `npm run lint` runs both ESLint and `npm run i18n:check`. Drift fails CI. See [ADR-0001](docs/decisions/0001-i18n-parity-ci-gate.md).

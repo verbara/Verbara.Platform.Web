@@ -48,4 +48,8 @@ The decision, stated in one or two sentences.
 
 ## Catalog
 
-<!-- Add one line per ADR as they are created -->
+- [ADR-0001](0001-i18n-parity-ci-gate.md) — i18n locale parity enforced as a CI gate (Accepted, 2026-05-03)
+- [ADR-0002](0002-area-error-boundary-pattern.md) — Per-area Error Boundaries (Accepted, 2026-05-03)
+- [ADR-0003](0003-operational-foundation-priority.md) — Operational Foundation before customer-facing features (Accepted, 2026-05-03)
+- [ADR-0004](0004-backend-to-ui-bridge-as-track.md) — Backend-to-UI Bridge as a dedicated track (Accepted, 2026-05-03)
+- [ADR-0005](0005-versioning-track-end-tags.md) — Track-end versioning policy (Accepted, 2026-05-03)
