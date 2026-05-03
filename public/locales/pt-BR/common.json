@@ -166,7 +166,15 @@
     "go_home": "Ir para o início",
     "route_error_title": "Algo deu errado nesta página",
     "route_error_fallback": "Ocorreu um erro inesperado.",
-    "try_again": "Tentar novamente"
+    "try_again": "Tentar novamente",
+    "area_error_title": "Algo falhou nesta seção",
+    "area_error_message": "O módulo {{areaName}} não pôde ser carregado. O restante do aplicativo continua disponível.",
+    "area_names": {
+      "admin": "Administração",
+      "agent": "Espaço do Agente",
+      "analytics": "Análise",
+      "operations": "Operações"
+    }
   },
   "agent_layout": {
     "toggle_context": "Alternar painel de contexto (Ctrl+I)",

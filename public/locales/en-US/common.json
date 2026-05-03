@@ -166,7 +166,15 @@
     "go_home": "Go Home",
     "route_error_title": "Something went wrong on this page",
     "route_error_fallback": "An unexpected error occurred.",
-    "try_again": "Try Again"
+    "try_again": "Try Again",
+    "area_error_title": "Something went wrong in this section",
+    "area_error_message": "The {{areaName}} module failed to load. The rest of the app is still available.",
+    "area_names": {
+      "admin": "Administration",
+      "agent": "Agent Workspace",
+      "analytics": "Analytics",
+      "operations": "Operations"
+    }
   },
   "agent_layout": {
     "toggle_context": "Toggle context panel (Ctrl+I)",

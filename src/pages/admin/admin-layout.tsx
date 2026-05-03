@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { AdminSidebar } from '@/admin/sidebar';
 import { SetupBanner } from '@/admin/setup/setup-banner';
+import { AreaErrorBoundary } from '@/core/ui/area-error-boundary';
 
 export default function AdminLayout() {
   return (
@@ -11,7 +12,9 @@ export default function AdminLayout() {
       <div className="flex-1 overflow-auto">
         <SetupBanner />
         <div className="p-6">
-          <Outlet />
+          <AreaErrorBoundary areaName="admin">
+            <Outlet />
+          </AreaErrorBoundary>
         </div>
       </div>
     </div>
