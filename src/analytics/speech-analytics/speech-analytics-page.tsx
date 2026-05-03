@@ -29,6 +29,7 @@ import {
   type ComplianceRuleSummaryDto,
 } from '@/core/api/hooks/use-analytics';
 import type { ConversationStateChangedPayload } from '@/core/api/hooks/use-conversation-state-stream';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const TOP_N_OPTIONS = [10, 25, 50] as const;
 type TopN = (typeof TOP_N_OPTIONS)[number];
@@ -179,7 +180,7 @@ function TopicTrendsTab() {
 // ─── Sentiment Trends Tab ────────────────────────────────────────────────────
 
 function SentimentTrendsTab() {
-  const { t } = useTranslation('analytics');
+  const { t, i18n } = useTranslation('analytics');
   const { from, to, queue } = useAnalyticsFilterStore();
   const [bucket, setBucket] = useState<'day' | 'week'>('day');
 
@@ -188,12 +189,13 @@ function SentimentTrendsTab() {
   if (isLoading) return <LoadingSkeleton />;
 
   const points = data?.points ?? [];
+  const monthDayFmt = new Intl.DateTimeFormat(i18n.language, {
+    month: 'short',
+    day: 'numeric',
+  });
 
   const chartData = points.map((p) => ({
-    label: new Date(p.bucketStart).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    }),
+    label: monthDayFmt.format(new Date(p.bucketStart)),
     positive: p.positiveCount,
     neutral: p.neutralCount,
     negative: p.negativeCount,
@@ -294,6 +296,7 @@ function SentimentTrendsTab() {
 
 function ComplianceOverviewTab() {
   const { t } = useTranslation('analytics');
+  const { formatDateShort } = useFormatDate();
   const { from, to, queue } = useAnalyticsFilterStore();
   const [severity, setSeverity] = useState<'Info' | 'Warning' | 'Critical' | ''>('');
   const [sortKey, setSortKey] = useState<SortKey>('occurrences');
@@ -448,10 +451,10 @@ function ComplianceOverviewTab() {
                   <td className="px-4 py-2 tabular-nums text-right">{rule.occurrences}</td>
                   <td className="px-4 py-2 tabular-nums text-right">{rule.sessionsAffected}</td>
                   <td className="px-4 py-2 tabular-nums">
-                    {new Date(rule.firstSeen).toLocaleDateString()}
+                    {formatDateShort(rule.firstSeen)}
                   </td>
                   <td className="px-4 py-2 tabular-nums">
-                    {new Date(rule.lastSeen).toLocaleDateString()}
+                    {formatDateShort(rule.lastSeen)}
                   </td>
                 </tr>
               ))}

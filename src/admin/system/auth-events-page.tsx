@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/core/ui/select';
 import { useAuthEvents } from '@/core/api/hooks/use-auth-admin';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const EVENT_TYPES = [
   'login_success',
@@ -39,6 +40,7 @@ const EVENT_TYPE_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive
 
 export default function AuthEventsPage() {
   const { t } = useTranslation(['admin']);
+  const { formatDateTime } = useFormatDate();
   const [page, setPage] = useState(1);
   const [eventType, setEventType] = useState('');
   const [userSearch, setUserSearch] = useState('');
@@ -154,7 +156,7 @@ export default function AuthEventsPage() {
             {data?.items.map((event) => (
               <tr key={event.eventId} className="border-b last:border-0">
                 <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
-                  {new Date(event.createdAt).toLocaleString()}
+                  {formatDateTime(event.createdAt)}
                 </td>
                 <td className="px-4 py-2.5">{event.userEmail ?? event.userId ?? '-'}</td>
                 <td className="px-4 py-2.5">

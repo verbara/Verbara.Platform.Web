@@ -9,11 +9,13 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { useFlows, useCreateFlow, type FlowDefinition } from '@/core/api/hooks/use-flows';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const columnHelper = createColumnHelper<FlowDefinition>();
 
 export default function FlowListPage() {
   const { t } = useTranslation(['admin']);
+  const { formatDateShort } = useFormatDate();
   const navigate = useNavigate();
 
   const { data: flows = [] } = useFlows();
@@ -44,10 +46,10 @@ export default function FlowListPage() {
       }),
       columnHelper.accessor('updatedAt', {
         header: () => t('admin:flows.lastModified'),
-        cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+        cell: (info) => formatDateShort(info.getValue()),
       }),
     ],
-    [t],
+    [t, formatDateShort],
   );
 
   const handleCreate = () => {

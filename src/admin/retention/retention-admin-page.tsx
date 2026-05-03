@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useFormatDate } from '@/core/i18n/use-format';
 import {
   useRetentionConfig,
   useRetentionTargets,
@@ -15,11 +16,11 @@ import {
   type RetentionRunResultDto,
 } from './use-retention-targets';
 
-const formatTimestamp = (iso: string | null): string =>
-  iso ? new Date(iso).toLocaleString() : '—';
-
 export default function RetentionAdminPage() {
   const { t } = useTranslation(['admin']);
+  const { formatDateTime } = useFormatDate();
+  const formatTimestamp = (iso: string | null): string =>
+    iso ? formatDateTime(iso) : '—';
   const permissions = useAuthStore((s) => s.permissions);
   const canManage = permissions.includes('retention.manage');
 

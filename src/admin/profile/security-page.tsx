@@ -20,9 +20,11 @@ import {
   useRegenerateRecoveryCodes, usePasswordPolicy,
   type UserSession, type MfaSetupResponse,
 } from '@/core/api/hooks/use-auth-admin';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 export default function SecurityPage() {
   const { t } = useTranslation(['admin', 'common']);
+  const { formatDateTime } = useFormatDate();
   const { data: me, isLoading: meLoading } = useMe();
 
   if (meLoading || !me) {
@@ -58,7 +60,7 @@ export default function SecurityPage() {
           data-testid="security-lockout-banner"
         >
           {t('admin:security.account_locked', {
-            time: new Date(me.lockedUntil!).toLocaleString(),
+            time: formatDateTime(me.lockedUntil!),
           })}
         </div>
       )}
@@ -585,8 +587,9 @@ function SessionRow({
   locked: boolean;
 }>) {
   const { t } = useTranslation(['admin']);
+  const { formatDateTime } = useFormatDate();
   const device = parseUserAgent(session.userAgent);
-  const created = new Date(session.createdAt).toLocaleString();
+  const created = formatDateTime(session.createdAt);
 
   return (
     <tr

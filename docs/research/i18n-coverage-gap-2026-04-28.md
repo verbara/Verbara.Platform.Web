@@ -140,3 +140,29 @@ Locale bundle parity check ✅ enforced via `scripts/i18n-parity-check.mjs`,
 wired to `npm run lint`. Patched `admin.json` for the 16 missing
 `sidebar.*` keys in `en-US`/`pt-BR` plus `security_admin.audit.export.pending`
 parity (`es-419`/`pt-BR`).
+
+**2026-05-03 — `1.13.34` (Phase 2):** Multi-locale Playwright smoke
+spec ✅ at `tests/e2e/tests/i18n/locale-smoke.spec.ts`. Itera 3 locales
+× 8 rutas top-level (login + 7 autenticadas) verificando que ningún
+literal tipo `ns:dotted.key` se renderee. 27 tests total.
+
+**2026-05-03 — `1.13.35` (Phase 3):** Date/number/currency consumer
+audit ✅ y long-tail i18n cerrado.
+
+- Long-tail finding: los 9 archivos sin `useTranslation` (3 admin + 6
+  analytics) son pure-prop components (page-header, empty-state,
+  base-node, kpi-card, trend-chart, score-gauge, waveform/audio
+  player, speech-analytics-page.test). Reciben todos los strings via
+  props desde sus consumers — patrón legítimo, no requieren extracción.
+- `src/core/i18n/use-format.ts` extendido con `formatDateTime`,
+  `formatDateShort`, `formatTimeShort`, `formatCurrency`. El
+  `formatDuration` se mantiene locale-agnostic por diseño (MM:SS).
+- 37 archivos refactorizados a través de `src/admin`, `src/analytics`,
+  `src/operations`, `src/agent`, `src/core/ui`, `src/profile`. Todos
+  los `.toLocaleString()`/`.toLocaleDateString()`/`.toLocaleTimeString()`
+  reemplazados por hooks. 4 sitios con opciones custom (month/day,
+  hour/min/sec) usan `new Intl.DateTimeFormat(i18n.language, {...})` —
+  locale-aware, ya no hardcoded.
+- Bug fix de impacto cliente: 3 helpers de currency en partner/billing
+  hardcodeaban `'en-US'` (revenue-page, customer-detail-page,
+  invoices-page); ahora usan el idioma activo via `formatCurrency`.

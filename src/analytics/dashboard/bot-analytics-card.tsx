@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Bot, ArrowRightLeft, CheckCircle, XCircle } from 'lucide-react';
 import { useBotAnalytics } from '@/core/api/hooks/use-analytics';
+import { useFormatNumber } from '@/core/i18n/use-format';
 
 interface KpiMiniProps {
   readonly label: string;
@@ -24,6 +25,7 @@ interface BotAnalyticsCardProps {
 
 export function BotAnalyticsCard({ from, to }: BotAnalyticsCardProps) {
   const { t } = useTranslation('analytics');
+  const { formatNumber } = useFormatNumber();
   const { data, isLoading } = useBotAnalytics(from, to);
 
   if (isLoading) {
@@ -58,7 +60,7 @@ export function BotAnalyticsCard({ from, to }: BotAnalyticsCardProps) {
       <div className="grid grid-cols-4 gap-4">
         <KpiMini
           label={t('bot_analytics.conversations')}
-          value={data.totalConversations.toLocaleString()}
+          value={formatNumber(data.totalConversations)}
           color="text-slate-900 dark:text-white"
         />
         <KpiMini

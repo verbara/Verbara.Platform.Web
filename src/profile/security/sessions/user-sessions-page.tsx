@@ -11,6 +11,7 @@ import {
   useRevokeUserSession,
   type UserSessionDto,
 } from '@/core/api/hooks/use-user-sessions';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 /**
  * End-user active sessions page at `/profile/security/sessions` (R5.2 PA.2).
@@ -22,6 +23,7 @@ import {
  */
 export default function UserSessionsPage() {
   const { t } = useTranslation(['admin', 'common']);
+  const { formatDateTime } = useFormatDate();
   const { data: sessions, isLoading, isError } = useUserSessions();
   const revoke = useRevokeUserSession();
 
@@ -32,6 +34,14 @@ export default function UserSessionsPage() {
     revoke.mutate(confirmTarget.sessionId, {
       onSuccess: () => setConfirmTarget(null),
     });
+  }
+
+  function formatDate(iso: string): string {
+    try {
+      return formatDateTime(iso);
+    } catch {
+      return iso;
+    }
   }
 
   return (
@@ -125,10 +135,3 @@ export default function UserSessionsPage() {
   );
 }
 
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
-}

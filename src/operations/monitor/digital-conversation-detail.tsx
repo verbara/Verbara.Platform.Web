@@ -11,6 +11,7 @@ import {
   useSendCoachingNote,
   type SupervisorConversation,
 } from '@/core/api/hooks/use-supervisor';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 interface DigitalConversationDetailProps {
   readonly conversation: SupervisorConversation;
@@ -18,6 +19,7 @@ interface DigitalConversationDetailProps {
 
 export function DigitalConversationDetail({ conversation }: DigitalConversationDetailProps) {
   const { t } = useTranslation('operations');
+  const { formatTimeShort } = useFormatDate();
   const { data: messages = [] } = useSupervisorMessages(conversation.id);
   const takeoverMutation = useTakeoverConversation();
   const closeMutation = useCloseDigitalConversation();
@@ -94,7 +96,7 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
                   )}
                   <p>{msg.text}</p>
                   <p className="mt-0.5 text-[10px] opacity-50">
-                    {new Date(msg.timestamp).toLocaleTimeString()}
+                    {formatTimeShort(msg.timestamp)}
                   </p>
                 </div>
               </div>

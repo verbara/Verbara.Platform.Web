@@ -33,11 +33,14 @@ import {
   useDeleteDncList,
   type DncListSummary,
 } from '@/core/api/hooks/use-dnc-lists';
+import { useFormatDate, useFormatNumber } from '@/core/i18n/use-format';
 
 const columnHelper = createColumnHelper<DncListSummary>();
 
 export default function DncListsPage() {
   const { t } = useTranslation('admin');
+  const { formatDateShort } = useFormatDate();
+  const { formatNumber } = useFormatNumber();
   const navigate = useNavigate();
   const [deletingList, setDeletingList] = useState<DncListSummary | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -68,11 +71,11 @@ export default function DncListsPage() {
       }),
       columnHelper.accessor('entryCount', {
         header: () => t('dnc-lists.columns.entries'),
-        cell: (info) => info.getValue().toLocaleString(),
+        cell: (info) => formatNumber(info.getValue()),
       }),
       columnHelper.accessor('createdAt', {
         header: () => t('dnc-lists.columns.created'),
-        cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+        cell: (info) => formatDateShort(info.getValue()),
       }),
       columnHelper.display({
         id: 'actions',
@@ -111,7 +114,7 @@ export default function DncListsPage() {
         ),
       }),
     ],
-    [t],
+    [t, formatNumber, formatDateShort],
   );
 
   if (isLoading) {

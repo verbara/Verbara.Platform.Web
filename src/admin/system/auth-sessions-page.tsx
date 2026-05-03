@@ -5,9 +5,11 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { useActiveSessions, useForceLogout } from '@/core/api/hooks/use-auth-admin';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 export default function AuthSessionsPage() {
   const { t } = useTranslation(['admin']);
+  const { formatDateTime, formatDateShort } = useFormatDate();
   const { data: sessions = [] } = useActiveSessions();
   const forceLogout = useForceLogout();
   const [logoutTarget, setLogoutTarget] = useState<{
@@ -31,7 +33,7 @@ export default function AuthSessionsPage() {
     if (mins < 60) return t('admin:auth.minutes_ago', { defaultValue: '{{count}} min ago', count: mins });
     const hours = Math.floor(mins / 60);
     if (hours < 24) return t('admin:auth.hours_ago', { defaultValue: '{{count}} hr ago', count: hours });
-    return new Date(dateStr).toLocaleDateString();
+    return formatDateShort(dateStr);
   }
 
   return (
@@ -74,7 +76,7 @@ export default function AuthSessionsPage() {
                   {formatUserAgent(session.userAgent)}
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
-                  {new Date(session.createdAt).toLocaleString()}
+                  {formatDateTime(session.createdAt)}
                 </td>
                 <td className="px-4 py-2.5">
                   <Badge variant="secondary">{timeAgo(session.lastActivity)}</Badge>

@@ -17,6 +17,7 @@ import {
   useCheckDncNumber,
   type DncEntry,
 } from '@/core/api/hooks/use-dnc-lists';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const PAGE_SIZE = 50;
 
@@ -41,6 +42,7 @@ function parsePhonesFromCsv(text: string): string[] {
 
 export default function DncListDetail() {
   const { t } = useTranslation('admin');
+  const { formatDateShort } = useFormatDate();
   const { listId } = useParams<{ listId: string }>();
   const navigate = useNavigate();
 
@@ -307,7 +309,7 @@ export default function DncListDetail() {
                     </td>
                     <td className="px-3 py-2 text-muted-foreground">
                       {entry.expiresAt
-                        ? new Date(entry.expiresAt).toLocaleDateString()
+                        ? formatDateShort(entry.expiresAt)
                         : <span className="italic text-muted-foreground/50">{t('dnc-lists.detail.expires_never')}</span>}
                     </td>
                     <td className="px-3 py-2">

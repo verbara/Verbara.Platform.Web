@@ -39,6 +39,7 @@ import {
   useCustomerUsage,
 } from '@/core/api/hooks/use-partner';
 import { useDunningStatus, useUpdateDunningStatus } from '@/core/api/hooks/use-billing';
+import { useFormatNumber } from '@/core/i18n/use-format';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   Active: 'default',
@@ -46,10 +47,6 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
   Warning: 'outline',
   Degraded: 'outline',
 };
-
-function formatCurrency(amount: number, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
-}
 
 export default function PartnerCustomerDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
@@ -499,6 +496,7 @@ function CustomerSettingsTab({ customerId }: Readonly<{ customerId: string }>) {
 
 function CustomerInvoicesTab({ customerId }: Readonly<{ customerId: string }>) {
   const { t } = useTranslation('admin');
+  const { formatCurrency } = useFormatNumber();
   const { data: invoices = [] } = useCustomerInvoices(customerId);
   const generate = useGeneratePartnerInvoice(customerId);
   const [genOpen, setGenOpen] = useState(false);
@@ -596,6 +594,7 @@ function CustomerInvoicesTab({ customerId }: Readonly<{ customerId: string }>) {
 }
 
 function CustomerUsageTab({ customerId }: Readonly<{ customerId: string }>) {
+  const { formatNumber } = useFormatNumber();
   const { data: usage = [] } = useCustomerUsage(customerId);
 
   if (usage.length === 0) {
@@ -614,7 +613,7 @@ function CustomerUsageTab({ customerId }: Readonly<{ customerId: string }>) {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-lg font-semibold">{u.totalQuantity.toLocaleString()}</p>
+              <p className="text-lg font-semibold">{formatNumber(u.totalQuantity)}</p>
               <p className="text-xs text-muted-foreground">{u.recordCount} records</p>
             </div>
           </div>

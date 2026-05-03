@@ -20,6 +20,7 @@ import { Badge } from '@/core/ui/badge';
 import { DrawerDetail } from '@/core/ui/drawer-detail';
 import { StatCard } from '@/core/ui/stat-card';
 import { StatusBadge } from '@/core/ui/status-badge';
+import { useFormatDate } from '@/core/i18n/use-format';
 import type {
   ClusterNode,
   DrainStatus,
@@ -53,23 +54,23 @@ function buildGrafanaDeeplink(baseUrl: string, nodeId: string): string {
   return `${baseUrl}${separator}var-node=${encodeURIComponent(nodeId)}`;
 }
 
-function formatIso(iso: string | undefined): string {
-  if (iso === undefined || iso === null || iso === '') return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+function useFormatIso(): (iso: string | undefined) => string {
+  // Wrap the centralized date-fns formatter so we honour the active i18n
+  // locale. Output mirrors the previous Intl format (`MMM d, yyyy, HH:mm`).
+  const { formatDate } = useFormatDate();
+  return (iso: string | undefined): string => {
+    if (iso === undefined || iso === null || iso === '') return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '—';
+    return formatDate(d, 'PPp');
+  };
 }
 
 // ─── Overview tab ────────────────────────────────────────────────────────────
 
 function OverviewTab({ node }: { node: ClusterNode }) {
   const { t } = useTranslation(['admin', 'common']);
+  const formatIso = useFormatIso();
   const grafanaBase = getGrafanaUrl();
   const grafanaHref = grafanaBase ? buildGrafanaDeeplink(grafanaBase, node.nodeId) : undefined;
 
@@ -157,6 +158,7 @@ function DrainTab({
   activeDrain: DrainStatus | undefined;
 }) {
   const { t } = useTranslation(['admin']);
+  const formatIso = useFormatIso();
 
   if (node.state !== 'Draining' || !activeDrain) {
     return (

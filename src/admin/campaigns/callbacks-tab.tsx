@@ -13,6 +13,7 @@ import {
 } from '@/core/ui/dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useCallbacks, useCreateCallback } from '@/core/api/hooks/use-campaigns';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 interface CallbacksTabProps {
   campaignId: number;
@@ -20,6 +21,7 @@ interface CallbacksTabProps {
 
 export function CallbacksTab({ campaignId }: CallbacksTabProps) {
   const { t } = useTranslation('admin');
+  const { formatDateTime } = useFormatDate();
   const { data: callbacks = [], isLoading } = useCallbacks(campaignId);
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState({ contactId: '', phone: '', scheduledAt: '', agentId: '' });
@@ -52,7 +54,7 @@ export function CallbacksTab({ campaignId }: CallbacksTabProps) {
                 <p className="text-sm font-medium">{t('campaigns.callbacks.contact_label', { id: cb.contactId })}</p>
                 <p className="text-xs text-muted-foreground">
                   <Calendar className="mr-1 inline h-3 w-3" />
-                  {new Date(cb.scheduledAt).toLocaleString()}
+                  {formatDateTime(cb.scheduledAt)}
                   {cb.agentId && (
                     <><User className="ml-2 mr-1 inline h-3 w-3" />{cb.agentId}</>
                   )}

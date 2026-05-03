@@ -8,6 +8,7 @@ import { useDashboard, useIntervals, type DashboardKpis } from '@/core/api/hooks
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 import { CurrentIntervalCard } from './current-interval-card';
 import { BotAnalyticsCard } from './bot-analytics-card';
+import { useFormatNumber } from '@/core/i18n/use-format';
 
 function formatWait(ms: number): string {
   return `${Math.round(ms / 1000)}s`;
@@ -27,6 +28,7 @@ function computeDelta(current: number, previous: number): number {
 
 export default function DashboardPage() {
   const { t } = useTranslation('analytics');
+  const { formatNumber } = useFormatNumber();
   const { from, to, queue } = useAnalyticsFilterStore();
 
   const { data, isLoading } = useDashboard(from, to, queue || undefined);
@@ -90,7 +92,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="dashboard-kpis">
             <KpiCard
               label={t('dashboard.conversations_handled')}
-              value={kpis ? kpis.conversationsHandled.toLocaleString() : '—'}
+              value={kpis ? formatNumber(kpis.conversationsHandled) : '—'}
               delta={deltas.handled}
               deltaLabel={prev ? t('dashboard.vs_prev_period') : undefined}
             />

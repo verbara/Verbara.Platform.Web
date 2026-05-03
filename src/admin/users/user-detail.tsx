@@ -31,6 +31,7 @@ import { UserForm } from './user-form';
 import { useUser, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
 import { useUserRoles, useAssignRole, useRemoveRole, useRoles } from '@/core/api/hooks/use-rbac';
 import { useForceLogoutUser } from '@/core/api/hooks/use-auth-admin';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 function InfoRow({
   icon: Icon,
@@ -54,6 +55,7 @@ function InfoRow({
 
 export default function UserDetailPage() {
   const { t } = useTranslation(['admin']);
+  const { formatDateTime } = useFormatDate();
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
@@ -167,7 +169,7 @@ export default function UserDetailPage() {
         </InfoRow>
         {lastLogin && (
           <InfoRow icon={Clock} label={t('admin:users.last_login', 'Last Login')}>
-            {new Date(lastLogin).toLocaleString()}
+            {formatDateTime(lastLogin)}
           </InfoRow>
         )}
       </div>

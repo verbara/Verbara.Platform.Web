@@ -28,6 +28,7 @@ import {
   type ReportFormat,
   type ReportExecution,
 } from '@/core/api/hooks/use-reports';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const columnHelper = createColumnHelper<ScheduledReport>();
 
@@ -71,6 +72,7 @@ function statusVariant(status: ReportExecution['status']): 'default' | 'destruct
 
 export default function ReportsPage() {
   const { t } = useTranslation(['admin']);
+  const { formatDateTime } = useFormatDate();
   const [createOpen, setCreateOpen] = useState(false);
   const [editReport, setEditReport] = useState<ScheduledReport | null>(null);
   const [deletingReport, setDeletingReport] = useState<ScheduledReport | null>(null);
@@ -242,7 +244,7 @@ export default function ReportsPage() {
                 <div>
                   <Badge variant={statusVariant(exec.status)}>{exec.status}</Badge>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {new Date(exec.startedAt).toLocaleString()}
+                    {formatDateTime(exec.startedAt)}
                   </p>
                 </div>
                 {exec.status === 'Completed' && (

@@ -23,6 +23,7 @@ import { ContactSearchPanel } from '@/admin/shared/contact-search-panel';
 import { CdrDetailDrawer } from './cdr-detail-drawer';
 import { useCdrList, type CdrRow as ApiCdrRow } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -153,20 +154,21 @@ function formatMinSec(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
-function formatDateTime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
-}
-
-function mapApiRowToGridRow(r: ApiCdrRow): CdrRow {
-  return {
+export default function CdrPage() {
+  const { t } = useTranslation('analytics');
+  const { formatDateTime } = useFormatDate();
+  const formatDateTimeSafe = (iso: string): string => {
+    try {
+      return formatDateTime(iso);
+    } catch {
+      return iso;
+    }
+  };
+  const mapApiRowToGridRow = (r: ApiCdrRow): CdrRow => ({
     id: r.sessionId,
-    startTime: formatDateTime(r.startTime),
-    endTime: formatDateTime(r.endTime),
-    answerTime: r.answerTime ? formatDateTime(r.answerTime) : null,
+    startTime: formatDateTimeSafe(r.startTime),
+    endTime: formatDateTimeSafe(r.endTime),
+    answerTime: r.answerTime ? formatDateTimeSafe(r.answerTime) : null,
     contact: r.contact ?? '',
     channel: r.channelType ?? r.channel,
     queue: r.queueName ?? '',
@@ -183,11 +185,7 @@ function mapApiRowToGridRow(r: ApiCdrRow): CdrRow {
     ringDurationMs: r.ringDurationMs ?? null,
     holdCount: r.holdCount ?? null,
     wrapUpDurationMs: r.wrapUpDurationMs ?? null,
-  };
-}
-
-export default function CdrPage() {
-  const { t } = useTranslation('analytics');
+  });
   const [selectedRow, setSelectedRow] = useState<CdrRow | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [page, setPage] = useState(1);

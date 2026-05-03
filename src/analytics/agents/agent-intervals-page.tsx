@@ -2,9 +2,11 @@ import { useTranslation } from 'react-i18next';
 import { useAgentIntervals } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 import { PageHeader } from '@/admin/shared/page-header';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof useAgentIntervals>['data'] & object[] }) {
   const { t } = useTranslation('analytics');
+  const { formatDateTime } = useFormatDate();
   if (intervals.length === 0) {
     return (
       <div data-testid="agent-intervals-table" className="rounded-lg border border-dashed p-8 text-center">
@@ -30,7 +32,7 @@ function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof us
           {intervals.map((row) => (
             <tr key={`${row.agentId}-${row.intervalStart}`} className="border-b last:border-0">
               <td className="px-4 py-2">{row.agentId}</td>
-              <td className="px-4 py-2">{new Date(row.intervalStart).toLocaleString()}</td>
+              <td className="px-4 py-2">{formatDateTime(row.intervalStart)}</td>
               <td className="px-4 py-2 text-right">{row.callsHandled}</td>
               <td className="px-4 py-2 text-right">{(row.ahtMs / 1000).toFixed(0)}s</td>
               <td className="px-4 py-2 text-right">{row.occupancyPercent.toFixed(1)}%</td>

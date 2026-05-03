@@ -23,6 +23,7 @@ import { Separator } from '@/core/ui/separator';
 import { ScoreGauge } from './score-gauge';
 import { useQaDetail } from '@/core/api/hooks/use-analytics';
 import type { TurnSentimentInfo, ComplianceViolationInfo } from '@/core/api/hooks/use-analytics';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 interface QaDetailDrawerProps {
   readonly sessionId: string | null;
@@ -124,6 +125,7 @@ function sentimentAverage(points: readonly SentimentPoint[]): number {
 
 export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawerProps) {
   const { t } = useTranslation('analytics');
+  const { formatDateShort } = useFormatDate();
 
   const { data: detail, isLoading } = useQaDetail(sessionId ?? '');
 
@@ -145,7 +147,7 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
           {detail && (
             <SheetDescription>
               {detail.agentName ?? '—'} &mdash;{' '}
-              {detail.analyzedAt ? new Date(detail.analyzedAt).toLocaleDateString() : '—'}
+              {detail.analyzedAt ? formatDateShort(detail.analyzedAt) : '—'}
             </SheetDescription>
           )}
         </SheetHeader>

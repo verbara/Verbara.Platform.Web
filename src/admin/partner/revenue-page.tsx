@@ -24,12 +24,9 @@ import {
   usePartnerRevenueDetails,
   type PartnerRevenueDetail,
 } from '@/core/api/hooks/use-partner';
+import { useFormatNumber } from '@/core/i18n/use-format';
 
 const col = createColumnHelper<PartnerRevenueDetail>();
-
-function formatCurrency(amount: number, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
-}
 
 function marginColor(pct: number): string {
   if (pct >= 30) return 'text-green-600 dark:text-green-400';
@@ -100,6 +97,7 @@ function buildTrendSeries(details: PartnerRevenueDetail[]): TrendPoint[] {
 
 export default function PartnerRevenuePage() {
   const { t } = useTranslation('admin');
+  const { formatCurrency } = useFormatNumber();
   const navigate = useNavigate();
 
   const [from, setFrom] = useState('');
@@ -186,15 +184,15 @@ export default function PartnerRevenuePage() {
       }),
       col.accessor('grossAmount', {
         header: () => t('partner.revenue.col.gross', 'Gross'),
-        cell: (info) => <span>{formatCurrency(info.getValue())}</span>,
+        cell: (info) => <span>{formatCurrency(info.getValue(), 'USD')}</span>,
       }),
       col.accessor('platformCost', {
         header: () => t('partner.revenue.col.cost', 'Cost'),
-        cell: (info) => <span className="text-muted-foreground">{formatCurrency(info.getValue())}</span>,
+        cell: (info) => <span className="text-muted-foreground">{formatCurrency(info.getValue(), 'USD')}</span>,
       }),
       col.accessor('partnerMargin', {
         header: () => t('partner.revenue.col.margin', 'Margin'),
-        cell: (info) => <span className="font-medium">{formatCurrency(info.getValue())}</span>,
+        cell: (info) => <span className="font-medium">{formatCurrency(info.getValue(), 'USD')}</span>,
       }),
       col.display({
         id: 'marginPct',
@@ -217,7 +215,7 @@ export default function PartnerRevenuePage() {
         },
       }),
     ],
-    [t, firstRowIdByCustomer],
+    [t, firstRowIdByCustomer, formatCurrency],
   );
 
   return (
@@ -277,20 +275,20 @@ export default function PartnerRevenuePage() {
         <SummaryCard
           icon={<DollarSign className="h-4 w-4" />}
           label={t('partner.revenue.summary.totalRevenue', 'Total revenue')}
-          value={summary ? formatCurrency(summary.totalGross) : '—'}
+          value={summary ? formatCurrency(summary.totalGross, 'USD') : '—'}
           testid="revenue-total-gross"
         />
         <SummaryCard
           icon={<DollarSign className="h-4 w-4" />}
           label={t('partner.revenue.summary.platformCost', 'Platform cost')}
-          value={summary ? formatCurrency(summary.totalPlatformCost) : '—'}
+          value={summary ? formatCurrency(summary.totalPlatformCost, 'USD') : '—'}
           muted
           testid="revenue-total-cost"
         />
         <SummaryCard
           icon={<TrendingUp className="h-4 w-4" />}
           label={t('partner.revenue.summary.yourMargin', 'Your margin')}
-          value={summary ? formatCurrency(summary.totalMargin) : '—'}
+          value={summary ? formatCurrency(summary.totalMargin, 'USD') : '—'}
           highlight
           testid="revenue-total-margin"
         />

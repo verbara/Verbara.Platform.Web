@@ -6,6 +6,7 @@ import { ExportButton } from '@/analytics/shared/export-button';
 import { DateRangePicker, type DateRange } from '@/analytics/shared/date-range-picker';
 import { useIntervals, type IntervalData } from '@/core/api/hooks/use-analytics';
 import { useQueues } from '@/core/api/hooks/use-queues';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const PAGE_SIZE = 50;
 
@@ -17,14 +18,6 @@ function daysAgo(n: number): string {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return d.toISOString().slice(0, 10);
-}
-
-function formatDateTime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
 }
 
 function formatSeconds(ms: number): string {
@@ -66,6 +59,14 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 
 export default function IntervalPage() {
   const { t } = useTranslation('analytics');
+  const { formatDateTime } = useFormatDate();
+  const formatDateTimeSafe = (iso: string): string => {
+    try {
+      return formatDateTime(iso);
+    } catch {
+      return iso;
+    }
+  };
   const { data: queues = [] } = useQueues();
 
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -123,7 +124,7 @@ export default function IntervalPage() {
       headers.join(','),
       ...sorted.map((r) =>
         [
-          formatDateTime(r.intervalStart),
+          formatDateTimeSafe(r.intervalStart),
           r.queueName,
           r.callsOffered,
           r.callsAnswered,

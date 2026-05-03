@@ -8,9 +8,11 @@ import { ScoreInline } from './score-gauge';
 import { QaDetailDrawer } from './qa-detail-drawer';
 import { useQaList, type QaRow } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 export default function QaPage() {
   const { t } = useTranslation('analytics');
+  const { formatDateShort } = useFormatDate();
   const [searchParams] = useSearchParams();
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -39,7 +41,7 @@ export default function QaPage() {
         header: t('cdr.date'),
         cell: ({ getValue }) => {
           const val = getValue() as string;
-          return val ? new Date(val).toLocaleDateString() : '—';
+          return val ? formatDateShort(val) : '—';
         },
       },
       {
@@ -114,7 +116,7 @@ export default function QaPage() {
         },
       },
     ],
-    [t],
+    [t, formatDateShort],
   );
 
   const handleRowClick = useCallback((row: QaRow) => {

@@ -34,6 +34,7 @@ import {
 } from '@/core/api/hooks/use-billing';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useFormatNumber } from '@/core/i18n/use-format';
 
 const quotaSchema = z.object({
   maxConcurrentChannels: z.coerce.number().int().min(1),
@@ -79,7 +80,8 @@ interface QuotaRowProps {
 }
 
 function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
-  const fmt = formatter ?? ((v: number | null | undefined) => v?.toLocaleString() ?? '—');
+  const { formatNumber } = useFormatNumber();
+  const fmt = formatter ?? ((v: number | null | undefined) => (v == null ? '—' : formatNumber(v)));
   const pct = limit && limit > 0 ? Math.min(100, (usage / limit) * 100) : 0;
   const color = pct >= 90 ? 'bg-destructive' : pct >= 70 ? 'bg-warning' : 'bg-brand';
 
@@ -88,7 +90,7 @@ function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">{label}</span>
         <span className="text-xs text-muted-foreground">
-          {usage.toLocaleString()} / {fmt(limit)}
+          {formatNumber(usage)} / {fmt(limit)}
         </span>
       </div>
       {limit != null && limit > 0 && (

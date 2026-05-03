@@ -22,11 +22,13 @@ import {
 } from '@/core/api/hooks/use-billing';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useFormatNumber } from '@/core/i18n/use-format';
 
 const col = createColumnHelper<UsageRecord>();
 
 export default function UsagePage() {
   const { t } = useTranslation('admin');
+  const { formatNumber } = useFormatNumber();
   const activeTenantId = useTenantStore((s) => s.activeTenantId);
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
@@ -71,7 +73,7 @@ export default function UsagePage() {
       }),
       col.accessor('quantity', {
         header: () => t('billing.usage.columns.quantity'),
-        cell: (info) => info.getValue().toLocaleString(),
+        cell: (info) => formatNumber(info.getValue()),
       }),
       col.accessor('unit', {
         header: () => t('billing.usage.columns.unit'),
@@ -91,7 +93,7 @@ export default function UsagePage() {
           ),
       }),
     ],
-    [t],
+    [t, formatNumber],
   );
 
   if (!tenantId) {
@@ -176,7 +178,7 @@ export default function UsagePage() {
           {summaries.map((s) => (
             <div key={s.usageType} className="rounded-md border bg-card p-3">
               <p className="text-xs text-muted-foreground">{s.usageType}</p>
-              <p className="text-lg font-semibold">{s.totalQuantity.toLocaleString()}</p>
+              <p className="text-lg font-semibold">{formatNumber(s.totalQuantity)}</p>
               <p className="text-xs text-muted-foreground">{t('billing.usage.records_count', { count: s.recordCount })}</p>
             </div>
           ))}

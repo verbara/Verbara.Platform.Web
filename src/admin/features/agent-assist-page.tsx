@@ -19,6 +19,7 @@ import {
   type AgentAssistProvider,
   type AgentAssistFeatureUpdate,
 } from '@/core/api/hooks/use-agent-assist-feature';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const PROVIDERS: { value: AgentAssistProvider; labelKey: string }[] = [
   { value: 'deepgram', labelKey: 'admin:features.agent-assist.provider.deepgram' },
@@ -45,6 +46,7 @@ const EMPTY_FORM: FormState = {
 
 export default function AgentAssistFeaturePage() {
   const { t } = useTranslation(['admin']);
+  const { formatDateTime } = useFormatDate();
   const { data: feature, isLoading } = useAgentAssistFeature();
   const update = useUpdateAgentAssistFeature();
 
@@ -164,7 +166,7 @@ export default function AgentAssistFeaturePage() {
                 <span className="font-medium">
                   {t('admin:features.agent-assist.updated-by', {
                     user: feature.updatedBy ?? 'unknown',
-                    at: feature.updatedAt ? new Date(feature.updatedAt).toLocaleString() : '',
+                    at: feature.updatedAt ? formatDateTime(feature.updatedAt) : '',
                   })}
                 </span>
                 <span className="ml-2">

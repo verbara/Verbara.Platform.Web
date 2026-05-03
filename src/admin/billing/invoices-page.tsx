@@ -33,6 +33,7 @@ import {
 } from '@/core/api/hooks/use-billing';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useFormatNumber } from '@/core/i18n/use-format';
 
 const col = createColumnHelper<Invoice>();
 
@@ -43,12 +44,9 @@ const STATUS_COLORS: Record<string, 'default' | 'secondary' | 'destructive' | 'o
   Void: 'destructive',
 };
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
-}
-
 export default function InvoicesPage() {
   const { t } = useTranslation('admin');
+  const { formatCurrency } = useFormatNumber();
   const activeTenantId = useTenantStore((s) => s.activeTenantId);
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
@@ -146,7 +144,7 @@ export default function InvoicesPage() {
         ),
       }),
     ],
-    [issueInvoice, payInvoice, t],
+    [issueInvoice, payInvoice, t, formatCurrency],
   );
 
   const handleGenerate = () => {

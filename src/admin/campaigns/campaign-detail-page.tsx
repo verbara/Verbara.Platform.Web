@@ -63,6 +63,7 @@ import {
 import type { DispositionCode } from '@/core/api/hooks/use-campaigns';
 import type { CampaignStatus } from './campaign-list-page';
 import { CallbacksTab } from './callbacks-tab';
+import { useFormatNumber } from '@/core/i18n/use-format';
 
 interface DispositionFormState {
   code: string;
@@ -248,6 +249,7 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
 export default function CampaignDetailPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
   const { t } = useTranslation(['admin']);
+  const { formatNumber } = useFormatNumber();
   const navigate = useNavigate();
   const [stopOpen, setStopOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -527,10 +529,10 @@ export default function CampaignDetailPage() {
         {/* Contacts */}
         <SectionHeader title={t('admin:campaigns.detail.contacts')} />
         <InfoRow icon={Users} label={t('admin:campaigns.detail.total_contacts')}>
-          {campaign.totalContacts.toLocaleString()}
+          {formatNumber(campaign.totalContacts)}
         </InfoRow>
         <InfoRow icon={Phone} label={t('admin:campaigns.detail.contacts_dialed')}>
-          {campaign.contactsDialed.toLocaleString()}
+          {formatNumber(campaign.contactsDialed)}
         </InfoRow>
       </div>
 

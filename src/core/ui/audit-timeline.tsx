@@ -1,19 +1,24 @@
 import { Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useEntityHistory } from '@/core/api/hooks/use-audit';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 interface AuditTimelineProps {
   entityType: string;
   entityId: string;
 }
 
-function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
-    ', ' +
-    d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-}
-
 export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
+  const { i18n } = useTranslation();
+  const { formatTimeShort } = useFormatDate();
+  const monthDayFmt = new Intl.DateTimeFormat(i18n.language, {
+    month: 'short',
+    day: 'numeric',
+  });
+  const formatTimestamp = (iso: string): string => {
+    const d = new Date(iso);
+    return monthDayFmt.format(d) + ', ' + formatTimeShort(d);
+  };
   const { data: entries = [], isLoading } = useEntityHistory(entityType, entityId);
 
   if (isLoading) {

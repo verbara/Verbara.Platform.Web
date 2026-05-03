@@ -16,11 +16,13 @@ import {
 } from '@/core/api/hooks/use-knowledge';
 import type { Article } from '@/core/api/hooks/use-knowledge';
 import type { ArticleFormValues } from './kb-form';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const columnHelper = createColumnHelper<Article>();
 
 export default function KbListPage() {
   const { t } = useTranslation(['admin']);
+  const { formatDate } = useFormatDate();
   const [createOpen, setCreateOpen] = useState(false);
   const [editArticle, setEditArticle] = useState<Article | null>(null);
   const [, setDeleteId] = useState<string | null>(null);
@@ -100,12 +102,7 @@ export default function KbListPage() {
       }),
       columnHelper.accessor('updatedAt', {
         header: () => t('admin:knowledge.updatedAt'),
-        cell: (info) =>
-          new Date(info.getValue()).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          }),
+        cell: (info) => formatDate(info.getValue(), 'PP'),
       }),
       columnHelper.display({
         id: 'actions',
@@ -130,7 +127,7 @@ export default function KbListPage() {
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [t],
+    [t, formatDate],
   );
 
   const isEmpty = articles.length === 0;

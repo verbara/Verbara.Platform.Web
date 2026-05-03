@@ -3,8 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
 
 export function TranscriptTab() {
-  const { t } = useTranslation('agent');
+  const { t, i18n } = useTranslation('agent');
   const transcript = useAgentAiStore((s) => s.transcript);
+  const timeFmt = new Intl.DateTimeFormat(i18n.language, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
   const bottomRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -39,7 +44,7 @@ export function TranscriptTab() {
             className={`group flex flex-col gap-0.5 ${isCaller ? 'items-start' : 'items-end'}`}
           >
             <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
-              {segment.speaker} · {new Date(segment.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              {segment.speaker} · {timeFmt.format(new Date(segment.timestamp))}
             </span>
             <button
               onClick={() => handleCopy(segment.text, key)}

@@ -30,6 +30,7 @@ import {
 } from '@/core/api/hooks/use-cases';
 import { useSearchContacts, type Contact } from '@/core/api/hooks/use-contacts';
 import { useAgents } from '@/core/api/hooks/use-agents';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 const PRIORITIES: CasePriority[] = ['Low', 'Normal', 'High', 'Urgent'];
 const STATUSES: CaseStatus[] = ['Open', 'Pending', 'Resolved', 'Closed'];
@@ -57,6 +58,7 @@ function contactDisplayName(c: Contact, fallback: string): string {
 
 export default function CasesPage() {
   const { t } = useTranslation('admin');
+  const { formatDateShort } = useFormatDate();
   const unnamedContact = t('cases.unnamed_contact');
   const { data, isLoading } = useCases();
   const cases = data?.items ?? [];
@@ -162,7 +164,7 @@ export default function CasesPage() {
       }),
       columnHelper.accessor('createdAt', {
         header: () => t('cases.columns.created'),
-        cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+        cell: (info) => formatDateShort(info.getValue()),
       }),
       columnHelper.display({
         id: 'actions',
@@ -183,7 +185,7 @@ export default function CasesPage() {
         ),
       }),
     ],
-    [t],
+    [t, formatDateShort],
   );
 
   if (isLoading) {

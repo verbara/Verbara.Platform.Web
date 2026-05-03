@@ -18,6 +18,7 @@ const WaveformPlayer = lazy(() => import('./waveform-player'));
 import { SyncedTranscript } from './synced-transcript';
 import type { CdrRow } from './cdr-page';
 import { useCdrDetail, useTranscript } from '@/core/api/hooks/use-analytics';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 function formatMs(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
@@ -88,6 +89,7 @@ function buildTimelineFromEvents(
 
 export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetailDrawerProps) {
   const { t } = useTranslation('analytics');
+  const { formatDateTime } = useFormatDate();
   const [currentTime, setCurrentTime] = useState(0);
   const seekRef = useRef<((time: number) => void) | null>(null);
 
@@ -100,9 +102,9 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
   const apiCdr = detail?.cdr;
 
   // Prefer API-sourced fields when available, fall back to grid row
-  const startTime = apiCdr?.startTime ? new Date(apiCdr.startTime).toLocaleString() : row.startTime;
-  const endTime = apiCdr?.endTime ? new Date(apiCdr.endTime).toLocaleString() : row.endTime;
-  const answerTime = apiCdr?.answerTime ? new Date(apiCdr.answerTime).toLocaleString() : row.answerTime;
+  const startTime = apiCdr?.startTime ? formatDateTime(apiCdr.startTime) : row.startTime;
+  const endTime = apiCdr?.endTime ? formatDateTime(apiCdr.endTime) : row.endTime;
+  const answerTime = apiCdr?.answerTime ? formatDateTime(apiCdr.answerTime) : row.answerTime;
   const channel = apiCdr?.channel ?? row.channel;
   const queue = apiCdr?.queueName ?? row.queue;
   const agent = apiCdr?.agentName ?? row.agent;

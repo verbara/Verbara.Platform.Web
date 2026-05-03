@@ -12,6 +12,7 @@
 import { useTranslation } from 'react-i18next';
 import { Clock } from 'lucide-react';
 import { useAuditEvents } from '@/core/api/hooks/use-audit-events';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 export interface AuditTrailMiniProps {
   readonly resourceType: string;
@@ -20,21 +21,15 @@ export interface AuditTrailMiniProps {
   readonly limit?: number;
 }
 
-function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  return (
-    d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
-    ', ' +
-    d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-  );
-}
-
 export function AuditTrailMini({
   resourceType,
   resourceId,
   limit = 10,
 }: AuditTrailMiniProps) {
   const { t } = useTranslation(['common']);
+  const { formatDateShort, formatTimeShort } = useFormatDate();
+  const formatTimestamp = (iso: string): string =>
+    `${formatDateShort(iso)}, ${formatTimeShort(iso)}`;
   const { data: entries = [], isLoading } = useAuditEvents({ resourceType, resourceId });
 
   if (isLoading) {

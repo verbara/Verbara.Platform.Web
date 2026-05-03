@@ -87,7 +87,7 @@ const DEFAULT_FILTERS: FilterState = {
 const PAGE_SIZE = 25;
 
 export default function AuditPage() {
-  const { t } = useTranslation(['admin']);
+  const { t, i18n } = useTranslation(['admin']);
 
   const [draft, setDraft] = useState<FilterState>(DEFAULT_FILTERS);
   const [applied, setApplied] = useState<FilterState>(DEFAULT_FILTERS);
@@ -118,7 +118,7 @@ export default function AuditPage() {
 
   function formatTimestamp(ts: string) {
     try {
-      return new Intl.DateTimeFormat(undefined, {
+      return new Intl.DateTimeFormat(i18n.language, {
         dateStyle: 'medium',
         timeStyle: 'medium',
       }).format(new Date(ts));

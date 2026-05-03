@@ -65,6 +65,7 @@ import {
   type UpdateNodeInput,
 } from '@/core/api/hooks/use-cluster';
 import { NodeDetailDrawer } from '@/admin/cluster/node-detail-drawer';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 // ── State badge ──
 // Delegates to the shared StatusBadge primitive (variant="cluster-node")
@@ -364,6 +365,7 @@ const col = createColumnHelper<ClusterNode>();
 
 export default function ClusterPage() {
   const { t } = useTranslation('admin');
+  const { formatDateTime } = useFormatDate();
   const { data: status } = useClusterStatus();
   const { data: nodes = [] } = useClusterNodes();
   const { data: instances = [] } = useClusterInstances();
@@ -604,7 +606,7 @@ export default function ClusterPage() {
                 <div className="flex items-center justify-between">
                   <p className="font-mono text-sm font-medium">{inst.instanceId}</p>
                   <span className="text-xs text-muted-foreground">
-                    {t('cluster.instances.last_seen', { date: new Date(inst.lastSeen).toLocaleString() })}
+                    {t('cluster.instances.last_seen', { date: formatDateTime(inst.lastSeen) })}
                   </span>
                 </div>
                 <div className="flex gap-4 text-xs text-muted-foreground">

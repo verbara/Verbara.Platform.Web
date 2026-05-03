@@ -17,6 +17,7 @@ import {
   useSurveyResponses,
   type SurveyResponse,
 } from '@/core/api/hooks/use-surveys';
+import { useFormatDate } from '@/core/i18n/use-format';
 
 interface KpiCardProps {
   label: string;
@@ -49,6 +50,7 @@ function ResponseDetail({ response }: { response: SurveyResponse }) {
 
 function ExpandableResponseTable({ responses }: { responses: SurveyResponse[] }) {
   const { t } = useTranslation('analytics');
+  const { formatDateShort } = useFormatDate();
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const columns = useMemo<ColumnDef<SurveyResponse, unknown>[]>(
@@ -82,7 +84,7 @@ function ExpandableResponseTable({ responses }: { responses: SurveyResponse[] })
         header: t('cdr.date'),
         cell: ({ getValue }) => {
           const val = getValue() as string;
-          return val ? new Date(val).toLocaleDateString() : '—';
+          return val ? formatDateShort(val) : '—';
         },
       },
       {
@@ -118,7 +120,7 @@ function ExpandableResponseTable({ responses }: { responses: SurveyResponse[] })
         },
       },
     ],
-    [t, expandedId],
+    [t, expandedId, formatDateShort],
   );
 
   if (responses.length === 0) {
