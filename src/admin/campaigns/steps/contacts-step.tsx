@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Upload, FileText, CheckCircle2, AlertTriangle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -128,7 +128,8 @@ export default function ContactsStep() {
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const columnMapping = watch('columnMapping') ?? {};
+  const columnMappingRaw = watch('columnMapping');
+  const columnMapping = useMemo(() => columnMappingRaw ?? {}, [columnMappingRaw]);
   const contactFile = watch('contactFile');
   const uploaded = parseResult !== null;
 

@@ -24,9 +24,7 @@ test.describe('Auth Events', () => {
   });
 
   test('should filter reactively by event type', async ({ platformAdminPage: page }) => {
-    // Count initial rows
     const table = page.getByTestId('auth-events-table');
-    const initialCount = await table.locator('tbody tr').count();
 
     // Select a specific event type via click (base-ui Select, not native)
     await page.getByTestId('auth-events-filter-type').click();
@@ -69,7 +67,6 @@ test.describe('Auth Events', () => {
 
     // Wait less than debounce (300ms) — should not have fired yet
     await page.waitForTimeout(100);
-    const callsDuringTyping = apiCalls.length - callCountBefore;
 
     // Wait for debounce to settle
     await page.waitForTimeout(500);

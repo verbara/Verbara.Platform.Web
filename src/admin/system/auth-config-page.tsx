@@ -19,10 +19,16 @@ export default function AuthConfigPage() {
   const [form, setForm] = useState<Partial<AuthConfig>>({});
   const [dirty, setDirty] = useState(false);
 
+  // Sync server config into editable local form when it (re)loads. Legitimate
+  // because we need to overwrite both `form` and `dirty` after a successful
+  // refetch/save round-trip — modeling this purely as derived state would lose
+  // unsaved edits on every refetch.
   useEffect(() => {
     if (config) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setForm(config);
       setDirty(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [config]);
 

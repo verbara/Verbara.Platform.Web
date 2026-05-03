@@ -157,48 +157,59 @@ function formatMinSec(ms: number): string {
 export default function CdrPage() {
   const { t } = useTranslation('analytics');
   const { formatDateTime } = useFormatDate();
-  const formatDateTimeSafe = (iso: string): string => {
-    try {
-      return formatDateTime(iso);
-    } catch {
-      return iso;
-    }
-  };
-  const mapApiRowToGridRow = (r: ApiCdrRow): CdrRow => ({
-    id: r.sessionId,
-    startTime: formatDateTimeSafe(r.startTime),
-    endTime: formatDateTimeSafe(r.endTime),
-    answerTime: r.answerTime ? formatDateTimeSafe(r.answerTime) : null,
-    contact: r.contact ?? '',
-    channel: r.channelType ?? r.channel,
-    queue: r.queueName ?? '',
-    agent: r.agentName ?? '',
-    duration: formatDurationMs(r.durationMs),
-    disposition: r.dispositionName ?? r.disposition,
-    slaMet: r.slaMet,
-    recordingUrl: r.recordingStreamUrl ?? null,
-    transferTo: r.transferredTo ?? null,
-    hasRecording: r.hasRecording,
-    campaignName: r.campaignName ?? null,
-    qaScore: r.qaScore ?? null,
-    sentimentLabel: r.sentimentLabel ?? null,
-    ringDurationMs: r.ringDurationMs ?? null,
-    holdCount: r.holdCount ?? null,
-    wrapUpDurationMs: r.wrapUpDurationMs ?? null,
-  });
+  const mapApiRowToGridRow = useCallback(
+    (r: ApiCdrRow): CdrRow => {
+      const formatDateTimeSafe = (iso: string): string => {
+        try {
+          return formatDateTime(iso);
+        } catch {
+          return iso;
+        }
+      };
+      return {
+        id: r.sessionId,
+        startTime: formatDateTimeSafe(r.startTime),
+        endTime: formatDateTimeSafe(r.endTime),
+        answerTime: r.answerTime ? formatDateTimeSafe(r.answerTime) : null,
+        contact: r.contact ?? '',
+        channel: r.channelType ?? r.channel,
+        queue: r.queueName ?? '',
+        agent: r.agentName ?? '',
+        duration: formatDurationMs(r.durationMs),
+        disposition: r.dispositionName ?? r.disposition,
+        slaMet: r.slaMet,
+        recordingUrl: r.recordingStreamUrl ?? null,
+        transferTo: r.transferredTo ?? null,
+        hasRecording: r.hasRecording,
+        campaignName: r.campaignName ?? null,
+        qaScore: r.qaScore ?? null,
+        sentimentLabel: r.sentimentLabel ?? null,
+        ringDurationMs: r.ringDurationMs ?? null,
+        holdCount: r.holdCount ?? null,
+        wrapUpDurationMs: r.wrapUpDurationMs ?? null,
+      };
+    },
+    [formatDateTime],
+  );
   const [selectedRow, setSelectedRow] = useState<CdrRow | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [contactSearchOpen, setContactSearchOpen] = useState(false);
   const { from, to, queue } = useAnalyticsFilterStore();
 
-  useEffect(() => { setPage(1); }, [from, to, queue]);
+  // Reset to first page when filters (Zustand store) change. Legitimate because
+  // the filters are owned by an external store, not a local prop, so we can't
+  // co-locate the reset with the setter.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPage(1);
+  }, [from, to, queue]);
 
   const { data, isLoading } = useCdrList(from, to, { queue: queue || undefined }, page);
 
   const rowData = useMemo<CdrRow[]>(
     () => (data?.items ?? []).map(mapApiRowToGridRow),
-    [data],
+    [data, mapApiRowToGridRow],
   );
 
   const columnDefs = useMemo<ColDef<CdrRow>[]>(

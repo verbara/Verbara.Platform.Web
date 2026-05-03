@@ -151,7 +151,11 @@ interface RevokeDialogProps {
 
 function RevokeDialog({ target, onClose, onConfirm, isPending, t }: RevokeDialogProps) {
   const [reason, setReason] = useState('');
+  // Reset textarea when the dialog gets a different target or closes. Legitimate
+  // because the parent may force-close by setting target=null after revoke
+  // settles, which doesn't fire Dialog's onOpenChange.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (target === null) setReason('');
   }, [target]);
 

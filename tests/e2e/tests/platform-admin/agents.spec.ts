@@ -1,5 +1,4 @@
 import { test, expect } from '../../fixtures/auth.fixture';
-import { ApiHelper } from '../../fixtures/api.fixture';
 
 test.describe('Agents', () => {
   test.beforeEach(async ({ platformAdminPage: page }) => {

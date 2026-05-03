@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/core/ui/button';
@@ -60,13 +60,16 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 export default function IntervalPage() {
   const { t } = useTranslation('analytics');
   const { formatDateTime } = useFormatDate();
-  const formatDateTimeSafe = (iso: string): string => {
-    try {
-      return formatDateTime(iso);
-    } catch {
-      return iso;
-    }
-  };
+  const formatDateTimeSafe = useCallback(
+    (iso: string): string => {
+      try {
+        return formatDateTime(iso);
+      } catch {
+        return iso;
+      }
+    },
+    [formatDateTime],
+  );
   const { data: queues = [] } = useQueues();
 
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -84,10 +87,15 @@ export default function IntervalPage() {
     queue || undefined,
   );
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
+  function handleDateRangeChange(next: DateRange) {
+    setDateRange(next);
     setPage(1);
-  }, [dateRange, queue]);
+  }
+
+  function handleQueueChange(next: string) {
+    setQueue(next);
+    setPage(1);
+  }
 
   const sorted = useMemo(() => sortData(rawData, sortKey, sortDir), [rawData, sortKey, sortDir]);
 
@@ -97,17 +105,14 @@ export default function IntervalPage() {
     [sorted, page],
   );
 
-  const handleSort = useCallback(
-    (key: SortKey) => {
-      if (sortKey === key) {
-        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-      } else {
-        setSortKey(key);
-        setSortDir('asc');
-      }
-    },
-    [sortKey],
-  );
+  function handleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  }
 
   const handleExport = useCallback(() => {
     const headers = [
@@ -142,7 +147,7 @@ export default function IntervalPage() {
     a.download = 'intervals-export.csv';
     a.click();
     URL.revokeObjectURL(url);
-  }, [sorted, t]);
+  }, [sorted, t, formatDateTimeSafe]);
 
   const thClass =
     'select-none cursor-pointer whitespace-nowrap px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200';
@@ -171,11 +176,11 @@ export default function IntervalPage() {
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800" data-testid="interval-filters">
-        <DateRangePicker value={dateRange} onChange={setDateRange} />
+        <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
 
         <select
           value={queue}
-          onChange={(e) => setQueue(e.target.value)}
+          onChange={(e) => handleQueueChange(e.target.value)}
           className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
         >
           <option value="">{t('filters.queue')}</option>

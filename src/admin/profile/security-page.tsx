@@ -381,12 +381,16 @@ function PasswordSection({ locked }: Readonly<{ locked: boolean }>) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const effective = policy ?? {
-    minLength: 12,
-    requireUppercase: true,
-    requireNumber: true,
-    requireSpecial: false,
-  };
+  const effective = useMemo(
+    () =>
+      policy ?? {
+        minLength: 12,
+        requireUppercase: true,
+        requireNumber: true,
+        requireSpecial: false,
+      },
+    [policy],
+  );
 
   const checks = useMemo(() => ({
     length: newPassword.length >= effective.minLength,

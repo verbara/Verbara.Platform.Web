@@ -92,7 +92,10 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
   });
 
   /* Users not yet assigned as agents, plus the currently-edited user */
-  const assignedUserIds = new Set(agents.map((a) => a.userId));
+  const assignedUserIds = useMemo(
+    () => new Set(agents.map((a) => a.userId)),
+    [agents],
+  );
   const availableUsers = useMemo(() => {
     const available = allUsers.filter(
       (u) => !assignedUserIds.has(u.id) || u.id === defaultValues?.userId,

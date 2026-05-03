@@ -27,8 +27,11 @@ export function CannedResponses({ open, onSelect, onClose, contactName }: Canned
   const [search, setSearch] = useState('');
   const { data: responses, isLoading } = useSearchCannedResponses(search);
 
+  // Reset search when popover closes so reopening starts fresh. Legitimate
+  // because parent owns `open` state and may close from outside (escape, blur).
   useEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearch('');
     }
   }, [open]);

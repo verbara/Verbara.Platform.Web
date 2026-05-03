@@ -163,7 +163,9 @@ export default function ReportsPage() {
         ),
       }),
     ],
-    [t],
+    // setHistoryReportId/setDeletingReport are stable useState setters; runReport
+    // mutation is referenced and may change identity across renders.
+    [t, runReport, setHistoryReportId, setDeletingReport],
   );
 
   if (isLoading) {

@@ -53,8 +53,12 @@ export default function AgentAssistFeaturePage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [dirty, setDirty] = useState(false);
 
+  // Sync server feature into editable local form on (re)load. Legitimate because
+  // we need to overwrite both `form` and `dirty` after a successful refetch/save
+  // round-trip; credentials are intentionally cleared (server returns masked).
   useEffect(() => {
     if (feature) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setForm({
         enabled: feature.enabled,
         provider: feature.provider ?? '',
@@ -63,6 +67,7 @@ export default function AgentAssistFeaturePage() {
         googleJson: '',
       });
       setDirty(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [feature]);
 

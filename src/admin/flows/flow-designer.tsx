@@ -45,15 +45,20 @@ export default function FlowDesigner() {
   const updateFlow = useUpdateFlow();
   const publishFlow = usePublishFlow();
 
-  // Load flow data when it arrives from API
+  // Load flow data when it arrives from API. Legitimate sync of remote data into
+  // multiple local-state slots (nodes/edges live in xyflow internals, plus name,
+  // version, published). Cannot model as derived state because user edits diverge
+  // from server values.
   useEffect(() => {
     if (flow) {
       const { nodes: rfNodes, edges: rfEdges } = toReactFlow(flow);
+      /* eslint-disable react-hooks/set-state-in-effect */
       setNodes(rfNodes);
       setEdges(rfEdges);
       setFlowName(flow.name);
       setVersion(flow.version);
       setIsPublished(flow.isPublished);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [flow, setNodes, setEdges]);
 

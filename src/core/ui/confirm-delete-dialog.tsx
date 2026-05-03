@@ -45,10 +45,15 @@ export function ConfirmDeleteDialog({
   const [countdown, setCountdown] = useState(3);
   const [typed, setTyped] = useState('');
 
+  // Manage countdown timer + reset state when dialog closes. Legitimate because
+  // (a) the parent controls `open` so reset must respond to a prop change, and
+  // (b) the timer-driven countdown is genuinely effectful.
   useEffect(() => {
     if (!open) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setCountdown(3);
       setTyped('');
+      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
 

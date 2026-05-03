@@ -98,7 +98,10 @@ interface ChannelConfigFormProps {
 export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConfigFormProps) {
   const { t } = useTranslation(['admin']);
   const updateChannel = useUpdateChannel();
-  const fields = channelId ? (channelFields[channelId] ?? []) : [];
+  const fields = useMemo(
+    () => (channelId ? (channelFields[channelId] ?? []) : []),
+    [channelId],
+  );
   const schema = useMemo(() => buildSchema(fields), [fields]);
 
   const {

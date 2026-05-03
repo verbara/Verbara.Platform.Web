@@ -124,6 +124,12 @@ export default function CasesPage() {
     }
   };
 
+  // keep manual memoization: column array is consumed by TanStack Table which
+  // rebuilds internal state on identity changes — a stable reference matters
+  // even when the React Compiler memoizes the producer scope. The Compiler
+  // wants to add `openEdit` (recreated each render), which would defeat the
+  // purpose of memoizing the columns.
+  /* eslint-disable react-hooks/preserve-manual-memoization */
   const columns = useMemo(
     () => [
       columnHelper.accessor('caseNumber', {
@@ -187,6 +193,7 @@ export default function CasesPage() {
     ],
     [t, formatDateShort],
   );
+  /* eslint-enable react-hooks/preserve-manual-memoization */
 
   if (isLoading) {
     return (

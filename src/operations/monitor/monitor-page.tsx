@@ -13,9 +13,12 @@ export default function MonitorPage() {
   const startListening = useStartListening();
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
-  // Auto-deselect if the selected session disappears
+  // Auto-deselect if the selected session disappears from the live list.
+  // Legitimate because the sessions array is an external (server-driven) source
+  // we must reactively reconcile against local selection state.
   useEffect(() => {
     if (selectedSessionId && !sessions.find((s) => s.sessionId === selectedSessionId)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSessionId(null);
     }
   }, [sessions, selectedSessionId]);

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Plus, Users, Pencil, Trash2 } from 'lucide-react';
@@ -60,16 +60,19 @@ export default function TeamsPage() {
     setDialogOpen(true);
   };
 
-  const openEdit = (team: Team) => {
-    setEditingTeam(team);
-    reset({ name: team.name });
-    setDialogOpen(true);
-  };
+  const openEdit = useCallback(
+    (team: Team) => {
+      setEditingTeam(team);
+      reset({ name: team.name });
+      setDialogOpen(true);
+    },
+    [reset],
+  );
 
-  const openDelete = (team: Team) => {
+  const openDelete = useCallback((team: Team) => {
     setDeletingTeam(team);
     setDeleteOpen(true);
-  };
+  }, []);
 
   const handleFormSubmit = handleSubmit((values) => {
     if (editingTeam) {
@@ -95,6 +98,8 @@ export default function TeamsPage() {
     });
   };
 
+  // openEdit/openDelete are defined inline above; React Compiler will memoize
+  // them per-render, so adding to deps array is safe.
   const columns = useMemo(
     () => [
       columnHelper.accessor('name', {
@@ -146,7 +151,7 @@ export default function TeamsPage() {
         ),
       }),
     ],
-    [t],
+    [t, openEdit, openDelete],
   );
 
   const isEmpty = teams.length === 0;

@@ -89,6 +89,10 @@ export function LoginPage() {
       });
     }
     })();
+    // Once-on-mount OIDC callback handler. Adding `completeLogin` to deps would
+    // re-run on every render (function recreated each render); clearing the URL
+    // hash also makes the body a no-op on subsequent runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function completeLogin(data: LoginResponse) {

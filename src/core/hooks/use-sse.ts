@@ -214,7 +214,7 @@ export function useSSE() {
       reconnectAttemptRef.current = attempt + 1;
       setTimeout(connect, delay);
     };
-  }, [accessToken, queryClient, navigate]);
+  }, [accessToken, queryClient, navigate, t]);
 
   useEffect(() => {
     connect();

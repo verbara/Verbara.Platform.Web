@@ -883,8 +883,12 @@ export default function AgentAssistConfigPage() {
   const [form, setForm] = useState<ConfigFormState>(DEFAULT_CONFIG);
   const [dirty, setDirty] = useState(false);
 
+  // Sync server config into editable local form when it (re)loads. Legitimate
+  // because we need to overwrite both `form` and `dirty` after a successful
+  // refetch/save round-trip.
   useEffect(() => {
     if (config) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setForm((prev) => ({
         ...prev,
         enabled: config.enabled,
@@ -894,6 +898,7 @@ export default function AgentAssistConfigPage() {
         queueNames: config.queueNames ?? [],
       }));
       setDirty(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [config]);
 

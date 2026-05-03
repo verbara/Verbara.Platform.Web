@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check } from 'lucide-react';
@@ -38,12 +38,13 @@ export function NotificationDrawer({ open, onOpenChange }: NotificationDrawerPro
   const markAllRead = useMarkAllNotificationsRead();
 
   // Reset drawer state when closed so reopening lands on a predictable view.
-  useEffect(() => {
-    if (!open) {
+  function handleOpenChange(next: boolean) {
+    if (!next) {
       setActiveTab('all');
       setLimit(PAGE_SIZE);
     }
-  }, [open]);
+    onOpenChange(next);
+  }
 
   // Category filtering is client-side: backend /notifications endpoint does not
   // accept a ?category= param. Counts and filtered list operate only on the
@@ -78,7 +79,7 @@ export function NotificationDrawer({ open, onOpenChange }: NotificationDrawerPro
     }
     if (n.actionUrl) {
       navigate(n.actionUrl);
-      onOpenChange(false);
+      handleOpenChange(false);
     }
   }
 
@@ -93,7 +94,7 @@ export function NotificationDrawer({ open, onOpenChange }: NotificationDrawerPro
   const hasUnread = (unreadCount?.count ?? 0) > 0;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent className="w-full sm:!max-w-md overflow-hidden flex flex-col p-0">
         <SheetHeader className="flex-row items-center justify-between gap-0 border-b border-slate-200 px-4 py-3 pr-12 dark:border-slate-700">
           <SheetTitle>{t('notifications.title')}</SheetTitle>

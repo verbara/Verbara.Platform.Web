@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -47,45 +47,49 @@ export default function RoleDetailPage() {
   const [dirty, setDirty] = useState(false);
 
   // Build implies map from categories
-  const impliesMap = new Map<string, string[]>();
-  for (const cat of categories) {
-    for (const p of cat.permissions) {
-      impliesMap.set(p.permissionId, p.implies);
+  const impliesMap = useMemo(() => {
+    const m = new Map<string, string[]>();
+    for (const cat of categories) {
+      for (const p of cat.permissions) {
+        m.set(p.permissionId, p.implies);
+      }
     }
-  }
+    return m;
+  }, [categories]);
 
+  // Sync server role into editable local form on (re)load. Legitimate because
+  // we need to overwrite multiple state slots and reset dirty after refetch.
   useEffect(() => {
     if (role) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setName(role.name);
       setDescription(role.description ?? '');
       setSelected(new Set(role.permissions));
       setDirty(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [role]);
 
-  const togglePermission = useCallback(
-    (permissionId: string, checked: boolean) => {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        if (checked) {
-          next.add(permissionId);
-          // Cascade: add implied permissions
-          for (const implied of getImplied(permissionId, impliesMap)) {
-            next.add(implied);
-          }
-        } else {
-          next.delete(permissionId);
-          // Cascade: remove permissions that depend on this one
-          for (const dep of getDependents(permissionId, impliesMap)) {
-            next.delete(dep);
-          }
+  function togglePermission(permissionId: string, checked: boolean) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(permissionId);
+        // Cascade: add implied permissions
+        for (const implied of getImplied(permissionId, impliesMap)) {
+          next.add(implied);
         }
-        return next;
-      });
-      setDirty(true);
-    },
-    [impliesMap],
-  );
+      } else {
+        next.delete(permissionId);
+        // Cascade: remove permissions that depend on this one
+        for (const dep of getDependents(permissionId, impliesMap)) {
+          next.delete(dep);
+        }
+      }
+      return next;
+    });
+    setDirty(true);
+  }
 
   function handleSave() {
     if (!id) return;

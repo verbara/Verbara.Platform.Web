@@ -21,14 +21,24 @@ export default function QaPage() {
 
   const autoSessionId = searchParams.get('sessionId');
 
+  // Auto-open detail drawer when a sessionId is provided in the URL query.
+  // Legitimate because the source of truth is the URL (router-controlled), and
+  // the drawer state needs to reflect that on navigation.
   useEffect(() => {
     if (autoSessionId) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setSelectedSessionId(autoSessionId);
       setDrawerOpen(true);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [autoSessionId]);
 
-  useEffect(() => { setPage(1); }, [from, to, queue]);
+  // Reset to first page when filters (Zustand store) change. External store
+  // ownership prevents co-locating with the setter.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPage(1);
+  }, [from, to, queue]);
 
   const { data, isLoading } = useQaList(from, to, { queue: queue || undefined }, page);
 

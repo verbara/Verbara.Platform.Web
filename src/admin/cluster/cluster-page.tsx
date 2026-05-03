@@ -480,7 +480,9 @@ export default function ClusterPage() {
         },
       }),
     ],
-    [handleCancelDrain, t],
+    // setEditNode/setDrainNodeId/setForceNode/setRemoveNode are stable useState
+    // setters; including them satisfies the Compiler's inferred-dependency check.
+    [handleCancelDrain, t, setEditNode, setDrainNodeId, setForceNode, setRemoveNode],
   );
 
   return (

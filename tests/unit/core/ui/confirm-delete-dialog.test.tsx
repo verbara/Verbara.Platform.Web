@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 
 // ─── Mock i18n ───────────────────────────────────────────────────────────────
 // Serves the few keys this dialog reads with their English values so test

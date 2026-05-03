@@ -121,9 +121,14 @@ export default function RoutesPage() {
   const [orderedRoutes, setOrderedRoutes] = useState<OutboundRouteSummary[]>([]);
   const [hasReordered, setHasReordered] = useState(false);
 
+  // Sync server route order into local mutable list for drag-reorder UI.
+  // Legitimate because the user reorders locally and we reset both state slots
+  // when server order changes (e.g. after save or refetch).
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     setOrderedRoutes(sortedRoutes);
     setHasReordered(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [sortedRoutes]);
 
   const sensors = useSensors(

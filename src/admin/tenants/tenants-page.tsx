@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -88,10 +88,13 @@ export default function TenantsPage() {
   const updateTenant = useUpdateTenant();
   const deleteTenant = useDeleteTenant();
 
-  const handleManageBilling = (tenant: Tenant) => {
-    useTenantStore.getState().setActiveTenant(tenant.tenantId);
-    navigate('/admin/billing/rate-cards');
-  };
+  const handleManageBilling = useCallback(
+    (tenant: Tenant) => {
+      useTenantStore.getState().setActiveTenant(tenant.tenantId);
+      navigate('/admin/billing/rate-cards');
+    },
+    [navigate],
+  );
 
   const {
     register,
@@ -253,7 +256,9 @@ export default function TenantsPage() {
         ),
       }),
     ],
-    [t, updateTenant],
+    // handleManageBilling is now memoized via useCallback; setDeleteTarget is a
+    // stable useState setter; updateTenant is the mutation hook reference.
+    [t, updateTenant, handleManageBilling, setDeleteTarget],
   );
 
   if (isLoading) {

@@ -49,13 +49,12 @@ export default function AuthEventsPage() {
   const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedUserSearch(userSearch), 300);
+    const timer = setTimeout(() => {
+      setDebouncedUserSearch(userSearch);
+      setPage(1);
+    }, 300);
     return () => clearTimeout(timer);
   }, [userSearch]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [eventType, debouncedUserSearch, startDate, endDate]);
 
   const params = useMemo(() => {
     const p: Record<string, string> = { page: String(page), pageSize: '50' };
@@ -103,7 +102,13 @@ export default function AuthEventsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <Select value={eventType} onValueChange={(v) => setEventType(v ?? '')}>
+        <Select
+          value={eventType}
+          onValueChange={(v) => {
+            setEventType(v ?? '');
+            setPage(1);
+          }}
+        >
           <SelectTrigger data-testid="auth-events-filter-type">
             <SelectValue placeholder={t('admin:auth.all_events', 'All events')} />
           </SelectTrigger>
@@ -126,14 +131,20 @@ export default function AuthEventsPage() {
           data-testid="auth-events-filter-start"
           className="w-40"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          onChange={(e) => {
+            setStartDate(e.target.value);
+            setPage(1);
+          }}
         />
         <Input
           type="date"
           data-testid="auth-events-filter-end"
           className="w-40"
           value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
+          onChange={(e) => {
+            setEndDate(e.target.value);
+            setPage(1);
+          }}
         />
         {isFetching && (
           <span className="text-sm text-muted-foreground animate-pulse">{t('common:status.loading')}</span>
