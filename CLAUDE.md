@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 > **Planning split (updated 2026-05-03):**
+>
 > - **Web-only tracks** (i18n, lint, UX, frontend features) live in this repo's `docs/plans/`. The v1.14.x Operational Foundation roadmap is the authoritative source for Web work.
 > - **Cross-cutting tracks** that span API + Web (e.g. auth-hotpath-hardening, R5.5 production validation) continue under `/media/Data/Source/IPcom/Asterisk.Platform/docs/plans/`.
 > - The previous note (2026-04-19) directing all planning to Platform is superseded for Web-only work; the v1.13.x i18n closure already shipped Web-authored plans/specs/ADRs successfully.
@@ -9,26 +10,26 @@
 
 Asterisk.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~330 TS/TSX files · 60+ pages · 54 API hooks · 28 UI components · 12 Zustand stores · 64+ E2E specs · 205/205 Vitest · Version 1.13.37** (cosmetic-track Platform 1.14.x).
+**~330 TS/TSX files · 60+ pages · 54 API hooks · 28 UI components · 12 Zustand stores · 64+ E2E specs · 800/800 Vitest · Version 1.15.5** (Nivel 2 Quality Foundation closed).
 
-The v1.13.x i18n track shipped 5 closure phases on 2026-05-03 (`v1.13.33` → `v1.13.37`, tagged `v1.13.37-web` with GitHub release). The track closed all acceptance criteria from [`docs/research/i18n-coverage-gap-2026-04-28.md`](docs/research/i18n-coverage-gap-2026-04-28.md): locale parity (CI-enforced via `npm run i18n:check`), multi-locale Playwright smoke, date/number/currency consumer audit, lint priority cleanup (70 problems resolved), and per-area error boundaries.
+Nivel 1 (Operational Foundation, `v1.14.0`..`v1.14.5`, tag `v1.14.5-web`) and Nivel 2 (Quality Foundation, `v1.15.0`..`v1.15.5`, tag `v1.15.5-web`) are complete. Coverage: 28% statements, hooks dir 91.58% lines. Shell bundle 114 kB (-86% from pre-split). Zero npm vulnerabilities.
 
-**Next track: v1.14.x Operational Foundation.** See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md). Decision recorded in [ADR-0003](docs/decisions/0003-operational-foundation-priority.md): CI/CD, error tracking, coverage and vulnerability remediation precede customer-facing features. The full roadmap covers 7 levels (24 tracks) ending at `v1.21.0` "WebChat customer widget" (~3 months calendar).
+**Next track: Nivel 3 — Code Quality** (`v1.16.x`). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md). Track 3A: lint-cleanup-2 (111 ESLint errors → 0). Track 3B: typescript-strict-2 (eliminate `as any` casts).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
 ## Documentation Layout (all git-tracked, private repo)
 
-| Folder | Purpose | Lifecycle |
-|--------|---------|-----------|
-| `docs/specs/` | Technical designs (input to implementation) | Add on new feature, rarely edited after |
-| `docs/specs/archived/` | Superseded / draft specs kept for history | Append-only |
-| `docs/decisions/` | ADRs — architecture decision records (why, not how) | Append-only; never delete |
-| `docs/plans/active/` | Execution plans currently in progress | Moves to `completed/` on ship |
-| `docs/plans/completed/` | Shipped plans, preserved as historical record | Append-only |
-| `docs/plans/archived/` | Skeletons / superseded / abandoned plans | Append-only |
-| `docs/research/` | Exploratory findings, market analysis, discovery | Freeform |
-| `docs/research/archived/` | Older research kept for context | Append-only |
+| Folder                    | Purpose                                             | Lifecycle                               |
+| ------------------------- | --------------------------------------------------- | --------------------------------------- |
+| `docs/specs/`             | Technical designs (input to implementation)         | Add on new feature, rarely edited after |
+| `docs/specs/archived/`    | Superseded / draft specs kept for history           | Append-only                             |
+| `docs/decisions/`         | ADRs — architecture decision records (why, not how) | Append-only; never delete               |
+| `docs/plans/active/`      | Execution plans currently in progress               | Moves to `completed/` on ship           |
+| `docs/plans/completed/`   | Shipped plans, preserved as historical record       | Append-only                             |
+| `docs/plans/archived/`    | Skeletons / superseded / abandoned plans            | Append-only                             |
+| `docs/research/`          | Exploratory findings, market analysis, discovery    | Freeform                                |
+| `docs/research/archived/` | Older research kept for context                     | Append-only                             |
 
 After `ExitPlanMode` approval, copy the system-path plan file (`~/.claude/plans/*.md`) into `docs/plans/active/` with a date-prefixed meaningful name — the repo is authoritative. When the plan ships, `git mv` it to `docs/plans/completed/`.
 
@@ -36,28 +37,28 @@ ADR numbering is sequential (`0001`, `0002`, …). Once `Accepted`, ADRs are app
 
 ## Stack
 
-| Library | Version |
-|---------|---------|
-| React | 19.2.x |
-| TypeScript | 5.9.x (strict mode) |
-| Vite | 8.0.x |
-| TailwindCSS | 4.2.x (via `@tailwindcss/vite`) |
-| shadcn/ui | 4.1.x (`@base-ui/react` 1.3.x, **NOT Radix**) |
-| TanStack Query | 5.95.x |
-| TanStack Table | 8.21.x |
-| React Router | 7.13.x |
-| Zustand | 5.0.x |
-| React Hook Form + Zod | 7.72.x / 4.3.x |
-| Recharts | 3.8.x |
-| AG Grid | 35.1.x |
-| XY Flow | 12.10.x (flow designer) |
-| dnd-kit | core 6.3.x / sortable 10.0.x |
-| Lucide React | 0.577.x |
-| i18next | 25.10.x |
-| date-fns | 4.1.x |
-| Vitest | 4.1.x |
-| Testing Library | React 16.3.x |
-| Node (Docker) | 22-alpine |
+| Library               | Version                                       |
+| --------------------- | --------------------------------------------- |
+| React                 | 19.2.x                                        |
+| TypeScript            | 5.9.x (strict mode)                           |
+| Vite                  | 8.0.x                                         |
+| TailwindCSS           | 4.2.x (via `@tailwindcss/vite`)               |
+| shadcn/ui             | 4.1.x (`@base-ui/react` 1.3.x, **NOT Radix**) |
+| TanStack Query        | 5.95.x                                        |
+| TanStack Table        | 8.21.x                                        |
+| React Router          | 7.13.x                                        |
+| Zustand               | 5.0.x                                         |
+| React Hook Form + Zod | 7.72.x / 4.3.x                                |
+| Recharts              | 3.8.x                                         |
+| AG Grid               | 35.1.x                                        |
+| XY Flow               | 12.10.x (flow designer)                       |
+| dnd-kit               | core 6.3.x / sortable 10.0.x                  |
+| Lucide React          | 0.577.x                                       |
+| i18next               | 25.10.x                                       |
+| date-fns              | 4.1.x                                         |
+| Vitest                | 4.1.x                                         |
+| Testing Library       | React 16.3.x                                  |
+| Node (Docker)         | 22-alpine                                     |
 
 ## Build & Test
 
@@ -93,18 +94,19 @@ src/
 
 4 layout areas, all behind `AuthGuard`. Every route uses `lazy()` + `<Suspense>` for code splitting.
 
-| Layout | Path | Permission Guard (requiresAny) |
-|--------|------|-----------------|
-| **Admin** | `/admin/*` | `users:user:view` · `queues:queue:view` · `campaigns:campaign:view` · `routing:flow:view` · `system:tenant:configure` |
-| **Operations** | `/operations/*` | `reporting:realtime:view` · `contacts:conversation:monitor` |
-| **Analytics** | `/analytics/*` | `analytics:cdr:view` · `reporting:historical:view` |
-| **Agent** | `/agent/*` | `contacts:conversation:handle` |
+| Layout         | Path            | Permission Guard (requiresAny)                                                                                        |
+| -------------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Admin**      | `/admin/*`      | `users:user:view` · `queues:queue:view` · `campaigns:campaign:view` · `routing:flow:view` · `system:tenant:configure` |
+| **Operations** | `/operations/*` | `reporting:realtime:view` · `contacts:conversation:monitor`                                                           |
+| **Analytics**  | `/analytics/*`  | `analytics:cdr:view` · `reporting:historical:view`                                                                    |
+| **Agent**      | `/agent/*`      | `contacts:conversation:handle`                                                                                        |
 
 Public routes: `/login`, `/forgot-password`, `/reset-password`, `/unauthorized`
 
 ## API Layer
 
 `customFetch<T>()` in [src/core/api/client.ts](src/core/api/client.ts):
+
 - Adds `Authorization: Bearer <JWT>` + `X-Tenant-Id` (from tenant store) headers
 - Pre-flight token refresh when expired; deduplicates concurrent refreshes
 - On 401: single refresh attempt, then redirects to `/login`
@@ -117,12 +119,12 @@ Hooks live in [src/core/api/hooks/](src/core/api/hooks/) — one per domain, nam
 
 11 Zustand stores total across `core/`, `agent/`, and `operations/`. Architectural ones to know about:
 
-| Store | Location | Purpose |
-|-------|----------|---------|
-| `auth-store` | `src/core/auth/` | JWT tokens, user, tenant, permissions, expiry check, impersonation state |
-| `tenant-store` | `src/core/tenant/` | Active tenant ID for multi-tenant context switching |
-| `conversation-store` | `src/agent/stores/` | Active conversations, selection, message state |
-| `queue-metrics-store` | `src/operations/stores/` | Real-time queue metrics |
+| Store                 | Location                 | Purpose                                                                  |
+| --------------------- | ------------------------ | ------------------------------------------------------------------------ |
+| `auth-store`          | `src/core/auth/`         | JWT tokens, user, tenant, permissions, expiry check, impersonation state |
+| `tenant-store`        | `src/core/tenant/`       | Active tenant ID for multi-tenant context switching                      |
+| `conversation-store`  | `src/agent/stores/`      | Active conversations, selection, message state                           |
+| `queue-metrics-store` | `src/operations/stores/` | Real-time queue metrics                                                  |
 
 Feature-scoped stores: `draft-store`, `agent-ai-store`, `agent-alerts-store`, `notification-store`, `ui-store`, `analytics-filter-store`, `agent-state-store`, `campaign-metrics-store`.
 
@@ -169,6 +171,7 @@ Multi-stage (`Dockerfile`): build with `node:22-alpine` (`npm ci` + `npm run bui
 ## Plan Execution
 
 **Always use Subagent-Driven Development** with risk-weighted batching (FCM pattern):
+
 - Phase A: Foundation (scaffolding, models) — batch
 - Phase B: Critical components (serializers, calculators) — individual focused subagents
 - Phase C: Integration (DI, storage, wiring) — batch
