@@ -5,7 +5,7 @@
 
 React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**Version:** 1.15.1 — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
+**Version:** 1.15.5 — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
 
 ## Stack
 

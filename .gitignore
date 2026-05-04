@@ -33,5 +33,9 @@ test-results/
 # Vitest coverage (Track 2A)
 coverage/
 
+# Claude Code
+.claude/
+.project-memory/
+
 # claudelint
 .claudelint-cache/
