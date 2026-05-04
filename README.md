@@ -1,6 +1,9 @@
-# Asterisk.Platform.Web
+# Verbara Web
 
-React 19 frontend for the Asterisk omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
+> Frontend for the **Verbara** open-core contact-center platform.
+> Repository name (`Asterisk.Platform.Web`) is transitional — the project is rebranding to **Verbara** ([ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)). Repo rename to `verbara-web` will happen after Track 1A ships.
+
+React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
 **Version:** 1.13.37 — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
 
@@ -121,14 +124,25 @@ Track-end versioning ([ADR-0005](docs/decisions/0005-versioning-track-end-tags.m
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) (planned for v1.14.0 — Track 1A).
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full contribution guide.
 
-For now: branch from `main`, conventional commits, `npm run lint && npm run test && npm run build` must all pass before push. Open a PR; CI gates will arrive in v1.14.2 (Track 1C).
+Quick version: branch from `main`, [Conventional Commits](https://www.conventionalcommits.org/), sign commits with DCO (`git commit -s`), and ensure `npm run lint && npm run test && npm run build` all pass before opening a PR.
+
+For security disclosure use `security@verbara.io`. For commercial licensing inquiries use `licensing@verbara.io`.
 
 ## License
 
-TBD — to be added in v1.14.0 (Track 1A). Coordinate with the Asterisk SDK ecosystem licensing matrix:
-- `Asterisk.Sdk` — MIT
-- `Asterisk.Sdk.Pro` — Commercial
-- `Asterisk.Platform` — TBD
-- `Asterisk.Platform.Web` — inherits from Platform
+This repository is licensed under the **[Apache License 2.0](LICENSE)**. See [`NOTICE`](NOTICE) for attributions.
+
+This is the open-source UI of the **Verbara** open-core contact-center stack:
+
+| Repository | License | Role |
+|---|---|---|
+| **Verbara Sdk** (currently `Asterisk.Sdk`) | MIT | Telephony primitives (AMI/ARI/SIP wrappers) — community attractor |
+| **Verbara Web** (this repository) | **Apache 2.0** | Frontend UI (admin / agent / analytics / operations) |
+| **Verbara Platform** (currently `Asterisk.Platform`) | Apache 2.0 | Backend application — full contact-center engine |
+| **Verbara Sdk Pro** (currently `Asterisk.Sdk.Pro`) | Commercial | Enterprise overlays (multi-tenant, analytics, cluster, licensing) |
+
+**Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md) for the full rationale (license decision + 5-tier commercial model).
+
+**Trademark note:** "Asterisk" is a registered trademark of Sangoma Technologies/Digium and is unrelated to the Verbara project. The repository names that begin with `Asterisk.` are transitional and will be renamed to `verbara-*` as part of the v1.14.0 rebrand.

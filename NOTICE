@@ -1,0 +1,18 @@
+Verbara Web
+Copyright 2026-present Harol A. Reina H. and Verbara Contributors
+
+This product is part of the Verbara open-core ecosystem:
+
+  - Verbara Sdk           — MIT License (telephony primitives)
+  - Verbara Sdk Pro       — Commercial License (enterprise overlays)
+  - Verbara Platform      — Apache License 2.0 (full backend application)
+  - Verbara Web           — Apache License 2.0 (this repository, frontend UI)
+
+This product includes software developed by various contributors and
+incorporates open-source components. See `package.json` and the
+respective licenses of upstream dependencies for the full list.
+
+For commercial licensing inquiries:  licensing@verbara.io
+For security disclosure:              security@verbara.io
+For legal inquiries:                  legal@verbara.io
+General contact:                      hello@verbara.io
