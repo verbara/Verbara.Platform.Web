@@ -10,13 +10,7 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -125,7 +119,7 @@ export default function QuotasPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<QuotaFormValues>({
-    resolver: zodResolver(quotaSchema) as any,
+    resolver: zodResolver(quotaSchema),
   });
 
   useEffect(() => {
@@ -167,7 +161,9 @@ export default function QuotasPage() {
       <div className="flex h-64 items-center justify-center">
         <p className="text-sm text-muted-foreground" data-testid="no-tenant-message">
           <Trans i18nKey="billing.select_tenant_quotas_prefix" ns="admin" />
-          <a href="/admin/tenants" className="text-brand underline">{t('billing.tenants_link')}</a>
+          <a href="/admin/tenants" className="text-brand underline">
+            {t('billing.tenants_link')}
+          </a>
           <Trans i18nKey="billing.select_tenant_quotas_suffix" ns="admin" />
         </p>
       </div>
@@ -203,7 +199,13 @@ export default function QuotasPage() {
             <p className="text-amber-800 dark:text-amber-200">
               {t('billing.quotas.dunning.days', { count: dunning.daysOverdue })}
               {dunning.overdueAmount > 0 && (
-                <> &mdash; {t('billing.quotas.dunning.amount', { amount: `$${dunning.overdueAmount.toFixed(2)}` })}</>
+                <>
+                  {' '}
+                  &mdash;{' '}
+                  {t('billing.quotas.dunning.amount', {
+                    amount: `$${dunning.overdueAmount.toFixed(2)}`,
+                  })}
+                </>
               )}
             </p>
           </div>
@@ -223,7 +225,10 @@ export default function QuotasPage() {
         </div>
       ) : (
         <>
-          <div className="flex items-center gap-2 rounded-md border bg-card p-4" data-testid="quota-action-badge">
+          <div
+            className="flex items-center gap-2 rounded-md border bg-card p-4"
+            data-testid="quota-action-badge"
+          >
             <ActionIcon className={`h-5 w-5 ${ACTION_COLORS[quota.quotaAction] ?? ''}`} />
             <span className="text-sm font-medium">{t('billing.quotas.enforcement')}</span>
             <Badge variant={quota.quotaAction === 'HardBlock' ? 'destructive' : 'outline'}>
@@ -273,35 +278,77 @@ export default function QuotasPage() {
 
           <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
             <div className="space-y-1.5">
-              <Label htmlFor="q-channels">{t('billing.quotas.edit_dialog.max_concurrent_channels')}</Label>
-              <Input id="q-channels" type="number" data-testid="quota-channels" {...register('maxConcurrentChannels')} />
-              {errors.maxConcurrentChannels && <p className="text-xs text-destructive">{errors.maxConcurrentChannels.message}</p>}
+              <Label htmlFor="q-channels">
+                {t('billing.quotas.edit_dialog.max_concurrent_channels')}
+              </Label>
+              <Input
+                id="q-channels"
+                type="number"
+                data-testid="quota-channels"
+                {...register('maxConcurrentChannels')}
+              />
+              {errors.maxConcurrentChannels && (
+                <p className="text-xs text-destructive">{errors.maxConcurrentChannels.message}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="q-campaigns">{t('billing.quotas.edit_dialog.max_active_campaigns')}</Label>
-              <Input id="q-campaigns" type="number" data-testid="quota-campaigns" {...register('maxActiveCampaigns')} />
-              {errors.maxActiveCampaigns && <p className="text-xs text-destructive">{errors.maxActiveCampaigns.message}</p>}
+              <Label htmlFor="q-campaigns">
+                {t('billing.quotas.edit_dialog.max_active_campaigns')}
+              </Label>
+              <Input
+                id="q-campaigns"
+                type="number"
+                data-testid="quota-campaigns"
+                {...register('maxActiveCampaigns')}
+              />
+              {errors.maxActiveCampaigns && (
+                <p className="text-xs text-destructive">{errors.maxActiveCampaigns.message}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="q-voice">{t('billing.quotas.edit_dialog.max_monthly_voice_minutes')}</Label>
-              <Input id="q-voice" type="number" data-testid="quota-voice" {...register('maxMonthlyVoiceMinutes')} />
+              <Label htmlFor="q-voice">
+                {t('billing.quotas.edit_dialog.max_monthly_voice_minutes')}
+              </Label>
+              <Input
+                id="q-voice"
+                type="number"
+                data-testid="quota-voice"
+                {...register('maxMonthlyVoiceMinutes')}
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="q-messages">{t('billing.quotas.edit_dialog.max_monthly_messages')}</Label>
-              <Input id="q-messages" type="number" data-testid="quota-messages" {...register('maxMonthlyMessages')} />
+              <Label htmlFor="q-messages">
+                {t('billing.quotas.edit_dialog.max_monthly_messages')}
+              </Label>
+              <Input
+                id="q-messages"
+                type="number"
+                data-testid="quota-messages"
+                {...register('maxMonthlyMessages')}
+              />
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="q-storage">{t('billing.quotas.edit_dialog.max_storage_bytes')}</Label>
-              <Input id="q-storage" type="number" data-testid="quota-storage" {...register('maxStorageBytes')} />
+              <Input
+                id="q-storage"
+                type="number"
+                data-testid="quota-storage"
+                {...register('maxStorageBytes')}
+              />
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="q-agents">{t('billing.quotas.edit_dialog.max_active_agents')}</Label>
-              <Input id="q-agents" type="number" data-testid="quota-agents" {...register('maxActiveAgents')} />
+              <Input
+                id="q-agents"
+                type="number"
+                data-testid="quota-agents"
+                {...register('maxActiveAgents')}
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -316,7 +363,9 @@ export default function QuotasPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {QUOTA_ACTIONS.map((a) => (
-                        <SelectItem key={a} value={a}>{a}</SelectItem>
+                        <SelectItem key={a} value={a}>
+                          {a}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -326,7 +375,9 @@ export default function QuotasPage() {
 
             <SheetFooter className="mt-auto px-0">
               <Button type="submit" disabled={isSubmitting} data-testid="quota-submit">
-                {isSubmitting ? t('billing.quotas.edit_dialog.saving') : t('billing.quotas.edit_dialog.save')}
+                {isSubmitting
+                  ? t('billing.quotas.edit_dialog.saving')
+                  : t('billing.quotas.edit_dialog.save')}
               </Button>
             </SheetFooter>
           </form>

@@ -6,13 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -21,7 +15,11 @@ import {
   SheetDescription,
   SheetFooter,
 } from '@/core/ui/sheet';
-import { useCreateRoute, useUpdateRoute, type OutboundRouteSummary } from '@/core/api/hooks/use-routes';
+import {
+  useCreateRoute,
+  useUpdateRoute,
+  type OutboundRouteSummary,
+} from '@/core/api/hooks/use-routes';
 import { useTrunks } from '@/core/api/hooks/use-trunks';
 
 const PATTERN_TYPES = ['prefix', 'exact', 'regex'] as const;
@@ -57,7 +55,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<RouteFormValues>({
-    resolver: zodResolver(routeSchema) as any,
+    resolver: zodResolver(routeSchema),
     defaultValues: {
       priority: 10,
       pattern: '',
@@ -124,7 +122,10 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
+        >
           {/* Priority */}
           <div className="space-y-1.5">
             <Label htmlFor="route-priority">{t('routes.priority')}</Label>
@@ -239,11 +240,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
           {/* Dial Prefix */}
           <div className="space-y-1.5">
             <Label htmlFor="route-dialPrefix">{t('routes.form.dial_prefix_optional')}</Label>
-            <Input
-              id="route-dialPrefix"
-              placeholder="9"
-              {...register('dialPrefix')}
-            />
+            <Input id="route-dialPrefix" placeholder="9" {...register('dialPrefix')} />
           </div>
 
           <SheetFooter className="mt-auto px-0">

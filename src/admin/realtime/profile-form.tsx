@@ -7,13 +7,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -39,7 +33,10 @@ const profileSchema = z.object({
   webrtc: z.boolean(),
   directMedia: z.boolean(),
   context: z.string().min(1, 'admin:realtime.validation.contextRequired'),
-  qualifyFrequency: z.coerce.number().int().min(0, 'admin:realtime.validation.qualifyFrequencyAtLeastZero'),
+  qualifyFrequency: z.coerce
+    .number()
+    .int()
+    .min(0, 'admin:realtime.validation.qualifyFrequencyAtLeastZero'),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -63,7 +60,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema) as any,
+    resolver: zodResolver(profileSchema),
     defaultValues: {
       name: '',
       type: 'agent',
@@ -130,7 +127,10 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
+        >
           {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="profile-name">{t('realtime.form.name')}</Label>
@@ -159,7 +159,9 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
                   <SelectContent>
                     {PROFILE_TYPES.map((pt) => (
                       <SelectItem key={pt} value={pt}>
-                        {pt === 'agent' ? t('realtime.form.type_agent') : t('realtime.form.type_trunk')}
+                        {pt === 'agent'
+                          ? t('realtime.form.type_agent')
+                          : t('realtime.form.type_trunk')}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -276,7 +278,9 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           <SheetFooter className="mt-auto px-0">
             <Button type="submit" disabled={isSubmitting}>
-              {mode === 'create' ? t('realtime.form.submit_create') : t('realtime.form.submit_edit')}
+              {mode === 'create'
+                ? t('realtime.form.submit_create')
+                : t('realtime.form.submit_edit')}
             </Button>
           </SheetFooter>
         </form>

@@ -8,13 +8,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
 import { Textarea } from '@/core/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -92,7 +86,7 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ReportFormValues>({
-    resolver: zodResolver(reportSchema) as any,
+    resolver: zodResolver(reportSchema),
     defaultValues: DEFAULT_VALUES,
   });
 
@@ -138,7 +132,10 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
+        >
           {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="report-name">{t('admin:reports.name')}</Label>
@@ -208,9 +205,7 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
                 placeholder={t('admin:reports.cronPlaceholder')}
                 {...register('cronExpression')}
               />
-              <p className="text-xs text-muted-foreground">
-                {t('admin:reports.cronHint')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('admin:reports.cronHint')}</p>
             </div>
           )}
 
@@ -222,9 +217,7 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
               placeholder={t('admin:reports.filtersPlaceholder')}
               {...register('filters')}
             />
-            <p className="text-xs text-muted-foreground">
-              {t('admin:reports.filtersHint')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('admin:reports.filtersHint')}</p>
           </div>
 
           {/* Recipients */}
@@ -236,9 +229,7 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
               placeholder={t('admin:reports.recipientsPlaceholder')}
               {...register('recipients')}
             />
-            <p className="text-xs text-muted-foreground">
-              {t('admin:reports.recipientsHint')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('admin:reports.recipientsHint')}</p>
           </div>
 
           {/* Format */}
@@ -254,7 +245,9 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
                   </SelectTrigger>
                   <SelectContent>
                     {REPORT_FORMATS.map((rf) => (
-                      <SelectItem key={rf} value={rf}>{rf}</SelectItem>
+                      <SelectItem key={rf} value={rf}>
+                        {rf}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

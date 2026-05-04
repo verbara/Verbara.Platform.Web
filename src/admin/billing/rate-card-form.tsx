@@ -8,13 +8,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -91,7 +85,7 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
     reset,
     formState: { errors, isSubmitting },
   } = useForm<RateCardFormValues>({
-    resolver: zodResolver(rateCardSchema) as any,
+    resolver: zodResolver(rateCardSchema),
     defaultValues: DEFAULT_VALUES,
   });
 
@@ -134,7 +128,11 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>{mode === 'create' ? t('billing.rate_cards.form.create_title') : t('billing.rate_cards.form.edit_title')}</SheetTitle>
+          <SheetTitle>
+            {mode === 'create'
+              ? t('billing.rate_cards.form.create_title')
+              : t('billing.rate_cards.form.edit_title')}
+          </SheetTitle>
           <SheetDescription>
             {mode === 'create'
               ? t('billing.rate_cards.form.create_description')
@@ -145,25 +143,51 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
         <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           <div className="space-y-1.5">
             <Label htmlFor="rc-name">{t('billing.rate_cards.form.name')}</Label>
-            <Input id="rc-name" data-testid="rate-card-name" placeholder={t('billing.rate_cards.form.name_placeholder')} {...register('name')} />
-            {errors.name && <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>}
+            <Input
+              id="rc-name"
+              data-testid="rate-card-name"
+              placeholder={t('billing.rate_cards.form.name_placeholder')}
+              {...register('name')}
+            />
+            {errors.name && (
+              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="rc-currency">{t('billing.rate_cards.form.currency')}</Label>
-            <Input id="rc-currency" data-testid="rate-card-currency" placeholder={t('billing.rate_cards.form.currency_placeholder')} {...register('currency')} />
-            {errors.currency && <p className="text-xs text-destructive">{t(errors.currency.message ?? '')}</p>}
+            <Input
+              id="rc-currency"
+              data-testid="rate-card-currency"
+              placeholder={t('billing.rate_cards.form.currency_placeholder')}
+              {...register('currency')}
+            />
+            {errors.currency && (
+              <p className="text-xs text-destructive">{t(errors.currency.message ?? '')}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="rc-from">{t('billing.rate_cards.form.effective_from')}</Label>
-              <Input id="rc-from" type="datetime-local" data-testid="rate-card-from" {...register('effectiveFrom')} />
-              {errors.effectiveFrom && <p className="text-xs text-destructive">{t(errors.effectiveFrom.message ?? '')}</p>}
+              <Input
+                id="rc-from"
+                type="datetime-local"
+                data-testid="rate-card-from"
+                {...register('effectiveFrom')}
+              />
+              {errors.effectiveFrom && (
+                <p className="text-xs text-destructive">{t(errors.effectiveFrom.message ?? '')}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="rc-to">{t('billing.rate_cards.form.effective_to')}</Label>
-              <Input id="rc-to" type="datetime-local" data-testid="rate-card-to" {...register('effectiveTo')} />
+              <Input
+                id="rc-to"
+                type="datetime-local"
+                data-testid="rate-card-to"
+                {...register('effectiveTo')}
+              />
             </div>
           </div>
 
@@ -181,7 +205,13 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label>{t('billing.rate_cards.form.rate_entries')}</Label>
-              <Button type="button" size="sm" variant="outline" onClick={addRate} data-testid="add-rate-entry">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={addRate}
+                data-testid="add-rate-entry"
+              >
                 <Plus className="mr-1 h-3.5 w-3.5" />
                 {t('billing.rate_cards.form.add_rate')}
               </Button>
@@ -192,13 +222,21 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
             )}
 
             {fields.length === 0 && (
-              <p className="text-sm text-muted-foreground">{t('billing.rate_cards.form.no_entries')}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('billing.rate_cards.form.no_entries')}
+              </p>
             )}
 
             {fields.map((field, index) => (
-              <div key={field.id} className="rounded-md border bg-muted/30 p-3 space-y-2" data-testid={`rate-entry-${index}`}>
+              <div
+                key={field.id}
+                className="rounded-md border bg-muted/30 p-3 space-y-2"
+                data-testid={`rate-entry-${index}`}
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">{t('billing.rate_cards.form.rate_number', { n: index + 1 })}</span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {t('billing.rate_cards.form.rate_number', { n: index + 1 })}
+                  </span>
                   <Button
                     type="button"
                     size="sm"
@@ -220,7 +258,9 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
                       </SelectTrigger>
                       <SelectContent>
                         {USAGE_TYPES.map((ut) => (
-                          <SelectItem key={ut} value={ut}>{ut}</SelectItem>
+                          <SelectItem key={ut} value={ut}>
+                            {ut}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -253,7 +293,9 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
 
           <SheetFooter className="mt-auto px-0">
             <Button type="submit" disabled={isSubmitting} data-testid="rate-card-submit">
-              {mode === 'create' ? t('billing.rate_cards.form.create') : t('billing.rate_cards.form.save')}
+              {mode === 'create'
+                ? t('billing.rate_cards.form.create')
+                : t('billing.rate_cards.form.save')}
             </Button>
           </SheetFooter>
         </form>

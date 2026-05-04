@@ -9,13 +9,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
 import { Textarea } from '@/core/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -107,7 +101,7 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
     reset,
     formState: { errors, isSubmitting },
   } = useForm<SurveyFormValues>({
-    resolver: zodResolver(surveySchema) as any,
+    resolver: zodResolver(surveySchema),
     defaultValues: DEFAULT_VALUES,
   });
 
@@ -141,9 +135,13 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
         id: q.id,
         text: q.text,
         type: q.type,
-        options: q.type === 'Choice' && q.options
-          ? q.options.split(',').map((o) => o.trim()).filter(Boolean)
-          : undefined,
+        options:
+          q.type === 'Choice' && q.options
+            ? q.options
+                .split(',')
+                .map((o) => o.trim())
+                .filter(Boolean)
+            : undefined,
         order: idx,
       })),
     };
@@ -170,7 +168,10 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
+        >
           {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="survey-name">{t('admin:surveys.name')}</Label>
@@ -199,7 +200,9 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
                   </SelectTrigger>
                   <SelectContent>
                     {SURVEY_TYPES.map((st) => (
-                      <SelectItem key={st} value={st}>{st}</SelectItem>
+                      <SelectItem key={st} value={st}>
+                        {st}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

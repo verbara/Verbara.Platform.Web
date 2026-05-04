@@ -7,13 +7,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -55,7 +49,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<TrunkFormValues>({
-    resolver: zodResolver(trunkSchema) as any,
+    resolver: zodResolver(trunkSchema),
     defaultValues: {
       name: '',
       displayName: '',
@@ -110,7 +104,10 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
+        >
           {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="trunk-name">{t('trunks.name')}</Label>

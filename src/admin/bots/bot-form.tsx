@@ -7,13 +7,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -60,7 +54,7 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<BotFormValues>({
-    resolver: zodResolver(botSchema) as any,
+    resolver: zodResolver(botSchema),
     defaultValues: {
       name: '',
       defaultFlowId: undefined,
@@ -123,7 +117,10 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
+        >
           {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="bot-name">{t('admin:bots.name')}</Label>

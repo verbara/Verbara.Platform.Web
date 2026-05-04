@@ -4,7 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Building2, Trash2, Pencil, Clock, CreditCard, Ban, CheckCircle2 } from 'lucide-react';
+import {
+  Plus,
+  Building2,
+  Trash2,
+  Pencil,
+  Clock,
+  CreditCard,
+  Ban,
+  CheckCircle2,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { RetentionPolicySection } from '@/admin/gdpr/retention-policy-section';
@@ -25,20 +34,8 @@ import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/core/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import {
   useTenants,
@@ -55,7 +52,10 @@ const columnHelper = createColumnHelper<Tenant>();
 // ─── Form schema ──────────────────────────────────────────────────────────────
 
 const createSchema = z.object({
-  tenantId: z.string().min(1, 'admin:tenants.validation.tenantIdRequired').regex(/^[a-z0-9-]+$/, 'admin:tenants.validation.tenantIdFormat'),
+  tenantId: z
+    .string()
+    .min(1, 'admin:tenants.validation.tenantIdRequired')
+    .regex(/^[a-z0-9-]+$/, 'admin:tenants.validation.tenantIdFormat'),
   name: z.string().min(1, 'admin:tenants.validation.nameRequired'),
   maxConcurrentChannels: z.coerce.number().int().min(1).optional(),
   maxActiveCampaigns: z.coerce.number().int().min(1).optional(),
@@ -80,7 +80,12 @@ export default function TenantsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
   const [suspendTarget, setSuspendTarget] = useState<Tenant | null>(null);
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
-  const [editForm, setEditForm] = useState({ name: '', status: 'active', maxConcurrentChannels: 0, maxActiveCampaigns: 0 });
+  const [editForm, setEditForm] = useState({
+    name: '',
+    status: 'active',
+    maxConcurrentChannels: 0,
+    maxActiveCampaigns: 0,
+  });
   const [retentionTenantId, setRetentionTenantId] = useState<string | null>(null);
 
   const { data: tenants = [], isLoading } = useTenants();
@@ -102,7 +107,7 @@ export default function TenantsPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateFormValues>({
-    resolver: zodResolver(createSchema) as any,
+    resolver: zodResolver(createSchema),
     defaultValues: {
       tenantId: '',
       name: '',
@@ -145,16 +150,17 @@ export default function TenantsPage() {
       }),
       columnHelper.accessor('name', {
         header: () => t('tenants.list.columns.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('status', {
         header: () => t('tenants.list.columns.status'),
         cell: (info) => {
           const s = info.getValue().toLowerCase();
           return (
-            <Badge data-testid={`tenant-status-${info.row.original.tenantId}`} variant={STATUS_VARIANT[s] ?? 'outline'}>
+            <Badge
+              data-testid={`tenant-status-${info.row.original.tenantId}`}
+              variant={STATUS_VARIANT[s] ?? 'outline'}
+            >
               {info.getValue()}
             </Badge>
           );
@@ -223,7 +229,10 @@ export default function TenantsPage() {
                   size="sm"
                   className="h-7 w-7 p-0 text-destructive hover:text-destructive"
                   title={t('tenants.list.actions.suspend')}
-                  onClick={(e) => { e.stopPropagation(); setSuspendTarget(row.original); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSuspendTarget(row.original);
+                  }}
                 >
                   <Ban className="h-3.5 w-3.5" />
                 </Button>
@@ -234,7 +243,10 @@ export default function TenantsPage() {
                   size="sm"
                   className="h-7 w-7 p-0 text-emerald-600"
                   title={t('tenants.list.actions.activate')}
-                  onClick={(e) => { e.stopPropagation(); updateTenant.mutate({ id: row.original.tenantId, status: 'Active' }); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateTenant.mutate({ id: row.original.tenantId, status: 'Active' });
+                  }}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </Button>
@@ -287,10 +299,7 @@ export default function TenantsPage() {
       </PageHeader>
 
       {tenants.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          message={t('tenants.list.empty')}
-        />
+        <EmptyState icon={Building2} message={t('tenants.list.empty')} />
       ) : (
         <DataTable
           data={tenants}
@@ -311,9 +320,7 @@ export default function TenantsPage() {
         <SheetContent data-testid="tenants-create-sheet">
           <SheetHeader>
             <SheetTitle>{t('tenants.list.create_sheet.title')}</SheetTitle>
-            <SheetDescription>
-              {t('tenants.list.create_sheet.description')}
-            </SheetDescription>
+            <SheetDescription>{t('tenants.list.create_sheet.description')}</SheetDescription>
           </SheetHeader>
 
           <form onSubmit={onCreateSubmit} className="mt-6 space-y-4">
@@ -346,7 +353,9 @@ export default function TenantsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="maxConcurrentChannels">{t('tenants.list.create_sheet.max_channels')}</Label>
+              <Label htmlFor="maxConcurrentChannels">
+                {t('tenants.list.create_sheet.max_channels')}
+              </Label>
               <Input
                 id="maxConcurrentChannels"
                 data-testid="tenants-form-maxChannels"
@@ -357,7 +366,9 @@ export default function TenantsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="maxActiveCampaigns">{t('tenants.list.create_sheet.max_campaigns')}</Label>
+              <Label htmlFor="maxActiveCampaigns">
+                {t('tenants.list.create_sheet.max_campaigns')}
+              </Label>
               <Input
                 id="maxActiveCampaigns"
                 data-testid="tenants-form-maxCampaigns"
@@ -368,7 +379,12 @@ export default function TenantsPage() {
             </div>
 
             <SheetFooter className="pt-2">
-              <Button type="submit" data-testid="tenants-form-submit" disabled={isSubmitting || createTenant.isPending} className="w-full">
+              <Button
+                type="submit"
+                data-testid="tenants-form-submit"
+                disabled={isSubmitting || createTenant.isPending}
+                className="w-full"
+              >
                 {t('tenants.list.create_sheet.submit')}
               </Button>
             </SheetFooter>
@@ -379,7 +395,9 @@ export default function TenantsPage() {
       {/* Delete confirm dialog (3s countdown) */}
       <ConfirmDeleteDialog
         open={deleteTarget !== null}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         onConfirm={handleDeleteConfirm}
         entityName={deleteTarget?.name ?? ''}
         entityType={t('tenants.list.entity_type')}
@@ -388,7 +406,9 @@ export default function TenantsPage() {
       {/* Suspend confirm dialog */}
       <ConfirmDialog
         open={suspendTarget !== null}
-        onOpenChange={(open) => { if (!open) setSuspendTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setSuspendTarget(null);
+        }}
         title={t('tenants.list.suspend_dialog.title')}
         description={
           <>
@@ -411,12 +431,19 @@ export default function TenantsPage() {
         <RetentionPolicySection
           tenantId={retentionTenantId}
           open={retentionTenantId !== null}
-          onOpenChange={(open) => { if (!open) setRetentionTenantId(null); }}
+          onOpenChange={(open) => {
+            if (!open) setRetentionTenantId(null);
+          }}
         />
       )}
 
       {/* Edit tenant dialog */}
-      <Dialog open={editingTenant !== null} onOpenChange={(open) => { if (!open) setEditingTenant(null); }}>
+      <Dialog
+        open={editingTenant !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingTenant(null);
+        }}
+      >
         <DialogContent className="sm:max-w-md" data-testid="tenants-edit-dialog">
           <DialogHeader>
             <DialogTitle>{t('tenants.list.edit_dialog.title')}</DialogTitle>
@@ -433,51 +460,81 @@ export default function TenantsPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-tenant-status">{t('tenants.list.edit_dialog.status')}</Label>
-              <Select value={editForm.status} onValueChange={(v) => setEditForm((f) => ({ ...f, status: v ?? f.status }))}>
-                <SelectTrigger id="edit-tenant-status" data-testid="tenants-edit-status"><SelectValue /></SelectTrigger>
+              <Select
+                value={editForm.status}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, status: v ?? f.status }))}
+              >
+                <SelectTrigger id="edit-tenant-status" data-testid="tenants-edit-status">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">{t('tenants.list.edit_dialog.status_active')}</SelectItem>
-                  <SelectItem value="suspended">{t('tenants.list.edit_dialog.status_suspended')}</SelectItem>
-                  <SelectItem value="disabled">{t('tenants.list.edit_dialog.status_disabled')}</SelectItem>
+                  <SelectItem value="active">
+                    {t('tenants.list.edit_dialog.status_active')}
+                  </SelectItem>
+                  <SelectItem value="suspended">
+                    {t('tenants.list.edit_dialog.status_suspended')}
+                  </SelectItem>
+                  <SelectItem value="disabled">
+                    {t('tenants.list.edit_dialog.status_disabled')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-tenant-channels">{t('tenants.list.edit_dialog.max_channels')}</Label>
+              <Label htmlFor="edit-tenant-channels">
+                {t('tenants.list.edit_dialog.max_channels')}
+              </Label>
               <Input
                 id="edit-tenant-channels"
                 data-testid="tenants-edit-channels"
                 type="number"
                 min={1}
                 value={editForm.maxConcurrentChannels}
-                onChange={(e) => setEditForm((f) => ({ ...f, maxConcurrentChannels: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, maxConcurrentChannels: Number(e.target.value) }))
+                }
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-tenant-campaigns">{t('tenants.list.edit_dialog.max_campaigns')}</Label>
+              <Label htmlFor="edit-tenant-campaigns">
+                {t('tenants.list.edit_dialog.max_campaigns')}
+              </Label>
               <Input
                 id="edit-tenant-campaigns"
                 data-testid="tenants-edit-campaigns"
                 type="number"
                 min={1}
                 value={editForm.maxActiveCampaigns}
-                onChange={(e) => setEditForm((f) => ({ ...f, maxActiveCampaigns: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setEditForm((f) => ({ ...f, maxActiveCampaigns: Number(e.target.value) }))
+                }
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" data-testid="tenants-edit-cancel" onClick={() => setEditingTenant(null)}>{t('tenants.list.edit_dialog.cancel')}</Button>
+            <Button
+              variant="outline"
+              data-testid="tenants-edit-cancel"
+              onClick={() => setEditingTenant(null)}
+            >
+              {t('tenants.list.edit_dialog.cancel')}
+            </Button>
             <Button
               data-testid="tenants-edit-submit"
               disabled={!editForm.name.trim() || updateTenant.isPending}
               onClick={() => {
                 if (!editingTenant) return;
-                updateTenant.mutate({ id: editingTenant.tenantId, ...editForm }, {
-                  onSuccess: () => setEditingTenant(null),
-                });
+                updateTenant.mutate(
+                  { id: editingTenant.tenantId, ...editForm },
+                  {
+                    onSuccess: () => setEditingTenant(null),
+                  },
+                );
               }}
             >
-              {updateTenant.isPending ? t('tenants.list.edit_dialog.saving') : t('tenants.list.edit_dialog.submit')}
+              {updateTenant.isPending
+                ? t('tenants.list.edit_dialog.saving')
+                : t('tenants.list.edit_dialog.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
