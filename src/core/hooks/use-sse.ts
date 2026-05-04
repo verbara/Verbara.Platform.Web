@@ -22,7 +22,7 @@ export function useSSE() {
   const navigate = useNavigate();
   const sourceRef = useRef<EventSource | null>(null);
   const reconnectAttemptRef = useRef(0);
-  const connectRef = useRef<() => void>();
+  const connectRef = useRef<() => void>(null);
 
   const connect = useCallback(() => {
     if (!accessToken || sourceRef.current) return;

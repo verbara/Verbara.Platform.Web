@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -107,7 +107,7 @@ export default function TenantsPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateFormValues>({
-    resolver: zodResolver(createSchema),
+    resolver: zodResolver(createSchema) as Resolver<CreateFormValues>,
     defaultValues: {
       tenantId: '',
       name: '',

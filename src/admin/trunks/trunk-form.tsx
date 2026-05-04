@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
@@ -49,7 +49,7 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<TrunkFormValues>({
-    resolver: zodResolver(trunkSchema),
+    resolver: zodResolver(trunkSchema) as Resolver<TrunkFormValues>,
     defaultValues: {
       name: '',
       displayName: '',
