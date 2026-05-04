@@ -28,7 +28,12 @@ import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useHasPermission } from '@/core/auth/use-has-permission';
 import { RouteForm } from './route-form';
-import { useRoutes, useDeleteRoute, useReorderRoutes, type OutboundRouteSummary } from '@/core/api/hooks/use-routes';
+import {
+  useRoutes,
+  useDeleteRoute,
+  useReorderRoutes,
+  type OutboundRouteSummary,
+} from '@/core/api/hooks/use-routes';
 import { useTrunks } from '@/core/api/hooks/use-trunks';
 
 const columnHelper = createColumnHelper<OutboundRouteSummary>();
@@ -48,6 +53,7 @@ function SortableRow({
   trunkMap: Map<number, string>;
   onDelete: (route: OutboundRouteSummary) => void;
 }>) {
+  const { t } = useTranslation(['admin']);
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: route.id,
   });
@@ -78,11 +84,14 @@ function SortableRow({
       </td>
       <td className="px-3 py-2 font-mono text-muted-foreground">#{route.priority}</td>
       <td className="px-3 py-2">{trunkName ?? route.trunkId}</td>
-      <td className="px-3 py-2 font-mono">{route.dialPrefix ?? <span className="text-muted-foreground">&mdash;</span>}</td>
+      <td className="px-3 py-2 font-mono">
+        {route.dialPrefix ?? <span className="text-muted-foreground">&mdash;</span>}
+      </td>
       <td className="px-3 py-2 text-right">
         <Button
           variant="ghost"
           size="icon"
+          aria-label={t('admin:routes.delete_route')}
           data-testid={`delete-route-${route.id}`}
           onClick={(e) => {
             e.stopPropagation();
@@ -113,10 +122,7 @@ export default function RoutesPage() {
     [trunks],
   );
 
-  const sortedRoutes = useMemo(
-    () => [...routes].sort((a, b) => a.priority - b.priority),
-    [routes],
-  );
+  const sortedRoutes = useMemo(() => [...routes].sort((a, b) => a.priority - b.priority), [routes]);
 
   const [orderedRoutes, setOrderedRoutes] = useState<OutboundRouteSummary[]>([]);
   const [hasReordered, setHasReordered] = useState(false);
@@ -154,9 +160,7 @@ export default function RoutesPage() {
     () => [
       columnHelper.accessor('priority', {
         header: () => t('admin:routes.priority'),
-        cell: (info) => (
-          <span className="font-mono text-muted-foreground">#{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-mono text-muted-foreground">#{info.getValue()}</span>,
       }),
       columnHelper.accessor('pattern', {
         header: () => t('admin:routes.pattern'),
@@ -199,6 +203,7 @@ export default function RoutesPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              aria-label={t('admin:routes.delete_route')}
               data-testid={`delete-route-${info.row.original.id}`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -223,7 +228,9 @@ export default function RoutesPage() {
             {t('admin:routes.create')}
           </Button>
         </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
+        <div className="flex h-64 items-center justify-center text-muted-foreground">
+          {t('common:status.loading')}
+        </div>
       </div>
     );
   }
@@ -240,24 +247,38 @@ export default function RoutesPage() {
       </PageHeader>
 
       {isEmpty ? (
-        <EmptyState
-          icon={Route}
-          message="No outbound routes yet — Add your first route"
-        />
+        <EmptyState icon={Route} message="No outbound routes yet — Add your first route" />
       ) : canManage ? (
         <div className="space-y-3">
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={orderedRoutes.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={orderedRoutes.map((r) => r.id)}
+              strategy={verticalListSortingStrategy}
+            >
               <div className="overflow-x-auto rounded-lg border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50">
                     <tr>
                       <th className="w-10 px-3 py-2" />
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Pattern</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Type</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Priority</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Trunk</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Prefix</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                        Pattern
+                      </th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                        Type
+                      </th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                        Priority
+                      </th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                        Trunk
+                      </th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                        Prefix
+                      </th>
                       <th className="w-12 px-3 py-2" />
                     </tr>
                   </thead>
@@ -280,9 +301,12 @@ export default function RoutesPage() {
             <div className="flex justify-end">
               <Button
                 onClick={() => {
-                  reorderRoutes.mutate(orderedRoutes.map((r) => r.id), {
-                    onSuccess: () => setHasReordered(false),
-                  });
+                  reorderRoutes.mutate(
+                    orderedRoutes.map((r) => r.id),
+                    {
+                      onSuccess: () => setHasReordered(false),
+                    },
+                  );
                 }}
                 disabled={reorderRoutes.isPending}
               >
@@ -303,23 +327,23 @@ export default function RoutesPage() {
       )}
 
       {/* Create route sheet */}
-      <RouteForm
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        mode="create"
-      />
+      <RouteForm open={createOpen} onOpenChange={setCreateOpen} mode="create" />
 
       {/* Edit route sheet */}
       <RouteForm
         open={editRoute !== null}
-        onOpenChange={(open) => { if (!open) setEditRoute(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditRoute(null);
+        }}
         mode="edit"
         route={editRoute ?? undefined}
       />
 
       <ConfirmDeleteDialog
         open={deletingRoute !== null}
-        onOpenChange={(open) => { if (!open) setDeletingRoute(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeletingRoute(null);
+        }}
         onConfirm={() => {
           if (!deletingRoute) return;
           deleteRoute.mutate(deletingRoute.id, {

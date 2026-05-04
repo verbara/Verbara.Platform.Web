@@ -702,6 +702,7 @@
   "routes": {
     "title": "Rotas de saída",
     "create": "Adicionar rota",
+    "delete_route": "Excluir rota",
     "edit": "Editar rota",
     "priority": "Prioridade",
     "pattern": "Padrão",

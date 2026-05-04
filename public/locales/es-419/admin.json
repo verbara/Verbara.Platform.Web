@@ -702,6 +702,7 @@
   "routes": {
     "title": "Rutas salientes",
     "create": "Agregar ruta",
+    "delete_route": "Eliminar ruta",
     "edit": "Editar ruta",
     "priority": "Prioridad",
     "pattern": "Patrón",

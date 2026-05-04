@@ -43,9 +43,7 @@ export default function CampaignListPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('admin:campaigns.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.display({
         id: 'status',
@@ -53,9 +51,7 @@ export default function CampaignListPage() {
         cell: (info) => {
           const status = info.row.original.status;
           return (
-            <Badge variant={STATUS_VARIANT[status]}>
-              {t(`admin:campaigns.status_${status}`)}
-            </Badge>
+            <Badge variant={STATUS_VARIANT[status]}>{t(`admin:campaigns.status_${status}`)}</Badge>
           );
         },
       }),
@@ -64,9 +60,7 @@ export default function CampaignListPage() {
       }),
       columnHelper.accessor('mode', {
         header: () => t('admin:campaigns.mode'),
-        cell: (info) => (
-          <span className="capitalize">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="capitalize">{info.getValue()}</span>,
       }),
       columnHelper.display({
         id: 'progress',
@@ -98,8 +92,12 @@ export default function CampaignListPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={t('admin:campaigns.start')}
                   title={t('admin:campaigns.start')}
-                  onClick={(e) => { e.stopPropagation(); startCampaign.mutate(id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startCampaign.mutate(id);
+                  }}
                 >
                   <Play className="h-4 w-4" />
                 </Button>
@@ -108,8 +106,12 @@ export default function CampaignListPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={t('admin:campaigns.pause')}
                   title={t('admin:campaigns.pause')}
-                  onClick={(e) => { e.stopPropagation(); pauseCampaign.mutate(id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    pauseCampaign.mutate(id);
+                  }}
                 >
                   <Pause className="h-4 w-4" />
                 </Button>
@@ -118,8 +120,12 @@ export default function CampaignListPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={t('admin:campaigns.start')}
                   title={t('admin:campaigns.start')}
-                  onClick={(e) => { e.stopPropagation(); startCampaign.mutate(id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startCampaign.mutate(id);
+                  }}
                 >
                   <Play className="h-4 w-4" />
                 </Button>
@@ -128,8 +134,12 @@ export default function CampaignListPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={t('admin:campaigns.stop')}
                   title={t('admin:campaigns.stop')}
-                  onClick={(e) => { e.stopPropagation(); stopCampaign.mutate(id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    stopCampaign.mutate(id);
+                  }}
                 >
                   <Square className="h-4 w-4" />
                 </Button>
@@ -151,7 +161,9 @@ export default function CampaignListPage() {
             {t('admin:campaigns.create')}
           </Button>
         </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
+        <div className="flex h-64 items-center justify-center text-muted-foreground">
+          {t('common:status.loading')}
+        </div>
       </div>
     );
   }
@@ -168,10 +180,7 @@ export default function CampaignListPage() {
       </PageHeader>
 
       {isEmpty ? (
-        <EmptyState
-          icon={Megaphone}
-          message={t('admin:campaigns.empty')}
-        />
+        <EmptyState icon={Megaphone} message={t('admin:campaigns.empty')} />
       ) : (
         <DataTable
           data={campaigns}

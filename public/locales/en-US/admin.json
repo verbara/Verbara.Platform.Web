@@ -702,6 +702,7 @@
   "routes": {
     "title": "Outbound Routes",
     "create": "Add Route",
+    "delete_route": "Delete route",
     "edit": "Edit Route",
     "priority": "Priority",
     "pattern": "Pattern",
