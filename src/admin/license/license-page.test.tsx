@@ -33,15 +33,12 @@ vi.mock('@/core/api/hooks/use-system', () => ({
   useUpdateLicense: vi.fn(),
 }));
 
-import {
-  useSystemLicense,
-  useUpdateLicense,
-  type LicenseInfo,
-} from '@/core/api/hooks/use-system';
+import { asMock } from '@/tests/utils/as-mock';
+import { useSystemLicense, useUpdateLicense, type LicenseInfo } from '@/core/api/hooks/use-system';
 import LicensePage from './license-page';
 
-const mockUseLicense = useSystemLicense as unknown as ReturnType<typeof vi.fn>;
-const mockUseUpdate = useUpdateLicense as unknown as ReturnType<typeof vi.fn>;
+const mockUseLicense = asMock(useSystemLicense);
+const mockUseUpdate = asMock(useUpdateLicense);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

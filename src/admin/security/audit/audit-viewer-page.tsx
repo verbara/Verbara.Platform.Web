@@ -14,7 +14,7 @@
 //     `idx_audit_time` keeps the OFFSET cost flat for the typical viewer use).
 
 import { useMemo, useState } from 'react';
-import { createColumnHelper, type ColumnDef } from '@tanstack/react-table';
+import { createColumnHelper } from '@tanstack/react-table';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Download, FileText, Filter, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -35,11 +35,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { useAuthStore } from '@/core/auth/auth-store';
-import {
-  useAuditEvents,
-  type AuditEventDto,
-  type AuditEventsFilter,
-} from './use-audit-events';
+import { useAuditEvents, type AuditEventDto, type AuditEventsFilter } from './use-audit-events';
 import { useAuditExport, type AuditExportFormat } from './use-audit-export';
 
 const PAGE_SIZE = 50;
@@ -146,7 +142,7 @@ export default function AuditViewerPage() {
     exportMutation.mutate({ format, filter: draftToFilter(applied, 1) });
   }
 
-  const columns = useMemo<ColumnDef<AuditEventDto>[]>(
+  const columns = useMemo(
     () => [
       col.accessor('occurredAt', {
         header: () => t('admin:security_admin.audit.columns.timestamp'),
@@ -190,15 +186,13 @@ export default function AuditViewerPage() {
       }),
       col.accessor('severity', {
         header: () => t('admin:security_admin.audit.columns.severity'),
-        cell: (info) => (
-          <Badge variant={severityVariant(info.getValue())}>{info.getValue()}</Badge>
-        ),
+        cell: (info) => <Badge variant={severityVariant(info.getValue())}>{info.getValue()}</Badge>,
       }),
       col.accessor('status', {
         header: () => t('admin:security_admin.audit.columns.status'),
         cell: (info) => <span className="text-sm capitalize">{info.getValue()}</span>,
       }),
-    ] as unknown as ColumnDef<AuditEventDto>[],
+    ],
     [t, formatDate, formatRelative],
   );
 
@@ -207,9 +201,7 @@ export default function AuditViewerPage() {
     const before = safeStringify(selected.before);
     const after = safeStringify(selected.after);
     const hasDiff = before.length > 0 || after.length > 0;
-    const metadataJson = selected.metadata
-      ? safeStringify(selected.metadata)
-      : '';
+    const metadataJson = selected.metadata ? safeStringify(selected.metadata) : '';
 
     return [
       {
@@ -226,8 +218,8 @@ export default function AuditViewerPage() {
               {formatDate(selected.occurredAt)}
             </p>
             <p>
-              <strong>{t('admin:security_admin.audit.columns.actor')}:</strong>{' '}
-              {selected.actorId} ({selected.actorType})
+              <strong>{t('admin:security_admin.audit.columns.actor')}:</strong> {selected.actorId} (
+              {selected.actorType})
             </p>
             {selected.targetId && (
               <p>
@@ -274,10 +266,7 @@ export default function AuditViewerPage() {
             )}
           </div>
         ) : (
-          <p
-            className="text-xs text-muted-foreground"
-            data-testid="audit-drawer-diff-empty"
-          >
+          <p className="text-xs text-muted-foreground" data-testid="audit-drawer-diff-empty">
             {t('admin:security_admin.audit.drawer.no_diff')}
           </p>
         ),
@@ -285,18 +274,16 @@ export default function AuditViewerPage() {
       {
         key: 'metadata',
         label: t('admin:security_admin.audit.drawer.tabs.metadata'),
-        content: metadataJson.length > 0 ? (
-          <div data-testid="audit-drawer-metadata">
-            <CodeBlock code={metadataJson} language="json" />
-          </div>
-        ) : (
-          <p
-            className="text-xs text-muted-foreground"
-            data-testid="audit-drawer-metadata-empty"
-          >
-            {t('admin:security_admin.audit.drawer.no_metadata')}
-          </p>
-        ),
+        content:
+          metadataJson.length > 0 ? (
+            <div data-testid="audit-drawer-metadata">
+              <CodeBlock code={metadataJson} language="json" />
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground" data-testid="audit-drawer-metadata-empty">
+              {t('admin:security_admin.audit.drawer.no_metadata')}
+            </p>
+          ),
       },
     ];
   }, [selected, t, formatDate]);
@@ -322,10 +309,7 @@ export default function AuditViewerPage() {
               {t('admin:security_admin.audit.export.label')}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                data-testid="audit-export-csv"
-                onClick={() => handleExport('csv')}
-              >
+              <DropdownMenuItem data-testid="audit-export-csv" onClick={() => handleExport('csv')}>
                 <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
                 {t('admin:security_admin.audit.export.csv')}
               </DropdownMenuItem>
@@ -342,19 +326,13 @@ export default function AuditViewerPage() {
       </PageHeader>
 
       {retentionDays !== null && (
-        <p
-          className="text-xs text-muted-foreground"
-          data-testid="audit-retention-summary"
-        >
+        <p className="text-xs text-muted-foreground" data-testid="audit-retention-summary">
           {t('admin:security_admin.audit.retention_summary', { days: retentionDays })}
         </p>
       )}
 
       {/* Filter panel */}
-      <div
-        className="rounded-lg border bg-card p-4 shadow-sm"
-        data-testid="audit-viewer-filters"
-      >
+      <div className="rounded-lg border bg-card p-4 shadow-sm" data-testid="audit-viewer-filters">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <div className="space-y-1.5">
             <Label htmlFor="audit-filter-action-prefix">
@@ -405,9 +383,7 @@ export default function AuditViewerPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="audit-filter-to">
-              {t('admin:security_admin.audit.filters.to')}
-            </Label>
+            <Label htmlFor="audit-filter-to">{t('admin:security_admin.audit.filters.to')}</Label>
             <Input
               id="audit-filter-to"
               data-testid="audit-filter-to"
@@ -433,11 +409,7 @@ export default function AuditViewerPage() {
         </div>
 
         <div className="mt-3 flex items-center gap-2">
-          <Button
-            data-testid="audit-filter-apply"
-            onClick={handleApply}
-            disabled={isFetching}
-          >
+          <Button data-testid="audit-filter-apply" onClick={handleApply} disabled={isFetching}>
             <Filter className="mr-1.5 h-4 w-4" aria-hidden="true" />
             {t('admin:security_admin.audit.filters.apply')}
           </Button>

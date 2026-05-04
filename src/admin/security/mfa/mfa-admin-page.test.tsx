@@ -32,6 +32,7 @@ vi.mock('@/core/api/hooks/use-mfa-users', () => ({
   useRevokeMfaSessions: vi.fn(),
 }));
 
+import { asMock } from '@/tests/utils/as-mock';
 import {
   useMfaUsers,
   useResetMfa,
@@ -40,9 +41,9 @@ import {
 } from '@/core/api/hooks/use-mfa-users';
 import MfaAdminPage from './mfa-admin-page';
 
-const mockUseList = useMfaUsers as unknown as ReturnType<typeof vi.fn>;
-const mockUseReset = useResetMfa as unknown as ReturnType<typeof vi.fn>;
-const mockUseRevoke = useRevokeMfaSessions as unknown as ReturnType<typeof vi.fn>;
+const mockUseList = asMock(useMfaUsers);
+const mockUseReset = asMock(useResetMfa);
+const mockUseRevoke = asMock(useRevokeMfaSessions);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -118,9 +119,7 @@ describe('MfaAdminPage', () => {
 
     // The useMfaUsers hook is invoked again (each render triggers a call) —
     // assert at least one call passed status="locked".
-    const callsWithLocked = mockUseList.mock.calls.filter(
-      (args) => args[0]?.status === 'locked',
-    );
+    const callsWithLocked = mockUseList.mock.calls.filter((args) => args[0]?.status === 'locked');
     expect(callsWithLocked.length).toBeGreaterThan(0);
   });
 

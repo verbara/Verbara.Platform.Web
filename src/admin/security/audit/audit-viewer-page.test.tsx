@@ -48,12 +48,13 @@ vi.mock('./use-audit-export', () => ({
   useAuditExport: vi.fn(),
 }));
 
+import { asMock } from '@/tests/utils/as-mock';
 import { useAuditEvents, type AuditEventDto } from './use-audit-events';
 import { useAuditExport } from './use-audit-export';
 import AuditViewerPage from './audit-viewer-page';
 
-const mockUseEvents = useAuditEvents as unknown as ReturnType<typeof vi.fn>;
-const mockUseExport = useAuditExport as unknown as ReturnType<typeof vi.fn>;
+const mockUseEvents = asMock(useAuditEvents);
+const mockUseExport = asMock(useAuditExport);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -161,9 +162,7 @@ describe('AuditViewerPage', () => {
 
     fireEvent.click(screen.getByTestId('audit-row-action-entry-001'));
     // Switch to Diff tab.
-    fireEvent.click(
-      screen.getByText('admin:security_admin.audit.drawer.tabs.diff'),
-    );
+    fireEvent.click(screen.getByText('admin:security_admin.audit.drawer.tabs.diff'));
 
     expect(screen.getByTestId('audit-drawer-diff')).toBeDefined();
   });
@@ -178,9 +177,7 @@ describe('AuditViewerPage', () => {
     fireEvent.click(screen.getByTestId('audit-export-button'));
     fireEvent.click(screen.getByTestId('audit-export-csv'));
 
-    expect(mutate).toHaveBeenCalledWith(
-      expect.objectContaining({ format: 'csv' }),
-    );
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ format: 'csv' }));
   });
 });
 

@@ -16,10 +16,11 @@ vi.mock('@/core/api/hooks/use-recovery-codes', () => ({
   useRegenerateRecoveryCodes: vi.fn(),
 }));
 
+import { asMock } from '@/tests/utils/as-mock';
 import { useRegenerateRecoveryCodes } from '@/core/api/hooks/use-recovery-codes';
 import RegeneratePage from './regenerate-page';
 
-const mockRegenerate = useRegenerateRecoveryCodes as unknown as ReturnType<typeof vi.fn>;
+const mockRegenerate = asMock(useRegenerateRecoveryCodes);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });

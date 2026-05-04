@@ -14,7 +14,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'es-419',
-    supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
+    supportedLngs: [...SUPPORTED_LANGUAGES],
     nonExplicitSupportedLngs: true,
     load: 'currentOnly',
     ns: ['common', 'admin', 'agent', 'operations', 'analytics'],

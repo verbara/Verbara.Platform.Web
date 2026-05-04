@@ -10,6 +10,9 @@ export interface User {
   role: string;
   status: string;
   createdAt: string;
+  mfaEnabled?: boolean;
+  lastLoginAt?: string;
+  authProvider?: string;
 }
 
 interface PagedResult<T> {
@@ -36,8 +39,7 @@ export function useUsers() {
 export function useUser(id: string | undefined) {
   return useQuery({
     queryKey: ['users', id],
-    queryFn: () =>
-      customFetch<User>({ url: `/api/v1/admin/users/${id}`, method: 'GET' }),
+    queryFn: () => customFetch<User>({ url: `/api/v1/admin/users/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }

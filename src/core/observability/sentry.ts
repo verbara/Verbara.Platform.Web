@@ -61,7 +61,7 @@ export function initSentry(): void {
       }
       if (event.request?.headers && typeof event.request.headers === 'object') {
         event.request.headers = redactHeaders(
-          event.request.headers as unknown as Record<string, unknown>,
+          event.request.headers,
         ) as typeof event.request.headers;
       }
       if (event.message) event.message = String(maskEmails(event.message));

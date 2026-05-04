@@ -17,13 +17,7 @@ import {
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { AuditTimeline } from '@/core/ui/audit-timeline';
@@ -103,13 +97,11 @@ export default function UserDetailPage() {
     );
   };
 
-  const availableRoles = allRoles.filter(
-    (r) => !userRoles.some((ur) => ur.roleId === r.roleId),
-  );
+  const availableRoles = allRoles.filter((r) => !userRoles.some((ur) => ur.roleId === r.roleId));
 
-  const mfaEnabled = (user as unknown as Record<string, unknown>).mfaEnabled === true;
-  const lastLogin = (user as unknown as Record<string, unknown>).lastLoginAt as string | undefined;
-  const authProvider = ((user as unknown as Record<string, unknown>).authProvider as string) || 'local';
+  const mfaEnabled = user.mfaEnabled === true;
+  const lastLogin = user.lastLoginAt;
+  const authProvider = user.authProvider || 'local';
 
   return (
     <div data-testid="user-detail-page" className="mx-auto max-w-2xl space-y-6">
@@ -120,7 +112,12 @@ export default function UserDetailPage() {
           Back
         </Button>
         <div className="flex gap-2">
-          <Button data-testid="user-edit-btn" variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+          <Button
+            data-testid="user-edit-btn"
+            variant="outline"
+            size="sm"
+            onClick={() => setEditOpen(true)}
+          >
             <Pencil className="mr-1.5 h-4 w-4" />
             Edit
           </Button>
@@ -130,7 +127,12 @@ export default function UserDetailPage() {
               {t('admin:users.force_logout', 'Force Logout')}
             </Button>
           </PermissionGuard>
-          <Button data-testid="user-delete-btn" variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+          <Button
+            data-testid="user-delete-btn"
+            variant="destructive"
+            size="sm"
+            onClick={() => setDeleteOpen(true)}
+          >
             <Trash2 className="mr-1.5 h-4 w-4" />
             Delete
           </Button>
@@ -148,9 +150,7 @@ export default function UserDetailPage() {
           {user.email}
         </InfoRow>
         <InfoRow icon={Shield} label={t('admin:users.role')}>
-          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-            {user.role}
-          </Badge>
+          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
         </InfoRow>
         <InfoRow icon={CircleDot} label={t('admin:users.status')}>
           <Badge variant={user.status === 'active' ? 'default' : 'destructive'}>
@@ -192,9 +192,7 @@ export default function UserDetailPage() {
                 {ur.roleName}
                 <button
                   type="button"
-                  onClick={() =>
-                    removeRole.mutate({ userId: user.id, roleId: ur.roleId })
-                  }
+                  onClick={() => removeRole.mutate({ userId: user.id, roleId: ur.roleId })}
                   className="ml-1 rounded-full p-0.5 hover:bg-destructive/20 hover:text-destructive"
                   aria-label={`Remove ${ur.roleName}`}
                 >

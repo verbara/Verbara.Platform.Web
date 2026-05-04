@@ -35,6 +35,7 @@ vi.mock('@/core/api/hooks/use-api-keys', () => ({
   useRevokeApiKey: vi.fn(),
 }));
 
+import { asMock } from '@/tests/utils/as-mock';
 import {
   useApiKeys,
   useCreateApiKey,
@@ -45,10 +46,10 @@ import {
 import ApiKeysPage from './api-keys-page';
 import { resolveApiKeyStatus } from './resolve-status';
 
-const mockUseList = useApiKeys as unknown as ReturnType<typeof vi.fn>;
-const mockUseCreate = useCreateApiKey as unknown as ReturnType<typeof vi.fn>;
-const mockUseRotate = useRotateApiKey as unknown as ReturnType<typeof vi.fn>;
-const mockUseRevoke = useRevokeApiKey as unknown as ReturnType<typeof vi.fn>;
+const mockUseList = asMock(useApiKeys);
+const mockUseCreate = asMock(useCreateApiKey);
+const mockUseRotate = asMock(useRotateApiKey);
+const mockUseRevoke = asMock(useRevokeApiKey);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -78,16 +79,12 @@ describe('resolveApiKeyStatus', () => {
 
   it('returns_expired_when_expiresAt_is_past', () => {
     const key = makeKey({ expiresAt: '2020-01-01T00:00:00Z' });
-    expect(resolveApiKeyStatus(key, new Date('2026-01-01T00:00:00Z'))).toBe(
-      'expired',
-    );
+    expect(resolveApiKeyStatus(key, new Date('2026-01-01T00:00:00Z'))).toBe('expired');
   });
 
   it('returns_active_for_non_revoked_non_expired_key', () => {
     const key = makeKey({ expiresAt: '2099-01-01T00:00:00Z' });
-    expect(resolveApiKeyStatus(key, new Date('2026-01-01T00:00:00Z'))).toBe(
-      'active',
-    );
+    expect(resolveApiKeyStatus(key, new Date('2026-01-01T00:00:00Z'))).toBe('active');
   });
 
   it('returns_active_when_expiresAt_is_null', () => {

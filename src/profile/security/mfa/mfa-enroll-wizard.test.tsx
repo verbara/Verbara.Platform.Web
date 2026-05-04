@@ -17,9 +17,7 @@ vi.mock('sonner', () => ({
 }));
 
 vi.mock('qrcode.react', () => ({
-  QRCodeSVG: ({ value }: { value: string }) => (
-    <svg data-testid="qrcode-svg" data-value={value} />
-  ),
+  QRCodeSVG: ({ value }: { value: string }) => <svg data-testid="qrcode-svg" data-value={value} />,
 }));
 
 vi.mock('@/core/api/hooks/use-mfa-enroll', () => ({
@@ -28,6 +26,7 @@ vi.mock('@/core/api/hooks/use-mfa-enroll', () => ({
   useMfaEnrollComplete: vi.fn(),
 }));
 
+import { asMock } from '@/tests/utils/as-mock';
 import {
   useMfaEnrollInit,
   useMfaEnrollVerify,
@@ -35,9 +34,9 @@ import {
 } from '@/core/api/hooks/use-mfa-enroll';
 import MfaEnrollWizard from './mfa-enroll-wizard';
 
-const mockInit = useMfaEnrollInit as unknown as ReturnType<typeof vi.fn>;
-const mockVerify = useMfaEnrollVerify as unknown as ReturnType<typeof vi.fn>;
-const mockComplete = useMfaEnrollComplete as unknown as ReturnType<typeof vi.fn>;
+const mockInit = asMock(useMfaEnrollInit);
+const mockVerify = asMock(useMfaEnrollVerify);
+const mockComplete = asMock(useMfaEnrollComplete);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -54,7 +53,11 @@ describe('MfaEnrollWizard', () => {
   });
 
   it('Init_ShouldRenderQrCode_WhenInitResolves', async () => {
-    const initData = { secret: 'JBSWY3DPEHPK3PXP', qrUri: 'otpauth://totp/test', manualCode: 'JBSWY3DPEHPK3PXP' };
+    const initData = {
+      secret: 'JBSWY3DPEHPK3PXP',
+      qrUri: 'otpauth://totp/test',
+      manualCode: 'JBSWY3DPEHPK3PXP',
+    };
     mockInit.mockReturnValue({
       mutateAsync: vi.fn().mockResolvedValue(initData),
       isPending: false,
@@ -115,7 +118,18 @@ describe('MfaEnrollWizard', () => {
 
   it('Verify_ShouldRenderRecoveryCodes_WhenVerifyResolves', async () => {
     const initData = { secret: 'SEC', qrUri: 'uri', manualCode: 'SEC' };
-    const codes = ['ABCD2345', 'EFGH6789', 'JKLM2345', 'NPQR6789', 'STUV2345', 'WXYZ6789', 'ABCD3456', 'EFGH7890', 'JKLM3456', 'NPQR7890'];
+    const codes = [
+      'ABCD2345',
+      'EFGH6789',
+      'JKLM2345',
+      'NPQR6789',
+      'STUV2345',
+      'WXYZ6789',
+      'ABCD3456',
+      'EFGH7890',
+      'JKLM3456',
+      'NPQR7890',
+    ];
     mockInit.mockReturnValue({
       mutateAsync: vi.fn().mockResolvedValue(initData),
       isPending: false,

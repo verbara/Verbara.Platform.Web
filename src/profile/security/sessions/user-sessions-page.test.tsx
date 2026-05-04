@@ -17,6 +17,7 @@ vi.mock('@/core/api/hooks/use-user-sessions', () => ({
   useRevokeUserSession: vi.fn(),
 }));
 
+import { asMock } from '@/tests/utils/as-mock';
 import {
   useUserSessions,
   useRevokeUserSession,
@@ -24,8 +25,8 @@ import {
 } from '@/core/api/hooks/use-user-sessions';
 import UserSessionsPage from './user-sessions-page';
 
-const mockSessions = useUserSessions as unknown as ReturnType<typeof vi.fn>;
-const mockRevoke = useRevokeUserSession as unknown as ReturnType<typeof vi.fn>;
+const mockSessions = asMock(useUserSessions);
+const mockRevoke = asMock(useRevokeUserSession);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });

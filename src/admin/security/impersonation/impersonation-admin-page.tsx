@@ -85,9 +85,10 @@ function CountdownCell({ session, nowMs, t }: CountdownProps) {
 
   const minutes = Math.floor(remaining / 60);
   const seconds = remaining % 60;
-  const label = minutes > 0
-    ? t('admin:security_admin.impersonation.live.minutes_remaining', { minutes })
-    : t('admin:security_admin.impersonation.live.seconds_remaining', { seconds });
+  const label =
+    minutes > 0
+      ? t('admin:security_admin.impersonation.live.minutes_remaining', { minutes })
+      : t('admin:security_admin.impersonation.live.seconds_remaining', { seconds });
 
   return (
     <span
@@ -105,11 +106,14 @@ interface OutcomeBadgeProps {
 }
 
 function OutcomeBadge({ status, t }: OutcomeBadgeProps) {
-  const map: Record<ImpersonationSessionStatus, {
-    variant: 'default' | 'secondary' | 'destructive';
-    key: string;
-    icon: typeof ShieldAlert;
-  }> = {
+  const map: Record<
+    ImpersonationSessionStatus,
+    {
+      variant: 'default' | 'secondary' | 'destructive';
+      key: string;
+      icon: typeof ShieldAlert;
+    }
+  > = {
     Active: {
       variant: 'default',
       key: 'admin:security_admin.impersonation.tabs.active',
@@ -163,16 +167,17 @@ function RevokeDialog({ target, onClose, onConfirm, isPending, t }: RevokeDialog
   const disabled = isPending || reason.trim().length === 0;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {t('admin:security_admin.impersonation.actions.revoke')}
-          </DialogTitle>
+          <DialogTitle>{t('admin:security_admin.impersonation.actions.revoke')}</DialogTitle>
           <DialogDescription>
-            {target
-              ? `${target.actorUserId} → ${target.targetTenantId}`
-              : ''}
+            {target ? `${target.actorUserId} → ${target.targetTenantId}` : ''}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -228,123 +233,133 @@ export default function ImpersonationAdminPage() {
   const activeSessions = active.data?.items ?? [];
   const historySessions = history.data?.items ?? [];
 
-  const activeColumns = useMemo<ColumnDef<ImpersonationSessionDto>[]>(
-    () => [
-      col.accessor('actorUserId', {
-        header: () => t('admin:security_admin.impersonation.columns.actor'),
-        cell: (info) => (
-          <div
-            className="flex flex-col"
-            data-testid={`impersonation-actor-${info.row.original.id}`}
-          >
-            <span className="font-medium">{info.getValue()}</span>
-            <span className="text-xs text-muted-foreground">{info.row.original.actorTenantId}</span>
-          </div>
-        ),
-      }),
-      col.accessor('targetTenantId', {
-        header: () => t('admin:security_admin.impersonation.columns.target'),
-        cell: (info) => (
-          <span
-            className="text-sm text-muted-foreground"
-            data-testid={`impersonation-target-${info.row.original.id}`}
-          >
-            {info.getValue()}
-          </span>
-        ),
-      }),
-      col.accessor('startedAt', {
-        header: () => t('admin:security_admin.impersonation.columns.started'),
-        cell: (info) => (
-          <span title={formatDate(info.getValue())}>
-            {formatRelative(info.getValue())}
-          </span>
-        ),
-      }),
-      col.accessor('reason', {
-        header: () => t('admin:security_admin.impersonation.columns.reason'),
-        cell: (info) => {
-          const value = info.getValue();
-          return value
-            ? <span className="text-sm">{value}</span>
-            : <span className="text-muted-foreground">—</span>;
-        },
-      }),
-      col.display({
-        id: 'time-remaining',
-        header: () => t('admin:security_admin.impersonation.columns.time_remaining'),
-        cell: ({ row }) => <CountdownCell session={row.original} nowMs={nowMs} t={t} />,
-      }),
-      col.display({
-        id: 'actions',
-        header: () => t('admin:security_admin.impersonation.columns.actions'),
-        cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-destructive hover:text-destructive"
-            onClick={() => setRevokeTarget(row.original)}
-            data-testid={`impersonation-revoke-${row.original.id}`}
-            aria-label={t('admin:security_admin.impersonation.actions.revoke')}
-          >
-            <LogOut className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-            {t('admin:security_admin.impersonation.actions.revoke')}
-          </Button>
-        ),
-      }),
-    ] as unknown as ColumnDef<ImpersonationSessionDto>[],
+  const activeColumns = useMemo(
+    () =>
+      [
+        col.accessor('actorUserId', {
+          header: () => t('admin:security_admin.impersonation.columns.actor'),
+          cell: (info) => (
+            <div
+              className="flex flex-col"
+              data-testid={`impersonation-actor-${info.row.original.id}`}
+            >
+              <span className="font-medium">{info.getValue()}</span>
+              <span className="text-xs text-muted-foreground">
+                {info.row.original.actorTenantId}
+              </span>
+            </div>
+          ),
+        }),
+        col.accessor('targetTenantId', {
+          header: () => t('admin:security_admin.impersonation.columns.target'),
+          cell: (info) => (
+            <span
+              className="text-sm text-muted-foreground"
+              data-testid={`impersonation-target-${info.row.original.id}`}
+            >
+              {info.getValue()}
+            </span>
+          ),
+        }),
+        col.accessor('startedAt', {
+          header: () => t('admin:security_admin.impersonation.columns.started'),
+          cell: (info) => (
+            <span title={formatDate(info.getValue())}>{formatRelative(info.getValue())}</span>
+          ),
+        }),
+        col.accessor('reason', {
+          header: () => t('admin:security_admin.impersonation.columns.reason'),
+          cell: (info) => {
+            const value = info.getValue();
+            return value ? (
+              <span className="text-sm">{value}</span>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            );
+          },
+        }),
+        col.display({
+          id: 'time-remaining',
+          header: () => t('admin:security_admin.impersonation.columns.time_remaining'),
+          cell: ({ row }) => <CountdownCell session={row.original} nowMs={nowMs} t={t} />,
+        }),
+        col.display({
+          id: 'actions',
+          header: () => t('admin:security_admin.impersonation.columns.actions'),
+          cell: ({ row }) => (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-destructive hover:text-destructive"
+              onClick={() => setRevokeTarget(row.original)}
+              data-testid={`impersonation-revoke-${row.original.id}`}
+              aria-label={t('admin:security_admin.impersonation.actions.revoke')}
+            >
+              <LogOut className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+              {t('admin:security_admin.impersonation.actions.revoke')}
+            </Button>
+          ),
+        }),
+      ] as ColumnDef<ImpersonationSessionDto>[],
     [t, nowMs, formatDate, formatRelative],
   );
 
-  const historyColumns = useMemo<ColumnDef<ImpersonationSessionDto>[]>(
-    () => [
-      col.accessor('actorUserId', {
-        header: () => t('admin:security_admin.impersonation.columns.actor'),
-        cell: (info) => (
-          <div className="flex flex-col">
-            <span className="font-medium">{info.getValue()}</span>
-            <span className="text-xs text-muted-foreground">{info.row.original.actorTenantId}</span>
-          </div>
-        ),
-      }),
-      col.accessor('targetTenantId', {
-        header: () => t('admin:security_admin.impersonation.columns.target'),
-        cell: (info) => <span className="text-sm text-muted-foreground">{info.getValue()}</span>,
-      }),
-      col.accessor('startedAt', {
-        header: () => t('admin:security_admin.impersonation.columns.started'),
-        cell: (info) => <span title={formatDate(info.getValue())}>{formatRelative(info.getValue())}</span>,
-      }),
-      col.accessor('endedAt', {
-        header: () => t('admin:security_admin.impersonation.columns.ended'),
-        cell: (info) => {
-          const value = info.getValue();
-          return value
-            ? <span title={formatDate(value)}>{formatRelative(value)}</span>
-            : <span className="text-muted-foreground">—</span>;
-        },
-      }),
-      col.display({
-        id: 'duration',
-        header: () => t('admin:security_admin.impersonation.columns.duration'),
-        cell: ({ row }) => {
-          const start = Date.parse(row.original.startedAt);
-          const end = row.original.endedAt ? Date.parse(row.original.endedAt) : Number.NaN;
-          if (Number.isNaN(end)) return <span className="text-muted-foreground">—</span>;
-          const seconds = Math.max(0, Math.round((end - start) / 1000));
-          const minutes = Math.floor(seconds / 60);
-          return (
-            <span className="font-mono text-sm">
-              {minutes >= 1 ? `${minutes}m` : `${seconds}s`}
-            </span>
-          );
-        },
-      }),
-      col.accessor('status', {
-        header: () => t('admin:security_admin.impersonation.columns.outcome'),
-        cell: (info) => <OutcomeBadge status={info.getValue()} t={t} />,
-      }),
-    ] as unknown as ColumnDef<ImpersonationSessionDto>[],
+  const historyColumns = useMemo(
+    () =>
+      [
+        col.accessor('actorUserId', {
+          header: () => t('admin:security_admin.impersonation.columns.actor'),
+          cell: (info) => (
+            <div className="flex flex-col">
+              <span className="font-medium">{info.getValue()}</span>
+              <span className="text-xs text-muted-foreground">
+                {info.row.original.actorTenantId}
+              </span>
+            </div>
+          ),
+        }),
+        col.accessor('targetTenantId', {
+          header: () => t('admin:security_admin.impersonation.columns.target'),
+          cell: (info) => <span className="text-sm text-muted-foreground">{info.getValue()}</span>,
+        }),
+        col.accessor('startedAt', {
+          header: () => t('admin:security_admin.impersonation.columns.started'),
+          cell: (info) => (
+            <span title={formatDate(info.getValue())}>{formatRelative(info.getValue())}</span>
+          ),
+        }),
+        col.accessor('endedAt', {
+          header: () => t('admin:security_admin.impersonation.columns.ended'),
+          cell: (info) => {
+            const value = info.getValue();
+            return value ? (
+              <span title={formatDate(value)}>{formatRelative(value)}</span>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            );
+          },
+        }),
+        col.display({
+          id: 'duration',
+          header: () => t('admin:security_admin.impersonation.columns.duration'),
+          cell: ({ row }) => {
+            const start = Date.parse(row.original.startedAt);
+            const end = row.original.endedAt ? Date.parse(row.original.endedAt) : Number.NaN;
+            if (Number.isNaN(end)) return <span className="text-muted-foreground">—</span>;
+            const seconds = Math.max(0, Math.round((end - start) / 1000));
+            const minutes = Math.floor(seconds / 60);
+            return (
+              <span className="font-mono text-sm">
+                {minutes >= 1 ? `${minutes}m` : `${seconds}s`}
+              </span>
+            );
+          },
+        }),
+        col.accessor('status', {
+          header: () => t('admin:security_admin.impersonation.columns.outcome'),
+          cell: (info) => <OutcomeBadge status={info.getValue()} t={t} />,
+        }),
+      ] as ColumnDef<ImpersonationSessionDto>[],
     [t, formatDate, formatRelative],
   );
 
@@ -357,8 +372,10 @@ export default function ImpersonationAdminPage() {
 
       {/* Tab toggle (active vs history) — minimal segmented control to avoid
           pulling in another primitive just for two tabs. */}
-      <div className="flex gap-1 rounded-lg border bg-card p-1 text-sm shadow-sm w-fit"
-        data-testid="impersonation-admin-tabs">
+      <div
+        className="flex gap-1 rounded-lg border bg-card p-1 text-sm shadow-sm w-fit"
+        data-testid="impersonation-admin-tabs"
+      >
         <button
           type="button"
           data-testid="impersonation-admin-tab-active"

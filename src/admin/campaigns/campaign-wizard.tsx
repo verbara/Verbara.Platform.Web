@@ -7,7 +7,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ArrowRight, Save, Rocket } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { PageHeader } from '@/admin/shared/page-header';
-import { useCreateCampaign, useStartCampaign, useCreateContactList, useImportContacts } from '@/core/api/hooks/use-campaigns';
+import {
+  useCreateCampaign,
+  useStartCampaign,
+  useCreateContactList,
+  useImportContacts,
+} from '@/core/api/hooks/use-campaigns';
 import type { ContactImportRow, CampaignDetail } from '@/core/api/hooks/use-campaigns';
 import BasicStep from './steps/basic-step';
 import DialingStep from './steps/dialing-step';
@@ -134,18 +139,25 @@ export default function CampaignWizard() {
   const currentSchema = stepSchemas[currentStepKey];
   const methods = useForm<CampaignFormValues>({
     defaultValues: DEFAULT_VALUES,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: currentSchema ? zodResolver(currentSchema as any) : undefined,
+    resolver: currentSchema
+      ? zodResolver(currentSchema as z.ZodType<CampaignFormValues, CampaignFormValues>)
+      : undefined,
   });
 
   const StepComponent = STEP_COMPONENTS[currentStepKey];
   const isFirst = step === 0;
   const isLast = step === STEP_KEYS.length - 1;
 
-  const isPending = createCampaign.isPending || startCampaign.isPending ||
-    createContactList.isPending || importContacts.isPending;
+  const isPending =
+    createCampaign.isPending ||
+    startCampaign.isPending ||
+    createContactList.isPending ||
+    importContacts.isPending;
 
-  const buildApiPayload = (formData: CampaignFormValues, status: 'draft' | 'active'): Partial<Omit<CampaignDetail, 'id' | 'createdAt'>> => {
+  const buildApiPayload = (
+    formData: CampaignFormValues,
+    status: 'draft' | 'active',
+  ): Partial<Omit<CampaignDetail, 'id' | 'createdAt'>> => {
     const payload: Record<string, unknown> = {
       name: formData.name,
       description: formData.description || undefined,
@@ -184,7 +196,14 @@ export default function CampaignWizard() {
 
     const fileName = formData.contactFile || 'contacts.csv';
     createContactList.mutate(
-      { campaignId, name: fileName, sourceFileName: fileName, totalContacts: contacts.length, pendingContacts: contacts.length, completedContacts: 0 },
+      {
+        campaignId,
+        name: fileName,
+        sourceFileName: fileName,
+        totalContacts: contacts.length,
+        pendingContacts: contacts.length,
+        completedContacts: 0,
+      },
       {
         onSuccess: (list) => {
           importContacts.mutate({ campaignId, listId: list.id, contacts });
@@ -248,23 +267,17 @@ export default function CampaignWizard() {
 
           {/* Navigation buttons */}
           <div className="flex items-center justify-between border-t pt-4">
-            <Button
-              variant="outline"
-              disabled={isFirst}
-              onClick={() => setStep((s) => s - 1)}
-            >
+            <Button variant="outline" disabled={isFirst} onClick={() => setStep((s) => s - 1)}>
               <ArrowLeft className="mr-1.5 h-4 w-4" />
               {t('admin:campaigns.previous')}
             </Button>
 
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                disabled={isPending}
-                onClick={handleSaveDraft}
-              >
+              <Button variant="outline" disabled={isPending} onClick={handleSaveDraft}>
                 <Save className="mr-1.5 h-4 w-4" />
-                {createCampaign.isPending ? t('admin:campaigns.saving') : t('admin:campaigns.saveDraft')}
+                {createCampaign.isPending
+                  ? t('admin:campaigns.saving')
+                  : t('admin:campaigns.saveDraft')}
               </Button>
 
               {isLast ? (

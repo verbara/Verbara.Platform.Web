@@ -13,15 +13,13 @@ vi.mock('@/core/stores/realtime-store', () => ({
   useRealtimeStore: vi.fn(),
 }));
 
+import { asMock } from '@/tests/utils/as-mock';
 import { onHubEvent } from '@/core/realtime';
 import { useRealtimeStore } from '@/core/stores/realtime-store';
-import {
-  useClusterStateStream,
-  type ClusterNodeStatePayload,
-} from './use-cluster-state-stream';
+import { useClusterStateStream, type ClusterNodeStatePayload } from './use-cluster-state-stream';
 
 const mockOnHubEvent = onHubEvent as ReturnType<typeof vi.fn>;
-const mockUseRealtimeStore = useRealtimeStore as unknown as ReturnType<typeof vi.fn>;
+const mockUseRealtimeStore = asMock(useRealtimeStore);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });

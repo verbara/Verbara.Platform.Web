@@ -32,6 +32,7 @@ vi.mock('./use-impersonation-sessions', () => ({
   useRevokeImpersonationSession: vi.fn(),
 }));
 
+import { asMock } from '@/tests/utils/as-mock';
 import {
   useActiveImpersonationSessions,
   useImpersonationSessionHistory,
@@ -40,9 +41,9 @@ import {
 } from './use-impersonation-sessions';
 import ImpersonationAdminPage from './impersonation-admin-page';
 
-const mockUseActive = useActiveImpersonationSessions as unknown as ReturnType<typeof vi.fn>;
-const mockUseHistory = useImpersonationSessionHistory as unknown as ReturnType<typeof vi.fn>;
-const mockUseRevoke = useRevokeImpersonationSession as unknown as ReturnType<typeof vi.fn>;
+const mockUseActive = asMock(useActiveImpersonationSessions);
+const mockUseHistory = asMock(useImpersonationSessionHistory);
+const mockUseRevoke = asMock(useRevokeImpersonationSession);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -124,10 +125,14 @@ describe('ImpersonationAdminPage', () => {
       vi.setSystemTime(start);
       // 65s window — countdown starts at "minutes_remaining" (>= 60), drops
       // to "seconds_remaining" once the page advances 10s past start.
-      mockUseActive.mockReturnValue(pagedResult([makeSession({
-        timeRemainingSeconds: 65,
-        expiresAt: '2026-04-25T10:01:05Z',
-      })]));
+      mockUseActive.mockReturnValue(
+        pagedResult([
+          makeSession({
+            timeRemainingSeconds: 65,
+            expiresAt: '2026-04-25T10:01:05Z',
+          }),
+        ]),
+      );
 
       render(<ImpersonationAdminPage />, { wrapper: makeWrapper() });
 
@@ -171,16 +176,18 @@ describe('ImpersonationAdminPage', () => {
   });
 
   it('TogglesHistoryTab_When_HistoryButtonClicked', () => {
-    mockUseHistory.mockReturnValue(pagedResult([
-      makeSession({
-        id: 'closed-1',
-        status: 'AutoTimedOut',
-        endedAt: '2026-04-25T14:00:00Z',
-        closeReason: 'auto_timeout',
-        timeRemainingSeconds: null,
-        expiresAt: null,
-      }),
-    ]));
+    mockUseHistory.mockReturnValue(
+      pagedResult([
+        makeSession({
+          id: 'closed-1',
+          status: 'AutoTimedOut',
+          endedAt: '2026-04-25T14:00:00Z',
+          closeReason: 'auto_timeout',
+          timeRemainingSeconds: null,
+          expiresAt: null,
+        }),
+      ]),
+    );
 
     render(<ImpersonationAdminPage />, { wrapper: makeWrapper() });
 
