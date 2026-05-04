@@ -40,7 +40,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@types/dompurify": "^3.0.5",
     "@wavesurfer/react": "^1.0.12",
-    "@xyflow/react": "^12.10.1",
+    "@xyflow/react": "^12.10.2",
     "ag-grid-community": "^35.2.1",
     "ag-grid-react": "^35.2.1",
     "class-variance-authority": "^0.7.1",
