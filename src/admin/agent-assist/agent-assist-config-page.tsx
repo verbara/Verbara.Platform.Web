@@ -14,13 +14,7 @@ import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
 import { Switch } from '@/core/ui/switch';
 import { Checkbox } from '@/core/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   useAgentAssistConfig,
   useUpdateAgentAssistConfig,
@@ -59,9 +53,7 @@ function SectionCard({
     <div className="rounded-lg border bg-card p-6 shadow-sm" data-testid={testId}>
       <div className="mb-4">
         <h2 className="text-base font-semibold text-foreground">{title}</h2>
-        {description && (
-          <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
-        )}
+        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
       </div>
       {children}
     </div>
@@ -117,7 +109,9 @@ function MultiSelect({
       </div>
       <div className="max-h-48 overflow-y-auto rounded-md border bg-background p-2 space-y-1">
         {options.length === 0 ? (
-          <p className="text-sm text-muted-foreground px-1 py-0.5">{t('admin:agentAssist.noOptionsAvailable')}</p>
+          <p className="text-sm text-muted-foreground px-1 py-0.5">
+            {t('admin:agentAssist.noOptionsAvailable')}
+          </p>
         ) : (
           options.map((opt) => (
             <label
@@ -148,7 +142,13 @@ function KeywordRulesSection() {
   const { data: rules = [], isLoading } = useKeywordRules();
   const updateRules = useUpdateKeywordRules();
 
-  const [localRules, setLocalRules] = useState<KeywordRule[]>([]);
+  const [localRules, setLocalRules] = useState<KeywordRule[]>(rules);
+  const [prevRules, setPrevRules] = useState(rules);
+  if (prevRules !== rules) {
+    setPrevRules(rules);
+    setLocalRules(rules);
+  }
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<RuleRowEdit>({
     keyword: '',
@@ -161,10 +161,6 @@ function KeywordRulesSection() {
     suggestionText: '',
     priority: 'Informational',
   });
-
-  useEffect(() => {
-    setLocalRules(rules);
-  }, [rules]);
 
   const startEdit = (rule: KeywordRule) => {
     setEditingId(rule.id);
@@ -182,13 +178,7 @@ function KeywordRulesSection() {
 
   const saveEdit = () => {
     if (!editingId) return;
-    setLocalRules((prev) =>
-      prev.map((r) =>
-        r.id === editingId
-          ? { ...r, ...editDraft }
-          : r,
-      ),
-    );
+    setLocalRules((prev) => prev.map((r) => (r.id === editingId ? { ...r, ...editDraft } : r)));
     setEditingId(null);
   };
 
@@ -260,9 +250,7 @@ function KeywordRulesSection() {
                   <td className="px-3 py-2">
                     <Input
                       value={editDraft.keyword}
-                      onChange={(e) =>
-                        setEditDraft((d) => ({ ...d, keyword: e.target.value }))
-                      }
+                      onChange={(e) => setEditDraft((d) => ({ ...d, keyword: e.target.value }))}
                       className="h-7 text-sm"
                     />
                   </td>
@@ -370,9 +358,7 @@ function KeywordRulesSection() {
                 <td className="px-3 py-2">
                   <Input
                     value={newDraft.keyword}
-                    onChange={(e) =>
-                      setNewDraft((d) => ({ ...d, keyword: e.target.value }))
-                    }
+                    onChange={(e) => setNewDraft((d) => ({ ...d, keyword: e.target.value }))}
                     placeholder={t('admin:agentAssist.rules.keywordPlaceholder')}
                     className="h-7 text-sm"
                     autoFocus
@@ -381,9 +367,7 @@ function KeywordRulesSection() {
                 <td className="px-3 py-2">
                   <Input
                     value={newDraft.suggestionText}
-                    onChange={(e) =>
-                      setNewDraft((d) => ({ ...d, suggestionText: e.target.value }))
-                    }
+                    onChange={(e) => setNewDraft((d) => ({ ...d, suggestionText: e.target.value }))}
                     placeholder={t('admin:agentAssist.rules.suggestionPlaceholder')}
                     className="h-7 text-sm"
                   />
@@ -391,9 +375,7 @@ function KeywordRulesSection() {
                 <td className="px-3 py-2">
                   <Select
                     value={newDraft.priority}
-                    onValueChange={(v) =>
-                      setNewDraft((d) => ({ ...d, priority: v as Priority }))
-                    }
+                    onValueChange={(v) => setNewDraft((d) => ({ ...d, priority: v as Priority }))}
                   >
                     <SelectTrigger size="sm" className="w-36">
                       <SelectValue />
@@ -449,12 +431,7 @@ function KeywordRulesSection() {
           {t('admin:agentAssist.rules.addRule')}
         </Button>
 
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleSaveRules}
-          disabled={updateRules.isPending}
-        >
+        <Button type="button" size="sm" onClick={handleSaveRules} disabled={updateRules.isPending}>
           <Save className="mr-1.5 h-4 w-4" />
           {updateRules.isPending
             ? t('admin:agentAssist.saving')
@@ -477,7 +454,13 @@ function ComplianceRulesSection() {
   const { data: rules = [], isLoading } = useComplianceRules();
   const updateRules = useUpdateComplianceRules();
 
-  const [localRules, setLocalRules] = useState<ComplianceRule[]>([]);
+  const [localRules, setLocalRules] = useState<ComplianceRule[]>(rules);
+  const [prevRules, setPrevRules] = useState(rules);
+  if (prevRules !== rules) {
+    setPrevRules(rules);
+    setLocalRules(rules);
+  }
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<ComplianceRowEdit>({
     pattern: '',
@@ -492,10 +475,6 @@ function ComplianceRulesSection() {
     action: 'Alert',
     description: '',
   });
-
-  useEffect(() => {
-    setLocalRules(rules);
-  }, [rules]);
 
   const startEdit = (rule: ComplianceRule) => {
     setEditingId(rule.ruleId);
@@ -601,9 +580,7 @@ function ComplianceRulesSection() {
                   <td className="px-3 py-2">
                     <Input
                       value={editDraft.pattern}
-                      onChange={(e) =>
-                        setEditDraft((d) => ({ ...d, pattern: e.target.value }))
-                      }
+                      onChange={(e) => setEditDraft((d) => ({ ...d, pattern: e.target.value }))}
                       className="h-7 text-sm"
                     />
                   </td>
@@ -629,9 +606,7 @@ function ComplianceRulesSection() {
                   <td className="px-3 py-2">
                     <Select
                       value={editDraft.action}
-                      onValueChange={(v) =>
-                        setEditDraft((d) => ({ ...d, action: v as Action }))
-                      }
+                      onValueChange={(v) => setEditDraft((d) => ({ ...d, action: v as Action }))}
                     >
                       <SelectTrigger size="sm" className="w-24">
                         <SelectValue />
@@ -648,9 +623,7 @@ function ComplianceRulesSection() {
                   <td className="px-3 py-2">
                     <Input
                       value={editDraft.description}
-                      onChange={(e) =>
-                        setEditDraft((d) => ({ ...d, description: e.target.value }))
-                      }
+                      onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))}
                       className="h-7 text-sm"
                     />
                   </td>
@@ -698,9 +671,7 @@ function ComplianceRulesSection() {
                   <td className="px-3 py-2">
                     <Badge variant="outline">{rule.action}</Badge>
                   </td>
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {rule.description ?? '—'}
-                  </td>
+                  <td className="px-3 py-2 text-muted-foreground">{rule.description ?? '—'}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-1">
                       <Button
@@ -735,9 +706,7 @@ function ComplianceRulesSection() {
                 <td className="px-3 py-2">
                   <Input
                     value={newDraft.pattern}
-                    onChange={(e) =>
-                      setNewDraft((d) => ({ ...d, pattern: e.target.value }))
-                    }
+                    onChange={(e) => setNewDraft((d) => ({ ...d, pattern: e.target.value }))}
                     placeholder={t('admin:agentAssist.complianceRules.patternPlaceholder')}
                     className="h-7 text-sm"
                     autoFocus
@@ -746,9 +715,7 @@ function ComplianceRulesSection() {
                 <td className="px-3 py-2">
                   <Select
                     value={newDraft.severity}
-                    onValueChange={(v) =>
-                      setNewDraft((d) => ({ ...d, severity: v as Severity }))
-                    }
+                    onValueChange={(v) => setNewDraft((d) => ({ ...d, severity: v as Severity }))}
                   >
                     <SelectTrigger size="sm" className="w-28">
                       <SelectValue />
@@ -765,9 +732,7 @@ function ComplianceRulesSection() {
                 <td className="px-3 py-2">
                   <Select
                     value={newDraft.action}
-                    onValueChange={(v) =>
-                      setNewDraft((d) => ({ ...d, action: v as Action }))
-                    }
+                    onValueChange={(v) => setNewDraft((d) => ({ ...d, action: v as Action }))}
                   >
                     <SelectTrigger size="sm" className="w-24">
                       <SelectValue />
@@ -784,9 +749,7 @@ function ComplianceRulesSection() {
                 <td className="px-3 py-2">
                   <Input
                     value={newDraft.description}
-                    onChange={(e) =>
-                      setNewDraft((d) => ({ ...d, description: e.target.value }))
-                    }
+                    onChange={(e) => setNewDraft((d) => ({ ...d, description: e.target.value }))}
                     placeholder={t('admin:agentAssist.complianceRules.descriptionPlaceholder')}
                     className="h-7 text-sm"
                   />
@@ -833,12 +796,7 @@ function ComplianceRulesSection() {
           {t('admin:agentAssist.complianceRules.addRule')}
         </Button>
 
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleSaveRules}
-          disabled={updateRules.isPending}
-        >
+        <Button type="button" size="sm" onClick={handleSaveRules} disabled={updateRules.isPending}>
           <Save className="mr-1.5 h-4 w-4" />
           {updateRules.isPending
             ? t('admin:agentAssist.saving')
@@ -930,15 +888,13 @@ export default function AgentAssistConfigPage() {
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="font-heading text-2xl font-semibold">
-              {t('admin:agentAssist.title')}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {t('admin:agentAssist.description')}
-            </p>
+            <h1 className="font-heading text-2xl font-semibold">{t('admin:agentAssist.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('admin:agentAssist.description')}</p>
           </div>
         </div>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
+        <div className="flex h-64 items-center justify-center text-muted-foreground">
+          {t('common:status.loading')}
+        </div>
       </div>
     );
   }
@@ -948,8 +904,8 @@ export default function AgentAssistConfigPage() {
       {/* Coming Soon banner */}
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
         <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-          Coming Soon — Agent Assist requires speech recognition configuration.
-          This feature will be available in a future release.
+          Coming Soon — Agent Assist requires speech recognition configuration. This feature will be
+          available in a future release.
         </p>
       </div>
 
@@ -959,242 +915,220 @@ export default function AgentAssistConfigPage() {
           <Sparkles className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {t('admin:agentAssist.title')}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t('admin:agentAssist.description')}
-          </p>
+          <h1 className="font-heading text-2xl font-semibold">{t('admin:agentAssist.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('admin:agentAssist.description')}</p>
         </div>
       </div>
 
       <fieldset disabled className="space-y-6 opacity-50 pointer-events-none">
-      {/* Section 1 — Engine Status */}
-      <SectionCard
-        title={t('admin:agentAssist.status.title')}
-        description={t('admin:agentAssist.status.description')}
-        testId="agent-assist-section-status"
-      >
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div className="space-y-0.5">
-            <p className="text-sm font-medium">{t('admin:agentAssist.status.enableLabel')}</p>
-            <p className="text-xs text-muted-foreground">
-              {t('admin:agentAssist.status.enableHint')}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant={form.enabled ? 'default' : 'secondary'}>
-              {form.enabled
-                ? t('admin:agentAssist.status.active')
-                : t('admin:agentAssist.status.inactive')}
-            </Badge>
-            <Switch
-              checked={form.enabled}
-              onCheckedChange={(checked) => update('enabled', checked)}
-              aria-label={t('admin:agentAssist.aria.engineEnabled')}
-            />
-          </div>
-        </div>
-      </SectionCard>
-
-      {/* Section 2 — Filters */}
-      <SectionCard
-        title={t('admin:agentAssist.filters.title')}
-        description={t('admin:agentAssist.filters.description')}
-      >
-        <div className="space-y-5">
-          <div className="space-y-2">
-            <Label>{t('admin:agentAssist.filters.queues')}</Label>
-            <MultiSelect
-              options={queueOptions}
-              selected={form.queueNames}
-              onChange={(v) => update('queueNames', v)}
-              placeholder={t('admin:agentAssist.filters.allCalls')}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t('admin:agentAssist.filters.emptyNote')}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('admin:agentAssist.filters.agents')}</Label>
-            <MultiSelect
-              options={agentOptions}
-              selected={form.agentIds}
-              onChange={(v) => update('agentIds', v)}
-              placeholder={t('admin:agentAssist.filters.allAgents')}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t('admin:agentAssist.filters.emptyNote')}
-            </p>
-          </div>
-        </div>
-      </SectionCard>
-
-      {/* Section 3 — Timeouts */}
-      <SectionCard
-        title={t('admin:agentAssist.timeouts.title')}
-        description={t('admin:agentAssist.timeouts.description')}
-      >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="suggestionTimeout">
-              {t('admin:agentAssist.timeouts.suggestion')}
-            </Label>
-            <Input
-              id="suggestionTimeout"
-              type="number"
-              min={100}
-              step={100}
-              value={form.suggestionTimeoutMs}
-              onChange={(e) =>
-                update('suggestionTimeoutMs', Number(e.target.value))
-              }
-            />
-            <p className="text-xs text-muted-foreground">ms</p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="sentimentTimeout">
-              {t('admin:agentAssist.timeouts.sentiment')}
-            </Label>
-            <Input
-              id="sentimentTimeout"
-              type="number"
-              min={100}
-              step={100}
-              value={form.sentimentTimeoutMs}
-              onChange={(e) =>
-                update('sentimentTimeoutMs', Number(e.target.value))
-              }
-            />
-            <p className="text-xs text-muted-foreground">ms</p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="complianceTimeout">
-              {t('admin:agentAssist.timeouts.compliance')}
-            </Label>
-            <Input
-              id="complianceTimeout"
-              type="number"
-              min={100}
-              step={100}
-              value={form.complianceTimeoutMs}
-              onChange={(e) =>
-                update('complianceTimeoutMs', Number(e.target.value))
-              }
-            />
-            <p className="text-xs text-muted-foreground">ms</p>
-          </div>
-        </div>
-      </SectionCard>
-
-      {/* Section 4 — Whisper */}
-      <SectionCard
-        title={t('admin:agentAssist.whisper.title')}
-        description={t('admin:agentAssist.whisper.description')}
-      >
-        <div className="space-y-5">
-          {/* Enable toggle */}
+        {/* Section 1 — Engine Status */}
+        <SectionCard
+          title={t('admin:agentAssist.status.title')}
+          description={t('admin:agentAssist.status.description')}
+          testId="agent-assist-section-status"
+        >
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">
-                {t('admin:agentAssist.whisper.enableLabel')}
-              </p>
+              <p className="text-sm font-medium">{t('admin:agentAssist.status.enableLabel')}</p>
               <p className="text-xs text-muted-foreground">
-                {t('admin:agentAssist.whisper.enableHint')}
+                {t('admin:agentAssist.status.enableHint')}
               </p>
             </div>
-            <Switch
-              checked={form.whisperEnabled}
-              onCheckedChange={(checked) => update('whisperEnabled', checked)}
-              aria-label={t('admin:agentAssist.aria.whisperEnabled')}
-            />
+            <div className="flex items-center gap-3">
+              <Badge variant={form.enabled ? 'default' : 'secondary'}>
+                {form.enabled
+                  ? t('admin:agentAssist.status.active')
+                  : t('admin:agentAssist.status.inactive')}
+              </Badge>
+              <Switch
+                checked={form.enabled}
+                onCheckedChange={(checked) => update('enabled', checked)}
+                aria-label={t('admin:agentAssist.aria.engineEnabled')}
+              />
+            </div>
           </div>
+        </SectionCard>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* Priority threshold */}
-            <div className="space-y-1.5">
-              <Label htmlFor="whisperPriority">
-                {t('admin:agentAssist.whisper.priorityThreshold')}
-              </Label>
-              <Select
-                value={form.whisperPriorityThreshold}
-                onValueChange={(v) =>
-                  update('whisperPriorityThreshold', v as Priority)
-                }
-              >
-                <SelectTrigger id="whisperPriority" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRIORITY_OPTIONS.map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {p}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {t('admin:agentAssist.whisper.priorityHint')}
-              </p>
-            </div>
-
-            {/* Queue capacity */}
-            <div className="space-y-1.5">
-              <Label htmlFor="whisperCapacity">
-                {t('admin:agentAssist.whisper.queueCapacity')}
-              </Label>
-              <Input
-                id="whisperCapacity"
-                type="number"
-                min={1}
-                max={100}
-                value={form.whisperQueueCapacity}
-                onChange={(e) =>
-                  update('whisperQueueCapacity', Number(e.target.value))
-                }
+        {/* Section 2 — Filters */}
+        <SectionCard
+          title={t('admin:agentAssist.filters.title')}
+          description={t('admin:agentAssist.filters.description')}
+        >
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label>{t('admin:agentAssist.filters.queues')}</Label>
+              <MultiSelect
+                options={queueOptions}
+                selected={form.queueNames}
+                onChange={(v) => update('queueNames', v)}
+                placeholder={t('admin:agentAssist.filters.allCalls')}
               />
               <p className="text-xs text-muted-foreground">
-                {t('admin:agentAssist.whisper.capacityHint')}
+                {t('admin:agentAssist.filters.emptyNote')}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t('admin:agentAssist.filters.agents')}</Label>
+              <MultiSelect
+                options={agentOptions}
+                selected={form.agentIds}
+                onChange={(v) => update('agentIds', v)}
+                placeholder={t('admin:agentAssist.filters.allAgents')}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('admin:agentAssist.filters.emptyNote')}
               </p>
             </div>
           </div>
-        </div>
-      </SectionCard>
+        </SectionCard>
 
-      {/* Save button for sections 1-4 */}
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          onClick={handleSave}
-          disabled={!dirty || updateConfig.isPending}
+        {/* Section 3 — Timeouts */}
+        <SectionCard
+          title={t('admin:agentAssist.timeouts.title')}
+          description={t('admin:agentAssist.timeouts.description')}
         >
-          <Save className="mr-2 h-4 w-4" />
-          {updateConfig.isPending
-            ? t('admin:agentAssist.saving')
-            : t('admin:agentAssist.saveConfig')}
-        </Button>
-      </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="suggestionTimeout">
+                {t('admin:agentAssist.timeouts.suggestion')}
+              </Label>
+              <Input
+                id="suggestionTimeout"
+                type="number"
+                min={100}
+                step={100}
+                value={form.suggestionTimeoutMs}
+                onChange={(e) => update('suggestionTimeoutMs', Number(e.target.value))}
+              />
+              <p className="text-xs text-muted-foreground">ms</p>
+            </div>
 
-      {/* Section 5 — Keyword Rules */}
-      <SectionCard
-        title={t('admin:agentAssist.rules.title')}
-        description={t('admin:agentAssist.rules.description')}
-        testId="agent-assist-section-keyword-rules"
-      >
-        <KeywordRulesSection />
-      </SectionCard>
+            <div className="space-y-1.5">
+              <Label htmlFor="sentimentTimeout">{t('admin:agentAssist.timeouts.sentiment')}</Label>
+              <Input
+                id="sentimentTimeout"
+                type="number"
+                min={100}
+                step={100}
+                value={form.sentimentTimeoutMs}
+                onChange={(e) => update('sentimentTimeoutMs', Number(e.target.value))}
+              />
+              <p className="text-xs text-muted-foreground">ms</p>
+            </div>
 
-      {/* Section 6 — Compliance Rules */}
-      <SectionCard
-        title={t('admin:agentAssist.complianceRules.title')}
-        description={t('admin:agentAssist.complianceRules.description')}
-        testId="agent-assist-section-compliance-rules"
-      >
-        <ComplianceRulesSection />
-      </SectionCard>
+            <div className="space-y-1.5">
+              <Label htmlFor="complianceTimeout">
+                {t('admin:agentAssist.timeouts.compliance')}
+              </Label>
+              <Input
+                id="complianceTimeout"
+                type="number"
+                min={100}
+                step={100}
+                value={form.complianceTimeoutMs}
+                onChange={(e) => update('complianceTimeoutMs', Number(e.target.value))}
+              />
+              <p className="text-xs text-muted-foreground">ms</p>
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* Section 4 — Whisper */}
+        <SectionCard
+          title={t('admin:agentAssist.whisper.title')}
+          description={t('admin:agentAssist.whisper.description')}
+        >
+          <div className="space-y-5">
+            {/* Enable toggle */}
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">{t('admin:agentAssist.whisper.enableLabel')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:agentAssist.whisper.enableHint')}
+                </p>
+              </div>
+              <Switch
+                checked={form.whisperEnabled}
+                onCheckedChange={(checked) => update('whisperEnabled', checked)}
+                aria-label={t('admin:agentAssist.aria.whisperEnabled')}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {/* Priority threshold */}
+              <div className="space-y-1.5">
+                <Label htmlFor="whisperPriority">
+                  {t('admin:agentAssist.whisper.priorityThreshold')}
+                </Label>
+                <Select
+                  value={form.whisperPriorityThreshold}
+                  onValueChange={(v) => update('whisperPriorityThreshold', v as Priority)}
+                >
+                  <SelectTrigger id="whisperPriority" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRIORITY_OPTIONS.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:agentAssist.whisper.priorityHint')}
+                </p>
+              </div>
+
+              {/* Queue capacity */}
+              <div className="space-y-1.5">
+                <Label htmlFor="whisperCapacity">
+                  {t('admin:agentAssist.whisper.queueCapacity')}
+                </Label>
+                <Input
+                  id="whisperCapacity"
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={form.whisperQueueCapacity}
+                  onChange={(e) => update('whisperQueueCapacity', Number(e.target.value))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:agentAssist.whisper.capacityHint')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* Save button for sections 1-4 */}
+        <div className="flex justify-end">
+          <Button type="button" onClick={handleSave} disabled={!dirty || updateConfig.isPending}>
+            <Save className="mr-2 h-4 w-4" />
+            {updateConfig.isPending
+              ? t('admin:agentAssist.saving')
+              : t('admin:agentAssist.saveConfig')}
+          </Button>
+        </div>
+
+        {/* Section 5 — Keyword Rules */}
+        <SectionCard
+          title={t('admin:agentAssist.rules.title')}
+          description={t('admin:agentAssist.rules.description')}
+          testId="agent-assist-section-keyword-rules"
+        >
+          <KeywordRulesSection />
+        </SectionCard>
+
+        {/* Section 6 — Compliance Rules */}
+        <SectionCard
+          title={t('admin:agentAssist.complianceRules.title')}
+          description={t('admin:agentAssist.complianceRules.description')}
+          testId="agent-assist-section-compliance-rules"
+        >
+          <ComplianceRulesSection />
+        </SectionCard>
       </fieldset>
     </div>
   );
