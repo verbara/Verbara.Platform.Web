@@ -19,16 +19,11 @@ export function PermissionGuard({
 }: PermissionGuardProps) {
   const permissions = useAuthStore((s) => s.permissions);
 
-  let allowed = false;
-
-  if (requires) {
-    allowed = permissions.includes(requires);
-  } else if (requiresAny && requiresAny.length > 0) {
-    allowed = requiresAny.some((p) => permissions.includes(p));
-  } else {
-    // No permission specified = allow
-    allowed = true;
-  }
+  const allowed = requires
+    ? permissions.includes(requires)
+    : requiresAny && requiresAny.length > 0
+      ? requiresAny.some((p) => permissions.includes(p))
+      : true; // No permission specified = allow
 
   if (!allowed) {
     if (redirect) {
