@@ -5,7 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
-import { useCampaignMetricsStore, type CampaignStatus } from '@/operations/stores/campaign-metrics-store';
+import {
+  useCampaignMetricsStore,
+  type CampaignStatus,
+} from '@/operations/stores/campaign-metrics-store';
 import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
 import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
@@ -19,6 +22,7 @@ export function useSSE() {
   const navigate = useNavigate();
   const sourceRef = useRef<EventSource | null>(null);
   const reconnectAttemptRef = useRef(0);
+  const connectRef = useRef<() => void>();
 
   const connect = useCallback(() => {
     if (!accessToken || sourceRef.current) return;
@@ -212,9 +216,13 @@ export function useSSE() {
       }
       const delay = Math.min(2000 * Math.pow(2, attempt), 30000) + Math.random() * 1000;
       reconnectAttemptRef.current = attempt + 1;
-      setTimeout(connect, delay);
+      setTimeout(() => connectRef.current?.(), delay);
     };
   }, [accessToken, queryClient, navigate, t]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   useEffect(() => {
     connect();
