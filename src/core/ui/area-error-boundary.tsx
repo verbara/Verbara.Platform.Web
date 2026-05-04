@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import i18n from '@/core/i18n/i18n';
+import { captureAreaError } from '@/core/observability/sentry';
 import { Button } from '@/core/ui/button';
 
 interface Props {
@@ -31,6 +32,7 @@ export class AreaErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error(`Area error [${this.props.areaName}]:`, error, errorInfo);
+    captureAreaError(error, this.props.areaName, errorInfo);
   }
 
   render() {
@@ -43,16 +45,12 @@ export class AreaErrorBoundary extends Component<Props, State> {
           className="flex h-full flex-col items-center justify-center gap-4 p-8"
           data-testid={`area-error-boundary-${this.props.areaName}`}
         >
-          <h2 className="text-lg font-semibold">
-            {i18n.t('common:errors.area_error_title')}
-          </h2>
+          <h2 className="text-lg font-semibold">{i18n.t('common:errors.area_error_title')}</h2>
           <p className="max-w-md text-center text-sm text-muted-foreground">
             {i18n.t('common:errors.area_error_message', { areaName: areaLabel })}
           </p>
           {this.state.error?.message && (
-            <p className="text-xs text-muted-foreground/80">
-              {this.state.error.message}
-            </p>
+            <p className="text-xs text-muted-foreground/80">{this.state.error.message}</p>
           )}
           <div className="flex gap-2">
             <Button

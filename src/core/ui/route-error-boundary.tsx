@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import i18n from '@/core/i18n/i18n';
+import { captureRouteError } from '@/core/observability/sentry';
 import { Button } from '@/core/ui/button';
 
 interface Props {
@@ -23,12 +24,16 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Route error:', error, errorInfo);
+    captureRouteError(error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-full flex-col items-center justify-center gap-4 p-8" data-testid="route-error-boundary">
+        <div
+          className="flex h-full flex-col items-center justify-center gap-4 p-8"
+          data-testid="route-error-boundary"
+        >
           <h2 className="text-lg font-semibold">{i18n.t('common:errors.route_error_title')}</h2>
           <p className="text-sm text-muted-foreground">
             {this.state.error?.message ?? i18n.t('common:errors.route_error_fallback')}
@@ -41,7 +46,11 @@ export class RouteErrorBoundary extends Component<Props, State> {
             >
               {i18n.t('common:errors.try_again')}
             </Button>
-            <Button variant="ghost" data-testid="route-error-home" onClick={() => (window.location.href = '/admin')}>
+            <Button
+              variant="ghost"
+              data-testid="route-error-home"
+              onClick={() => (window.location.href = '/admin')}
+            >
               {i18n.t('common:errors.go_home')}
             </Button>
           </div>

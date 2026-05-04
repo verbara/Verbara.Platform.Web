@@ -83,7 +83,11 @@ Custom breadcrumbs específicos del producto:
 
 ```ts
 // En tenant-store al cambiar tenant
-Sentry.addBreadcrumb({ category: 'tenant', message: `switch to tenant=${hashed(id)}`, level: 'info' });
+Sentry.addBreadcrumb({
+  category: 'tenant',
+  message: `switch to tenant=${hashed(id)}`,
+  level: 'info',
+});
 // En i18n al cambiar lang
 Sentry.addBreadcrumb({ category: 'i18n', message: `language → ${code}`, level: 'info' });
 // En auth-store en login/logout
@@ -94,9 +98,9 @@ Sentry.addBreadcrumb({ category: 'auth', message: 'login_success', level: 'info'
 
 ```ts
 Sentry.setContext('app', { version: import.meta.env.VITE_APP_VERSION });
-Sentry.setTag('area', 'admin' | 'agent' | 'analytics' | 'operations');  // viene del AreaErrorBoundary
+Sentry.setTag('area', 'admin' | 'agent' | 'analytics' | 'operations'); // viene del AreaErrorBoundary
 Sentry.setTag('route', currentRoutePath);
-Sentry.setUser({ id: hashedUserId, segment: userRole });   // role hashed, no raw
+Sentry.setUser({ id: hashedUserId, segment: userRole }); // role hashed, no raw
 ```
 
 ### Cost guardrails
@@ -135,3 +139,82 @@ Sentry.setUser({ id: hashedUserId, segment: userRole });   // role hashed, no ra
 2. **Trace correlation backend↔frontend?** — requiere `sentry-trace` header propagation. Negociar con Platform team en su Track de observability.
 3. **Severity levels para `console.warn`?** — capturar como `warning` o filtrar? Empezar capturando, ajustar si genera ruido.
 4. **¿Un DSN compartido entre repos del ecosistema, o uno por repo?** — uno por repo (Web, Platform, SDK Pro) para aislar quotas y permisos.
+
+---
+
+## Implementation notes (added 2026-05-03 during Track 1E ship — v1.14.4)
+
+### Files shipped
+
+- `src/core/observability/sentry.ts` — init + helpers (`captureAreaError`, `captureRouteError`, `setSentryUser`, `addSentryBreadcrumb`, `isSentryInitialized`)
+- `src/main.tsx` — `initSentry()` call before `createRoot`
+- `src/core/ui/area-error-boundary.tsx` — `componentDidCatch` calls `captureAreaError`
+- `src/core/ui/route-error-boundary.tsx` — `componentDidCatch` calls `captureRouteError`
+- `vite.config.ts` — `@sentry/vite-plugin` (conditional on `SENTRY_AUTH_TOKEN` + `SENTRY_ORG` + `SENTRY_PROJECT`) + `build.sourcemap: 'hidden'`
+- `.env.example` — documented env vars (replaces missing template)
+
+### DSN gating — true no-op when empty
+
+`initSentry()` returns early if `VITE_SENTRY_DSN` is empty or already initialized. The error-boundary helpers (`captureAreaError`, `captureRouteError`) check `initialized` and return early too. This means a dev environment without `VITE_SENTRY_DSN` set has zero Sentry runtime overhead — no events, no breadcrumbs, no fetch instrumentation.
+
+### Bundle size cost (measured)
+
+Adding `@sentry/react` with `browserTracingIntegration` increased the main bundle:
+
+|                   | Before    | After     | Δ           |
+| ----------------- | --------- | --------- | ----------- |
+| `index-*.js` raw  | 486.59 kB | 818.06 kB | **+331 kB** |
+| `index-*.js` gzip | 143.93 kB | 250.71 kB | **+107 kB** |
+
+This is acceptable for Track 1E (Sentry is a critical operational dependency). Bundle optimization is the responsibility of [Track 2B (Performance budget + bundle consolidation)](../plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md), where `manualChunks` will isolate Sentry into a vendor chunk that can be cached aggressively.
+
+### PII filtering — implementation specifics
+
+Hooks installed in `Sentry.init`:
+
+- **`beforeBreadcrumb`** drops fetch/XHR breadcrumbs whose URL matches `/\/api\/v1\/auth\//`. Redacts `authorization`, `x-tenant-id`, `cookie`, and `set-cookie` headers (case-insensitive) from any breadcrumb data.
+- **`beforeSend`**:
+  - Drops `event.request.data` for events whose URL matches `/\/api\/v1\/auth\//` (login, MFA, password reset, recovery).
+  - Redacts the same sensitive headers from `event.request.headers`.
+  - Masks email addresses (`/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g`) in `event.message` and in each `event.exception.values[].value`.
+
+`sendDefaultPii: false` is explicit. `maxBreadcrumbs: 50`. `tracesSampleRate: 0.1`.
+
+Replay integrations (Session Replay) are **NOT** included in v1.14.4 — privacy concerns with agent conversations require an anonymization spec first. Tracked in §"Out of scope".
+
+### Source-map upload (production only)
+
+`vite.config.ts` enables `@sentry/vite-plugin` only when all three are present in the build environment: `SENTRY_AUTH_TOKEN` + `SENTRY_ORG` + `SENTRY_PROJECT`. Local `npm run build` without these → plugin is a no-op (build succeeds, no upload attempt). CI workflow (Track 1C) can wire these as repository secrets later.
+
+`build.sourcemap: 'hidden'` generates `.map` files alongside bundles but does NOT reference them in the bundles themselves (no `//# sourceMappingURL=...` comment). Browsers won't load them via DevTools; Sentry uploads them server-side via the auth token. This prevents PII leakage through DevTools while keeping Sentry stack traces meaningful.
+
+### Test impact — none
+
+No existing test files needed mocking changes. The `area-error-boundary.test.tsx` test suite continues to pass: `Sentry.captureException` invoked through `captureAreaError` is a no-op when `initialized = false`, which is the test environment's state (no `VITE_SENTRY_DSN`).
+
+### Bundle artifact warning
+
+`vite-reporter` continues to warn that some chunks > 500 kB. Pre-existing condition (cdr-page, recharts vendor chunks). Sentry adds to this. Track 2B handles via `manualChunks` config.
+
+### Acceptance criteria (Track 1E close)
+
+| Criterion                                                                                  | Status                                              |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `@sentry/react` + `@sentry/vite-plugin` installed                                          | ✅                                                  |
+| `VITE_SENTRY_DSN` empty → no-op (no init, no overhead)                                     | ✅                                                  |
+| `VITE_SENTRY_DSN` set → init + capture in error boundaries                                 | ✅ (verified manually with throwaway DSN; reverted) |
+| PII filtering: emails masked, auth URLs scrubbed, sensitive headers redacted               | ✅                                                  |
+| Source maps generated in `hidden` mode                                                     | ✅                                                  |
+| `@sentry/vite-plugin` conditional on `SENTRY_AUTH_TOKEN` + `SENTRY_ORG` + `SENTRY_PROJECT` | ✅                                                  |
+| Build green                                                                                | ✅                                                  |
+| 205/205 tests passing                                                                      | ✅                                                  |
+| `.env.example` documents all Sentry env vars                                               | ✅                                                  |
+
+### Deferred to follow-up tracks
+
+- Custom breadcrumbs (tenant switch, language change, login/logout) — wire when respective stores are touched in feature work.
+- `Sentry.setContext('app', { version })` — wire when release versioning is normalized to git SHA in CI.
+- Playwright observability spec (`tests/e2e/tests/observability/sentry-arrival.spec.ts`) with mocked envelope endpoint — defer to Track 2C (API hooks coverage) when MSW is added.
+- PII review test (forces error with email + JWT, asserts envelope is clean) — defer with the Playwright spec above.
+- Backend correlation (`sentry-trace` header propagation) — coordinate with Platform team in their Track de observability.
+- Bundle optimization (`manualChunks` for Sentry vendor split) — Track 2B.
