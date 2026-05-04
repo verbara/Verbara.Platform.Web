@@ -1,0 +1,129 @@
+version: 2
+
+# Dependabot configuration for Verbara Web (formerly Asterisk.Platform.Web).
+# See https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Strategy (Track 1B, v1.14.1, established 2026-05-03):
+#   - npm: weekly schedule, batch by group, ignore major version bumps for now
+#     (manual review for majors via npm-deps-majors track v1.16.x).
+#   - GitHub Actions: weekly schedule.
+#   - Auto-merge for patch + minor security updates is handled by a separate
+#     workflow (.github/workflows/dependabot-auto-merge.yml — to be added in
+#     Track 1C with the rest of the CI/CD pipeline).
+
+updates:
+  # ─────────────────────────────────────────────────────────────────────
+  # npm dependencies (root package.json)
+  # ─────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Mexico_City"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    # Group related dependencies into a single PR to reduce noise.
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router*"
+          - "@types/react*"
+        update-types:
+          - "minor"
+          - "patch"
+      tanstack:
+        patterns:
+          - "@tanstack/*"
+        update-types:
+          - "minor"
+          - "patch"
+      vite-toolchain:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "vitest"
+          - "@vitest/*"
+        update-types:
+          - "minor"
+          - "patch"
+      eslint-toolchain:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "@typescript-eslint/*"
+          - "typescript-eslint"
+        update-types:
+          - "minor"
+          - "patch"
+      i18n:
+        patterns:
+          - "i18next"
+          - "i18next-*"
+          - "react-i18next"
+        update-types:
+          - "minor"
+          - "patch"
+      base-ui-radix:
+        patterns:
+          - "@base-ui/react"
+          - "@radix-ui/*"
+        update-types:
+          - "minor"
+          - "patch"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "tailwind-*"
+        update-types:
+          - "minor"
+          - "patch"
+      forms:
+        patterns:
+          - "react-hook-form"
+          - "@hookform/*"
+          - "zod"
+        update-types:
+          - "minor"
+          - "patch"
+      playwright:
+        patterns:
+          - "@playwright/*"
+          - "playwright"
+        update-types:
+          - "minor"
+          - "patch"
+    # Major version bumps are handled manually in Track 3C (npm-deps-majors).
+    # Dependabot ignores them here to avoid PR noise.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+
+  # ─────────────────────────────────────────────────────────────────────
+  # GitHub Actions
+  # ─────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Mexico_City"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
