@@ -8,13 +8,7 @@ import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
@@ -129,20 +123,15 @@ export default function CasesPage() {
   // even when the React Compiler memoizes the producer scope. The Compiler
   // wants to add `openEdit` (recreated each render), which would defeat the
   // purpose of memoizing the columns.
-  /* eslint-disable react-hooks/preserve-manual-memoization */
   const columns = useMemo(
     () => [
       columnHelper.accessor('caseNumber', {
         header: () => t('cases.columns.case_number'),
-        cell: (info) => (
-          <code className="text-xs font-medium">{info.getValue()}</code>
-        ),
+        cell: (info) => <code className="text-xs font-medium">{info.getValue()}</code>,
       }),
       columnHelper.accessor('subject', {
         header: () => t('cases.columns.subject'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('priority', {
         header: () => t('cases.columns.priority'),
@@ -193,7 +182,6 @@ export default function CasesPage() {
     ],
     [t, formatDateShort],
   );
-  /* eslint-enable react-hooks/preserve-manual-memoization */
 
   if (isLoading) {
     return (
@@ -243,7 +231,9 @@ export default function CasesPage() {
         <SheetContent>
           <SheetHeader>
             <SheetTitle>
-              {editing ? t('cases.form.edit_title', { number: editing.caseNumber }) : t('cases.form.create_title')}
+              {editing
+                ? t('cases.form.edit_title', { number: editing.caseNumber })
+                : t('cases.form.create_title')}
             </SheetTitle>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4 px-4 pb-4">
@@ -308,7 +298,9 @@ export default function CasesPage() {
                 <Label>{t('cases.form.contact')}</Label>
                 {selectedContact ? (
                   <div className="flex items-center justify-between rounded-md border border-input px-3 py-2">
-                    <span className="text-sm">{contactDisplayName(selectedContact, unnamedContact)}</span>
+                    <span className="text-sm">
+                      {contactDisplayName(selectedContact, unnamedContact)}
+                    </span>
                     <Button
                       type="button"
                       size="sm"

@@ -28,10 +28,7 @@ import { StatusBadge } from '@/core/ui/status-badge';
 import { CopyButton } from '@/core/ui/copy-button';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { useFormatDate } from '@/core/i18n/use-format';
-import {
-  useSystemLicense,
-  useUpdateLicense,
-} from '@/core/api/hooks/use-system';
+import { useSystemLicense, useUpdateLicense } from '@/core/api/hooks/use-system';
 
 // ─── Status mapping ──────────────────────────────────────────────────────────
 
@@ -66,8 +63,7 @@ function toBadgeStatus(status: string, inGrace: boolean): string {
 // Parses System.Text.Json's default TimeSpan format ("d.hh:mm:ss" or
 // "hh:mm:ss" for sub-day spans) into a total-seconds number. Returns null
 // for malformed/empty input so callers can treat missing values gracefully.
-// Exported for the StatCard test harness.
-export function parseGraceDuration(value: string | null | undefined): number | null {
+function parseGraceDuration(value: string | null | undefined): number | null {
   if (!value) return null;
   // System.Text.Json emits hh:mm:ss with optional leading "d." for days and
   // a trailing ".fffffff" for sub-second precision. We only care about whole
@@ -138,9 +134,7 @@ export default function LicensePage() {
   if (isLoading || !license) {
     return (
       <div className="space-y-6" data-testid="license-page">
-        <h1 className="font-heading text-2xl font-semibold">
-          {t('admin:license.title')}
-        </h1>
+        <h1 className="font-heading text-2xl font-semibold">{t('admin:license.title')}</h1>
         <p className="text-sm text-muted-foreground">{t('admin:license.loading')}</p>
       </div>
     );
@@ -154,8 +148,7 @@ export default function LicensePage() {
     : t('admin:license.perpetual');
   const expiryExtra = (() => {
     if (isExpired) return t('admin:license.expired_label');
-    if (daysLeft !== null)
-      return t('admin:license.expires_in_days', { days: daysLeft });
+    if (daysLeft !== null) return t('admin:license.expires_in_days', { days: daysLeft });
     return '';
   })();
 
@@ -169,12 +162,8 @@ export default function LicensePage() {
     <div className="space-y-8" data-testid="license-page">
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold">
-          {t('admin:license.title')}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t('admin:license.subtitle')}
-        </p>
+        <h1 className="font-heading text-2xl font-semibold">{t('admin:license.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('admin:license.subtitle')}</p>
       </div>
 
       {/* Summary row: tier + expiration + nodes/grace.
@@ -188,9 +177,7 @@ export default function LicensePage() {
           icon={<Shield className="h-4 w-4" aria-hidden="true" />}
           label={t('admin:license.tier')}
           value={tierValue}
-          description={
-            license.licenseId ? maskLicenseId(license.licenseId) : '—'
-          }
+          description={license.licenseId ? maskLicenseId(license.licenseId) : '—'}
           statusBadge={<StatusBadge status={badgeStatus} variant="license" />}
         />
         <StatCard
@@ -291,9 +278,7 @@ export default function LicensePage() {
           </p>
         </div>
         {license.licensedFeatures.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t('admin:license.no_features')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('admin:license.no_features')}</p>
         ) : (
           <div className="overflow-hidden rounded-lg border">
             <table className="w-full text-sm">
@@ -314,9 +299,7 @@ export default function LicensePage() {
                     className="border-t"
                     data-testid={`feature-row-${feature.toLowerCase()}`}
                   >
-                    <td className="px-4 py-2 text-foreground">
-                      {featureLabel(feature)}
-                    </td>
+                    <td className="px-4 py-2 text-foreground">{featureLabel(feature)}</td>
                     <td className="px-4 py-2 text-right">
                       <StatusBadge status="active" variant="license" />
                     </td>
@@ -336,9 +319,7 @@ export default function LicensePage() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             {t('admin:license.upload_title')}
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t('admin:license.upload_subtitle')}
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t('admin:license.upload_subtitle')}</p>
         </div>
         <form
           className="max-w-2xl space-y-3"
@@ -349,9 +330,7 @@ export default function LicensePage() {
           }}
         >
           <div className="space-y-1.5">
-            <Label htmlFor="license-key-input">
-              {t('admin:license.key_label')}
-            </Label>
+            <Label htmlFor="license-key-input">{t('admin:license.key_label')}</Label>
             <Textarea
               id="license-key-input"
               data-testid="license-key-input"
@@ -389,7 +368,7 @@ export default function LicensePage() {
                 setConfirmOpen(false);
                 setKeyInput('');
               },
-            }
+            },
           );
         }}
       />
