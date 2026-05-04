@@ -9,11 +9,9 @@ name: CI
 #   - coverage  blocking - vitest run --coverage (Track 2A ratchet floor)
 #   - i18n      blocking - locale parity check (ADR-0001)
 #   - audit     blocking - npm audit --audit-level=high
-#   - lint      NON-BLOCKING (continue-on-error) - eslint baseline preserved
-#                            until Track 3A clears 111 deferred errors.
+#   - lint      blocking - eslint (0 errors enforced since Track 3A)
 #
-# Branch protection on main requires: build, test, coverage, i18n, audit
-# (lint stays informational until Track 3A; see Track 1C spec).
+# Branch protection on main requires: build, test, coverage, i18n, audit, lint
 
 on:
   push:
@@ -149,12 +147,9 @@ jobs:
         run: npm audit --audit-level=high
 
   lint:
-    name: lint (non-blocking)
+    name: lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Non-blocking until Track 3A (lint-cleanup-2) clears 111 deferred errors.
-    # This job runs to surface lint signal in PR checks but does not gate merges.
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v5
