@@ -7,6 +7,32 @@ import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { useActiveSessions, useForceLogout } from '@/core/api/hooks/use-auth-admin';
 import { useFormatDate } from '@/core/i18n/use-format';
 
+function formatUserAgent(ua: string | null): string {
+  if (!ua) return '-';
+  if (ua.includes('Chrome')) return 'Chrome';
+  if (ua.includes('Firefox')) return 'Firefox';
+  if (ua.includes('Safari')) return 'Safari';
+  if (ua.includes('Edge')) return 'Edge';
+  return ua.slice(0, 30);
+}
+
+function timeAgo(
+  dateStr: string,
+  now: number,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+  formatDateShort: (d: string) => string,
+): string {
+  const diff = now - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return t('admin:auth.just_now', { defaultValue: 'Just now' });
+  if (mins < 60)
+    return t('admin:auth.minutes_ago', { defaultValue: '{{count}} min ago', count: mins });
+  const hours = Math.floor(mins / 60);
+  if (hours < 24)
+    return t('admin:auth.hours_ago', { defaultValue: '{{count}} hr ago', count: hours });
+  return formatDateShort(dateStr);
+}
+
 export default function AuthSessionsPage() {
   const { t } = useTranslation(['admin']);
   const { formatDateTime, formatDateShort } = useFormatDate();
@@ -16,33 +42,20 @@ export default function AuthSessionsPage() {
     sessionId: string;
     userName: string;
   } | null>(null);
-
-  function formatUserAgent(ua: string | null): string {
-    if (!ua) return '-';
-    if (ua.includes('Chrome')) return 'Chrome';
-    if (ua.includes('Firefox')) return 'Firefox';
-    if (ua.includes('Safari')) return 'Safari';
-    if (ua.includes('Edge')) return 'Edge';
-    return ua.slice(0, 30);
-  }
-
-  function timeAgo(dateStr: string): string {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return t('admin:auth.just_now', 'Just now');
-    if (mins < 60) return t('admin:auth.minutes_ago', { defaultValue: '{{count}} min ago', count: mins });
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return t('admin:auth.hours_ago', { defaultValue: '{{count}} hr ago', count: hours });
-    return formatDateShort(dateStr);
-  }
+  const [now] = useState(() => Date.now());
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-heading text-xl font-semibold">{t('admin:auth.sessions_title', 'Active Sessions')}</h1>
+          <h1 className="font-heading text-xl font-semibold">
+            {t('admin:auth.sessions_title', 'Active Sessions')}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            {t('admin:auth.sessions_description', { defaultValue: '{{count}} active sessions', count: sessions.length })}
+            {t('admin:auth.sessions_description', {
+              defaultValue: '{{count}} active sessions',
+              count: sessions.length,
+            })}
           </p>
         </div>
       </div>
@@ -56,7 +69,9 @@ export default function AuthSessionsPage() {
               <th className="px-4 py-2 font-medium">{t('admin:auth.ip_address', 'IP Address')}</th>
               <th className="px-4 py-2 font-medium">{t('admin:auth.browser', 'Browser')}</th>
               <th className="px-4 py-2 font-medium">{t('admin:auth.started', 'Started')}</th>
-              <th className="px-4 py-2 font-medium">{t('admin:auth.last_activity', 'Last Activity')}</th>
+              <th className="px-4 py-2 font-medium">
+                {t('admin:auth.last_activity', 'Last Activity')}
+              </th>
               <th className="px-4 py-2 font-medium w-24" />
             </tr>
           </thead>
@@ -79,7 +94,9 @@ export default function AuthSessionsPage() {
                   {formatDateTime(session.createdAt)}
                 </td>
                 <td className="px-4 py-2.5">
-                  <Badge variant="secondary">{timeAgo(session.lastActivity)}</Badge>
+                  <Badge variant="secondary">
+                    {timeAgo(session.lastActivity, now, t, formatDateShort)}
+                  </Badge>
                 </td>
                 <td className="px-4 py-2.5">
                   <Button
@@ -112,7 +129,8 @@ export default function AuthSessionsPage() {
         description={
           <>
             {t('admin:auth.force_logout_confirm', {
-              defaultValue: 'Are you sure you want to force logout {{name}}? Their session will be immediately terminated.',
+              defaultValue:
+                'Are you sure you want to force logout {{name}}? Their session will be immediately terminated.',
               name: logoutTarget?.userName,
             })}
           </>
