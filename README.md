@@ -5,30 +5,30 @@
 
 React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**Version:** 1.13.37 — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
+**Version:** 1.15.0 — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
 
 ## Stack
 
-| Library | Version |
-|---|---|
-| React | 19.2.x |
-| TypeScript | 5.9.x (strict mode) |
-| Vite | 8.0.x |
-| TailwindCSS | 4.2.x (`@tailwindcss/vite`) |
-| shadcn/ui | 4.1.x — uses **`@base-ui/react`** (NOT Radix) |
-| TanStack Query | 5.95.x |
-| TanStack Table | 8.21.x |
-| React Router | 7.13.x |
-| Zustand | 5.0.x |
-| React Hook Form + Zod | 7.72.x / 4.3.x |
-| Recharts | 3.8.x |
-| AG Grid | 35.1.x |
-| XY Flow (`@xyflow/react`) | 12.10.x |
-| Lucide React | 0.577.x |
-| i18next | 25.10.x — locales: `es-419`, `en-US`, `pt-BR` |
-| date-fns | 4.1.x |
-| Vitest + Testing Library | 4.1.x / 16.3.x |
-| Node (Docker base) | 22-alpine |
+| Library                   | Version                                       |
+| ------------------------- | --------------------------------------------- |
+| React                     | 19.2.x                                        |
+| TypeScript                | 5.9.x (strict mode)                           |
+| Vite                      | 8.0.x                                         |
+| TailwindCSS               | 4.2.x (`@tailwindcss/vite`)                   |
+| shadcn/ui                 | 4.1.x — uses **`@base-ui/react`** (NOT Radix) |
+| TanStack Query            | 5.95.x                                        |
+| TanStack Table            | 8.21.x                                        |
+| React Router              | 7.13.x                                        |
+| Zustand                   | 5.0.x                                         |
+| React Hook Form + Zod     | 7.72.x / 4.3.x                                |
+| Recharts                  | 3.8.x                                         |
+| AG Grid                   | 35.1.x                                        |
+| XY Flow (`@xyflow/react`) | 12.10.x                                       |
+| Lucide React              | 0.577.x                                       |
+| i18next                   | 25.10.x — locales: `es-419`, `en-US`, `pt-BR` |
+| date-fns                  | 4.1.x                                         |
+| Vitest + Testing Library  | 4.1.x / 16.3.x                                |
+| Node (Docker base)        | 22-alpine                                     |
 
 ## Setup
 
@@ -58,29 +58,30 @@ The dev server expects the Platform backend running on `localhost:5000`. See the
 
 ## Available scripts
 
-| Script | What it does |
-|---|---|
-| `npm run dev` | Vite dev server with HMR |
-| `npm run build` | Production build (`tsc -b && vite build`) |
-| `npm run preview` | Preview the production build locally |
-| `npm run test` | Run unit tests (Vitest, excludes `tests/e2e/**`) |
-| `npm run test:watch` | Vitest in watch mode |
-| `npm run lint` | ESLint + i18n parity check ([ADR-0001](docs/decisions/0001-i18n-parity-ci-gate.md)) |
-| `npm run i18n:check` | Standalone i18n locale parity check |
-| `npm run e2e` | Playwright E2E (requires backend running) |
-| `npm run e2e:ui` | Playwright UI mode |
-| `npm run e2e:debug` | Playwright debug mode |
+| Script                  | What it does                                                                                                            |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`           | Vite dev server with HMR                                                                                                |
+| `npm run build`         | Production build (`tsc -b && vite build`)                                                                               |
+| `npm run preview`       | Preview the production build locally                                                                                    |
+| `npm run test`          | Run unit tests (Vitest, excludes `tests/e2e/**`)                                                                        |
+| `npm run test:watch`    | Vitest in watch mode                                                                                                    |
+| `npm run test:coverage` | Run tests with V8 coverage report (HTML in `coverage/`) — see [baseline](docs/research/2026-05-03-coverage-baseline.md) |
+| `npm run lint`          | ESLint + i18n parity check ([ADR-0001](docs/decisions/0001-i18n-parity-ci-gate.md))                                     |
+| `npm run i18n:check`    | Standalone i18n locale parity check                                                                                     |
+| `npm run e2e`           | Playwright E2E (requires backend running)                                                                               |
+| `npm run e2e:ui`        | Playwright UI mode                                                                                                      |
+| `npm run e2e:debug`     | Playwright debug mode                                                                                                   |
 
 ## Architecture overview
 
 Four layout areas, all behind `AuthGuard`:
 
-| Layout | Path | Purpose |
-|---|---|---|
-| Admin | `/admin/*` | Configuration: users, agents, queues, campaigns, flows, billing, ... |
-| Operations | `/operations/*` | Real-time monitoring: wallboard, agent states, campaign monitor |
-| Analytics | `/analytics/*` | Historical: dashboards, CDR, QA, surveys |
-| Agent | `/agent/*` | Agent workspace: inbox, conversation, AI assist |
+| Layout     | Path            | Purpose                                                              |
+| ---------- | --------------- | -------------------------------------------------------------------- |
+| Admin      | `/admin/*`      | Configuration: users, agents, queues, campaigns, flows, billing, ... |
+| Operations | `/operations/*` | Real-time monitoring: wallboard, agent states, campaign monitor      |
+| Analytics  | `/analytics/*`  | Historical: dashboards, CDR, QA, surveys                             |
+| Agent      | `/agent/*`      | Agent workspace: inbox, conversation, AI assist                      |
 
 Each layout is wrapped in an `AreaErrorBoundary` ([ADR-0002](docs/decisions/0002-area-error-boundary-pattern.md)) so a render-time crash in one area does not tumble the others.
 
@@ -90,14 +91,14 @@ For deeper detail see [`CLAUDE.md`](CLAUDE.md) (project overview) or [`docs/`](d
 
 All documentation lives under `docs/`, git-tracked:
 
-| Folder | Purpose | Lifecycle |
-|---|---|---|
-| [`docs/specs/`](docs/specs/) | Technical designs (input to implementation) | Add on new feature |
-| [`docs/decisions/`](docs/decisions/) | Architecture Decision Records (ADRs) | Append-only |
-| [`docs/plans/active/`](docs/plans/active/) | Execution plans currently in progress | Moves to `completed/` on ship |
-| [`docs/plans/completed/`](docs/plans/completed/) | Shipped plans (historical record) | Append-only |
-| [`docs/plans/archived/`](docs/plans/archived/) | Skeletons / superseded / abandoned plans | Append-only |
-| [`docs/research/`](docs/research/) | Exploratory findings, market analysis, discovery | Freeform |
+| Folder                                           | Purpose                                          | Lifecycle                     |
+| ------------------------------------------------ | ------------------------------------------------ | ----------------------------- |
+| [`docs/specs/`](docs/specs/)                     | Technical designs (input to implementation)      | Add on new feature            |
+| [`docs/decisions/`](docs/decisions/)             | Architecture Decision Records (ADRs)             | Append-only                   |
+| [`docs/plans/active/`](docs/plans/active/)       | Execution plans currently in progress            | Moves to `completed/` on ship |
+| [`docs/plans/completed/`](docs/plans/completed/) | Shipped plans (historical record)                | Append-only                   |
+| [`docs/plans/archived/`](docs/plans/archived/)   | Skeletons / superseded / abandoned plans         | Append-only                   |
+| [`docs/research/`](docs/research/)               | Exploratory findings, market analysis, discovery | Freeform                      |
 
 Roadmap: [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md) — 7 niveles · 24 tracks · ~3 months calendar para llegar a `v1.21.0`.
 
@@ -136,12 +137,12 @@ This repository is licensed under the **[Apache License 2.0](LICENSE)**. See [`N
 
 This is the open-source UI of the **Verbara** open-core contact-center stack:
 
-| Repository | License | Role |
-|---|---|---|
-| **Verbara Sdk** (currently `Asterisk.Sdk`) | MIT | Telephony primitives (AMI/ARI/SIP wrappers) — community attractor |
-| **Verbara Web** (this repository) | **Apache 2.0** | Frontend UI (admin / agent / analytics / operations) |
-| **Verbara Platform** (currently `Asterisk.Platform`) | Apache 2.0 | Backend application — full contact-center engine |
-| **Verbara Sdk Pro** (currently `Asterisk.Sdk.Pro`) | Commercial | Enterprise overlays (multi-tenant, analytics, cluster, licensing) |
+| Repository                                           | License        | Role                                                              |
+| ---------------------------------------------------- | -------------- | ----------------------------------------------------------------- |
+| **Verbara Sdk** (currently `Asterisk.Sdk`)           | MIT            | Telephony primitives (AMI/ARI/SIP wrappers) — community attractor |
+| **Verbara Web** (this repository)                    | **Apache 2.0** | Frontend UI (admin / agent / analytics / operations)              |
+| **Verbara Platform** (currently `Asterisk.Platform`) | Apache 2.0     | Backend application — full contact-center engine                  |
+| **Verbara Sdk Pro** (currently `Asterisk.Sdk.Pro`)   | Commercial     | Enterprise overlays (multi-tenant, analytics, cluster, licensing) |
 
 **Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md) for the full rationale (license decision + 5-tier commercial model).
 

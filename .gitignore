@@ -30,5 +30,8 @@ tests/e2e/.auth-*.json
 playwright-report/
 test-results/
 
+# Vitest coverage (Track 2A)
+coverage/
+
 # claudelint
 .claudelint-cache/
