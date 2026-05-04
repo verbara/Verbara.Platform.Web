@@ -1,0 +1,49 @@
+# Verbara Web — commit-msg hook
+# Validates Conventional Commits format on the first line of the commit message.
+#
+# Allowed types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert
+# Format:        <type>(<optional scope>)<optional !>: <description>
+#
+# Examples:
+#   feat(auth): add SAML SSO support
+#   fix: resolve race condition in queue manager
+#   docs(readme): clarify installation steps
+#   refactor!: rename queue.priority to queue.weight (breaking)
+#
+# Bypass:        git commit --no-verify  (only for emergencies, document why
+#                in the commit body or follow-up PR)
+
+commit_msg_file="$1"
+commit_msg=$(head -n 1 "$commit_msg_file")
+
+# Allow empty messages (git rejects them anyway).
+if [ -z "$commit_msg" ]; then
+  exit 0
+fi
+
+# Allow merge commits, revert commits, and fixup/squash commits (git-internal).
+case "$commit_msg" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *|amend!\ *)
+    exit 0
+    ;;
+esac
+
+# Conventional Commits regex.
+pattern='^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([a-z0-9_./-]+\))?!?: .+'
+
+if ! echo "$commit_msg" | grep -qE "$pattern"; then
+  printf '\n\033[31mERROR\033[0m: commit message does not follow Conventional Commits.\n\n'
+  printf 'Expected: \033[36m<type>(<scope>): <description>\033[0m\n'
+  printf 'Types:    feat | fix | docs | style | refactor | perf | test | chore | ci | build | revert\n\n'
+  printf 'Examples:\n'
+  printf '  \033[32mfeat(auth):\033[0m add SAML SSO support\n'
+  printf '  \033[32mfix:\033[0m resolve race condition in queue manager\n'
+  printf '  \033[32mdocs(readme):\033[0m clarify installation steps\n'
+  printf '  \033[32mrefactor!:\033[0m rename queue.priority to queue.weight (breaking)\n\n'
+  printf 'Your message:\n'
+  printf '  %s\n\n' "$commit_msg"
+  printf 'Bypass with --no-verify only for emergencies; document the reason in the commit body.\n'
+  exit 1
+fi
+
+exit 0

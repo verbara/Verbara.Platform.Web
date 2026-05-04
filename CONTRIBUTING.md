@@ -23,7 +23,29 @@ npx playwright test  # E2E (requires running backend)
 
 # 5. Lint + i18n parity
 npm run lint
+
+# 6. Format code (prettier)
+npm run format         # write
+npm run format:check   # CI-style check, no writes
 ```
+
+After `npm ci`, the `prepare` script auto-installs git hooks via [husky](https://typicode.github.io/husky/) at `.husky/`. The hooks enforce:
+
+- **`pre-commit`** — runs [`lint-staged`](https://github.com/lint-staged/lint-staged) on staged files. Currently scoped to `prettier --write` for `*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml,css}`. ESLint is NOT in the pre-commit gate yet — 111 deferred eslint errors block enforcement until [Track 3A](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md) clears them. Track 3A flips eslint to blocking when the count reaches 0.
+- **`commit-msg`** — validates [Conventional Commits](https://www.conventionalcommits.org/) format on the first line. Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`. Optional scope in parentheses, optional `!` for breaking changes. Examples in `.husky/commit-msg`.
+
+### Hook bypass policy (`--no-verify`)
+
+Bypass git hooks **only for emergencies** (production hotfix, urgent revert). When you bypass, document the reason in the commit body:
+
+```bash
+git commit --no-verify -m "fix: emergency hotfix for outage
+
+Bypassed pre-commit hooks: ran out of time to format properly during
+the incident. Will rebase + format in a follow-up PR."
+```
+
+For routine commits, never use `--no-verify` — fix the underlying issue (run `npm run format` to satisfy prettier; restructure the code to satisfy eslint when Track 3A enables it).
 
 See [`CLAUDE.md`](CLAUDE.md) for the full architecture overview, stack, and conventions.
 
@@ -86,7 +108,7 @@ The core team triages weekly. Larger features (multi-week) may need a `docs/spec
 - **Icons:** Lucide React exclusively.
 - **Routes:** lazy-loaded with `React.lazy()` + `<Suspense>`.
 - **Drag-and-drop:** `@dnd-kit` for sortable lists.
-- **Comments:** default to none. Only add when the *why* is non-obvious.
+- **Comments:** default to none. Only add when the _why_ is non-obvious.
 - **No emojis in code or commits unless explicitly relevant** to a UX feature (e.g., reaction picker).
 
 See [`CLAUDE.md`](CLAUDE.md) for the canonical conventions.
