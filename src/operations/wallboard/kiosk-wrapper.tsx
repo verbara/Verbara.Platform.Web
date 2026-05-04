@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Maximize2 } from 'lucide-react';
@@ -10,10 +10,9 @@ interface KioskWrapperProps {
 export function KioskWrapper({ children }: KioskWrapperProps) {
   const { t } = useTranslation('operations');
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isKiosk, setIsKiosk] = useState(searchParams.get('kiosk') === 'true');
+  const isKiosk = searchParams.get('kiosk') === 'true';
 
   const exitKiosk = useCallback(() => {
-    setIsKiosk(false);
     setSearchParams((prev) => {
       prev.delete('kiosk');
       return prev;
@@ -21,7 +20,6 @@ export function KioskWrapper({ children }: KioskWrapperProps) {
   }, [setSearchParams]);
 
   const enterKiosk = useCallback(() => {
-    setIsKiosk(true);
     setSearchParams((prev) => {
       prev.set('kiosk', 'true');
       return prev;
@@ -40,11 +38,6 @@ export function KioskWrapper({ children }: KioskWrapperProps) {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isKiosk, exitKiosk]);
-
-  // Sync with URL params if they change externally
-  useEffect(() => {
-    setIsKiosk(searchParams.get('kiosk') === 'true');
-  }, [searchParams]);
 
   if (isKiosk) {
     return (
@@ -69,7 +62,9 @@ export function KioskWrapper({ children }: KioskWrapperProps) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('wallboard.title')}</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          {t('wallboard.title')}
+        </h1>
         <button
           type="button"
           onClick={enterKiosk}
