@@ -1,0 +1,139 @@
+name: CI
+
+# CI for Verbara Web (formerly Asterisk.Platform.Web).
+# Runs on every PR + push to main.
+#
+# Jobs (5 in parallel):
+#   - build   blocking - tsc -b && vite build
+#   - test    blocking - vitest run (205 specs)
+#   - i18n    blocking - locale parity check (ADR-0001)
+#   - audit   blocking - npm audit --audit-level=high
+#   - lint    NON-BLOCKING (continue-on-error) - eslint baseline preserved
+#                          until Track 3A clears 111 deferred errors.
+#
+# Branch protection on main requires: build, test, i18n, audit
+# (lint stays informational until Track 3A; see Track 1C spec).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs on rapid pushes to the same branch.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Default minimal permissions for all jobs.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (typecheck + production build)
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: ./dist
+          retention-days: 7
+          if-no-files-found: error
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test -- --run
+
+  i18n:
+    name: i18n
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: i18n locale parity check (ADR-0001)
+        run: npm run i18n:check
+
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: npm audit (HIGH or CRITICAL fails)
+        run: npm audit --audit-level=high
+
+  lint:
+    name: lint (non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Non-blocking until Track 3A (lint-cleanup-2) clears 111 deferred errors.
+    # This job runs to surface lint signal in PR checks but does not gate merges.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npx eslint .

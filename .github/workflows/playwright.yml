@@ -1,0 +1,71 @@
+name: Playwright E2E
+
+# E2E tests for Verbara Web. Opt-in via PR label `e2e` or manual workflow_dispatch.
+#
+# Why opt-in: Playwright tests require a running backend (Verbara Platform on
+# localhost:5000). Running on every PR would either need expensive Docker-Compose
+# bootstrap or fail fast with no signal. Opt-in keeps the workflow available for
+# major UI changes where E2E coverage matters.
+#
+# To trigger: add the `e2e` label to a PR, or run manually from the Actions tab.
+#
+# This job is NOT a required check on main. It runs informationally.
+# Backend availability is the test author's responsibility — see spec for plans
+# to add CI-bootstrapped backend in a future track.
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: Backend URL for E2E (default http://localhost:5000)
+        required: false
+        default: http://localhost:5000
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Only run if the label is `e2e` (skip other labeled events).
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'e2e')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Run Playwright tests
+        run: npx playwright test -c tests/e2e/playwright.config.ts
+        env:
+          # Default to localhost; override via workflow_dispatch input.
+          BACKEND_URL: ${{ inputs.backend_url || 'http://localhost:5000' }}
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.sha }}
+          path: playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore

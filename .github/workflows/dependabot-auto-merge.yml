@@ -1,0 +1,48 @@
+name: Dependabot auto-merge
+
+# Auto-merge Dependabot PRs for safe (patch + minor) updates after CI passes.
+#
+# - Major updates are filtered upstream by .github/dependabot.yml — they don't
+#   reach this workflow.
+# - Auto-merge only completes when all required status checks (build, test,
+#   i18n, audit) pass. Branch protection on `main` enforces that gate.
+# - Squash strategy keeps history linear.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: auto-merge
+    runs-on: ubuntu-latest
+    # Only run on Dependabot-authored PRs.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for patch + minor
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on major updates (manual review required)
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          gh pr comment "$PR_URL" --body \
+            "Major version update detected. Auto-merge skipped. Manual review required (see Track 3C in v1.14.x roadmap for the deps-majors track when these are coordinated)."
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
