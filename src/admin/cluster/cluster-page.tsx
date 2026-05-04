@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -146,7 +146,7 @@ function AddNodeSheet({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateNodeForm>({
-    resolver: zodResolver(createNodeSchema),
+    resolver: zodResolver(createNodeSchema) as Resolver<CreateNodeForm>,
     defaultValues: {
       nodeId: '',
       amiHostname: '',
@@ -309,7 +309,7 @@ function EditNodeSheet({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<EditNodeForm>({
-    resolver: zodResolver(editNodeSchema),
+    resolver: zodResolver(editNodeSchema) as Resolver<EditNodeForm>,
     defaultValues: { weight: 100, priorityTier: 1, maxCapacity: 100 },
   });
 
@@ -412,7 +412,7 @@ function DrainDialog({
     reset,
     formState: { errors },
   } = useForm<DrainForm>({
-    resolver: zodResolver(drainSchema),
+    resolver: zodResolver(drainSchema) as Resolver<DrainForm>,
     defaultValues: { gracePeriodSeconds: 300 },
   });
 

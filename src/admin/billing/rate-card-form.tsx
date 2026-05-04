@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useForm, Controller, useFieldArray, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Plus, Trash2 } from 'lucide-react';
@@ -85,7 +85,7 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
     reset,
     formState: { errors, isSubmitting },
   } = useForm<RateCardFormValues>({
-    resolver: zodResolver(rateCardSchema),
+    resolver: zodResolver(rateCardSchema) as Resolver<RateCardFormValues>,
     defaultValues: DEFAULT_VALUES,
   });
 
@@ -108,7 +108,7 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
       effectiveFrom: new Date(values.effectiveFrom).toISOString(),
       effectiveTo: values.effectiveTo ? new Date(values.effectiveTo).toISOString() : null,
       isDefault: values.isDefault,
-      rates: values.rates.map((r) => ({
+      rates: values.rates.map((r: RateCardFormValues['rates'][number]) => ({
         usageType: r.usageType,
         unitPrice: r.unitPrice,
         includedQuantity: r.includedQuantity,

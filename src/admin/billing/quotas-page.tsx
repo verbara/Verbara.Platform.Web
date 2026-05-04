@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router';
@@ -119,7 +119,7 @@ export default function QuotasPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<QuotaFormValues>({
-    resolver: zodResolver(quotaSchema),
+    resolver: zodResolver(quotaSchema) as Resolver<QuotaFormValues>,
   });
 
   useEffect(() => {

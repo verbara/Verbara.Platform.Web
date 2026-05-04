@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
@@ -54,7 +54,7 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<BotFormValues>({
-    resolver: zodResolver(botSchema),
+    resolver: zodResolver(botSchema) as Resolver<BotFormValues>,
     defaultValues: {
       name: '',
       defaultFlowId: undefined,

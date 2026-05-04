@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
@@ -60,7 +60,7 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(profileSchema) as Resolver<ProfileFormValues>,
     defaultValues: {
       name: '',
       type: 'agent',

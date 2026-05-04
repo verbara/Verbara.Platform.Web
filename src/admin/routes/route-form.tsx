@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
@@ -55,7 +55,7 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<RouteFormValues>({
-    resolver: zodResolver(routeSchema),
+    resolver: zodResolver(routeSchema) as Resolver<RouteFormValues>,
     defaultValues: {
       priority: 10,
       pattern: '',
