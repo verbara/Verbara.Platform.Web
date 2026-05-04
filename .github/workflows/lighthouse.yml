@@ -1,0 +1,86 @@
+name: Lighthouse
+
+# Track 2B — Performance budget. Runs Lighthouse against the production
+# build of the login page (the only unauthenticated route) and posts a
+# summary comment on the PR. Non-blocking: signal only, no merge gate.
+#
+# Login is the realistic target: every other route requires JWT + tenant
+# headers and Lighthouse cannot drive auth flows in CI. Authenticated
+# performance is monitored at runtime via web-vitals -> Sentry.
+#
+# Trigger: opt-in via PR label `lighthouse` or manual workflow_dispatch.
+# This avoids running on every PR (Lighthouse takes ~2 minutes and most
+# PRs do not affect performance).
+
+on:
+  pull_request:
+    branches: [main]
+    types: [labeled, synchronize]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lighthouse:
+    name: lighthouse
+    if: github.event.action != 'labeled' || github.event.label.name == 'lighthouse'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        id: lhci
+        with:
+          configPath: ./.lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        continue-on-error: true
+
+      - name: Comment results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const links = `${{ steps.lhci.outputs.links }}`;
+            const manifest = JSON.parse(`${{ steps.lhci.outputs.manifest }}` || '[]');
+            const summary = manifest
+              .filter((r) => r.isRepresentativeRun)
+              .map((r) => {
+                const s = r.summary;
+                return `| ${r.url} | ${(s.performance * 100).toFixed(0)} | ${(s.accessibility * 100).toFixed(0)} | ${(s['best-practices'] * 100).toFixed(0)} | ${(s.seo * 100).toFixed(0)} |`;
+              })
+              .join('\n');
+            const body = [
+              '### Lighthouse results (login page)',
+              '',
+              '| URL | Performance | A11y | Best Practices | SEO |',
+              '|---|---|---|---|---|',
+              summary,
+              '',
+              `Reports: ${links}`,
+              '',
+              '_Non-blocking: signal only. Track 2B introduces this gate at advisory level._',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
