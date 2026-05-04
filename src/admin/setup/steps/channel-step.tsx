@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/incompatible-library -- RHF watch() subscription + useFormContext patterns */
 import { useEffect, useMemo } from 'react';
 import { useForm, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';

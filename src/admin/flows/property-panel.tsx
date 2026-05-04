@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/incompatible-library -- RHF watch() subscription pattern has no hook alternative */
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import type { Node } from '@xyflow/react';
@@ -18,9 +19,7 @@ interface PropertyField {
 }
 
 const nodeProperties: Record<string, PropertyField[]> = {
-  SendMessage: [
-    { key: 'text', labelKey: 'text', type: 'textarea' },
-  ],
+  SendMessage: [{ key: 'text', labelKey: 'text', type: 'textarea' }],
   CollectInput: [
     { key: 'prompt', labelKey: 'prompt', type: 'textarea' },
     { key: 'timeout', labelKey: 'timeout', type: 'number' },
@@ -29,9 +28,7 @@ const nodeProperties: Record<string, PropertyField[]> = {
     // field which is conceptually a different action.
     { key: 'variable', labelKey: 'collect_input_variable', type: 'text' },
   ],
-  Condition: [
-    { key: 'expression', labelKey: 'expression', type: 'text' },
-  ],
+  Condition: [{ key: 'expression', labelKey: 'expression', type: 'text' }],
   Enqueue: [
     { key: 'queue_id', labelKey: 'queue_id', type: 'queue-select' },
     { key: 'priority', labelKey: 'priority', type: 'number' },
@@ -40,22 +37,14 @@ const nodeProperties: Record<string, PropertyField[]> = {
     { key: 'variable', labelKey: 'set_variable_name', type: 'text' },
     { key: 'value', labelKey: 'value', type: 'text' },
   ],
-  Wait: [
-    { key: 'duration', labelKey: 'duration', type: 'number' },
-  ],
-  End: [
-    { key: 'disposition', labelKey: 'disposition', type: 'text' },
-  ],
+  Wait: [{ key: 'duration', labelKey: 'duration', type: 'number' }],
+  End: [{ key: 'disposition', labelKey: 'disposition', type: 'text' }],
   HttpRequest: [
     { key: 'url', labelKey: 'url', type: 'text' },
     { key: 'method', labelKey: 'method', type: 'text' },
   ],
-  KnowledgeSearch: [
-    { key: 'query_variable', labelKey: 'query_variable', type: 'text' },
-  ],
-  AiClassify: [
-    { key: 'categories', labelKey: 'categories', type: 'text' },
-  ],
+  KnowledgeSearch: [{ key: 'query_variable', labelKey: 'query_variable', type: 'text' }],
+  AiClassify: [{ key: 'categories', labelKey: 'categories', type: 'text' }],
   AiGenerate: [
     { key: 'prompt', labelKey: 'prompt', type: 'textarea' },
     { key: 'output_variable', labelKey: 'output_variable', type: 'text' },
@@ -123,26 +112,18 @@ export default function PropertyPanel({ node, onUpdate }: PropertyPanelProps) {
               </Label>
 
               {field.type === 'textarea' ? (
-                <Textarea
-                  id={field.key}
-                  rows={3}
-                  className="text-xs"
-                  {...register(field.key)}
-                />
+                <Textarea id={field.key} rows={3} className="text-xs" {...register(field.key)} />
               ) : field.type === 'number' ? (
-                <Input
-                  id={field.key}
-                  type="number"
-                  className="text-xs"
-                  {...register(field.key)}
-                />
+                <Input id={field.key} type="number" className="text-xs" {...register(field.key)} />
               ) : (
                 // text and queue-select both render as plain text input
                 <Input
                   id={field.key}
                   type="text"
                   className="text-xs"
-                  placeholder={field.type === 'queue-select' ? t('flows.queue_id_placeholder') : undefined}
+                  placeholder={
+                    field.type === 'queue-select' ? t('flows.queue_id_placeholder') : undefined
+                  }
                   {...register(field.key)}
                 />
               )}

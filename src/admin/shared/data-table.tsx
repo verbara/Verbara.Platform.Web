@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/incompatible-library -- TanStack Table useReactTable() internal subscriptions */
 import { useState, useEffect, useRef } from 'react';
 import {
   useReactTable,
