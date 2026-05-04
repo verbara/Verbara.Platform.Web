@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/incompatible-library -- watch() in dynamic field loop has no hook alternative */
 import { useEffect, useCallback } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

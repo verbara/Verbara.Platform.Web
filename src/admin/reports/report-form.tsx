@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
@@ -82,7 +82,6 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
     register,
     handleSubmit,
     control,
-    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ReportFormValues>({
@@ -90,7 +89,7 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
     defaultValues: DEFAULT_VALUES,
   });
 
-  const schedule = watch('schedule');
+  const schedule = useWatch({ control, name: 'schedule' });
 
   useEffect(() => {
     if (open) {

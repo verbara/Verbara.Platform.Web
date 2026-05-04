@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -35,7 +35,7 @@ export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConf
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm({
@@ -49,7 +49,7 @@ export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConf
     }
   }, [open, fields, reset]);
 
-  const isActive = watch('isActive') as boolean;
+  const isActive = useWatch({ control, name: 'isActive' }) as boolean;
 
   const handleFormSubmit = handleSubmit((values) => {
     if (!channelId) return;

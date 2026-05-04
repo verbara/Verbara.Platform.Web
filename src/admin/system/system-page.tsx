@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Save } from 'lucide-react';
@@ -7,16 +7,14 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Separator } from '@/core/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { LicenseCard } from './license-card';
 import { useEffect } from 'react';
-import { useSystemLicense, useSystemSettings, useUpdateSystemSettings } from '@/core/api/hooks/use-system';
+import {
+  useSystemLicense,
+  useSystemSettings,
+  useUpdateSystemSettings,
+} from '@/core/api/hooks/use-system';
 
 /* ---------- Constants ---------- */
 
@@ -65,7 +63,7 @@ export default function SystemPage() {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     reset,
     formState: { errors, isDirty },
   } = useForm<SettingsFormValues>({
@@ -76,6 +74,9 @@ export default function SystemPage() {
       defaultLanguage: '',
     },
   });
+
+  const defaultTimezone = useWatch({ control, name: 'defaultTimezone' });
+  const defaultLanguage = useWatch({ control, name: 'defaultLanguage' });
 
   useEffect(() => {
     if (settings) {
@@ -99,7 +100,7 @@ export default function SystemPage() {
         </h2>
         {license ? (
           <div data-testid="system-license-card">
-          <LicenseCard license={license} />
+            <LicenseCard license={license} />
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">{t('admin:system.loading')}</p>
@@ -131,7 +132,10 @@ export default function SystemPage() {
           {/* Default timezone */}
           <div className="space-y-1.5">
             <Label>{t('admin:system.default_timezone')}</Label>
-            <Select value={watch('defaultTimezone')} onValueChange={(v) => setValue('defaultTimezone', v as string, { shouldDirty: true })}>
+            <Select
+              value={defaultTimezone}
+              onValueChange={(v) => setValue('defaultTimezone', v as string, { shouldDirty: true })}
+            >
               <SelectTrigger data-testid="system-settings-timezone" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -148,7 +152,10 @@ export default function SystemPage() {
           {/* Default language */}
           <div className="space-y-1.5">
             <Label>{t('admin:system.default_language')}</Label>
-            <Select value={watch('defaultLanguage')} onValueChange={(v) => setValue('defaultLanguage', v as string, { shouldDirty: true })}>
+            <Select
+              value={defaultLanguage}
+              onValueChange={(v) => setValue('defaultLanguage', v as string, { shouldDirty: true })}
+            >
               <SelectTrigger data-testid="system-settings-language" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -162,7 +169,11 @@ export default function SystemPage() {
             </Select>
           </div>
 
-          <Button type="submit" data-testid="system-settings-save" disabled={!isDirty || updateSettings.isPending}>
+          <Button
+            type="submit"
+            data-testid="system-settings-save"
+            disabled={!isDirty || updateSettings.isPending}
+          >
             <Save className="mr-2 h-4 w-4" />
             {t('admin:system.save')}
           </Button>
