@@ -1,17 +1,12 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
-// Deferred to track "lint-cleanup-2" (separate plan):
-//   - 92x react-refresh/only-export-components (barrel-export refactor)
-//   - 39x @typescript-eslint/no-explicit-any in src/ (typing audit)
-//   - 8x react-hooks/incompatible-library (third-party compat)
-//   - 1x react-hooks/purity, 1x react-hooks/immutability (case-by-case)
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'coverage']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -49,4 +44,12 @@ export default defineConfig([
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
-])
+  {
+    // router.tsx is routing infrastructure (lazy() declarations + createBrowserRouter
+    // config), not a React component — the refresh rule is semantically irrelevant.
+    files: ['src/router.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+]);
