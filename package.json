@@ -1,7 +1,7 @@
 {
   "name": "asterisk-platform-web",
   "private": true,
-  "version": "1.16.1",
+  "version": "1.16.5",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
@@ -39,7 +39,6 @@
     "@microsoft/signalr": "^10.0.0",
     "@tanstack/react-query": "^5.100.9",
     "@tanstack/react-table": "^8.21.3",
-    "@types/dompurify": "^3.2.0",
     "@wavesurfer/react": "^1.0.12",
     "@xyflow/react": "^12.10.2",
     "ag-grid-community": "^35.2.1",
@@ -91,13 +90,13 @@
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^16.4.0",
-    "msw": "^2.14.2",
+    "msw": "^2.14.3",
     "otpauth": "^9.5.1",
     "otplib": "^13.4.0",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.2.2",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.59.1",
+    "typescript-eslint": "^8.59.2",
     "vite": "^8.0.1",
     "vitest": "^4.1.5"
   }
