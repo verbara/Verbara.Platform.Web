@@ -3,8 +3,17 @@ import { useForm, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  MessageSquare, Smartphone, Mail, Globe, Phone,
-  MessagesSquare, Camera, Send, Twitter, Video, MessageCircle,
+  MessageSquare,
+  Smartphone,
+  Mail,
+  Globe,
+  Phone,
+  MessagesSquare,
+  Camera,
+  Send,
+  Twitter,
+  Video,
+  MessageCircle,
 } from 'lucide-react';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -15,7 +24,7 @@ import {
   buildSchema,
   buildDefaults,
   type FieldDef,
-} from '@/admin/channels/channel-config-form';
+} from '@/admin/channels/channel-fields';
 import type { SetupFormValues } from '../setup-wizard';
 
 const CHANNELS = [
@@ -85,9 +94,7 @@ function ChannelConfigFields({
             {...register(field.key)}
           />
           {errors[field.key] && (
-            <p className="text-xs text-destructive">
-              {String(errors[field.key]?.message ?? '')}
-            </p>
+            <p className="text-xs text-destructive">{String(errors[field.key]?.message ?? '')}</p>
           )}
         </div>
       ))}
