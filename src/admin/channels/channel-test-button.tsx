@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Plug } from 'lucide-react';
+import { LoaderCircle, Plug } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
 import { customFetch } from '@/core/api/client';
@@ -31,7 +31,7 @@ export function ChannelTestButton({ channelId }: ChannelTestButtonProps) {
   return (
     <Button type="button" variant="outline" disabled={testing} onClick={handleTest}>
       {testing ? (
-        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+        <LoaderCircle className="mr-1.5 h-4 w-4 animate-spin" />
       ) : (
         <Plug className="mr-1.5 h-4 w-4" />
       )}

@@ -1,11 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { Check, AlertTriangle, Shield, ShieldCheck, ShieldX } from 'lucide-react';
+import { Check, TriangleAlert, Shield, ShieldCheck, ShieldX } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { differenceInDays, parseISO } from 'date-fns';
 import type { LicenseInfo } from '@/core/api/hooks/use-system';
 
-const STATUS_STYLES: Record<string, { variant: 'default' | 'destructive' | 'outline'; icon: typeof ShieldCheck }> = {
+const STATUS_STYLES: Record<
+  string,
+  { variant: 'default' | 'destructive' | 'outline'; icon: typeof ShieldCheck }
+> = {
   Valid: { variant: 'default', icon: ShieldCheck },
   Expired: { variant: 'destructive', icon: ShieldX },
   Invalid: { variant: 'destructive', icon: ShieldX },
@@ -27,9 +30,7 @@ function statusBgClass(status: string): string {
 }
 
 function featureLabel(key: string): string {
-  return key
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/^./, (c) => c.toUpperCase());
+  return key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 }
 
 export function LicenseCard({ license }: { license: LicenseInfo }) {
@@ -60,9 +61,7 @@ export function LicenseCard({ license }: { license: LicenseInfo }) {
           </Badge>
         </div>
         {license.licensee && (
-          <span className="text-sm font-medium text-foreground">
-            {license.licensee}
-          </span>
+          <span className="text-sm font-medium text-foreground">{license.licensee}</span>
         )}
       </div>
 
@@ -72,7 +71,10 @@ export function LicenseCard({ license }: { license: LicenseInfo }) {
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             License ID
           </p>
-          <p className="truncate font-mono text-sm text-foreground" title={license.licenseId ?? undefined}>
+          <p
+            className="truncate font-mono text-sm text-foreground"
+            title={license.licenseId ?? undefined}
+          >
             {license.licenseId ?? '--'}
           </p>
         </div>
@@ -80,9 +82,7 @@ export function LicenseCard({ license }: { license: LicenseInfo }) {
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Max Nodes
           </p>
-          <p className="text-sm font-semibold text-foreground">
-            {license.maxNodes}
-          </p>
+          <p className="text-sm font-semibold text-foreground">{license.maxNodes}</p>
         </div>
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -100,7 +100,9 @@ export function LicenseCard({ license }: { license: LicenseInfo }) {
           {t('admin:system.expires')}
         </p>
         {expiresDate ? (
-          <p className={`text-sm font-medium ${isExpired ? 'text-destructive' : isExpiringSoon ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'}`}>
+          <p
+            className={`text-sm font-medium ${isExpired ? 'text-destructive' : isExpiringSoon ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'}`}
+          >
             {formatDate(license.expiresAt!)}
             {isExpiringSoon && (
               <span className="ml-2 text-xs">
@@ -115,12 +117,14 @@ export function LicenseCard({ license }: { license: LicenseInfo }) {
 
       {/* Expiration warning */}
       {(isExpiringSoon || isExpired) && (
-        <div className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
-          isExpired
-            ? 'bg-destructive/10 text-destructive'
-            : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-        }`}>
-          <AlertTriangle className="h-4 w-4 shrink-0" />
+        <div
+          className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+            isExpired
+              ? 'bg-destructive/10 text-destructive'
+              : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+          }`}
+        >
+          <TriangleAlert className="h-4 w-4 shrink-0" />
           {isExpired
             ? t('admin:system.license_expired')
             : t('admin:system.license_expiring_soon', { days: daysUntilExpiry })}

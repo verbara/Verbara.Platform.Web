@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CircleCheckBig, CircleX } from 'lucide-react';
 import { usePasswordPolicy, type PasswordPolicy } from '@/core/api/hooks/use-auth-admin';
 
 const defaultPolicy: PasswordPolicy = {
@@ -19,11 +19,30 @@ function PasswordStrength({ password, policy }: { password: string; policy: Pass
 
   const checks = useMemo(() => {
     const items = [
-      { key: 'length', label: t('admin:security.password_too_short', { n: policy.minLength }), met: password.length >= policy.minLength },
+      {
+        key: 'length',
+        label: t('admin:security.password_too_short', { n: policy.minLength }),
+        met: password.length >= policy.minLength,
+      },
     ];
-    if (policy.requireUppercase) items.push({ key: 'upper', label: t('admin:security.password_needs_uppercase'), met: /[A-Z]/.test(password) });
-    if (policy.requireNumber) items.push({ key: 'number', label: t('admin:security.password_needs_number'), met: /\d/.test(password) });
-    if (policy.requireSpecial) items.push({ key: 'special', label: t('admin:security.password_needs_special'), met: /[!@#$%^&*(),.?":{}|<>]/.test(password) });
+    if (policy.requireUppercase)
+      items.push({
+        key: 'upper',
+        label: t('admin:security.password_needs_uppercase'),
+        met: /[A-Z]/.test(password),
+      });
+    if (policy.requireNumber)
+      items.push({
+        key: 'number',
+        label: t('admin:security.password_needs_number'),
+        met: /\d/.test(password),
+      });
+    if (policy.requireSpecial)
+      items.push({
+        key: 'special',
+        label: t('admin:security.password_needs_special'),
+        met: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      });
     return items;
   }, [password, policy, t]);
 
@@ -44,9 +63,9 @@ function PasswordStrength({ password, policy }: { password: string; policy: Pass
         {checks.map((check) => (
           <li key={check.key} className="flex items-center gap-1.5 text-xs">
             {check.met ? (
-              <CheckCircle className="h-3 w-3 text-green-500" />
+              <CircleCheckBig className="h-3 w-3 text-green-500" />
             ) : (
-              <XCircle className="h-3 w-3 text-slate-300" />
+              <CircleX className="h-3 w-3 text-slate-300" />
             )}
             <span className={check.met ? 'text-green-600' : 'text-slate-400'}>{check.label}</span>
           </li>
@@ -149,9 +168,7 @@ export function ResetPasswordPage() {
             )}
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <Button
             type="submit"

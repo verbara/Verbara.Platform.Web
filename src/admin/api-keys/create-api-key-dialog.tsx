@@ -11,7 +11,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -25,10 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/core/ui/dialog';
-import {
-  useCreateApiKey,
-  type CreateApiKeyResponse,
-} from '@/core/api/hooks/use-api-keys';
+import { useCreateApiKey, type CreateApiKeyResponse } from '@/core/api/hooks/use-api-keys';
 
 export interface CreateApiKeyDialogProps {
   readonly open: boolean;
@@ -102,24 +99,17 @@ export function CreateApiKeyDialog({ open, onOpenChange }: CreateApiKeyDialogPro
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        data-testid="create-api-key-dialog"
-        className="sm:max-w-md"
-      >
+      <DialogContent data-testid="create-api-key-dialog" className="sm:max-w-md">
         {phase === 'form' ? (
           <form onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>{t('admin:api-keys.create_title')}</DialogTitle>
-              <DialogDescription>
-                {t('admin:api-keys.create_description')}
-              </DialogDescription>
+              <DialogDescription>{t('admin:api-keys.create_description')}</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-1.5">
-                <Label htmlFor="api-key-name">
-                  {t('admin:api-keys.name_label')}
-                </Label>
+                <Label htmlFor="api-key-name">{t('admin:api-keys.name_label')}</Label>
                 <Input
                   id="api-key-name"
                   data-testid="api-key-name-input"
@@ -181,9 +171,7 @@ export function CreateApiKeyDialog({ open, onOpenChange }: CreateApiKeyDialogPro
                 disabled={!name.trim() || create.isPending}
                 data-testid="create-api-key-submit"
               >
-                {create.isPending
-                  ? t('admin:api-keys.creating')
-                  : t('admin:api-keys.create')}
+                {create.isPending ? t('admin:api-keys.creating') : t('admin:api-keys.create')}
               </Button>
             </DialogFooter>
           </form>
@@ -228,14 +216,12 @@ export function RevealPanel({ keyName, plaintextKey, onDismiss }: RevealPanelPro
         data-testid="api-key-reveal-warning"
         role="alert"
       >
-        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <TriangleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span>{t('admin:api-keys.reveal_warning')}</span>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="api-key-reveal-value">
-          {t('admin:api-keys.key_label')}
-        </Label>
+        <Label htmlFor="api-key-reveal-value">{t('admin:api-keys.key_label')}</Label>
         <div className="flex items-center gap-2">
           <Input
             id="api-key-reveal-value"
@@ -255,11 +241,7 @@ export function RevealPanel({ keyName, plaintextKey, onDismiss }: RevealPanelPro
       </div>
 
       <DialogFooter className="mt-4">
-        <Button
-          type="button"
-          onClick={onDismiss}
-          data-testid="api-key-reveal-dismiss"
-        >
+        <Button type="button" onClick={onDismiss} data-testid="api-key-reveal-dismiss">
           {t('admin:api-keys.reveal_dismiss')}
         </Button>
       </DialogFooter>

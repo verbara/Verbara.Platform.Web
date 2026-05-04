@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/core/ui/command';
-import { Settings, Activity, BarChart3, MessageSquare } from 'lucide-react';
+import { Settings, Activity, ChartColumn, MessageSquare } from 'lucide-react';
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -57,7 +57,7 @@ export function CommandPalette() {
 
         <CommandGroup heading={t('nav.analytics')}>
           <CommandItem onSelect={() => go('/analytics')}>
-            <BarChart3 className="mr-2 h-4 w-4" />
+            <ChartColumn className="mr-2 h-4 w-4" />
             {t('nav.analytics')}
           </CommandItem>
         </CommandGroup>

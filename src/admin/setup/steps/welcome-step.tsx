@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ListChecks, Headset, Radio, CheckCircle } from 'lucide-react';
+import { ListChecks, Headset, Radio, CircleCheckBig } from 'lucide-react';
 
 const BULLETS = [
   { icon: ListChecks, key: 'bullet1', fallback: 'A queue to receive conversations' },
@@ -11,7 +11,7 @@ const PREVIEW_STEPS = [
   { icon: ListChecks, key: 'step_queue' },
   { icon: Headset, key: 'step_agent' },
   { icon: Radio, key: 'step_channel' },
-  { icon: CheckCircle, key: 'step_test' },
+  { icon: CircleCheckBig, key: 'step_test' },
 ] as const;
 
 export default function WelcomeStep() {

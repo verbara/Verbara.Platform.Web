@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle } from 'lucide-react';
+import { CircleCheckBig } from 'lucide-react';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Checkbox } from '@/core/ui/checkbox';
 import { Label } from '@/core/ui/label';
@@ -28,9 +28,7 @@ export default function TestStep() {
   return (
     <div className="mx-auto max-w-lg space-y-6 py-4">
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold">
-          {t('admin:setup.testTitle', 'Test Your Setup')}
-        </h2>
+        <h2 className="text-xl font-semibold">{t('admin:setup.testTitle', 'Test Your Setup')}</h2>
         <p className="text-sm text-muted-foreground">
           {t(
             'admin:setup.testDescription',
@@ -46,19 +44,19 @@ export default function TestStep() {
         </h3>
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CircleCheckBig className="h-4 w-4 text-green-500" />
             <span>
               {t('admin:setup.testQueue', 'Queue')}: <strong>{queueName}</strong>
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CircleCheckBig className="h-4 w-4 text-green-500" />
             <span>
               {t('admin:setup.testAgent', 'Agent')}: <strong>{agentDisplayName}</strong>
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CircleCheckBig className="h-4 w-4 text-green-500" />
             <span>
               {t('admin:setup.testChannel', 'Channel')}: <strong>{capitalize(channelId)}</strong>
             </span>
@@ -131,12 +129,7 @@ export default function TestStep() {
                   `Configure this webhook URL in your ${capitalize(channelId)} provider dashboard`,
                 )}
               </li>
-              <li>
-                {t(
-                  'admin:setup.testStep2',
-                  'Send a test message from a customer device',
-                )}
-              </li>
+              <li>{t('admin:setup.testStep2', 'Send a test message from a customer device')}</li>
               <li>
                 {t(
                   'admin:setup.testStep3',
@@ -148,10 +141,7 @@ export default function TestStep() {
 
           {/* Tested checkbox */}
           <div className="flex items-center gap-2">
-            <Checkbox
-              checked={tested}
-              onCheckedChange={(v) => setTested(v === true)}
-            />
+            <Checkbox checked={tested} onCheckedChange={(v) => setTested(v === true)} />
             <Label className="text-sm cursor-pointer" onClick={() => setTested(!tested)}>
               {t('admin:setup.testConfirm', "I've tested it")}
             </Label>

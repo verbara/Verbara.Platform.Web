@@ -2,7 +2,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { es, enUS, ptBR } from 'date-fns/locale';
 import type { Locale } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { Info, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Info, TriangleAlert, CircleAlert } from 'lucide-react';
 import type { Notification, NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
 interface NotificationItemProps {
@@ -19,7 +19,7 @@ const LOCALE_MAP: Record<string, Locale> = {
 function SeverityIcon({ severity }: { readonly severity: NotificationSeverity }) {
   if (severity === 'Critical') {
     return (
-      <AlertCircle
+      <CircleAlert
         className="h-5 w-5 shrink-0 text-red-500"
         data-testid="notification-icon-critical"
       />
@@ -27,18 +27,13 @@ function SeverityIcon({ severity }: { readonly severity: NotificationSeverity })
   }
   if (severity === 'Warning') {
     return (
-      <AlertTriangle
+      <TriangleAlert
         className="h-5 w-5 shrink-0 text-amber-500"
         data-testid="notification-icon-warning"
       />
     );
   }
-  return (
-    <Info
-      className="h-5 w-5 shrink-0 text-blue-500"
-      data-testid="notification-icon-info"
-    />
-  );
+  return <Info className="h-5 w-5 shrink-0 text-blue-500" data-testid="notification-icon-info" />;
 }
 
 export function NotificationItem({ notification, onClick }: NotificationItemProps) {

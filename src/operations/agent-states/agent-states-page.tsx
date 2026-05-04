@@ -1,18 +1,12 @@
 import { useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { MoreHorizontal, UserX, MessageSquare } from 'lucide-react';
+import { Ellipsis, UserX, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Button } from '@/core/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -21,7 +15,11 @@ import {
 } from '@/core/ui/dropdown-menu';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useFormatDate } from '@/core/i18n/use-format';
-import { useAgentStateStore, type AgentState, type AgentPresence } from '@/operations/stores/agent-state-store';
+import {
+  useAgentStateStore,
+  type AgentState,
+  type AgentPresence,
+} from '@/operations/stores/agent-state-store';
 import { useAgents, useUpdateAgentStateAdmin, type Agent } from '@/core/api/hooks/use-agents';
 import { invokeHub } from '@/core/realtime';
 import { useRealtimeStore } from '@/core/stores/realtime-store';
@@ -113,9 +111,7 @@ export default function AgentStatesPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('agent_states.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('team', {
         header: () => t('agent_states.team'),
@@ -178,10 +174,8 @@ function AgentActions({ agent }: { readonly agent: AgentState }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<Button variant="ghost" size="icon-xs" />}
-      >
-        <MoreHorizontal className="h-4 w-4" />
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-xs" />}>
+        <Ellipsis className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem

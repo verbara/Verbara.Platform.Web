@@ -3,7 +3,7 @@ import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router';
-import { Pencil, ShieldAlert, ShieldCheck, ShieldX, AlertTriangle } from 'lucide-react';
+import { Pencil, ShieldAlert, ShieldCheck, ShieldX, TriangleAlert } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { Button } from '@/core/ui/button';
@@ -186,7 +186,7 @@ export default function QuotasPage() {
           className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-700 dark:bg-amber-950"
           data-testid="dunning-banner"
         >
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="flex-1 space-y-1">
             <p className="font-medium text-amber-900 dark:text-amber-100">
               {t('billing.quotas.dunning.overdue')}

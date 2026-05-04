@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Upload, FileText, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { Upload, FileText, CircleCheck, TriangleAlert, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Label } from '@/core/ui/label';
@@ -8,7 +8,16 @@ import type { CampaignFormValues } from '../campaign-wizard';
 import type { ContactImportRow } from '@/core/api/hooks/use-campaigns';
 
 // Contact fields the API accepts
-const CONTACT_FIELDS = ['firstName', 'lastName', 'phone', 'phoneType', 'metadata.email', 'metadata.company', 'metadata.custom1', 'metadata.custom2'] as const;
+const CONTACT_FIELDS = [
+  'firstName',
+  'lastName',
+  'phone',
+  'phoneType',
+  'metadata.email',
+  'metadata.company',
+  'metadata.custom1',
+  'metadata.custom2',
+] as const;
 type ContactField = (typeof CONTACT_FIELDS)[number];
 
 interface ParseResult {
@@ -30,10 +39,15 @@ function parseCsv(text: string): ParseResult {
     for (let i = 0; i < line.length; i++) {
       const ch = line[i];
       if (ch === '"') {
-        if (inQuotes && line[i + 1] === '"') { field += '"'; i++; }
-        else { inQuotes = !inQuotes; }
+        if (inQuotes && line[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
       } else if (ch === ',' && !inQuotes) {
-        fields.push(field); field = '';
+        fields.push(field);
+        field = '';
       } else {
         field += ch;
       }
@@ -47,7 +61,9 @@ function parseCsv(text: string): ParseResult {
   for (let i = 1; i < nonEmpty.length; i++) {
     const values = parseRow(nonEmpty[i]!);
     const row: Record<string, string> = {};
-    columns.forEach((col, idx) => { row[col] = values[idx] ?? ''; });
+    columns.forEach((col, idx) => {
+      row[col] = values[idx] ?? '';
+    });
     rows.push(row);
   }
 
@@ -58,13 +74,24 @@ function parseCsv(text: string): ParseResult {
 function buildAutoMapping(columns: string[]): Record<string, string> {
   const lower = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
   const heuristics: Record<string, ContactField> = {
-    firstname: 'firstName', first: 'firstName',
-    lastname: 'lastName', last: 'lastName',
-    fullname: 'firstName', name: 'firstName',
-    phone: 'phone', phonenumber: 'phone', mobile: 'phone', cell: 'phone', telephone: 'phone',
-    phonetype: 'phoneType', type: 'phoneType',
-    email: 'metadata.email', emailaddress: 'metadata.email',
-    company: 'metadata.company', organization: 'metadata.company', org: 'metadata.company',
+    firstname: 'firstName',
+    first: 'firstName',
+    lastname: 'lastName',
+    last: 'lastName',
+    fullname: 'firstName',
+    name: 'firstName',
+    phone: 'phone',
+    phonenumber: 'phone',
+    mobile: 'phone',
+    cell: 'phone',
+    telephone: 'phone',
+    phonetype: 'phoneType',
+    type: 'phoneType',
+    email: 'metadata.email',
+    emailaddress: 'metadata.email',
+    company: 'metadata.company',
+    organization: 'metadata.company',
+    org: 'metadata.company',
   };
 
   const mapping: Record<string, string> = {};
@@ -76,7 +103,10 @@ function buildAutoMapping(columns: string[]): Record<string, string> {
 }
 
 /** Apply column mapping to parsed rows to produce API-ready ContactImportRow[]. */
-function applyMapping(rows: Record<string, string>[], mapping: Record<string, string>): ContactImportRow[] {
+function applyMapping(
+  rows: Record<string, string>[],
+  mapping: Record<string, string>,
+): ContactImportRow[] {
   return rows
     .map((row) => {
       const contact: Partial<ContactImportRow> & { metadata?: Record<string, string> } = {};
@@ -103,7 +133,10 @@ interface ValidationSummary {
   duplicates: number;
 }
 
-function computeValidation(rows: Record<string, string>[], mapping: Record<string, string>): ValidationSummary {
+function computeValidation(
+  rows: Record<string, string>[],
+  mapping: Record<string, string>,
+): ValidationSummary {
   const phoneCol = Object.entries(mapping).find(([, f]) => f === 'phone')?.[0];
   const phones = new Set<string>();
   let skipped = 0;
@@ -112,8 +145,14 @@ function computeValidation(rows: Record<string, string>[], mapping: Record<strin
 
   rows.forEach((row) => {
     const phone = phoneCol ? row[phoneCol]?.trim() : '';
-    if (!phone) { skipped++; return; }
-    if (phones.has(phone)) { duplicates++; return; }
+    if (!phone) {
+      skipped++;
+      return;
+    }
+    if (phones.has(phone)) {
+      duplicates++;
+      return;
+    }
     phones.add(phone);
     loaded++;
   });
@@ -198,7 +237,10 @@ export default function ContactsStep() {
       <div className="space-y-4">
         <Label>{t('campaigns.contacts_step.upload_label')}</Label>
         <div
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
           className={`flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-12 transition-colors ${
@@ -206,9 +248,7 @@ export default function ContactsStep() {
           }`}
         >
           <Upload className="h-10 w-10 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            {t('campaigns.contacts_step.drop_hint')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('campaigns.contacts_step.drop_hint')}</p>
           <Button
             type="button"
             variant="outline"
@@ -239,20 +279,36 @@ export default function ContactsStep() {
     <div className="space-y-6">
       {/* Validation Report */}
       <div className="flex items-start gap-3 rounded-lg border bg-muted/50 p-4">
-        <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-500" />
+        <CircleCheck className="mt-0.5 h-5 w-5 text-emerald-500" />
         <div className="flex-1 text-sm">
-          <p className="font-medium">{t('campaigns.contacts_step.file_processed', { name: contactFile })}</p>
+          <p className="font-medium">
+            {t('campaigns.contacts_step.file_processed', { name: contactFile })}
+          </p>
           <p className="mt-1 text-muted-foreground">
-            <span className="font-medium text-foreground">{t('campaigns.contacts_step.loaded_count', { count: validation.loaded })}</span>
-            {' '}&middot;{' '}
-            <span className="text-amber-600">{t('campaigns.contacts_step.skipped_count', { count: validation.skipped })}</span>
-            {' '}&middot;{' '}
-            <span className="text-amber-600">{t('campaigns.contacts_step.duplicates_count', { count: validation.duplicates })}</span>
-            {' '}&middot;{' '}
-            <span className="text-muted-foreground">{t('campaigns.contacts_step.total_rows', { count: parseResult.totalRows })}</span>
+            <span className="font-medium text-foreground">
+              {t('campaigns.contacts_step.loaded_count', { count: validation.loaded })}
+            </span>{' '}
+            &middot;{' '}
+            <span className="text-amber-600">
+              {t('campaigns.contacts_step.skipped_count', { count: validation.skipped })}
+            </span>{' '}
+            &middot;{' '}
+            <span className="text-amber-600">
+              {t('campaigns.contacts_step.duplicates_count', { count: validation.duplicates })}
+            </span>{' '}
+            &middot;{' '}
+            <span className="text-muted-foreground">
+              {t('campaigns.contacts_step.total_rows', { count: parseResult.totalRows })}
+            </span>
           </p>
         </div>
-        <Button type="button" variant="ghost" size="sm" onClick={handleReset} className="h-7 w-7 p-0">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleReset}
+          className="h-7 w-7 p-0"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -263,8 +319,10 @@ export default function ContactsStep() {
         <div className="space-y-2">
           {parseResult.columns.map((col) => (
             <div key={col} className="flex items-center gap-3">
-              <span className="w-40 truncate text-sm text-muted-foreground" title={col}>{col}</span>
-              <AlertTriangle className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+              <span className="w-40 truncate text-sm text-muted-foreground" title={col}>
+                {col}
+              </span>
+              <TriangleAlert className="h-4 w-4 shrink-0 text-muted-foreground/50" />
               <select
                 value={columnMapping[col] ?? ''}
                 onChange={(e) => updateMapping(col, e.target.value)}
@@ -272,7 +330,9 @@ export default function ContactsStep() {
               >
                 <option value="">{t('campaigns.contacts_step.skip_option')}</option>
                 {CONTACT_FIELDS.map((f) => (
-                  <option key={f} value={f}>{f}</option>
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
                 ))}
               </select>
             </div>
@@ -288,13 +348,18 @@ export default function ContactsStep() {
             <thead className="bg-muted/50">
               <tr>
                 {previewCols.map((col) => (
-                  <th key={col} className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                  <th
+                    key={col}
+                    className="px-3 py-2 text-left text-xs font-medium text-muted-foreground"
+                  >
                     {col}
                   </th>
                 ))}
                 {parseResult.columns.length > 6 && (
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                    {t('campaigns.contacts_step.more_columns', { count: parseResult.columns.length - 6 })}
+                    {t('campaigns.contacts_step.more_columns', {
+                      count: parseResult.columns.length - 6,
+                    })}
                   </th>
                 )}
               </tr>
@@ -304,7 +369,11 @@ export default function ContactsStep() {
                 <tr key={i} className="border-t">
                   {previewCols.map((col) => (
                     <td key={col} className="px-3 py-1.5 text-muted-foreground">
-                      {row[col] || <span className="italic text-muted-foreground/50">{t('campaigns.contacts_step.empty')}</span>}
+                      {row[col] || (
+                        <span className="italic text-muted-foreground/50">
+                          {t('campaigns.contacts_step.empty')}
+                        </span>
+                      )}
                     </td>
                   ))}
                   {parseResult.columns.length > 6 && <td className="px-3 py-1.5" />}

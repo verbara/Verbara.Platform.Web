@@ -10,7 +10,7 @@ import {
   MessagesSquare,
   Camera,
   Send,
-  Twitter,
+  X,
   Video,
   MessageCircle,
 } from 'lucide-react';
@@ -18,13 +18,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { Label } from '@/core/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/core/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { ChannelConfigForm } from './channel-config-form';
 import { customFetch } from '@/core/api/client';
 import { useChannel } from '@/core/api/hooks/use-channels';
@@ -47,7 +41,7 @@ const CHANNEL_LIST: Omit<ChannelInfo, 'isActive'>[] = [
   { id: 'messenger', name: 'Messenger', icon: MessagesSquare, group: 'extended' },
   { id: 'instagram', name: 'Instagram', icon: Camera, group: 'extended' },
   { id: 'telegram', name: 'Telegram', icon: Send, group: 'extended' },
-  { id: 'twitter', name: 'Twitter', icon: Twitter, group: 'extended' },
+  { id: 'twitter', name: 'Twitter', icon: X, group: 'extended' },
   { id: 'video', name: 'Video', icon: Video, group: 'extended' },
   { id: 'rcs', name: 'RCS', icon: MessageCircle, group: 'extended' },
 ];
@@ -131,24 +125,31 @@ export default function ChannelsPage() {
       </section>
 
       {/* Config form sheet */}
-      <ChannelConfigForm
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        channelId={selectedChannel}
-      />
+      <ChannelConfigForm open={formOpen} onOpenChange={setFormOpen} channelId={selectedChannel} />
 
       {/* Channel detail dialog */}
-      <Dialog open={detailChannel !== null} onOpenChange={(o) => { if (!o) setDetailChannel(null); }}>
+      <Dialog
+        open={detailChannel !== null}
+        onOpenChange={(o) => {
+          if (!o) setDetailChannel(null);
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t('admin:channels.detailTitle', { channel: channelDetail?.channel ?? detailChannel })}</DialogTitle>
+            <DialogTitle>
+              {t('admin:channels.detailTitle', {
+                channel: channelDetail?.channel ?? detailChannel,
+              })}
+            </DialogTitle>
           </DialogHeader>
           {channelDetail && (
             <div className="space-y-4 py-2">
               <div className="flex items-center justify-between">
                 <Label>{t('admin:channels.statusLabel')}</Label>
                 <Badge variant={channelDetail.isActive ? 'default' : 'destructive'}>
-                  {channelDetail.isActive ? t('admin:channels.activeStatus') : t('admin:channels.inactiveStatus')}
+                  {channelDetail.isActive
+                    ? t('admin:channels.activeStatus')
+                    : t('admin:channels.inactiveStatus')}
                 </Badge>
               </div>
               {channelDetail.credentials && Object.keys(channelDetail.credentials).length > 0 && (
@@ -167,8 +168,15 @@ export default function ChannelsPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDetailChannel(null)}>{t('common:actions.close')}</Button>
-            <Button onClick={() => { setDetailChannel(null); handleConfigure(detailChannel!); }}>
+            <Button variant="outline" onClick={() => setDetailChannel(null)}>
+              {t('common:actions.close')}
+            </Button>
+            <Button
+              onClick={() => {
+                setDetailChannel(null);
+                handleConfigure(detailChannel!);
+              }}
+            >
               {t('admin:channels.configure')}
             </Button>
           </DialogFooter>
@@ -205,7 +213,14 @@ function ChannelCard({
           {channel.isActive ? t('admin:channels.enabled') : t('admin:channels.disabled')}
         </Badge>
       </div>
-      <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onConfigure(channel.id); }}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          onConfigure(channel.id);
+        }}
+      >
         {t('admin:channels.configure')}
       </Button>
     </div>

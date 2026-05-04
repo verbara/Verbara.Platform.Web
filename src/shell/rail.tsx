@@ -5,7 +5,7 @@ import { UserMenu } from './user-menu';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
-import { Settings, Activity, BarChart3, MessageSquare, Hexagon, Command } from 'lucide-react';
+import { Settings, Activity, ChartColumn, MessageSquare, Hexagon, Command } from 'lucide-react';
 
 export function Rail() {
   const { t } = useTranslation();
@@ -37,14 +37,12 @@ export function Rail() {
       </div>
 
       <div className="flex flex-1 flex-col items-center gap-1">
-        {showAdmin && (
-          <RailIcon to="/admin" icon={Settings} label={t('nav.admin')} />
-        )}
+        {showAdmin && <RailIcon to="/admin" icon={Settings} label={t('nav.admin')} />}
         {showOperations && (
           <RailIcon to="/operations" icon={Activity} label={t('nav.operations')} />
         )}
         {showAnalytics && (
-          <RailIcon to="/analytics" icon={BarChart3} label={t('nav.analytics')} />
+          <RailIcon to="/analytics" icon={ChartColumn} label={t('nav.analytics')} />
         )}
         <div className="relative">
           <RailIcon to="/agent" icon={MessageSquare} label={t('nav.agent')} />

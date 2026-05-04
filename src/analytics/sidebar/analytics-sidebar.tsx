@@ -1,6 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BarChart3, FileText, ClipboardCheck, ClipboardList, Table, Users, AudioWaveform } from 'lucide-react';
+import {
+  ChartColumn,
+  FileText,
+  ClipboardCheck,
+  ClipboardList,
+  Table,
+  Users,
+  AudioWaveform,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface SidebarItem {
@@ -10,7 +18,7 @@ interface SidebarItem {
 }
 
 const items: SidebarItem[] = [
-  { labelKey: 'sidebar.dashboard', to: '/analytics/dashboard', icon: BarChart3 },
+  { labelKey: 'sidebar.dashboard', to: '/analytics/dashboard', icon: ChartColumn },
   { labelKey: 'sidebar.cdr', to: '/analytics/cdr', icon: FileText },
   { labelKey: 'sidebar.qa', to: '/analytics/qa', icon: ClipboardCheck },
   { labelKey: 'sidebar.surveys', to: '/analytics/surveys', icon: ClipboardList },
@@ -24,9 +32,7 @@ export function AnalyticsSidebar() {
 
   return (
     <nav className="flex h-full flex-col gap-1 py-3">
-      <p className="px-4 pb-1 text-sm font-medium text-slate-500">
-        {t('sidebar.dashboard')}
-      </p>
+      <p className="px-4 pb-1 text-sm font-medium text-slate-500">{t('sidebar.dashboard')}</p>
       <ul className="space-y-0.5 px-2">
         {items.map((item) => {
           const Icon = item.icon;

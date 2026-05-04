@@ -12,7 +12,7 @@ import {
   MessagesSquare,
   Camera,
   Send,
-  Twitter,
+  X,
   Video,
   MessageCircle,
 } from 'lucide-react';
@@ -37,7 +37,7 @@ const CHANNELS = [
   { id: 'messenger', name: 'Messenger', icon: MessagesSquare },
   { id: 'instagram', name: 'Instagram', icon: Camera },
   { id: 'telegram', name: 'Telegram', icon: Send },
-  { id: 'twitter', name: 'Twitter', icon: Twitter },
+  { id: 'twitter', name: 'Twitter', icon: X },
   { id: 'video', name: 'Video', icon: Video },
   { id: 'rcs', name: 'RCS', icon: MessageCircle },
 ];

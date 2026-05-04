@@ -5,11 +5,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   Plus,
-  MoreHorizontal,
+  Ellipsis,
   Pencil,
   Trash2,
   ArrowDownToLine,
-  XCircle,
+  CircleX,
   Zap,
   Server,
   Radio,
@@ -585,7 +585,7 @@ export default function ClusterPage() {
                   data-testid={`cluster-node-${node.nodeId}-actions`}
                   render={<Button variant="ghost" size="sm" className="h-7 w-7 p-0" />}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <Ellipsis className="h-4 w-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {canEdit && (
@@ -603,7 +603,7 @@ export default function ClusterPage() {
                   {canCancelDrain && (
                     <>
                       <DropdownMenuItem onClick={() => handleCancelDrain(node.nodeId)}>
-                        <XCircle className="mr-2 h-3.5 w-3.5" />
+                        <CircleX className="mr-2 h-3.5 w-3.5" />
                         {t('cluster.actions.cancel_drain')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setForceNode(node)}>
@@ -715,7 +715,7 @@ export default function ClusterPage() {
                     onClick={() => handleCancelDrain(drain.nodeId)}
                     disabled={cancelDrain.isPending}
                   >
-                    <XCircle className="mr-1 h-3.5 w-3.5" />
+                    <CircleX className="mr-1 h-3.5 w-3.5" />
                     {t('cluster.drains.cancel')}
                   </Button>
                   <Button

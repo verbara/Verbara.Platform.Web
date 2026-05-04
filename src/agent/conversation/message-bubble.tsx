@@ -3,7 +3,7 @@ import { es, enUS, ptBR } from 'date-fns/locale';
 import type { Locale } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
-import { Check, CheckCheck, FileIcon, AlertCircle } from 'lucide-react';
+import { Check, CheckCheck, FileIcon, CircleAlert } from 'lucide-react';
 import type { Message } from '@/agent/stores/conversation-store';
 import { cn } from '@/lib/utils';
 
@@ -26,7 +26,7 @@ function DeliveryStatus({ status }: { readonly status: Message['status'] }) {
     case 'read':
       return <CheckCheck className="h-3 w-3 text-blue-300" />;
     case 'failed':
-      return <AlertCircle className="h-3 w-3 text-red-300" />;
+      return <CircleAlert className="h-3 w-3 text-red-300" />;
     default:
       return null;
   }
@@ -99,10 +99,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
         )}
 
         <div
-          className={cn(
-            'mt-1 flex items-center gap-1',
-            isAgent ? 'justify-end' : 'justify-end',
-          )}
+          className={cn('mt-1 flex items-center gap-1', isAgent ? 'justify-end' : 'justify-end')}
         >
           <span
             className={cn(

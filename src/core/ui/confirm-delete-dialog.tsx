@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -83,7 +83,8 @@ export function ConfirmDeleteDialog({
 
   const computeButtonLabel = (): string => {
     if (isPending) return t('confirm_delete_dialog.deleting');
-    if (!useWord && countdown > 0) return t('confirm_delete_dialog.wait_seconds', { seconds: countdown });
+    if (!useWord && countdown > 0)
+      return t('confirm_delete_dialog.wait_seconds', { seconds: countdown });
     return t('confirm_delete_dialog.delete');
   };
   const buttonLabel = computeButtonLabel();
@@ -94,12 +95,14 @@ export function ConfirmDeleteDialog({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <TriangleAlert className="h-4 w-4 text-red-600 dark:text-red-400" />
             </div>
             <DialogTitle>{t('confirm_delete_dialog.title', { entityType })}</DialogTitle>
           </div>
           <DialogDescription>
-            {t('confirm_delete_dialog.description_prefix')}<strong>&ldquo;{entityName}&rdquo;</strong>{t('confirm_delete_dialog.description_suffix')}
+            {t('confirm_delete_dialog.description_prefix')}
+            <strong>&ldquo;{entityName}&rdquo;</strong>
+            {t('confirm_delete_dialog.description_suffix')}
           </DialogDescription>
         </DialogHeader>
         {useWord && (
@@ -124,7 +127,9 @@ export function ConfirmDeleteDialog({
           </div>
         )}
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>{t('confirm_delete_dialog.cancel')}</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>
+            {t('confirm_delete_dialog.cancel')}
+          </DialogClose>
           <Button
             variant="destructive"
             data-testid="confirm-delete-btn"

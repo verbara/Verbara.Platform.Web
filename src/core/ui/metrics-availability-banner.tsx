@@ -4,7 +4,7 @@
 // OR Postgres unreachable per R5.1 Task G spec). Header parsing happens in
 // {@link useQueueMetrics}; this component is a pure presentation primitive.
 
-import { AlertCircle } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface MetricsAvailabilityBannerProps {
@@ -22,7 +22,7 @@ export function MetricsAvailabilityBanner({ isAvailable }: MetricsAvailabilityBa
       data-testid="metrics-availability-banner"
       role="status"
     >
-      <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+      <CircleAlert className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
       <span>{t('wallboard.metrics_unavailable')}</span>
     </div>
   );

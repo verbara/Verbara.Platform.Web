@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Check, Download, RefreshCw } from 'lucide-react';
+import { TriangleAlert, Check, Download, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -59,9 +59,12 @@ export default function RegeneratePage() {
       />
 
       {step === 'warning' && (
-        <div className="rounded-lg border bg-card p-6 space-y-4" data-testid="recovery-warning-step">
+        <div
+          className="rounded-lg border bg-card p-6 space-y-4"
+          data-testid="recovery-warning-step"
+        >
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-1 h-5 w-5 text-amber-500" />
+            <TriangleAlert className="mt-1 h-5 w-5 text-amber-500" />
             <div className="space-y-1">
               <p className="text-sm font-medium">
                 {t('admin:profile_security.recovery_codes.regenerate.warning_title')}

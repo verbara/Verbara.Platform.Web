@@ -13,7 +13,7 @@ import {
   ClipboardCheck,
   X,
   Check,
-  XCircle,
+  CircleX,
   Pause,
   Play,
   type LucideIcon,
@@ -136,7 +136,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
                 {t('conversation.accept')}
               </Button>
               <Button size="sm" variant="destructive" onClick={() => setRejectOpen(true)}>
-                <XCircle className="h-3.5 w-3.5" data-icon="inline-start" />
+                <CircleX className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.reject')}
               </Button>
             </>

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Bot, ArrowRightLeft, CheckCircle, XCircle } from 'lucide-react';
+import { Bot, ArrowRightLeft, CircleCheckBig, CircleX } from 'lucide-react';
 import { useBotAnalytics } from '@/core/api/hooks/use-analytics';
 import { useFormatNumber } from '@/core/i18n/use-format';
 
@@ -54,7 +54,9 @@ export function BotAnalyticsCard({ from, to }: BotAnalyticsCardProps) {
     >
       <div className="mb-3 flex items-center gap-2">
         <Bot className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{t('bot_analytics.title')}</h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+          {t('bot_analytics.title')}
+        </h3>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
@@ -73,7 +75,11 @@ export function BotAnalyticsCard({ from, to }: BotAnalyticsCardProps) {
           value={`${(data.handoffRate * 100).toFixed(0)}%`}
           color={handoffColor}
         />
-        <KpiMini label={t('bot_analytics.avg_turns')} value={data.avgTurns.toFixed(1)} color="text-slate-900 dark:text-white" />
+        <KpiMini
+          label={t('bot_analytics.avg_turns')}
+          value={data.avgTurns.toFixed(1)}
+          color="text-slate-900 dark:text-white"
+        />
       </div>
 
       <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
@@ -95,16 +101,19 @@ export function BotAnalyticsCard({ from, to }: BotAnalyticsCardProps) {
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
         <span className="flex items-center gap-1">
-          <CheckCircle className="h-2.5 w-2.5 text-green-500" />
-          {t('bot_analytics.resolved_label')}{data.resolved})
+          <CircleCheckBig className="h-2.5 w-2.5 text-green-500" />
+          {t('bot_analytics.resolved_label')}
+          {data.resolved})
         </span>
         <span className="flex items-center gap-1">
           <ArrowRightLeft className="h-2.5 w-2.5 text-amber-500" />
-          {t('bot_analytics.handoff_label')}{data.handedOff})
+          {t('bot_analytics.handoff_label')}
+          {data.handedOff})
         </span>
         <span className="flex items-center gap-1">
-          <XCircle className="h-2.5 w-2.5 text-red-500" />
-          {t('bot_analytics.failed_label')}{data.failed})
+          <CircleX className="h-2.5 w-2.5 text-red-500" />
+          {t('bot_analytics.failed_label')}
+          {data.failed})
         </span>
       </div>
     </div>

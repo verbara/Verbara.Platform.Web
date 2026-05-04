@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { FileText, Send, Eye, CheckCircle } from 'lucide-react';
+import { FileText, Send, Eye, CircleCheckBig } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
@@ -9,13 +9,7 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/core/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/core/ui/sheet';
 import {
   Dialog,
   DialogContent,
@@ -65,9 +59,7 @@ export default function InvoicesPage() {
     () => [
       col.accessor('invoiceId', {
         header: () => t('billing.invoices.columns.invoice'),
-        cell: (info) => (
-          <span className="font-mono text-xs">{info.getValue().slice(0, 8)}...</span>
-        ),
+        cell: (info) => <span className="font-mono text-xs">{info.getValue().slice(0, 8)}...</span>,
       }),
       col.accessor('periodStart', {
         header: () => t('billing.invoices.columns.period'),
@@ -87,9 +79,7 @@ export default function InvoicesPage() {
       col.accessor('status', {
         header: () => t('billing.invoices.columns.status'),
         cell: (info) => (
-          <Badge variant={STATUS_COLORS[info.getValue()] ?? 'outline'}>
-            {info.getValue()}
-          </Badge>
+          <Badge variant={STATUS_COLORS[info.getValue()] ?? 'outline'}>{info.getValue()}</Badge>
         ),
       }),
       col.accessor('generatedAt', {
@@ -137,7 +127,7 @@ export default function InvoicesPage() {
                   payInvoice.mutate(row.original.invoiceId);
                 }}
               >
-                <CheckCircle className="h-3.5 w-3.5" />
+                <CircleCheckBig className="h-3.5 w-3.5" />
               </Button>
             )}
           </div>
@@ -163,7 +153,9 @@ export default function InvoicesPage() {
       <div className="flex h-64 items-center justify-center">
         <p className="text-sm text-muted-foreground" data-testid="no-tenant-message">
           <Trans i18nKey="billing.select_tenant_invoices_prefix" ns="admin" />
-          <a href="/admin/tenants" className="text-brand underline">{t('billing.tenants_link')}</a>
+          <a href="/admin/tenants" className="text-brand underline">
+            {t('billing.tenants_link')}
+          </a>
           <Trans i18nKey="billing.select_tenant_invoices_suffix" ns="admin" />
         </p>
       </div>
@@ -172,7 +164,10 @@ export default function InvoicesPage() {
 
   return (
     <div className="space-y-6" data-testid="invoices-page">
-      <PageHeader title={t('billing.invoices.title')} description={t('billing.invoices.description')}>
+      <PageHeader
+        title={t('billing.invoices.title')}
+        description={t('billing.invoices.description')}
+      >
         <Button onClick={() => setGenerateOpen(true)} data-testid="generate-invoice">
           <FileText className="mr-1.5 h-4 w-4" />
           {t('billing.invoices.generate')}
@@ -196,7 +191,9 @@ export default function InvoicesPage() {
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3 py-4">
             <div className="space-y-1.5">
-              <Label htmlFor="gen-start">{t('billing.invoices.generate_dialog.period_start')}</Label>
+              <Label htmlFor="gen-start">
+                {t('billing.invoices.generate_dialog.period_start')}
+              </Label>
               <Input
                 id="gen-start"
                 type="datetime-local"
@@ -217,25 +214,35 @@ export default function InvoicesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setGenerateOpen(false)}>{t('billing.invoices.generate_dialog.cancel')}</Button>
+            <Button variant="outline" onClick={() => setGenerateOpen(false)}>
+              {t('billing.invoices.generate_dialog.cancel')}
+            </Button>
             <Button
               onClick={handleGenerate}
               disabled={!periodStart || !periodEnd || generateInvoice.isPending}
               data-testid="generate-invoice-submit"
             >
-              {generateInvoice.isPending ? t('billing.invoices.generate_dialog.generating') : t('billing.invoices.generate_dialog.submit')}
+              {generateInvoice.isPending
+                ? t('billing.invoices.generate_dialog.generating')
+                : t('billing.invoices.generate_dialog.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Invoice Detail Sheet */}
-      <Sheet open={!!detailInvoice} onOpenChange={(open) => { if (!open) setDetailInvoice(undefined); }}>
+      <Sheet
+        open={!!detailInvoice}
+        onOpenChange={(open) => {
+          if (!open) setDetailInvoice(undefined);
+        }}
+      >
         <SheetContent side="right" className="sm:max-w-lg">
           <SheetHeader>
             <SheetTitle>{t('billing.invoices.detail.title')}</SheetTitle>
             <SheetDescription>
-              {detailInvoice && `${format(new Date(detailInvoice.periodStart), 'MMM d')} — ${format(new Date(detailInvoice.periodEnd), 'MMM d, yyyy')}`}
+              {detailInvoice &&
+                `${format(new Date(detailInvoice.periodStart), 'MMM d')} — ${format(new Date(detailInvoice.periodEnd), 'MMM d, yyyy')}`}
             </SheetDescription>
           </SheetHeader>
 
@@ -243,16 +250,28 @@ export default function InvoicesPage() {
             <div className="space-y-4 px-4" data-testid="invoice-detail">
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <p className="text-xs text-muted-foreground">{t('billing.invoices.detail.subtotal')}</p>
-                  <p className="text-sm font-medium">{formatCurrency(detailInvoice.subtotal, detailInvoice.currency)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('billing.invoices.detail.subtotal')}
+                  </p>
+                  <p className="text-sm font-medium">
+                    {formatCurrency(detailInvoice.subtotal, detailInvoice.currency)}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t('billing.invoices.detail.tax')}</p>
-                  <p className="text-sm font-medium">{formatCurrency(detailInvoice.tax, detailInvoice.currency)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('billing.invoices.detail.tax')}
+                  </p>
+                  <p className="text-sm font-medium">
+                    {formatCurrency(detailInvoice.tax, detailInvoice.currency)}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t('billing.invoices.detail.total')}</p>
-                  <p className="text-sm font-semibold">{formatCurrency(detailInvoice.total, detailInvoice.currency)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('billing.invoices.detail.total')}
+                  </p>
+                  <p className="text-sm font-semibold">
+                    {formatCurrency(detailInvoice.total, detailInvoice.currency)}
+                  </p>
                 </div>
               </div>
 
@@ -267,12 +286,16 @@ export default function InvoicesPage() {
                 )}
                 {detailInvoice.issuedAt && (
                   <span className="text-xs text-muted-foreground">
-                    {t('billing.invoices.detail.issued_at', { date: format(new Date(detailInvoice.issuedAt), 'MMM d, yyyy') })}
+                    {t('billing.invoices.detail.issued_at', {
+                      date: format(new Date(detailInvoice.issuedAt), 'MMM d, yyyy'),
+                    })}
                   </span>
                 )}
                 {detailInvoice.dueDate && (
                   <span className="text-xs text-muted-foreground" data-testid="invoice-due-date">
-                    {t('billing.invoices.detail.due_date', { date: format(new Date(detailInvoice.dueDate), 'MMM d, yyyy') })}
+                    {t('billing.invoices.detail.due_date', {
+                      date: format(new Date(detailInvoice.dueDate), 'MMM d, yyyy'),
+                    })}
                   </span>
                 )}
               </div>
@@ -296,7 +319,9 @@ export default function InvoicesPage() {
                           })}
                         </p>
                       </div>
-                      <span className="font-medium">{formatCurrency(li.amount, detailInvoice.currency)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(li.amount, detailInvoice.currency)}
+                      </span>
                     </div>
                   ))}
                 </div>

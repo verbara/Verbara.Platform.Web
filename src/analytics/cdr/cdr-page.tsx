@@ -1,7 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AgGridReact } from 'ag-grid-react';
-import { AllCommunityModule, type ColDef, type ICellRendererParams, ModuleRegistry } from 'ag-grid-community';
+import {
+  AllCommunityModule,
+  type ColDef,
+  type ICellRendererParams,
+  ModuleRegistry,
+} from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import {
@@ -9,8 +14,8 @@ import {
   MessageCircle,
   Globe,
   Mail,
-  CheckCircle2,
-  XCircle,
+  CircleCheck,
+  CircleX,
   ChevronLeft,
   ChevronRight,
   Play,
@@ -71,11 +76,11 @@ function ChannelCellRenderer({ value }: ICellRendererParams<CdrRow, string>) {
 function SlaCellRenderer({ value }: ICellRendererParams<CdrRow, boolean>) {
   return value ? (
     <span className="inline-flex items-center gap-1 text-green-600">
-      <CheckCircle2 className="h-3.5 w-3.5" /> Yes
+      <CircleCheck className="h-3.5 w-3.5" /> Yes
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 text-red-500">
-      <XCircle className="h-3.5 w-3.5" /> No
+      <CircleX className="h-3.5 w-3.5" /> No
     </span>
   );
 }
@@ -83,7 +88,8 @@ function SlaCellRenderer({ value }: ICellRendererParams<CdrRow, boolean>) {
 // Disposition badge cell renderer
 function DispositionCellRenderer({ value }: ICellRendererParams<CdrRow, string>) {
   const upper = (value ?? '').toUpperCase();
-  const variant = upper === 'ANSWERED' ? 'default' : upper === 'NO ANSWER' ? 'destructive' : 'secondary';
+  const variant =
+    upper === 'ANSWERED' ? 'default' : upper === 'NO ANSWER' ? 'destructive' : 'secondary';
   return <Badge variant={variant}>{value}</Badge>;
 }
 
@@ -105,7 +111,9 @@ function QaScoreCellRenderer({ data }: ICellRendererParams<CdrRow>) {
         ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
         : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${color}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${color}`}
+    >
       {Math.round(score)}/100
     </span>
   );
@@ -123,7 +131,9 @@ function SentimentCellRenderer({ data }: ICellRendererParams<CdrRow>) {
         ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
         : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${color}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${color}`}
+    >
       {label}
     </span>
   );
@@ -290,10 +300,7 @@ export default function CdrPage() {
     [t],
   );
 
-  const defaultColDef = useMemo<ColDef>(
-    () => ({ resizable: true, flex: 1 }),
-    [],
-  );
+  const defaultColDef = useMemo<ColDef>(() => ({ resizable: true, flex: 1 }), []);
 
   const handleRowClicked = useCallback((event: { data: CdrRow | undefined }) => {
     if (event.data) {
@@ -303,11 +310,29 @@ export default function CdrPage() {
   }, []);
 
   const handleExport = useCallback(() => {
-    const headers = ['Date', 'Contact', 'Channel', 'Queue', 'Agent', 'Duration', 'Disposition', 'SLA Met'];
+    const headers = [
+      'Date',
+      'Contact',
+      'Channel',
+      'Queue',
+      'Agent',
+      'Duration',
+      'Disposition',
+      'SLA Met',
+    ];
     const csvRows = [
       headers.join(','),
       ...rowData.map((r) =>
-        [r.startTime, r.contact, r.channel, r.queue, r.agent, r.duration, r.disposition, r.slaMet ? 'Yes' : 'No'].join(','),
+        [
+          r.startTime,
+          r.contact,
+          r.channel,
+          r.queue,
+          r.agent,
+          r.duration,
+          r.disposition,
+          r.slaMet ? 'Yes' : 'No',
+        ].join(','),
       ),
     ];
     const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
@@ -322,19 +347,15 @@ export default function CdrPage() {
   return (
     <div className="space-y-4" data-testid="cdr-page">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          {t('cdr.title')}
-        </h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('cdr.title')}</h1>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setContactSearchOpen((o) => !o)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setContactSearchOpen((o) => !o)}>
             <Users className="mr-1.5 h-4 w-4" />
             Contact Search
           </Button>
-          <span data-testid="cdr-export-btn"><ExportButton onClick={handleExport} /></span>
+          <span data-testid="cdr-export-btn">
+            <ExportButton onClick={handleExport} />
+          </span>
         </div>
       </div>
 
@@ -351,7 +372,10 @@ export default function CdrPage() {
       )}
 
       {!isLoading && (
-        <div className="ag-theme-alpine h-[600px] w-full rounded-lg border dark:ag-theme-alpine-dark" data-testid="cdr-table">
+        <div
+          className="ag-theme-alpine h-[600px] w-full rounded-lg border dark:ag-theme-alpine-dark"
+          data-testid="cdr-table"
+        >
           <AgGridReact<CdrRow>
             rowData={rowData}
             columnDefs={columnDefs}

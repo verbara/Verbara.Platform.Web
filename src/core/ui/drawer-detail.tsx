@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Loader2 } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 
 import { Button } from '@/core/ui/button';
 import {
@@ -105,10 +105,7 @@ export function DrawerDetail({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent
-        side="right"
-        className={cn('flex flex-col gap-0 p-0', WIDTH_CLASSES[width])}
-      >
+      <SheetContent side="right" className={cn('flex flex-col gap-0 p-0', WIDTH_CLASSES[width])}>
         <SheetHeader className="border-b">
           <SheetTitle>{title}</SheetTitle>
           {subtitle !== undefined && subtitle !== null && (
@@ -165,7 +162,7 @@ export function DrawerDetail({
                   }}
                 >
                   {isLoading ? (
-                    <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                    <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
                   ) : (
                     action.icon
                   )}

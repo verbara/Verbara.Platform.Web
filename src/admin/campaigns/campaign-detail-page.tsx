@@ -13,7 +13,7 @@ import {
   Settings,
   Calendar,
   MapPin,
-  AlertTriangle,
+  TriangleAlert,
   RotateCcw,
   Timer,
   FileText,
@@ -28,20 +28,8 @@ import { Switch } from '@/core/ui/switch';
 import { Input } from '@/core/ui/input';
 import { Checkbox } from '@/core/ui/checkbox';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/core/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
@@ -83,14 +71,23 @@ const DEFAULT_DISPO_FORM: DispositionFormState = {
   triggerCallback: false,
 };
 
-const STATUS_VARIANT: Record<CampaignStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  draft: 'secondary',
-  active: 'default',
-  paused: 'outline',
-  completed: 'secondary',
-};
+const STATUS_VARIANT: Record<CampaignStatus, 'default' | 'secondary' | 'outline' | 'destructive'> =
+  {
+    draft: 'secondary',
+    active: 'default',
+    paused: 'outline',
+    completed: 'secondary',
+  };
 
-function InfoRow({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: React.ReactNode }) {
+function InfoRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Clock;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start gap-3 py-3">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -150,7 +147,12 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
     } else {
       createCode.mutate(
         { campaignId, ...form },
-        { onSuccess: () => { onOpenChange(false); setForm(DEFAULT_DISPO_FORM); } },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+            setForm(DEFAULT_DISPO_FORM);
+          },
+        },
       );
     }
   };
@@ -159,7 +161,11 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{editing ? t('admin:campaigns.dispositions.dialog_edit_title') : t('admin:campaigns.dispositions.dialog_add_title')}</DialogTitle>
+          <DialogTitle>
+            {editing
+              ? t('admin:campaigns.dispositions.dialog_edit_title')
+              : t('admin:campaigns.dispositions.dialog_add_title')}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="grid grid-cols-2 gap-3">
@@ -184,7 +190,9 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="dispo-category">{t('admin:campaigns.dispositions.field_category')}</Label>
+            <Label htmlFor="dispo-category">
+              {t('admin:campaigns.dispositions.field_category')}
+            </Label>
             <Select
               value={form.category}
               onValueChange={(v) => setForm((f) => ({ ...f, category: v ?? f.category }))}
@@ -193,10 +201,18 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="success">{t('admin:campaigns.dispositions.cat_success')}</SelectItem>
-                <SelectItem value="failure">{t('admin:campaigns.dispositions.cat_failure')}</SelectItem>
-                <SelectItem value="callback">{t('admin:campaigns.dispositions.cat_callback')}</SelectItem>
-                <SelectItem value="no_answer">{t('admin:campaigns.dispositions.cat_no_answer')}</SelectItem>
+                <SelectItem value="success">
+                  {t('admin:campaigns.dispositions.cat_success')}
+                </SelectItem>
+                <SelectItem value="failure">
+                  {t('admin:campaigns.dispositions.cat_failure')}
+                </SelectItem>
+                <SelectItem value="callback">
+                  {t('admin:campaigns.dispositions.cat_callback')}
+                </SelectItem>
+                <SelectItem value="no_answer">
+                  {t('admin:campaigns.dispositions.cat_no_answer')}
+                </SelectItem>
                 <SelectItem value="busy">{t('admin:campaigns.dispositions.cat_busy')}</SelectItem>
                 <SelectItem value="dnc">{t('admin:campaigns.dispositions.cat_dnc')}</SelectItem>
                 <SelectItem value="other">{t('admin:campaigns.dispositions.cat_other')}</SelectItem>
@@ -211,17 +227,23 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
                 checked={form.triggerRetry}
                 onCheckedChange={(v) => setForm((f) => ({ ...f, triggerRetry: !!v }))}
               />
-              <Label htmlFor="dispo-retry" className="cursor-pointer">{t('admin:campaigns.dispositions.toggle_retry')}</Label>
+              <Label htmlFor="dispo-retry" className="cursor-pointer">
+                {t('admin:campaigns.dispositions.toggle_retry')}
+              </Label>
             </div>
             {form.triggerRetry && (
               <div className="ml-6 space-y-1.5">
-                <Label htmlFor="dispo-retry-delay">{t('admin:campaigns.dispositions.retry_delay')}</Label>
+                <Label htmlFor="dispo-retry-delay">
+                  {t('admin:campaigns.dispositions.retry_delay')}
+                </Label>
                 <Input
                   id="dispo-retry-delay"
                   type="number"
                   min={1}
                   value={form.retryDelayMinutes}
-                  onChange={(e) => setForm((f) => ({ ...f, retryDelayMinutes: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, retryDelayMinutes: Number(e.target.value) }))
+                  }
                 />
               </div>
             )}
@@ -231,14 +253,25 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
                 checked={form.triggerCallback}
                 onCheckedChange={(v) => setForm((f) => ({ ...f, triggerCallback: !!v }))}
               />
-              <Label htmlFor="dispo-callback" className="cursor-pointer">{t('admin:campaigns.dispositions.toggle_callback')}</Label>
+              <Label htmlFor="dispo-callback" className="cursor-pointer">
+                {t('admin:campaigns.dispositions.toggle_callback')}
+              </Label>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('admin:campaigns.dispositions.dialog_cancel')}</Button>
-          <Button onClick={handleSave} disabled={isPending || !form.code.trim() || !form.label.trim()}>
-            {isPending ? t('admin:campaigns.dispositions.dialog_saving') : editing ? t('admin:campaigns.dispositions.dialog_update') : t('admin:campaigns.dispositions.dialog_add')}
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {t('admin:campaigns.dispositions.dialog_cancel')}
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isPending || !form.code.trim() || !form.label.trim()}
+          >
+            {isPending
+              ? t('admin:campaigns.dispositions.dialog_saving')
+              : editing
+                ? t('admin:campaigns.dispositions.dialog_update')
+                : t('admin:campaigns.dispositions.dialog_add')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -275,7 +308,9 @@ export default function CampaignDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
+      <div className="flex h-64 items-center justify-center text-muted-foreground">
+        {t('common:status.loading')}
+      </div>
     );
   }
 
@@ -306,9 +341,10 @@ export default function CampaignDetailPage() {
     setStopOpen(false);
   };
 
-  const progressPct = campaign.totalContacts > 0
-    ? Math.round((campaign.contactsDialed / campaign.totalContacts) * 100)
-    : 0;
+  const progressPct =
+    campaign.totalContacts > 0
+      ? Math.round((campaign.contactsDialed / campaign.totalContacts) * 100)
+      : 0;
 
   const handleOpenAddDispo = () => {
     setEditingDispo(null);
@@ -362,7 +398,12 @@ export default function CampaignDetailPage() {
             </Button>
           )}
           <PermissionGuard requires="campaigns:campaign:delete">
-            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setDeleteOpen(true)}
+            >
               <Trash2 className="mr-1.5 h-4 w-4" />
               {t('admin:campaigns.detail.delete_btn')}
             </Button>
@@ -383,28 +424,41 @@ export default function CampaignDetailPage() {
             ) : (
               <h2 className="font-heading text-xl font-semibold">{campaign.name}</h2>
             )}
-            <Badge variant={STATUS_VARIANT[status]}>
-              {t(`admin:campaigns.status_${status}`)}
-            </Badge>
+            <Badge variant={STATUS_VARIANT[status]}>{t(`admin:campaigns.status_${status}`)}</Badge>
           </div>
           <PermissionGuard requires="campaigns:campaign:edit">
             {isEditing ? (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>{t('admin:campaigns.detail.cancel_btn')}</Button>
-                <Button size="sm" disabled={updateCampaign.isPending} onClick={() => {
-                  updateCampaign.mutate({ id: campaignIdNum, name: editName, description: editDescription }, {
-                    onSuccess: () => setIsEditing(false),
-                  });
-                }}>
-                  {updateCampaign.isPending ? t('admin:campaigns.detail.saving_btn') : t('admin:campaigns.detail.save_btn')}
+                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
+                  {t('admin:campaigns.detail.cancel_btn')}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={updateCampaign.isPending}
+                  onClick={() => {
+                    updateCampaign.mutate(
+                      { id: campaignIdNum, name: editName, description: editDescription },
+                      {
+                        onSuccess: () => setIsEditing(false),
+                      },
+                    );
+                  }}
+                >
+                  {updateCampaign.isPending
+                    ? t('admin:campaigns.detail.saving_btn')
+                    : t('admin:campaigns.detail.save_btn')}
                 </Button>
               </div>
             ) : (
-              <Button size="sm" variant="ghost" onClick={() => {
-                setEditName(campaign.name);
-                setEditDescription(campaign.description ?? '');
-                setIsEditing(true);
-              }}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setEditName(campaign.name);
+                  setEditDescription(campaign.description ?? '');
+                  setIsEditing(true);
+                }}
+              >
                 <Pencil className="mr-1.5 h-4 w-4" />
                 {t('admin:campaigns.detail.edit_btn')}
               </Button>
@@ -487,9 +541,13 @@ export default function CampaignDetailPage() {
                 <div key={entry.day} className="flex items-center gap-2 text-xs">
                   <span className="w-24 font-medium">{entry.day}</span>
                   {entry.enabled ? (
-                    <span>{entry.start} &ndash; {entry.end}</span>
+                    <span>
+                      {entry.start} &ndash; {entry.end}
+                    </span>
                   ) : (
-                    <span className="text-muted-foreground">{t('admin:campaigns.detail.day_closed')}</span>
+                    <span className="text-muted-foreground">
+                      {t('admin:campaigns.detail.day_closed')}
+                    </span>
                   )}
                 </div>
               ))}
@@ -497,10 +555,12 @@ export default function CampaignDetailPage() {
           </InfoRow>
         )}
         {campaign.holidays && campaign.holidays.length > 0 && (
-          <InfoRow icon={AlertTriangle} label={t('admin:campaigns.detail.holidays_no_dialing')}>
+          <InfoRow icon={TriangleAlert} label={t('admin:campaigns.detail.holidays_no_dialing')}>
             <div className="flex flex-wrap gap-1">
               {campaign.holidays.map((h) => (
-                <Badge key={h} variant="outline">{h}</Badge>
+                <Badge key={h} variant="outline">
+                  {h}
+                </Badge>
               ))}
             </div>
           </InfoRow>
@@ -549,20 +609,30 @@ export default function CampaignDetailPage() {
         </div>
 
         {dispositions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t('admin:campaigns.dispositions.empty')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('admin:campaigns.dispositions.empty')}</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_code')}</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_label')}</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_category')}</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_retry')}</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_callback')}</th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">{t('admin:campaigns.dispositions.col_active')}</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                    {t('admin:campaigns.dispositions.col_code')}
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                    {t('admin:campaigns.dispositions.col_label')}
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                    {t('admin:campaigns.dispositions.col_category')}
+                  </th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
+                    {t('admin:campaigns.dispositions.col_retry')}
+                  </th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
+                    {t('admin:campaigns.dispositions.col_callback')}
+                  </th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
+                    {t('admin:campaigns.dispositions.col_active')}
+                  </th>
                   <th className="px-3 py-2" />
                 </tr>
               </thead>
@@ -572,7 +642,9 @@ export default function CampaignDetailPage() {
                     <td className="px-3 py-2 font-mono text-xs font-medium">{d.code}</td>
                     <td className="px-3 py-2">{d.label}</td>
                     <td className="px-3 py-2">
-                      <Badge variant="outline" className="capitalize">{d.category}</Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {d.category}
+                      </Badge>
                     </td>
                     <td className="px-3 py-2 text-center">
                       <Switch
@@ -639,11 +711,16 @@ export default function CampaignDetailPage() {
           </p>
         </div>
         {contactLists.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('admin:campaigns.detail.contact_lists_empty')}</p>
+          <p className="text-sm text-muted-foreground">
+            {t('admin:campaigns.detail.contact_lists_empty')}
+          </p>
         ) : (
           <div className="space-y-2">
             {contactLists.map((list) => (
-              <div key={list.id} className="flex items-center justify-between rounded-md border p-3">
+              <div
+                key={list.id}
+                className="flex items-center justify-between rounded-md border p-3"
+              >
                 <div>
                   <p className="text-sm font-medium">{list.name}</p>
                   {list.sourceFileName && (
@@ -651,9 +728,15 @@ export default function CampaignDetailPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>{t('admin:campaigns.detail.list_total', { count: list.totalContacts })}</span>
-                  <span>{t('admin:campaigns.detail.list_pending', { count: list.pendingContacts })}</span>
-                  <span>{t('admin:campaigns.detail.list_completed', { count: list.completedContacts })}</span>
+                  <span>
+                    {t('admin:campaigns.detail.list_total', { count: list.totalContacts })}
+                  </span>
+                  <span>
+                    {t('admin:campaigns.detail.list_pending', { count: list.pendingContacts })}
+                  </span>
+                  <span>
+                    {t('admin:campaigns.detail.list_completed', { count: list.completedContacts })}
+                  </span>
                 </div>
               </div>
             ))}
@@ -678,7 +761,9 @@ export default function CampaignDetailPage() {
         title={t('admin:campaigns.stopTitle')}
         description={
           <>
-            {t('admin:campaigns.detail.stop_description_prefix')}<strong>{campaign.name}</strong>{t('admin:campaigns.detail.stop_description_suffix')}
+            {t('admin:campaigns.detail.stop_description_prefix')}
+            <strong>{campaign.name}</strong>
+            {t('admin:campaigns.detail.stop_description_suffix')}
           </>
         }
         onConfirm={handleStop}
@@ -697,7 +782,9 @@ export default function CampaignDetailPage() {
       {/* Disposition delete confirmation */}
       <ConfirmDialog
         open={deletingDispoId !== null}
-        onOpenChange={(o) => { if (!o) setDeletingDispoId(null); }}
+        onOpenChange={(o) => {
+          if (!o) setDeletingDispoId(null);
+        }}
         title={t('admin:campaigns.dispositions.delete_title')}
         description={t('admin:campaigns.dispositions.delete_description')}
         onConfirm={handleConfirmDelete}

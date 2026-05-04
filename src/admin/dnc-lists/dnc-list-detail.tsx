@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Upload, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Upload, CircleCheck, CircleX } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -52,7 +52,11 @@ export default function DncListDetail() {
   const offset = page * PAGE_SIZE;
 
   const { data: list, isLoading: listLoading } = useDncList(listIdNum);
-  const { data: entries = [], isLoading: entriesLoading } = useDncEntries(listIdNum, offset, PAGE_SIZE);
+  const { data: entries = [], isLoading: entriesLoading } = useDncEntries(
+    listIdNum,
+    offset,
+    PAGE_SIZE,
+  );
 
   const addEntry = useAddDncEntry();
   const removeEntry = useRemoveDncEntry();
@@ -169,7 +173,9 @@ export default function DncListDetail() {
               placeholder={t('dnc-lists.detail.phone_placeholder')}
               value={addPhone}
               onChange={(e) => setAddPhone(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleAddEntry(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddEntry();
+              }}
             />
           </div>
           <div className="flex-1 space-y-1.5">
@@ -179,13 +185,12 @@ export default function DncListDetail() {
               placeholder={t('dnc-lists.detail.reason_placeholder')}
               value={addReason}
               onChange={(e) => setAddReason(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleAddEntry(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddEntry();
+              }}
             />
           </div>
-          <Button
-            onClick={handleAddEntry}
-            disabled={!addPhone.trim() || addEntry.isPending}
-          >
+          <Button onClick={handleAddEntry} disabled={!addPhone.trim() || addEntry.isPending}>
             <Plus className="mr-1.5 h-4 w-4" />
             {t('dnc-lists.detail.add')}
           </Button>
@@ -202,7 +207,9 @@ export default function DncListDetail() {
             placeholder={t('dnc-lists.detail.phone_placeholder')}
             value={checkPhone}
             onChange={(e) => setCheckPhone(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleCheck(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCheck();
+            }}
           />
           <Button
             variant="outline"
@@ -223,7 +230,7 @@ export default function DncListDetail() {
           >
             {checkResult.isBlocked ? (
               <>
-                <XCircle className="h-4 w-4 shrink-0" />
+                <CircleX className="h-4 w-4 shrink-0" />
                 <span>
                   <Trans
                     i18nKey="dnc-lists.detail.blocked_message"
@@ -231,12 +238,14 @@ export default function DncListDetail() {
                     values={{ phone: checkResult.phoneNumber }}
                     components={[<strong key="phone" />]}
                   />
-                  {checkResult.matchedListName && t('dnc-lists.detail.blocked_by_list', { list: checkResult.matchedListName })}.
+                  {checkResult.matchedListName &&
+                    t('dnc-lists.detail.blocked_by_list', { list: checkResult.matchedListName })}
+                  .
                 </span>
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <CircleCheck className="h-4 w-4 shrink-0" />
                 <span>
                   <Trans
                     i18nKey="dnc-lists.detail.not_blocked"
@@ -264,7 +273,9 @@ export default function DncListDetail() {
             disabled={importEntries.isPending}
           >
             <Upload className="mr-1.5 h-4 w-4" />
-            {importEntries.isPending ? t('dnc-lists.detail.importing') : t('dnc-lists.detail.import_csv')}
+            {importEntries.isPending
+              ? t('dnc-lists.detail.importing')
+              : t('dnc-lists.detail.import_csv')}
           </Button>
           <input
             ref={fileInputRef}
@@ -280,9 +291,7 @@ export default function DncListDetail() {
             {t('dnc-lists.detail.loading_entries')}
           </div>
         ) : entries.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t('dnc-lists.detail.no_entries')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('dnc-lists.detail.no_entries')}</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-sm">
@@ -308,9 +317,13 @@ export default function DncListDetail() {
                       {entry.reason ?? <span className="italic text-muted-foreground/50">—</span>}
                     </td>
                     <td className="px-3 py-2 text-muted-foreground">
-                      {entry.expiresAt
-                        ? formatDateShort(entry.expiresAt)
-                        : <span className="italic text-muted-foreground/50">{t('dnc-lists.detail.expires_never')}</span>}
+                      {entry.expiresAt ? (
+                        formatDateShort(entry.expiresAt)
+                      ) : (
+                        <span className="italic text-muted-foreground/50">
+                          {t('dnc-lists.detail.expires_never')}
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-2">
                       <Button
@@ -356,7 +369,9 @@ export default function DncListDetail() {
       {/* Delete confirmation */}
       <ConfirmDialog
         open={deletingEntryId !== null}
-        onOpenChange={(o) => { if (!o) setDeletingEntryId(null); }}
+        onOpenChange={(o) => {
+          if (!o) setDeletingEntryId(null);
+        }}
         title={t('dnc-lists.detail.remove_dialog.title')}
         description={t('dnc-lists.detail.remove_dialog.description')}
         onConfirm={handleConfirmDelete}
@@ -364,7 +379,11 @@ export default function DncListDetail() {
         variant="destructive"
       />
 
-      <DncImportWizard listId={listIdNum} open={importWizardOpen} onOpenChange={setImportWizardOpen} />
+      <DncImportWizard
+        listId={listIdNum}
+        open={importWizardOpen}
+        onOpenChange={setImportWizardOpen}
+      />
     </div>
   );
 }

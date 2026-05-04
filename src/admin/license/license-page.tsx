@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { differenceInDays, parseISO } from 'date-fns';
-import { AlertTriangle, Clock, Shield, ShieldX, Upload } from 'lucide-react';
+import { TriangleAlert, Clock, Shield, ShieldX, Upload } from 'lucide-react';
 
 import { Button } from '@/core/ui/button';
 import { Textarea } from '@/core/ui/textarea';
@@ -231,7 +231,7 @@ export default function LicensePage() {
               : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
           }`}
         >
-          <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <TriangleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
           {isExpired
             ? t('admin:license.warning_expired')
             : t('admin:license.warning_expiring_soon', {

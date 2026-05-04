@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { RefreshCw, AlertTriangle, Search } from 'lucide-react';
+import { RefreshCw, TriangleAlert, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
@@ -50,15 +50,11 @@ export default function DeadLetterPage() {
     () => [
       col.accessor('deliveryId', {
         header: () => t('admin:deadLetter.deliveryId', 'Delivery ID'),
-        cell: (info) => (
-          <span className="font-mono text-xs">{info.getValue().slice(0, 12)}</span>
-        ),
+        cell: (info) => <span className="font-mono text-xs">{info.getValue().slice(0, 12)}</span>,
       }),
       col.accessor('subscriptionId', {
         header: () => t('admin:deadLetter.subscriptionId', 'Subscription ID'),
-        cell: (info) => (
-          <span className="font-mono text-xs">{info.getValue().slice(0, 12)}</span>
-        ),
+        cell: (info) => <span className="font-mono text-xs">{info.getValue().slice(0, 12)}</span>,
       }),
       col.accessor('eventType', {
         header: () => t('admin:deadLetter.eventType', 'Event Type'),
@@ -66,9 +62,7 @@ export default function DeadLetterPage() {
       }),
       col.accessor('status', {
         header: () => t('admin:deadLetter.status', 'Status'),
-        cell: (info) => (
-          <StatusBadge variant="webhook-delivery" status={info.getValue()} />
-        ),
+        cell: (info) => <StatusBadge variant="webhook-delivery" status={info.getValue()} />,
       }),
       col.accessor('attempts', {
         header: () => t('admin:deadLetter.attempts', 'Attempts'),
@@ -157,9 +151,7 @@ export default function DeadLetterPage() {
       {/* Filter bar */}
       <div className="flex items-end gap-3">
         <div className="w-80 space-y-1.5">
-          <Label htmlFor="dead-letter-tenant">
-            {t('admin:deadLetter.tenantId', 'Tenant ID')}
-          </Label>
+          <Label htmlFor="dead-letter-tenant">{t('admin:deadLetter.tenantId', 'Tenant ID')}</Label>
           <Input
             id="dead-letter-tenant"
             placeholder={t('admin:deadLetter.tenantPlaceholder', 'Enter tenant ID...')}
@@ -182,12 +174,9 @@ export default function DeadLetterPage() {
       {/* Empty state when no tenant searched */}
       {!searchTenantId && (
         <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-lg border border-dashed">
-          <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+          <TriangleAlert className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            {t(
-              'admin:deadLetter.enterTenant',
-              'Enter a tenant ID to view dead-letter deliveries.',
-            )}
+            {t('admin:deadLetter.enterTenant', 'Enter a tenant ID to view dead-letter deliveries.')}
           </p>
         </div>
       )}
@@ -199,14 +188,8 @@ export default function DeadLetterPage() {
             <DataTable
               data={items}
               columns={columns}
-              searchPlaceholder={t(
-                'admin:deadLetter.searchDeliveries',
-                'Search deliveries...',
-              )}
-              noResultsMessage={t(
-                'admin:deadLetter.noResults',
-                'No dead-letter deliveries found.',
-              )}
+              searchPlaceholder={t('admin:deadLetter.searchDeliveries', 'Search deliveries...')}
+              noResultsMessage={t('admin:deadLetter.noResults', 'No dead-letter deliveries found.')}
               pageSize={pageSize}
             />
           </div>

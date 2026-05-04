@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, ShieldAlert, Info } from 'lucide-react';
+import { TriangleAlert, ShieldAlert, Info } from 'lucide-react';
 import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
 import { Button } from '@/core/ui/button';
 
 const SEVERITY_ICON = {
   Info: Info,
-  Warning: AlertTriangle,
+  Warning: TriangleAlert,
   Critical: ShieldAlert,
 };
 
@@ -42,9 +42,7 @@ export function ComplianceAlert() {
           >
             <Icon className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
             <div className="flex-1">
-              <p className="text-sm font-bold text-red-800 dark:text-red-300">
-                {alert.ruleId}
-              </p>
+              <p className="text-sm font-bold text-red-800 dark:text-red-300">{alert.ruleId}</p>
               {alert.phrase && (
                 <p className="text-xs text-red-600 dark:text-red-400">
                   &ldquo;{alert.phrase}&rdquo;
