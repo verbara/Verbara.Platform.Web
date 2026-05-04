@@ -135,11 +135,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
                 <Check className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.accept')}
               </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => setRejectOpen(true)}
-              >
+              <Button size="sm" variant="destructive" onClick={() => setRejectOpen(true)}>
                 <XCircle className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.reject')}
               </Button>
@@ -171,27 +167,15 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
                   {t('conversation.hold')}
                 </Button>
               )}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setTransferOpen(true)}
-              >
+              <Button size="sm" variant="outline" onClick={() => setTransferOpen(true)}>
                 <ArrowRightLeft className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.transfer')}
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setWrapUpOpen(true)}
-              >
+              <Button size="sm" variant="outline" onClick={() => setWrapUpOpen(true)}>
                 <ClipboardCheck className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.wrap_up')}
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setCloseOpen(true)}
-              >
+              <Button size="sm" variant="ghost" onClick={() => setCloseOpen(true)}>
                 <X className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.close')}
               </Button>
@@ -215,7 +199,11 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
       <MessageThread conversationId={conversationId} />
 
       {/* Reply Composer */}
-      <ReplyComposer conversationId={conversationId} contactName={conversation.contactName} />
+      <ReplyComposer
+        key={conversationId}
+        conversationId={conversationId}
+        contactName={conversation.contactName}
+      />
 
       {/* Dialogs */}
       <ConfirmDialog

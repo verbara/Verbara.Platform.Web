@@ -28,27 +28,17 @@ interface ReplyComposerProps {
 
 export function ReplyComposer({ conversationId, contactName }: ReplyComposerProps) {
   const { t } = useTranslation('agent');
-  const [text, setText] = useState('');
+  const setDraft = useDraftStore((s) => s.setDraft);
+  const clearDraft = useDraftStore((s) => s.clearDraft);
+  const [text, setText] = useState(() => useDraftStore.getState().drafts[conversationId] ?? '');
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [cannedOpen, setCannedOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const draft = useDraftStore((s) => s.drafts[conversationId] ?? '');
-  const setDraft = useDraftStore((s) => s.setDraft);
-  const clearDraft = useDraftStore((s) => s.clearDraft);
   const addMessage = useConversationStore((s) => s.addMessage);
   const sendMessageMutation = useSendMessage();
   const uploadMedia = useUploadMedia();
-
-  // Restore draft when conversation switches
-  useEffect(() => {
-    setText(draft);
-    setCannedOpen(false);
-    setAttachments([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -143,11 +133,21 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
       senderName: 'You',
       text: trimmed,
       timestamp: new Date().toISOString(),
-      type: attachments.length > 0 && attachments[0]!.file.type.startsWith('image/') ? 'image' : trimmed ? 'text' : 'file',
+      type:
+        attachments.length > 0 && attachments[0]!.file.type.startsWith('image/')
+          ? 'image'
+          : trimmed
+            ? 'text'
+            : 'file',
       status: 'sending',
-      metadata: attachments.length > 0
-        ? { fileName: attachments[0]!.file.name, fileSize: formatFileSize(attachments[0]!.file.size), mediaId }
-        : undefined,
+      metadata:
+        attachments.length > 0
+          ? {
+              fileName: attachments[0]!.file.name,
+              fileSize: formatFileSize(attachments[0]!.file.size),
+              mediaId,
+            }
+          : undefined,
     };
 
     // Optimistically add to store
@@ -233,9 +233,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
                 <span className="max-w-32 truncate text-xs font-medium text-slate-700 dark:text-slate-200">
                   {att.file.name}
                 </span>
-                <span className="text-[10px] text-slate-400">
-                  {formatFileSize(att.file.size)}
-                </span>
+                <span className="text-[10px] text-slate-400">{formatFileSize(att.file.size)}</span>
               </div>
               <button
                 type="button"
