@@ -10,11 +10,11 @@
 
 Asterisk.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~330 TS/TSX files · 60+ pages · 54 API hooks · 28 UI components · 12 Zustand stores · 64+ E2E specs · 800/800 Vitest · Version 1.15.5** (Nivel 2 Quality Foundation closed).
+**~330 TS/TSX files · 60+ pages · 54 API hooks · 28 UI components · 12 Zustand stores · 64+ E2E specs · 800/800 Vitest · Version 1.16.5** (Nivel 3 Code Quality closed).
 
-Nivel 1 (Operational Foundation, `v1.14.0`..`v1.14.5`, tag `v1.14.5-web`) and Nivel 2 (Quality Foundation, `v1.15.0`..`v1.15.5`, tag `v1.15.5-web`) are complete. Coverage: 28% statements, hooks dir 91.58% lines. Shell bundle 114 kB (-86% from pre-split). Zero npm vulnerabilities.
+Nivel 1 (Operational Foundation, `v1.14.0`..`v1.14.5`, tag `v1.14.5-web`), Nivel 2 (Quality Foundation, `v1.15.0`..`v1.15.5`, tag `v1.15.5-web`), and Nivel 3 (Code Quality, `v1.16.0`..`v1.16.5`, tag `v1.16.5-web`) are complete. Coverage: 28% statements, hooks dir 91.58% lines. Shell bundle 114 kB (-86% from pre-split). Zero npm vulnerabilities.
 
-**Next track: Nivel 3 — Code Quality** (`v1.16.x`). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md). Track 3A: lint-cleanup-2 (111 ESLint errors → 0). Track 3B: typescript-strict-2 (eliminate `as any` casts).
+**Next: Nivel 4 — Backend-to-UI Bridge** (`v1.17.x`). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
@@ -40,7 +40,7 @@ ADR numbering is sequential (`0001`, `0002`, …). Once `Accepted`, ADRs are app
 | Library               | Version                                       |
 | --------------------- | --------------------------------------------- |
 | React                 | 19.2.x                                        |
-| TypeScript            | 5.9.x (strict mode)                           |
+| TypeScript            | 6.0.x (strict mode)                           |
 | Vite                  | 8.0.x                                         |
 | TailwindCSS           | 4.2.x (via `@tailwindcss/vite`)               |
 | shadcn/ui             | 4.1.x (`@base-ui/react` 1.3.x, **NOT Radix**) |
@@ -53,8 +53,8 @@ ADR numbering is sequential (`0001`, `0002`, …). Once `Accepted`, ADRs are app
 | AG Grid               | 35.1.x                                        |
 | XY Flow               | 12.10.x (flow designer)                       |
 | dnd-kit               | core 6.3.x / sortable 10.0.x                  |
-| Lucide React          | 0.577.x                                       |
-| i18next               | 25.10.x                                       |
+| Lucide React          | 1.14.x                                        |
+| i18next               | 26.0.x                                        |
 | date-fns              | 4.1.x                                         |
 | Vitest                | 4.1.x                                         |
 | Testing Library       | React 16.3.x                                  |
