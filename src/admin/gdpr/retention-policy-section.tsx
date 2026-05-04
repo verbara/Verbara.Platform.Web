@@ -1,5 +1,11 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import {
+  useForm,
+  Controller,
+  type Control,
+  type UseFormWatch,
+  type UseFormSetValue,
+} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Save, Clock } from 'lucide-react';
@@ -17,10 +23,7 @@ import {
   SheetDescription,
   SheetFooter,
 } from '@/core/ui/sheet';
-import {
-  useRetentionPolicy,
-  useUpdateRetentionPolicy,
-} from '@/core/api/hooks/use-gdpr';
+import { useRetentionPolicy, useUpdateRetentionPolicy } from '@/core/api/hooks/use-gdpr';
 
 const retentionSchema = z.object({
   conversationRetentionDays: z.number().min(1).max(3650).nullable(),
@@ -66,7 +69,7 @@ export function RetentionPolicySection({
     setValue,
     formState: { isSubmitting },
   } = useForm<RetentionFormValues>({
-    resolver: zodResolver(retentionSchema) as any,
+    resolver: zodResolver(retentionSchema),
     defaultValues: {
       conversationRetentionDays: null,
       authEventRetentionDays: null,
@@ -136,9 +139,9 @@ export function RetentionPolicySection({
 
 interface RetentionFieldRowProps {
   config: RetentionFieldConfig;
-  control: any;
-  watch: any;
-  setValue: any;
+  control: Control<RetentionFormValues>;
+  watch: UseFormWatch<RetentionFormValues>;
+  setValue: UseFormSetValue<RetentionFormValues>;
 }
 
 function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldRowProps) {
@@ -154,8 +157,12 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
     <div className="space-y-3 rounded-md border bg-card p-4">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label className="text-sm font-medium">{t(`retention.policy.fields.${config.i18nKey}.label`)}</Label>
-          <p className="text-xs text-muted-foreground">{t(`retention.policy.fields.${config.i18nKey}.description`)}</p>
+          <Label className="text-sm font-medium">
+            {t(`retention.policy.fields.${config.i18nKey}.label`)}
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            {t(`retention.policy.fields.${config.i18nKey}.description`)}
+          </p>
         </div>
         <Switch checked={enabled} onCheckedChange={handleToggle} />
       </div>
@@ -181,14 +188,14 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
                     placeholder={t('retention.policy.days_placeholder')}
                   />
                   {fieldState.error && (
-                    <p className="text-xs text-destructive">
-                      {fieldState.error.message}
-                    </p>
+                    <p className="text-xs text-destructive">{fieldState.error.message}</p>
                   )}
                 </div>
               )}
             />
-            <span className="text-sm text-muted-foreground">{t('retention.policy.days_suffix')}</span>
+            <span className="text-sm text-muted-foreground">
+              {t('retention.policy.days_suffix')}
+            </span>
           </div>
         </>
       )}
