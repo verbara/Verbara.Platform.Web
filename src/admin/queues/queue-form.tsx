@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,13 +8,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Checkbox } from '@/core/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -97,13 +91,19 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     remove: removeSkill,
   } = useFieldArray({ control, name: 'requiredSkills' });
 
-  useEffect(() => {
-    if (open) {
-      reset(defaults);
-      setSkillInput('');
-    }
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (nextOpen) {
+        reset(defaults);
+        setSkillInput('');
+      }
+      onOpenChange(nextOpen);
+    },
+    // defaults is reconstructed each render but its contents come from
+    // defaultValues (stable prop) — include it to satisfy exhaustive-deps.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, reset]);
+    [reset, onOpenChange],
+  );
 
   const handleFormSubmit = handleSubmit((values) => {
     onSubmit?.(values);
@@ -135,7 +135,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
   const title = mode === 'create' ? t('admin:queues.create') : t('admin:queues.edit');
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent side="right" className="sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
@@ -146,7 +146,10 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
+        >
           <Tabs defaultValue="general">
             <TabsList className="w-full">
               <TabsTrigger value="general">{t('admin:queues.general')}</TabsTrigger>
@@ -187,10 +190,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                   name="isActive"
                   control={control}
                   render={({ field }) => (
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                   )}
                 />
                 <Label>{t('admin:queues.active')}</Label>
@@ -211,7 +211,9 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="firstResponseWithinSeconds">{t('admin:queues.firstResponseWithin')}</Label>
+                <Label htmlFor="firstResponseWithinSeconds">
+                  {t('admin:queues.firstResponseWithin')}
+                </Label>
                 <Input
                   id="firstResponseWithinSeconds"
                   type="number"
@@ -222,7 +224,9 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="resolutionWithinSeconds">{t('admin:queues.resolutionWithin')}</Label>
+                <Label htmlFor="resolutionWithinSeconds">
+                  {t('admin:queues.resolutionWithin')}
+                </Label>
                 <Input
                   id="resolutionWithinSeconds"
                   type="number"
@@ -326,10 +330,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                   name="forceWrapUp"
                   control={control}
                   render={({ field }) => (
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                   )}
                 />
                 <Label>{t('admin:queues.forceWrapUp')}</Label>
