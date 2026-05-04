@@ -34,7 +34,10 @@ import {
 
 const webhookSchema = z.object({
   name: z.string().min(1, 'admin:webhooks.validation.nameRequired'),
-  endpointUrl: z.string().url('admin:webhooks.validation.urlInvalid').refine((v) => v.startsWith('https://'), 'admin:webhooks.validation.urlMustHttps'),
+  endpointUrl: z
+    .string()
+    .url('admin:webhooks.validation.urlInvalid')
+    .refine((v) => v.startsWith('https://'), 'admin:webhooks.validation.urlMustHttps'),
   eventTypes: z.array(z.string()).min(1, 'admin:webhooks.validation.eventTypesRequired'),
   isActive: z.boolean(),
 });
@@ -80,7 +83,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
     reset,
     formState: { errors, isSubmitting },
   } = useForm<WebhookFormValues>({
-    resolver: zodResolver(webhookSchema) as any,
+    resolver: zodResolver(webhookSchema),
     defaultValues: DEFAULT_VALUES,
   });
 
@@ -125,11 +128,11 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="right" className="sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>{isEdit ? t('webhooks.form.edit_title') : t('webhooks.form.create_title')}</SheetTitle>
+            <SheetTitle>
+              {isEdit ? t('webhooks.form.edit_title') : t('webhooks.form.create_title')}
+            </SheetTitle>
             <SheetDescription>
-              {isEdit
-                ? t('webhooks.form.edit_description')
-                : t('webhooks.form.create_description')}
+              {isEdit ? t('webhooks.form.edit_description') : t('webhooks.form.create_description')}
             </SheetDescription>
           </SheetHeader>
 
@@ -142,7 +145,9 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                 placeholder={t('webhooks.form.name_placeholder')}
                 {...register('name')}
               />
-              {errors.name && <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>}
+              {errors.name && (
+                <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -154,7 +159,9 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                 {...register('endpointUrl')}
               />
               {errors.endpointUrl && (
-                <p data-testid="webhook-form-url-error" className="text-xs text-destructive">{t(errors.endpointUrl.message ?? '')}</p>
+                <p data-testid="webhook-form-url-error" className="text-xs text-destructive">
+                  {t(errors.endpointUrl.message ?? '')}
+                </p>
               )}
             </div>
 
@@ -164,11 +171,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                   name="isActive"
                   control={control}
                   render={({ field }) => (
-                    <Switch
-                      id="wh-active"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Switch id="wh-active" checked={field.value} onCheckedChange={field.onChange} />
                   )}
                 />
                 <Label htmlFor="wh-active">{t('webhooks.form.active')}</Label>
@@ -186,7 +189,9 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
               )}
 
               {eventTypes.length === 0 && (
-                <p className="text-sm text-muted-foreground">{t('webhooks.form.event_types_loading')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('webhooks.form.event_types_loading')}
+                </p>
               )}
 
               <Controller
@@ -208,14 +213,18 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                               if (c) {
                                 field.onChange([...field.value, et.eventType]);
                               } else {
-                                field.onChange(field.value.filter((v: string) => v !== et.eventType));
+                                field.onChange(
+                                  field.value.filter((v: string) => v !== et.eventType),
+                                );
                               }
                             }}
                             className="mt-0.5"
                           />
                           <div className="min-w-0">
                             <span className="text-sm font-medium">{et.eventType}</span>
-                            <p className="truncate text-xs text-muted-foreground">{et.description}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {et.description}
+                            </p>
                           </div>
                         </label>
                       );
@@ -246,9 +255,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t('webhooks.form.secret_dialog.title')}</DialogTitle>
-            <DialogDescription>
-              {t('webhooks.form.secret_dialog.description')}
-            </DialogDescription>
+            <DialogDescription>{t('webhooks.form.secret_dialog.description')}</DialogDescription>
           </DialogHeader>
 
           <div className="flex items-center gap-2">
@@ -263,7 +270,9 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
           </p>
 
           <DialogFooter>
-            <Button onClick={() => setSecretDialog(false)}>{t('webhooks.form.secret_dialog.done')}</Button>
+            <Button onClick={() => setSecretDialog(false)}>
+              {t('webhooks.form.secret_dialog.done')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
