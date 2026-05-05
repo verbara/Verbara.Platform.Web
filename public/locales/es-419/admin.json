@@ -1673,7 +1673,8 @@
         "security": "Seguridad",
         "features": "Funcionalidades",
         "billing": "Sobrescrituras de facturación",
-        "retention": "Retención"
+        "retention": "Retención",
+        "ipAllowlist": "Lista IP permitidas"
       },
       "fields": {
         "tenantId": "ID del tenant",
@@ -1733,6 +1734,7 @@
         "id": "ID",
         "name": "Nombre",
         "status": "Estado",
+        "type": "Tipo",
         "max_channels": "Canales máx.",
         "max_campaigns": "Campañas máx."
       },
@@ -1749,6 +1751,11 @@
         "tenant_id_placeholder": "acme-corp",
         "name": "Nombre",
         "name_placeholder": "Acme Corporation",
+        "type": "Tipo de tenant",
+        "type_customer": "Cliente",
+        "type_partner": "Socio",
+        "parent_tenant": "Tenant padre",
+        "parent_none": "Ninguno (nivel superior)",
         "max_channels": "Máx. canales concurrentes",
         "max_campaigns": "Máx. campañas activas",
         "submit": "Crear tenant"
@@ -1772,7 +1779,12 @@
         "saving": "Guardando...",
         "submit": "Actualizar"
       },
-      "entity_type": "tenant"
+      "entity_type": "tenant",
+      "status_hint": {
+        "warning": "pago vencido",
+        "degraded": "funciones limitadas",
+        "pending_deletion": "eliminación pendiente"
+      }
     },
     "validation": {
       "tenantIdRequired": "El ID del inquilino es obligatorio",
@@ -1780,7 +1792,24 @@
       "nameRequired": "El nombre es obligatorio"
     },
     "consentPolicyPlaceholder": "Optional / Required / RequiredForRoles",
-    "recordingActionPlaceholder": "Warn / Block / Throttle"
+    "recordingActionPlaceholder": "Warn / Block / Throttle",
+    "ipAllowlist": {
+      "upgrade": "Actualice su plan para habilitar la lista de IP permitidas",
+      "cidr": "CIDR",
+      "description": "Descripción",
+      "description_placeholder": "VPN oficina",
+      "add": "Agregar",
+      "loading": "Cargando...",
+      "empty": "Sin restricciones de IP configuradas. Todas las IPs están permitidas.",
+      "delete_title": "Eliminar entrada IP",
+      "delete_description": "Este rango de IP será eliminado de la lista permitida.",
+      "delete_confirm": "Eliminar",
+      "validation": {
+        "cidrRequired": "El CIDR es requerido",
+        "cidrFormat": "Debe ser un CIDR IPv4 válido (ej. 192.168.1.0/24)",
+        "descriptionRequired": "La descripción es requerida"
+      }
+    }
   },
   "shared": {
     "placeholder_pending": "Implementación pendiente",
@@ -2508,5 +2537,10 @@
       "titleRequired": "El título es obligatorio",
       "contentRequired": "El contenido es obligatorio"
     }
+  },
+  "home": {
+    "title": "Panel",
+    "subtitle": "Bienvenido al panel de administración.",
+    "placeholder": "Widgets del panel próximamente."
   }
 }

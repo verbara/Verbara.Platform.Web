@@ -10,6 +10,7 @@ import UnauthorizedPage from '@/pages/unauthorized';
 import { RouteErrorBoundary } from '@/core/ui/route-error-boundary';
 
 const AdminLayout = lazy(() => import('@/pages/admin/admin-layout'));
+const AdminHomePage = lazy(() => import('@/admin/admin-home-page'));
 const UsersPage = lazy(() => import('@/admin/users/users-page'));
 const UserDetailPage = lazy(() => import('@/admin/users/user-detail'));
 const AgentsPage = lazy(() => import('@/admin/agents/agents-page'));
@@ -166,7 +167,14 @@ export const router = createBrowserRouter([
               </LazyLoad>
             ),
           },
-          { index: true, element: <Navigate to="users" replace /> },
+          {
+            index: true,
+            element: (
+              <LazyLoad>
+                <AdminHomePage />
+              </LazyLoad>
+            ),
+          },
           {
             path: 'users',
             element: (

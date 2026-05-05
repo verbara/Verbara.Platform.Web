@@ -421,7 +421,13 @@
     "tenants": {
       "created": "Tenant criado",
       "updated": "Tenant atualizado",
-      "deleted": "Tenant excluído"
+      "deleted": "Tenant excluído",
+      "suspended": "Tenant suspenso",
+      "activated": "Tenant ativado"
+    },
+    "ipAllowlist": {
+      "added": "Entrada IP adicionada",
+      "removed": "Entrada IP removida"
     },
     "sse": {
       "connectionLost": "Conexão em tempo real perdida. Atualize a página para reconectar."

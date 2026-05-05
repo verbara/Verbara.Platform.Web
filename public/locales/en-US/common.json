@@ -421,7 +421,13 @@
     "tenants": {
       "created": "Tenant created",
       "updated": "Tenant updated",
-      "deleted": "Tenant deleted"
+      "deleted": "Tenant deleted",
+      "suspended": "Tenant suspended",
+      "activated": "Tenant activated"
+    },
+    "ipAllowlist": {
+      "added": "IP entry added",
+      "removed": "IP entry removed"
     },
     "sse": {
       "connectionLost": "Real-time connection lost. Refresh the page to reconnect."

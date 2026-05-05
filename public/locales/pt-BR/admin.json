@@ -1673,7 +1673,8 @@
         "security": "Segurança",
         "features": "Recursos",
         "billing": "Sobrescrições de faturamento",
-        "retention": "Retenção"
+        "retention": "Retenção",
+        "ipAllowlist": "Lista de IPs permitidos"
       },
       "fields": {
         "tenantId": "ID do tenant",
@@ -1733,6 +1734,7 @@
         "id": "ID",
         "name": "Nome",
         "status": "Status",
+        "type": "Tipo",
         "max_channels": "Canais máx.",
         "max_campaigns": "Campanhas máx."
       },
@@ -1749,6 +1751,11 @@
         "tenant_id_placeholder": "acme-corp",
         "name": "Nome",
         "name_placeholder": "Acme Corporation",
+        "type": "Tipo de tenant",
+        "type_customer": "Cliente",
+        "type_partner": "Parceiro",
+        "parent_tenant": "Tenant pai",
+        "parent_none": "Nenhum (nível superior)",
         "max_channels": "Máx. canais concorrentes",
         "max_campaigns": "Máx. campanhas ativas",
         "submit": "Criar tenant"
@@ -1772,7 +1779,12 @@
         "saving": "Salvando...",
         "submit": "Atualizar"
       },
-      "entity_type": "tenant"
+      "entity_type": "tenant",
+      "status_hint": {
+        "warning": "pagamento vencido",
+        "degraded": "recursos limitados",
+        "pending_deletion": "exclusão pendente"
+      }
     },
     "validation": {
       "tenantIdRequired": "ID do tenant é obrigatório",
@@ -1780,7 +1792,24 @@
       "nameRequired": "Nome é obrigatório"
     },
     "consentPolicyPlaceholder": "Optional / Required / RequiredForRoles",
-    "recordingActionPlaceholder": "Warn / Block / Throttle"
+    "recordingActionPlaceholder": "Warn / Block / Throttle",
+    "ipAllowlist": {
+      "upgrade": "Atualize seu plano para ativar a lista de IPs permitidos",
+      "cidr": "CIDR",
+      "description": "Descrição",
+      "description_placeholder": "VPN escritório",
+      "add": "Adicionar",
+      "loading": "Carregando...",
+      "empty": "Sem restrições de IP configuradas. Todos os IPs são permitidos.",
+      "delete_title": "Remover entrada IP",
+      "delete_description": "Este intervalo de IP será removido da lista permitida.",
+      "delete_confirm": "Remover",
+      "validation": {
+        "cidrRequired": "O CIDR é obrigatório",
+        "cidrFormat": "Deve ser um CIDR IPv4 válido (ex. 192.168.1.0/24)",
+        "descriptionRequired": "A descrição é obrigatória"
+      }
+    }
   },
   "shared": {
     "placeholder_pending": "Implementação pendente",
@@ -2508,5 +2537,10 @@
       "titleRequired": "Título é obrigatório",
       "contentRequired": "Conteúdo é obrigatório"
     }
+  },
+  "home": {
+    "title": "Painel",
+    "subtitle": "Bem-vindo ao painel de administração.",
+    "placeholder": "Widgets do painel em breve."
   }
 }

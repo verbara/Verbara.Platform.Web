@@ -1673,7 +1673,8 @@
         "security": "Security",
         "features": "Features",
         "billing": "Billing overrides",
-        "retention": "Retention"
+        "retention": "Retention",
+        "ipAllowlist": "IP Allowlist"
       },
       "fields": {
         "tenantId": "Tenant ID",
@@ -1733,6 +1734,7 @@
         "id": "ID",
         "name": "Name",
         "status": "Status",
+        "type": "Type",
         "max_channels": "Max Channels",
         "max_campaigns": "Max Campaigns"
       },
@@ -1749,6 +1751,11 @@
         "tenant_id_placeholder": "acme-corp",
         "name": "Name",
         "name_placeholder": "Acme Corporation",
+        "type": "Tenant type",
+        "type_customer": "Customer",
+        "type_partner": "Partner",
+        "parent_tenant": "Parent tenant",
+        "parent_none": "None (top-level)",
         "max_channels": "Max Concurrent Channels",
         "max_campaigns": "Max Active Campaigns",
         "submit": "Create Tenant"
@@ -1772,7 +1779,12 @@
         "saving": "Saving...",
         "submit": "Update"
       },
-      "entity_type": "tenant"
+      "entity_type": "tenant",
+      "status_hint": {
+        "warning": "payment overdue",
+        "degraded": "features limited",
+        "pending_deletion": "pending deletion"
+      }
     },
     "validation": {
       "tenantIdRequired": "Tenant ID is required",
@@ -1780,7 +1792,24 @@
       "nameRequired": "Name is required"
     },
     "consentPolicyPlaceholder": "Optional / Required / RequiredForRoles",
-    "recordingActionPlaceholder": "Warn / Block / Throttle"
+    "recordingActionPlaceholder": "Warn / Block / Throttle",
+    "ipAllowlist": {
+      "upgrade": "Upgrade plan to enable IP Allowlist",
+      "cidr": "CIDR",
+      "description": "Description",
+      "description_placeholder": "Office VPN",
+      "add": "Add",
+      "loading": "Loading...",
+      "empty": "No IP restrictions configured. All IPs are allowed.",
+      "delete_title": "Remove IP entry",
+      "delete_description": "This IP range will be removed from the allowlist.",
+      "delete_confirm": "Remove",
+      "validation": {
+        "cidrRequired": "CIDR is required",
+        "cidrFormat": "Must be valid IPv4 CIDR (e.g. 192.168.1.0/24)",
+        "descriptionRequired": "Description is required"
+      }
+    }
   },
   "shared": {
     "placeholder_pending": "Pending implementation",
@@ -2508,5 +2537,10 @@
       "titleRequired": "Title is required",
       "contentRequired": "Content is required"
     }
+  },
+  "home": {
+    "title": "Dashboard",
+    "subtitle": "Welcome to the administration panel.",
+    "placeholder": "Dashboard widgets coming soon."
   }
 }
