@@ -1,7 +1,7 @@
 # Verbara Web
 
 > Frontend for the **Verbara** open-core contact-center platform.
-> Repository name (`Asterisk.Platform.Web`) is transitional — the project is rebranding to **Verbara** ([ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)). Repo rename to `verbara-web` will happen after Track 1A ships.
+> Repository rebranded to **Verbara** ([ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)).
 
 React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
@@ -34,8 +34,8 @@ React 19 frontend for the Verbara omnichannel contact-center platform. Admin con
 
 ```sh
 # Clone + install
-git clone git@github.com:Harol-Reina/Asterisk.Platform.Web.git
-cd Asterisk.Platform.Web
+git clone git@github.com:verbara/Verbara.Platform.Web.git
+cd Verbara.Platform.Web
 npm install
 
 # Run dev server (proxies /api/v1 → http://localhost:5000)
@@ -54,7 +54,7 @@ npm run build
 npx playwright test -c tests/e2e/playwright.config.ts
 ```
 
-The dev server expects the Platform backend running on `localhost:5000`. See the [Asterisk.Platform repo](https://github.com/Harol-Reina/Asterisk.Platform) for backend setup. A demo docker-compose is documented in the Platform repo.
+The dev server expects the Platform backend running on `localhost:5000`. See the [Verbara.Platform repo](https://github.com/verbara/Verbara.Platform) for backend setup. A demo docker-compose is documented in the Platform repo.
 
 ## Available scripts
 
@@ -137,13 +137,13 @@ This repository is licensed under the **[Apache License 2.0](LICENSE)**. See [`N
 
 This is the open-source UI of the **Verbara** open-core contact-center stack:
 
-| Repository                                           | License        | Role                                                              |
-| ---------------------------------------------------- | -------------- | ----------------------------------------------------------------- |
-| **Verbara Sdk** (currently `Asterisk.Sdk`)           | MIT            | Telephony primitives (AMI/ARI/SIP wrappers) — community attractor |
-| **Verbara Web** (this repository)                    | **Apache 2.0** | Frontend UI (admin / agent / analytics / operations)              |
-| **Verbara Platform** (currently `Asterisk.Platform`) | Apache 2.0     | Backend application — full contact-center engine                  |
-| **Verbara Sdk Pro** (currently `Asterisk.Sdk.Pro`)   | Commercial     | Enterprise overlays (multi-tenant, analytics, cluster, licensing) |
+| Repository                        | License        | Role                                                              |
+| --------------------------------- | -------------- | ----------------------------------------------------------------- |
+| **Verbara Sdk**                   | MIT            | Telephony primitives (AMI/ARI/SIP wrappers) — community attractor |
+| **Verbara Web** (this repository) | **Apache 2.0** | Frontend UI (admin / agent / analytics / operations)              |
+| **Verbara Platform**              | Apache 2.0     | Backend application — full contact-center engine                  |
+| **Verbara Sdk Pro**               | Commercial     | Enterprise overlays (multi-tenant, analytics, cluster, licensing) |
 
 **Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md) for the full rationale (license decision + 5-tier commercial model).
 
-**Trademark note:** "Asterisk" is a registered trademark of Sangoma Technologies/Digium and is unrelated to the Verbara project. The repository names that begin with `Asterisk.` are transitional and will be renamed to `verbara-*` as part of the v1.14.0 rebrand.
+**Trademark note:** "Asterisk" is a registered trademark of Sangoma Technologies/Digium. Verbara integrates with Asterisk PBX but is an independent project.

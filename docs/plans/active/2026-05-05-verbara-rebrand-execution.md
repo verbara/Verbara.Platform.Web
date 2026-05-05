@@ -62,14 +62,14 @@ Since NO production database exists with real data, this is a config string chan
 
 **Decision: ALL rename to `Verbara`/`verbara`**
 
-| Item                           | Current                                                   | New                                  | Where                                  |
-| ------------------------------ | --------------------------------------------------------- | ------------------------------------ | -------------------------------------- |
-| ARI Stasis app name            | `asterisk_platform` / `asterisk-platform` (inconsistent!) | `verbara`                            | extensions.conf + docker-compose + K8s |
-| Postgres `application_name`    | `"Asterisk.Platform"`                                     | `"Verbara.Platform"`                 | Program.cs:502,512                     |
-| Telemetry meter names          | `"Asterisk.Platform.Auth.WriteQueue"`                     | `"Verbara.Platform.Auth.WriteQueue"` | AuthWriteQueue.cs:41                   |
-| Logger category names          | `"Asterisk.Platform.Api.Endpoints.Sse"`                   | auto-rename with namespace           | SseEndpoints.cs:26                     |
-| Docker image names             | `asterisk-platform-api`                                   | `verbara-platform-api`               | compose + K8s                          |
-| PrometheusRules meter matchers | any rule matching `Asterisk.*` meters                     | update to `Verbara.*`                | K8s CRDs                               |
+| Item                           | Current                                                  | New                                  | Where                                  |
+| ------------------------------ | -------------------------------------------------------- | ------------------------------------ | -------------------------------------- |
+| ARI Stasis app name            | `asterisk_platform` / `verbara-platform` (inconsistent!) | `verbara`                            | extensions.conf + docker-compose + K8s |
+| Postgres `application_name`    | `"Verbara.Platform"`                                     | `"Verbara.Platform"`                 | Program.cs:502,512                     |
+| Telemetry meter names          | `"Verbara.Platform.Auth.WriteQueue"`                     | `"Verbara.Platform.Auth.WriteQueue"` | AuthWriteQueue.cs:41                   |
+| Logger category names          | `"Verbara.Platform.Api.Endpoints.Sse"`                   | auto-rename with namespace           | SseEndpoints.cs:26                     |
+| Docker image names             | `verbara-platform-api`                                   | `verbara-platform-api`               | compose + K8s                          |
+| PrometheusRules meter matchers | any rule matching `Asterisk.*` meters                    | update to `Verbara.*`                | K8s CRDs                               |
 
 ### What STAYS as "Asterisk" (refers to the PBX software itself)
 
@@ -103,26 +103,26 @@ Since NO production database exists with real data, this is a config string chan
 
 ### Phase 0: Preparation (~30 min)
 
-| Step | Action                                                                                                                                       |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1  | Create branch `rebrand/verbara-2.0` in all 4 repos                                                                                           |
-| 0.2  | Tag current HEADs: `pre-rebrand` (safety rollback point)                                                                                     |
-| 0.3  | Verify all repos build + tests pass on current state                                                                                         |
-| 0.4  | **Pre-alignment:** In Asterisk.Sdk.Pro, bump SDK pin from 1.15.1 → 1.15.3 in `Directory.Packages.props`, run full test suite, fix any breaks |
-| 0.5  | **Pre-alignment:** In Asterisk.Platform, bump SDK pin from 1.15.1 → 1.15.3, verify build + tests                                             |
-| 0.6  | Wipe `local-nuget-feed/` (old .nupkg files are dead weight)                                                                                  |
-| 0.7  | Commit pre-alignment: `chore: align SDK pin to 1.15.3 before rebrand`                                                                        |
+| Step | Action                                                                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1  | Create branch `rebrand/verbara-2.0` in all 4 repos                                                                                          |
+| 0.2  | Tag current HEADs: `pre-rebrand` (safety rollback point)                                                                                    |
+| 0.3  | Verify all repos build + tests pass on current state                                                                                        |
+| 0.4  | **Pre-alignment:** In Verbara.Sdk.Pro, bump SDK pin from 1.15.1 → 1.15.3 in `Directory.Packages.props`, run full test suite, fix any breaks |
+| 0.5  | **Pre-alignment:** In Verbara.Platform, bump SDK pin from 1.15.1 → 1.15.3, verify build + tests                                             |
+| 0.6  | Wipe `local-nuget-feed/` (old .nupkg files are dead weight)                                                                                 |
+| 0.7  | Commit pre-alignment: `chore: align SDK pin to 1.15.3 before rebrand`                                                                       |
 
-### Phase 1: Asterisk.Sdk → Verbara.Sdk 2.0.0 (~3-4 hours)
+### Phase 1: Verbara.Sdk → Verbara.Sdk 2.0.0 (~3-4 hours)
 
-**Repo:** `/media/Data/Source/Verbara/Asterisk.Sdk/`
+**Repo:** `/media/Data/Source/Verbara/Verbara.Sdk/`
 **Scope:** 26 src + 31 test packages, 1,855 .cs files (1,192 with namespace)
 
 #### 1A. Structural rename (folders, projects, solution)
 
-- Rename solution: `Asterisk.Sdk.slnx` → `Verbara.Sdk.slnx`
-- Rename all `src/Asterisk.Sdk.*` folders → `src/Verbara.Sdk.*` (26 folders)
-- Rename all `Tests/Asterisk.Sdk.*` folders → `Tests/Verbara.Sdk.*` (~31 folders)
+- Rename solution: `Verbara.Sdk.slnx` → `Verbara.Sdk.slnx`
+- Rename all `src/Verbara.Sdk.*` folders → `src/Verbara.Sdk.*` (26 folders)
+- Rename all `Tests/Verbara.Sdk.*` folders → `Tests/Verbara.Sdk.*` (~31 folders)
 - Rename `.csproj` files inside to match folder names
 - Update `.slnx` project paths
 - Update all `<ProjectReference>` paths in .csproj files
@@ -157,7 +157,7 @@ find src Tests -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" \
 
 #### 1D. Telemetry constants
 
-- `ActivitySource` names: `"Asterisk.Sdk.Ami"` → `"Verbara.Sdk.Ami"`, etc.
+- `ActivitySource` names: `"Verbara.Sdk.Ami"` → `"Verbara.Sdk.Ami"`, etc.
 - `Meter` names: same pattern
 
 #### 1E. Build metadata + API validation
@@ -176,9 +176,9 @@ find src Tests -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" \
 
 ---
 
-### Phase 2: Asterisk.Sdk.Pro → Verbara.Sdk.Pro 2.0.0-pro (~2-3 hours)
+### Phase 2: Verbara.Sdk.Pro → Verbara.Sdk.Pro 2.0.0-pro (~2-3 hours)
 
-**Repo:** `/media/Data/Source/Verbara/Asterisk.Sdk.Pro/`
+**Repo:** `/media/Data/Source/Verbara/Verbara.Sdk.Pro/`
 **Scope:** 24 src + ~20 test packages, 1,092 .cs files (813 with namespace)
 **Depends on:** Phase 1 complete (Verbara.Sdk 2.0.0 in local-nuget-feed)
 
@@ -197,7 +197,7 @@ find src Tests -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" \
 
 #### 2D. Package references update
 
-- `Directory.Packages.props`: `Asterisk.Sdk.*` → `Verbara.Sdk.*` @ `2.0.0`
+- `Directory.Packages.props`: `Verbara.Sdk.*` → `Verbara.Sdk.*` @ `2.0.0`
 - `Directory.Build.props`: version `2.0.0-pro`, metadata
 - Individual .csproj `<PackageReference>` IDs
 
@@ -211,17 +211,17 @@ find src Tests -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" \
 
 ---
 
-### Phase 3: Asterisk.Platform → Verbara.Platform 2.0.0 (~4-5 hours)
+### Phase 3: Verbara.Platform → Verbara.Platform 2.0.0 (~4-5 hours)
 
-**Repo:** `/media/Data/Source/Verbara/Asterisk.Platform/`
+**Repo:** `/media/Data/Source/Verbara/Verbara.Platform/`
 **Scope:** 31 src + tests, 1,508 .cs files (1,073 with namespace) + infra
 **Depends on:** Phase 2 complete (both SDK + Pro in local-nuget-feed)
 
 #### 3A. Structural rename
 
-- 31 `src/Asterisk.Platform.*` → `src/Verbara.Platform.*`
+- 31 `src/Verbara.Platform.*` → `src/Verbara.Platform.*`
 - All test project folders similarly
-- Solution: `Asterisk.Platform.slnx` → `Verbara.Platform.slnx`
+- Solution: `Verbara.Platform.slnx` → `Verbara.Platform.slnx`
 - All .csproj renames + ProjectReference updates
 
 #### 3B. Namespace + using rename
@@ -230,7 +230,7 @@ find src Tests -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" \
 
 #### 3C. Package references
 
-- `Directory.Packages.props`: both `Asterisk.Sdk.*` → `Verbara.Sdk.*` @ 2.0.0 AND `Asterisk.Sdk.Pro.*` → `Verbara.Sdk.Pro.*` @ 2.0.0-pro
+- `Directory.Packages.props`: both `Verbara.Sdk.*` → `Verbara.Sdk.*` @ 2.0.0 AND `Verbara.Sdk.Pro.*` → `Verbara.Sdk.Pro.*` @ 2.0.0-pro
 - `Directory.Build.props`: version 2.0.0, metadata
 
 #### 3D. Extension method call sites (Program.cs)
@@ -260,12 +260,12 @@ find src Tests -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" \
 
 #### 3F. Operational identity (Layer 5)
 
-- `Program.cs:502,512`: `ApplicationName = "Asterisk.Platform*"` → `"Verbara.Platform*"`
-- `AuthWriteQueue.cs:41`: `MeterName = "Asterisk.Platform.Auth.WriteQueue"` → `"Verbara.Platform.Auth.WriteQueue"`
-- `SseEndpoints.cs:26`: `"Asterisk.Platform.Api.Endpoints.Sse"` → auto-fixed by namespace rename
+- `Program.cs:502,512`: `ApplicationName = "Verbara.Platform*"` → `"Verbara.Platform*"`
+- `AuthWriteQueue.cs:41`: `MeterName = "Verbara.Platform.Auth.WriteQueue"` → `"Verbara.Platform.Auth.WriteQueue"`
+- `SseEndpoints.cs:26`: `"Verbara.Platform.Api.Endpoints.Sse"` → auto-fixed by namespace rename
 - ARI app name: standardize to `verbara` across:
   - `docker/asterisk-config/extensions.conf`: `Stasis(asterisk_platform,...)` → `Stasis(verbara,...)`
-  - `docker/docker-compose.full.yml`: `Asterisk__Ari__Application: asterisk-platform` → `verbara`
+  - `docker/docker-compose.full.yml`: `Asterisk__Ari__Application: verbara-platform` → `verbara`
   - `docker/demo/docker-compose.demo.yml`: same
   - `infra/k8s/helm/platform/` values: same
   - `appsettings.json` / `appsettings.Development.json`: ARI Application value
@@ -279,9 +279,9 @@ find src Tests -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" \
 
 #### 3H. Docker image names
 
-- `docker-compose.loadtest.yml`: `asterisk-platform-api:loadtest` → `verbara-platform-api:loadtest`
-- Dockerfile ENTRYPOINT: `Asterisk.Platform.Api.dll` → `Verbara.Platform.Api.dll`
-- K8s helm values: image repo `asterisk-platform/api` → `verbara-platform/api`
+- `docker-compose.loadtest.yml`: `verbara-platform-api:loadtest` → `verbara-platform-api:loadtest`
+- Dockerfile ENTRYPOINT: `Verbara.Platform.Api.dll` → `Verbara.Platform.Api.dll`
+- K8s helm values: image repo `verbara-platform/api` → `verbara-platform/api`
 
 #### 3I. What stays "Asterisk" (explicit DO NOT TOUCH list)
 
@@ -303,14 +303,14 @@ find src Tests -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" \
 
 ---
 
-### Phase 4: Asterisk.Platform.Web → verbara-web 2.0.0 (~1-2 hours)
+### Phase 4: Verbara.Platform.Web → verbara-web 2.0.0 (~1-2 hours)
 
-**Repo:** `/media/Data/Source/Verbara/Asterisk.Platform.Web/`
+**Repo:** `/media/Data/Source/Verbara/Verbara.Platform.Web/`
 **Depends on:** Phase 3 (API running for E2E verification)
 
 #### 4A. Package + config
 
-- `package.json`: `"name": "asterisk-platform-web"` → `"verbara-web"`
+- `package.json`: `"name": "verbara-platform-web"` → `"verbara-web"`
 - Version → `2.0.0`
 
 #### 4B. Brand copy (i18n)
@@ -372,28 +372,28 @@ After all phases complete:
 
 **SDK:**
 
-- `/media/Data/Source/Verbara/Asterisk.Sdk/Directory.Build.props`
-- `/media/Data/Source/Verbara/Asterisk.Sdk/src/Asterisk.Sdk.Hosting/ServiceCollectionExtensions.cs` (config section preservation)
+- `/media/Data/Source/Verbara/Verbara.Sdk/Directory.Build.props`
+- `/media/Data/Source/Verbara/Verbara.Sdk/src/Verbara.Sdk.Hosting/ServiceCollectionExtensions.cs` (config section preservation)
 
 **Pro:**
 
-- `/media/Data/Source/Verbara/Asterisk.Sdk.Pro/Directory.Packages.props` (SDK pin)
-- `/media/Data/Source/Verbara/Asterisk.Sdk.Pro/Directory.Build.props`
+- `/media/Data/Source/Verbara/Verbara.Sdk.Pro/Directory.Packages.props` (SDK pin)
+- `/media/Data/Source/Verbara/Verbara.Sdk.Pro/Directory.Build.props`
 
 **Platform:**
 
-- `/media/Data/Source/Verbara/Asterisk.Platform/Directory.Packages.props` (SDK + Pro pins)
-- `/media/Data/Source/Verbara/Asterisk.Platform/src/Asterisk.Platform.Api/Program.cs` (extension methods + config reads)
-- `/media/Data/Source/Verbara/Asterisk.Platform/src/Asterisk.Platform.Api/Services/MfaService.cs` (user-facing issuer)
-- `/media/Data/Source/Verbara/Asterisk.Platform/src/Asterisk.Platform.Api/Endpoints/SetupEndpoints.cs` (default name)
-- `/media/Data/Source/Verbara/Asterisk.Platform/docker/asterisk-config/extensions.conf` (ARI Stasis app)
-- `/media/Data/Source/Verbara/Asterisk.Platform/infra/k8s/manifests/cloudnativepg/cluster.yaml` (DB name)
-- `/media/Data/Source/Verbara/Asterisk.Platform/infra/k8s/helm/platform/values.yaml` (image + ARI app)
+- `/media/Data/Source/Verbara/Verbara.Platform/Directory.Packages.props` (SDK + Pro pins)
+- `/media/Data/Source/Verbara/Verbara.Platform/src/Verbara.Platform.Api/Program.cs` (extension methods + config reads)
+- `/media/Data/Source/Verbara/Verbara.Platform/src/Verbara.Platform.Api/Services/MfaService.cs` (user-facing issuer)
+- `/media/Data/Source/Verbara/Verbara.Platform/src/Verbara.Platform.Api/Endpoints/SetupEndpoints.cs` (default name)
+- `/media/Data/Source/Verbara/Verbara.Platform/docker/asterisk-config/extensions.conf` (ARI Stasis app)
+- `/media/Data/Source/Verbara/Verbara.Platform/infra/k8s/manifests/cloudnativepg/cluster.yaml` (DB name)
+- `/media/Data/Source/Verbara/Verbara.Platform/infra/k8s/helm/platform/values.yaml` (image + ARI app)
 
 **Web:**
 
-- `/media/Data/Source/Verbara/Asterisk.Platform.Web/package.json`
-- `/media/Data/Source/Verbara/Asterisk.Platform.Web/public/locales/*/common.json`
+- `/media/Data/Source/Verbara/Verbara.Platform.Web/package.json`
+- `/media/Data/Source/Verbara/Verbara.Platform.Web/public/locales/*/common.json`
 
 ## Estimated Total Effort
 

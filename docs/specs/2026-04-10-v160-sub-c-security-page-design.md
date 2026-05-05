@@ -3,7 +3,7 @@
 **Status:** Design approved, ready for plan
 **Date:** 2026-04-10
 **Parent release:** v1.6.0 "Production Polish"
-**Repos touched:** `Asterisk.Platform` (backend) + `Asterisk.Platform.Web` (frontend)
+**Repos touched:** `Verbara.Platform` (backend) + `Verbara.Platform.Web` (frontend)
 **Related memory:** `project_v160_production_polish.md`
 **Sub-project predecessor:** Sub A Notification Center (complete 2026-04-10)
 
@@ -47,12 +47,12 @@ The result is a tiered sub-project: Tier 0 critical bug fixes, Tier 1 polish + T
 
 ### Repos touched
 
-| Repo | Work | Version bump |
-|---|---|---|
-| `Asterisk.Platform` (backend) | New endpoints, middleware extension, policy enforcement, notification emits, tests | v1.5.0 → v1.5.1 |
-| `Asterisk.Platform.Web` (frontend) | New hooks, page rewrite, user-menu link, i18n, tests | No bump yet (→1.6.0 after all Sub C/D/E complete) |
+| Repo                              | Work                                                                               | Version bump                                      |
+| --------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `Verbara.Platform` (backend)      | New endpoints, middleware extension, policy enforcement, notification emits, tests | v1.5.0 → v1.5.1                                   |
+| `Verbara.Platform.Web` (frontend) | New hooks, page rewrite, user-menu link, i18n, tests                               | No bump yet (→1.6.0 after all Sub C/D/E complete) |
 
-**No SDK changes.** `Asterisk.Sdk` and `Asterisk.Sdk.Pro` are untouched. No NuGet repack.
+**No SDK changes.** `Verbara.Sdk` and `Verbara.Sdk.Pro` are untouched. No NuGet repack.
 
 ### Execution order
 
@@ -90,25 +90,32 @@ Non-negotiable. These are bugs, not features.
 **Severity:** P0 regression. Users with MFA enabled cannot log in.
 
 **Location:**
+
 - Backend: `AuthEndpoints.cs` — `MfaChallengeResponse` record
 - Frontend: `login-page.tsx:125` — expects `{ requiresMfa, mfaToken }`
 
 **Current state:**
+
 ```csharp
 // backend
 internal sealed record MfaChallengeResponse(bool MfaRequired, string ChallengeToken);
 ```
+
 ```tsx
 // frontend login-page.tsx:125
-if (data.requiresMfa && data.mfaToken) { /* show MFA step */ }
+if (data.requiresMfa && data.mfaToken) {
+  /* show MFA step */
+}
 ```
 
 With default camelCase JSON policy, the backend ships `{mfaRequired, challengeToken}` but the frontend looks for `{requiresMfa, mfaToken}`. The condition is always false. Users silently bounce back to login.
 
 **Fix:** Rename backend properties (fewer call sites than frontend):
+
 ```csharp
 internal sealed record MfaChallengeResponse(bool RequiresMfa, string MfaToken);
 ```
+
 Update `ApiJsonContext.cs` if explicitly registered. Single file, single record, zero risk.
 
 **Test:** 1 new test — `Login_ShouldReturnMfaChallengeWithCorrectFields_WhenUserHasMfa` asserting serialized JSON has `requiresMfa` and `mfaToken` keys.
@@ -120,6 +127,7 @@ Update `ApiJsonContext.cs` if explicitly registered. Single file, single record,
 **Location:** `TenantResolutionMiddleware.cs` — `BlockedImpersonationPaths` static HashSet (line ~14-20)
 
 **Current state:** An admin impersonating a tenant user can call:
+
 - `POST /auth/mfa/setup` — create new MFA secret for the victim
 - `POST /auth/mfa/confirm` — confirm it
 - `DELETE /auth/mfa` — disable victim's MFA
@@ -128,6 +136,7 @@ Update `ApiJsonContext.cs` if explicitly registered. Single file, single record,
 The middleware already has `BlockedImpersonationPaths` logic for management-API paths, but auth self-service paths are not included.
 
 **Fix:** Extend `BlockedImpersonationPaths` (or add a new `SecurityCriticalPaths` HashSet checked in the same branch) with:
+
 ```
 POST /api/v1/auth/mfa/setup
 POST /api/v1/auth/mfa/confirm
@@ -141,6 +150,7 @@ DELETE /api/v1/auth/sessions/{id}
 Both full impersonation AND read-only impersonation must block these (read-only already blocks DELETE/POST by default; full must opt in via the HashSet).
 
 **Tests (7 new):**
+
 - `ImpersonationMiddleware_ShouldBlock_MfaSetup_WhenImpersonating`
 - `ImpersonationMiddleware_ShouldBlock_MfaConfirm_WhenImpersonating`
 - `ImpersonationMiddleware_ShouldBlock_MfaDisable_WhenImpersonating`
@@ -160,6 +170,7 @@ All return 403 with a clear error message.
 **Current state:** The handler verifies the user's password and clears `User.MfaEnabled` + `User.MfaSecret` + `User.MfaRecoveryCodes`. It **does not** check `TenantAuthConfig.MfaPolicy` or `MfaRequiredRoles`.
 
 **Fix:** Add policy check at top of handler:
+
 ```csharp
 var authConfig = await tenantAuthConfigStore.GetAsync(tenantId, ct);
 if (authConfig is not null)
@@ -178,6 +189,7 @@ if (authConfig is not null)
 Also apply to `MfaConfirm` (if MFA is disallowed by policy, e.g., policy="disabled", prevent enrollment — this is a minor case but same pattern).
 
 **Tests (3 new):**
+
 - `MfaDisable_ShouldReturn403_WhenTenantPolicyRequiresMfaAll`
 - `MfaDisable_ShouldReturn403_WhenUserRoleIsInMfaRequiredRoles`
 - `MfaDisable_ShouldSucceed_WhenTenantPolicyIsOptional`
@@ -189,11 +201,13 @@ Also apply to `MfaConfirm` (if MFA is disallowed by policy, e.g., policy="disabl
 **Location:** `src/core/auth/mfa-verify.tsx`
 
 **Current state:**
+
 - No handling of HTTP 429 (rate limit) — shown as "Invalid code"
 - No handling of expired challenge token — shown as "Invalid code"
 - Recovery code entry UI exists but is untested
 
 **Fix:**
+
 - Add `if (response.status === 429)` branch showing "Too many attempts. Please wait and try again."
 - Add `if (error.code === 'CHALLENGE_EXPIRED')` branch showing "Session expired. Please log in again." with a "Return to login" button
 - (Backend optionally returns `{ code, message }` in error body — standardize if not already)
@@ -209,6 +223,7 @@ Also apply to `MfaConfirm` (if MFA is disallowed by policy, e.g., policy="disabl
 **Current state:** `login.spec.ts` tests regular login and MFA code entry, but not recovery code entry.
 
 **Fix:** Add 1 new E2E test:
+
 ```
 test('should accept recovery code instead of TOTP during MFA verify', async ({ ... }) => {
   await apiHelper.setupTestUserWithMfa('test-user@...');
@@ -233,15 +248,16 @@ Shipped before Tier 1 frontend so hooks can consume them directly without rework
 
 **New endpoints:**
 
-| Method | Path | Auth | Handler |
-|---|---|---|---|
-| `GET` | `/auth/sessions` | `RequireAuthorization()` | `GetOwnSessions` |
-| `DELETE` | `/auth/sessions/{tokenId}` | `RequireAuthorization()` | `RevokeOwnSession` |
-| `POST` | `/auth/sessions/revoke-others` | `RequireAuthorization()` | `RevokeOtherSessions` |
+| Method   | Path                           | Auth                     | Handler               |
+| -------- | ------------------------------ | ------------------------ | --------------------- |
+| `GET`    | `/auth/sessions`               | `RequireAuthorization()` | `GetOwnSessions`      |
+| `DELETE` | `/auth/sessions/{tokenId}`     | `RequireAuthorization()` | `RevokeOwnSession`    |
+| `POST`   | `/auth/sessions/revoke-others` | `RequireAuthorization()` | `RevokeOtherSessions` |
 
 **Difference from admin endpoints:** `/admin/auth/sessions?userId=X` exists for admins to view any user's sessions. The new `/auth/sessions` (no admin gate) always filters by the JWT's user claim and ignores any query parameter attempting to specify a different userId.
 
 **DTO:**
+
 ```csharp
 internal sealed record ActiveSessionDto(
     string TokenId,
@@ -255,11 +271,13 @@ internal sealed record ActiveSessionDto(
 `IsCurrentSession` is computed by comparing `TokenId` against the current refresh token chain.
 
 **Implementation:**
+
 - `GetOwnSessions`: reuse `ISessionStore.ListByUserAsync(tenantId, userId)` or add if missing
 - `RevokeOwnSession`: validate `session.UserId == currentUserId` before revoking; return 404 (not 403) if not found to avoid user-id existence leaks
 - `RevokeOtherSessions`: list all, filter out current token, revoke each in a loop
 
 **Tests (5 new):**
+
 - `GetOwnSessions_ShouldReturnOnlyCurrentUserSessions_WhenCalled`
 - `GetOwnSessions_ShouldIgnoreUserIdQueryParam_WhenProvided`
 - `RevokeOwnSession_ShouldReturn404_WhenTokenBelongsToOtherUser`
@@ -272,11 +290,12 @@ internal sealed record ActiveSessionDto(
 
 **New endpoint:**
 
-| Method | Path | Auth | Handler |
-|---|---|---|---|
+| Method | Path                                  | Auth                     | Handler                   |
+| ------ | ------------------------------------- | ------------------------ | ------------------------- |
 | `POST` | `/auth/mfa/recovery-codes/regenerate` | `RequireAuthorization()` | `RegenerateRecoveryCodes` |
 
 **Implementation:**
+
 - Require current password in body (`{password: string}`) to confirm identity
 - Require `user.MfaEnabled == true` — return 400 otherwise
 - Call existing `GenerateRecoveryCodes()` helper (already used in setup flow)
@@ -285,12 +304,14 @@ internal sealed record ActiveSessionDto(
 - Log auth event `RecoveryCodesRegenerated`
 
 **DTO:**
+
 ```csharp
 internal sealed record RegenerateRecoveryCodesRequest(string Password);
 internal sealed record RecoveryCodesResponse(string[] RecoveryCodes);
 ```
 
 **Tests (2 new):**
+
 - `RegenerateRecoveryCodes_ShouldReturn10Codes_WhenMfaEnabledAndPasswordCorrect`
 - `RegenerateRecoveryCodes_ShouldReturn400_WhenMfaNotEnabled`
 
@@ -300,16 +321,18 @@ internal sealed record RecoveryCodesResponse(string[] RecoveryCodes);
 
 **New endpoint:**
 
-| Method | Path | Auth | Handler |
-|---|---|---|---|
-| `GET` | `/auth/password-policy` | `RequireAuthorization()` | `GetPasswordPolicy` |
+| Method | Path                    | Auth                     | Handler             |
+| ------ | ----------------------- | ------------------------ | ------------------- |
+| `GET`  | `/auth/password-policy` | `RequireAuthorization()` | `GetPasswordPolicy` |
 
 **Implementation:**
+
 - Read `TenantAuthConfig` for current tenant
 - Return subset DTO — NOT the full config (which contains OIDC secrets, lockout config, etc.)
 - Fallback to platform default if tenant has no custom policy
 
 **DTO:**
+
 ```csharp
 internal sealed record PasswordPolicyDto(
     int MinLength,
@@ -322,6 +345,7 @@ internal sealed record PasswordPolicyDto(
 Note: `PasswordRequireLowercase` does not currently exist in `TenantAuthConfig`. Add it as a field (default true) OR compute it from an implicit rule. Decide in plan task.
 
 **Tests (2 new):**
+
 - `GetPasswordPolicy_ShouldReturnTenantPolicy_WhenCalled`
 - `GetPasswordPolicy_ShouldNotLeakSecrets_WhenCalled` (asserts DTO only contains the 5 password fields, no OIDC/lockout fields)
 
@@ -330,6 +354,7 @@ Note: `PasswordRequireLowercase` does not currently exist in `TenantAuthConfig`.
 **Location:** `NotificationTypeRegistry.cs` + `AuthEndpoints.cs`
 
 **New notification types:**
+
 ```csharp
 ["security.mfa_enabled"] = new(
     "security.mfa_enabled",
@@ -351,6 +376,7 @@ Note: `PasswordRequireLowercase` does not currently exist in `TenantAuthConfig`.
 Note: `"self"` is a sentinel indicating "the user performing the action receives their own notification." If the registry does not support this pattern, extend routing logic or omit and let the admin propagation cover the user via their role.
 
 **Handler injection:**
+
 - Add `[FromServices] INotificationService notifications` parameter to:
   - `MfaConfirm`
   - `MfaDisable`
@@ -359,6 +385,7 @@ Note: `"self"` is a sentinel indicating "the user performing the action receives
 - Localized titles/bodies should use the tenant's default language or fall back to English (dedup window: 5 min already handled by service)
 
 **Tests (3 new):**
+
 - `MfaConfirm_ShouldEmitNotification_WhenSucceeds`
 - `MfaDisable_ShouldEmitNotification_WhenSucceeds`
 - `ChangePassword_ShouldEmitNotification_WhenSucceeds`
@@ -370,6 +397,7 @@ Note: `"self"` is a sentinel indicating "the user performing the action receives
 **Location:** `src/core/api/hooks/use-me.ts` (new file)
 
 **Type:**
+
 ```ts
 export interface Me {
   id: string;
@@ -402,21 +430,23 @@ export function useMe() {
 **Location:** `src/core/api/hooks/use-auth-admin.ts`
 
 **New mutations:**
+
 ```ts
-useSetupMfa()        // POST /auth/mfa/setup → returns MfaSetupResponse
-useConfirmMfa()      // POST /auth/mfa/confirm, invalidates ['me']
-useDisableMfa()      // DELETE /auth/mfa, invalidates ['me']
-useChangePassword()  // POST /auth/change-password
-useMySessions()      // GET /auth/sessions → ActiveSession[]
-useRevokeSession()   // DELETE /auth/sessions/{id}, invalidates ['auth','sessions','me']
-useRevokeOtherSessions()  // POST /auth/sessions/revoke-others, same invalidation
-useRegenerateRecoveryCodes()  // POST /auth/mfa/recovery-codes/regenerate
-usePasswordPolicy()  // GET /auth/password-policy, staleTime: Infinity
+useSetupMfa(); // POST /auth/mfa/setup → returns MfaSetupResponse
+useConfirmMfa(); // POST /auth/mfa/confirm, invalidates ['me']
+useDisableMfa(); // DELETE /auth/mfa, invalidates ['me']
+useChangePassword(); // POST /auth/change-password
+useMySessions(); // GET /auth/sessions → ActiveSession[]
+useRevokeSession(); // DELETE /auth/sessions/{id}, invalidates ['auth','sessions','me']
+useRevokeOtherSessions(); // POST /auth/sessions/revoke-others, same invalidation
+useRegenerateRecoveryCodes(); // POST /auth/mfa/recovery-codes/regenerate
+usePasswordPolicy(); // GET /auth/password-policy, staleTime: Infinity
 ```
 
 All follow the existing `use-auth-admin.ts` pattern. Each mutation has typed input/output, toast on success/error, narrow query invalidation.
 
 **Query keys:**
+
 - `['me']` — current user profile
 - `['auth', 'sessions', 'me']` — own sessions list
 - `['auth', 'password-policy']` — tenant password policy (cache infinite)
@@ -430,6 +460,7 @@ All follow the existing `use-auth-admin.ts` pattern. Each mutation has typed inp
 **Missing keys identified by audit:**
 
 `admin.json` — add `security.*` subtree (17 keys):
+
 ```json
 "security": {
   "title": "Security",
@@ -464,6 +495,7 @@ All follow the existing `use-auth-admin.ts` pattern. Each mutation has typed inp
 ```
 
 `common.json` — add missing keys:
+
 ```json
 "status": { "enabled": "Enabled", "disabled": "Disabled" },
 "actions": { "copy": "Copy", "download": "Download", "done": "Done", "next": "Next" }
@@ -478,6 +510,7 @@ Total across 3 locales: ~60–75 strings. Mechanical task.
 **Location:** `src/shell/user-menu.tsx`
 
 **Change:** Add `<DropdownMenuItem>` between Theme submenu and Logout:
+
 ```tsx
 <DropdownMenuItem onClick={() => navigate('/admin/security')}>
   <Lock className="mr-2 h-4 w-4" />
@@ -561,11 +594,13 @@ No permission gate — `/admin/security` is already reachable by any authenticat
    - Its "Revoke" button is disabled with a hint — "Use Logout to end this session"
 
 **Recovery codes regeneration:**
+
 - Button appears only when `mfaEnabled === true`
 - Click opens a confirm dialog: "This will invalidate your existing recovery codes. Enter your password to confirm."
 - On success, shows the 10 new codes in a modal with Copy + Download buttons (same component as initial setup)
 
 **Delete confirmations:**
+
 - "Sign out all other devices": 3-second delay confirmation (following codebase pattern)
 - "Revoke session" (individual): instant confirmation (minor impact)
 - "Disable MFA": password-gated dialog (existing pattern)
@@ -576,22 +611,26 @@ No permission gate — `/admin/security` is already reachable by any authenticat
 ### Updates to existing tests
 
 **`security.spec.ts`** — existing 6 tests need updates:
+
 - Change setup to pre-configure MFA state via new `apiHelper.setupTestUserWithMfa()` helper
 - Assert initial badge reflects real state from `/users/me`
 
 ### New E2E tests
 
 **`security.spec.ts`** — 4 new tests:
+
 - `should show MFA enabled when user has MFA configured`
 - `should block MFA disable when tenant policy requires MFA` (uses tenant with policy)
 - `should regenerate recovery codes and show new codes`
 - `should display password policy checklist with live validation`
 
 **`sessions.spec.ts`** (new file) — 2 tests:
+
 - `should list active sessions for current user`
 - `should revoke other sessions and preserve current session`
 
 **`login.spec.ts`** — 1 new test (T0.4):
+
 - `should accept recovery code instead of TOTP during MFA verify`
 
 **Total new E2E:** 7 tests + 6 updated = 13 tests touching security/MFA.
@@ -607,28 +646,29 @@ No permission gate — `/admin/security` is already reachable by any authenticat
 
 18 tasks. See execution order in Architecture Overview.
 
-| # | Task | Tier | Primary file(s) | Tests |
-|---|---|---|---|---|
-| 1 | **T0.2** Extend `BlockedImpersonationPaths` middleware | T0 | `TenantResolutionMiddleware.cs` | 7 |
-| 2 | **T0.1** Rename `MfaChallengeResponse` fields | T0 | `AuthEndpoints.cs`, `ApiJsonContext.cs` | 1 |
-| 3 | **T0.5** `MfaDisable`/`MfaConfirm` policy enforcement | T0 | `AuthEndpoints.cs` | 3 |
-| 4 | **T0.3** `mfa-verify.tsx` error handling | T0 | `mfa-verify.tsx` | — |
-| 5 | **T0.4** E2E recovery code login test | T0 | `login.spec.ts`, `api-helper.ts` | +1 E2E |
-| 6 | **T2.1a** 3 user-scoped sessions endpoints | T2-be | `AuthEndpoints.cs` | 5 |
-| 7 | **T2.2a** Recovery codes regenerate endpoint | T2-be | `AuthEndpoints.cs` | 2 |
-| 8 | **T2.3a** Password policy GET endpoint | T2-be | `AuthEndpoints.cs`, `ApiJsonContext.cs` | 2 |
-| 9 | **T2.4a** Security notification types + emits | T2-be | `NotificationTypeRegistry.cs`, `AuthEndpoints.cs` | 3 |
-| 10 | **T1.1** `useMe` hook + typed `Me` interface | T1 | `use-me.ts` | 3 |
-| 11 | **T1.2** Refactor to mutations in `use-auth-admin.ts` | T1 | `use-auth-admin.ts` | 5 |
-| 12 | **T1.3** i18n completion (17+ keys × 3 locales) | T1 | `admin.json`, `common.json` ×3 | — |
-| 13 | **T1.4** User-menu "Security" link | T1 | `user-menu.tsx` | — |
-| 14 | **T1.5** `reset-password-page.tsx` live checklist | T1 | `reset-password-page.tsx` | — |
-| 15 | **T2.5** Rewrite `security-page.tsx` | T2-fe | `security-page.tsx` | — |
-| 16 | Update `security.spec.ts` + 4 new tests | E2E | `security.spec.ts`, `api-helper.ts` | +4 E2E |
-| 17 | Add `sessions.spec.ts` (2 tests) | E2E | `sessions.spec.ts` | +2 E2E |
-| 18 | Final verification (build/test/lint/manual) | — | — | — |
+| #   | Task                                                   | Tier  | Primary file(s)                                   | Tests  |
+| --- | ------------------------------------------------------ | ----- | ------------------------------------------------- | ------ |
+| 1   | **T0.2** Extend `BlockedImpersonationPaths` middleware | T0    | `TenantResolutionMiddleware.cs`                   | 7      |
+| 2   | **T0.1** Rename `MfaChallengeResponse` fields          | T0    | `AuthEndpoints.cs`, `ApiJsonContext.cs`           | 1      |
+| 3   | **T0.5** `MfaDisable`/`MfaConfirm` policy enforcement  | T0    | `AuthEndpoints.cs`                                | 3      |
+| 4   | **T0.3** `mfa-verify.tsx` error handling               | T0    | `mfa-verify.tsx`                                  | —      |
+| 5   | **T0.4** E2E recovery code login test                  | T0    | `login.spec.ts`, `api-helper.ts`                  | +1 E2E |
+| 6   | **T2.1a** 3 user-scoped sessions endpoints             | T2-be | `AuthEndpoints.cs`                                | 5      |
+| 7   | **T2.2a** Recovery codes regenerate endpoint           | T2-be | `AuthEndpoints.cs`                                | 2      |
+| 8   | **T2.3a** Password policy GET endpoint                 | T2-be | `AuthEndpoints.cs`, `ApiJsonContext.cs`           | 2      |
+| 9   | **T2.4a** Security notification types + emits          | T2-be | `NotificationTypeRegistry.cs`, `AuthEndpoints.cs` | 3      |
+| 10  | **T1.1** `useMe` hook + typed `Me` interface           | T1    | `use-me.ts`                                       | 3      |
+| 11  | **T1.2** Refactor to mutations in `use-auth-admin.ts`  | T1    | `use-auth-admin.ts`                               | 5      |
+| 12  | **T1.3** i18n completion (17+ keys × 3 locales)        | T1    | `admin.json`, `common.json` ×3                    | —      |
+| 13  | **T1.4** User-menu "Security" link                     | T1    | `user-menu.tsx`                                   | —      |
+| 14  | **T1.5** `reset-password-page.tsx` live checklist      | T1    | `reset-password-page.tsx`                         | —      |
+| 15  | **T2.5** Rewrite `security-page.tsx`                   | T2-fe | `security-page.tsx`                               | —      |
+| 16  | Update `security.spec.ts` + 4 new tests                | E2E   | `security.spec.ts`, `api-helper.ts`               | +4 E2E |
+| 17  | Add `sessions.spec.ts` (2 tests)                       | E2E   | `sessions.spec.ts`                                | +2 E2E |
+| 18  | Final verification (build/test/lint/manual)            | —     | —                                                 | —      |
 
 **Totals:**
+
 - Platform backend tests: **+23** (1627 → ~1650)
 - Platform.Web unit tests: **+8** (36 → ~44)
 - Platform.Web E2E tests: **+7 new + 6 updated** (253 → ~260, 13 spec files touched)
@@ -657,14 +697,14 @@ No permission gate — `/admin/security` is already reachable by any authenticat
 
 ## Risks and mitigations
 
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| Rewrite of security-page introduces regression in existing recovery-codes display | Medium | High | Comprehensive E2E updates before merge; side-by-side visual diff during rewrite |
-| Backend `MfaChallengeResponse` rename breaks existing test fixtures | Low | Medium | Grep for `MfaRequired`/`ChallengeToken` before merge; update any callers |
-| Notification emit loops if Notification Center consumer triggers re-emit | Low | Medium | `CreateAsync` has 5-min dedup window; tests should verify dedup behavior |
-| `TenantAuthConfig.MfaPolicy` values inconsistent across tests | Medium | Low | Add fixture builder for `TenantAuthConfig` with common policy presets |
-| `AuthProvider` field missing from `User` entity (if assumption wrong) | Low | High | Task 1 of plan verifies actual User entity shape before writing `useMe` type |
-| OIDC users with local MFA fallback (hybrid auth) lose access | Very low | High | Audit found no hybrid support; explicit non-goal in this spec |
+| Risk                                                                              | Likelihood | Impact | Mitigation                                                                      |
+| --------------------------------------------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------- |
+| Rewrite of security-page introduces regression in existing recovery-codes display | Medium     | High   | Comprehensive E2E updates before merge; side-by-side visual diff during rewrite |
+| Backend `MfaChallengeResponse` rename breaks existing test fixtures               | Low        | Medium | Grep for `MfaRequired`/`ChallengeToken` before merge; update any callers        |
+| Notification emit loops if Notification Center consumer triggers re-emit          | Low        | Medium | `CreateAsync` has 5-min dedup window; tests should verify dedup behavior        |
+| `TenantAuthConfig.MfaPolicy` values inconsistent across tests                     | Medium     | Low    | Add fixture builder for `TenantAuthConfig` with common policy presets           |
+| `AuthProvider` field missing from `User` entity (if assumption wrong)             | Low        | High   | Task 1 of plan verifies actual User entity shape before writing `useMe` type    |
+| OIDC users with local MFA fallback (hybrid auth) lose access                      | Very low   | High   | Audit found no hybrid support; explicit non-goal in this spec                   |
 
 ## Open questions (answer in plan)
 

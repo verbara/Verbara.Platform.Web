@@ -10,21 +10,21 @@
 
 ### High severity (3)
 
-| Package | Affected versions | Vulnerability | Source |
-|---|---|---|---|
-| **`vite`** | 8.0.0 – 8.0.4 | Path traversal in optimized deps `.map` handling, `server.fs.deny` bypass with queries, arbitrary file read via dev-server WebSocket | [GHSA-4w7w-66w2-5vf9](https://github.com/advisories/GHSA-4w7w-66w2-5vf9), [GHSA-v2wj-q39q-566r](https://github.com/advisories/GHSA-v2wj-q39q-566r), [GHSA-p9ff-h696-f583](https://github.com/advisories/GHSA-p9ff-h696-f583) |
-| **`picomatch`** | ≤2.3.1, 4.0.0 – 4.0.3 | Method injection in POSIX character classes (incorrect glob matching), ReDoS via extglob quantifiers | [GHSA-3v7f-55p6-f55p](https://github.com/advisories/GHSA-3v7f-55p6-f55p), [GHSA-c2c7-rcm5-vvqj](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj) |
-| **`path-to-regexp`** | (transitive via router) | (advisory pending detailed enumeration) | (npm audit reported as HIGH) |
+| Package              | Affected versions       | Vulnerability                                                                                                                        | Source                                                                                                                                                                                                                       |
+| -------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`vite`**           | 8.0.0 – 8.0.4           | Path traversal in optimized deps `.map` handling, `server.fs.deny` bypass with queries, arbitrary file read via dev-server WebSocket | [GHSA-4w7w-66w2-5vf9](https://github.com/advisories/GHSA-4w7w-66w2-5vf9), [GHSA-v2wj-q39q-566r](https://github.com/advisories/GHSA-v2wj-q39q-566r), [GHSA-p9ff-h696-f583](https://github.com/advisories/GHSA-p9ff-h696-f583) |
+| **`picomatch`**      | ≤2.3.1, 4.0.0 – 4.0.3   | Method injection in POSIX character classes (incorrect glob matching), ReDoS via extglob quantifiers                                 | [GHSA-3v7f-55p6-f55p](https://github.com/advisories/GHSA-3v7f-55p6-f55p), [GHSA-c2c7-rcm5-vvqj](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj)                                                                           |
+| **`path-to-regexp`** | (transitive via router) | (advisory pending detailed enumeration)                                                                                              | (npm audit reported as HIGH)                                                                                                                                                                                                 |
 
 ### Moderate severity (6)
 
-| Package | Affected versions | Vulnerability | Source |
-|---|---|---|---|
-| **`@hono/node-server`** | <1.19.13 | Middleware bypass via repeated slashes in `serveStatic` | [GHSA-92pp-h63x-v22m](https://github.com/advisories/GHSA-92pp-h63x-v22m) |
-| **`brace-expansion`** | <1.1.13, 4.0.0 – 5.0.4 | DoS via zero-step sequence (process hang + memory exhaustion) | [GHSA-f886-m6hf-6m8v](https://github.com/advisories/GHSA-f886-m6hf-6m8v) |
-| **`dompurify`** | ≤3.3.3 | `ADD_TAGS` form bypasses `FORBID_TAGS` due to short-circuit evaluation | [GHSA-39q2-94rc-95cp](https://github.com/advisories/GHSA-39q2-94rc-95cp) |
-| **`postcss`** | <8.5.10 | XSS via unescaped `</style>` in CSS Stringify output | [GHSA-qx2v-qp2m-jg93](https://github.com/advisories/GHSA-qx2v-qp2m-jg93) |
-| (2 additional moderate not enumerated above — full list in `npm audit` output) | | | |
+| Package                                                                        | Affected versions      | Vulnerability                                                          | Source                                                                   |
+| ------------------------------------------------------------------------------ | ---------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **`@hono/node-server`**                                                        | <1.19.13               | Middleware bypass via repeated slashes in `serveStatic`                | [GHSA-92pp-h63x-v22m](https://github.com/advisories/GHSA-92pp-h63x-v22m) |
+| **`brace-expansion`**                                                          | <1.1.13, 4.0.0 – 5.0.4 | DoS via zero-step sequence (process hang + memory exhaustion)          | [GHSA-f886-m6hf-6m8v](https://github.com/advisories/GHSA-f886-m6hf-6m8v) |
+| **`dompurify`**                                                                | ≤3.3.3                 | `ADD_TAGS` form bypasses `FORBID_TAGS` due to short-circuit evaluation | [GHSA-39q2-94rc-95cp](https://github.com/advisories/GHSA-39q2-94rc-95cp) |
+| **`postcss`**                                                                  | <8.5.10                | XSS via unescaped `</style>` in CSS Stringify output                   | [GHSA-qx2v-qp2m-jg93](https://github.com/advisories/GHSA-qx2v-qp2m-jg93) |
+| (2 additional moderate not enumerated above — full list in `npm audit` output) |                        |                                                                        |                                                                          |
 
 ### Direct vs transitive
 
@@ -33,13 +33,13 @@
 
 ### Risk assessment (pre-fix)
 
-| Vulnerability | Production exposure | Dev exposure | Notes |
-|---|---|---|---|
-| Vite path traversal / fs.deny / WebSocket | None (Vite is build-time only; the production output is static HTML/JS) | **Yes** — anyone running `npm run dev` exposed a vulnerable dev server | High priority for fix because devs run vite locally daily |
-| Picomatch ReDoS / POSIX injection | None (used by tooling, not runtime) | Yes | Build/lint hot path |
-| `dompurify` ADD_TAGS bypass | **Yes** — used for sanitizing user-submitted HTML (e.g., agent message content) | Yes | Direct prod risk |
-| postcss XSS in CSS stringify | None (build-time tool) | Yes | Build-time |
-| Other moderate | Mostly build/lint tools | Yes | Lower priority |
+| Vulnerability                             | Production exposure                                                             | Dev exposure                                                           | Notes                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
+| Vite path traversal / fs.deny / WebSocket | None (Vite is build-time only; the production output is static HTML/JS)         | **Yes** — anyone running `npm run dev` exposed a vulnerable dev server | High priority for fix because devs run vite locally daily |
+| Picomatch ReDoS / POSIX injection         | None (used by tooling, not runtime)                                             | Yes                                                                    | Build/lint hot path                                       |
+| `dompurify` ADD_TAGS bypass               | **Yes** — used for sanitizing user-submitted HTML (e.g., agent message content) | Yes                                                                    | Direct prod risk                                          |
+| postcss XSS in CSS stringify              | None (build-time tool)                                                          | Yes                                                                    | Build-time                                                |
+| Other moderate                            | Mostly build/lint tools                                                         | Yes                                                                    | Lower priority                                            |
 
 The `dompurify` direct prod exposure was the most user-visible — agent inbox renders sanitized message HTML, and a sanitization bypass could enable XSS. Fix priority: HIGH for that one specifically (regardless of npm severity tag).
 
@@ -60,13 +60,13 @@ found 0 vulnerabilities
 
 ### Verification
 
-| Check | Result |
-|---|---|
-| `npm audit --audit-level=high` | 0 vulnerabilities ✅ |
-| `npm audit --audit-level=critical` | 0 vulnerabilities ✅ |
-| `npm run build` | Successful, 473 ms ✅ |
-| `npm run test -- --run` | 205 / 205 passing ✅ |
-| `npm run lint` | 111 pre-existing lint errors (deferred to Track 3A — unchanged) |
+| Check                              | Result                                                          |
+| ---------------------------------- | --------------------------------------------------------------- |
+| `npm audit --audit-level=high`     | 0 vulnerabilities ✅                                            |
+| `npm audit --audit-level=critical` | 0 vulnerabilities ✅                                            |
+| `npm run build`                    | Successful, 473 ms ✅                                           |
+| `npm run test -- --run`            | 205 / 205 passing ✅                                            |
+| `npm run lint`                     | 111 pre-existing lint errors (deferred to Track 3A — unchanged) |
 
 22 transitive packages updated. No direct-dependency major-version bumps. No breaking changes observed across the test suite. The fix was clean.
 
@@ -76,15 +76,15 @@ found 0 vulnerabilities
 
 Configured at [`.github/dependabot.yml`](../../.github/dependabot.yml). Strategy:
 
-| Aspect | Configuration |
-|---|---|
-| **Schedule** | Weekly, Monday 06:00 America/Mexico_City |
-| **Ecosystems** | npm + github-actions |
-| **PR limits** | 10 npm + 5 actions |
-| **Grouping** | 9 logical groups (react-ecosystem, tanstack, vite-toolchain, eslint-toolchain, i18n, base-ui-radix, tailwind, forms, playwright) — each batched into a single PR per cycle |
-| **Major versions** | **Ignored** (`version-update:semver-major`) — handled manually in Track 3C (npm-deps-majors) to allow coordinated regression testing |
-| **Auto-merge** | Not yet configured. Will be added in Track 1C with the CI/CD pipeline (auto-merge requires green CI checks, which don't exist yet) |
-| **Commit message prefix** | `chore(deps):` for runtime, `chore(deps-dev):` for dev, `chore(ci):` for actions |
+| Aspect                    | Configuration                                                                                                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schedule**              | Weekly, Monday 06:00 America/Mexico_City                                                                                                                                   |
+| **Ecosystems**            | npm + github-actions                                                                                                                                                       |
+| **PR limits**             | 10 npm + 5 actions                                                                                                                                                         |
+| **Grouping**              | 9 logical groups (react-ecosystem, tanstack, vite-toolchain, eslint-toolchain, i18n, base-ui-radix, tailwind, forms, playwright) — each batched into a single PR per cycle |
+| **Major versions**        | **Ignored** (`version-update:semver-major`) — handled manually in Track 3C (npm-deps-majors) to allow coordinated regression testing                                       |
+| **Auto-merge**            | Not yet configured. Will be added in Track 1C with the CI/CD pipeline (auto-merge requires green CI checks, which don't exist yet)                                         |
+| **Commit message prefix** | `chore(deps):` for runtime, `chore(deps-dev):` for dev, `chore(ci):` for actions                                                                                           |
 
 **Rationale for ignoring majors:**
 
@@ -96,10 +96,10 @@ Major version bumps in this stack frequently introduce breaking changes (e.g., V
 
 Top-level direct dependencies that were transitively affected by the fix and now sit at known-clean versions (sample, not exhaustive):
 
-| Direct dep | Was | Now (post-fix) |
-|---|---|---|
-| `vite` | 8.0.x | 8.0.5+ (vulnerable range was 8.0.0-8.0.4) |
-| `dompurify` | 3.x.y | 3.3.4+ (advisory affects ≤3.3.3) |
+| Direct dep  | Was   | Now (post-fix)                            |
+| ----------- | ----- | ----------------------------------------- |
+| `vite`      | 8.0.x | 8.0.5+ (vulnerable range was 8.0.0-8.0.4) |
+| `dompurify` | 3.x.y | 3.3.4+ (advisory affects ≤3.3.3)          |
 
 Full lockfile snapshot is in `package-lock.json` (committed to repo).
 
@@ -123,7 +123,7 @@ Full lockfile snapshot is in `package-lock.json` (committed to repo).
 
 ### What is NOT covered by this baseline
 
-- Backend (`Asterisk.Platform`) vulnerabilities — separate track in the Platform repo (NuGet `dotnet list package --vulnerable`).
+- Backend (`Verbara.Platform`) vulnerabilities — separate track in the Platform repo (NuGet `dotnet list package --vulnerable`).
 - Pro overlays — closed-source, separate process.
 - Container image vulnerabilities (Docker base image scans) — defer to Track 1C if/when we publish public images.
 - Source-code SAST (CodeQL, Semgrep) — defer to Track 1C.
@@ -142,14 +142,14 @@ Full lockfile snapshot is in `package-lock.json` (committed to repo).
 
 ## 7. Acceptance criteria (Track 1B)
 
-| Criterion | Status |
-|---|---|
-| `npm audit --audit-level=high` returns 0 vulnerabilities | ✅ |
-| `npm audit --audit-level=critical` returns 0 vulnerabilities | ✅ |
-| Direct vulnerable dependencies (`dompurify`) upgraded to clean version | ✅ |
-| `.github/dependabot.yml` configured with weekly schedule + grouping | ✅ |
-| Build + tests verde post-upgrade | ✅ (build OK, 205/205 tests) |
-| Security disclosure channel published | ✅ (`security@verbara.io` in README/CONTRIBUTING/NOTICE) |
-| Baseline doc captures before/after state | ✅ (this document) |
+| Criterion                                                              | Status                                                   |
+| ---------------------------------------------------------------------- | -------------------------------------------------------- |
+| `npm audit --audit-level=high` returns 0 vulnerabilities               | ✅                                                       |
+| `npm audit --audit-level=critical` returns 0 vulnerabilities           | ✅                                                       |
+| Direct vulnerable dependencies (`dompurify`) upgraded to clean version | ✅                                                       |
+| `.github/dependabot.yml` configured with weekly schedule + grouping    | ✅                                                       |
+| Build + tests verde post-upgrade                                       | ✅ (build OK, 205/205 tests)                             |
+| Security disclosure channel published                                  | ✅ (`security@verbara.io` in README/CONTRIBUTING/NOTICE) |
+| Baseline doc captures before/after state                               | ✅ (this document)                                       |
 
 **Track 1B closed 2026-05-03 → version `1.14.1`.** Per [ADR-0005](../decisions/0005-versioning-track-end-tags.md), no tag yet — tag at end of Operational Foundation level (`v1.14.5-web`).

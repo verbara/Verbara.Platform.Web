@@ -1,7 +1,7 @@
 # v1.6.1 "Product Integrity" — Design Spec
 
 **Date:** 2026-04-11
-**Scope:** Asterisk.Platform.Web (primary) + Asterisk.Platform (1 backend endpoint)
+**Scope:** Verbara.Platform.Web (primary) + Verbara.Platform (1 backend endpoint)
 **Goal:** Fix all broken functionality, complete partially-implemented features, and improve UX quality before adding new features.
 
 ## Context
@@ -40,6 +40,7 @@ This release fixes everything that is broken or half-done before proceeding with
 **Fix:** Remove `useToggleReportActive`. In `reports-page.tsx`, use `useUpdateReport` with `{ isActive: !current }` instead.
 
 Additionally fix two type mismatches in the same file:
+
 - `ScheduledReport.id`: `number` → `string` (backend uses GUID string)
 - `ScheduledReport.schedule`: `ReportSchedule` union → `string` (backend uses cron expressions)
 
@@ -66,18 +67,20 @@ Additionally fix two type mismatches in the same file:
 **Root cause:** `src/pages/analytics/analytics-layout.tsx` (line 12) renders `<FilterBar />` without `onFilterChange`. Filter state goes nowhere.
 
 **Files affected:**
+
 - `src/analytics/cdr/cdr-page.tsx` (line 194): `useCdrList(undefined, undefined, {}, page)` — hardcoded undefined filters
 - `src/analytics/qa/qa-page.tsx` (line 27): `useQaList(undefined, undefined, {}, page)` — same, plus `[page]` has no setter (stuck at 1)
 - `src/analytics/agents/agent-intervals-page.tsx` (lines 42-46): `from`/`to` hardcoded at component mount with no setter
 - `src/analytics/shared/filter-bar.tsx` (line 40): `agent` state has no setter, Export button has no onClick
 
 **Fix:** Create `src/core/stores/analytics-filter-store.ts` (Zustand):
+
 ```typescript
 interface AnalyticsFilterState {
-  from: string;       // ISO date
-  to: string;         // ISO date
-  queue: string;      // queue ID or empty
-  channel: string;    // channel ID or empty
+  from: string; // ISO date
+  to: string; // ISO date
+  queue: string; // queue ID or empty
+  channel: string; // channel ID or empty
   setFilters: (filters: Partial<AnalyticsFilterState>) => void;
   reset: () => void;
 }
@@ -97,6 +100,7 @@ Defaults: `from` = start of current month, `to` = now.
 **Problem:** `useBillingTenantId()` reads `activeTenantId` from tenant store, but no UI sets it. `setActiveTenant` is only called at login. Platform admins managing multiple tenants can never switch context — billing pages show "Select a tenant" forever.
 
 **Fix:** Add a "Manage" icon-button action in each tenant row in `tenants-page.tsx`. On click:
+
 1. Call `useTenantStore.getState().setActiveTenant(tenant.id)`
 2. Navigate to `/admin/billing/rate-cards`
 
@@ -108,6 +112,7 @@ Also add a small tenant-context indicator in the billing pages header showing wh
 **Problem:** `defaultValues` are hardcoded (`platformName: 'Asterisk Platform'`, `defaultTimezone: 'America/Bogota'`). No `useSystemSettings` GET hook exists. Saving overwrites real settings with hardcoded values.
 
 **Fix:**
+
 1. Add `useSystemSettings()` GET hook in `use-system.ts` → `GET /api/v1/management/system/settings`
 2. In `system-page.tsx`: call `useSystemSettings()`, use `form.reset(data)` in `useEffect` when data loads. Show loading skeleton while fetching.
 
@@ -118,6 +123,7 @@ Also add a small tenant-context indicator in the billing pages header showing wh
 **Files:** `src/analytics/dashboard/trend-chart.tsx`, `overlay-chart.tsx`, `heatmap.tsx`
 **Problem:** Recharts grid/axis use hardcoded hex colors (`#e2e8f0`, `#94a3b8`) — invisible on dark backgrounds. Heatmap uses inline `rgb()`.
 **Fix:** Replace with CSS variable references:
+
 - Grid: `hsl(var(--border))`
 - Axis: `hsl(var(--muted-foreground))`
 - Chart data colors: `hsl(var(--primary))`, `hsl(var(--chart-1))` through `hsl(var(--chart-5))` (shadcn chart colors)
@@ -128,6 +134,7 @@ Also add a small tenant-context indicator in the billing pages header showing wh
 **File:** `src/core/hooks/use-sse.ts` (line 191)
 **Problem:** Fixed 2s retry, no limit, no jitter. Thundering herd on outages.
 **Fix:** Exponential backoff with jitter:
+
 ```
 attempt = 0
 onError:
@@ -168,11 +175,13 @@ onOpen:
 
 **File:** `src/core/api/hooks/use-reports.ts`
 **New hooks:**
+
 - `useRunReport()` → `POST /api/v1/admin/reports/${id}/run` — mutation, returns 202. Toast: "Report execution started".
 - `useReportHistory(id)` → `GET /api/v1/admin/reports/${id}/history?limit=25` — query, enabled when id is set.
 - Download: Plain `window.open()` to `/api/v1/admin/reports/${id}/history/${executionId}/download` (file download, no hook needed).
 
 **UI in `reports-page.tsx`:**
+
 - Add "Run" icon-button (Play) in the actions column. Shows loading spinner during execution.
 - Add "History" icon-button (Clock) that opens a Sheet with execution history table: `startedAt`, `completedAt`, `status` badge (Pending/Running/Completed/Failed), download button per row.
 
@@ -180,6 +189,7 @@ onOpen:
 
 **File:** `src/admin/tenants/tenants-page.tsx`
 **UI:** Add to the existing row dropdown menu:
+
 - "Suspend" — visible when `status === 'Active'`. Uses `useUpdateTenant` with `{ status: 'Suspended' }`. Requires `ConfirmDeleteDialog` (destructive action).
 - "Activate" — visible when `status === 'Suspended'`. Uses `useUpdateTenant` with `{ status: 'Active' }`. No confirmation needed.
 
@@ -190,6 +200,7 @@ No new hooks — reuses existing `useUpdateTenant`.
 **File:** `src/admin/campaigns/campaign-wizard.tsx` + step components
 **Problem:** `useForm<CampaignFormValues>` has no resolver. Zero client-side validation.
 **Fix:** Add Zod schemas per step:
+
 - `basicStepSchema`: `name` min 2 chars required, `queueId` required
 - `dialingStepSchema`: `dialingMode` required, `maxChannels` positive integer
 - `scheduleStepSchema`: `timezone` required, `startDate` required
@@ -202,10 +213,12 @@ Attach `resolver: zodResolver(currentStepSchema)` and add `{errors.fieldName && 
 
 **File:** `src/core/api/hooks/use-gdpr.ts`
 **New hooks:**
+
 - `usePurgePreview(scope, id)` → `GET /api/v1/admin/gdpr/purge-preview?userId=${id}` — query, returns entity counts.
 - `usePurgeUser()` → `POST /api/v1/admin/gdpr/purge-user` with `{ userId, reason }` — mutation.
 
 **UI in `gdpr-page.tsx`:**
+
 - Add scope toggle: "Contact" / "User" using Tabs component.
 - In "User" mode: userId input field, "Preview" button that shows affected entity counts (conversations, messages, auth events, audit entries), then "Purge" with confirmation dialog showing the preview summary.
 
@@ -213,10 +226,12 @@ Attach `resolver: zodResolver(currentStepSchema)` and add `{errors.fieldName && 
 
 **File:** `src/core/api/hooks/use-webhooks.ts`
 **New hooks:**
+
 - `useCircuitStatus(subscriptionId)` → `GET /api/v1/webhooks/subscriptions/${id}/circuit-status` — query.
 - `useResetCircuit()` → `POST /api/v1/webhooks/subscriptions/${id}/reset-circuit` — mutation.
 
 **UI in `webhook-detail-sheet.tsx`:**
+
 - Show circuit-breaker badge next to Active/Inactive: Closed (green), HalfOpen (amber), Open (red).
 - When Open: show "Reset Circuit Breaker" button. On click, call `useResetCircuit`, invalidate status.
 - Show failure count and last failure timestamp if available in the response.
@@ -225,13 +240,16 @@ Attach `resolver: zodResolver(currentStepSchema)` and add `{errors.fieldName && 
 
 **File:** `src/core/api/hooks/use-billing.ts`
 **New hook:**
+
 - `usePayInvoice()` → `POST /api/v1/management/invoices/${invoiceId}/pay` — mutation. Invalidates `['billing', 'invoices']`.
 
 **Type update:** Add to `Invoice` interface:
+
 - `paymentStatus: string` (values: 'Current' | 'Overdue' | 'InCollections')
 - `dueDate: string | null`
 
 **UI in `invoices-page.tsx`:**
+
 - Add "Mark Paid" button visible when `status === 'Issued'`. Confirmation dialog: "Mark invoice #{number} as paid?"
 - Show `paymentStatus` badge and `dueDate` in the detail sheet.
 
@@ -242,6 +260,7 @@ Attach `resolver: zodResolver(currentStepSchema)` and add `{errors.fieldName && 
 **Fix:** Add `useDunningStatus(tenantId)` query hook in `use-billing.ts` → `GET /api/v1/management/tenants/${tenantId}/dunning`. Enabled only when `tenantId` is truthy.
 
 **UI:** Show amber banner above quotas when dunning is active:
+
 - Phase badge: Warning / Degraded / Suspended / PendingDeletion
 - Days overdue, overdue amount
 - "View Invoice" link navigating to invoices page
@@ -250,6 +269,7 @@ Attach `resolver: zodResolver(currentStepSchema)` and add `{errors.fieldName && 
 
 **File:** `src/core/api/hooks/use-contacts.ts`
 **New hook:**
+
 - `useDeleteContact()` → `DELETE /api/v1/contacts/${id}` — mutation with `ConfirmDeleteDialog`.
 
 **UI:** Add "Delete" action in the contact context panel of the agent workspace (`contact-info.tsx`). Only visible to users with `contacts:contact:manage` permission.
@@ -264,6 +284,7 @@ Attach `resolver: zodResolver(currentStepSchema)` and add `{errors.fieldName && 
 #### C10. Dead Code Cleanup
 
 **Remove:**
+
 - `useSystemCluster` from `use-system.ts` — dead code, replaced by `use-cluster.ts` in v1.2.1. Verify `diagnostics-page.tsx` uses `use-cluster.ts` instead; update import if not.
 - `hasFeature()` and `hasAnyPermission()` from `auth-store.ts` — defined but never called from any component. Remove their test cases too.
 - `useToggleReportActive` from `use-reports.ts` — replaced in A4 by reusing `useUpdateReport`.
@@ -282,10 +303,10 @@ Attach `resolver: zodResolver(currentStepSchema)` and add `{errors.fieldName && 
 
 ## Repos Affected
 
-| Repo | Changes |
-|------|---------|
-| Asterisk.Platform.Web | 25 items (all frontend) |
-| Asterisk.Platform | 1 item (A3: force-logout endpoint) |
+| Repo                 | Changes                            |
+| -------------------- | ---------------------------------- |
+| Verbara.Platform.Web | 25 items (all frontend)            |
+| Verbara.Platform     | 1 item (A3: force-logout endpoint) |
 
 ## Verification
 

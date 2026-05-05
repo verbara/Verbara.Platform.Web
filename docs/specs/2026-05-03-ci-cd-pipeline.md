@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-03
 **Parent track:** v1.14.x Operational Foundation — Track 1C
-**Scope:** Platform.Web only. GitHub Actions on `Harol-Reina/Asterisk.Platform.Web`. Zero backend changes.
+**Scope:** Platform.Web only. GitHub Actions on `verbara/Verbara.Platform.Web`. Zero backend changes.
 
 ## Context
 
@@ -39,7 +39,7 @@ jobs:
   lint:
     needs: setup
     steps:
-      - run: npm run lint   # incluye eslint . && npm run i18n:check
+      - run: npm run lint # incluye eslint . && npm run i18n:check
 
   test:
     needs: setup
@@ -52,14 +52,14 @@ jobs:
   build:
     needs: setup
     steps:
-      - run: npm run build   # tsc -b && vite build, valida TypeScript
+      - run: npm run build # tsc -b && vite build, valida TypeScript
       - uses: actions/upload-artifact@v4
         with: { name: dist, path: ./dist, retention-days: 7 }
 
   audit:
     needs: setup
     steps:
-      - run: npm audit --audit-level=high   # fails on HIGH/CRITICAL
+      - run: npm audit --audit-level=high # fails on HIGH/CRITICAL
 ```
 
 **Caching:** `actions/setup-node` con `cache: 'npm'` cubre `~/.npm`. Adicional para Vite: `actions/cache@v4` con key `vite-${{ hashFiles('package-lock.json', 'vite.config.ts') }}` sobre `node_modules/.vite`.
@@ -71,6 +71,7 @@ jobs:
 **Razón del opt-in:** los E2E necesitan el backend Platform demo running. Hasta que tengamos un docker-compose stack en CI o un staging endpoint público, los E2E corren en máquinas locales o en runs explícitos.
 
 **Jobs:**
+
 1. Setup + checkout + Node 22 + `npm ci`
 2. Build + start nginx local
 3. Wait for backend health (`http://platform-demo.local:5000/health`) — TBD: cómo proveerlo en CI (skip si no disponible)
@@ -100,7 +101,7 @@ Decisión: requirir 1 PR review de un colaborador. Para single-maintainer hoy, e
 
 1. Crear `.github/workflows/ci.yml` con los 5 jobs
 2. Crear `.github/workflows/playwright.yml` con opt-in label
-3. Configurar branch protection vía `gh api repos/Harol-Reina/Asterisk.Platform.Web/branches/main/protection ...`
+3. Configurar branch protection vía `gh api repos/verbara/Verbara.Platform.Web/branches/main/protection ...`
 4. Verificar: PR de prueba con commit que rompe lint queda bloqueado; otro con todo verde queda mergeable
 5. Documentar el flujo en CONTRIBUTING.md (Track 1A)
 
@@ -149,6 +150,7 @@ Auto-merge logic: `dependabot/fetch-metadata@v2` extracts update type; if `patch
 ### Branch protection: NOT including `lint` as required
 
 Per the lint deferral above, branch protection required-checks list is:
+
 - `build`, `test`, `i18n`, `audit` (4 required, all blocking)
 - NOT `lint` (non-blocking until Track 3A)
 - NOT `e2e` / `playwright` (opt-in)

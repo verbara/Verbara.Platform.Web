@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **Asterisk.Platform.Web** are documented here.
+All notable changes to **Verbara.Platform.Web** are documented here.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) ·
 Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -155,7 +155,7 @@ were left untouched.
 
 This brings every `t()` call site in the codebase to a
 fully-resolvable key. Future i18n work can focus on
-extracting *more* hardcoded strings rather than backfilling
+extracting _more_ hardcoded strings rather than backfilling
 already-extracted-but-unmapped ones.
 
 ---
@@ -193,7 +193,7 @@ translates these surfaces.
   `searchPlaceholder`, plus a new `columns` sub-section with
   `name`, `endpointUrl`, `eventTypes`, `status`, `created`
   (9 keys total under existing `webhooks.{status, detail, form,
-  entity_type}`).
+entity_type}`).
 
 ### Verification
 
@@ -220,21 +220,22 @@ Spanish UI) now read their entity noun from i18n.
 
 ### Migrated callers
 
-| File | Before | After (key) |
-|---|---|---|
-| `admin/bots/bot-list-page.tsx` | `"Bot"` | `admin:bots.entity_type` |
-| `admin/canned-responses/canned-responses-page.tsx` | `"Canned Response"` | `admin:cannedResponses.entity_type` |
-| `admin/campaigns/campaign-detail-page.tsx` | `"Campaign"` | `admin:campaigns.entity_type` |
-| `admin/reports/reports-page.tsx` | `"Report"` | `admin:reports.entity_type` |
-| `admin/roles/roles-page.tsx` | `"role"` | `admin:roles.entity_type` |
-| `admin/routes/routes-page.tsx` | `"Route"` | `admin:routes.entity_type` |
-| `admin/surveys/survey-list-page.tsx` | `"Survey"` | `admin:surveys.entity_type` |
-| `admin/trunks/trunks-page.tsx` | `"Trunk"` | `admin:trunks.entity_type` |
-| `admin/webhooks/webhooks-page.tsx` | `"webhook subscription"` | `admin:webhooks.entity_type` |
+| File                                               | Before                   | After (key)                         |
+| -------------------------------------------------- | ------------------------ | ----------------------------------- |
+| `admin/bots/bot-list-page.tsx`                     | `"Bot"`                  | `admin:bots.entity_type`            |
+| `admin/canned-responses/canned-responses-page.tsx` | `"Canned Response"`      | `admin:cannedResponses.entity_type` |
+| `admin/campaigns/campaign-detail-page.tsx`         | `"Campaign"`             | `admin:campaigns.entity_type`       |
+| `admin/reports/reports-page.tsx`                   | `"Report"`               | `admin:reports.entity_type`         |
+| `admin/roles/roles-page.tsx`                       | `"role"`                 | `admin:roles.entity_type`           |
+| `admin/routes/routes-page.tsx`                     | `"Route"`                | `admin:routes.entity_type`          |
+| `admin/surveys/survey-list-page.tsx`               | `"Survey"`               | `admin:surveys.entity_type`         |
+| `admin/trunks/trunks-page.tsx`                     | `"Trunk"`                | `admin:trunks.entity_type`          |
+| `admin/webhooks/webhooks-page.tsx`                 | `"webhook subscription"` | `admin:webhooks.entity_type`        |
 
 ### Locales
 
 `admin.json` (3 locales):
+
 - Added `entity_type` to existing sections: `bots`, `campaigns`,
   `reports`, `routes`, `surveys`, `trunks`, `webhooks`.
 - Created new minimal sections: `cannedResponses.entity_type`
@@ -285,11 +286,12 @@ shape carries i18n keys instead of frozen English strings.
 
 **`src/admin/flows/property-panel.tsx`** — "Properties" header,
 "No configurable properties." empty state, 14 unique field labels
-+ 2 disambiguating keys (`collect_input_variable` for "Save to
-Variable", `set_variable_name` for "Variable") so the same `data`
-key can carry different labels across node types. "Queue ID"
-input placeholder. Refactored `PropertyField.label` → `labelKey`
-under `flows.fields.*`.
+
+- 2 disambiguating keys (`collect_input_variable` for "Save to
+  Variable", `set_variable_name` for "Variable") so the same `data`
+  key can carry different labels across node types. "Queue ID"
+  input placeholder. Refactored `PropertyField.label` → `labelKey`
+  under `flows.fields.*`.
 
 **`src/admin/flows/flow-designer.tsx`** — default `flowName`
 state value reads `flows.untitled` instead of hardcoded "Untitled
@@ -408,8 +410,8 @@ the "Type X to confirm." instruction. Button label cycles through
 ### Locales
 
 - `common.confirm_delete_dialog.{title, description_prefix,
-  description_suffix, type_to_confirm_prefix,
-  type_to_confirm_suffix, cancel, delete, deleting, wait_seconds}`
+description_suffix, type_to_confirm_prefix,
+type_to_confirm_suffix, cancel, delete, deleting, wait_seconds}`
   added in 3 locales.
 - New entity nouns: `agent.context.contact_entity_type`,
   `admin.billing.rate_cards.entity_label`,
@@ -458,14 +460,15 @@ Cancel/Saving.../Update/Create).
 
 **`src/admin/dnc-lists/dnc-list-detail.tsx`** — loading + not-
 found states, Back button, scope_summary header with `{{scope}}`
-+ `{{count}}`, Import Numbers CTA, Add Number section + 2 input
-labels (phone/reason) + placeholders + Add button, Check Number
-section + button + result messages via `<Trans>` with `<strong>`
-component for `{{phone}}`, blocked-by-list suffix with `{{list}}`,
-not-blocked variant, Entries section + Importing.../Import CSV
-toggle, loading-entries, no-entries, 3 column headers, never
-expiry placeholder, Previous/`Page {{n}}`/Next pagination, remove
-ConfirmDialog (title/description/confirm).
+
+- `{{count}}`, Import Numbers CTA, Add Number section + 2 input
+  labels (phone/reason) + placeholders + Add button, Check Number
+  section + button + result messages via `<Trans>` with `<strong>`
+  component for `{{phone}}`, blocked-by-list suffix with `{{list}}`,
+  not-blocked variant, Entries section + Importing.../Import CSV
+  toggle, loading-entries, no-entries, 3 column headers, never
+  expiry placeholder, Previous/`Page {{n}}`/Next pagination, remove
+  ConfirmDialog (title/description/confirm).
 
 **`src/admin/dnc-lists/dnc-import-wizard.tsx`** — dialog title,
 3 step descriptions (upload/preview/result), drop hint + Browse
@@ -631,7 +634,8 @@ option, Manual Holiday Exclusions label + Add button.
 label + help + select placeholder + None option + plural entry
 count badge, 3 attempt-limit field labels (Max Attempts, Retry
 Interval, Time Between Attempts), Compliance Rule Summary label
-+ placeholder.
+
+- placeholder.
 
 **`src/admin/campaigns/steps/contacts-step.tsx`** — Upload Contact
 List label, drop hint, Select File button, validation report
@@ -783,7 +787,7 @@ interpolation, Confirm).
 Added under `admin.json` (3 locales):
 
 - `tenants.list.*` (new sub-section under existing `tenants.{detail,
-  settings}` block)
+settings}` block)
 - `cluster.*` (new top-level — distinct from existing
   `cluster-nodes.detail` for the node-detail drawer)
 - `system.diagnostics.*` (new sub-section under existing `system.*`
@@ -907,7 +911,7 @@ translated copy across every CRUD surface that consumes them.
   button (Saving…/Save), no-tenant message via `<Trans>`.
 - `usage-page.tsx` — page header, filter labels (From, Until, Type,
   All types), Usage by type chart heading, summary cards `{count}
-  records` plural, Detailed records heading, search placeholder, all
+records` plural, Detailed records heading, search placeholder, all
   6 table column headers (Time, Type, Quantity, Unit, Channel,
   Reference), no-tenant message via `<Trans>`.
 
@@ -916,9 +920,9 @@ translated copy across every CRUD surface that consumes them.
 Added under `admin.json` (3 locales: es-419, en-US, pt-BR):
 
 - `shared.{placeholder_pending, data_table.*, confirm_dialog.*,
-  contact_search.*}`
+contact_search.*}`
 - `billing.{select_tenant_*_prefix/suffix, tenants_link, rate_cards.*,
-  invoices.*, quotas.*, usage.*}`
+invoices.*, quotas.*, usage.*}`
 
 Plural forms (`_one` / `_other`) used for `entries_count`,
 `records_count`, and dunning `days`.
@@ -1000,12 +1004,14 @@ operations digital-monitor + wallboard live states.
 ### Added translation keys
 
 **`analytics.json`** (3 locales):
+
 - `agent_intervals.{title,col_agent,col_interval,col_handled,col_aht,col_occupancy,col_rna,col_transfers,empty}`
 - `current_interval.{title,offered,answered,sla,aht}`
 - `bot_analytics.{title,conversations,resolution,handoff,avg_turns,resolved_prefix,handed_off_prefix,failed_prefix,resolved_label,handoff_label,failed_label}`
 - `transcript.{agent,caller}`
 
 **`operations.json`** (3 locales):
+
 - `monitor.{no_digital_sessions,select_to_monitor,no_messages_yet,takeover,close,coaching_note_label,coaching_note_placeholder,takeover_dialog_title,takeover_dialog_desc,close_dialog_title,close_dialog_desc}`
 - `wallboard.{on_call,paused,live_queue_states,empty}`
 
@@ -1219,7 +1225,7 @@ without blocking this slice.
 
 **Cosmetic version bump only — no source change.** Coordinated with the
 Platform-side AHH (Auth Hotpath Hardening) train shipped 2026-04-27 as
-`Asterisk.Platform 1.14.0`. AHH lifts the `POST /auth/login` knee from
+`Verbara.Platform 1.14.0`. AHH lifts the `POST /auth/login` knee from
 ~75 req/s → ~220 req/s single-replica (~880 req/s 4-replica aggregate
 projected) via:
 
