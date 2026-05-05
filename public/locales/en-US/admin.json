@@ -60,7 +60,9 @@
     "securityAudit": "Audit",
     "securityImpersonation": "Impersonation",
     "retention": "Retention",
-    "consent": "Consent"
+    "consent": "Consent",
+    "notifications": "Notifications",
+    "notificationRules": "Rules"
   },
   "api-keys": {
     "title": "API Keys",
@@ -2613,5 +2615,148 @@
     },
     "empty": "No contacts found. Try a different search term.",
     "save": "Save"
+  },
+  "notifications": {
+    "rules": {
+      "title": "Notification Rules",
+      "description": "Configure automated notification rules based on system events.",
+      "create": "New Rule",
+      "searchPlaceholder": "Search rules...",
+      "emptyState": "No notification rules configured yet.",
+      "emptyStateCta": "Create your first rule",
+      "entity_type": "notification rule",
+      "columns": {
+        "name": "Name",
+        "eventType": "Event Type",
+        "channels": "Channels",
+        "severity": "Severity",
+        "recipients": "Recipients",
+        "state": "State",
+        "lastFired": "Last Fired"
+      },
+      "state": {
+        "active": "Active",
+        "paused": "Paused"
+      },
+      "severity": {
+        "Info": "Info",
+        "Warning": "Warning",
+        "Critical": "Critical"
+      },
+      "channels": {
+        "Email": "Email",
+        "SMS": "SMS",
+        "Push": "Push",
+        "Webhook": "Webhook",
+        "InApp": "In-App"
+      },
+      "form": {
+        "createTitle": "Create Notification Rule",
+        "editTitle": "Edit Notification Rule",
+        "createDescription": "Define when and how to send automated notifications.",
+        "editDescription": "Update the notification rule configuration.",
+        "name": "Rule Name",
+        "namePlaceholder": "e.g. High queue wait alert",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional description...",
+        "sections": {
+          "trigger": "Trigger",
+          "conditions": "Conditions",
+          "actions": "Actions",
+          "schedule": "Schedule",
+          "throttling": "Throttling"
+        },
+        "trigger": {
+          "eventType": "Event Type",
+          "eventTypePlaceholder": "Select event type...",
+          "subConditions": "Event Parameters"
+        },
+        "conditions": {
+          "title": "Filter Conditions",
+          "add": "Add Condition",
+          "field": "Field",
+          "fieldPlaceholder": "Select field...",
+          "operator": "Operator",
+          "value": "Value",
+          "valuePlaceholder": "Enter value...",
+          "empty": "No conditions — rule fires on every matching event."
+        },
+        "actions": {
+          "title": "Notification Channels",
+          "recipients": "Recipients",
+          "recipientsPlaceholder": "Enter recipients...",
+          "template": "Message Template",
+          "templatePlaceholder": "Use {{variable}} for dynamic content...",
+          "webhookUrl": "Webhook URL",
+          "webhookUrlPlaceholder": "https://...",
+          "severity": "Severity"
+        },
+        "schedule": {
+          "mode": "Active Window",
+          "always": "Always",
+          "businessHours": "Business Hours",
+          "custom": "Custom Schedule",
+          "timezone": "Timezone",
+          "addWindow": "Add Time Window",
+          "days": "Days",
+          "startTime": "Start",
+          "endTime": "End"
+        },
+        "throttling": {
+          "maxPerPeriod": "Max Notifications",
+          "period": "Per",
+          "hour": "Hour",
+          "day": "Day",
+          "cooldown": "Cooldown",
+          "cooldownMinutes": "minutes after firing"
+        },
+        "save": "Save Rule",
+        "create": "Create Rule",
+        "cancel": "Cancel"
+      },
+      "preview": {
+        "title": "Rule Preview",
+        "description": "Estimate how this rule would have fired in the last 24 hours.",
+        "runPreview": "Run Preview",
+        "running": "Running...",
+        "estimatedFires": "Estimated Fires (24h)",
+        "matchingEvents": "Matching Events",
+        "estimatedRecipients": "Estimated Recipients",
+        "noMatches": "No matching events in the last 24 hours."
+      },
+      "history": {
+        "title": "Firing History",
+        "noFirings": "No firings recorded yet.",
+        "columns": {
+          "firedAt": "Fired At",
+          "event": "Event",
+          "channels": "Channels",
+          "status": "Status"
+        },
+        "status": {
+          "success": "Success",
+          "partial": "Partial",
+          "failed": "Failed"
+        }
+      },
+      "detail": {
+        "title": "Rule Details",
+        "tabs": {
+          "overview": "Overview",
+          "history": "History"
+        },
+        "actions": {
+          "edit": "Edit",
+          "pause": "Pause",
+          "activate": "Activate",
+          "preview": "Preview"
+        }
+      },
+      "validation": {
+        "nameRequired": "Rule name is required.",
+        "eventTypeRequired": "Event type is required.",
+        "channelRequired": "At least one notification channel is required."
+      }
+    }
   }
 }

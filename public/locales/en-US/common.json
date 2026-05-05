@@ -290,6 +290,13 @@
       "holidayAdded": "Holiday added",
       "holidayRemoved": "Holiday removed"
     },
+    "notificationRules": {
+      "created": "Notification rule created",
+      "updated": "Notification rule updated",
+      "deleted": "Notification rule deleted",
+      "paused": "Notification rule paused",
+      "activated": "Notification rule activated"
+    },
     "webhooks": {
       "subscriptionCreated": "Webhook subscription created",
       "subscriptionUpdated": "Webhook subscription updated",

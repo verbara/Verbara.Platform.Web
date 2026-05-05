@@ -290,6 +290,13 @@
       "holidayAdded": "Feriado adicionado",
       "holidayRemoved": "Feriado removido"
     },
+    "notificationRules": {
+      "created": "Regra de notificação criada",
+      "updated": "Regra de notificação atualizada",
+      "deleted": "Regra de notificação excluída",
+      "paused": "Regra de notificação pausada",
+      "activated": "Regra de notificação ativada"
+    },
     "webhooks": {
       "subscriptionCreated": "Assinatura de webhook criada",
       "subscriptionUpdated": "Assinatura de webhook atualizada",

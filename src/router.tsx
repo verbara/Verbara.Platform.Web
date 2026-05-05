@@ -71,6 +71,7 @@ const AuthEventsPage = lazy(() => import('@/admin/system/auth-events-page'));
 const AuthSessionsPage = lazy(() => import('@/admin/system/auth-sessions-page'));
 const WebhooksPage = lazy(() => import('@/admin/webhooks/webhooks-page'));
 const DeadLetterPage = lazy(() => import('@/admin/webhooks/dead-letter-page'));
+const NotificationRulesPage = lazy(() => import('@/admin/notifications/rules-page'));
 const GdprPage = lazy(() => import('@/admin/gdpr/gdpr-page'));
 const PurgeLogPage = lazy(() => import('@/admin/gdpr/purge-log-page'));
 const ConsentManagementPage = lazy(() => import('@/admin/compliance/consent-management-page'));
@@ -818,6 +819,16 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:tenant:configure" redirect>
                 <LazyLoad>
                   <DeadLetterPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'notifications/rules',
+            element: (
+              <PermissionGuard requires="notifications:rule:configure" redirect>
+                <LazyLoad>
+                  <NotificationRulesPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

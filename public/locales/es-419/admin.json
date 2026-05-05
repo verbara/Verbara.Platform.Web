@@ -60,7 +60,9 @@
     "securityAudit": "Auditoría",
     "securityImpersonation": "Suplantación",
     "retention": "Retención",
-    "consent": "Consentimiento"
+    "consent": "Consentimiento",
+    "notifications": "Notificaciones",
+    "notificationRules": "Reglas"
   },
   "api-keys": {
     "title": "API Keys",
@@ -2613,5 +2615,148 @@
     },
     "empty": "No se encontraron contactos. Intente con otro término de búsqueda.",
     "save": "Guardar"
+  },
+  "notifications": {
+    "rules": {
+      "title": "Reglas de Notificación",
+      "description": "Configure reglas de notificación automáticas basadas en eventos del sistema.",
+      "create": "Nueva Regla",
+      "searchPlaceholder": "Buscar reglas...",
+      "emptyState": "No hay reglas de notificación configuradas.",
+      "emptyStateCta": "Cree su primera regla",
+      "entity_type": "regla de notificación",
+      "columns": {
+        "name": "Nombre",
+        "eventType": "Tipo de Evento",
+        "channels": "Canales",
+        "severity": "Severidad",
+        "recipients": "Destinatarios",
+        "state": "Estado",
+        "lastFired": "Último Disparo"
+      },
+      "state": {
+        "active": "Activa",
+        "paused": "Pausada"
+      },
+      "severity": {
+        "Info": "Info",
+        "Warning": "Advertencia",
+        "Critical": "Crítica"
+      },
+      "channels": {
+        "Email": "Email",
+        "SMS": "SMS",
+        "Push": "Push",
+        "Webhook": "Webhook",
+        "InApp": "En App"
+      },
+      "form": {
+        "createTitle": "Crear Regla de Notificación",
+        "editTitle": "Editar Regla de Notificación",
+        "createDescription": "Defina cuándo y cómo enviar notificaciones automáticas.",
+        "editDescription": "Actualice la configuración de la regla de notificación.",
+        "name": "Nombre de la Regla",
+        "namePlaceholder": "ej. Alerta de cola con alta espera",
+        "description": "Descripción",
+        "descriptionPlaceholder": "Descripción opcional...",
+        "sections": {
+          "trigger": "Disparador",
+          "conditions": "Condiciones",
+          "actions": "Acciones",
+          "schedule": "Horario",
+          "throttling": "Limitación"
+        },
+        "trigger": {
+          "eventType": "Tipo de Evento",
+          "eventTypePlaceholder": "Seleccione tipo de evento...",
+          "subConditions": "Parámetros del Evento"
+        },
+        "conditions": {
+          "title": "Condiciones de Filtro",
+          "add": "Agregar Condición",
+          "field": "Campo",
+          "fieldPlaceholder": "Seleccione campo...",
+          "operator": "Operador",
+          "value": "Valor",
+          "valuePlaceholder": "Ingrese valor...",
+          "empty": "Sin condiciones — la regla se dispara en cada evento coincidente."
+        },
+        "actions": {
+          "title": "Canales de Notificación",
+          "recipients": "Destinatarios",
+          "recipientsPlaceholder": "Ingrese destinatarios...",
+          "template": "Plantilla de Mensaje",
+          "templatePlaceholder": "Use {{variable}} para contenido dinámico...",
+          "webhookUrl": "URL del Webhook",
+          "webhookUrlPlaceholder": "https://...",
+          "severity": "Severidad"
+        },
+        "schedule": {
+          "mode": "Ventana Activa",
+          "always": "Siempre",
+          "businessHours": "Horario Laboral",
+          "custom": "Horario Personalizado",
+          "timezone": "Zona Horaria",
+          "addWindow": "Agregar Ventana",
+          "days": "Días",
+          "startTime": "Inicio",
+          "endTime": "Fin"
+        },
+        "throttling": {
+          "maxPerPeriod": "Máx. Notificaciones",
+          "period": "Por",
+          "hour": "Hora",
+          "day": "Día",
+          "cooldown": "Enfriamiento",
+          "cooldownMinutes": "minutos después de disparar"
+        },
+        "save": "Guardar Regla",
+        "create": "Crear Regla",
+        "cancel": "Cancelar"
+      },
+      "preview": {
+        "title": "Vista Previa de la Regla",
+        "description": "Estime cuántas veces se habría disparado esta regla en las últimas 24 horas.",
+        "runPreview": "Ejecutar Vista Previa",
+        "running": "Ejecutando...",
+        "estimatedFires": "Disparos Estimados (24h)",
+        "matchingEvents": "Eventos Coincidentes",
+        "estimatedRecipients": "Destinatarios Estimados",
+        "noMatches": "Sin eventos coincidentes en las últimas 24 horas."
+      },
+      "history": {
+        "title": "Historial de Disparos",
+        "noFirings": "No se han registrado disparos.",
+        "columns": {
+          "firedAt": "Disparado",
+          "event": "Evento",
+          "channels": "Canales",
+          "status": "Estado"
+        },
+        "status": {
+          "success": "Éxito",
+          "partial": "Parcial",
+          "failed": "Fallido"
+        }
+      },
+      "detail": {
+        "title": "Detalles de la Regla",
+        "tabs": {
+          "overview": "General",
+          "history": "Historial"
+        },
+        "actions": {
+          "edit": "Editar",
+          "pause": "Pausar",
+          "activate": "Activar",
+          "preview": "Vista Previa"
+        }
+      },
+      "validation": {
+        "nameRequired": "El nombre de la regla es obligatorio.",
+        "eventTypeRequired": "El tipo de evento es obligatorio.",
+        "channelRequired": "Se requiere al menos un canal de notificación."
+      }
+    }
   }
 }

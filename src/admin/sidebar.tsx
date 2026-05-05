@@ -45,6 +45,7 @@ import {
   ShieldAlert,
   UserCog,
   Database,
+  BellRing,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -259,6 +260,20 @@ const groups: SidebarGroup[] = [
         to: '/admin/webhooks/dead-letter',
         icon: TriangleAlert,
         requiredPermission: 'system:tenant:configure',
+      },
+    ],
+  },
+  {
+    key: 'notifications',
+    labelKey: 'admin:sidebar.notifications',
+    requiredPermission: 'notifications:rule:configure',
+    items: [
+      {
+        key: 'notification-rules',
+        labelKey: 'admin:sidebar.notificationRules',
+        to: '/admin/notifications/rules',
+        icon: BellRing,
+        requiredPermission: 'notifications:rule:configure',
       },
     ],
   },
