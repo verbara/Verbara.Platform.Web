@@ -3,10 +3,22 @@ import { customFetch } from '@/core/api/client';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+export type TenantStatus =
+  | 'Active'
+  | 'Suspended'
+  | 'Deleted'
+  | 'Warning'
+  | 'Degraded'
+  | 'PendingDeletion';
+
+export type TenantType = 'Platform' | 'Partner' | 'Customer';
+
 export interface Tenant {
   tenantId: string;
   name: string;
-  status: string;
+  status: TenantStatus;
+  type: TenantType;
+  parentTenantId: string | null;
   maxConcurrentChannels: number;
   maxActiveCampaigns: number;
   metadata?: Record<string, string>;
@@ -26,9 +38,17 @@ export interface TenantStats {
 export interface CreateTenantInput {
   tenantId: string;
   name: string;
+  type?: TenantType;
+  parentTenantId?: string;
+  template?: string;
   maxConcurrentChannels?: number;
   maxActiveCampaigns?: number;
   metadata?: Record<string, string>;
+}
+
+export interface StatusUpdateResponse {
+  id: string;
+  status: string;
 }
 
 export interface UpdateTenantInput {
@@ -41,16 +61,14 @@ export interface UpdateTenantInput {
 export function useTenants() {
   return useQuery({
     queryKey: ['tenants'],
-    queryFn: () =>
-      customFetch<Tenant[]>({ url: '/api/v1/management/tenants', method: 'GET' }),
+    queryFn: () => customFetch<Tenant[]>({ url: '/api/v1/management/tenants', method: 'GET' }),
   });
 }
 
 export function useTenant(id: string) {
   return useQuery({
     queryKey: ['tenant', id],
-    queryFn: () =>
-      customFetch<Tenant>({ url: `/api/v1/management/tenants/${id}`, method: 'GET' }),
+    queryFn: () => customFetch<Tenant>({ url: `/api/v1/management/tenants/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -93,6 +111,42 @@ export function useDeleteTenant() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenants'] });
       toast.success(t('toasts.tenants.deleted'));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useSuspendTenant() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
+  return useMutation({
+    mutationFn: (id: string) =>
+      customFetch<StatusUpdateResponse>({
+        url: `/api/v1/management/tenants/${id}/suspend`,
+        method: 'POST',
+      }),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ['tenants'] });
+      qc.invalidateQueries({ queryKey: ['tenant', id] });
+      toast.success(t('toasts.tenants.suspended'));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useActivateTenant() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
+  return useMutation({
+    mutationFn: (id: string) =>
+      customFetch<StatusUpdateResponse>({
+        url: `/api/v1/management/tenants/${id}/activate`,
+        method: 'POST',
+      }),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ['tenants'] });
+      qc.invalidateQueries({ queryKey: ['tenant', id] });
+      toast.success(t('toasts.tenants.activated'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
