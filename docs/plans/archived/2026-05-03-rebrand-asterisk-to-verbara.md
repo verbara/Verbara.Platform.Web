@@ -40,6 +40,7 @@ Es un trabajo coordinado de ~2-4 semanas calendario. Se ejecuta **DESPUÉS de Tr
 **Repos afectados:** los 4.
 
 **Tareas por repo:**
+
 1. Crear/actualizar `LICENSE` con copyright `Copyright 2026-present Harol A. Reina H. and Verbara Contributors` (Apache 2.0 para Platform/Web; mantener MIT en Sdk; mantener Commercial en Sdk.Pro)
 2. Crear `NOTICE` con cross-repo matrix bajo branding Verbara
 3. Crear/actualizar `CONTRIBUTING.md` con DCO requirement + `verbara.io` emails
@@ -56,6 +57,7 @@ Es un trabajo coordinado de ~2-4 semanas calendario. Se ejecuta **DESPUÉS de Tr
 **Objetivo:** Mover los 4 repos a `github.com/verbara` con redirects activos.
 
 **Tareas:**
+
 1. Crear `github.com/verbara` org (action del user, ya documentada)
 2. Para cada repo, en **Settings → Transfer**: transferir de `Harol-Reina/<oldname>` a `verbara/<oldname>`
 3. GitHub mantiene redirect 301 automáticamente del URL viejo → nuevo (cuántas semanas/meses depende del repo activity)
@@ -69,14 +71,15 @@ Es un trabajo coordinado de ~2-4 semanas calendario. Se ejecuta **DESPUÉS de Tr
 
 **Objetivo:** Renombrar cada repo en GitHub al nombre final (`verbara-X`).
 
-| Repo actual | Nombre nuevo |
-|---|---|
-| `verbara/Asterisk.Sdk` | `verbara/verbara-sdk` |
-| `verbara/Asterisk.Sdk.Pro` | `verbara/verbara-sdk-pro` |
-| `verbara/Asterisk.Platform` | `verbara/verbara-platform` |
-| `verbara/Asterisk.Platform.Web` | `verbara/verbara-web` |
+| Repo actual                     | Nombre nuevo               |
+| ------------------------------- | -------------------------- |
+| `verbara/Asterisk.Sdk`          | `verbara/verbara-sdk`      |
+| `verbara/Asterisk.Sdk.Pro`      | `verbara/verbara-sdk-pro`  |
+| `verbara/Asterisk.Platform`     | `verbara/verbara-platform` |
+| `verbara/Asterisk.Platform.Web` | `verbara/verbara-web`      |
 
 **Tareas:**
+
 1. Settings → Rename (uno por uno)
 2. GitHub redirect 301 mantiene los URLs viejos funcionando
 3. Actualizar `git remote set-url origin git@github.com:verbara/verbara-X.git` localmente
@@ -115,6 +118,7 @@ Mismo pattern + actualizar dependency references a `Verbara.Sdk` y `Verbara.Sdk.
 **Objetivo:** Cambiar `asterisk-platform-web` → `verbara-web` en `package.json` + actualizar referencias internas.
 
 #### Tareas
+
 1. `package.json` → `"name": "verbara-web"`
 2. Buscar referencias a `asterisk-platform-web` en:
    - `package-lock.json` (regenera con `npm install`)
@@ -186,17 +190,17 @@ cd ~/source/verbara-web && npx playwright test
 
 ## Estimación
 
-| Fase | Calendario | Notas |
-|---|---|---|
-| 1 — Branding superficial | 1-2 días | Web ✅ done; faltan Sdk + Pro + Platform |
-| 2 — Crear org + transferir | 1 día | Mecánico |
-| 3 — Rename repos | 1 día | Mecánico |
-| 4 — Namespaces .NET | 1-2 semanas | Trabajo serio, repo por repo |
-| 5 — Rename Web | 3-5 días | Más simple que .NET |
-| 6 — Cross-repo deps | 3-5 días | Coordinación |
-| 7 — Docker | 2-3 días | Mecánico |
-| 8 — Anuncio público | (post-launch) | Cuando se decida publicar |
-| **Total** | **~3-5 semanas** | Calendario, no full-time effort |
+| Fase                       | Calendario       | Notas                                    |
+| -------------------------- | ---------------- | ---------------------------------------- |
+| 1 — Branding superficial   | 1-2 días         | Web ✅ done; faltan Sdk + Pro + Platform |
+| 2 — Crear org + transferir | 1 día            | Mecánico                                 |
+| 3 — Rename repos           | 1 día            | Mecánico                                 |
+| 4 — Namespaces .NET        | 1-2 semanas      | Trabajo serio, repo por repo             |
+| 5 — Rename Web             | 3-5 días         | Más simple que .NET                      |
+| 6 — Cross-repo deps        | 3-5 días         | Coordinación                             |
+| 7 — Docker                 | 2-3 días         | Mecánico                                 |
+| 8 — Anuncio público        | (post-launch)    | Cuando se decida publicar                |
+| **Total**                  | **~3-5 semanas** | Calendario, no full-time effort          |
 
 ## Dependencias
 
@@ -205,10 +209,10 @@ cd ~/source/verbara-web && npx playwright test
 
 ## Mitigación de riesgos
 
-| Riesgo | Mitigación |
-|---|---|
-| Romper builds intermedios | Cada sub-fase debe terminar en build verde + tests verde antes de mergear |
-| Romper dependencias downstream (si hay externos) | Mantener publicación dual de paquetes Asterisk.* + Verbara.* por 6-12 meses |
-| Confusión durante la transición | Notas transitional explícitas en READMEs ("formerly Asterisk.X") |
-| Olvidar referencias a "Asterisk" | Final pass con `grep -ri "Asterisk" --include="*.cs" --include="*.ts" --include="*.md"` antes de declarar done |
-| Conflicto con menciones legítimas a "Asterisk PBX" (Sangoma) | Mantener esas referencias intactas (son atribuciones a otro producto, no nuestro branding) |
+| Riesgo                                                       | Mitigación                                                                                                     |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Romper builds intermedios                                    | Cada sub-fase debe terminar en build verde + tests verde antes de mergear                                      |
+| Romper dependencias downstream (si hay externos)             | Mantener publicación dual de paquetes Asterisk._ + Verbara._ por 6-12 meses                                    |
+| Confusión durante la transición                              | Notas transitional explícitas en READMEs ("formerly Asterisk.X")                                               |
+| Olvidar referencias a "Asterisk"                             | Final pass con `grep -ri "Asterisk" --include="*.cs" --include="*.ts" --include="*.md"` antes de declarar done |
+| Conflicto con menciones legítimas a "Asterisk PBX" (Sangoma) | Mantener esas referencias intactas (son atribuciones a otro producto, no nuestro branding)                     |
