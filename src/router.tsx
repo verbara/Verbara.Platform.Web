@@ -28,7 +28,9 @@ const DncListDetail = lazy(() => import('@/admin/dnc-lists/dnc-list-detail'));
 const CallerIdPoolsPage = lazy(() => import('@/admin/caller-id-pools/caller-id-pools-page'));
 const CallerIdPoolDetailPage = lazy(() => import('@/admin/caller-id-pools/caller-id-pool-detail'));
 const HolidayCalendarsPage = lazy(() => import('@/admin/holiday-calendars/holiday-calendars-page'));
-const HolidayCalendarDetailPage = lazy(() => import('@/admin/holiday-calendars/holiday-calendar-detail'));
+const HolidayCalendarDetailPage = lazy(
+  () => import('@/admin/holiday-calendars/holiday-calendar-detail'),
+);
 const TrunksPage = lazy(() => import('@/admin/trunks/trunks-page'));
 const RoutesPage = lazy(() => import('@/admin/routes/routes-page'));
 const DialerSettingsPage = lazy(() => import('@/admin/dialer-settings/dialer-settings-page'));
@@ -39,6 +41,7 @@ const AgentAssistConfigPage = lazy(() => import('@/admin/agent-assist/agent-assi
 const AgentAssistFeaturePage = lazy(() => import('@/admin/features/agent-assist-page'));
 const SurveyListPage = lazy(() => import('@/admin/surveys/survey-list-page'));
 const ReportsPage = lazy(() => import('@/admin/reports/reports-page'));
+const SetupPage = lazy(() => import('@/core/auth/setup-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
 const SystemPage = lazy(() => import('@/admin/system/system-page'));
 const DiagnosticsPage = lazy(() => import('@/admin/system/diagnostics-page'));
@@ -55,7 +58,9 @@ const SecurityPage = lazy(() => import('@/admin/profile/security-page'));
 // R5.2 Phase 0 placeholders — implemented by Phase A/B/C subagents.
 const MfaAdminPage = lazy(() => import('@/admin/security/mfa/mfa-admin-page'));
 const AuditViewerPage = lazy(() => import('@/admin/security/audit/audit-viewer-page'));
-const ImpersonationAdminPage = lazy(() => import('@/admin/security/impersonation/impersonation-admin-page'));
+const ImpersonationAdminPage = lazy(
+  () => import('@/admin/security/impersonation/impersonation-admin-page'),
+);
 const RetentionAdminPage = lazy(() => import('@/admin/retention/retention-admin-page'));
 const MfaEnrollWizard = lazy(() => import('@/profile/security/mfa/mfa-enroll-wizard'));
 const UserSessionsPage = lazy(() => import('@/profile/security/sessions/user-sessions-page'));
@@ -82,7 +87,9 @@ const PartnerSettingsPage = lazy(() => import('@/admin/partner/partner-settings-
 const OperationsLayout = lazy(() => import('@/pages/operations/operations-layout'));
 const WallboardPage = lazy(() => import('@/operations/wallboard/wallboard-page'));
 const AgentStatesPage = lazy(() => import('@/operations/agent-states/agent-states-page'));
-const CampaignMonitorPage = lazy(() => import('@/operations/campaign-monitor/campaign-monitor-page'));
+const CampaignMonitorPage = lazy(
+  () => import('@/operations/campaign-monitor/campaign-monitor-page'),
+);
 const MonitorPage = lazy(() => import('@/operations/monitor/monitor-page'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const DashboardPage = lazy(() => import('@/analytics/dashboard/dashboard-page'));
@@ -91,7 +98,9 @@ const QaPage = lazy(() => import('@/analytics/qa/qa-page'));
 const SurveyResultsPage = lazy(() => import('@/analytics/surveys/survey-results-page'));
 const IntervalPage = lazy(() => import('@/analytics/intervals/interval-page'));
 const AgentIntervalsPage = lazy(() => import('@/analytics/agents/agent-intervals-page'));
-const SpeechAnalyticsPage = lazy(() => import('@/analytics/speech-analytics/speech-analytics-page'));
+const SpeechAnalyticsPage = lazy(
+  () => import('@/analytics/speech-analytics/speech-analytics-page'),
+);
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
 const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
 
@@ -112,6 +121,14 @@ export const router = createBrowserRouter([
   { path: '/forgot-password', element: <ForgotPasswordPage /> },
   { path: '/reset-password', element: <ResetPasswordPage /> },
   { path: '/unauthorized', element: <UnauthorizedPage /> },
+  {
+    path: '/setup',
+    element: (
+      <LazyLoad>
+        <SetupPage />
+      </LazyLoad>
+    ),
+  },
   {
     path: '/',
     element: (

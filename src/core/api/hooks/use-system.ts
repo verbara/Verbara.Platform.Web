@@ -117,3 +117,26 @@ export function useUpdateLicense() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+// ─── First-time platform setup ──────────────────────────────────────────────
+
+export interface SetupInput {
+  email: string;
+  password: string;
+  displayName?: string;
+  platformName?: string;
+}
+
+export interface SetupResponse {
+  tenantId: string;
+  userId: string;
+  accessToken: string;
+  managementApiKey: string;
+}
+
+export function useSetup() {
+  return useMutation({
+    mutationFn: (data: SetupInput) =>
+      customFetch<SetupResponse>({ url: '/api/v1/setup', method: 'POST', data }),
+  });
+}
