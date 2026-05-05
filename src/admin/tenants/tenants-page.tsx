@@ -33,6 +33,8 @@ import {
   useCreateTenant,
   useUpdateTenant,
   useDeleteTenant,
+  useSuspendTenant,
+  useActivateTenant,
   type Tenant,
 } from '@/core/api/hooks/use-tenants';
 
@@ -48,6 +50,8 @@ const createSchema = z.object({
     .min(1, 'admin:tenants.validation.tenantIdRequired')
     .regex(/^[a-z0-9-]+$/, 'admin:tenants.validation.tenantIdFormat'),
   name: z.string().min(1, 'admin:tenants.validation.nameRequired'),
+  type: z.enum(['Customer', 'Partner']).optional(),
+  parentTenantId: z.string().optional(),
   maxConcurrentChannels: z.coerce.number().int().min(1).optional(),
   maxActiveCampaigns: z.coerce.number().int().min(1).optional(),
 });
@@ -56,11 +60,35 @@ type CreateFormValues = z.infer<typeof createSchema>;
 
 // ─── Status badge helper ──────────────────────────────────────────────────────
 
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  active: 'default',
-  suspended: 'secondary',
-  deleted: 'destructive',
+interface StatusConfig {
+  variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  className?: string;
+}
+
+const STATUS_CONFIG: Record<string, StatusConfig> = {
+  active: { variant: 'default' },
+  warning: { variant: 'outline', className: 'text-amber-600 border-amber-300' },
+  degraded: { variant: 'outline', className: 'text-orange-600 border-orange-300' },
+  suspended: { variant: 'secondary' },
+  pendingdeletion: { variant: 'destructive' },
+  deleted: { variant: 'destructive' },
 };
+
+const STATUS_HINT: Record<string, string> = {
+  warning: 'tenants.list.status_hint.warning',
+  degraded: 'tenants.list.status_hint.degraded',
+  pendingdeletion: 'tenants.list.status_hint.pending_deletion',
+};
+
+function canSuspend(status: string): boolean {
+  const s = status.toLowerCase();
+  return s === 'active' || s === 'warning' || s === 'degraded';
+}
+
+function canActivate(status: string): boolean {
+  const s = status.toLowerCase();
+  return s === 'suspended' || s === 'pendingdeletion';
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -83,6 +111,8 @@ export default function TenantsPage() {
   const createTenant = useCreateTenant();
   const updateTenant = useUpdateTenant();
   const deleteTenant = useDeleteTenant();
+  const suspendTenant = useSuspendTenant();
+  const activateTenant = useActivateTenant();
 
   const handleManageBilling = useCallback(
     (tenant: Tenant) => {
@@ -96,6 +126,8 @@ export default function TenantsPage() {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateFormValues>({
     resolver: zodResolver(createSchema) as Resolver<CreateFormValues>,
@@ -112,6 +144,8 @@ export default function TenantsPage() {
       {
         tenantId: values.tenantId,
         name: values.name,
+        type: values.type,
+        parentTenantId: values.parentTenantId,
         maxConcurrentChannels: values.maxConcurrentChannels,
         maxActiveCampaigns: values.maxActiveCampaigns,
       },
@@ -147,15 +181,29 @@ export default function TenantsPage() {
         header: () => t('tenants.list.columns.status'),
         cell: (info) => {
           const s = info.getValue().toLowerCase();
+          const config = STATUS_CONFIG[s] ?? { variant: 'outline' as const };
+          const hintKey = STATUS_HINT[s];
           return (
-            <Badge
-              data-testid={`tenant-status-${info.row.original.tenantId}`}
-              variant={STATUS_VARIANT[s] ?? 'outline'}
-            >
-              {info.getValue()}
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge
+                data-testid={`tenant-status-${info.row.original.tenantId}`}
+                variant={config.variant}
+                className={config.className}
+              >
+                {info.getValue()}
+              </Badge>
+              {hintKey && <span className="text-xs text-muted-foreground">{t(hintKey)}</span>}
+            </div>
           );
         },
+      }),
+      columnHelper.accessor('type', {
+        header: () => t('tenants.list.columns.type'),
+        cell: (info) => (
+          <Badge variant="outline" data-testid={`tenant-type-${info.row.original.tenantId}`}>
+            {info.getValue()}
+          </Badge>
+        ),
       }),
       columnHelper.accessor('maxConcurrentChannels', {
         header: () => t('tenants.list.columns.max_channels'),
@@ -214,12 +262,13 @@ export default function TenantsPage() {
               >
                 <CreditCard className="h-3.5 w-3.5" />
               </Button>
-              {row.original.status === 'Active' && (
+              {canSuspend(row.original.status) && (
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-7 w-7 p-0 text-destructive hover:text-destructive"
                   title={t('tenants.list.actions.suspend')}
+                  aria-label={t('tenants.list.actions.suspend')}
                   onClick={(e) => {
                     e.stopPropagation();
                     setSuspendTarget(row.original);
@@ -228,15 +277,16 @@ export default function TenantsPage() {
                   <Ban className="h-3.5 w-3.5" />
                 </Button>
               )}
-              {row.original.status === 'Suspended' && (
+              {canActivate(row.original.status) && (
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-7 w-7 p-0 text-emerald-600"
                   title={t('tenants.list.actions.activate')}
+                  aria-label={t('tenants.list.actions.activate')}
                   onClick={(e) => {
                     e.stopPropagation();
-                    updateTenant.mutate({ id: row.original.tenantId, status: 'Active' });
+                    activateTenant.mutate(row.original.tenantId);
                   }}
                 >
                   <CircleCheck className="h-3.5 w-3.5" />
@@ -261,7 +311,7 @@ export default function TenantsPage() {
     ],
     // handleManageBilling is now memoized via useCallback; setDeleteTarget is a
     // stable useState setter; updateTenant is the mutation hook reference.
-    [t, updateTenant, handleManageBilling, setDeleteTarget],
+    [t, activateTenant, handleManageBilling, setDeleteTarget],
   );
 
   if (isLoading) {
@@ -344,6 +394,48 @@ export default function TenantsPage() {
             </div>
 
             <div className="space-y-1.5">
+              <Label htmlFor="type">{t('tenants.list.create_sheet.type')}</Label>
+              <Select
+                value={watch('type') ?? 'Customer'}
+                onValueChange={(v) => setValue('type', v as 'Customer' | 'Partner')}
+              >
+                <SelectTrigger id="type" data-testid="tenants-form-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Customer">
+                    {t('tenants.list.create_sheet.type_customer')}
+                  </SelectItem>
+                  <SelectItem value="Partner">
+                    {t('tenants.list.create_sheet.type_partner')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="parentTenantId">{t('tenants.list.create_sheet.parent_tenant')}</Label>
+              <Select
+                value={watch('parentTenantId') ?? ''}
+                onValueChange={(v) => setValue('parentTenantId', v || undefined)}
+              >
+                <SelectTrigger id="parentTenantId" data-testid="tenants-form-parent">
+                  <SelectValue placeholder={t('tenants.list.create_sheet.parent_none')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">{t('tenants.list.create_sheet.parent_none')}</SelectItem>
+                  {tenants
+                    .filter((tenant) => tenant.type === 'Platform' || tenant.type === 'Partner')
+                    .map((tenant) => (
+                      <SelectItem key={tenant.tenantId} value={tenant.tenantId}>
+                        {tenant.name} ({tenant.type})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
               <Label htmlFor="maxConcurrentChannels">
                 {t('tenants.list.create_sheet.max_channels')}
               </Label>
@@ -411,7 +503,7 @@ export default function TenantsPage() {
         confirmLabel={t('tenants.list.suspend_dialog.confirm')}
         onConfirm={() => {
           if (suspendTarget) {
-            updateTenant.mutate({ id: suspendTarget.tenantId, status: 'Suspended' });
+            suspendTenant.mutate(suspendTarget.tenantId);
             setSuspendTarget(null);
           }
         }}
