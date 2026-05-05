@@ -158,3 +158,68 @@ export function useUpdateTenantSettings(tenantId: string) {
     onError: (err: Error) => toast.error(err.message ?? 'Failed to save settings'),
   });
 }
+
+// ─── IP Allowlist ───────────────────────────────────────────────────────────
+
+export interface IpAllowlistEntry {
+  id: string;
+  cidr: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface CreateIpAllowlistInput {
+  cidr: string;
+  description: string;
+}
+
+export function ipAllowlistQueryKey(tenantId: string) {
+  return ['ip-allowlist', tenantId] as const;
+}
+
+export function useIpAllowlist(tenantId: string) {
+  return useQuery({
+    queryKey: ipAllowlistQueryKey(tenantId),
+    queryFn: () =>
+      customFetch<IpAllowlistEntry[]>({
+        url: `/api/v1/management/tenants/${tenantId}/ip-allowlist`,
+        method: 'GET',
+      }),
+    enabled: !!tenantId,
+  });
+}
+
+export function useAddIpAllowlistEntry(tenantId: string) {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
+  return useMutation({
+    mutationFn: (data: CreateIpAllowlistInput) =>
+      customFetch<IpAllowlistEntry>({
+        url: `/api/v1/management/tenants/${tenantId}/ip-allowlist`,
+        method: 'POST',
+        data,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ipAllowlistQueryKey(tenantId) });
+      toast.success(t('toasts.ipAllowlist.added'));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useRemoveIpAllowlistEntry(tenantId: string) {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
+  return useMutation({
+    mutationFn: (entryId: string) =>
+      customFetch<void>({
+        url: `/api/v1/management/tenants/${tenantId}/ip-allowlist/${entryId}`,
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ipAllowlistQueryKey(tenantId) });
+      toast.success(t('toasts.ipAllowlist.removed'));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
