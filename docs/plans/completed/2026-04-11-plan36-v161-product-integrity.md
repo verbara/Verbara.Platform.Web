@@ -17,6 +17,7 @@
 ### Task 1: Fix Tenants Hook URLs (A1)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-tenants.ts`
 
 - [ ] **Step 1: Replace all `/admin/tenants` with `/management/tenants`**
@@ -24,12 +25,13 @@
 In `src/core/api/hooks/use-tenants.ts`, replace every occurrence of `/api/v1/admin/tenants` with `/api/v1/management/tenants`. There are 5 occurrences across 5 hooks: `useTenants` (line 44), `useTenant` (line 52), `useCreateTenant` (line 61), `useUpdateTenant` (line 74), `useDeleteTenant` (line 88).
 
 Use a global find-and-replace within the file:
+
 - Old: `/api/v1/admin/tenants`
 - New: `/api/v1/management/tenants`
 
 - [ ] **Step 2: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 3: Commit**
@@ -44,6 +46,7 @@ git commit -m "fix(hooks): correct tenants hook URLs from /admin to /management"
 ### Task 2: Fix Reports Types + Remove Toggle (A4 + C10 partial)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-reports.ts`
 - Modify: `src/admin/reports/reports-page.tsx`
 
@@ -66,12 +69,15 @@ The `ReportType` union (line 5) stays — it serves as documentation even if the
 In `src/admin/reports/reports-page.tsx`, find where `useToggleReportActive` is used (the active/inactive toggle). Replace it with `useUpdateReport`:
 
 Replace the toggle call pattern from:
+
 ```tsx
-toggleActive.mutate(!report.isActive)
+toggleActive.mutate(!report.isActive);
 ```
+
 to:
+
 ```tsx
-updateReport.mutate({ id: report.id, isActive: !report.isActive })
+updateReport.mutate({ id: report.id, isActive: !report.isActive });
 ```
 
 Remove the `useToggleReportActive` import. Add `useUpdateReport` to the existing import from `use-reports`.
@@ -80,7 +86,7 @@ Also update any place where report `id` is treated as `number` (e.g., `useToggle
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -95,6 +101,7 @@ git commit -m "fix(reports): correct id/schedule types, remove broken toggle hoo
 ### Task 3: Fix Agent State Admin URL (A6)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-agents.ts`
 
 - [ ] **Step 1: Fix `useUpdateAgentStateAdmin` URL**
@@ -108,7 +115,7 @@ The body should send `{ status: newState }` where `newState` is the desired agen
 
 - [ ] **Step 2: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 3: Commit**
@@ -123,6 +130,7 @@ git commit -m "fix(hooks): correct agent state admin URL to use existing PUT end
 ### Task 4: Fix DNC Check Hook (A2)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-dnc-lists.ts`
 - Modify: consumers of `useCheckDncNumber` (search for imports)
 
@@ -131,6 +139,7 @@ git commit -m "fix(hooks): correct agent state admin URL to use existing PUT end
 Find `useCheckDncNumber` (around line 160). Replace the entire hook:
 
 Old:
+
 ```tsx
 export function useCheckDncNumber() {
   return useMutation({
@@ -146,6 +155,7 @@ export function useCheckDncNumber() {
 ```
 
 New:
+
 ```tsx
 export function useCheckDncNumber() {
   return useMutation({
@@ -165,7 +175,7 @@ Search the codebase for `useCheckDncNumber` usages (likely in `dnc-list-detail.t
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -180,6 +190,7 @@ git commit -m "fix(hooks): correct DNC check to use GET with listId and phone pa
 ### Task 5: Remove Dead System Cluster Hook (C10 partial)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-system.ts`
 - Modify: `src/admin/system/diagnostics-page.tsx` (if it imports `useSystemCluster`)
 
@@ -193,7 +204,7 @@ Search for `useSystemCluster` in the codebase. If `diagnostics-page.tsx` imports
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -210,6 +221,7 @@ git commit -m "fix(hooks): remove dead useSystemCluster, replaced by use-cluster
 ### Task 6: Fix OIDC SSO Permissions (A7)
 
 **Files:**
+
 - Modify: `src/core/auth/login-page.tsx`
 
 - [ ] **Step 1: Add /users/me fetch after OIDC hash parse**
@@ -221,8 +233,8 @@ Add a fetch to get the full user profile with permissions:
 ```tsx
 // Fetch full user profile with permissions
 const me = await fetch('/api/v1/users/me', {
-  headers: { 'Authorization': `Bearer ${accessToken}`, 'X-Tenant-Id': tenantId },
-}).then(r => r.json());
+  headers: { Authorization: `Bearer ${accessToken}`, 'X-Tenant-Id': tenantId },
+}).then((r) => r.json());
 
 completeLogin({
   accessToken,
@@ -247,8 +259,8 @@ let permissions: string[] = [];
 let features: Record<string, boolean> = {};
 try {
   const me = await fetch('/api/v1/users/me', {
-    headers: { 'Authorization': `Bearer ${accessToken}`, 'X-Tenant-Id': tenantId },
-  }).then(r => r.json());
+    headers: { Authorization: `Bearer ${accessToken}`, 'X-Tenant-Id': tenantId },
+  }).then((r) => r.json());
   permissions = me.permissions ?? [];
   features = me.features ?? {};
 } catch {
@@ -258,7 +270,7 @@ try {
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -273,6 +285,7 @@ git commit -m "fix(auth): fetch permissions from /users/me after OIDC callback"
 ### Task 7: AuthGuard Token Expiry Check (B3)
 
 **Files:**
+
 - Modify: `src/core/auth/auth-guard.tsx`
 
 - [ ] **Step 1: Add token expiry check**
@@ -300,7 +313,7 @@ The store already has `isTokenExpired()` which checks `Date.now() >= tokenExpiry
 
 - [ ] **Step 2: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 3: Commit**
@@ -315,12 +328,13 @@ git commit -m "fix(auth): check token expiry in AuthGuard to prevent stale UI fl
 ### Task 8: Force Logout Backend Endpoint (A3)
 
 **Files:**
-- Modify: `/media/Data/Source/IPcom/Asterisk.Platform/src/Asterisk.Platform.Api/Endpoints/AuthAdminEndpoints.cs`
+
+- Modify: `/media/Data/Source/Verbara/Asterisk.Platform/src/Asterisk.Platform.Api/Endpoints/AuthAdminEndpoints.cs`
 - Modify: `src/core/api/hooks/use-auth-admin.ts` (Platform.Web)
 
 - [ ] **Step 1: Add bulk session revoke endpoint (Platform repo)**
 
-In `/media/Data/Source/IPcom/Asterisk.Platform/src/Asterisk.Platform.Api/Endpoints/AuthAdminEndpoints.cs`, add a new endpoint in the `Map` method alongside the existing session routes:
+In `/media/Data/Source/Verbara/Asterisk.Platform/src/Asterisk.Platform.Api/Endpoints/AuthAdminEndpoints.cs`, add a new endpoint in the `Map` method alongside the existing session routes:
 
 ```csharp
 group.MapDelete("/sessions/by-user/{userId}", RevokeAllUserSessions)
@@ -361,22 +375,24 @@ New: `` `/api/v1/admin/auth/sessions/by-user/${userId}` ``
 - [ ] **Step 3: Build and test both repos**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform && dotnet build Asterisk.Platform.slnx && dotnet test Asterisk.Platform.slnx -v q
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit
+cd /media/Data/Source/Verbara/Asterisk.Platform && dotnet build Asterisk.Platform.slnx && dotnet test Asterisk.Platform.slnx -v q
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit
 ```
 
 - [ ] **Step 4: Commit both repos**
 
 Platform:
+
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 git add src/Asterisk.Platform.Api/Endpoints/AuthAdminEndpoints.cs
 git commit -m "feat(auth): add DELETE /sessions/by-user/{userId} bulk session revoke endpoint"
 ```
 
 Platform.Web:
+
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 git add src/core/api/hooks/use-auth-admin.ts
 git commit -m "fix(hooks): update force-logout URL to /sessions/by-user/{userId}"
 ```
@@ -386,6 +402,7 @@ git commit -m "fix(hooks): update force-logout URL to /sessions/by-user/{userId}
 ### Task 9: SSE Reconnect with Backoff (B2)
 
 **Files:**
+
 - Modify: `src/core/hooks/use-sse.ts`
 
 - [ ] **Step 1: Add exponential backoff to SSE reconnect**
@@ -399,6 +416,7 @@ const reconnectAttemptRef = useRef(0);
 Replace the `source.onerror` handler (around line 186):
 
 Old:
+
 ```tsx
 source.onerror = () => {
   source.close();
@@ -409,6 +427,7 @@ source.onerror = () => {
 ```
 
 New:
+
 ```tsx
 source.onerror = () => {
   source.close();
@@ -438,7 +457,7 @@ Import `toast` from `sonner` if not already imported.
 
 - [ ] **Step 2: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 3: Commit**
@@ -455,6 +474,7 @@ git commit -m "fix(sse): add exponential backoff with jitter and max retries to 
 ### Task 10: Create Analytics Filter Store + Wire FilterBar
 
 **Files:**
+
 - Create: `src/core/stores/analytics-filter-store.ts`
 - Modify: `src/analytics/shared/filter-bar.tsx`
 
@@ -481,7 +501,9 @@ interface AnalyticsFilterState {
   to: string;
   queue: string;
   channel: string;
-  setFilters: (filters: Partial<Pick<AnalyticsFilterState, 'from' | 'to' | 'queue' | 'channel'>>) => void;
+  setFilters: (
+    filters: Partial<Pick<AnalyticsFilterState, 'from' | 'to' | 'queue' | 'channel'>>,
+  ) => void;
   reset: () => void;
 }
 
@@ -568,7 +590,7 @@ export function FilterBar() {
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -583,6 +605,7 @@ git commit -m "feat(analytics): add analytics filter Zustand store and wire Filt
 ### Task 11: Wire Analytics Pages to Filter Store
 
 **Files:**
+
 - Modify: `src/analytics/cdr/cdr-page.tsx`
 - Modify: `src/analytics/qa/qa-page.tsx`
 - Modify: `src/analytics/agents/agent-intervals-page.tsx`
@@ -595,8 +618,11 @@ In `src/analytics/cdr/cdr-page.tsx`:
 2. Add at the top of the component: `const { from, to, queue } = useAnalyticsFilterStore();`
 3. Replace the `useCdrList(undefined, undefined, {}, page)` call with: `useCdrList(from, to, { queue }, page)`
 4. Add page reset when filters change — add a `useEffect` that resets page to 1 when `from`, `to`, or `queue` change:
+
 ```tsx
-useEffect(() => { setPage(1); }, [from, to, queue]);
+useEffect(() => {
+  setPage(1);
+}, [from, to, queue]);
 ```
 
 - [ ] **Step 2: Wire QA page**
@@ -608,8 +634,11 @@ In `src/analytics/qa/qa-page.tsx`:
 3. Fix the `page` state — change `const [page] = useState(1)` to `const [page, setPage] = useState(1)`
 4. Replace `useQaList(undefined, undefined, {}, page)` with: `useQaList(from, to, { queue }, page)`
 5. Add page reset on filter change:
+
 ```tsx
-useEffect(() => { setPage(1); }, [from, to, queue]);
+useEffect(() => {
+  setPage(1);
+}, [from, to, queue]);
 ```
 
 - [ ] **Step 3: Wire Agent Intervals page**
@@ -624,7 +653,7 @@ In `src/analytics/agents/agent-intervals-page.tsx`:
 
 - [ ] **Step 4: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 5: Commit**
@@ -641,6 +670,7 @@ git commit -m "fix(analytics): wire CDR, QA, and Agent Intervals pages to filter
 ### Task 12: Billing Tenant Selection (A9)
 
 **Files:**
+
 - Modify: `src/admin/tenants/tenants-page.tsx`
 
 - [ ] **Step 1: Add "Manage Billing" action to tenant rows**
@@ -661,6 +691,7 @@ const handleManageBilling = (tenant: Tenant) => {
 ```
 
 Add this as a dropdown item or icon-button alongside the existing Edit/Delete actions:
+
 ```tsx
 <DropdownMenuItem onClick={() => handleManageBilling(tenant)}>
   <CreditCard className="mr-2 h-4 w-4" />
@@ -670,7 +701,7 @@ Add this as a dropdown item or icon-button alongside the existing Edit/Delete ac
 
 - [ ] **Step 2: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 3: Commit**
@@ -685,6 +716,7 @@ git commit -m "fix(tenants): add Manage Billing action to set active tenant cont
 ### Task 13: System Settings GET Hook + Form Fix (A10)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-system.ts`
 - Modify: `src/admin/system/system-page.tsx`
 
@@ -714,6 +746,7 @@ In `src/admin/system/system-page.tsx`:
 1. Import `useSystemSettings` from `use-system.ts`
 2. Call `const { data: settings, isLoading: settingsLoading } = useSystemSettings();`
 3. Change `defaultValues` to empty strings (they will be populated by `reset`):
+
 ```tsx
 defaultValues: {
   platformName: '',
@@ -721,7 +754,9 @@ defaultValues: {
   defaultLanguage: '',
 },
 ```
+
 4. Add a `useEffect` to populate the form when data loads:
+
 ```tsx
 useEffect(() => {
   if (settings) {
@@ -729,11 +764,12 @@ useEffect(() => {
   }
 }, [settings, form]);
 ```
+
 5. Show loading state while `settingsLoading` is true (wrap the form section in a conditional or show a skeleton).
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -750,6 +786,7 @@ git commit -m "fix(system): add useSystemSettings GET hook, load real values in 
 ### Task 14: Dark Mode Charts (B1)
 
 **Files:**
+
 - Modify: `src/analytics/dashboard/trend-chart.tsx`
 - Modify: `src/analytics/dashboard/overlay-chart.tsx`
 - Modify: `src/analytics/dashboard/heatmap.tsx`
@@ -780,7 +817,7 @@ Replace the `interpolateBlue` function and hardcoded text colors with CSS-variab
 
 - [ ] **Step 4: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 5: Commit**
@@ -795,6 +832,7 @@ git commit -m "fix(charts): replace hardcoded hex colors with CSS variables for 
 ### Task 15: Teams Sidebar + Agent-Assist Blocked (B5 + B6)
 
 **Files:**
+
 - Modify: `src/admin/sidebar.tsx`
 - Modify: `src/admin/agent-assist/agent-assist-config-page.tsx`
 
@@ -815,8 +853,8 @@ In `src/admin/agent-assist/agent-assist-config-page.tsx`, add a "Coming Soon" ba
 ```tsx
 <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
   <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-    Coming Soon — Agent Assist requires speech recognition configuration.
-    This feature will be available in a future release.
+    Coming Soon — Agent Assist requires speech recognition configuration. This feature will be
+    available in a future release.
   </p>
 </div>
 ```
@@ -833,7 +871,7 @@ Also verify the sidebar: if there is an entry for agent-assist in the sidebar, i
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -848,6 +886,7 @@ git commit -m "fix(admin): add Teams to sidebar, block agent-assist config with 
 ### Task 16: Setup Wizard Hooks Refactor (A5)
 
 **Files:**
+
 - Modify: `src/admin/setup/setup-wizard.tsx`
 
 - [ ] **Step 1: Replace customFetch calls with hooks**
@@ -855,12 +894,14 @@ git commit -m "fix(admin): add Teams to sidebar, block agent-assist config with 
 In `src/admin/setup/setup-wizard.tsx`, the `handleNext` function (lines 69-133) calls `customFetch` directly for queue, agent, and channel creation. Replace with the existing mutation hooks.
 
 1. Import the needed hooks at the top:
+
 ```tsx
 import { useCreateQueue } from '@/core/api/hooks/use-queues';
 import { useCreateAgent } from '@/core/api/hooks/use-agents';
 ```
 
 2. In the component body, initialize the hooks:
+
 ```tsx
 const createQueue = useCreateQueue();
 const createAgent = useCreateAgent();
@@ -869,6 +910,7 @@ const createAgent = useCreateAgent();
 3. In `handleNext`, replace the `customFetch` calls:
 
 For the queue step (currently line 76-85):
+
 ```tsx
 if (currentStepKey === 'queue') {
   try {
@@ -880,6 +922,7 @@ if (currentStepKey === 'queue') {
 ```
 
 For the agent step (currently line 88-113):
+
 ```tsx
 if (currentStepKey === 'agent') {
   try {
@@ -900,7 +943,7 @@ Note: The hooks already handle toasts and cache invalidation, so remove the manu
 
 - [ ] **Step 2: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 3: Commit**
@@ -917,6 +960,7 @@ git commit -m "refactor(setup): replace raw customFetch with mutation hooks for 
 ### Task 17: Reports Run/History/Download (C1)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-reports.ts`
 - Modify: `src/admin/reports/reports-page.tsx`
 
@@ -970,6 +1014,7 @@ In `src/admin/reports/reports-page.tsx`:
 4. Import: `Badge` from `@/core/ui/badge`
 
 Add state for the history sheet:
+
 ```tsx
 const [historyReportId, setHistoryReportId] = useState<string | undefined>();
 const runReport = useRunReport();
@@ -1008,16 +1053,28 @@ Add a Sheet at the bottom of the component for history:
       {history.map((exec) => (
         <div key={exec.id} className="flex items-center justify-between rounded-md border p-3">
           <div>
-            <Badge variant={exec.status === 'Completed' ? 'default' : exec.status === 'Failed' ? 'destructive' : 'secondary'}>
+            <Badge
+              variant={
+                exec.status === 'Completed'
+                  ? 'default'
+                  : exec.status === 'Failed'
+                    ? 'destructive'
+                    : 'secondary'
+              }
+            >
               {exec.status}
             </Badge>
-            <p className="mt-1 text-xs text-muted-foreground">{new Date(exec.startedAt).toLocaleString()}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {new Date(exec.startedAt).toLocaleString()}
+            </p>
           </div>
           {exec.status === 'Completed' && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => window.open(`/api/v1/admin/reports/${historyReportId}/history/${exec.id}/download`)}
+              onClick={() =>
+                window.open(`/api/v1/admin/reports/${historyReportId}/history/${exec.id}/download`)
+              }
             >
               <Download className="h-4 w-4" />
             </Button>
@@ -1032,7 +1089,7 @@ Add a Sheet at the bottom of the component for history:
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -1047,6 +1104,7 @@ git commit -m "feat(reports): add run, history, and download functionality"
 ### Task 18: Tenant Suspend/Activate Quick-Actions (C2)
 
 **Files:**
+
 - Modify: `src/admin/tenants/tenants-page.tsx`
 
 - [ ] **Step 1: Add suspend/activate dropdown items**
@@ -1054,30 +1112,35 @@ git commit -m "feat(reports): add run, history, and download functionality"
 In `src/admin/tenants/tenants-page.tsx`, find the row actions dropdown (where Edit, Delete, Retention Policy actions are). Add:
 
 ```tsx
-{tenant.status === 'Active' && (
-  <DropdownMenuItem
-    className="text-destructive"
-    onClick={() => {
-      setSuspendTarget(tenant);
-    }}
-  >
-    Suspend
-  </DropdownMenuItem>
-)}
-{tenant.status === 'Suspended' && (
-  <DropdownMenuItem
-    onClick={() => {
-      updateTenant.mutate({ id: tenant.tenantId, status: 'Active' });
-    }}
-  >
-    Activate
-  </DropdownMenuItem>
-)}
+{
+  tenant.status === 'Active' && (
+    <DropdownMenuItem
+      className="text-destructive"
+      onClick={() => {
+        setSuspendTarget(tenant);
+      }}
+    >
+      Suspend
+    </DropdownMenuItem>
+  );
+}
+{
+  tenant.status === 'Suspended' && (
+    <DropdownMenuItem
+      onClick={() => {
+        updateTenant.mutate({ id: tenant.tenantId, status: 'Active' });
+      }}
+    >
+      Activate
+    </DropdownMenuItem>
+  );
+}
 ```
 
 Add state: `const [suspendTarget, setSuspendTarget] = useState<Tenant | null>(null);`
 
 Add a `ConfirmDeleteDialog` for suspend (it's a destructive action):
+
 ```tsx
 <ConfirmDeleteDialog
   open={!!suspendTarget}
@@ -1097,7 +1160,7 @@ Import `ConfirmDeleteDialog` if not already imported.
 
 - [ ] **Step 2: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 3: Commit**
@@ -1112,6 +1175,7 @@ git commit -m "feat(tenants): add suspend/activate quick-actions in row dropdown
 ### Task 19: Campaign Wizard Zod Validation (C3)
 
 **Files:**
+
 - Modify: `src/admin/campaigns/campaign-wizard.tsx`
 - Modify: `src/admin/campaigns/steps/basic-step.tsx`
 - Modify: `src/admin/campaigns/steps/dialing-step.tsx`
@@ -1160,13 +1224,20 @@ Note: The `as any` cast follows the existing project pattern for Zod v4 + react-
 In `src/admin/campaigns/steps/basic-step.tsx`, add error messages below each field:
 
 ```tsx
-const { register, formState: { errors } } = useFormContext<CampaignFormValues>();
+const {
+  register,
+  formState: { errors },
+} = useFormContext<CampaignFormValues>();
 
 // After the name input:
-{errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+{
+  errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>;
+}
 
 // After the queue select:
-{errors.queueId && <p className="text-sm text-destructive">{errors.queueId.message}</p>}
+{
+  errors.queueId && <p className="text-sm text-destructive">{errors.queueId.message}</p>;
+}
 ```
 
 - [ ] **Step 3: Add error display to dialing-step.tsx and schedule-step.tsx**
@@ -1175,7 +1246,7 @@ Same pattern — destructure `errors` from `useFormContext` and add error messag
 
 - [ ] **Step 4: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 5: Commit**
@@ -1190,6 +1261,7 @@ git commit -m "feat(campaigns): add Zod validation schemas and error messages to
 ### Task 20: GDPR Purge-User + Preview (C4)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-gdpr.ts`
 - Modify: `src/admin/gdpr/gdpr-page.tsx`
 
@@ -1255,9 +1327,7 @@ In `src/admin/gdpr/gdpr-page.tsx`:
     <TabsTrigger value="user">By User ID</TabsTrigger>
   </TabsList>
 
-  <TabsContent value="contact">
-    {/* existing export + purge UI */}
-  </TabsContent>
+  <TabsContent value="contact">{/* existing export + purge UI */}</TabsContent>
 
   <TabsContent value="user">
     {/* New user purge UI with userId input, Preview button showing PurgePreview counts, and Purge with confirm */}
@@ -1266,6 +1336,7 @@ In `src/admin/gdpr/gdpr-page.tsx`:
 ```
 
 The "User" tab should have:
+
 - Input field for userId
 - "Preview" button that triggers `usePurgePreview(userId)`
 - When preview data is loaded, show entity counts (conversations, messages, auth events, audit entries)
@@ -1274,7 +1345,7 @@ The "User" tab should have:
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -1289,6 +1360,7 @@ git commit -m "feat(gdpr): add purge-by-user with preview and user tab in GDPR p
 ### Task 21: Webhook Circuit-Breaker (C5)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-webhooks.ts`
 - Modify: `src/admin/webhooks/webhook-detail-sheet.tsx`
 
@@ -1345,36 +1417,41 @@ In `src/admin/webhooks/webhook-detail-sheet.tsx`:
 Add a circuit-breaker section near the Active/Inactive badge:
 
 ```tsx
-{circuit && (
-  <div className="flex items-center gap-2">
-    <Badge variant={
-      circuit.state === 'Closed' ? 'default' :
-      circuit.state === 'Open' ? 'destructive' : 'secondary'
-    }>
-      Circuit: {circuit.state}
-    </Badge>
-    {circuit.state === 'Open' && (
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={resetCircuit.isPending}
-        onClick={() => resetCircuit.mutate(subscription!.id)}
+{
+  circuit && (
+    <div className="flex items-center gap-2">
+      <Badge
+        variant={
+          circuit.state === 'Closed'
+            ? 'default'
+            : circuit.state === 'Open'
+              ? 'destructive'
+              : 'secondary'
+        }
       >
-        Reset Circuit
-      </Button>
-    )}
-    {circuit.failureCount > 0 && (
-      <span className="text-xs text-muted-foreground">
-        {circuit.failureCount} failures
-      </span>
-    )}
-  </div>
-)}
+        Circuit: {circuit.state}
+      </Badge>
+      {circuit.state === 'Open' && (
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={resetCircuit.isPending}
+          onClick={() => resetCircuit.mutate(subscription!.id)}
+        >
+          Reset Circuit
+        </Button>
+      )}
+      {circuit.failureCount > 0 && (
+        <span className="text-xs text-muted-foreground">{circuit.failureCount} failures</span>
+      )}
+    </div>
+  );
+}
 ```
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -1389,6 +1466,7 @@ git commit -m "feat(webhooks): add circuit-breaker status display and reset acti
 ### Task 22: Invoice Pay + Dunning Status (C6 + C7)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-billing.ts`
 - Modify: `src/admin/billing/invoices-page.tsx`
 - Modify: `src/admin/billing/quotas-page.tsx`
@@ -1396,6 +1474,7 @@ git commit -m "feat(webhooks): add circuit-breaker status display and reset acti
 - [ ] **Step 1: Add hooks to `use-billing.ts`**
 
 Add to the `Invoice` interface:
+
 ```tsx
 paymentStatus?: string;
 dueDate?: string | null;
@@ -1450,16 +1529,18 @@ In `src/admin/billing/invoices-page.tsx`:
 3. In the actions column, add a "Mark Paid" button visible when `invoice.status === 'Issued'`:
 
 ```tsx
-{invoice.status === 'Issued' && (
-  <Button
-    variant="outline"
-    size="sm"
-    disabled={payInvoice.isPending}
-    onClick={() => payInvoice.mutate(invoice.id)}
-  >
-    Mark Paid
-  </Button>
-)}
+{
+  invoice.status === 'Issued' && (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={payInvoice.isPending}
+      onClick={() => payInvoice.mutate(invoice.id)}
+    >
+      Mark Paid
+    </Button>
+  );
+}
 ```
 
 4. In the detail sheet, show `paymentStatus` and `dueDate` if present.
@@ -1474,26 +1555,28 @@ In `src/admin/billing/quotas-page.tsx`:
 4. Above the quotas content, add a conditional banner:
 
 ```tsx
-{dunning?.isActive && (
-  <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-    <div className="flex items-center justify-between">
-      <div>
-        <Badge variant="secondary">{dunning.phase}</Badge>
-        <span className="ml-2 text-sm text-amber-800 dark:text-amber-200">
-          {dunning.daysOverdue} days overdue — ${dunning.overdueAmount.toFixed(2)}
-        </span>
+{
+  dunning?.isActive && (
+    <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+      <div className="flex items-center justify-between">
+        <div>
+          <Badge variant="secondary">{dunning.phase}</Badge>
+          <span className="ml-2 text-sm text-amber-800 dark:text-amber-200">
+            {dunning.daysOverdue} days overdue — ${dunning.overdueAmount.toFixed(2)}
+          </span>
+        </div>
+        <Button variant="link" size="sm" onClick={() => navigate('/admin/billing/invoices')}>
+          View Invoice
+        </Button>
       </div>
-      <Button variant="link" size="sm" onClick={() => navigate('/admin/billing/invoices')}>
-        View Invoice
-      </Button>
     </div>
-  </div>
-)}
+  );
+}
 ```
 
 - [ ] **Step 4: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 5: Commit**
@@ -1508,6 +1591,7 @@ git commit -m "feat(billing): add invoice pay action and dunning status banner i
 ### Task 23: Contacts DELETE (C8)
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-contacts.ts`
 - Modify: `src/agent/context/contact-info.tsx`
 
@@ -1565,7 +1649,7 @@ In `src/agent/context/contact-info.tsx`, add a "Delete Contact" button. Read the
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -1580,6 +1664,7 @@ git commit -m "feat(contacts): add delete contact hook and action in agent works
 ### Task 24: ErrorBoundary per Route (C9)
 
 **Files:**
+
 - Create: `src/core/ui/route-error-boundary.tsx`
 - Modify: `src/router.tsx`
 
@@ -1645,6 +1730,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
 - [ ] **Step 2: Apply to main layout routes in `router.tsx`**
 
 In `src/router.tsx`, import the error boundary:
+
 ```tsx
 import { RouteErrorBoundary } from '@/core/ui/route-error-boundary';
 ```
@@ -1652,6 +1738,7 @@ import { RouteErrorBoundary } from '@/core/ui/route-error-boundary';
 Add `errorElement: <RouteErrorBoundary />` to the 4 main layout route objects. Find each layout route (`admin`, `agent`, `analytics`, `operations`) and add the property.
 
 For example, the admin layout route (around line 106):
+
 ```tsx
 {
   path: 'admin',
@@ -1669,7 +1756,7 @@ Do the same for the `operations`, `analytics`, and `agent` layout routes.
 
 - [ ] **Step 3: Verify build**
 
-Run: `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit`
+Run: `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit`
 Expected: 0 errors
 
 - [ ] **Step 4: Commit**
@@ -1684,6 +1771,7 @@ git commit -m "feat(core): add per-route ErrorBoundary to isolate page crashes"
 ### Task 25: Dead Code Cleanup (C10 remaining)
 
 **Files:**
+
 - Modify: `src/core/auth/auth-store.ts`
 - Modify: `src/core/auth/auth-store.test.ts` (if it exists)
 
@@ -1706,8 +1794,9 @@ Search for `auth-store.test.ts` or similar. If tests exist for `hasFeature` and 
 - [ ] **Step 3: Verify build and tests**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npx tsc --noEmit && npm run test
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npx tsc --noEmit && npm run test
 ```
+
 Expected: 0 errors, all tests pass
 
 - [ ] **Step 4: Commit**
@@ -1724,23 +1813,24 @@ git commit -m "refactor(auth): remove unused hasFeature and hasAnyPermission fro
 After all 25 tasks are complete:
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web && npm run build && npm run test && npm run lint
-cd /media/Data/Source/IPcom/Asterisk.Platform && dotnet build Asterisk.Platform.slnx && dotnet test Asterisk.Platform.slnx -v q
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web && npm run build && npm run test && npm run lint
+cd /media/Data/Source/Verbara/Asterisk.Platform && dotnet build Asterisk.Platform.slnx && dotnet test Asterisk.Platform.slnx -v q
 ```
 
 Expected:
+
 - Platform.Web: 0 TypeScript errors, all unit tests pass, lint baseline unchanged
 - Platform: 0 warnings, all tests pass
 
 ## Task Summary
 
-| Phase | Tasks | Items Covered |
-|-------|-------|---------------|
-| 1: URL & Type Fixes | T1-T5 | A1, A2, A4, A6, C10 partial |
-| 2: Auth & Core | T6-T9 | A7, B3, A3, B2 |
-| 3: Analytics Filters | T10-T11 | A8 |
-| 4: Billing & System | T12-T13 | A9, A10 |
-| 5: UX Quality | T14-T16 | B1, B5, B6, A5 |
-| 6: Features | T17-T25 | C1-C10 |
+| Phase                | Tasks   | Items Covered               |
+| -------------------- | ------- | --------------------------- |
+| 1: URL & Type Fixes  | T1-T5   | A1, A2, A4, A6, C10 partial |
+| 2: Auth & Core       | T6-T9   | A7, B3, A3, B2              |
+| 3: Analytics Filters | T10-T11 | A8                          |
+| 4: Billing & System  | T12-T13 | A9, A10                     |
+| 5: UX Quality        | T14-T16 | B1, B5, B6, A5              |
+| 6: Features          | T17-T25 | C1-C10                      |
 
 **Note:** B4 (Agent mutations onError) was dropped — verified that all 5 conversation mutations already have `onError: (err: Error) => toast.error(err.message)`. The original audit was incorrect.

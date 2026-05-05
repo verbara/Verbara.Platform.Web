@@ -10,18 +10,19 @@ Los repos Platform (API) y Platform.Web (React UI) no tienen sistema de memoria 
 
 ## Datos verificados
 
-| Repo | Packages | Tests | Files | Warnings |
-|------|----------|-------|-------|----------|
-| Platform | 27 src + 27 test | 908 (22 API failing) | 612 .cs | 0 |
-| Platform.Web | - | 28 (4 test files) | 246 .ts/.tsx | 0 TS |
+| Repo         | Packages         | Tests                | Files        | Warnings |
+| ------------ | ---------------- | -------------------- | ------------ | -------- |
+| Platform     | 27 src + 27 test | 908 (22 API failing) | 612 .cs      | 0        |
+| Platform.Web | -                | 28 (4 test files)    | 246 .ts/.tsx | 0 TS     |
 
 ---
 
 ## Entregables (27 archivos nuevos + 1 update)
 
 ### Platform (15 archivos)
+
 ```
-/home/orion75/.claude/projects/-media-Data-Source-IPcom-Asterisk-Platform/memory/
+/home/orion75/.claude/projects/-media-Data-Source-Verbara-Asterisk-Platform/memory/
   MEMORY.md                          (índice)
   feedback_commit_rules.md           (copiar de Pro)
   feedback_no_company_references.md  (copiar de Pro)
@@ -38,12 +39,13 @@ Los repos Platform (API) y Platform.Web (React UI) no tienen sistema de memoria 
   research_rbac_design.md            (52 permisos, 7 templates)
   reference_pro_packages.md          (wiring de cada Pro package)
 
-/media/Data/Source/IPcom/Asterisk.Platform/CLAUDE.md  (UPDATE existente)
+/media/Data/Source/Verbara/Asterisk.Platform/CLAUDE.md  (UPDATE existente)
 ```
 
 ### Platform.Web (13 archivos)
+
 ```
-/home/orion75/.claude/projects/-media-Data-Source-IPcom-Asterisk-Platform-Web/memory/
+/home/orion75/.claude/projects/-media-Data-Source-Verbara-Asterisk-Platform-Web/memory/
   MEMORY.md                          (índice)
   feedback_commit_rules.md           (copiar de Pro)
   feedback_no_company_references.md  (copiar de Pro)
@@ -57,7 +59,7 @@ Los repos Platform (API) y Platform.Web (React UI) no tienen sistema de memoria 
   project_v110_enterprise_ui.md      (Auth pages, RBAC guards, DnD)
   research_frontend_patterns.md      (shadcn, TanStack, Zustand, etc.)
 
-/media/Data/Source/IPcom/Asterisk.Platform.Web/CLAUDE.md  (CREATE nuevo)
+/media/Data/Source/Verbara/Asterisk.Platform.Web/CLAUDE.md  (CREATE nuevo)
 ```
 
 ---
@@ -65,11 +67,13 @@ Los repos Platform (API) y Platform.Web (React UI) no tienen sistema de memoria 
 ## Ejecución (Subagent-Driven, 4 fases)
 
 ### Fase A: Directorios + feedback (foundation)
+
 - **Tarea A1:** Crear directorios memory/ para ambos repos
 - **Tarea A2:** Copiar 6 feedback files → Platform memory/
 - **Tarea A3:** Copiar 6 feedback files → Platform.Web memory/
 
 ### Fase B: Project + research memories (parallelizable)
+
 - **Tarea B1:** Platform — project_platform_architecture.md + project_platform_milestones.md
 - **Tarea B2:** Platform — project_plan21_demo.md + project_plan22_schema.md + project_v110_enterprise.md
 - **Tarea B3:** Platform — research_auth_architecture.md + research_rbac_design.md + reference_pro_packages.md
@@ -77,19 +81,23 @@ Los repos Platform (API) y Platform.Web (React UI) no tienen sistema de memoria 
 - **Tarea B5:** Web — project_web_hooks_inventory.md + project_v110_enterprise_ui.md + research_frontend_patterns.md
 
 ### Fase C: CLAUDE.md files (parallel)
+
 - **Tarea C1:** Update Platform CLAUDE.md (rewrite con datos actuales)
 - **Tarea C2:** Create Platform.Web CLAUDE.md (nuevo completo)
 
 ### Fase D: MEMORY.md indices (after B completes)
+
 - **Tarea D1:** Platform MEMORY.md
 - **Tarea D2:** Platform.Web MEMORY.md
 
 ---
 
 ## Nota: 22 API tests failing en Platform
+
 Los tests fallidos son pre-existentes (no relacionados con este trabajo). Se documentarán en la memoria como bug conocido.
 
 ## Verificación
+
 - Leer MEMORY.md de ambos repos → confirmar que todos los archivos existen
 - Verificar que CLAUDE.md de Platform.Web tiene build commands correctos
 - Verificar que cada memory file tiene frontmatter YAML válido

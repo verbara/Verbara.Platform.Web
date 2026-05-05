@@ -16,14 +16,17 @@ Política operativa del usuario: **"sin atajos ni arreglos rápidos — resolver
 ### Diagnóstico por fail (evidencia in-tree)
 
 #### A. Bots (`should create a bot` + `should delete a bot with 3s confirmation`)
+
 **El módulo de bots está medio implementado end-to-end. Cuatro defectos del backend convergen:**
 
 1. **`IBotConfigStore` no tiene `ListAsync` ni `DeleteAsync`** — `src/Asterisk.Platform.Bot/IBotConfigStore.cs:8-18` solo expone `GetByIdAsync`/`GetDefaultAsync`/`SaveAsync`. El propio handler `ListBots` lo admite con un comentario:
+
    ```csharp
    // [FromServices] IBotConfigStore does not expose a ListAsync method.
    var bot = await store.GetDefaultAsync(tenantId, ct);
    return Results.Ok(bot is null ? [] : new[] { bot });
    ```
+
    `GetDefaultAsync` retorna **el primer bot activo**; el handler de DELETE hace soft-delete via `IsActive=false`, así la lista queda vacía después del primer borrado y nunca contiene >1 bot.
 
 2. **`BotEndpoints.CreateBot` retorna el aggregate raw `BotConfiguration`** (línea 68: `Results.Created(..., config)`). Eso serializa **`botId`** (PascalCase del aggregate), no `id`. Frontend (`use-bots.ts:6`, `bot-list-page.tsx:85`) y tests E2E (`bots.spec.ts:39`: `getByTestId(\`delete-bot-${created.id}\`)`) esperan **`id`** → `created.id === undefined` → fallo.
@@ -35,7 +38,9 @@ Política operativa del usuario: **"sin atajos ni arreglos rápidos — resolver
 **Causa raíz unificada:** la feature "bots" se expuso como UI completa, pero el backend nunca migró del modelo single-default-bot al modelo multi-bot. Es **dead-feature parcial** — pero a diferencia de Agent Assist (que se difirió), bots aparece en sidebar y CLAUDE.md afirma que el demo seedea uno. El producto promete bots; hay que cumplirlo.
 
 #### B. `queues.should show queues in data table`
+
 **`docker/demo/demo-reset.sh:215-219` envía POST con `queueId` en el payload:**
+
 ```bash
 curl -sf -X POST "$API_BASE/api/v1/admin/queues" -H "$CT" -H "$AUTH" -H "$TENANT" \
     -d '{"queueId":"demo-queue-sales","name":"Sales","isActive":true}' > /dev/null 2>&1 || true
@@ -46,10 +51,14 @@ Después del Plan 29A morning session que introdujo `QueueDto` y eliminó campos
 **Causa raíz:** demo-reset desincronizado con el contrato actual del endpoint, agravado por seed que no falla ruidoso.
 
 #### C. `wallboard.should show queue cards section`
+
 **`wallboard-page.tsx:33` siempre renderiza el div con testid pero sin contenido cuando `sortedQueues.length === 0`:**
+
 ```tsx
 <div className="grid grid-cols-1 gap-4 ..." data-testid="wallboard-queue-cards">
-  {sortedQueues.map((q) => <QueueCard key={q.queueId} queue={q} />)}
+  {sortedQueues.map((q) => (
+    <QueueCard key={q.queueId} queue={q} />
+  ))}
 </div>
 ```
 
@@ -62,17 +71,21 @@ Un `<div className="grid">` vacío colapsa a height=0px. Playwright `toBeVisible
 ## Decisiones de diseño
 
 ### Bots (mayor de los cuatro)
+
 **Convertir bots en feature multi-bot real.** Es la única forma sin atajos.
 
 Alternativas descartadas:
+
 - (X) Eliminar bots de la sidebar y aceptar que es Agent-Assist-style dead code → contradice CLAUDE.md y el rol de bots como audiencia en Notification Center.
 - (X) Solo arreglar el response shape (renombrar `botId`→`id`) sin agregar `ListAsync`/`DeleteAsync` → el test "delete a bot" seguiría fallando porque el soft-delete deja el bot visible y `GetDefaultAsync` solo trae uno.
 - (✓) **Completar el backend**: `ListAsync` real, `DeleteAsync` hard-delete, `BotDto` que matchea el frontend, alinear `MaxTurns` ↔ `MaxTurnsBeforeHandoff`, `DefaultFlowId` opcional.
 
 ### Queues
+
 **Re-sincronizar `demo-reset.sh` con el contrato `POST /admin/queues` actual** + endurecer el seed para que falle ruidosamente (no `|| true` para errores 4xx/5xx). Convención que evitará re-incidencia de este patrón.
 
 ### Wallboard
+
 **Empty-state inline** dentro del contenedor `wallboard-queue-cards`. Cumple UX y testid simultáneamente; mismo patrón usado en `bot-list-page.tsx` (`EmptyState`).
 
 ---
@@ -82,6 +95,7 @@ Alternativas descartadas:
 ### Fix 1 — Bot store: ListAsync + DeleteAsync (interface + 2 impls)
 
 **Archivos:**
+
 - `src/Asterisk.Platform.Bot/IBotConfigStore.cs` — agregar:
   ```csharp
   Task<IReadOnlyList<BotConfiguration>> ListAsync(TenantId tenantId, CancellationToken ct);
@@ -123,12 +137,14 @@ private static BotDto ToDto(BotConfiguration c) => new(
 ### Fix 3 — AOT registration
 
 **Archivo:** `src/Asterisk.Platform.Api/Serialization/ApiJsonContext.cs`
+
 - `[JsonSerializable(typeof(BotDto))]`
 - `[JsonSerializable(typeof(BotDto[]))]`
 
 ### Fix 4 — Tests backend
 
 **Archivo:** `tests/Asterisk.Platform.Api.Tests/Endpoints/BotEndpointsTests.cs` (extender o crear)
+
 - `ListBots_ShouldReturnAllTenantBots_AsBotDto`
 - `CreateBot_ShouldReturn201WithBotDto_HavingIdField`
 - `CreateBot_ShouldAcceptNullDefaultFlowId`
@@ -140,6 +156,7 @@ Usar `AuthenticatedPlatformApiFactory` con `InMemoryBotConfigStore` real (no NSu
 ### Fix 5 — Demo seed: queues + bots + fail-loud
 
 **Archivo:** `docker/demo/demo-reset.sh:215-219`
+
 - Quitar `queueId` del payload y endurecer el seed:
   ```bash
   curl -fsS -X POST "$API_BASE/api/v1/admin/queues" -H "$CT" -H "$AUTH" -H "$TENANT" \
@@ -160,7 +177,10 @@ Usar `AuthenticatedPlatformApiFactory` con `InMemoryBotConfigStore` real (no NSu
 **Archivo:** `src/operations/wallboard/wallboard-page.tsx:33`
 
 ```tsx
-<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="wallboard-queue-cards">
+<div
+  className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+  data-testid="wallboard-queue-cards"
+>
   {sortedQueues.length === 0 ? (
     <div className="col-span-full rounded-lg border border-dashed p-8 text-center">
       <p className="text-sm text-muted-foreground">
@@ -179,7 +199,7 @@ Mantiene el testid siempre con contenido visible. UX honesto cuando no hay datos
 
 ```bash
 # Backend: build + tests
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 dotnet build Asterisk.Platform.slnx                                    # 0 warn
 xUnit.MaxParallelThreads=1 dotnet test Asterisk.Platform.slnx -v q     # 1666+ pass
 
@@ -187,7 +207,7 @@ xUnit.MaxParallelThreads=1 dotnet test Asterisk.Platform.slnx -v q     # 1666+ p
 bash docker/demo/demo-reset.sh                                          # debe terminar OK; falla ruidoso si algún seed 4xxs
 
 # E2E focalizados
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 npx playwright test -c tests/e2e/playwright.config.ts \
   tests/e2e/tests/platform-admin/bots.spec.ts \
   tests/e2e/tests/platform-admin/queues.spec.ts \
@@ -202,16 +222,16 @@ npx playwright test -c tests/e2e/playwright.config.ts                   # >= 261
 
 ## Archivos a modificar
 
-| Archivo | Repo | Fix |
-|---|---|---|
-| `src/Asterisk.Platform.Bot/IBotConfigStore.cs` | Platform | 1 |
-| `src/Asterisk.Platform.Storage.InMemory/InMemoryBotConfigStore.cs` | Platform | 1 |
-| `src/Asterisk.Platform.Storage.Postgres/Stores/PostgresBotConfigStore.cs` | Platform | 1 |
-| `src/Asterisk.Platform.Api/Endpoints/BotEndpoints.cs` | Platform | 2 |
-| `src/Asterisk.Platform.Api/Serialization/ApiJsonContext.cs` | Platform | 3 |
-| `tests/Asterisk.Platform.Api.Tests/Endpoints/BotEndpointsTests.cs` | Platform | 4 |
-| `docker/demo/demo-reset.sh` | Platform | 5 |
-| `src/operations/wallboard/wallboard-page.tsx` | Platform.Web | 6 |
+| Archivo                                                                   | Repo         | Fix |
+| ------------------------------------------------------------------------- | ------------ | --- |
+| `src/Asterisk.Platform.Bot/IBotConfigStore.cs`                            | Platform     | 1   |
+| `src/Asterisk.Platform.Storage.InMemory/InMemoryBotConfigStore.cs`        | Platform     | 1   |
+| `src/Asterisk.Platform.Storage.Postgres/Stores/PostgresBotConfigStore.cs` | Platform     | 1   |
+| `src/Asterisk.Platform.Api/Endpoints/BotEndpoints.cs`                     | Platform     | 2   |
+| `src/Asterisk.Platform.Api/Serialization/ApiJsonContext.cs`               | Platform     | 3   |
+| `tests/Asterisk.Platform.Api.Tests/Endpoints/BotEndpointsTests.cs`        | Platform     | 4   |
+| `docker/demo/demo-reset.sh`                                               | Platform     | 5   |
+| `src/operations/wallboard/wallboard-page.tsx`                             | Platform.Web | 6   |
 
 **Sin migración SQL** — la tabla `bot_configurations` ya existe con todas las columnas necesarias para `ListAsync`/`DeleteAsync`.
 
@@ -226,6 +246,7 @@ npx playwright test -c tests/e2e/playwright.config.ts                   # >= 261
 5. **Verify (individual):** Fix 7 — dependiente de todo lo demás aplicado y demo reseteada.
 
 Cada fase termina con un commit convencional:
+
 - `feat(bots): list/delete in IBotConfigStore + InMemory + Postgres`
 - `feat(api): BotDto + multi-bot endpoints + AOT registration`
 - `test(bots): cover list/create/delete contract`

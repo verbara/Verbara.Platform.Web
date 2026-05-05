@@ -15,22 +15,26 @@
 ## File Structure
 
 **New (4):**
+
 - `src/core/api/hooks/use-notifications.ts` — 4 hooks + types + optimistic updates
 - `src/shell/notification-drawer.tsx` — Sheet drawer with category tabs + list + mark-all
 - `src/shell/notification-item.tsx` — single row component with severity icon + click
 - `src/agent/stores/agent-alerts-store.ts` — ephemeral Zustand store for agent rail badge
 
 **Modified (4):**
+
 - `src/shell/notification-bell.tsx` — rewritten as drawer trigger + unread badge
 - `src/core/hooks/use-sse.ts` — add `notification.created` listener + rewrite `conversation.assigned` handler
 - `src/shell/rail.tsx` — wrap Agent RailIcon with numeric badge
 - `src/pages/agent/agent-layout.tsx` — reset agent-alerts on mount
 
 **Deleted (2):**
+
 - `src/core/stores/notification-store.ts`
 - `src/core/stores/notification-store.test.ts`
 
 **Tests (2 new):**
+
 - `src/core/api/hooks/use-notifications.test.tsx`
 - `src/shell/notification-item.test.tsx`
 
@@ -64,6 +68,7 @@ Tasks 1→4 form the "center" track. Tasks 5→8 form the "agent badge" track. T
 ## Task 1: `use-notifications.ts` hook + tests
 
 **Files:**
+
 - Create: `src/core/api/hooks/use-notifications.ts`
 - Create: `src/core/api/hooks/use-notifications.test.tsx`
 
@@ -201,7 +206,7 @@ describe('useMarkAllNotificationsRead', () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 npm run test -- use-notifications
 ```
 
@@ -287,19 +292,12 @@ export function useMarkNotificationRead() {
       const previousLists = qc.getQueriesData<Notification[]>({
         queryKey: ['notifications', 'list'],
       });
-      const previousCount = qc.getQueryData<UnreadCountResponse>([
-        'notifications',
-        'unread-count',
-      ]);
+      const previousCount = qc.getQueryData<UnreadCountResponse>(['notifications', 'unread-count']);
 
-      qc.setQueriesData<Notification[]>(
-        { queryKey: ['notifications', 'list'] },
-        (old) =>
-          old?.map((n) =>
-            n.notificationId === id
-              ? { ...n, isRead: true, readAt: new Date().toISOString() }
-              : n,
-          ),
+      qc.setQueriesData<Notification[]>({ queryKey: ['notifications', 'list'] }, (old) =>
+        old?.map((n) =>
+          n.notificationId === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
+        ),
       );
 
       if (previousCount) {
@@ -339,17 +337,10 @@ export function useMarkAllNotificationsRead() {
       const previousLists = qc.getQueriesData<Notification[]>({
         queryKey: ['notifications', 'list'],
       });
-      const previousCount = qc.getQueryData<UnreadCountResponse>([
-        'notifications',
-        'unread-count',
-      ]);
+      const previousCount = qc.getQueryData<UnreadCountResponse>(['notifications', 'unread-count']);
 
-      qc.setQueriesData<Notification[]>(
-        { queryKey: ['notifications', 'list'] },
-        (old) =>
-          old?.map((n) =>
-            n.isRead ? n : { ...n, isRead: true, readAt: new Date().toISOString() },
-          ),
+      qc.setQueriesData<Notification[]>({ queryKey: ['notifications', 'list'] }, (old) =>
+        old?.map((n) => (n.isRead ? n : { ...n, isRead: true, readAt: new Date().toISOString() })),
       );
 
       qc.setQueryData<UnreadCountResponse>(['notifications', 'unread-count'], { count: 0 });
@@ -398,6 +389,7 @@ git commit -m "feat(notifications): add use-notifications hook with optimistic u
 ## Task 2: `notification-item.tsx` component + test
 
 **Files:**
+
 - Create: `src/shell/notification-item.tsx`
 - Create: `src/shell/notification-item.test.tsx`
 
@@ -574,6 +566,7 @@ git commit -m "feat(notifications): add NotificationItem component with severity
 ## Task 3: `notification-drawer.tsx` Sheet drawer
 
 **Files:**
+
 - Create: `src/shell/notification-drawer.tsx`
 
 - [ ] **Step 1: Create the drawer component**
@@ -772,6 +765,7 @@ git commit -m "feat(notifications): add NotificationDrawer with category tabs an
 ## Task 4: Rewrite `notification-bell.tsx`
 
 **Files:**
+
 - Modify: `src/shell/notification-bell.tsx`
 
 - [ ] **Step 1: Replace the file content**
@@ -834,6 +828,7 @@ git commit -m "feat(notifications): rewrite NotificationBell as drawer trigger"
 ## Task 5: `agent-alerts-store.ts`
 
 **Files:**
+
 - Create: `src/agent/stores/agent-alerts-store.ts`
 
 - [ ] **Step 1: Create the store**
@@ -876,6 +871,7 @@ git commit -m "feat(notifications): add ephemeral agent-alerts Zustand store"
 ## Task 6: Modify `use-sse.ts` — add `notification.created` + rewrite `conversation.assigned`
 
 **Files:**
+
 - Modify: `src/core/hooks/use-sse.ts`
 
 - [ ] **Step 1: Replace the file content**
@@ -889,7 +885,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
-import { useCampaignMetricsStore, type CampaignStatus } from '@/operations/stores/campaign-metrics-store';
+import {
+  useCampaignMetricsStore,
+  type CampaignStatus,
+} from '@/operations/stores/campaign-metrics-store';
 import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
 import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
@@ -1115,6 +1114,7 @@ git commit -m "feat(notifications): wire SSE to notification.created and agent a
 ## Task 7: Add badge to Agent rail icon in `rail.tsx`
 
 **Files:**
+
 - Modify: `src/shell/rail.tsx`
 
 - [ ] **Step 1: Replace the file content**
@@ -1228,6 +1228,7 @@ git commit -m "feat(notifications): add numeric badge to Agent rail icon"
 ## Task 8: Reset agent-alerts on agent-layout mount
 
 **Files:**
+
 - Modify: `src/pages/agent/agent-layout.tsx`
 
 - [ ] **Step 1: Replace the file content**
@@ -1324,13 +1325,14 @@ git commit -m "feat(notifications): reset agent rail badge on agent layout mount
 ## Task 9: Delete `notification-store.ts` and its test
 
 **Files:**
+
 - Delete: `src/core/stores/notification-store.ts`
 - Delete: `src/core/stores/notification-store.test.ts`
 
 - [ ] **Step 1: Verify zero remaining consumers**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 grep -rn "notification-store\|useNotificationStore" src/ 2>/dev/null
 ```
 
@@ -1350,6 +1352,7 @@ npm run test 2>&1 | tail -20
 ```
 
 Expected:
+
 - Build: 0 TypeScript errors
 - Tests: all pass. The old `notification-store.test.ts` tests are gone; new tests from Tasks 1-2 take their place.
 
@@ -1365,12 +1368,13 @@ git commit -m "refactor(notifications): remove obsolete client-only notification
 ## Task 10: Final verification
 
 **Files:**
+
 - None (verification only)
 
 - [ ] **Step 1: Full build**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 npm run build
 ```
 
@@ -1397,14 +1401,14 @@ Expected: 0 errors, 0 warnings.
 Start the demo backend if not already running:
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 docker compose -f docker/demo/docker-compose.demo.yml up -d
 ```
 
 Start the dev server:
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 npm run dev
 ```
 
@@ -1443,21 +1447,21 @@ No changes in this step. If all verifications pass, Sub A is complete.
 
 Map each spec acceptance criterion to the task where it is implemented:
 
-| # | Criterion | Task |
-|---|---|---|
-| 1 | Bell badge shows unread count | Task 4 |
-| 2 | Bell click opens right-side drawer | Task 4 |
-| 3 | Drawer has 5 category tabs | Task 3 |
-| 4 | Each tab shows unread count badge | Task 3 |
-| 5 | Items display severity icon + title + body + time | Task 2 |
-| 6 | Unread bold + dot; read opacity-reduced | Task 2 |
-| 7 | Click marks read + navigates actionUrl | Task 3 (handleItemClick) |
-| 8 | "Mark all read" button | Task 3 |
-| 9 | Load more button | Task 3 |
-| 10 | Empty state per tab | Task 3 |
-| 11 | SSE notification.created → invalidate + toast | Task 6 |
-| 12 | conversation.assigned → toast + agent badge | Task 6 |
-| 13 | Agent rail badge resets on /agent/* | Task 8 |
-| 14 | notification-store deleted | Task 9 |
-| 15 | Build passes 0 errors | Task 10 |
-| 16 | Unit tests pass | Task 10 |
+| #   | Criterion                                         | Task                     |
+| --- | ------------------------------------------------- | ------------------------ |
+| 1   | Bell badge shows unread count                     | Task 4                   |
+| 2   | Bell click opens right-side drawer                | Task 4                   |
+| 3   | Drawer has 5 category tabs                        | Task 3                   |
+| 4   | Each tab shows unread count badge                 | Task 3                   |
+| 5   | Items display severity icon + title + body + time | Task 2                   |
+| 6   | Unread bold + dot; read opacity-reduced           | Task 2                   |
+| 7   | Click marks read + navigates actionUrl            | Task 3 (handleItemClick) |
+| 8   | "Mark all read" button                            | Task 3                   |
+| 9   | Load more button                                  | Task 3                   |
+| 10  | Empty state per tab                               | Task 3                   |
+| 11  | SSE notification.created → invalidate + toast     | Task 6                   |
+| 12  | conversation.assigned → toast + agent badge       | Task 6                   |
+| 13  | Agent rail badge resets on /agent/\*              | Task 8                   |
+| 14  | notification-store deleted                        | Task 9                   |
+| 15  | Build passes 0 errors                             | Task 10                  |
+| 16  | Unit tests pass                                   | Task 10                  |

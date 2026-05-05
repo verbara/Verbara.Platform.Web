@@ -1,6 +1,7 @@
 # Platform + Web v1.7.0 — Version Alignment (SDK 1.8.0 + Pro 1.2.0-pro)
 
 > **STATUS: COMPLETE 2026-04-13**
+>
 > - Platform: `962c17f` tag `v1.7.0` pushed to origin
 > - Platform.Web: `1746d2f` tag `v1.7.0` + retroactive `v1.6.0` at `bb13cb5` pushed
 > - SDK 1.7.0→1.8.0, Pro 1.1.4-pro→1.2.0-pro (19 version bumps)
@@ -16,12 +17,12 @@ After completing Pro SDK v1.2.0-pro (Phase 2 backplane), Platform still pins SDK
 
 ## Current State
 
-| Repo | Version | Tag | SDK | Pro | Gap |
-|------|---------|-----|-----|-----|-----|
-| Sdk | 1.8.0 | v1.8.0 | — | — | Branch `chore/docker-unify-realtime` (non-blocking) |
-| Sdk.Pro | 1.2.0-pro | v1.2.0-pro | 1.8.0 | — | None |
-| **Platform** | **1.6.0** | v1.6.0 | **1.7.0** | **1.1.4-pro** | SDK stale, Pro stale, version behind |
-| **Platform.Web** | 1.6.0 | **v1.5.0** | — | — | Missing v1.6.0 + v1.7.0 tags |
+| Repo             | Version   | Tag        | SDK       | Pro           | Gap                                                 |
+| ---------------- | --------- | ---------- | --------- | ------------- | --------------------------------------------------- |
+| Sdk              | 1.8.0     | v1.8.0     | —         | —             | Branch `chore/docker-unify-realtime` (non-blocking) |
+| Sdk.Pro          | 1.2.0-pro | v1.2.0-pro | 1.8.0     | —             | None                                                |
+| **Platform**     | **1.6.0** | v1.6.0     | **1.7.0** | **1.1.4-pro** | SDK stale, Pro stale, version behind                |
+| **Platform.Web** | 1.6.0     | **v1.5.0** | —         | —             | Missing v1.6.0 + v1.7.0 tags                        |
 
 ## Key Decisions
 
@@ -38,23 +39,24 @@ After completing Pro SDK v1.2.0-pro (Phase 2 backplane), Platform still pins SDK
 Verify repos clean, NuGet feed has packages.
 
 ```sh
-cd /media/Data/Source/IPcom/Asterisk.Platform && git status
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web && git status
-ls /media/Data/Source/IPcom/local-nuget-feed/Asterisk.Sdk.Hosting.1.8.0.nupkg
-ls /media/Data/Source/IPcom/local-nuget-feed/Asterisk.Sdk.Pro.EventStore.1.2.0-pro.nupkg
+cd /media/Data/Source/Verbara/Asterisk.Platform && git status
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web && git status
+ls /media/Data/Source/Verbara/local-nuget-feed/Asterisk.Sdk.Hosting.1.8.0.nupkg
+ls /media/Data/Source/Verbara/local-nuget-feed/Asterisk.Sdk.Pro.EventStore.1.2.0-pro.nupkg
 ```
 
 ## Phase 1 — Platform Dependency Bump
 
 **File:** `Directory.Packages.props`
 
-| Line | Package | From | To |
-|------|---------|------|----|
-| 30 | Asterisk.Sdk.Hosting | 1.7.0 | 1.8.0 |
-| 31 | Asterisk.Sdk.Push | 1.7.0 | 1.8.0 |
-| 35-51 | All 17 Asterisk.Sdk.Pro.* | 1.1.4-pro | 1.2.0-pro |
+| Line  | Package                    | From      | To        |
+| ----- | -------------------------- | --------- | --------- |
+| 30    | Asterisk.Sdk.Hosting       | 1.7.0     | 1.8.0     |
+| 31    | Asterisk.Sdk.Push          | 1.7.0     | 1.8.0     |
+| 35-51 | All 17 Asterisk.Sdk.Pro.\* | 1.1.4-pro | 1.2.0-pro |
 
 **Actions:**
+
 1. Edit `Directory.Packages.props` (19 version changes)
 2. Clear NuGet cache: `dotnet nuget locals all --clear`
 3. `dotnet restore`
@@ -66,10 +68,12 @@ ls /media/Data/Source/IPcom/local-nuget-feed/Asterisk.Sdk.Pro.EventStore.1.2.0-p
 ## Phase 2 — Platform Version Bump + Tag
 
 **Files:**
+
 - `Directory.Build.props` line 28: `1.6.0` → `1.7.0`
 - `tests/Asterisk.Platform.Api.Tests/ManagementSystemEndpointTests.cs` line 24: `"1.6.0"` → `"1.7.0"`
 
 **Actions:**
+
 1. Edit both files
 2. `dotnet build -c Release` → verify
 3. `dotnet test` → all 1636 pass (including version assertion test)
@@ -80,12 +84,14 @@ ls /media/Data/Source/IPcom/local-nuget-feed/Asterisk.Sdk.Pro.EventStore.1.2.0-p
 ## Phase 3 — Platform.Web Tags + Version Bump
 
 **Step 3a — Retroactive v1.6.0 tag:**
+
 ```sh
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 git tag -a v1.6.0 bb13cb5 -m "v1.6.0 — notification center, security page, SSE resilience, E2E hardening"
 ```
 
 **Step 3b — Bump + tag v1.7.0:**
+
 - Edit `package.json` line 4: `"1.6.0"` → `"1.7.0"`
 - Commit: `chore(release): bump version to 1.7.0`
 - Tag: `git tag -a v1.7.0 -m "v1.7.0 — Partner Portal pages, hooks, permission gates"`
@@ -94,13 +100,14 @@ git tag -a v1.6.0 bb13cb5 -m "v1.6.0 — notification center, security page, SSE
 ## Phase 4 — Cleanup
 
 Delete stale local branches:
+
 ```sh
 # Platform
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 git branch -d feat/plan-0.5-api-hardening
 
 # Platform.Web
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 git branch -d feat/plan2-admin-crud feat/plan3-agent-workspace feat/plan4-5-ops-analytics
 ```
 
@@ -118,7 +125,7 @@ Note: SDK branch `chore/docker-unify-realtime` — informational, separate clean
 
 ```sh
 # Platform
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 git describe --tags                     # v1.7.0
 grep PackageVersion Directory.Build.props   # 1.7.0
 grep Sdk.Hosting Directory.Packages.props   # 1.8.0
@@ -126,19 +133,19 @@ grep Pro.EventStore Directory.Packages.props # 1.2.0-pro
 dotnet test -v q                        # all pass
 
 # Platform.Web
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 git tag -l 'v1.*' --sort=-v:refname     # v1.7.0, v1.6.0, v1.5.0
 head -5 package.json                    # 1.7.0
 ```
 
 ## Critical Files
 
-| File | Change |
-|------|--------|
-| `Asterisk.Platform/Directory.Packages.props` | 19 version bumps |
-| `Asterisk.Platform/Directory.Build.props` | 1.6.0 → 1.7.0 |
+| File                                                              | Change            |
+| ----------------------------------------------------------------- | ----------------- |
+| `Asterisk.Platform/Directory.Packages.props`                      | 19 version bumps  |
+| `Asterisk.Platform/Directory.Build.props`                         | 1.6.0 → 1.7.0     |
 | `Asterisk.Platform/tests/.../ManagementSystemEndpointTests.cs:24` | version assertion |
-| `Asterisk.Platform.Web/package.json` | 1.6.0 → 1.7.0 |
+| `Asterisk.Platform.Web/package.json`                              | 1.6.0 → 1.7.0     |
 
 ## Risk Assessment
 

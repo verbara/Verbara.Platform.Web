@@ -16,6 +16,7 @@ Platform backend ha shipped en este sprint dos releases que entregan valor ya ex
 Track A designó **R4 Platform.Web** como el release siguiente que materializa ese valor en la UI. **Paralelo a v1.9.2 (Asterisk 23 matrix)** — zero dependencias cross-repo después de que Web consuma los nuevos hooks.
 
 Platform.Web state baseline:
+
 - Version `1.8.0` (SDK consumer via typed fetch to Platform.Api `/api/v1/*`)
 - React 19 + TypeScript + Vite + Tailwind + shadcn/ui v4 (`@base-ui/react`, NO Radix)
 - 45 unit tests (Vitest) + 265 E2E tests (Playwright)
@@ -31,13 +32,14 @@ Platform.Web state baseline:
 
 Los 3 backend T27 bridges shipped en Platform v1.9.0 publican a `IPushEventBus` con topics estandarizados. Web debe consumir vía `PlatformHub` + SignalR subscription + React Query invalidation.
 
-| Hook | Topic subscription | Consumers | File |
-|---|---|---|---|
-| `useConversationStateStream(tenantId, convId?)` | `conversation.{tenant}.*.state.changed` (or single `convId`) | Conversation UI live-update | `src/core/api/hooks/use-conversation-state-stream.ts` |
-| `useAgentStateStream(tenantId, agentId?)` | `agent.{tenant}.*.state.changed` (or single `agentId`) | Agent desktop + supervisor view | `src/core/api/hooks/use-agent-state-stream.ts` |
-| `useClusterStateStream()` | `cluster.node.*.state.changed` (admin-scoped) | Cluster admin page | `src/core/api/hooks/use-cluster-state-stream.ts` |
+| Hook                                            | Topic subscription                                           | Consumers                       | File                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------ | ------------------------------- | ----------------------------------------------------- |
+| `useConversationStateStream(tenantId, convId?)` | `conversation.{tenant}.*.state.changed` (or single `convId`) | Conversation UI live-update     | `src/core/api/hooks/use-conversation-state-stream.ts` |
+| `useAgentStateStream(tenantId, agentId?)`       | `agent.{tenant}.*.state.changed` (or single `agentId`)       | Agent desktop + supervisor view | `src/core/api/hooks/use-agent-state-stream.ts`        |
+| `useClusterStateStream()`                       | `cluster.node.*.state.changed` (admin-scoped)                | Cluster admin page              | `src/core/api/hooks/use-cluster-state-stream.ts`      |
 
 **Pattern** (reuse `src/core/realtime/use-realtime-presence.ts` precedent):
+
 ```typescript
 export function useConversationStateStream(tenantId: string, convId?: string) {
   const hub = usePlatformHub();
@@ -76,12 +78,14 @@ Dos dashboards en Web aún consumen mocks en lugar de las APIs reales que Platfo
 ### C. Retention admin page (new)
 
 Platform v1.8.0 shipped `Pro.Storage.Common.Retention` with `DryRun` default. Admins need a UI to:
+
 - View retention policy status per table (event stores, CDR, dialer contacts, etc.)
 - Toggle `DryRun` → live mode (danger zone UI with confirmation modal)
 - See last execution status + rows-purged counter from meter
 - Schedule override (one-off manual run)
 
 **New files:**
+
 - `src/pages/admin/retention/retention-page.tsx` (page component)
 - `src/pages/admin/retention/retention-policy-card.tsx` (per-table card)
 - `src/pages/admin/retention/retention-danger-zone-modal.tsx`
@@ -93,6 +97,7 @@ Platform v1.8.0 shipped `Pro.Storage.Common.Retention` with `DryRun` default. Ad
 ### D. EventStore audit UI — expansion
 
 Existing `src/pages/admin/audit/` probably covers basic auth events. Expand to surface:
+
 - Impersonation events (both caller + target tenant entries — P0 v1.9.0 dual audit)
 - MFA policy enforcement events (enrollment-required, policy-violation, policy-updated)
 - Resilience circuit-open/close events from `IResilienceStateObserver` (optional dev-facing, gate behind feature flag)
@@ -146,6 +151,7 @@ Backend shipped P0 impersonation + MFA enforcement. Frontend needs companion UX:
 ## Archivos críticos (por frente)
 
 **A — SignalR hooks:**
+
 - `src/core/api/hooks/use-conversation-state-stream.ts` (new)
 - `src/core/api/hooks/use-agent-state-stream.ts` (new)
 - `src/core/api/hooks/use-cluster-state-stream.ts` (new)
@@ -153,22 +159,26 @@ Backend shipped P0 impersonation + MFA enforcement. Frontend needs companion UX:
 - `src/core/api/hooks/__tests__/use-conversation-state-stream.test.tsx` (new)
 
 **B — Dashboards mock removal:**
+
 - `src/pages/analytics/call-analytics/call-analytics-page.tsx`
 - `src/pages/analytics/bot-analytics/bot-analytics-page.tsx`
 - Remove any `__mocks__/` in the same directories
 - `src/core/api/hooks/use-call-analytics.ts` (likely exists, verify + fix)
 
 **C — Retention admin:**
+
 - `src/pages/admin/retention/` (new directory, 3-4 new files)
 - `src/core/api/hooks/use-retention.ts` (new)
 - Route registration
 - Server-side: `Asterisk.Platform/src/Asterisk.Platform.Api/Endpoints/ManagementRetentionEndpoints.cs` (verify/add)
 
 **D — Audit UI expansion:**
+
 - `src/pages/admin/audit/audit-page.tsx` (extend filters)
 - `src/core/api/hooks/use-audit.ts` (add new action constants)
 
 **E — P0 security UI:**
+
 - `src/pages/auth/login.tsx` (MFA challenge field)
 - `src/pages/auth/mfa-enrollment.tsx` (new wizard)
 - `src/pages/admin/security/sessions.tsx` (new)
@@ -177,6 +187,7 @@ Backend shipped P0 impersonation + MFA enforcement. Frontend needs companion UX:
 - `src/core/api/response-types.ts` — add `MfaEnrollmentRequiredResponse`, `PasswordResetMfaRequiredResponse`
 
 **F — Sub-B (if in scope):**
+
 - `src/pages/agent/cases/` (wiring)
 - `src/pages/admin/canned-responses/` (CRUD UI)
 - `src/locales/*.json` (i18n keys)
@@ -186,7 +197,7 @@ Backend shipped P0 impersonation + MFA enforcement. Frontend needs companion UX:
 ## Verification
 
 ```sh
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 
 # Per-frente verification
 npm run build                    # TypeScript + Vite build
@@ -280,6 +291,7 @@ npm run dev                      # local Web server
 **Scope:** 2/3 hooks shipped via Platform-only relay (Opción B). Cluster hook diferido a Opción A (requires Pro-side `admins:platform` group, separate session).
 
 **Commits (local main, not pushed):**
+
 - Platform `999d494` — `feat(api): add PushToHubRelay forwarding T27 conversation+agent events to SignalR`
 - Web `111d9ac` — `feat(realtime): add onHubEvent subscription helper for ad-hoc hub events`
 - Web `a86cd01` — `feat(hooks): add useConversationStateStream for T27 conversation bridge`
@@ -288,11 +300,13 @@ npm run dev                      # local Web server
 **Tests:** Platform +5 (`PushToHubRelayTests`, 5/5 green, 1,762 total non-Postgres). Web +11 (6 conversation + 5 agent stream tests, 56/56 green, baseline 45).
 
 **Implementation notes:**
+
 - Relay uses dynamic SignalR method name via `SendCoreAsync(method, [payload], ct)` — avoids Pro change (no typed `IPlatformHubClient` extension). Opción A follow-up migrates to typed interface.
 - Hooks use a new `onHubEvent<T>(method, handler) → unsubscribe` helper exported from `platform-hub.ts` — keeps the global `registerHandlers()` unchanged and lets components opt in per-effect.
 - Broadcasts target the existing `tenant:{tenantId}` SignalR group (clients auto-join on connect via JWT `tid`). No backend schema / auth changes required.
 
 **E2E deferred to Frente B.** Rationale:
+
 - Hooks return `void` — no observable UI state without a consumer. Validating cache invalidation without a visible re-fetch adds either a test-only endpoint (backend debt) or a fake debug page (frontend debt).
 - Frente B wires `Call Analytics` + `Bot Analytics` dashboards to real backend data → those become the natural consumers. Closing a conversation via the existing API causes `CallEndedEvent` → bridge → bus → relay → hub → `useConversationStateStream` → dashboard re-fetches updated row. That Playwright spec validates the complete wire with a realistic trigger.
 - Contract is already covered end-to-end by unit tests on both layers (Platform 5 + Web 11 = 16). Transport is `@microsoft/signalr` v10 + ASP.NET SignalR — battle-tested.
@@ -304,12 +318,14 @@ npm run dev                      # local Web server
 **Scope:** 3/3 hooks complete. Migrated to typed `IPlatformHubClient` interface in Pro, added `admins:platform` SignalR group for PlatformAdmin connections, added cluster hook end-to-end.
 
 **Commits (local main, not pushed):**
+
 - Pro `68176d4` — `feat(push-signalr): add typed hub client methods + admins:platform group for T27 events`
 - Pro `fa68350` — `chore(release): bump Pro 1.10.0-pro -> 1.11.0-pro`
 - Platform `cbd66cd` — `feat(api): migrate PushToHubRelay to typed IHubContext + add cluster event forward`
 - Web `39c2cb3` — `feat(hooks): add useClusterStateStream for T27 cluster bridge`
 
 **Tests:**
+
 - Pro `Push.SignalR.Tests` 58 → 61 (+3 admin group join scenarios)
 - Platform `PushToHubRelayTests` 5 → 7 (+2 cluster forward + null-node skip) — all migrated to typed NSubstitute mocks
 - Web total 56 → 62 (+6 cluster stream scenarios)
@@ -376,14 +392,14 @@ R4 pending scope is absorbed into the broader cross-repo release train R5. See a
 
 Mapping of pending R4 items to R5:
 
-| R4 pending item | R5 destination |
-|---|---|
-| Ω-3 drill-down (qa-detail-drawer enrichment) | R5.3 S4.6 |
-| Ω-3 Playwright E2E T27 bridge | R5.3 S4.7 |
-| Frente C — Retention admin | R5.2 S3.5 |
-| Frente D — EventStore/Audit UI expansion | R5.2 S3.2 |
-| Frente E — P0 security UI (MFA wizard) | R5.2 S3.4 (co-shipped with MFA admin S3.1 for UX coherence) |
-| Frente F — Sub-B Web Sync | R5.3 S4.8 (scope-guarded) |
+| R4 pending item                              | R5 destination                                              |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| Ω-3 drill-down (qa-detail-drawer enrichment) | R5.3 S4.6                                                   |
+| Ω-3 Playwright E2E T27 bridge                | R5.3 S4.7                                                   |
+| Frente C — Retention admin                   | R5.2 S3.5                                                   |
+| Frente D — EventStore/Audit UI expansion     | R5.2 S3.2                                                   |
+| Frente E — P0 security UI (MFA wizard)       | R5.2 S3.4 (co-shipped with MFA admin S3.1 for UX coherence) |
+| Frente F — Sub-B Web Sync                    | R5.3 S4.8 (scope-guarded)                                   |
 
 Rationale for absorption: R4 was Web-only in scope but the pending items all interlock with backend work (Platform audit enrichment, Retention per-tenant viewer, MFA admin view) and with Ops Toolkit UI (Phase 0 shared primitives consolidation benefits all subsequent UI work). Execution as one coordinated release train is more coherent than splitting R4 Web from a parallel Platform effort.
 

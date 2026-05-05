@@ -9,19 +9,23 @@
 **Tech Stack:** .NET 10 Native AOT, Minimal APIs, Dapper + Postgres, xunit + NSubstitute + FluentAssertions (backend); React 19, TanStack Query 5, Zustand 5, base-ui, Vitest, Playwright (frontend); i18next locale JSON.
 
 **Related files:**
+
 - Spec: `docs/superpowers/specs/2026-04-10-v160-sub-c-security-page-design.md`
 - Parent memory: `memory/project_v160_production_polish.md`
 - Predecessor: Plan 34 (Sub A Notification Center — complete)
 
 **Versioning:**
+
 - Backend `Asterisk.Platform`: v1.5.0 → v1.5.1 (bumped in task 18)
 - Frontend `Asterisk.Platform.Web`: stays 1.5.0 (will bump to 1.6.0 after all v1.6.0 sub-projects complete)
 
 **Repos and working directories:**
-- Backend: `/media/Data/Source/IPcom/Asterisk.Platform`
-- Frontend: `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+
+- Backend: `/media/Data/Source/Verbara/Asterisk.Platform`
+- Frontend: `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 **Execution conventions (from CLAUDE.md):**
+
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`)
 - No `Co-Authored-By` trailer
 - Merge direct to `main` in both repos (no feature branch)
@@ -86,10 +90,11 @@ Parallelism: Tasks 12, 13 (i18n + user-menu link) can run in parallel with task 
 ## Task 1: T0.2 — Extend impersonation middleware with security-critical auth paths
 
 **Files:**
+
 - Modify: `src/Asterisk.Platform.Api/Middleware/TenantResolutionMiddleware.cs`
 - Modify: `tests/Asterisk.Platform.Api.Tests/Middleware/TenantResolutionMiddlewareTests.cs` (create if absent)
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform`
 
 - [ ] **Step 1: Locate the existing test file for the middleware**
 
@@ -304,7 +309,7 @@ Expected: all pass.
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 git add src/Asterisk.Platform.Api/Middleware/TenantResolutionMiddleware.cs tests/Asterisk.Platform.Api.Tests/Middleware/TenantResolutionMiddlewareImpersonationTests.cs
 git commit -m "fix(auth): block security-critical operations during impersonation
 
@@ -325,10 +330,11 @@ security-page audit. Applies to both full and read-only impersonation modes."
 ## Task 2: T0.1 — Fix MfaChallengeResponse field name mismatch
 
 **Files:**
+
 - Modify: `src/Asterisk.Platform.Api/Endpoints/AuthEndpoints.cs:703`
 - Modify: `src/Asterisk.Platform.Api/Serialization/ApiJsonContext.cs` (if `MfaChallengeResponse` is registered)
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform`
 
 - [ ] **Step 1: Verify current state of the record**
 
@@ -413,10 +419,11 @@ Sub C T0.1 — regression fix. Field name change only; no behavior change."
 ## Task 3: T0.5 — MfaDisable/MfaConfirm tenant policy enforcement
 
 **Files:**
+
 - Modify: `src/Asterisk.Platform.Api/Endpoints/AuthEndpoints.cs` (MfaDisable handler ~line 499)
 - Modify: `tests/Asterisk.Platform.Api.Tests/Endpoints/AuthEndpointsTests.cs`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform`
 
 - [ ] **Step 1: Inspect the current MfaDisable handler**
 
@@ -614,9 +621,10 @@ multi-tenant security fixes."
 ## Task 4: T0.3 — mfa-verify.tsx 429 + expired token error handling
 
 **Files:**
+
 - Modify: `src/core/auth/mfa-verify.tsx`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Read current mfa-verify.tsx lines 20-80**
 
@@ -636,7 +644,9 @@ try {
 } catch (err) {
   // Sub C T0.3: distinguish error types
   if (err instanceof Error && err.message.includes('429')) {
-    setError(t('auth.mfa_rate_limited', 'Too many attempts. Please wait a few minutes and try again.'));
+    setError(
+      t('auth.mfa_rate_limited', 'Too many attempts. Please wait a few minutes and try again.'),
+    );
   } else if (err instanceof Error && err.message.includes('CHALLENGE_EXPIRED')) {
     setError(t('auth.mfa_challenge_expired', 'Your session expired. Please log in again.'));
     // After 3 seconds, redirect to login
@@ -678,12 +688,14 @@ Add under the `auth` subtree (create if absent). Exact strings for en-US:
 ```
 
 Spanish (es-419):
+
 ```json
 "mfa_rate_limited": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
 "mfa_challenge_expired": "Tu sesión expiró. Por favor, inicia sesión de nuevo."
 ```
 
 Portuguese (pt-BR):
+
 ```json
 "mfa_rate_limited": "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
 "mfa_challenge_expired": "Sua sessão expirou. Por favor, faça login novamente."
@@ -692,7 +704,7 @@ Portuguese (pt-BR):
 - [ ] **Step 5: Typecheck**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 npm run build 2>&1 | tail -8
 ```
 
@@ -719,10 +731,11 @@ Sub C T0.3 — UX polish for MFA login flow."
 ## Task 5: T0.4 — E2E recovery code login path test
 
 **Files:**
+
 - Modify: `tests/e2e/tests/platform-admin/login.spec.ts`
 - Modify: `tests/e2e/fixtures/api-helper.ts` (add `setupTestUserWithMfa` method)
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Read the existing login.spec.ts structure**
 
@@ -787,7 +800,10 @@ npm install --save-dev otplib
 Append to `tests/e2e/tests/platform-admin/login.spec.ts`:
 
 ```ts
-test('should accept recovery code instead of TOTP during MFA verify', async ({ page, apiHelper }) => {
+test('should accept recovery code instead of TOTP during MFA verify', async ({
+  page,
+  apiHelper,
+}) => {
   const email = `mfa-recovery-${Date.now()}@test.local`;
   const password = 'TestPassword123!';
   const { recoveryCodes } = await apiHelper.setupTestUserWithMfa(email, password);
@@ -813,7 +829,7 @@ test('should accept recovery code instead of TOTP during MFA verify', async ({ p
 - [ ] **Step 4: Run the test (demo env required)**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 npx playwright test tests/e2e/tests/platform-admin/login.spec.ts --grep "recovery code"
 ```
 
@@ -822,6 +838,7 @@ If demo env is NOT running, the test will be deferred to Task 18 (final verifica
 - [ ] **Step 5: Also add data-testids to mfa-verify.tsx if missing**
 
 Re-read `src/core/auth/mfa-verify.tsx` and ensure these data-testids exist:
+
 - `login-mfa-section` (wrapping div)
 - `login-mfa-use-recovery` (toggle button to recovery mode)
 - `login-mfa-recovery-input` (text input in recovery mode)
@@ -848,11 +865,12 @@ Sub C T0.4 — closes recovery code fallback testing gap."
 ## Task 6: T2.1a — User-scoped sessions endpoints
 
 **Files:**
+
 - Modify: `src/Asterisk.Platform.Api/Endpoints/AuthEndpoints.cs`
 - Modify: `src/Asterisk.Platform.Api/Serialization/ApiJsonContext.cs` (register new DTOs)
 - Modify: `tests/Asterisk.Platform.Api.Tests/Endpoints/AuthEndpointsTests.cs`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform`
 
 - [ ] **Step 1: Write 5 failing tests for the new endpoints**
 
@@ -1155,12 +1173,13 @@ Sub C T2.1a — closes 'Sign out other devices' feature gap."
 ## Task 7: T2.2a — Recovery codes regenerate endpoint
 
 **Files:**
+
 - Modify: `src/Asterisk.Platform.Api/Endpoints/AuthEndpoints.cs`
 - Modify: `src/Asterisk.Platform.Identity/AuthEvent.cs` (add new event type constant)
 - Modify: `src/Asterisk.Platform.Api/Serialization/ApiJsonContext.cs`
 - Modify: `tests/Asterisk.Platform.Api.Tests/Endpoints/AuthEndpointsTests.cs`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform`
 
 - [ ] **Step 1: Add the new auth event type constant**
 
@@ -1322,11 +1341,12 @@ Sub C T2.2a — closes 'user locked out after burning all codes' gap."
 ## Task 8: T2.3a — Password policy GET endpoint
 
 **Files:**
+
 - Modify: `src/Asterisk.Platform.Api/Endpoints/AuthEndpoints.cs`
 - Modify: `src/Asterisk.Platform.Api/Serialization/ApiJsonContext.cs`
 - Modify: `tests/Asterisk.Platform.Api.Tests/Endpoints/AuthEndpointsTests.cs`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform`
 
 - [ ] **Step 1: Write 2 failing tests**
 
@@ -1463,11 +1483,12 @@ Sub C T2.3a — closes UX friction in password change forms."
 ## Task 9: T2.4a — Security notification emits
 
 **Files:**
+
 - Modify: `src/Asterisk.Platform.Core/Notifications/NotificationTypeRegistry.cs`
 - Modify: `src/Asterisk.Platform.Api/Endpoints/AuthEndpoints.cs` (inject + call)
 - Modify: `tests/Asterisk.Platform.Api.Tests/Endpoints/AuthEndpointsTests.cs`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform`
 
 - [ ] **Step 1: Add 3 new notification types to the registry**
 
@@ -1672,37 +1693,38 @@ Sub C T2.4a — cross-feature integration with Sub A Notification Center."
 ## Task 10: T1.1 — `useMe` hook with typed Me interface
 
 **Files:**
+
 - Create: `src/core/api/hooks/use-me.ts`
 - Create: `src/core/api/hooks/use-me.test.tsx`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Verify `/users/me` endpoint response shape**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 grep -n "GetCurrentUser\|UsersMeEndpoint" src/Asterisk.Platform.Api/Endpoints/UsersMeEndpoint.cs
 ```
 
 Read the handler (from earlier audit, `GET /users/me` returns the full `User` entity). The JSON will be camelCase due to default policy. Field mapping:
 
-| Backend `User` | Frontend `Me` |
-|---|---|
-| `UserId` (EntityId) | `id: string` |
-| `Email` | `email: string` |
-| `DisplayName` | `displayName: string` |
-| `Role` (UserRole enum) | `role: string` (enum name as string) |
-| `Status` (UserStatus enum) | `status: string` |
-| `MfaEnabled` | `mfaEnabled: boolean` |
-| `MfaConfirmedAt` | `mfaConfirmedAt: string \| null` |
-| `EmailVerified` | `emailVerified: boolean` |
-| `FailedLoginAttempts` | `failedLoginAttempts: number` |
-| `LockedUntil` | `lockedUntil: string \| null` |
-| `PasswordChangedAt` | `passwordChangedAt: string \| null` |
-| `LastLoginAt` | `lastLoginAt: string \| null` |
-| `AuthProvider` | `authProvider: 'local' \| 'oidc' \| 'apikey'` |
-| `ExternalId` | `externalId: string \| null` |
-| `OidcSubject` | `oidcSubject: string \| null` |
+| Backend `User`             | Frontend `Me`                                 |
+| -------------------------- | --------------------------------------------- |
+| `UserId` (EntityId)        | `id: string`                                  |
+| `Email`                    | `email: string`                               |
+| `DisplayName`              | `displayName: string`                         |
+| `Role` (UserRole enum)     | `role: string` (enum name as string)          |
+| `Status` (UserStatus enum) | `status: string`                              |
+| `MfaEnabled`               | `mfaEnabled: boolean`                         |
+| `MfaConfirmedAt`           | `mfaConfirmedAt: string \| null`              |
+| `EmailVerified`            | `emailVerified: boolean`                      |
+| `FailedLoginAttempts`      | `failedLoginAttempts: number`                 |
+| `LockedUntil`              | `lockedUntil: string \| null`                 |
+| `PasswordChangedAt`        | `passwordChangedAt: string \| null`           |
+| `LastLoginAt`              | `lastLoginAt: string \| null`                 |
+| `AuthProvider`             | `authProvider: 'local' \| 'oidc' \| 'apikey'` |
+| `ExternalId`               | `externalId: string \| null`                  |
+| `OidcSubject`              | `oidcSubject: string \| null`                 |
 
 - [ ] **Step 2: Create the hook file**
 
@@ -1862,10 +1884,11 @@ Sub C T1.1 — closes the original TODO that triggered Sub C."
 ## Task 11: T1.2 — Refactor customFetch to mutations in use-auth-admin.ts
 
 **Files:**
+
 - Modify: `src/core/api/hooks/use-auth-admin.ts`
 - Create or modify: `src/core/api/hooks/use-auth-admin.test.tsx`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Read the existing use-auth-admin.ts structure**
 
@@ -2191,6 +2214,7 @@ Sub C T1.2 — normalizes security-page to codebase TanStack Query pattern."
 ## Task 12: T1.3 — i18n completion
 
 **Files:**
+
 - Modify: `public/locales/en-US/admin.json`
 - Modify: `public/locales/es-419/admin.json`
 - Modify: `public/locales/pt-BR/admin.json`
@@ -2198,7 +2222,7 @@ Sub C T1.2 — normalizes security-page to codebase TanStack Query pattern."
 - Modify: `public/locales/es-419/common.json`
 - Modify: `public/locales/pt-BR/common.json`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Add `security` subtree to en-US/admin.json**
 
@@ -2325,6 +2349,7 @@ Translate all the above for `public/locales/es-419/admin.json` and `common.json`
 ```
 
 es-419 common.json:
+
 ```json
 "status": { "enabled": "Habilitado", "disabled": "Deshabilitado" },
 "actions": { "copy": "Copiar", "download": "Descargar", "done": "Listo", "next": "Siguiente" },
@@ -2374,6 +2399,7 @@ pt-BR admin.json security subtree:
 ```
 
 pt-BR common.json:
+
 ```json
 "status": { "enabled": "Habilitado", "disabled": "Desabilitado" },
 "actions": { "copy": "Copiar", "download": "Baixar", "done": "Concluído", "next": "Próximo" },
@@ -2430,9 +2456,10 @@ Sub C T1.3 — closes i18n debt."
 ## Task 13: T1.4 — User-menu "Security" link
 
 **Files:**
+
 - Modify: `src/shell/user-menu.tsx`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Read user-menu.tsx to understand the current structure**
 
@@ -2447,13 +2474,13 @@ Expected: base-ui `DropdownMenu` with theme submenu + logout button.
 Add a new `<DropdownMenuItem>` between the Theme submenu and the Logout separator/button. Example diff:
 
 ```tsx
-import { Lock, LogOut, Moon, Sun, Monitor } from 'lucide-react';  // add Lock
-import { useNavigate } from 'react-router-dom';  // add if not present
+import { Lock, LogOut, Moon, Sun, Monitor } from 'lucide-react'; // add Lock
+import { useNavigate } from 'react-router-dom'; // add if not present
 // ... existing imports
 
 export function UserMenu() {
   const { t } = useTranslation();
-  const navigate = useNavigate();  // add
+  const navigate = useNavigate(); // add
   // ... existing hooks
 
   return (
@@ -2508,9 +2535,10 @@ Sub C T1.4 — discoverability fix."
 ## Task 14: T1.5 — Apply usePasswordPolicy to reset-password-page.tsx
 
 **Files:**
+
 - Modify: `src/core/auth/reset-password-page.tsx`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Read the current reset-password-page.tsx**
 
@@ -2609,9 +2637,10 @@ real policy but reset-password hardcoded checks that may or may not match."
 ## Task 15: T2.5 — Rewrite security-page.tsx
 
 **Files:**
+
 - Rewrite: `src/admin/profile/security-page.tsx`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 **Scope:** Full rewrite. The current file is 324 lines with mixed `customFetch` + `useState` + UI. The new file consumes `useMe`, the mutations from Task 11, `usePasswordPolicy`, and adds 3 edge-case handlers (OIDC, lockout, MFA required) + sessions card + recovery codes regeneration.
 
@@ -2622,6 +2651,7 @@ grep -n "data-testid" src/admin/profile/security-page.tsx
 ```
 
 Preserve these data-testids in the rewrite:
+
 - `security-mfa-status`
 - `security-mfa-enable`, `security-mfa-disable`
 - `security-mfa-qrcode`
@@ -2631,6 +2661,7 @@ Preserve these data-testids in the rewrite:
 - `security-mfa-disable-password`, `security-mfa-disable-confirm`
 
 Add new data-testids:
+
 - `security-lockout-banner`
 - `security-mfa-required-banner`
 - `security-oidc-badge`
@@ -2649,7 +2680,14 @@ Create/overwrite `src/admin/profile/security-page.tsx`:
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Shield, ShieldCheck, Download, Copy, KeyRound, Lock, RefreshCw, LogOut as LogOutIcon,
+  Shield,
+  ShieldCheck,
+  Download,
+  Copy,
+  KeyRound,
+  Lock,
+  RefreshCw,
+  LogOut as LogOutIcon,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/core/ui/button';
@@ -2657,16 +2695,27 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
 } from '@/core/ui/dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { useMe, isLockedOut, type Me } from '@/core/api/hooks/use-me';
 import {
-  useSetupMfa, useConfirmMfa, useDisableMfa,
+  useSetupMfa,
+  useConfirmMfa,
+  useDisableMfa,
   useChangePassword,
-  useMySessions, useRevokeSession, useRevokeOtherSessions,
-  useRegenerateRecoveryCodes, usePasswordPolicy,
-  type ActiveSession, type MfaSetupResponse,
+  useMySessions,
+  useRevokeSession,
+  useRevokeOtherSessions,
+  useRegenerateRecoveryCodes,
+  usePasswordPolicy,
+  type ActiveSession,
+  type MfaSetupResponse,
 } from '@/core/api/hooks/use-auth-admin';
 
 export default function SecurityPage() {
@@ -2676,9 +2725,7 @@ export default function SecurityPage() {
   if (meLoading || !me) {
     return (
       <div className="mx-auto max-w-2xl space-y-6 p-6">
-        <h1 className="font-heading text-2xl font-semibold">
-          {t('admin:security.title')}
-        </h1>
+        <h1 className="font-heading text-2xl font-semibold">{t('admin:security.title')}</h1>
         <p className="text-sm text-muted-foreground">Loading…</p>
       </div>
     );
@@ -2690,9 +2737,7 @@ export default function SecurityPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6" data-testid="security-page">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-semibold">
-          {t('admin:security.title')}
-        </h1>
+        <h1 className="font-heading text-2xl font-semibold">{t('admin:security.title')}</h1>
         {isOidc && (
           <Badge variant="secondary" data-testid="security-oidc-badge">
             {t('admin:security.oidc_badge')}
@@ -2747,7 +2792,7 @@ function MfaSection({ me, locked }: { me: Me; locked: boolean }) {
   // showing the disable button unless the mutation returns 403, then showing
   // the banner.
   // TODO(v1.7.0): add MfaPolicy to /users/me response so UI can hide proactively.
-  const mfaRequired = false;  // best-effort v1.6.0 — relies on backend 403
+  const mfaRequired = false; // best-effort v1.6.0 — relies on backend 403
 
   async function handleSetup() {
     const data = await setupMfa.mutateAsync();
@@ -2799,9 +2844,7 @@ function MfaSection({ me, locked }: { me: Me; locked: boolean }) {
           )}
           <div>
             <h3 className="font-medium">{t('admin:security.mfa')}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t('admin:security.mfa_description')}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('admin:security.mfa_description')}</p>
           </div>
         </div>
         <Badge data-testid="security-mfa-status" variant={me.mfaEnabled ? 'default' : 'secondary'}>
@@ -2814,8 +2857,7 @@ function MfaSection({ me, locked }: { me: Me; locked: boolean }) {
           className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800"
           data-testid="security-mfa-required-banner"
         >
-          {t('admin:security.mfa_required_banner')}{' '}
-          {t('admin:security.mfa_required_enroll')}
+          {t('admin:security.mfa_required_banner')} {t('admin:security.mfa_required_enroll')}
         </div>
       )}
 
@@ -2858,17 +2900,12 @@ function MfaSection({ me, locked }: { me: Me; locked: boolean }) {
         <div className="space-y-4 border-t pt-4">
           <p className="text-sm">{t('admin:security.scan_qr')}</p>
           <div className="flex justify-center">
-            <div
-              data-testid="security-mfa-qrcode"
-              className="rounded-lg border bg-white p-4"
-            >
+            <div data-testid="security-mfa-qrcode" className="rounded-lg border bg-white p-4">
               <QRCodeSVG value={setupData.qrUri} size={192} />
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">
-              {t('admin:security.manual_key')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('admin:security.manual_key')}</p>
             <code className="block rounded bg-muted px-3 py-2 text-sm font-mono break-all">
               {setupData.secret}
             </code>
@@ -2915,9 +2952,7 @@ function MfaSection({ me, locked }: { me: Me; locked: boolean }) {
       )}
 
       {/* Recovery codes regeneration result */}
-      {newCodes && (
-        <RecoveryCodesDisplay codes={newCodes} onDone={() => setNewCodes(null)} />
-      )}
+      {newCodes && <RecoveryCodesDisplay codes={newCodes} onDone={() => setNewCodes(null)} />}
 
       {/* Disable MFA dialog */}
       <Dialog open={disableOpen} onOpenChange={setDisableOpen}>
@@ -2957,9 +2992,7 @@ function MfaSection({ me, locked }: { me: Me; locked: boolean }) {
           <DialogHeader>
             <DialogTitle>{t('admin:security.regenerate_recovery_codes')}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {t('admin:security.regenerate_confirm')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('admin:security.regenerate_confirm')}</p>
           <Input
             type="password"
             value={regeneratePassword}
@@ -2996,7 +3029,9 @@ function RecoveryCodesDisplay({ codes, onDone }: { codes: string[]; onDone: () =
         className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-4"
       >
         {codes.map((code, i) => (
-          <code key={i} className="text-sm font-mono">{code}</code>
+          <code key={i} className="text-sm font-mono">
+            {code}
+          </code>
         ))}
       </div>
       <div className="flex gap-2">
@@ -3056,13 +3091,16 @@ function PasswordSection({ locked }: { locked: boolean }) {
     requireSpecial: false,
   };
 
-  const checks = useMemo(() => ({
-    length: newPassword.length >= effective.minLength,
-    uppercase: !effective.requireUppercase || /[A-Z]/.test(newPassword),
-    number: !effective.requireNumber || /[0-9]/.test(newPassword),
-    special: !effective.requireSpecial || /[^a-zA-Z0-9]/.test(newPassword),
-    match: newPassword === confirmPassword && newPassword.length > 0,
-  }), [newPassword, confirmPassword, effective]);
+  const checks = useMemo(
+    () => ({
+      length: newPassword.length >= effective.minLength,
+      uppercase: !effective.requireUppercase || /[A-Z]/.test(newPassword),
+      number: !effective.requireNumber || /[0-9]/.test(newPassword),
+      special: !effective.requireSpecial || /[^a-zA-Z0-9]/.test(newPassword),
+      match: newPassword === confirmPassword && newPassword.length > 0,
+    }),
+    [newPassword, confirmPassword, effective],
+  );
 
   const allValid = Object.values(checks).every(Boolean);
 
@@ -3113,11 +3151,15 @@ function PasswordSection({ locked }: { locked: boolean }) {
         </div>
 
         {/* Password policy checklist */}
-        <div data-testid="security-password-checklist" className="space-y-1 rounded-md bg-muted p-3 text-sm">
+        <div
+          data-testid="security-password-checklist"
+          className="space-y-1 rounded-md bg-muted p-3 text-sm"
+        >
           <p className="font-medium">{t('admin:security.password_policy_title')}</p>
           <ul className="space-y-0.5">
             <li className={checks.length ? 'text-green-600' : 'text-muted-foreground'}>
-              {checks.length ? '✓' : '○'} {t('admin:security.password_too_short', { n: effective.minLength })}
+              {checks.length ? '✓' : '○'}{' '}
+              {t('admin:security.password_too_short', { n: effective.minLength })}
             </li>
             {effective.requireUppercase && (
               <li className={checks.uppercase ? 'text-green-600' : 'text-muted-foreground'}>
@@ -3213,7 +3255,9 @@ function SessionsSection({ locked }: { locked: boolean }) {
 }
 
 function SessionRow({
-  session, onRevoke, locked,
+  session,
+  onRevoke,
+  locked,
 }: {
   session: ActiveSession;
   onRevoke: () => void;
@@ -3255,17 +3299,26 @@ function SessionRow({
 function parseUserAgent(ua: string | null): string {
   if (!ua) return 'Unknown';
   // Simple heuristic — enough for display
-  const browser = /Chrome/.test(ua) ? 'Chrome'
-    : /Firefox/.test(ua) ? 'Firefox'
-    : /Safari/.test(ua) ? 'Safari'
-    : /Edge/.test(ua) ? 'Edge'
-    : 'Browser';
-  const os = /Windows/.test(ua) ? 'Windows'
-    : /Mac OS/.test(ua) ? 'macOS'
-    : /Linux/.test(ua) ? 'Linux'
-    : /Android/.test(ua) ? 'Android'
-    : /iPhone|iPad/.test(ua) ? 'iOS'
-    : 'Unknown OS';
+  const browser = /Chrome/.test(ua)
+    ? 'Chrome'
+    : /Firefox/.test(ua)
+      ? 'Firefox'
+      : /Safari/.test(ua)
+        ? 'Safari'
+        : /Edge/.test(ua)
+          ? 'Edge'
+          : 'Browser';
+  const os = /Windows/.test(ua)
+    ? 'Windows'
+    : /Mac OS/.test(ua)
+      ? 'macOS'
+      : /Linux/.test(ua)
+        ? 'Linux'
+        : /Android/.test(ua)
+          ? 'Android'
+          : /iPhone|iPad/.test(ua)
+            ? 'iOS'
+            : 'Unknown OS';
   return `${browser} on ${os}`;
 }
 ```
@@ -3290,6 +3343,7 @@ sleep 3
 ```
 
 Verify:
+
 - Page renders without blanking
 - All 3 cards visible (MFA / Password / Sessions)
 - Loading state shows before data arrives
@@ -3325,10 +3379,11 @@ Sub C T2.5 — core deliverable."
 ## Task 16: Update security.spec.ts + add 4 new E2E tests
 
 **Files:**
+
 - Modify: `tests/e2e/tests/platform-admin/security.spec.ts`
 - Modify: `tests/e2e/fixtures/api-helper.ts` (add helpers)
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Read the existing security.spec.ts**
 
@@ -3343,13 +3398,18 @@ Identify the 6 existing tests and how they use the fixture.
 Change tests that assert "Disabled" initial state to pre-seed a user without MFA, and add one that pre-seeds WITH MFA:
 
 ```ts
-test('should show MFA disabled when user has no MFA configured', async ({ platformAdminPage: page }) => {
+test('should show MFA disabled when user has no MFA configured', async ({
+  platformAdminPage: page,
+}) => {
   // default test user has no MFA
   await page.goto('/admin/security');
   await expect(page.getByTestId('security-mfa-status')).toHaveText(/Disabled/i);
 });
 
-test('should show MFA enabled when user has MFA configured', async ({ platformAdminPage: page, apiHelper }) => {
+test('should show MFA enabled when user has MFA configured', async ({
+  platformAdminPage: page,
+  apiHelper,
+}) => {
   const email = `mfa-${Date.now()}@test.local`;
   await apiHelper.setupTestUserWithMfa(email, 'TestPassword123!');
   await apiHelper.loginAs(email, 'TestPassword123!');
@@ -3382,7 +3442,10 @@ test('should block MFA disable when tenant policy requires MFA', async ({ page, 
 
 test('should regenerate recovery codes and show new codes', async ({ page, apiHelper }) => {
   const email = `mfa-regen-${Date.now()}@test.local`;
-  const { recoveryCodes: oldCodes } = await apiHelper.setupTestUserWithMfa(email, 'TestPassword123!');
+  const { recoveryCodes: oldCodes } = await apiHelper.setupTestUserWithMfa(
+    email,
+    'TestPassword123!',
+  );
   await apiHelper.loginAs(email, 'TestPassword123!');
 
   await page.goto('/admin/security');
@@ -3473,9 +3536,10 @@ Sub C E2E coverage for T1.1/T2.2/T2.3/T0.5."
 ## Task 17: Add sessions.spec.ts
 
 **Files:**
+
 - Create: `tests/e2e/tests/platform-admin/sessions.spec.ts`
 
-**Working directory:** `/media/Data/Source/IPcom/Asterisk.Platform.Web`
+**Working directory:** `/media/Data/Source/Verbara/Asterisk.Platform.Web`
 
 - [ ] **Step 1: Create the new spec file**
 
@@ -3492,7 +3556,10 @@ test.describe('Active Sessions', () => {
     await expect(currentSessionBadge).toBeVisible();
   });
 
-  test('should revoke other sessions and preserve current session', async ({ platformAdminPage: page, apiHelper }) => {
+  test('should revoke other sessions and preserve current session', async ({
+    platformAdminPage: page,
+    apiHelper,
+  }) => {
     // Create a second session for the same user via API
     const secondSessionToken = await apiHelper.createAdditionalSession();
 
@@ -3564,6 +3631,7 @@ Sub C E2E coverage for T2.1a."
 ## Task 18: Final verification + version bump
 
 **Files:**
+
 - Modify: `Directory.Build.props` (Asterisk.Platform repo only — bump to 1.5.1)
 
 **Working directories:** both repos
@@ -3571,7 +3639,7 @@ Sub C E2E coverage for T2.1a."
 - [ ] **Step 1: Backend — full build + test suite**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 dotnet build Asterisk.Platform.slnx 2>&1 | tail -10
 ```
 
@@ -3586,7 +3654,7 @@ Expected: all pass. Count should be ~1650 (was 1627).
 - [ ] **Step 2: Frontend — full build + test suite**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 npm run build 2>&1 | tail -10
 ```
 
@@ -3616,7 +3684,7 @@ Expected: all new and updated tests pass.
 
 - [ ] **Step 4: Bump backend version**
 
-Edit `/media/Data/Source/IPcom/Asterisk.Platform/Directory.Build.props`:
+Edit `/media/Data/Source/Verbara/Asterisk.Platform/Directory.Build.props`:
 
 ```xml
 <PackageVersion>1.5.1</PackageVersion>
@@ -3628,6 +3696,7 @@ Also update `CLAUDE.md` if it references the version.
 - [ ] **Step 5: Manual verification checklist (docker demo required)**
 
 Run the manual checklist from the spec. Each item should work end-to-end:
+
 - [ ] Login with MFA enabled → enter code → dashboard loads
 - [ ] Login with MFA enabled → use recovery code → dashboard loads
 - [ ] Open user-menu → "Security" entry visible → click → page loads
@@ -3642,28 +3711,31 @@ Run the manual checklist from the spec. Each item should work end-to-end:
 - [ ] **Step 6: Commit version bump and push both repos**
 
 ```bash
-cd /media/Data/Source/IPcom/Asterisk.Platform
+cd /media/Data/Source/Verbara/Asterisk.Platform
 git add Directory.Build.props CLAUDE.md
 git commit -m "chore: bump PackageVersion to 1.5.1 for Sub C security fixes"
 git push origin main
 
-cd /media/Data/Source/IPcom/Asterisk.Platform.Web
+cd /media/Data/Source/Verbara/Asterisk.Platform.Web
 git push origin main
 ```
 
 - [ ] **Step 7: Update memory files**
 
-Update `/home/orion75/.claude/projects/-media-Data-Source-IPcom-Asterisk-Platform/memory/project_v160_production_polish.md`:
+Update `/home/orion75/.claude/projects/-media-Data-Source-Verbara-Asterisk-Platform/memory/project_v160_production_polish.md`:
+
 - Mark Sub C as COMPLETE with commit count and date
 - List files changed
 
-Update `/home/orion75/.claude/projects/-media-Data-Source-IPcom-Asterisk-Platform/memory/MEMORY.md`:
+Update `/home/orion75/.claude/projects/-media-Data-Source-Verbara-Asterisk-Platform/memory/MEMORY.md`:
+
 - Current Position: Sub C complete
 - Next: Sub D (Onboarding Sync)
 
 - [ ] **Step 8: Final summary to user**
 
 Report the final state:
+
 - Tasks completed: 18/18
 - Commits: ~17 (count actual)
 - Tests added: backend +23, frontend unit +8, E2E +7 new + 6 updated
@@ -3693,7 +3765,7 @@ Before marking the plan complete, the engineer (or subagent) verifies:
 
 If an executor needs to resume this plan after a break:
 
-1. `cd /media/Data/Source/IPcom/Asterisk.Platform.Web && git log --oneline origin/main..HEAD` — check which commits exist
+1. `cd /media/Data/Source/Verbara/Asterisk.Platform.Web && git log --oneline origin/main..HEAD` — check which commits exist
 2. Compare to the task commit messages in this plan — each task has a distinctive `Sub C TX.Y` marker in the commit body
 3. Resume at the first task whose commit is missing
 4. Re-read the spec `docs/superpowers/specs/2026-04-10-v160-sub-c-security-page-design.md` if returning after significant time
