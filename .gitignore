@@ -39,3 +39,4 @@ coverage/
 
 # claudelint
 .claudelint-cache/
+.superpowers/
