@@ -92,6 +92,7 @@ const CampaignMonitorPage = lazy(
   () => import('@/operations/campaign-monitor/campaign-monitor-page'),
 );
 const MonitorPage = lazy(() => import('@/operations/monitor/monitor-page'));
+const SseDiagnosticPage = lazy(() => import('@/operations/sse-diagnostic/sse-diagnostic-page'));
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const DashboardPage = lazy(() => import('@/analytics/dashboard/dashboard-page'));
 const CdrPage = lazy(() => import('@/analytics/cdr/cdr-page'));
@@ -885,6 +886,16 @@ export const router = createBrowserRouter([
               <LazyLoad>
                 <CampaignMonitorPage />
               </LazyLoad>
+            ),
+          },
+          {
+            path: 'sse-diagnostic',
+            element: (
+              <PermissionGuard requires="reporting:realtime:view" redirect>
+                <LazyLoad>
+                  <SseDiagnosticPage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
         ],

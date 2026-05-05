@@ -2542,5 +2542,27 @@
     "title": "Panel",
     "subtitle": "Bienvenido al panel de administración.",
     "placeholder": "Widgets del panel próximamente."
+  },
+  "sseDiagnostic": {
+    "title": "Diagnóstico SSE",
+    "description": "Monitorear la salud de la conexión de eventos en tiempo real (SSE) y el flujo de eventos.",
+    "clearLog": "Limpiar registro",
+    "connectionState": "Conexión",
+    "status": {
+      "connected": "Conectado",
+      "disconnected": "Desconectado",
+      "reconnecting": "Reconectando"
+    },
+    "totalEvents": "Total de eventos",
+    "uptime": "Tiempo activo",
+    "lastEvent": "Último evento",
+    "eventCounters": "Contadores de eventos",
+    "eventLog": "Registro de eventos",
+    "columns": {
+      "timestamp": "Marca de tiempo",
+      "eventType": "Tipo de evento",
+      "payload": "Contenido"
+    },
+    "noEvents": "No se han recibido eventos aún."
   }
 }

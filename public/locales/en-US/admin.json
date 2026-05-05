@@ -2542,5 +2542,27 @@
     "title": "Dashboard",
     "subtitle": "Welcome to the administration panel.",
     "placeholder": "Dashboard widgets coming soon."
+  },
+  "sseDiagnostic": {
+    "title": "SSE Diagnostics",
+    "description": "Monitor real-time Server-Sent Events connection health and event flow.",
+    "clearLog": "Clear Log",
+    "connectionState": "Connection",
+    "status": {
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "reconnecting": "Reconnecting"
+    },
+    "totalEvents": "Total Events",
+    "uptime": "Uptime",
+    "lastEvent": "Last Event",
+    "eventCounters": "Event Counters",
+    "eventLog": "Event Log",
+    "columns": {
+      "timestamp": "Timestamp",
+      "eventType": "Event Type",
+      "payload": "Payload"
+    },
+    "noEvents": "No events received yet."
   }
 }
