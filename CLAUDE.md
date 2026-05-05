@@ -10,11 +10,11 @@
 
 Asterisk.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~330 TS/TSX files · 60+ pages · 54 API hooks · 28 UI components · 12 Zustand stores · 64+ E2E specs · 800/800 Vitest · Version 1.16.5** (Nivel 3 Code Quality closed).
+**~330 TS/TSX files · 60+ pages · 54 API hooks · 28 UI components · 12 Zustand stores · 64+ E2E specs · 863/863 Vitest · Version 1.17.5** (Nivel 4 Backend-to-UI Bridge closed).
 
-Nivel 1 (Operational Foundation, `v1.14.0`..`v1.14.5`, tag `v1.14.5-web`), Nivel 2 (Quality Foundation, `v1.15.0`..`v1.15.5`, tag `v1.15.5-web`), and Nivel 3 (Code Quality, `v1.16.0`..`v1.16.5`, tag `v1.16.5-web`) are complete. Coverage: 28% statements, hooks dir 91.58% lines. Shell bundle 114 kB (-86% from pre-split). Zero npm vulnerabilities.
+Nivel 1 (Operational Foundation, `v1.14.0`..`v1.14.5`, tag `v1.14.5-web`), Nivel 2 (Quality Foundation, `v1.15.0`..`v1.15.5`, tag `v1.15.5-web`), Nivel 3 (Code Quality, `v1.16.0`..`v1.16.5`, tag `v1.16.5-web`), and Nivel 4 (Backend-to-UI Bridge, `v1.17.0`..`v1.17.5`, tag `v1.17.5-web`) are complete. Coverage: 28% statements, hooks dir 91.58% lines. Shell bundle 114 kB (-86% from pre-split). Zero npm vulnerabilities.
 
-**Next: Nivel 4 — Backend-to-UI Bridge** (`v1.17.x`). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
+**Next: Nivel 5 — UX Maturity** (`v1.18.x`). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
