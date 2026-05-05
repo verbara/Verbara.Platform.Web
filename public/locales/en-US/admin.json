@@ -2564,5 +2564,23 @@
       "payload": "Payload"
     },
     "noEvents": "No events received yet."
+  },
+  "mediaDiagnostic": {
+    "title": "Media Diagnostic",
+    "description": "Test media upload and download capabilities.",
+    "upload": {
+      "label": "Upload test file",
+      "success": "Upload successful",
+      "error": "Upload failed"
+    },
+    "download": {
+      "label": "Download",
+      "noFiles": "No media files available."
+    },
+    "status": {
+      "ready": "Ready",
+      "uploading": "Uploading...",
+      "error": "Error"
+    }
   }
 }

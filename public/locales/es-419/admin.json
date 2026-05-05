@@ -2564,5 +2564,23 @@
       "payload": "Contenido"
     },
     "noEvents": "No se han recibido eventos aún."
+  },
+  "mediaDiagnostic": {
+    "title": "Diagnóstico de medios",
+    "description": "Probar las capacidades de carga y descarga de medios.",
+    "upload": {
+      "label": "Cargar archivo de prueba",
+      "success": "Carga exitosa",
+      "error": "Error al cargar"
+    },
+    "download": {
+      "label": "Descargar",
+      "noFiles": "No hay archivos de medios disponibles."
+    },
+    "status": {
+      "ready": "Listo",
+      "uploading": "Cargando...",
+      "error": "Error"
+    }
   }
 }

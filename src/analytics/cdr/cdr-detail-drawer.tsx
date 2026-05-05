@@ -2,19 +2,13 @@ import { useRef, useState, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Phone, PhoneOff, UserCheck, Clock, ArrowRightLeft } from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/core/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/core/ui/sheet';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { Separator } from '@/core/ui/separator';
 import { AudioPlayer } from './audio-player';
 
-const WaveformPlayer = lazy(() => import('./waveform-player'));
+const StereoWaveformPlayer = lazy(() => import('./stereo-waveform-player'));
 import { SyncedTranscript } from './synced-transcript';
 import type { CdrRow } from './cdr-page';
 import { useCdrDetail, useTranscript } from '@/core/api/hooks/use-analytics';
@@ -74,10 +68,14 @@ function buildTimelineFromEvents(
 ): TimelineEvent[] {
   const iconFor = (event: string): React.ReactNode => {
     const lower = event.toLowerCase();
-    if (lower.includes('start') || lower.includes('creat')) return <Phone className="h-3.5 w-3.5 text-green-500" />;
-    if (lower.includes('answer') || lower.includes('agent')) return <UserCheck className="h-3.5 w-3.5 text-blue-500" />;
-    if (lower.includes('transfer')) return <ArrowRightLeft className="h-3.5 w-3.5 text-amber-500" />;
-    if (lower.includes('end') || lower.includes('hung') || lower.includes('abandon')) return <PhoneOff className="h-3.5 w-3.5 text-red-500" />;
+    if (lower.includes('start') || lower.includes('creat'))
+      return <Phone className="h-3.5 w-3.5 text-green-500" />;
+    if (lower.includes('answer') || lower.includes('agent'))
+      return <UserCheck className="h-3.5 w-3.5 text-blue-500" />;
+    if (lower.includes('transfer'))
+      return <ArrowRightLeft className="h-3.5 w-3.5 text-amber-500" />;
+    if (lower.includes('end') || lower.includes('hung') || lower.includes('abandon'))
+      return <PhoneOff className="h-3.5 w-3.5 text-red-500" />;
     return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
   };
   return events.map((e) => ({
@@ -111,15 +109,27 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
   const disposition = apiCdr?.dispositionName ?? apiCdr?.disposition ?? row.disposition;
   const slaMet = apiCdr != null ? apiCdr.slaMet : row.slaMet;
   const durationMs = apiCdr?.durationMs;
-  const duration = durationMs != null
-    ? `${Math.floor(durationMs / 60000)}m ${Math.floor((durationMs % 60000) / 1000)}s`
-    : row.duration;
+  const duration =
+    durationMs != null
+      ? `${Math.floor(durationMs / 60000)}m ${Math.floor((durationMs % 60000) / 1000)}s`
+      : row.duration;
   const recordingUrl: string | null = detail?.recordingStreamUrl ?? null;
 
   const timeline: TimelineEvent[] =
     detail?.timeline && detail.timeline.length > 0
       ? buildTimelineFromEvents(detail.timeline)
-      : buildTimelineFromRow({ ...row, startTime, endTime, answerTime, channel, queue, agent, duration, disposition, slaMet });
+      : buildTimelineFromRow({
+          ...row,
+          startTime,
+          endTime,
+          answerTime,
+          channel,
+          queue,
+          agent,
+          duration,
+          disposition,
+          slaMet,
+        });
 
   const qaSummary = detail?.qaSummary;
 
@@ -132,9 +142,7 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
         </SheetHeader>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
-          {isLoading && (
-            <p className="text-sm text-muted-foreground py-2">Loading detail…</p>
-          )}
+          {isLoading && <p className="text-sm text-muted-foreground py-2">Loading detail…</p>}
 
           {/* Fields */}
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -146,14 +154,14 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
             <Field label={t('cdr.disposition')} value={disposition} />
             <div className="col-span-2 flex items-center gap-2">
               <span className="text-muted-foreground">{t('cdr.sla_met')}:</span>
-              <Badge variant={slaMet ? 'default' : 'destructive'}>
-                {slaMet ? 'Yes' : 'No'}
-              </Badge>
+              <Badge variant={slaMet ? 'default' : 'destructive'}>{slaMet ? 'Yes' : 'No'}</Badge>
             </div>
           </div>
 
           {/* Timing */}
-          {(apiCdr?.ringDurationMs != null || apiCdr?.wrapUpDurationMs != null || (apiCdr?.holdCount ?? 0) > 0) && (
+          {(apiCdr?.ringDurationMs != null ||
+            apiCdr?.wrapUpDurationMs != null ||
+            (apiCdr?.holdCount ?? 0) > 0) && (
             <>
               <Separator />
               <div className="space-y-2">
@@ -182,14 +190,22 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   {apiCdr?.transferType != null && (
                     <Badge variant="outline">
-                      {apiCdr.transferType === 1 ? 'Blind' : apiCdr.transferType === 2 ? 'Attended' : `Type ${apiCdr.transferType}`}
+                      {apiCdr.transferType === 1
+                        ? 'Blind'
+                        : apiCdr.transferType === 2
+                          ? 'Attended'
+                          : `Type ${apiCdr.transferType}`}
                     </Badge>
                   )}
                   {apiCdr?.transferredTo && (
-                    <span className="text-muted-foreground">→ <span className="font-medium text-foreground">{apiCdr.transferredTo}</span></span>
+                    <span className="text-muted-foreground">
+                      → <span className="font-medium text-foreground">{apiCdr.transferredTo}</span>
+                    </span>
                   )}
                   {(detail?.transferCount ?? 0) > 1 && (
-                    <span className="text-muted-foreground text-xs">({detail!.transferCount} transfers)</span>
+                    <span className="text-muted-foreground text-xs">
+                      ({detail!.transferCount} transfers)
+                    </span>
                   )}
                 </div>
               </div>
@@ -204,7 +220,9 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
                 <h3 className="text-sm font-medium">Campaign</h3>
                 <p className="text-sm font-medium">{apiCdr.campaignName}</p>
                 {apiCdr.dispositionName && (
-                  <p className="text-sm text-muted-foreground">Disposition: {apiCdr.dispositionName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Disposition: {apiCdr.dispositionName}
+                  </p>
                 )}
               </div>
             </>
@@ -301,8 +319,20 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
               <Separator />
               <div className="space-y-3">
                 <h3 className="mb-2 text-sm font-medium">{t('cdr.recording')}</h3>
-                <Suspense fallback={<AudioPlayer src={recordingUrl} onTimeUpdate={setCurrentTime} seekRef={seekRef} />}>
-                  <WaveformPlayer src={recordingUrl} onTimeUpdate={setCurrentTime} seekRef={seekRef} />
+                <Suspense
+                  fallback={
+                    <AudioPlayer
+                      src={recordingUrl}
+                      onTimeUpdate={setCurrentTime}
+                      seekRef={seekRef}
+                    />
+                  }
+                >
+                  <StereoWaveformPlayer
+                    src={recordingUrl}
+                    onTimeUpdate={setCurrentTime}
+                    seekRef={seekRef}
+                  />
                 </Suspense>
                 {hasTranscript && transcriptSegments && transcriptSegments.length > 0 && (
                   <SyncedTranscript

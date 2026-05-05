@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Users, Megaphone, Radio } from 'lucide-react';
+import { LayoutDashboard, Users, Megaphone, Radio, HardDrive } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface SidebarItem {
@@ -14,6 +14,11 @@ const items: SidebarItem[] = [
   { labelKey: 'operations:sidebar.monitor', to: '/operations/monitor', icon: Radio },
   { labelKey: 'operations:sidebar.agent_states', to: '/operations/agents', icon: Users },
   { labelKey: 'operations:sidebar.campaigns', to: '/operations/campaigns', icon: Megaphone },
+  {
+    labelKey: 'operations:sidebar.media_diagnostic',
+    to: '/operations/media-diagnostic',
+    icon: HardDrive,
+  },
 ];
 
 export function OperationsSidebar() {
@@ -21,9 +26,7 @@ export function OperationsSidebar() {
 
   return (
     <nav className="flex h-full flex-col gap-1 py-3">
-      <p className="px-4 pb-1 text-sm font-medium text-slate-500">
-        {t('sidebar.wallboard')}
-      </p>
+      <p className="px-4 pb-1 text-sm font-medium text-slate-500">{t('sidebar.wallboard')}</p>
       <ul className="space-y-0.5 px-2">
         {items.map((item) => {
           const Icon = item.icon;

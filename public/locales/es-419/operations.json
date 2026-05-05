@@ -3,7 +3,8 @@
     "wallboard": "Tablero",
     "monitor": "Monitor",
     "agent_states": "Estados de agentes",
-    "campaigns": "Campanas"
+    "campaigns": "Campanas",
+    "media_diagnostic": "Diagnóstico de medios"
   },
   "wallboard": {
     "title": "Tablero en tiempo real",

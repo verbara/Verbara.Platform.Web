@@ -93,6 +93,9 @@ const CampaignMonitorPage = lazy(
 );
 const MonitorPage = lazy(() => import('@/operations/monitor/monitor-page'));
 const SseDiagnosticPage = lazy(() => import('@/operations/sse-diagnostic/sse-diagnostic-page'));
+const MediaDiagnosticPage = lazy(
+  () => import('@/operations/media-diagnostic/media-diagnostic-page'),
+);
 const AnalyticsLayout = lazy(() => import('@/pages/analytics/analytics-layout'));
 const DashboardPage = lazy(() => import('@/analytics/dashboard/dashboard-page'));
 const CdrPage = lazy(() => import('@/analytics/cdr/cdr-page'));
@@ -103,6 +106,7 @@ const AgentIntervalsPage = lazy(() => import('@/analytics/agents/agent-intervals
 const SpeechAnalyticsPage = lazy(
   () => import('@/analytics/speech-analytics/speech-analytics-page'),
 );
+const RecordingArchivePage = lazy(() => import('@/analytics/recording/recording-archive-page'));
 const AgentLayout = lazy(() => import('@/pages/agent/agent-layout'));
 const ConversationView = lazy(() => import('@/pages/agent/conversation-view'));
 
@@ -898,6 +902,16 @@ export const router = createBrowserRouter([
               </PermissionGuard>
             ),
           },
+          {
+            path: 'media-diagnostic',
+            element: (
+              <PermissionGuard requires="reporting:realtime:view" redirect>
+                <LazyLoad>
+                  <MediaDiagnosticPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
         ],
       },
       {
@@ -975,6 +989,16 @@ export const router = createBrowserRouter([
               <LazyLoad>
                 <SpeechAnalyticsPage />
               </LazyLoad>
+            ),
+          },
+          {
+            path: 'recordings',
+            element: (
+              <PermissionGuard requires="analytics:cdr:view" redirect>
+                <LazyLoad>
+                  <RecordingArchivePage />
+                </LazyLoad>
+              </PermissionGuard>
             ),
           },
         ],

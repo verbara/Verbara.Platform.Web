@@ -6,7 +6,8 @@
     "surveys": "Encuestas",
     "intervals": "Intervalos",
     "agent_intervals": "Intervalos de Agentes",
-    "speech": "Análisis de voz"
+    "speech": "Análisis de voz",
+    "recordings": "Grabaciones"
   },
   "filters": {
     "date_range": "Rango de fechas",
@@ -192,5 +193,35 @@
     },
     "totalAnalyzed": "{{count}} resultados analizados",
     "totalViolations": "Total de violaciones: {{violations}} · Sesiones afectadas: {{sessions}}"
+  },
+  "recording": {
+    "archive": {
+      "title": "Archivo de grabaciones",
+      "description": "Explorar y reproducir grabaciones de llamadas.",
+      "filters": {
+        "dateRange": "Rango de fechas",
+        "agent": "Agente",
+        "queue": "Cola",
+        "search": "Buscar por contacto o sesión"
+      },
+      "columns": {
+        "date": "Fecha",
+        "contact": "Contacto",
+        "agent": "Agente",
+        "queue": "Cola",
+        "duration": "Duración",
+        "actions": "Acciones"
+      },
+      "empty": "No se encontraron grabaciones para los filtros seleccionados.",
+      "play": "Reproducir",
+      "download": "Descargar"
+    },
+    "player": {
+      "channelSelector": "Canal",
+      "channelBoth": "Ambos",
+      "channelAgent": "Agente",
+      "channelCustomer": "Cliente",
+      "stereoTooltip": "Alternar canal de audio: agente (izquierda), cliente (derecha) o ambos"
+    }
   }
 }

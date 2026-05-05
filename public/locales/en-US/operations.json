@@ -3,7 +3,8 @@
     "wallboard": "Wallboard",
     "monitor": "Monitor",
     "agent_states": "Agent States",
-    "campaigns": "Campaigns"
+    "campaigns": "Campaigns",
+    "media_diagnostic": "Media Diagnostic"
   },
   "wallboard": {
     "title": "Real-time Wallboard",

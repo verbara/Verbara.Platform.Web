@@ -2564,5 +2564,23 @@
       "payload": "Conteúdo"
     },
     "noEvents": "Nenhum evento recebido ainda."
+  },
+  "mediaDiagnostic": {
+    "title": "Diagnóstico de mídia",
+    "description": "Testar capacidades de upload e download de mídia.",
+    "upload": {
+      "label": "Enviar arquivo de teste",
+      "success": "Upload bem-sucedido",
+      "error": "Falha no upload"
+    },
+    "download": {
+      "label": "Baixar",
+      "noFiles": "Nenhum arquivo de mídia disponível."
+    },
+    "status": {
+      "ready": "Pronto",
+      "uploading": "Enviando...",
+      "error": "Erro"
+    }
   }
 }

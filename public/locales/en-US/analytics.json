@@ -6,7 +6,8 @@
     "surveys": "Surveys",
     "intervals": "Intervals",
     "agent_intervals": "Agent Intervals",
-    "speech": "Speech Analytics"
+    "speech": "Speech Analytics",
+    "recordings": "Recordings"
   },
   "filters": {
     "date_range": "Date Range",
@@ -192,5 +193,35 @@
     },
     "totalAnalyzed": "{{count}} results analyzed",
     "totalViolations": "Total violations: {{violations}} · Sessions affected: {{sessions}}"
+  },
+  "recording": {
+    "archive": {
+      "title": "Recording Archive",
+      "description": "Browse and play back call recordings.",
+      "filters": {
+        "dateRange": "Date range",
+        "agent": "Agent",
+        "queue": "Queue",
+        "search": "Search by contact or session"
+      },
+      "columns": {
+        "date": "Date",
+        "contact": "Contact",
+        "agent": "Agent",
+        "queue": "Queue",
+        "duration": "Duration",
+        "actions": "Actions"
+      },
+      "empty": "No recordings found for the selected filters.",
+      "play": "Play",
+      "download": "Download"
+    },
+    "player": {
+      "channelSelector": "Channel",
+      "channelBoth": "Both",
+      "channelAgent": "Agent",
+      "channelCustomer": "Customer",
+      "stereoTooltip": "Toggle audio channel: agent (left), customer (right), or both"
+    }
   }
 }

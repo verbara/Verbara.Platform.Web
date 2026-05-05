@@ -8,6 +8,7 @@ import {
   Table,
   Users,
   AudioWaveform,
+  Disc3,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -25,6 +26,7 @@ const items: SidebarItem[] = [
   { labelKey: 'sidebar.intervals', to: '/analytics/intervals', icon: Table },
   { labelKey: 'sidebar.agent_intervals', to: '/analytics/agent-intervals', icon: Users },
   { labelKey: 'sidebar.speech', to: '/analytics/speech', icon: AudioWaveform },
+  { labelKey: 'sidebar.recordings', to: '/analytics/recordings', icon: Disc3 },
 ];
 
 export function AnalyticsSidebar() {
