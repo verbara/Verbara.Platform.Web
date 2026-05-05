@@ -22,7 +22,7 @@ function wrapper({ children }: { children: ReactNode }) {
 const mockSystemInfo: SystemInfo = {
   version: '1.14.6',
   hostTenantId: 'host-t1',
-  platformName: 'Asterisk Platform',
+  platformName: 'Verbara',
   features: { multiTenant: true, webhooks: true },
 };
 
@@ -41,7 +41,7 @@ const mockLicense: LicenseInfo = {
 };
 
 const mockSettings: SystemSettings = {
-  platformName: 'Asterisk Platform',
+  platformName: 'Verbara',
   defaultTimezone: 'America/Bogota',
   defaultLanguage: 'es',
 };

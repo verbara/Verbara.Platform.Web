@@ -8,14 +8,14 @@ import { Badge } from '@/core/ui/badge';
 export default function WebChatPage() {
   const { t } = useTranslation('admin');
   const apiBase = window.location.origin;
-  const snippet = `<!-- Asterisk Platform WebChat Widget -->
+  const snippet = `<!-- Verbara WebChat Widget -->
 <script>
 (function() {
   var s = document.createElement('script');
   s.src = '${apiBase}/webchat-widget.js';
   s.async = true;
   s.onload = function() {
-    AsteriskWebChat.init({
+    VerbaraWebChat.init({
       apiUrl: '${apiBase}/api/v1/webchat',
       wsUrl: '${apiBase.replace(/^http/, 'ws')}/ws/webchat',
     });
@@ -30,9 +30,7 @@ export default function WebChatPage() {
         <MessageCircle className="h-6 w-6 text-primary" />
         <div>
           <h1 className="font-heading text-xl font-semibold">{t('webchat.title')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t('webchat.description')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('webchat.description')}</p>
         </div>
       </div>
 
@@ -42,7 +40,9 @@ export default function WebChatPage() {
           <Badge variant="secondary">{t('webchat.html')}</Badge>
         </div>
         <p className="text-sm text-muted-foreground">
-          {t('webchat.instructions_prefix')}<code className="text-xs bg-muted px-1 py-0.5 rounded">&lt;/body&gt;</code>{t('webchat.instructions_suffix')}
+          {t('webchat.instructions_prefix')}
+          <code className="text-xs bg-muted px-1 py-0.5 rounded">&lt;/body&gt;</code>
+          {t('webchat.instructions_suffix')}
         </p>
         <div className="relative">
           <pre
@@ -66,7 +66,11 @@ export default function WebChatPage() {
           </div>
           <div className="space-y-2">
             <Label>{t('webchat.ws_url')}</Label>
-            <Input readOnly value={`${apiBase.replace(/^http/, 'ws')}/ws/webchat`} className="font-mono text-xs" />
+            <Input
+              readOnly
+              value={`${apiBase.replace(/^http/, 'ws')}/ws/webchat`}
+              className="font-mono text-xs"
+            />
           </div>
         </div>
       </div>

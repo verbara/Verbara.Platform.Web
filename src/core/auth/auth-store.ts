@@ -76,8 +76,7 @@ export const useAuthStore = create<AuthState>()(
 
       setAuth: (accessToken, tokenExpiry, user, tenantId, permissions, features) =>
         set({ accessToken, tokenExpiry, user, tenantId, permissions, features, mfaPending: null }),
-      setMfaPending: (mfaToken, email) =>
-        set({ mfaPending: { mfaToken, email } }),
+      setMfaPending: (mfaToken, email) => set({ mfaPending: { mfaToken, email } }),
       clearMfaPending: () => set({ mfaPending: null }),
       setRememberMe: (value) => set({ rememberMe: value }),
       logout: () =>
@@ -124,7 +123,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'asterisk-auth',
+      name: 'verbara-auth',
       storage: createJSONStorage(() => sessionStorage),
     },
   ),

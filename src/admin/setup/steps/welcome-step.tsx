@@ -21,7 +21,7 @@ export default function WelcomeStep() {
     <div className="mx-auto max-w-lg space-y-6 py-4 text-center">
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">
-          {t('admin:setup.welcomeTitle', 'Welcome to Asterisk Platform')}
+          {t('admin:setup.welcomeTitle', 'Welcome to Verbara')}
         </h2>
         <p className="text-sm text-muted-foreground">
           {t(

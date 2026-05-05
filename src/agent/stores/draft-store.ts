@@ -22,7 +22,7 @@ export const useDraftStore = create<DraftState>()(
         }),
     }),
     {
-      name: 'asterisk-drafts',
+      name: 'verbara-drafts',
       storage: createJSONStorage(() => localStorage),
     },
   ),

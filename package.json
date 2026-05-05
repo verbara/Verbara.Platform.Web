@@ -1,7 +1,7 @@
 {
-  "name": "asterisk-platform-web",
+  "name": "verbara-web",
   "private": true,
-  "version": "1.17.5",
+  "version": "2.0.0",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
