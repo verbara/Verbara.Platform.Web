@@ -73,6 +73,7 @@ const WebhooksPage = lazy(() => import('@/admin/webhooks/webhooks-page'));
 const DeadLetterPage = lazy(() => import('@/admin/webhooks/dead-letter-page'));
 const GdprPage = lazy(() => import('@/admin/gdpr/gdpr-page'));
 const PurgeLogPage = lazy(() => import('@/admin/gdpr/purge-log-page'));
+const ConsentManagementPage = lazy(() => import('@/admin/compliance/consent-management-page'));
 const RateCardsPage = lazy(() => import('@/admin/billing/rate-cards-page'));
 const InvoicesPage = lazy(() => import('@/admin/billing/invoices-page'));
 const UsagePage = lazy(() => import('@/admin/billing/usage-page'));
@@ -837,6 +838,16 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:tenant:configure" redirect>
                 <LazyLoad>
                   <PurgeLogPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'consent',
+            element: (
+              <PermissionGuard requires="system:tenant:configure" redirect>
+                <LazyLoad>
+                  <ConsentManagementPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

@@ -232,6 +232,13 @@ const groups: SidebarGroup[] = [
         icon: FileSearch,
         requiredPermission: 'system:tenant:configure',
       },
+      {
+        key: 'consent',
+        labelKey: 'admin:sidebar.consent',
+        to: '/admin/consent',
+        icon: ShieldCheck,
+        requiredPermission: 'system:tenant:configure',
+      },
     ],
   },
   {

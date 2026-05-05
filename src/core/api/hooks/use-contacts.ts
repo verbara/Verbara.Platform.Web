@@ -12,6 +12,8 @@ export interface Contact {
   preferredChannel?: string;
   preferredLanguage?: string;
   timezone?: string;
+  doNotContact?: boolean;
+  channelConsent?: Record<string, boolean>;
   addresses: { channel: string; address: string }[];
   customFields?: Record<string, string>;
   createdAt: string;

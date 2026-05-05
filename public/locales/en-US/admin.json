@@ -59,7 +59,8 @@
     "securityMfa": "MFA",
     "securityAudit": "Audit",
     "securityImpersonation": "Impersonation",
-    "retention": "Retention"
+    "retention": "Retention",
+    "consent": "Consent"
   },
   "api-keys": {
     "title": "API Keys",
@@ -2582,5 +2583,35 @@
       "uploading": "Uploading...",
       "error": "Error"
     }
+  },
+  "consent": {
+    "title": "Consent Management",
+    "description": "Manage contact communication preferences and opt-in/opt-out status.",
+    "search": "Search contacts...",
+    "columns": {
+      "contact": "Contact",
+      "company": "Company",
+      "dnc": "DNC",
+      "channels": "Channel Consent",
+      "actions": "Actions"
+    },
+    "edit": "Edit consent",
+    "channels": {
+      "voice": "Voice",
+      "email": "Email",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "webchat": "Web Chat"
+    },
+    "dnc": {
+      "label": "Do Not Contact",
+      "enable": "Mark as Do Not Contact"
+    },
+    "bulk": {
+      "setDnc": "Set Do Not Contact",
+      "confirm": "This will mark {{count}} contacts as Do Not Contact. This action is audited."
+    },
+    "empty": "No contacts found. Try a different search term.",
+    "save": "Save"
   }
 }
