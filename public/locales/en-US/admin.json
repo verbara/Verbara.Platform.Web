@@ -600,7 +600,7 @@
     }
   },
   "setup": {
-    "welcomeTitle": "Welcome to Asterisk Platform",
+    "welcomeTitle": "Welcome to Verbara",
     "welcomeDescription": "Let's get your contact center ready in a few steps.",
     "bullet1": "A queue to receive conversations",
     "bullet2": "An agent to handle them",

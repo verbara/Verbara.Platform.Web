@@ -16,7 +16,10 @@ test.describe('System Settings', () => {
     await expect(page.getByTestId('system-settings-language')).toBeVisible();
   });
 
-  test('should save and persist settings change', async ({ platformAdminPage: page, authenticatedApiContext }) => {
+  test('should save and persist settings change', async ({
+    platformAdminPage: page,
+    authenticatedApiContext,
+  }) => {
     const api = new ApiHelper(authenticatedApiContext);
     const original = await api.getSystemSettings();
 
@@ -37,7 +40,10 @@ test.describe('System Settings', () => {
     await expect(page.getByTestId('system-settings-save')).toBeDisabled();
   });
 
-  test('should load current settings from API', async ({ platformAdminPage: page, authenticatedApiContext }) => {
+  test('should load current settings from API', async ({
+    platformAdminPage: page,
+    authenticatedApiContext,
+  }) => {
     const api = new ApiHelper(authenticatedApiContext);
 
     // Set known values via API
@@ -56,7 +62,7 @@ test.describe('System Settings', () => {
 
     // Restore defaults
     await api.updateSystemSettings({
-      platformName: 'Asterisk Platform',
+      platformName: 'Verbara',
       defaultTimezone: 'America/Bogota',
       defaultLanguage: 'es-419',
     });

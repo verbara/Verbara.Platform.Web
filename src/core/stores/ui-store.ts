@@ -33,7 +33,7 @@ export const useUiStore = create<UiState>()(
       setTestCompleted: (v) => set({ testCompleted: v }),
       setTourDismissed: (v) => set({ tourDismissed: v }),
     }),
-    { name: 'asterisk-ui' },
+    { name: 'verbara-ui' },
   ),
 );
 
