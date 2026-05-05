@@ -11,12 +11,23 @@ import { useTenantSettings } from '@/admin/tenants/use-tenant-settings';
 import { TenantSettingsForm } from '@/admin/tenants/tenant-settings-form';
 import { RetentionPolicySection } from '@/admin/gdpr/retention-policy-section';
 
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  active: 'default',
-  Active: 'default',
-  suspended: 'secondary',
-  Suspended: 'destructive',
-  deleted: 'destructive',
+interface StatusConfig {
+  variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  className?: string;
+}
+
+const STATUS_CONFIG: Record<string, StatusConfig> = {
+  active: { variant: 'default' },
+  Active: { variant: 'default' },
+  warning: { variant: 'outline', className: 'text-amber-600 border-amber-300' },
+  Warning: { variant: 'outline', className: 'text-amber-600 border-amber-300' },
+  degraded: { variant: 'outline', className: 'text-orange-600 border-orange-300' },
+  Degraded: { variant: 'outline', className: 'text-orange-600 border-orange-300' },
+  suspended: { variant: 'secondary' },
+  Suspended: { variant: 'secondary' },
+  pendingdeletion: { variant: 'destructive' },
+  PendingDeletion: { variant: 'destructive' },
+  deleted: { variant: 'destructive' },
 };
 
 export default function TenantDetailPage() {
@@ -47,17 +58,34 @@ export default function TenantDetailPage() {
 
       <div className="flex items-center gap-2">
         <span className="font-mono text-xs text-muted-foreground">{tenantId}</span>
-        <Badge
-          variant={STATUS_VARIANT[status] ?? 'outline'}
-          data-status={status}
-          data-testid="tenant-status-badge"
-        >
-          {status}
-        </Badge>
+        {(() => {
+          const config = STATUS_CONFIG[status] ?? { variant: 'outline' as const };
+          return (
+            <Badge
+              variant={config.variant}
+              className={config.className}
+              data-status={status}
+              data-testid="tenant-status-badge"
+            >
+              {status}
+            </Badge>
+          );
+        })()}
+        {tenant?.type && (
+          <Badge variant="outline" data-testid="tenant-type-badge">
+            {tenant.type}
+          </Badge>
+        )}
         {plan && <Badge variant="outline">{plan}</Badge>}
       </div>
 
-      <PageHeader title={displayName} description={t('tenants.detail.subtitle', 'Tenant settings, security, features and quotas.')} />
+      <PageHeader
+        title={displayName}
+        description={t(
+          'tenants.detail.subtitle',
+          'Tenant settings, security, features and quotas.',
+        )}
+      />
 
       <Tabs defaultValue="general">
         <TabsList>
@@ -88,10 +116,7 @@ export default function TenantDetailPage() {
               value={tenantId}
               mono
             />
-            <InfoRow
-              label={t('tenants.detail.fields.name', 'Display name')}
-              value={displayName}
-            />
+            <InfoRow label={t('tenants.detail.fields.name', 'Display name')} value={displayName} />
             <InfoRow label={t('tenants.detail.fields.status', 'Status')} value={status} />
             <InfoRow
               label={t('tenants.detail.fields.type', 'Type')}
@@ -117,7 +142,11 @@ export default function TenantDetailPage() {
         </TabsContent>
 
         <TabsContent value="features" className="pt-4" data-testid="tab-content-features">
-          <FeaturesSection enabled={settings?.enabledFeatures ?? []} addOns={settings?.addOns ?? []} t={t} />
+          <FeaturesSection
+            enabled={settings?.enabledFeatures ?? []}
+            addOns={settings?.addOns ?? []}
+            t={t}
+          />
         </TabsContent>
 
         <TabsContent value="billing" className="pt-4" data-testid="tab-content-billing">
