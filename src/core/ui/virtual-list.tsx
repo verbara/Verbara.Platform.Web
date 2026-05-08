@@ -1,8 +1,9 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { type ReactNode, useRef } from 'react';
+import { useRef } from 'react';
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-export interface VirtualListProps<T> {
+interface VirtualListProps<T> {
   readonly items: readonly T[];
   readonly renderItem: (item: T, index: number) => ReactNode;
   readonly estimateSize: (index: number) => number;
@@ -11,7 +12,7 @@ export interface VirtualListProps<T> {
   readonly className?: string;
 }
 
-export function VirtualList<T>({
+function VirtualList<T>({
   items,
   renderItem,
   estimateSize,
@@ -56,3 +57,6 @@ export function VirtualList<T>({
     </div>
   );
 }
+
+export { VirtualList };
+export type { VirtualListProps };

@@ -34,6 +34,8 @@ describe('VirtualList', () => {
       </div>,
     );
     const renderedRows = container.querySelectorAll('[data-virtual-row]');
+    // Theoretical ceiling: viewport 400 / row 40 = 10 visible + overscan 5 each side = 20.
+    // 30 leaves slack for virtualizer rounding without masking real regressions.
     expect(renderedRows.length).toBeLessThanOrEqual(30);
     expect(renderedRows.length).toBeGreaterThan(0);
   });
