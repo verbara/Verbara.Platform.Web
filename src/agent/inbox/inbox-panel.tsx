@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
 import { Button } from '@/core/ui/button';
+import { VirtualList } from '@/core/ui/virtual-list';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useConversations } from '@/core/api/hooks/use-conversations';
 import { useAgentMe } from '@/core/api/hooks/use-agents';
@@ -10,6 +11,8 @@ import { InboxItem } from './inbox-item';
 import { InboxEmpty } from './inbox-empty';
 import { AgentStatusSelector } from './agent-status-selector';
 import { NewConversationDialog } from './new-conversation-dialog';
+
+const INBOX_ITEM_HEIGHT_PX = 64;
 
 export function InboxPanel() {
   const { t } = useTranslation(['agent']);
@@ -50,15 +53,20 @@ export function InboxPanel() {
 
       <InboxFilters />
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1">
         {visible.length === 0 ? (
           <InboxEmpty filter={filter} />
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
-            {visible.map((conv) => (
-              <InboxItem key={conv.id} conversation={conv} />
-            ))}
-          </div>
+          <VirtualList
+            items={visible}
+            getItemKey={(conv) => conv.id}
+            estimateSize={() => INBOX_ITEM_HEIGHT_PX}
+            renderItem={(conv) => (
+              <div className="border-b border-slate-100 dark:border-slate-700/50">
+                <InboxItem conversation={conv} />
+              </div>
+            )}
+          />
         )}
       </div>
 
