@@ -51,43 +51,46 @@ export function LoginPage() {
   // Handle OIDC callback via URL fragment (#oidc_callback&access_token=...&...)
   useEffect(() => {
     void (async () => {
-    const hash = window.location.hash;
-    if (!hash.startsWith('#oidc_callback')) return;
+      const hash = window.location.hash;
+      if (!hash.startsWith('#oidc_callback')) return;
 
-    const params = new URLSearchParams(hash.replace('#oidc_callback&', ''));
-    const accessToken = params.get('access_token');
-    const expiresAt = params.get('expires_at');
-    const tenantId = params.get('tenant_id');
-    const userId = params.get('user_id');
-    const email = params.get('email');
-    const displayName = params.get('display_name');
-    const role = params.get('role');
+      const params = new URLSearchParams(hash.replace('#oidc_callback&', ''));
+      const accessToken = params.get('access_token');
+      const expiresAt = params.get('expires_at');
+      const tenantId = params.get('tenant_id');
+      const userId = params.get('user_id');
+      const email = params.get('email');
+      const displayName = params.get('display_name');
+      const role = params.get('role');
 
-    if (accessToken && tenantId && userId && email && role) {
-      // Clear the hash to prevent re-processing
-      window.history.replaceState(null, '', window.location.pathname);
+      if (accessToken && tenantId && userId && email && role) {
+        // Clear the hash to prevent re-processing
+        window.history.replaceState(null, '', window.location.pathname);
 
-      let permissions: string[] = [];
-      let features: Record<string, boolean> = {};
-      try {
-        const me = await fetch('/api/v1/users/me', {
-          headers: { 'Authorization': `Bearer ${accessToken}`, 'X-Tenant-Id': tenantId },
-        }).then((r) => r.json() as Promise<{ permissions?: string[]; features?: Record<string, boolean> }>);
-        permissions = me.permissions ?? [];
-        features = me.features ?? {};
-      } catch {
-        // Degraded: login proceeds without permissions
+        let permissions: string[] = [];
+        let features: Record<string, boolean> = {};
+        try {
+          const me = await fetch('/api/v1/users/me', {
+            headers: { Authorization: `Bearer ${accessToken}`, 'X-Tenant-Id': tenantId },
+          }).then(
+            (r) =>
+              r.json() as Promise<{ permissions?: string[]; features?: Record<string, boolean> }>,
+          );
+          permissions = me.permissions ?? [];
+          features = me.features ?? {};
+        } catch {
+          // Degraded: login proceeds without permissions
+        }
+
+        completeLogin({
+          accessToken,
+          expiresAt: expiresAt ?? undefined,
+          tenantId,
+          user: { id: userId, email, displayName: displayName ?? email, role },
+          permissions,
+          features,
+        });
       }
-
-      completeLogin({
-        accessToken,
-        expiresAt: expiresAt ?? undefined,
-        tenantId,
-        user: { id: userId, email, displayName: displayName ?? email, role },
-        permissions,
-        features,
-      });
-    }
     })();
     // Once-on-mount OIDC callback handler. Adding `completeLogin` to deps would
     // re-run on every render (function recreated each render); clearing the URL
@@ -99,14 +102,16 @@ export function LoginPage() {
     if (!data.accessToken || !data.user || !data.tenantId) return;
 
     const expiry = data.expiresAt ? new Date(data.expiresAt).getTime() : Date.now() + 900000;
-    useAuthStore.getState().setAuth(
-      data.accessToken,
-      expiry,
-      data.user,
-      data.tenantId,
-      data.permissions ?? [],
-      data.features ?? {},
-    );
+    useAuthStore
+      .getState()
+      .setAuth(
+        data.accessToken,
+        expiry,
+        data.user,
+        data.tenantId,
+        data.permissions ?? [],
+        data.features ?? {},
+      );
     useTenantStore.getState().setActiveTenant(data.tenantId);
 
     const from =
@@ -215,9 +220,7 @@ export function LoginPage() {
       </div>
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-            {t('app.name')}
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">{t('app.name')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">{t('auth.sign_in')}</p>
         </div>
 
@@ -241,7 +244,8 @@ export function LoginPage() {
               <ChevronDown
                 className={`h-3 w-3 transition-transform ${showTenant ? '' : '-rotate-90'}`}
               />
-              {t('auth.tenant', 'Tenant')}{tenant ? `: ${tenant}` : ''}
+              {t('auth.tenant', 'Tenant')}
+              {tenant ? `: ${tenant}` : ''}
             </button>
             {showTenant && (
               <div className="mt-2 space-y-1">
@@ -266,6 +270,7 @@ export function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus first field on mount for keyboard users
               autoFocus
               data-testid="login-email"
             />
@@ -298,9 +303,7 @@ export function LoginPage() {
             <Checkbox
               id="remember-me"
               checked={rememberMe}
-              onCheckedChange={(checked) =>
-                useAuthStore.getState().setRememberMe(checked === true)
-              }
+              onCheckedChange={(checked) => useAuthStore.getState().setRememberMe(checked === true)}
             />
             <Label htmlFor="remember-me" className="text-sm font-normal">
               {t('auth.remember_me')}
@@ -308,7 +311,9 @@ export function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400" data-testid="login-error">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400" data-testid="login-error">
+              {error}
+            </p>
           )}
 
           <Button

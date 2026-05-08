@@ -87,6 +87,7 @@ export function AudioPlayer({ src, onTimeUpdate: onTimeUpdateProp, seekRef }: Au
 
   return (
     <div className="flex items-center gap-3 rounded-lg border bg-muted/30 px-3 py-2">
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption -- call recording; no transcription available */}
       <audio ref={audioRef} src={src} preload="metadata" />
 
       <Button variant="ghost" size="icon-sm" onClick={togglePlay}>

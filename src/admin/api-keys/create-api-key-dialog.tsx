@@ -114,6 +114,7 @@ export function CreateApiKeyDialog({ open, onOpenChange }: CreateApiKeyDialogPro
                   id="api-key-name"
                   data-testid="api-key-name-input"
                   autoComplete="off"
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- inside Dialog: focus must move into the modal on open
                   autoFocus
                   value={name}
                   onChange={(e) => setName(e.target.value)}

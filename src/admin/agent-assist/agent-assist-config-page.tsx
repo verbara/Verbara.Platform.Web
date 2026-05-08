@@ -232,7 +232,7 @@ function KeywordRulesSection() {
               <th className="px-3 py-2 text-left font-medium text-muted-foreground">
                 {t('admin:agentAssist.rules.priority')}
               </th>
-              <th className="w-24 px-3 py-2" />
+              <th className="w-24 px-3 py-2" aria-label={t('common:table.col_actions')} />
             </tr>
           </thead>
           <tbody>
@@ -269,7 +269,11 @@ function KeywordRulesSection() {
                         setEditDraft((d) => ({ ...d, priority: v as Priority }))
                       }
                     >
-                      <SelectTrigger size="sm" className="w-36">
+                      <SelectTrigger
+                        size="sm"
+                        className="w-36"
+                        aria-label={t('admin:agentAssist.rules.priority')}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -360,6 +364,7 @@ function KeywordRulesSection() {
                     onChange={(e) => setNewDraft((d) => ({ ...d, keyword: e.target.value }))}
                     placeholder={t('admin:agentAssist.rules.keywordPlaceholder')}
                     className="h-7 text-sm"
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- inline row insert: focus new row input immediately on add
                     autoFocus
                   />
                 </td>
@@ -376,7 +381,11 @@ function KeywordRulesSection() {
                     value={newDraft.priority}
                     onValueChange={(v) => setNewDraft((d) => ({ ...d, priority: v as Priority }))}
                   >
-                    <SelectTrigger size="sm" className="w-36">
+                    <SelectTrigger
+                      size="sm"
+                      className="w-36"
+                      aria-label={t('admin:agentAssist.rules.priority')}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -560,7 +569,7 @@ function ComplianceRulesSection() {
               <th className="px-3 py-2 text-left font-medium text-muted-foreground">
                 {t('admin:agentAssist.complianceRules.description')}
               </th>
-              <th className="w-24 px-3 py-2" />
+              <th className="w-24 px-3 py-2" aria-label={t('common:table.col_actions')} />
             </tr>
           </thead>
           <tbody>
@@ -588,7 +597,11 @@ function ComplianceRulesSection() {
                         setEditDraft((d) => ({ ...d, severity: v as Severity }))
                       }
                     >
-                      <SelectTrigger size="sm" className="w-28">
+                      <SelectTrigger
+                        size="sm"
+                        className="w-28"
+                        aria-label={t('admin:agentAssist.complianceRules.severity')}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -605,7 +618,11 @@ function ComplianceRulesSection() {
                       value={editDraft.action}
                       onValueChange={(v) => setEditDraft((d) => ({ ...d, action: v as Action }))}
                     >
-                      <SelectTrigger size="sm" className="w-24">
+                      <SelectTrigger
+                        size="sm"
+                        className="w-24"
+                        aria-label={t('admin:agentAssist.complianceRules.action')}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -706,6 +723,7 @@ function ComplianceRulesSection() {
                     onChange={(e) => setNewDraft((d) => ({ ...d, pattern: e.target.value }))}
                     placeholder={t('admin:agentAssist.complianceRules.patternPlaceholder')}
                     className="h-7 text-sm"
+                    // eslint-disable-next-line jsx-a11y/no-autofocus -- inline row insert: focus new row input immediately on add
                     autoFocus
                   />
                 </td>
@@ -714,7 +732,11 @@ function ComplianceRulesSection() {
                     value={newDraft.severity}
                     onValueChange={(v) => setNewDraft((d) => ({ ...d, severity: v as Severity }))}
                   >
-                    <SelectTrigger size="sm" className="w-28">
+                    <SelectTrigger
+                      size="sm"
+                      className="w-28"
+                      aria-label={t('admin:agentAssist.complianceRules.severity')}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -731,7 +753,11 @@ function ComplianceRulesSection() {
                     value={newDraft.action}
                     onValueChange={(v) => setNewDraft((d) => ({ ...d, action: v as Action }))}
                   >
-                    <SelectTrigger size="sm" className="w-24">
+                    <SelectTrigger
+                      size="sm"
+                      className="w-24"
+                      aria-label={t('admin:agentAssist.complianceRules.action')}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

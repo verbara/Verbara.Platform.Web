@@ -33,9 +33,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
     setError('');
     setLoading(true);
     try {
-      const body = recoveryMode
-        ? { mfaToken, recoveryCode: code }
-        : { mfaToken, code };
+      const body = recoveryMode ? { mfaToken, recoveryCode: code } : { mfaToken, code };
 
       const res = await fetch('/api/v1/auth/mfa/verify', {
         method: 'POST',
@@ -61,9 +59,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
           // ignore body read errors
         }
 
-        const isExpired =
-          res.status === 400 &&
-          /expired|CHALLENGE_EXPIRED/i.test(bodyText);
+        const isExpired = res.status === 400 && /expired|CHALLENGE_EXPIRED/i.test(bodyText);
 
         if (isExpired) {
           setError(t('auth.mfa_challenge_expired'));
@@ -138,7 +134,9 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
           {digits.map((digit, i) => (
             <input
               key={i}
-              ref={(el) => { inputRefs.current[i] = el; }}
+              ref={(el) => {
+                inputRefs.current[i] = el;
+              }}
               type="text"
               inputMode="numeric"
               maxLength={1}
@@ -146,6 +144,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
               onChange={(e) => handleDigitChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               className="h-12 w-10 rounded-lg border border-slate-200 bg-transparent text-center text-lg font-mono outline-none focus:border-brand focus:ring-2 focus:ring-brand/50 dark:border-slate-700 dark:bg-slate-800"
+              // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus first OTP digit on mount for keyboard users
               autoFocus={i === 0}
               data-testid={`login-mfa-digit-${i}`}
             />
@@ -158,6 +157,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
             placeholder={t('auth.mfa_recovery_placeholder')}
             value={recoveryCode}
             onChange={(e) => setRecoveryCode(e.target.value)}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus recovery input on mode switch for keyboard users
             autoFocus
             data-testid="login-mfa-recovery-input"
           />
@@ -172,9 +172,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
         </div>
       )}
 
-      {error && (
-        <p className="text-sm text-center text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-center text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="flex flex-col items-center gap-2 pt-2">
         <button
@@ -188,11 +186,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
         >
           {recoveryMode ? t('auth.mfa_use_code') : t('auth.mfa_use_recovery')}
         </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-xs text-slate-500 hover:underline"
-        >
+        <button type="button" onClick={onCancel} className="text-xs text-slate-500 hover:underline">
           {t('actions.cancel')}
         </button>
       </div>
