@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
 import { Button } from '@/core/ui/button';
+import { LiveRegion } from '@/core/ui/live-region';
 import { VirtualList } from '@/core/ui/virtual-list';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useConversations } from '@/core/api/hooks/use-conversations';
@@ -21,6 +22,8 @@ export function InboxPanel() {
   const filteredConversations = useConversationStore((s) => s.filteredConversations);
 
   const [newConvOpen, setNewConvOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState<string>('');
+  const previousFirstIdRef = useRef<string | undefined>(undefined);
 
   const { data: agent } = useAgentMe();
   const { data: conversations = [] } = useConversations({ agentId: agent?.id });
@@ -30,6 +33,15 @@ export function InboxPanel() {
   }, [conversations, upsertConversation]);
 
   const visible = filteredConversations();
+
+  useEffect(() => {
+    const currentFirst = visible[0];
+    const previousFirstId = previousFirstIdRef.current;
+    if (currentFirst && previousFirstId !== undefined && currentFirst.id !== previousFirstId) {
+      setAnnouncement(t('agent:inbox.announceNew', { name: currentFirst.contactName }));
+    }
+    previousFirstIdRef.current = currentFirst?.id;
+  }, [visible, t]);
 
   return (
     <>
@@ -71,6 +83,7 @@ export function InboxPanel() {
       </div>
 
       <NewConversationDialog open={newConvOpen} onOpenChange={setNewConvOpen} />
+      <LiveRegion politeness="polite">{announcement}</LiveRegion>
     </>
   );
 }

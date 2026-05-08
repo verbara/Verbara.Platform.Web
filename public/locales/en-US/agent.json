@@ -6,6 +6,7 @@
     "filter_wrapup": "Wrap-up",
     "empty": "No conversations. All caught up!",
     "new_conversation": "New conversation assigned",
+    "announceNew": "New conversation from {{name}}",
     "aria": {
       "newConversation": "New conversation"
     }

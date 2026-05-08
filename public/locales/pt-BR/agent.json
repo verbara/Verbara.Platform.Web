@@ -6,6 +6,7 @@
     "filter_wrapup": "Pós-atendimento",
     "empty": "Sem conversas. Tudo em dia!",
     "new_conversation": "Nova conversa atribuída",
+    "announceNew": "Nova conversa de {{name}}",
     "aria": {
       "newConversation": "Nova conversa"
     }
