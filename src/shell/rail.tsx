@@ -31,7 +31,7 @@ export function Rail() {
   }
 
   return (
-    <nav className="flex h-full w-12 flex-col items-center bg-rail-bg py-3">
+    <nav data-print="hide" className="flex h-full w-12 flex-col items-center bg-rail-bg py-3">
       <div className="mb-6 text-brand">
         <Hexagon className="h-6 w-6" />
       </div>

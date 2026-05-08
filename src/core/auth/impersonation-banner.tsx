@@ -49,12 +49,12 @@ export function ImpersonationBanner() {
   return (
     <div
       data-testid="impersonation-banner"
+      data-print="hide"
       className="flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-sm font-medium text-white"
     >
       <Shield className="h-4 w-4" />
       <span>
-        {t('impersonation.operating_as')}{' '}
-        <strong>{impersonation.targetTenantName}</strong>
+        {t('impersonation.operating_as')} <strong>{impersonation.targetTenantName}</strong>
       </span>
       {impersonation.readOnly && (
         <span className="rounded bg-amber-700 px-1.5 py-0.5 text-xs">
