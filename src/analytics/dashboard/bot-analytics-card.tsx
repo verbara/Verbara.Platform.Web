@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Bot, ArrowRightLeft, CircleCheckBig, CircleX } from 'lucide-react';
 import { useBotAnalytics } from '@/core/api/hooks/use-analytics';
 import { useFormatNumber } from '@/core/i18n/use-format';
+import { Skeleton } from '@/core/ui/skeleton';
 
 interface KpiMiniProps {
   readonly label: string;
@@ -30,10 +31,9 @@ export function BotAnalyticsCard({ from, to }: BotAnalyticsCardProps) {
 
   if (isLoading) {
     return (
-      <div
-        className="h-36 animate-pulse rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-700"
-        data-testid="bot-analytics-card-loading"
-      />
+      <div data-testid="bot-analytics-card-loading">
+        <Skeleton variant="rectangular" className="h-36" />
+      </div>
     );
   }
 

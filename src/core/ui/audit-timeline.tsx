@@ -2,6 +2,7 @@ import { Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEntityHistory } from '@/core/api/hooks/use-audit';
 import { useFormatDate } from '@/core/i18n/use-format';
+import { Skeleton } from '@/core/ui/skeleton';
 
 interface AuditTimelineProps {
   entityType: string;
@@ -22,7 +23,13 @@ export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
   const { data: entries = [], isLoading } = useEntityHistory(entityType, entityId);
 
   if (isLoading) {
-    return <p className="py-4 text-sm text-muted-foreground">Loading history...</p>;
+    return (
+      <div className="space-y-3 py-4">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    );
   }
 
   if (entries.length === 0) {
@@ -34,7 +41,9 @@ export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
       {entries.map((entry, i) => {
         const meta = entry.metadata ?? entry.details;
         const metaText = meta
-          ? Object.entries(meta).map(([k, v]) => k + '=' + (typeof v === 'string' ? v : JSON.stringify(v))).join(' · ')
+          ? Object.entries(meta)
+              .map(([k, v]) => k + '=' + (typeof v === 'string' ? v : JSON.stringify(v)))
+              .join(' · ')
           : null;
         return (
           <div key={entry.entryId} className="flex gap-3 pb-4">
@@ -43,9 +52,7 @@ export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
                 <Clock className="h-3 w-3 text-muted-foreground" />
               </div>
-              {i < entries.length - 1 && (
-                <div className="w-px flex-1 bg-border" />
-              )}
+              {i < entries.length - 1 && <div className="w-px flex-1 bg-border" />}
             </div>
 
             {/* Content */}
@@ -53,15 +60,12 @@ export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
               <p className="text-sm">
                 <span className="text-xs text-muted-foreground">
                   {formatTimestamp(entry.occurredAt)}
-                </span>
-                {' '}
+                </span>{' '}
                 <span className="font-medium">{entry.performedBy ?? 'system'}</span>
                 {': '}
                 <span className="capitalize">{entry.action.replace(/_/g, ' ')}</span>
               </p>
-              {metaText && (
-                <p className="mt-0.5 text-xs text-muted-foreground">{metaText}</p>
-              )}
+              {metaText && <p className="mt-0.5 text-xs text-muted-foreground">{metaText}</p>}
             </div>
           </div>
         );

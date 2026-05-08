@@ -30,6 +30,7 @@ import {
 } from '@/core/api/hooks/use-analytics';
 import type { ConversationStateChangedPayload } from '@/core/api/hooks/use-conversation-state-stream';
 import { useFormatDate } from '@/core/i18n/use-format';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 
 const TOP_N_OPTIONS = [10, 25, 50] as const;
 type TopN = (typeof TOP_N_OPTIONS)[number];
@@ -44,16 +45,6 @@ type SortKey = keyof Pick<
   ComplianceRuleSummaryDto,
   'occurrences' | 'sessionsAffected' | 'firstSeen' | 'lastSeen' | 'ruleName' | 'severity'
 >;
-
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-3 animate-pulse" data-testid="loading-skeleton">
-      <div className="h-8 rounded-md bg-slate-200 dark:bg-slate-700 w-1/3" />
-      <div className="h-56 rounded-xl bg-slate-200 dark:bg-slate-700" />
-      <div className="h-32 rounded-xl bg-slate-200 dark:bg-slate-700" />
-    </div>
-  );
-}
 
 function EmptyState({ message }: { message: string }) {
   return (
@@ -75,7 +66,7 @@ function TopicTrendsTab() {
 
   const { data, isLoading } = useTopicTrends(from, to, topN);
 
-  if (isLoading) return <LoadingSkeleton />;
+  if (isLoading) return <PageSkeleton variant="cards" rows={3} />;
 
   const topics = data?.topics ?? [];
 
@@ -186,7 +177,7 @@ function SentimentTrendsTab() {
 
   const { data, isLoading } = useSentimentTrends(from, to, bucket, queue || undefined);
 
-  if (isLoading) return <LoadingSkeleton />;
+  if (isLoading) return <PageSkeleton variant="cards" rows={3} />;
 
   const points = data?.points ?? [];
   const monthDayFmt = new Intl.DateTimeFormat(i18n.language, {
@@ -219,9 +210,7 @@ function SentimentTrendsTab() {
               }`}
               aria-pressed={bucket === b}
             >
-              {b === 'day'
-                ? t('speechAnalytics.bucket.day')
-                : t('speechAnalytics.bucket.week')}
+              {b === 'day' ? t('speechAnalytics.bucket.day') : t('speechAnalytics.bucket.week')}
             </button>
           ))}
         </div>
@@ -318,12 +307,13 @@ function ComplianceOverviewTab() {
     }
   };
 
-  if (isLoading) return <LoadingSkeleton />;
+  if (isLoading) return <PageSkeleton variant="cards" rows={3} />;
 
   const rules = [...(data?.rules ?? [])].sort((a, b) => {
     const av = a[sortKey];
     const bv = b[sortKey];
-    const cmp = typeof av === 'string' ? av.localeCompare(bv as string) : (av as number) - (bv as number);
+    const cmp =
+      typeof av === 'string' ? av.localeCompare(bv as string) : (av as number) - (bv as number);
     return sortAsc ? cmp : -cmp;
   });
 
@@ -379,9 +369,7 @@ function ComplianceOverviewTab() {
         <div className="flex-1 space-y-2">
           <select
             value={severity}
-            onChange={(e) =>
-              setSeverity(e.target.value as 'Info' | 'Warning' | 'Critical' | '')
-            }
+            onChange={(e) => setSeverity(e.target.value as 'Info' | 'Warning' | 'Critical' | '')}
             className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
             data-testid="severity-filter"
           >
@@ -404,7 +392,10 @@ function ComplianceOverviewTab() {
                   [
                     ['ruleName', t('speechAnalytics.columns.rule')],
                     ['severity', t('speechAnalytics.columns.severity')],
-                    ['occurrences', t('speechAnalytics.columns.occurrences', { defaultValue: 'Occurrences' })],
+                    [
+                      'occurrences',
+                      t('speechAnalytics.columns.occurrences', { defaultValue: 'Occurrences' }),
+                    ],
                     ['sessionsAffected', t('speechAnalytics.columns.sessionsAffected')],
                     ['firstSeen', t('speechAnalytics.columns.firstSeen')],
                     ['lastSeen', t('speechAnalytics.columns.lastSeen')],
@@ -416,9 +407,7 @@ function ComplianceOverviewTab() {
                     onClick={() => handleSort(key)}
                   >
                     {label}
-                    {sortKey === key && (
-                      <span className="ml-1">{sortAsc ? '↑' : '↓'}</span>
-                    )}
+                    {sortKey === key && <span className="ml-1">{sortAsc ? '↑' : '↓'}</span>}
                   </th>
                 ))}
               </tr>
@@ -450,12 +439,8 @@ function ComplianceOverviewTab() {
                   </td>
                   <td className="px-4 py-2 tabular-nums text-right">{rule.occurrences}</td>
                   <td className="px-4 py-2 tabular-nums text-right">{rule.sessionsAffected}</td>
-                  <td className="px-4 py-2 tabular-nums">
-                    {formatDateShort(rule.firstSeen)}
-                  </td>
-                  <td className="px-4 py-2 tabular-nums">
-                    {formatDateShort(rule.lastSeen)}
-                  </td>
+                  <td className="px-4 py-2 tabular-nums">{formatDateShort(rule.firstSeen)}</td>
+                  <td className="px-4 py-2 tabular-nums">{formatDateShort(rule.lastSeen)}</td>
                 </tr>
               ))}
             </tbody>

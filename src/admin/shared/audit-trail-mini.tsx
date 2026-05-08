@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Clock } from 'lucide-react';
 import { useAuditEvents } from '@/core/api/hooks/use-audit-events';
 import { useFormatDate } from '@/core/i18n/use-format';
+import { Skeleton } from '@/core/ui/skeleton';
 
 export interface AuditTrailMiniProps {
   readonly resourceType: string;
@@ -21,11 +22,7 @@ export interface AuditTrailMiniProps {
   readonly limit?: number;
 }
 
-export function AuditTrailMini({
-  resourceType,
-  resourceId,
-  limit = 10,
-}: AuditTrailMiniProps) {
+export function AuditTrailMini({ resourceType, resourceId, limit = 10 }: AuditTrailMiniProps) {
   const { t } = useTranslation(['common']);
   const { formatDateShort, formatTimeShort } = useFormatDate();
   const formatTimestamp = (iso: string): string =>
@@ -34,21 +31,16 @@ export function AuditTrailMini({
 
   if (isLoading) {
     return (
-      <p
-        className="py-3 text-xs text-muted-foreground"
-        data-testid="audit-trail-mini-loading"
-      >
-        {t('common:audit-trail-mini.loading', 'Loading events...')}
-      </p>
+      <div className="space-y-2" data-testid="audit-trail-mini-loading">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
     );
   }
 
   if (entries.length === 0) {
     return (
-      <p
-        className="py-3 text-xs text-muted-foreground"
-        data-testid="audit-trail-mini-empty"
-      >
+      <p className="py-3 text-xs text-muted-foreground" data-testid="audit-trail-mini-empty">
         {t('common:audit-trail-mini.no-events', 'No audit events yet.')}
       </p>
     );
@@ -67,9 +59,7 @@ export function AuditTrailMini({
           <Clock className="mt-0.5 h-3 w-3 flex-shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs">
-              <span className="text-muted-foreground">
-                {formatTimestamp(entry.occurredAt)}
-              </span>{' '}
+              <span className="text-muted-foreground">{formatTimestamp(entry.occurredAt)}</span>{' '}
               <span className="font-medium">{entry.performedBy ?? 'system'}</span>{' '}
               <span className="capitalize">{entry.action.replace(/_/g, ' ')}</span>
             </p>
@@ -77,9 +67,7 @@ export function AuditTrailMini({
         </div>
       ))}
       {hiddenCount > 0 && (
-        <p className="px-1 text-xs text-muted-foreground">
-          +{hiddenCount} older events
-        </p>
+        <p className="px-1 text-xs text-muted-foreground">+{hiddenCount} older events</p>
       )}
     </div>
   );

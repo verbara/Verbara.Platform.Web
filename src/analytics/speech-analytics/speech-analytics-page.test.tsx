@@ -38,7 +38,11 @@ vi.mock('@/core/api/hooks/use-analytics', () => ({
   useComplianceSummary: vi.fn(),
 }));
 
-import { useTopicTrends, useSentimentTrends, useComplianceSummary } from '@/core/api/hooks/use-analytics';
+import {
+  useTopicTrends,
+  useSentimentTrends,
+  useComplianceSummary,
+} from '@/core/api/hooks/use-analytics';
 import SpeechAnalyticsPage from './speech-analytics-page';
 
 const mockUseTopicTrends = useTopicTrends as ReturnType<typeof vi.fn>;
@@ -116,7 +120,7 @@ describe('SpeechAnalyticsPage', () => {
 
     // The filter bar renders; the skeleton shows in the active tab
     expect(screen.getByTestId('filter-bar')).toBeDefined();
-    expect(screen.getByTestId('loading-skeleton')).toBeDefined();
+    expect(screen.getByTestId('page-skeleton')).toBeDefined();
   });
 
   it('renders_topic_trends_tab_by_default_with_table_and_bar_chart', () => {
