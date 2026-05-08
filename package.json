@@ -60,6 +60,7 @@
     "react-dom": "^19.2.5",
     "react-hook-form": "^7.75.0",
     "react-i18next": "^17.0.0",
+    "react-is": "^19.2.6",
     "react-router-dom": "^7.14.2",
     "recharts": "^3.8.1",
     "shadcn": "^4.6.0",
@@ -72,6 +73,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@eslint/js": "^10.0.0",
     "@playwright/test": "^1.59.1",
     "@sentry/react": "^10.51.0",
@@ -85,6 +87,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^10.0.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
