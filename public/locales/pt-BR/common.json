@@ -160,7 +160,8 @@
     }
   },
   "a11y": {
-    "skipToMain": "Pular para o conteúdo principal"
+    "skipToMain": "Pular para o conteúdo principal",
+    "required": "obrigatório"
   },
   "errors": {
     "unauthorized_title": "403 — Não autorizado",

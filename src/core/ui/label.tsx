@@ -1,8 +1,14 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/utils';
 
-function Label({ className, ...props }: React.ComponentProps<'label'>) {
+interface LabelProps extends React.ComponentProps<'label'> {
+  readonly required?: boolean;
+}
+
+function Label({ className, required, children, ...props }: Readonly<LabelProps>) {
+  const { t } = useTranslation();
   return (
     // eslint-disable-next-line jsx-a11y/label-has-associated-control -- Label primitive; consumers wire htmlFor at call-site
     <label
@@ -12,8 +18,19 @@ function Label({ className, ...props }: React.ComponentProps<'label'>) {
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+      {required && (
+        <>
+          <span aria-hidden="true" className="text-destructive">
+            *
+          </span>
+          <span className="sr-only">{t('a11y.required')}</span>
+        </>
+      )}
+    </label>
   );
 }
 
 export { Label };
+export type { LabelProps };
