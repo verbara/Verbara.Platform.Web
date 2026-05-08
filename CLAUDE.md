@@ -10,11 +10,11 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~350 TS/TSX files · 60+ pages · 56 API hooks · 32 UI components · 12 Zustand stores · 64+ E2E specs · 889/889 Vitest · Version 2.0.2** (Nivel 5 Track 5B Virtualization done).
+**~350 TS/TSX files · 60+ pages · 56 API hooks · 35 UI components · 12 Zustand stores · 64+ E2E specs · 910/910 Vitest · Version 2.0.4** (Nivel 5 Track 5C-a11y done).
 
-Niveles 1-4 complete (tags `v1.14.5-web` through `v1.17.5-web`). Track 5A (Loading States Centralized) done 2026-05-08. Track 5B (Virtualization) done 2026-05-08: `<VirtualList>` primitive + `<DataTable virtualized>` mode backed by `@tanstack/react-virtual`. 6 components migrated (MessageThread, InboxPanel, audit-viewer, notification-drawer, agent-states-page, monitor voice tab). Tag `v2.0.2-web`. Shell bundle 116 kB.
+Niveles 1-4 complete (tags `v1.14.5-web` through `v1.17.5-web`). Track 5A (Loading States) done 2026-05-08. Track 5B (Virtualization) done 2026-05-08, tag `v2.0.2-web`. Track 5C-a11y (WCAG 2.1 AA Foundation) done 2026-05-08: `<SkipLink>`, `<LiveRegion>`, `<FieldError>` primitives + `useFieldA11y`, `useDocumentTitle`, `useHtmlLang` hooks + `<Label required>` + `eslint-plugin-jsx-a11y` (CI gate) + `@axe-core/playwright` baseline + 8 Tier 1 forms migrated + `prefers-reduced-motion` + button disabled contrast fix. Tag `v2.0.4-web`.
 
-**Next: Track 5C — Accessibility** (a11y improvements). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
+**Next: Track 5C-export** (print stylesheets + PDF export) or Track 5D (Forms UX + multi-tenant indicator). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
