@@ -465,5 +465,9 @@
       "stateUpdated": "Estado atualizado",
       "agentStateUpdated": "Estado do agente atualizado"
     }
+  },
+  "table": {
+    "col_actions": "Ações",
+    "col_drag_handle": "Arrastar para reordenar"
   }
 }
