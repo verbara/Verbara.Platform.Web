@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
@@ -19,6 +20,7 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    plugins: { 'jsx-a11y': jsxA11y },
     rules: {
       // Allow `_`-prefixed identifiers as intentional-unused (idiomatic JS:
       // destructuring rest, cb args you must declare but don't read).
@@ -31,6 +33,18 @@ export default defineConfig([
           destructuredArrayIgnorePattern: '^_',
         },
       ],
+      // jsx-a11y recommended preset — demoted to warn during the rollout
+      // sweep (Track 5C-a11y task 2). Promoted back to error in task 4
+      // once all baseline violations are resolved.
+      ...Object.fromEntries(
+        Object.entries(jsxA11y.configs.recommended.rules).map(([rule, level]) => {
+          if (Array.isArray(level)) {
+            const [, ...rest] = level;
+            return [rule, ['warn', ...rest]];
+          }
+          return [rule, level === 'error' || level === 2 ? 'warn' : level];
+        }),
+      ),
     },
   },
   {
