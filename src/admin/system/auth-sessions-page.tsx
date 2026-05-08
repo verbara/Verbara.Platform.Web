@@ -72,12 +72,16 @@ export default function AuthSessionsPage() {
               <th className="px-4 py-2 font-medium">
                 {t('admin:auth.last_activity', 'Last Activity')}
               </th>
-              <th className="px-4 py-2 font-medium w-24" />
+              <th
+                className="px-4 py-2 font-medium w-24"
+                aria-label={t('common:table.col_actions')}
+              />
             </tr>
           </thead>
           <tbody>
             {sessions.map((session) => (
               <tr key={session.sessionId} className="border-b last:border-0">
+                {/* eslint-disable-next-line jsx-a11y/control-has-associated-label -- display-only cell; no form control inside */}
                 <td className="px-4 py-2.5">
                   <div>
                     <p className="font-medium">{session.userDisplayName}</p>

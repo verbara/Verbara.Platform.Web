@@ -171,7 +171,7 @@ export default function HolidayCalendarDetailPage() {
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
                     {t('holiday-calendars.detail.col_allowed_end')}
                   </th>
-                  <th className="px-3 py-2" />
+                  <th className="px-3 py-2" aria-label={t('common:table.col_actions')} />
                 </tr>
               </thead>
               <tbody>

@@ -129,7 +129,7 @@ export default function CallerIdPoolDetailPage() {
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                     {t('caller-id-pools.detail.col_active')}
                   </th>
-                  <th className="px-3 py-2" />
+                  <th className="px-3 py-2" aria-label={t('common:table.col_actions')} />
                 </tr>
               </thead>
               <tbody>

@@ -376,7 +376,9 @@ export default function ContactsStep() {
                       )}
                     </td>
                   ))}
-                  {parseResult.columns.length > 6 && <td className="px-3 py-1.5" />}
+                  {parseResult.columns.length > 6 && (
+                    <td className="px-3 py-1.5" aria-hidden="true" />
+                  )}
                 </tr>
               ))}
             </tbody>

@@ -51,9 +51,7 @@ export default function UserSessionsPage() {
         description={t('admin:profile_security.sessions.description')}
       />
 
-      {isLoading && (
-        <p className="text-sm text-muted-foreground">{t('common:status.loading')}…</p>
-      )}
+      {isLoading && <p className="text-sm text-muted-foreground">{t('common:status.loading')}…</p>}
 
       {isError && (
         <div
@@ -65,21 +63,35 @@ export default function UserSessionsPage() {
       )}
 
       {sessions && sessions.length === 0 && (
-        <div className="rounded-md border bg-card p-6 text-sm text-muted-foreground" data-testid="user-sessions-empty">
+        <div
+          className="rounded-md border bg-card p-6 text-sm text-muted-foreground"
+          data-testid="user-sessions-empty"
+        >
           {t('admin:profile_security.sessions.empty')}
         </div>
       )}
 
       {sessions && sessions.length > 0 && (
-        <div className="overflow-hidden rounded-lg border bg-card" data-testid="user-sessions-table">
+        <div
+          className="overflow-hidden rounded-lg border bg-card"
+          data-testid="user-sessions-table"
+        >
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
               <tr>
-                <th className="px-4 py-2 text-left">{t('admin:profile_security.sessions.col_device')}</th>
-                <th className="px-4 py-2 text-left">{t('admin:profile_security.sessions.col_ip')}</th>
-                <th className="px-4 py-2 text-left">{t('admin:profile_security.sessions.col_created')}</th>
-                <th className="px-4 py-2 text-left">{t('admin:profile_security.sessions.col_last_activity')}</th>
-                <th className="px-4 py-2" />
+                <th className="px-4 py-2 text-left">
+                  {t('admin:profile_security.sessions.col_device')}
+                </th>
+                <th className="px-4 py-2 text-left">
+                  {t('admin:profile_security.sessions.col_ip')}
+                </th>
+                <th className="px-4 py-2 text-left">
+                  {t('admin:profile_security.sessions.col_created')}
+                </th>
+                <th className="px-4 py-2 text-left">
+                  {t('admin:profile_security.sessions.col_last_activity')}
+                </th>
+                <th className="px-4 py-2" aria-label={t('common:table.col_actions')} />
               </tr>
             </thead>
             <tbody>
@@ -134,4 +146,3 @@ export default function UserSessionsPage() {
     </div>
   );
 }
-

@@ -202,6 +202,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
                     {eventTypes.map((et) => {
                       const checked = field.value.includes(et.eventType);
                       return (
+                        // eslint-disable-next-line jsx-a11y/label-has-associated-control -- label wraps Checkbox; implicit association via nesting
                         <label
                           key={et.eventType}
                           className="flex cursor-pointer items-start gap-2 rounded-md border p-2 transition-colors hover:bg-muted/50"

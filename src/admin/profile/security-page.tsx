@@ -543,7 +543,7 @@ function SessionsSection({ locked }: Readonly<{ locked: boolean }>) {
               <th className="px-3 py-2 text-left font-medium">Device</th>
               <th className="px-3 py-2 text-left font-medium">IP</th>
               <th className="px-3 py-2 text-left font-medium">Created</th>
-              <th className="w-24 px-3 py-2"></th>
+              <th className="w-24 px-3 py-2" aria-label={t('common:table.col_actions')}></th>
             </tr>
           </thead>
           <tbody>

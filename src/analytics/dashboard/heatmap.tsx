@@ -28,12 +28,7 @@ function interpolateBlue(ratio: number): string {
   return `hsl(var(--primary) / ${Math.round(ratio * 90 + 5)}%)`;
 }
 
-export function Heatmap({
-  title,
-  data,
-  dayLabels,
-  emptyLabel,
-}: HeatmapProps) {
+export function Heatmap({ title, data, dayLabels, emptyLabel }: HeatmapProps) {
   const { t } = useTranslation('analytics');
   const resolvedDayLabels = dayLabels ?? DAY_KEYS.map((k) => t(k));
   const resolvedEmptyLabel = emptyLabel ?? t('dashboard.no_data');
@@ -60,7 +55,7 @@ export function Heatmap({
           <table className="border-separate border-spacing-[2px] text-xs">
             <thead>
               <tr>
-                <th className="w-10" />
+                <th className="w-10" aria-hidden="true" />
                 {HOURS.map((h) => (
                   <th
                     key={h}
@@ -81,7 +76,8 @@ export function Heatmap({
                     const val = lookup.get(dayIndex)?.get(hour) ?? 0;
                     const ratio = maxValue > 0 ? val / maxValue : 0;
                     const bg = interpolateBlue(ratio);
-                    const textColor = ratio > 0.55 ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))';
+                    const textColor =
+                      ratio > 0.55 ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))';
                     return (
                       <td
                         key={hour}

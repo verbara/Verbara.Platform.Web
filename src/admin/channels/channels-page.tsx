@@ -201,8 +201,13 @@ function ChannelCard({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       className="flex items-center gap-4 rounded-lg border bg-card p-4 shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
       onClick={() => onDetail(channel.id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onDetail(channel.id);
+      }}
     >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
         <Icon className="h-5 w-5" />

@@ -192,6 +192,7 @@ function RecordingRow({ row, isExpanded, onPlay }: RecordingRowProps) {
         <td className="px-4 py-3">{row.agentName ?? '—'}</td>
         <td className="px-4 py-3">{row.queueName ?? '—'}</td>
         <td className="px-4 py-3">{formatDuration(row.durationMs)}</td>
+        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label -- buttons inside have sr-only labels; <td> is not a control */}
         <td className="px-4 py-3">
           <div className="flex gap-2">
             <Button

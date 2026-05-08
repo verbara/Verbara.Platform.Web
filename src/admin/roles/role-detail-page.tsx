@@ -20,10 +20,7 @@ function getImplied(permissionId: string, allPermissions: Map<string, string[]>)
 }
 
 /** Given a permission being unchecked, compute permissions that should also be unchecked. */
-function getDependents(
-  permissionId: string,
-  allPermissions: Map<string, string[]>,
-): string[] {
+function getDependents(permissionId: string, allPermissions: Map<string, string[]>): string[] {
   const dependents: string[] = [];
   for (const [pId, implies] of allPermissions) {
     if (implies.includes(permissionId)) {
@@ -118,7 +115,11 @@ export default function RoleDetailPage() {
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t('actions.back', 'Back')}
         </Button>
-        <Button onClick={handleSave} disabled={!dirty || updateRole.isPending} data-testid="role-save-btn">
+        <Button
+          onClick={handleSave}
+          disabled={!dirty || updateRole.isPending}
+          data-testid="role-save-btn"
+        >
           <Save className="mr-1.5 h-4 w-4" />
           {t('actions.save', 'Save')}
         </Button>
@@ -151,7 +152,9 @@ export default function RoleDetailPage() {
 
       {/* Permissions by category */}
       <div className="rounded-lg border bg-card p-6 space-y-6">
-        <h3 className="font-heading text-base font-semibold">{t('admin:roles.permissions', 'Permissions')}</h3>
+        <h3 className="font-heading text-base font-semibold">
+          {t('admin:roles.permissions', 'Permissions')}
+        </h3>
 
         {categories.map((cat) => (
           <div key={cat.category}>
@@ -160,6 +163,7 @@ export default function RoleDetailPage() {
             </h4>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {cat.permissions.map((perm: Permission) => (
+                // eslint-disable-next-line jsx-a11y/label-has-associated-control -- label wraps Checkbox; implicit association via nesting
                 <label
                   key={perm.permissionId}
                   className="flex items-start gap-2 rounded-md p-2 hover:bg-muted/50 cursor-pointer"

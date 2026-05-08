@@ -630,7 +630,7 @@ export default function CampaignDetailPage() {
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                     {t('admin:campaigns.dispositions.col_active')}
                   </th>
-                  <th className="px-3 py-2" />
+                  <th className="px-3 py-2" aria-label={t('common:table.col_actions')} />
                 </tr>
               </thead>
               <tbody>
@@ -678,6 +678,7 @@ export default function CampaignDetailPage() {
                           size="sm"
                           variant="ghost"
                           className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          aria-label={t('common:actions.delete')}
                           onClick={() => setDeletingDispoId(d.id)}
                         >
                           <Trash2 className="h-3.5 w-3.5" />

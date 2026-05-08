@@ -14,13 +14,7 @@ import {
 } from '@/core/ui/dialog';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/core/ui/select';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import {
   useRoles,
@@ -83,7 +77,9 @@ export default function RolesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-xl font-semibold">{t('admin:roles.title', 'Roles')}</h1>
-          <p className="text-sm text-muted-foreground">{t('admin:roles.description', 'Manage roles and their permissions')}</p>
+          <p className="text-sm text-muted-foreground">
+            {t('admin:roles.description', 'Manage roles and their permissions')}
+          </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} data-testid="roles-create-btn">
           <Plus className="mr-1.5 h-4 w-4" />
@@ -98,9 +94,14 @@ export default function RolesPage() {
             <tr className="border-b bg-muted/50 text-left">
               <th className="px-4 py-2 font-medium">{t('admin:roles.name', 'Name')}</th>
               <th className="px-4 py-2 font-medium">{t('admin:roles.source', 'Source')}</th>
-              <th className="px-4 py-2 font-medium">{t('admin:roles.permissions', 'Permissions')}</th>
+              <th className="px-4 py-2 font-medium">
+                {t('admin:roles.permissions', 'Permissions')}
+              </th>
               <th className="px-4 py-2 font-medium">{t('admin:roles.users', 'Users')}</th>
-              <th className="px-4 py-2 font-medium w-24" />
+              <th
+                className="px-4 py-2 font-medium w-24"
+                aria-label={t('common:table.col_actions')}
+              />
             </tr>
           </thead>
           <tbody>
@@ -124,10 +125,12 @@ export default function RolesPage() {
                 <td className="px-4 py-2.5">{role.permissions?.length ?? 0}</td>
                 <td className="px-4 py-2.5">{role.userCount ?? 0}</td>
                 <td className="px-4 py-2.5">
+                  {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- event-stop container only; interactive children are <Button> elements */}
                   <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"
                       size="icon-sm"
+                      aria-label={t('admin:roles.clone', 'Clone Role')}
                       data-testid={`clone-role-${role.roleId}`}
                       onClick={() => {
                         setCloneTarget({ id: role.roleId, name: role.name });
@@ -140,10 +143,9 @@ export default function RolesPage() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
+                        aria-label={t('common:actions.delete')}
                         data-testid={`delete-role-${role.roleId}`}
-                        onClick={() =>
-                          setDeleteTarget({ id: role.roleId, name: role.name })
-                        }
+                        onClick={() => setDeleteTarget({ id: role.roleId, name: role.name })}
                       >
                         <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>
@@ -231,7 +233,11 @@ export default function RolesPage() {
             <DialogClose render={<Button variant="outline" />}>
               {t('actions.cancel', 'Cancel')}
             </DialogClose>
-            <Button onClick={handleClone} disabled={!cloneName.trim() || cloneRole.isPending} data-testid="role-clone-submit">
+            <Button
+              onClick={handleClone}
+              disabled={!cloneName.trim() || cloneRole.isPending}
+              data-testid="role-clone-submit"
+            >
               {t('admin:roles.clone', 'Clone Role')}
             </Button>
           </DialogFooter>
@@ -243,7 +249,9 @@ export default function RolesPage() {
           which was the only destructive action in the admin UI that skipped the delay. */}
       <ConfirmDeleteDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         onConfirm={() => {
           if (deleteTarget) {
             deleteRole.mutate(deleteTarget.id, {

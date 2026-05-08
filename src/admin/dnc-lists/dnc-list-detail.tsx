@@ -306,7 +306,7 @@ export default function DncListDetail() {
                   <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
                     {t('dnc-lists.detail.col_expires')}
                   </th>
-                  <th className="px-3 py-2" />
+                  <th className="px-3 py-2" aria-label={t('common:table.col_actions')} />
                 </tr>
               </thead>
               <tbody>

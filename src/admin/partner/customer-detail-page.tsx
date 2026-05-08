@@ -190,6 +190,11 @@ export default function PartnerCustomerDetailPage() {
             type="button"
             role="switch"
             aria-checked={dunningPaused}
+            aria-label={
+              dunningPaused
+                ? t('partner.dunning.statusPaused', 'Dunning paused')
+                : t('partner.dunning.statusActive', 'Dunning active')
+            }
             disabled={updateDunning.isPending}
             onClick={handleDunningToggleClick}
             data-testid="dunning-toggle"
