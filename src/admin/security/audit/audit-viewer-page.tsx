@@ -9,9 +9,8 @@
 //   - DataTable + DrawerDetail + CodeBlock primitives all ship from R5.1.
 //   - <Sheet> is the canonical drawer surface, embedded inside DrawerDetail.
 //   - useFormatDate gives consistent locale-aware timestamps.
-//   - Paged backend (50 rows/page default, max 500) — virtualization deferred
-//     until a tenant exceeds the page-size headroom (current Postgres index
-//     `idx_audit_time` keeps the OFFSET cost flat for the typical viewer use).
+//   - Paged backend (50 rows/page default, max 500); rows are virtualized via
+//     DataTable virtualized={true} so a full 500-row page renders in bounded DOM.
 
 import { useMemo, useState } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -445,6 +444,7 @@ export default function AuditViewerPage() {
             columns={columns}
             pageSize={PAGE_SIZE}
             onRowClick={(row) => setSelected(row)}
+            virtualized
           />
 
           {/* Server-side pagination — DataTable does its own client paging on

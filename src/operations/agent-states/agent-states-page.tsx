@@ -163,6 +163,7 @@ export default function AgentStatesPage() {
           columns={columns}
           searchPlaceholder={t('agent_states.name')}
           noResultsMessage="No agents found."
+          virtualized
         />
       </div>
     </div>

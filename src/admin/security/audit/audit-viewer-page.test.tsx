@@ -109,6 +109,10 @@ function pagedResult(items: AuditEventDto[]) {
 describe('AuditViewerPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // jsdom returns 0 for layout; the DataTable virtualizer needs a non-zero
+    // viewport to render any rows. Mock here so the existing assertions on
+    // [data-testid="audit-row-action-*"] still find the rows.
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(600);
     mockUseExport.mockReturnValue({ mutate: vi.fn(), isPending: false });
   });
 
