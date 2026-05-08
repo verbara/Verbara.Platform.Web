@@ -75,6 +75,10 @@ export default defineConfig({
             },
             { name: 'vendor-dnd', test: /[\\/]node_modules[\\/]@dnd-kit[\\/]/ },
             { name: 'vendor-realtime', test: /[\\/]node_modules[\\/]@microsoft[\\/]signalr[\\/]/ },
+            {
+              name: 'vendor-pdf',
+              test: /[\\/]node_modules[\\/](jspdf|jspdf-autotable|html2canvas|raf|css-line-break|text-segmentation|fflate|atob)[\\/]/,
+            },
           ],
         },
       },
