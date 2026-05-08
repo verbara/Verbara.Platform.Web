@@ -33,18 +33,8 @@ export default defineConfig([
           destructuredArrayIgnorePattern: '^_',
         },
       ],
-      // jsx-a11y recommended preset — demoted to warn during the rollout
-      // sweep (Track 5C-a11y task 2). Promoted back to error in task 4
-      // once all baseline violations are resolved.
-      ...Object.fromEntries(
-        Object.entries(jsxA11y.configs.recommended.rules).map(([rule, level]) => {
-          if (Array.isArray(level)) {
-            const [, ...rest] = level;
-            return [rule, ['warn', ...rest]];
-          }
-          return [rule, level === 'error' || level === 2 ? 'warn' : level];
-        }),
-      ),
+      // jsx-a11y recommended preset — at error level (CI gate).
+      ...jsxA11y.configs.recommended.rules,
     },
   },
   {
