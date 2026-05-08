@@ -10,11 +10,11 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~350 TS/TSX files · 60+ pages · 56 API hooks · 31 UI components · 12 Zustand stores · 64+ E2E specs · 879/879 Vitest · Version 2.0.0** (Nivel 5 Track 5A Loading States done).
+**~350 TS/TSX files · 60+ pages · 56 API hooks · 32 UI components · 12 Zustand stores · 64+ E2E specs · 889/889 Vitest · Version 2.0.2** (Nivel 5 Track 5B Virtualization done).
 
-Niveles 1-4 complete (tags `v1.14.5-web` through `v1.17.5-web`). Track 5A (Loading States Centralized) done 2026-05-08: `Skeleton`, `PageSkeleton`, `LoadingOverlay` components + 36 files refactored. Coverage: 28% statements, hooks dir 91.58% lines. Shell bundle 114 kB. Zero npm vulnerabilities.
+Niveles 1-4 complete (tags `v1.14.5-web` through `v1.17.5-web`). Track 5A (Loading States Centralized) done 2026-05-08. Track 5B (Virtualization) done 2026-05-08: `<VirtualList>` primitive + `<DataTable virtualized>` mode backed by `@tanstack/react-virtual`. 6 components migrated (MessageThread, InboxPanel, audit-viewer, notification-drawer, agent-states-page, monitor voice tab). Tag `v2.0.2-web`. Shell bundle 116 kB.
 
-**Next: Track 5B — Virtualization** (`@tanstack/react-virtual`). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
+**Next: Track 5C — Accessibility** (a11y improvements). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
