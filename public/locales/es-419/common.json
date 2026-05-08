@@ -159,6 +159,9 @@
       "Billing": "Facturación"
     }
   },
+  "a11y": {
+    "skipToMain": "Saltar al contenido principal"
+  },
   "errors": {
     "unauthorized_title": "403 — No autorizado",
     "unauthorized_description": "Tu rol no tiene acceso",
