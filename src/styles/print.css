@@ -1,0 +1,74 @@
+/* Track 5C-export — print stylesheet foundation
+ * See docs/specs/2026-05-08-track-5c-export.md §"Layer 1"
+ *
+ * Conventions:
+ *   data-print="hide"   → element omitted in print
+ *   data-print="show"   → element shown in print even if normally hidden
+ *   data-print="target" → element is the print target
+ */
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm 12mm 18mm 12mm;
+  }
+
+  html,
+  body,
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide shell chrome by convention + by selector */
+  [data-print='hide'],
+  nav[aria-label='primary'],
+  [role='dialog']:not([data-print='show']),
+  [role='navigation'],
+  .toaster,
+  [data-sonner-toaster],
+  .skip-link,
+  button:not([data-print='show']):not([data-print-keep]),
+  [data-testid$='-export']:not([data-print='show']) {
+    display: none !important;
+  }
+
+  /* Surface print targets */
+  [data-print='target'] {
+    display: block !important;
+    page-break-before: auto;
+  }
+
+  /* Tables: repeat header on each page, avoid mid-row breaks */
+  thead {
+    display: table-header-group;
+  }
+  tr,
+  td,
+  th {
+    page-break-inside: avoid;
+  }
+
+  /* Expand virtualized lists so all rows print (Track 5B) */
+  [data-virtualized='true'] {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  [data-virtualized='true'] > * {
+    transform: none !important;
+    position: static !important;
+  }
+
+  /* Charts (Recharts SVG) scale gracefully */
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Avoid leaking border colors that print poorly (oklch from Tailwind) */
+  * {
+    border-color: #ccc !important;
+  }
+}
