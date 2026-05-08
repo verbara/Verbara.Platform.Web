@@ -1,31 +1,31 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-brand: #0D9488;
-  --color-brand-light: #14B8A6;
-  --color-brand-dark: #0F766E;
-  --color-brand-foreground: #FFFFFF;
+  --color-brand: #0d9488;
+  --color-brand-light: #14b8a6;
+  --color-brand-dark: #0f766e;
+  --color-brand-foreground: #ffffff;
 
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-critical: #EF4444;
-  --color-info: #3B82F6;
-  --color-ai: #8B5CF6;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-critical: #ef4444;
+  --color-info: #3b82f6;
+  --color-ai: #8b5cf6;
 
-  --color-rail-bg: #0F172A;
-  --color-rail-icon: #94A3B8;
-  --color-rail-icon-active: #FFFFFF;
-  --color-rail-active-border: #0D9488;
+  --color-rail-bg: #0f172a;
+  --color-rail-icon: #94a3b8;
+  --color-rail-icon-active: #ffffff;
+  --color-rail-active-border: #0d9488;
 }
 
 .dark {
-  --color-background: #0F172A;
-  --color-card: #1E293B;
+  --color-background: #0f172a;
+  --color-card: #1e293b;
   --color-border: #334155;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -147,5 +147,19 @@
   }
   html {
     @apply font-sans;
+  }
+}
+/* WCAG 2.3.3 — respect user preference for reduced motion.
+   Applies near-instant durations to animations and transitions globally.
+   Skeleton/spinner animations remain functional but are no longer perceivable
+   as motion; aria-busy + sr-only loading text covers the equivalent semantics. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
