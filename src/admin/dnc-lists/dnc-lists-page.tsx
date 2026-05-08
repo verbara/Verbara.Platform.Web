@@ -7,20 +7,9 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/core/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
@@ -57,9 +46,7 @@ export default function DncListsPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('dnc-lists.columns.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('scope', {
         header: () => t('dnc-lists.columns.scope'),
@@ -117,45 +104,51 @@ export default function DncListsPage() {
     [t, formatNumber, formatDateShort],
   );
 
+  const isEmpty = !isLoading && lists.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('dnc-lists.title')} />
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('dnc-lists.loading')}
-        </div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={ShieldBan} message={t('dnc-lists.empty')} />;
+  } else {
+    content = (
+      <DataTable
+        data={lists}
+        columns={columns}
+        searchPlaceholder={t('dnc-lists.search_placeholder')}
+        noResultsMessage={t('dnc-lists.no_results')}
+        onRowClick={(list) => navigate(`/admin/dnc-lists/${list.id}`)}
+      />
     );
   }
-
-  const isEmpty = lists.length === 0;
 
   return (
     <div className="space-y-6" data-testid="dnc-lists-page">
       <PageHeader title={t('dnc-lists.title')}>
         <PermissionGuard requires="campaigns:dnc:manage">
-          <Button data-testid="dnc-lists-create-btn" size="sm" onClick={() => { setEditingList(null); setFormData({ name: '', scope: 'global' }); setFormOpen(true); }}>
+          <Button
+            data-testid="dnc-lists-create-btn"
+            size="sm"
+            onClick={() => {
+              setEditingList(null);
+              setFormData({ name: '', scope: 'global' });
+              setFormOpen(true);
+            }}
+          >
             <Plus className="mr-1.5 h-4 w-4" />
             {t('dnc-lists.create')}
           </Button>
         </PermissionGuard>
       </PageHeader>
 
-      {isEmpty ? (
-        <EmptyState icon={ShieldBan} message={t('dnc-lists.empty')} />
-      ) : (
-        <DataTable
-          data={lists}
-          columns={columns}
-          searchPlaceholder={t('dnc-lists.search_placeholder')}
-          noResultsMessage={t('dnc-lists.no_results')}
-          onRowClick={(list) => navigate(`/admin/dnc-lists/${list.id}`)}
-        />
-      )}
+      {content}
 
       <ConfirmDeleteDialog
         open={deletingList !== null}
-        onOpenChange={(open) => { if (!open) setDeletingList(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeletingList(null);
+        }}
         onConfirm={() => {
           if (!deletingList) return;
           deleteDncList.mutate(deletingList.id, {
@@ -170,7 +163,9 @@ export default function DncListsPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingList ? t('dnc-lists.form.edit_title') : t('dnc-lists.form.create_title')}</DialogTitle>
+            <DialogTitle>
+              {editingList ? t('dnc-lists.form.edit_title') : t('dnc-lists.form.create_title')}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
@@ -184,8 +179,13 @@ export default function DncListsPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="dnc-scope">{t('dnc-lists.form.scope')}</Label>
-              <Select value={formData.scope} onValueChange={(v) => setFormData((f) => ({ ...f, scope: v ?? f.scope }))}>
-                <SelectTrigger id="dnc-scope"><SelectValue /></SelectTrigger>
+              <Select
+                value={formData.scope}
+                onValueChange={(v) => setFormData((f) => ({ ...f, scope: v ?? f.scope }))}
+              >
+                <SelectTrigger id="dnc-scope">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="global">{t('dnc-lists.scope.global')}</SelectItem>
                   <SelectItem value="campaign">{t('dnc-lists.scope.campaign')}</SelectItem>
@@ -194,19 +194,28 @@ export default function DncListsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>{t('dnc-lists.form.cancel')}</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>
+              {t('dnc-lists.form.cancel')}
+            </Button>
             <Button
               data-testid="dnc-form-submit"
               disabled={!formData.name.trim() || createDnc.isPending || updateDnc.isPending}
               onClick={() => {
                 if (editingList) {
-                  updateDnc.mutate({ id: editingList.id, ...formData }, { onSuccess: () => setFormOpen(false) });
+                  updateDnc.mutate(
+                    { id: editingList.id, ...formData },
+                    { onSuccess: () => setFormOpen(false) },
+                  );
                 } else {
                   createDnc.mutate(formData, { onSuccess: () => setFormOpen(false) });
                 }
               }}
             >
-              {createDnc.isPending || updateDnc.isPending ? t('dnc-lists.form.saving') : editingList ? t('dnc-lists.form.update') : t('dnc-lists.form.create')}
+              {createDnc.isPending || updateDnc.isPending
+                ? t('dnc-lists.form.saving')
+                : editingList
+                  ? t('dnc-lists.form.update')
+                  : t('dnc-lists.form.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

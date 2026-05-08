@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Plus, Zap, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
@@ -59,9 +60,7 @@ export default function SkillsPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('admin:skills.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('category', {
         header: () => t('admin:skills.category'),
@@ -78,9 +77,7 @@ export default function SkillsPage() {
         header: () => t('admin:skills.description'),
         cell: (info) =>
           info.getValue() ? (
-            <span className="text-sm text-muted-foreground line-clamp-1">
-              {info.getValue()}
-            </span>
+            <span className="text-sm text-muted-foreground line-clamp-1">{info.getValue()}</span>
           ) : (
             <span className="text-muted-foreground">—</span>
           ),
@@ -107,21 +104,24 @@ export default function SkillsPage() {
     [t],
   );
 
+  const isEmpty = !isLoading && skills.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('admin:skills.title')}>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('admin:skills.createSkill')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={Zap} message={t('admin:skills.empty')} />;
+  } else {
+    content = (
+      <DataTable
+        data={skills}
+        columns={columns}
+        searchPlaceholder={t('admin:skills.searchPlaceholder')}
+        noResultsMessage={t('admin:skills.noResults')}
+        onRowClick={(skill) => setAgentsSkill(skill)}
+      />
     );
   }
-
-  const isEmpty = skills.length === 0;
 
   return (
     <div className="space-y-6" data-testid="skills-page">
@@ -132,20 +132,7 @@ export default function SkillsPage() {
         </Button>
       </PageHeader>
 
-      {isEmpty ? (
-        <EmptyState
-          icon={Zap}
-          message={t('admin:skills.empty')}
-        />
-      ) : (
-        <DataTable
-          data={skills}
-          columns={columns}
-          searchPlaceholder={t('admin:skills.searchPlaceholder')}
-          noResultsMessage={t('admin:skills.noResults')}
-          onRowClick={(skill) => setAgentsSkill(skill)}
-        />
-      )}
+      {content}
 
       <SkillForm
         open={createOpen}
@@ -164,10 +151,7 @@ export default function SkillsPage() {
         onSubmit={handleUpdate}
       />
 
-      <SkillAgents
-        skill={agentsSkill}
-        onClose={() => setAgentsSkill(null)}
-      />
+      <SkillAgents skill={agentsSkill} onClose={() => setAgentsSkill(null)} />
     </div>
   );
 }

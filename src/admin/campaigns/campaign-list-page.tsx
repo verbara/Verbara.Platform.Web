@@ -5,6 +5,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { Plus, Megaphone, Play, Pause, Square } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
@@ -152,23 +153,24 @@ export default function CampaignListPage() {
     [t, startCampaign, pauseCampaign, stopCampaign],
   );
 
+  const isEmpty = !isLoading && campaigns.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('admin:campaigns.title')}>
-          <Button onClick={() => navigate('/admin/campaigns/new')}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('admin:campaigns.create')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('common:status.loading')}
-        </div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={Megaphone} message={t('admin:campaigns.empty')} />;
+  } else {
+    content = (
+      <DataTable
+        data={campaigns}
+        columns={columns}
+        searchPlaceholder={t('admin:campaigns.searchPlaceholder')}
+        noResultsMessage={t('admin:campaigns.noResults')}
+        onRowClick={(campaign) => navigate(`/admin/campaigns/${campaign.id}`)}
+      />
     );
   }
-
-  const isEmpty = campaigns.length === 0;
 
   return (
     <div className="space-y-6" data-testid="campaigns-page">
@@ -179,17 +181,7 @@ export default function CampaignListPage() {
         </Button>
       </PageHeader>
 
-      {isEmpty ? (
-        <EmptyState icon={Megaphone} message={t('admin:campaigns.empty')} />
-      ) : (
-        <DataTable
-          data={campaigns}
-          columns={columns}
-          searchPlaceholder={t('admin:campaigns.searchPlaceholder')}
-          noResultsMessage={t('admin:campaigns.noResults')}
-          onRowClick={(campaign) => navigate(`/admin/campaigns/${campaign.id}`)}
-        />
-      )}
+      {content}
     </div>
   );
 }

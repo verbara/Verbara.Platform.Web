@@ -9,6 +9,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
@@ -183,23 +184,31 @@ export default function CasesPage() {
     [t, formatDateShort],
   );
 
+  const isEmpty = !isLoading && cases.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6" data-testid="cases-page">
-        <PageHeader title={t('cases.title')}>
-          <Button data-testid="cases-create-btn" onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('cases.create')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('cases.loading')}
-        </div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = (
+      <EmptyState
+        icon={Briefcase}
+        message={t('cases.empty')}
+        actionLabel={t('cases.create')}
+        onAction={openCreate}
+      />
+    );
+  } else {
+    content = (
+      <DataTable
+        data={cases}
+        columns={columns}
+        searchPlaceholder={t('cases.search_placeholder')}
+        noResultsMessage={t('cases.no_results')}
+        onRowClick={openEdit}
+      />
     );
   }
-
-  const isEmpty = cases.length === 0;
 
   return (
     <div className="space-y-6" data-testid="cases-page">
@@ -210,22 +219,7 @@ export default function CasesPage() {
         </Button>
       </PageHeader>
 
-      {isEmpty ? (
-        <EmptyState
-          icon={Briefcase}
-          message={t('cases.empty')}
-          actionLabel={t('cases.create')}
-          onAction={openCreate}
-        />
-      ) : (
-        <DataTable
-          data={cases}
-          columns={columns}
-          searchPlaceholder={t('cases.search_placeholder')}
-          noResultsMessage={t('cases.no_results')}
-          onRowClick={openEdit}
-        />
-      )}
+      {content}
 
       <Sheet open={formOpen} onOpenChange={setFormOpen}>
         <SheetContent>

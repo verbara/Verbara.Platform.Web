@@ -5,13 +5,20 @@ import { Plus, Cable, Trash2, Search } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { TrunkForm } from './trunk-form';
-import { useTrunks, useActiveTrunks, useDeleteTrunk, useTrunkByName, type TrunkSummary } from '@/core/api/hooks/use-trunks';
+import {
+  useTrunks,
+  useActiveTrunks,
+  useDeleteTrunk,
+  useTrunkByName,
+  type TrunkSummary,
+} from '@/core/api/hooks/use-trunks';
 
 const columnHelper = createColumnHelper<TrunkSummary>();
 
@@ -41,18 +48,14 @@ export default function TrunksPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('admin:trunks.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('displayName', {
         header: () => t('admin:trunks.displayName'),
       }),
       columnHelper.accessor('type', {
         header: () => t('admin:trunks.type'),
-        cell: (info) => (
-          <Badge variant="secondary">{info.getValue()}</Badge>
-        ),
+        cell: (info) => <Badge variant="secondary">{info.getValue()}</Badge>,
       }),
       columnHelper.accessor('maxChannels', {
         header: () => t('admin:trunks.maxChannels'),
@@ -90,21 +93,24 @@ export default function TrunksPage() {
     [t],
   );
 
+  const isEmpty = !isLoading && trunks.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('admin:trunks.title')}>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('admin:trunks.create')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={Cable} message="No trunks yet — Add your first trunk" />;
+  } else {
+    content = (
+      <DataTable
+        data={trunks}
+        columns={columns}
+        searchPlaceholder={t('admin:trunks.searchPlaceholder')}
+        noResultsMessage="No matching trunks found."
+        onRowClick={(trunk) => setEditTrunk(trunk)}
+      />
     );
   }
-
-  const isEmpty = trunks.length === 0;
 
   return (
     <div className="space-y-6" data-testid="trunks-page">
@@ -127,44 +133,36 @@ export default function TrunksPage() {
           />
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={activeOnly} data-testid="trunks-active-only" onChange={(e) => setActiveOnly(e.target.checked)} />
-          Active only
+          <input
+            type="checkbox"
+            checked={activeOnly}
+            data-testid="trunks-active-only"
+            onChange={(e) => setActiveOnly(e.target.checked)}
+          />
+          <span>Active only</span>
         </label>
       </div>
 
-      {isEmpty ? (
-        <EmptyState
-          icon={Cable}
-          message="No trunks yet — Add your first trunk"
-        />
-      ) : (
-        <DataTable
-          data={trunks}
-          columns={columns}
-          searchPlaceholder={t('admin:trunks.searchPlaceholder')}
-          noResultsMessage="No matching trunks found."
-          onRowClick={(trunk) => setEditTrunk(trunk)}
-        />
-      )}
+      {content}
 
       {/* Create trunk sheet */}
-      <TrunkForm
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        mode="create"
-      />
+      <TrunkForm open={createOpen} onOpenChange={setCreateOpen} mode="create" />
 
       {/* Edit trunk sheet */}
       <TrunkForm
         open={editTrunk !== null}
-        onOpenChange={(open) => { if (!open) setEditTrunk(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditTrunk(null);
+        }}
         mode="edit"
         trunk={editTrunk ?? undefined}
       />
 
       <ConfirmDeleteDialog
         open={deletingTrunk !== null}
-        onOpenChange={(open) => { if (!open) setDeletingTrunk(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeletingTrunk(null);
+        }}
         onConfirm={() => {
           if (!deletingTrunk) return;
           deleteTrunk.mutate(deletingTrunk.id, {

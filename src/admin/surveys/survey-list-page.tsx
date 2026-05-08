@@ -5,23 +5,25 @@ import { Plus, ClipboardList, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Switch } from '@/core/ui/switch';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { SurveyForm } from './survey-form';
-import { useSurveys, useToggleSurveyActive, useDeleteSurvey, type Survey, type SurveyType } from '@/core/api/hooks/use-surveys';
+import {
+  useSurveys,
+  useToggleSurveyActive,
+  useDeleteSurvey,
+  type Survey,
+  type SurveyType,
+} from '@/core/api/hooks/use-surveys';
 
 const columnHelper = createColumnHelper<Survey>();
 
 function TypeBadge({ type }: { type: SurveyType }) {
-  const variant =
-    type === 'CSAT'
-      ? 'default'
-      : type === 'NPS'
-        ? 'secondary'
-        : 'outline';
+  const variant = type === 'CSAT' ? 'default' : type === 'NPS' ? 'secondary' : 'outline';
   return <Badge variant={variant}>{type}</Badge>;
 }
 
@@ -49,9 +51,7 @@ export default function SurveyListPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('admin:surveys.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('type', {
         header: () => t('admin:surveys.type'),
@@ -75,9 +75,7 @@ export default function SurveyListPage() {
       }),
       columnHelper.accessor('questions', {
         header: () => t('admin:surveys.questions'),
-        cell: (info) => (
-          <span className="tabular-nums">{info.getValue().length}</span>
-        ),
+        cell: (info) => <span className="tabular-nums">{info.getValue().length}</span>,
       }),
       columnHelper.display({
         id: 'actions',
@@ -103,21 +101,24 @@ export default function SurveyListPage() {
     [t],
   );
 
+  const isEmpty = !isLoading && surveys.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('admin:surveys.title')}>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('admin:surveys.create')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={ClipboardList} message={t('admin:surveys.empty')} />;
+  } else {
+    content = (
+      <DataTable
+        data={surveys}
+        columns={columns}
+        searchPlaceholder={t('admin:surveys.searchPlaceholder')}
+        noResultsMessage={t('admin:surveys.noResults')}
+        onRowClick={(survey) => setEditSurvey(survey)}
+      />
     );
   }
-
-  const isEmpty = surveys.length === 0;
 
   return (
     <div className="space-y-6" data-testid="surveys-page">
@@ -128,37 +129,24 @@ export default function SurveyListPage() {
         </Button>
       </PageHeader>
 
-      {isEmpty ? (
-        <EmptyState
-          icon={ClipboardList}
-          message={t('admin:surveys.empty')}
-        />
-      ) : (
-        <DataTable
-          data={surveys}
-          columns={columns}
-          searchPlaceholder={t('admin:surveys.searchPlaceholder')}
-          noResultsMessage={t('admin:surveys.noResults')}
-          onRowClick={(survey) => setEditSurvey(survey)}
-        />
-      )}
+      {content}
 
-      <SurveyForm
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        mode="create"
-      />
+      <SurveyForm open={createOpen} onOpenChange={setCreateOpen} mode="create" />
 
       <SurveyForm
         open={editSurvey !== null}
-        onOpenChange={(open) => { if (!open) setEditSurvey(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditSurvey(null);
+        }}
         mode="edit"
         survey={editSurvey ?? undefined}
       />
 
       <ConfirmDeleteDialog
         open={deletingSurvey !== null}
-        onOpenChange={(open) => { if (!open) setDeletingSurvey(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeletingSurvey(null);
+        }}
         onConfirm={() => {
           if (!deletingSurvey) return;
           deleteSurvey.mutate(deletingSurvey.id, {

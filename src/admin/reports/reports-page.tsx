@@ -5,18 +5,14 @@ import { Plus, Calendar, Trash2, Play, Clock, Download } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Switch } from '@/core/ui/switch';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { ReportForm } from './report-form';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/core/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
 import {
   useReports,
   useUpdateReport,
@@ -40,15 +36,15 @@ const REPORT_TYPE_VARIANT: Record<ReportType, 'default' | 'secondary' | 'outline
 
 function TypeBadge({ type }: Readonly<{ type: ReportType }>) {
   const { t } = useTranslation(['admin']);
-  return <Badge variant={REPORT_TYPE_VARIANT[type] ?? 'outline'}>{t(`admin:reports.type_${type}`, type)}</Badge>;
+  return (
+    <Badge variant={REPORT_TYPE_VARIANT[type] ?? 'outline'}>
+      {t(`admin:reports.type_${type}`, type)}
+    </Badge>
+  );
 }
 
 function FormatBadge({ format }: { format: ReportFormat }) {
-  return (
-    <Badge variant={format === 'PDF' ? 'secondary' : 'outline'}>
-      {format}
-    </Badge>
-  );
+  return <Badge variant={format === 'PDF' ? 'secondary' : 'outline'}>{format}</Badge>;
 }
 
 function ActiveToggle({ report }: { report: ScheduledReport }) {
@@ -56,9 +52,7 @@ function ActiveToggle({ report }: { report: ScheduledReport }) {
   return (
     <Switch
       checked={report.isActive}
-      onCheckedChange={(checked) =>
-        updateReport.mutate({ id: report.id, isActive: checked })
-      }
+      onCheckedChange={(checked) => updateReport.mutate({ id: report.id, isActive: checked })}
       onClick={(e) => e.stopPropagation()}
     />
   );
@@ -87,9 +81,7 @@ export default function ReportsPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('admin:reports.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('type', {
         header: () => t('admin:reports.type'),
@@ -131,7 +123,10 @@ export default function ReportsPage() {
               title={t('admin:reports.runNow')}
               disabled={runReport.isPending}
               data-testid={`report-run-${info.row.original.id}`}
-              onClick={(e) => { e.stopPropagation(); runReport.mutate(info.row.original.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                runReport.mutate(info.row.original.id);
+              }}
             >
               <Play className="h-3.5 w-3.5" />
             </Button>
@@ -141,7 +136,10 @@ export default function ReportsPage() {
               className="h-7 w-7 p-0"
               title={t('admin:reports.executionHistory')}
               data-testid={`report-history-${info.row.original.id}`}
-              onClick={(e) => { e.stopPropagation(); setHistoryReportId(info.row.original.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setHistoryReportId(info.row.original.id);
+              }}
             >
               <Clock className="h-3.5 w-3.5" />
             </Button>
@@ -168,21 +166,24 @@ export default function ReportsPage() {
     [t, runReport, setHistoryReportId, setDeletingReport],
   );
 
+  const isEmpty = !isLoading && reports.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('admin:reports.title')}>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('admin:reports.create')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={Calendar} message={t('admin:reports.empty')} />;
+  } else {
+    content = (
+      <DataTable
+        data={reports}
+        columns={columns}
+        searchPlaceholder={t('admin:reports.searchPlaceholder')}
+        noResultsMessage={t('admin:reports.noResults')}
+        onRowClick={(report) => setEditReport(report)}
+      />
     );
   }
-
-  const isEmpty = reports.length === 0;
 
   return (
     <div className="space-y-6" data-testid="reports-page">
@@ -193,37 +194,24 @@ export default function ReportsPage() {
         </Button>
       </PageHeader>
 
-      {isEmpty ? (
-        <EmptyState
-          icon={Calendar}
-          message={t('admin:reports.empty')}
-        />
-      ) : (
-        <DataTable
-          data={reports}
-          columns={columns}
-          searchPlaceholder={t('admin:reports.searchPlaceholder')}
-          noResultsMessage={t('admin:reports.noResults')}
-          onRowClick={(report) => setEditReport(report)}
-        />
-      )}
+      {content}
 
-      <ReportForm
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        mode="create"
-      />
+      <ReportForm open={createOpen} onOpenChange={setCreateOpen} mode="create" />
 
       <ReportForm
         open={editReport !== null}
-        onOpenChange={(open) => { if (!open) setEditReport(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditReport(null);
+        }}
         mode="edit"
         report={editReport ?? undefined}
       />
 
       <ConfirmDeleteDialog
         open={deletingReport !== null}
-        onOpenChange={(open) => { if (!open) setDeletingReport(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeletingReport(null);
+        }}
         onConfirm={() => {
           if (!deletingReport) return;
           deleteReport.mutate(deletingReport.id, {
@@ -235,14 +223,22 @@ export default function ReportsPage() {
         isPending={deleteReport.isPending}
       />
 
-      <Sheet open={!!historyReportId} onOpenChange={(open) => { if (!open) setHistoryReportId(undefined); }}>
+      <Sheet
+        open={!!historyReportId}
+        onOpenChange={(open) => {
+          if (!open) setHistoryReportId(undefined);
+        }}
+      >
         <SheetContent data-testid="report-history-sheet">
           <SheetHeader>
             <SheetTitle>{t('admin:reports.historyTitle')}</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-3">
             {history.map((exec) => (
-              <div key={exec.id} className="flex items-center justify-between rounded-md border p-3">
+              <div
+                key={exec.id}
+                className="flex items-center justify-between rounded-md border p-3"
+              >
                 <div>
                   <Badge variant={statusVariant(exec.status)}>{exec.status}</Badge>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -253,7 +249,11 @@ export default function ReportsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => globalThis.open(`/api/v1/admin/reports/${historyReportId}/history/${exec.id}/download`)}
+                    onClick={() =>
+                      globalThis.open(
+                        `/api/v1/admin/reports/${historyReportId}/history/${exec.id}/download`,
+                      )
+                    }
                   >
                     <Download className="h-4 w-4" />
                   </Button>

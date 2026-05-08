@@ -8,6 +8,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Textarea } from '@/core/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
@@ -105,9 +106,7 @@ export default function CannedResponsesPage() {
       }),
       columnHelper.accessor('title', {
         header: () => t('admin:cannedResponses.titleColumn'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('body', {
         header: () => t('admin:cannedResponses.body'),
@@ -164,21 +163,31 @@ export default function CannedResponsesPage() {
     [t],
   );
 
+  const isEmpty = !isLoading && responses.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('admin:cannedResponses.title')}>
-          <Button onClick={openCreate}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('admin:cannedResponses.create')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">{t('common:status.loading')}</div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = (
+      <EmptyState
+        icon={MessageSquareText}
+        message={t('admin:cannedResponses.empty')}
+        actionLabel={t('admin:cannedResponses.create')}
+        onAction={openCreate}
+      />
+    );
+  } else {
+    content = (
+      <DataTable
+        data={responses}
+        columns={columns}
+        searchPlaceholder={t('admin:cannedResponses.searchPlaceholder')}
+        noResultsMessage={t('admin:cannedResponses.noResults')}
+        onRowClick={openEdit}
+      />
     );
   }
-
-  const isEmpty = responses.length === 0;
 
   return (
     <div className="space-y-6" data-testid="canned-responses-page">
@@ -189,29 +198,12 @@ export default function CannedResponsesPage() {
         </Button>
       </PageHeader>
 
-      {isEmpty ? (
-        <EmptyState
-          icon={MessageSquareText}
-          message={t('admin:cannedResponses.empty')}
-          actionLabel={t('admin:cannedResponses.create')}
-          onAction={openCreate}
-        />
-      ) : (
-        <DataTable
-          data={responses}
-          columns={columns}
-          searchPlaceholder={t('admin:cannedResponses.searchPlaceholder')}
-          noResultsMessage={t('admin:cannedResponses.noResults')}
-          onRowClick={openEdit}
-        />
-      )}
+      {content}
 
       <Sheet open={formOpen} onOpenChange={setFormOpen}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>
-              {editing ? 'Edit Canned Response' : 'Create Canned Response'}
-            </SheetTitle>
+            <SheetTitle>{editing ? 'Edit Canned Response' : 'Create Canned Response'}</SheetTitle>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4 px-4 pb-4">
             <div>

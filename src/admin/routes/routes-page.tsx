@@ -21,6 +21,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
@@ -219,23 +220,90 @@ export default function RoutesPage() {
     [t, trunkMap],
   );
 
+  const isEmpty = !isLoading && sortedRoutes.length === 0;
+
+  let content;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('admin:routes.title')}>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('admin:routes.create')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('common:status.loading')}
-        </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={Route} message="No outbound routes yet — Add your first route" />;
+  } else if (canManage) {
+    content = (
+      <div className="space-y-3">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext
+            items={orderedRoutes.map((r) => r.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="overflow-x-auto rounded-lg border">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="w-10 px-3 py-2" />
+                    <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                      Pattern
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                      Type
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                      Priority
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                      Trunk
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                      Prefix
+                    </th>
+                    <th className="w-12 px-3 py-2" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {orderedRoutes.map((route) => (
+                    <SortableRow
+                      key={route.id}
+                      route={route}
+                      trunkMap={trunkMap}
+                      onDelete={setDeletingRoute}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </SortableContext>
+        </DndContext>
+
+        {hasReordered && (
+          <div className="flex justify-end">
+            <Button
+              onClick={() => {
+                reorderRoutes.mutate(
+                  orderedRoutes.map((r) => r.id),
+                  {
+                    onSuccess: () => setHasReordered(false),
+                  },
+                );
+              }}
+              disabled={reorderRoutes.isPending}
+            >
+              <Save className="mr-1.5 h-4 w-4" />
+              {reorderRoutes.isPending ? 'Saving...' : 'Save Order'}
+            </Button>
+          </div>
+        )}
       </div>
     );
+  } else {
+    content = (
+      <DataTable
+        data={sortedRoutes}
+        columns={columns}
+        searchPlaceholder={t('admin:routes.searchPlaceholder')}
+        noResultsMessage="No matching routes found."
+        onRowClick={(route) => setEditRoute(route)}
+      />
+    );
   }
-
-  const isEmpty = sortedRoutes.length === 0;
 
   return (
     <div className="space-y-6" data-testid="routes-page">
@@ -246,85 +314,7 @@ export default function RoutesPage() {
         </Button>
       </PageHeader>
 
-      {isEmpty ? (
-        <EmptyState icon={Route} message="No outbound routes yet — Add your first route" />
-      ) : canManage ? (
-        <div className="space-y-3">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={orderedRoutes.map((r) => r.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="w-10 px-3 py-2" />
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                        Pattern
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                        Type
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                        Priority
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                        Trunk
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
-                        Prefix
-                      </th>
-                      <th className="w-12 px-3 py-2" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orderedRoutes.map((route) => (
-                      <SortableRow
-                        key={route.id}
-                        route={route}
-                        trunkMap={trunkMap}
-                        onDelete={setDeletingRoute}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </SortableContext>
-          </DndContext>
-
-          {hasReordered && (
-            <div className="flex justify-end">
-              <Button
-                onClick={() => {
-                  reorderRoutes.mutate(
-                    orderedRoutes.map((r) => r.id),
-                    {
-                      onSuccess: () => setHasReordered(false),
-                    },
-                  );
-                }}
-                disabled={reorderRoutes.isPending}
-              >
-                <Save className="mr-1.5 h-4 w-4" />
-                {reorderRoutes.isPending ? 'Saving...' : 'Save Order'}
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <DataTable
-          data={sortedRoutes}
-          columns={columns}
-          searchPlaceholder={t('admin:routes.searchPlaceholder')}
-          noResultsMessage="No matching routes found."
-          onRowClick={(route) => setEditRoute(route)}
-        />
-      )}
+      {content}
 
       {/* Create route sheet */}
       <RouteForm open={createOpen} onOpenChange={setCreateOpen} mode="create" />
