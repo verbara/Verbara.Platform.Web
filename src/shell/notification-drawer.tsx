@@ -5,6 +5,7 @@ import { Bell, Check } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
 import { Button } from '@/core/ui/button';
+import { VirtualList } from '@/core/ui/virtual-list';
 import { NotificationItem } from './notification-item';
 import {
   useNotifications,
@@ -131,11 +132,7 @@ export function NotificationDrawer({ open, onOpenChange }: NotificationDrawerPro
           </TabsList>
 
           {CATEGORY_VALUES.map((cat) => (
-            <TabsContent
-              key={cat}
-              value={cat}
-              className="flex-1 overflow-y-auto p-0"
-            >
+            <TabsContent key={cat} value={cat} className="flex-1 overflow-y-auto p-0">
               {isLoading ? (
                 <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
                   {t('notifications.loading')}
@@ -146,27 +143,15 @@ export function NotificationDrawer({ open, onOpenChange }: NotificationDrawerPro
                   <span className="text-sm">{t('notifications.empty')}</span>
                 </div>
               ) : (
-                <>
-                  {filtered.map((n) => (
-                    <NotificationItem
-                      key={n.notificationId}
-                      notification={n}
-                      onClick={handleItemClick}
-                    />
-                  ))}
-                  {canLoadMore && activeTab === 'all' && (
-                    <div className="p-3 text-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleLoadMore}
-                        data-testid="notification-load-more-btn"
-                      >
-                        {t('notifications.load_more')}
-                      </Button>
-                    </div>
+                <VirtualList
+                  items={filtered}
+                  getItemKey={(n) => n.notificationId}
+                  estimateSize={() => 80}
+                  onEndReached={canLoadMore && activeTab === 'all' ? handleLoadMore : undefined}
+                  renderItem={(n) => (
+                    <NotificationItem notification={n} onClick={handleItemClick} />
                   )}
-                </>
+                />
               )}
             </TabsContent>
           ))}

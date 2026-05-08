@@ -149,7 +149,6 @@
     "aria_label": "Notificações",
     "aria_label_with_count": "Notificações, {{count}} não lidas",
     "mark_all_read": "Marcar todas como lidas",
-    "load_more": "Carregar mais",
     "loading": "Carregando…",
     "empty": "Sem notificações",
     "category": {
