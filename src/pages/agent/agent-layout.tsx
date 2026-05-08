@@ -9,9 +9,11 @@ import { ContextPanel } from '@/agent/context/context-panel';
 import { AgentTour } from '@/agent/tour/agent-tour';
 import { SupervisionBanner } from '@/core/realtime';
 import { AreaErrorBoundary } from '@/core/ui/area-error-boundary';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 
 export default function AgentLayout() {
   const { t } = useTranslation();
+  useDocumentTitle(t('nav.agent'));
   const [contextOpen, setContextOpen] = useState(true);
 
   const toggleContext = useCallback(() => {
@@ -43,7 +45,10 @@ export default function AgentLayout() {
         <SupervisionBanner />
         <div className="flex min-h-0 flex-1">
           {/* Inbox Panel */}
-          <aside data-tour="inbox" className="flex w-70 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+          <aside
+            data-tour="inbox"
+            className="flex w-70 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+          >
             <InboxPanel />
           </aside>
 
@@ -63,7 +68,10 @@ export default function AgentLayout() {
 
           {/* Context Panel */}
           {contextOpen && (
-            <aside data-tour="context" className="flex w-80 shrink-0 flex-col border-l border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+            <aside
+              data-tour="context"
+              className="flex w-80 shrink-0 flex-col border-l border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+            >
               <ContextPanel />
             </aside>
           )}
