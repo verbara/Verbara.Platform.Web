@@ -1,7 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Shield, ShieldCheck, Download, KeyRound, Lock, RefreshCw, LogOut as LogOutIcon,
+  Shield,
+  ShieldCheck,
+  Download,
+  KeyRound,
+  Lock,
+  RefreshCw,
+  LogOut as LogOutIcon,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/core/ui/button';
@@ -10,15 +16,27 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
 } from '@/core/ui/dialog';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { useMe, isLockedOut, isMfaEnforcedByTenant, type Me } from '@/core/api/hooks/use-me';
 import {
-  useSetupMfa, useConfirmMfa, useDisableMfa,
+  useSetupMfa,
+  useConfirmMfa,
+  useDisableMfa,
   useChangePassword,
-  useMySessions, useRevokeSession, useRevokeOtherSessions,
-  useRegenerateRecoveryCodes, usePasswordPolicy,
-  type UserSession, type MfaSetupResponse,
+  useMySessions,
+  useRevokeSession,
+  useRevokeOtherSessions,
+  useRegenerateRecoveryCodes,
+  usePasswordPolicy,
+  type UserSession,
+  type MfaSetupResponse,
 } from '@/core/api/hooks/use-auth-admin';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -30,9 +48,7 @@ export default function SecurityPage() {
   if (meLoading || !me) {
     return (
       <div className="mx-auto max-w-2xl space-y-6 p-6">
-        <h1 className="font-heading text-2xl font-semibold">
-          {t('admin:security.title')}
-        </h1>
+        <h1 className="font-heading text-2xl font-semibold">{t('admin:security.title')}</h1>
         <p className="text-sm text-muted-foreground">{t('common:status.loading')}</p>
       </div>
     );
@@ -44,9 +60,7 @@ export default function SecurityPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6" data-testid="security-page">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-semibold">
-          {t('admin:security.title')}
-        </h1>
+        <h1 className="font-heading text-2xl font-semibold">{t('admin:security.title')}</h1>
         {isOidc && (
           <Badge variant="secondary" data-testid="security-oidc-badge">
             {t('admin:security.oidc_badge')}
@@ -135,9 +149,7 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
           )}
           <div>
             <h3 className="font-medium">{t('admin:security.mfa')}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t('admin:security.mfa_description')}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('admin:security.mfa_description')}</p>
           </div>
         </div>
         <Badge
@@ -154,8 +166,7 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
           className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800"
           data-testid="security-mfa-required-banner"
         >
-          {t('admin:security.mfa_required_banner')}{' '}
-          {t('admin:security.mfa_required_enroll')}
+          {t('admin:security.mfa_required_banner')} {t('admin:security.mfa_required_enroll')}
         </div>
       )}
 
@@ -198,17 +209,12 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
         <div className="space-y-4 border-t pt-4">
           <p className="text-sm">{t('admin:security.scan_qr')}</p>
           <div className="flex justify-center">
-            <div
-              data-testid="security-mfa-qrcode"
-              className="rounded-lg border bg-white p-4"
-            >
+            <div data-testid="security-mfa-qrcode" className="rounded-lg border bg-white p-4">
               <QRCodeSVG value={setupData.qrUri} size={192} />
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">
-              {t('admin:security.manual_key')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('admin:security.manual_key')}</p>
             <code className="block rounded bg-muted px-3 py-2 text-sm font-mono break-all">
               {setupData.secret}
             </code>
@@ -255,9 +261,7 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
       )}
 
       {/* Recovery codes regeneration result */}
-      {newCodes && (
-        <RecoveryCodesDisplay codes={newCodes} onDone={() => setNewCodes(null)} />
-      )}
+      {newCodes && <RecoveryCodesDisplay codes={newCodes} onDone={() => setNewCodes(null)} />}
 
       {/* Disable MFA dialog */}
       <Dialog open={disableOpen} onOpenChange={setDisableOpen}>
@@ -297,9 +301,7 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
           <DialogHeader>
             <DialogTitle>{t('admin:security.regenerate_recovery_codes')}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {t('admin:security.regenerate_confirm')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('admin:security.regenerate_confirm')}</p>
           <Input
             type="password"
             value={regeneratePassword}
@@ -324,7 +326,10 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
   );
 }
 
-function RecoveryCodesDisplay({ codes, onDone }: Readonly<{ codes: string[]; onDone: () => void }>) {
+function RecoveryCodesDisplay({
+  codes,
+  onDone,
+}: Readonly<{ codes: string[]; onDone: () => void }>) {
   const { t } = useTranslation(['admin', 'common']);
   return (
     <div className="space-y-4 border-t pt-4">
@@ -336,7 +341,9 @@ function RecoveryCodesDisplay({ codes, onDone }: Readonly<{ codes: string[]; onD
         className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-4"
       >
         {codes.map((code, i) => (
-          <code key={i} className="text-sm font-mono">{code}</code>
+          <code key={i} className="text-sm font-mono">
+            {code}
+          </code>
         ))}
       </div>
       <div className="flex gap-2">
@@ -392,13 +399,16 @@ function PasswordSection({ locked }: Readonly<{ locked: boolean }>) {
     [policy],
   );
 
-  const checks = useMemo(() => ({
-    length: newPassword.length >= effective.minLength,
-    uppercase: !effective.requireUppercase || /[A-Z]/.test(newPassword),
-    number: !effective.requireNumber || /[0-9]/.test(newPassword),
-    special: !effective.requireSpecial || /[^a-zA-Z0-9]/.test(newPassword),
-    match: newPassword === confirmPassword && newPassword.length > 0,
-  }), [newPassword, confirmPassword, effective]);
+  const checks = useMemo(
+    () => ({
+      length: newPassword.length >= effective.minLength,
+      uppercase: !effective.requireUppercase || /[A-Z]/.test(newPassword),
+      number: !effective.requireNumber || /[0-9]/.test(newPassword),
+      special: !effective.requireSpecial || /[^a-zA-Z0-9]/.test(newPassword),
+      match: newPassword === confirmPassword && newPassword.length > 0,
+    }),
+    [newPassword, confirmPassword, effective],
+  );
 
   const allValid = Object.values(checks).every(Boolean);
 
@@ -449,14 +459,18 @@ function PasswordSection({ locked }: Readonly<{ locked: boolean }>) {
         </div>
 
         {/* Password policy checklist */}
-        <div data-testid="security-password-checklist" className="space-y-1 rounded-md bg-muted p-3 text-sm">
+        <div
+          data-testid="security-password-checklist"
+          className="space-y-1 rounded-md bg-muted p-3 text-sm"
+        >
           <p className="font-medium">{t('admin:security.password_policy_title')}</p>
           <ul className="space-y-0.5">
             <li
               data-testid="security-password-rule-length"
               className={checks.length ? 'text-green-600' : 'text-muted-foreground'}
             >
-              {checks.length ? '✓' : '○'} {t('admin:security.password_too_short', { n: effective.minLength })}
+              {checks.length ? '✓' : '○'}{' '}
+              {t('admin:security.password_too_short', { n: effective.minLength })}
             </li>
             {effective.requireUppercase && (
               <li
@@ -508,14 +522,12 @@ function SessionsSection({ locked }: Readonly<{ locked: boolean }>) {
   const revokeOthers = useRevokeOtherSessions();
   const [revokeAllOpen, setRevokeAllOpen] = useState(false);
 
-  if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading sessions…</p>;
-  }
-
   async function handleRevokeAll() {
     await revokeOthers.mutateAsync();
     setRevokeAllOpen(false);
   }
+
+  if (isLoading) return <PageSkeleton variant="form" rows={3} />;
 
   return (
     <div className="rounded-lg border bg-card p-6 space-y-4">
@@ -584,7 +596,9 @@ function SessionsSection({ locked }: Readonly<{ locked: boolean }>) {
 }
 
 function SessionRow({
-  session, onRevoke, locked,
+  session,
+  onRevoke,
+  locked,
 }: Readonly<{
   session: UserSession;
   onRevoke: () => void;
@@ -629,16 +643,25 @@ function SessionRow({
 
 function parseUserAgent(ua: string | null): string {
   if (!ua) return 'Unknown';
-  const browser = /Chrome/.test(ua) ? 'Chrome'
-    : /Firefox/.test(ua) ? 'Firefox'
-    : /Safari/.test(ua) ? 'Safari'
-    : /Edge/.test(ua) ? 'Edge'
-    : 'Browser';
-  const os = /Windows/.test(ua) ? 'Windows'
-    : /Mac OS/.test(ua) ? 'macOS'
-    : /Linux/.test(ua) ? 'Linux'
-    : /Android/.test(ua) ? 'Android'
-    : /iPhone|iPad/.test(ua) ? 'iOS'
-    : 'Unknown OS';
+  const browser = /Chrome/.test(ua)
+    ? 'Chrome'
+    : /Firefox/.test(ua)
+      ? 'Firefox'
+      : /Safari/.test(ua)
+        ? 'Safari'
+        : /Edge/.test(ua)
+          ? 'Edge'
+          : 'Browser';
+  const os = /Windows/.test(ua)
+    ? 'Windows'
+    : /Mac OS/.test(ua)
+      ? 'macOS'
+      : /Linux/.test(ua)
+        ? 'Linux'
+        : /Android/.test(ua)
+          ? 'Android'
+          : /iPhone|iPad/.test(ua)
+            ? 'iOS'
+            : 'Unknown OS';
   return `${browser} on ${os}`;
 }

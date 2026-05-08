@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { ArrowLeft, Pause, Play, Pencil, FileText } from 'lucide-react';
@@ -101,9 +102,7 @@ export default function PartnerCustomerDetailPage() {
     if (suspendWord !== customer.name) return;
     const reason = suspendReason.trim();
     if (!reason) {
-      toast.error(
-        t('partner.suspend.reasonRequired', 'Reason is required to suspend a customer.'),
-      );
+      toast.error(t('partner.suspend.reasonRequired', 'Reason is required to suspend a customer.'));
       return;
     }
     suspendCustomer.mutate({ id, reason });
@@ -215,9 +214,7 @@ export default function PartnerCustomerDetailPage() {
       <Dialog open={dunningOpen} onOpenChange={setDunningOpen}>
         <DialogContent className="sm:max-w-md" data-testid="dunning-confirm-dialog">
           <DialogHeader>
-            <DialogTitle>
-              {t('partner.dunning.pauseTitle', 'Pause dunning?')}
-            </DialogTitle>
+            <DialogTitle>{t('partner.dunning.pauseTitle', 'Pause dunning?')}</DialogTitle>
             <DialogDescription>
               {t(
                 'partner.dunning.pauseBody',
@@ -226,9 +223,7 @@ export default function PartnerCustomerDetailPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="dunning-reason">
-              {t('partner.dunning.reasonLabel', 'Reason')}
-            </Label>
+            <Label htmlFor="dunning-reason">{t('partner.dunning.reasonLabel', 'Reason')}</Label>
             <Textarea
               id="dunning-reason"
               value={dunningReason}
@@ -258,9 +253,7 @@ export default function PartnerCustomerDetailPage() {
       <Dialog open={suspendOpen} onOpenChange={setSuspendOpen}>
         <DialogContent className="sm:max-w-md" data-testid="suspend-confirm-dialog">
           <DialogHeader>
-            <DialogTitle>
-              {t('partner.suspend.title', 'Suspend customer?')}
-            </DialogTitle>
+            <DialogTitle>{t('partner.suspend.title', 'Suspend customer?')}</DialogTitle>
             <DialogDescription>
               {t(
                 'partner.suspend.body',
@@ -332,10 +325,18 @@ export default function PartnerCustomerDetailPage() {
 
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview" data-testid="tab-overview">{t('admin:partner.customerDetail.tabs.overview')}</TabsTrigger>
-          <TabsTrigger value="settings" data-testid="tab-settings">{t('admin:partner.customerDetail.tabs.settings')}</TabsTrigger>
-          <TabsTrigger value="invoices" data-testid="tab-invoices">{t('admin:partner.customerDetail.tabs.invoices')}</TabsTrigger>
-          <TabsTrigger value="usage" data-testid="tab-usage">{t('admin:partner.customerDetail.tabs.usage')}</TabsTrigger>
+          <TabsTrigger value="overview" data-testid="tab-overview">
+            {t('admin:partner.customerDetail.tabs.overview')}
+          </TabsTrigger>
+          <TabsTrigger value="settings" data-testid="tab-settings">
+            {t('admin:partner.customerDetail.tabs.settings')}
+          </TabsTrigger>
+          <TabsTrigger value="invoices" data-testid="tab-invoices">
+            {t('admin:partner.customerDetail.tabs.invoices')}
+          </TabsTrigger>
+          <TabsTrigger value="usage" data-testid="tab-usage">
+            {t('admin:partner.customerDetail.tabs.usage')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="pt-4">
@@ -344,7 +345,10 @@ export default function PartnerCustomerDetailPage() {
             <InfoRow label="Display name" value={customer.name} />
             <InfoRow label="Plan" value={customer.plan} />
             <InfoRow label="Status" value={customer.status} />
-            <InfoRow label="Created" value={format(new Date(customer.createdAt), 'MMM d, yyyy HH:mm')} />
+            <InfoRow
+              label="Created"
+              value={format(new Date(customer.createdAt), 'MMM d, yyyy HH:mm')}
+            />
           </div>
         </TabsContent>
 
@@ -365,15 +369,24 @@ export default function PartnerCustomerDetailPage() {
         <SheetContent side="right" className="sm:max-w-md">
           <SheetHeader>
             <SheetTitle>{t('admin:partner.customerDetail.editDialog.title')}</SheetTitle>
-            <SheetDescription>{t('admin:partner.customerDetail.editDialog.description')}</SheetDescription>
+            <SheetDescription>
+              {t('admin:partner.customerDetail.editDialog.description')}
+            </SheetDescription>
           </SheetHeader>
           <div className="space-y-3 px-4">
             <div className="space-y-1.5">
               <Label htmlFor="cd-name">{t('admin:partner.customerDetail.editDialog.name')}</Label>
-              <Input id="cd-name" data-testid="cd-edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+              <Input
+                id="cd-name"
+                data-testid="cd-edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cd-channels">{t('admin:partner.customerDetail.editDialog.maxChannels')}</Label>
+              <Label htmlFor="cd-channels">
+                {t('admin:partner.customerDetail.editDialog.maxChannels')}
+              </Label>
               <Input
                 id="cd-channels"
                 type="number"
@@ -385,7 +398,9 @@ export default function PartnerCustomerDetailPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cd-campaigns">{t('admin:partner.customerDetail.editDialog.maxCampaigns')}</Label>
+              <Label htmlFor="cd-campaigns">
+                {t('admin:partner.customerDetail.editDialog.maxCampaigns')}
+              </Label>
               <Input
                 id="cd-campaigns"
                 type="number"
@@ -398,9 +413,17 @@ export default function PartnerCustomerDetailPage() {
             </div>
           </div>
           <SheetFooter className="px-4">
-            <Button variant="outline" onClick={() => setEditOpen(false)}>{t('common:actions.cancel')}</Button>
-            <Button onClick={handleEdit} disabled={updateCustomer.isPending} data-testid="cd-edit-submit">
-              {updateCustomer.isPending ? t('admin:partner.customerDetail.actions.saving') : t('admin:partner.customerDetail.actions.save')}
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              {t('common:actions.cancel')}
+            </Button>
+            <Button
+              onClick={handleEdit}
+              disabled={updateCustomer.isPending}
+              data-testid="cd-edit-submit"
+            >
+              {updateCustomer.isPending
+                ? t('admin:partner.customerDetail.actions.saving')
+                : t('admin:partner.customerDetail.actions.save')}
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -409,7 +432,11 @@ export default function PartnerCustomerDetailPage() {
   );
 }
 
-function InfoRow({ label, value, mono = false }: Readonly<{ label: string; value: string; mono?: boolean }>) {
+function InfoRow({
+  label,
+  value,
+  mono = false,
+}: Readonly<{ label: string; value: string; mono?: boolean }>) {
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -446,7 +473,7 @@ function CustomerSettingsTab({ customerId }: Readonly<{ customerId: string }>) {
     );
   }
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading settings...</p>;
+  if (isLoading) return <PageSkeleton variant="form" rows={3} />;
 
   return (
     <div className="space-y-4 max-w-2xl" data-testid="customer-settings-tab">
@@ -466,26 +493,55 @@ function CustomerSettingsTab({ customerId }: Readonly<{ customerId: string }>) {
         <SheetContent side="right" className="sm:max-w-md">
           <SheetHeader>
             <SheetTitle>{t('admin:partner.customerDetail.settingsDialog.title')}</SheetTitle>
-            <SheetDescription>{t('admin:partner.customerDetail.settingsDialog.description')}</SheetDescription>
+            <SheetDescription>
+              {t('admin:partner.customerDetail.settingsDialog.description')}
+            </SheetDescription>
           </SheetHeader>
           <div className="space-y-3 px-4">
             <div className="space-y-1.5">
-              <Label htmlFor="cs-name">{t('admin:partner.customerDetail.settingsDialog.platformName')}</Label>
-              <Input id="cs-name" data-testid="cs-platform-name" value={platformName} onChange={(e) => setPlatformName(e.target.value)} />
+              <Label htmlFor="cs-name">
+                {t('admin:partner.customerDetail.settingsDialog.platformName')}
+              </Label>
+              <Input
+                id="cs-name"
+                data-testid="cs-platform-name"
+                value={platformName}
+                onChange={(e) => setPlatformName(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cs-tz">{t('admin:partner.customerDetail.settingsDialog.defaultTimezone')}</Label>
-              <Input id="cs-tz" data-testid="cs-timezone" value={defaultTimezone} onChange={(e) => setDefaultTimezone(e.target.value)} placeholder={t('admin:partner.timezonePlaceholder')} />
+              <Label htmlFor="cs-tz">
+                {t('admin:partner.customerDetail.settingsDialog.defaultTimezone')}
+              </Label>
+              <Input
+                id="cs-tz"
+                data-testid="cs-timezone"
+                value={defaultTimezone}
+                onChange={(e) => setDefaultTimezone(e.target.value)}
+                placeholder={t('admin:partner.timezonePlaceholder')}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cs-lang">{t('admin:partner.customerDetail.settingsDialog.defaultLanguage')}</Label>
-              <Input id="cs-lang" data-testid="cs-language" value={defaultLanguage} onChange={(e) => setDefaultLanguage(e.target.value)} placeholder="es-CO" />
+              <Label htmlFor="cs-lang">
+                {t('admin:partner.customerDetail.settingsDialog.defaultLanguage')}
+              </Label>
+              <Input
+                id="cs-lang"
+                data-testid="cs-language"
+                value={defaultLanguage}
+                onChange={(e) => setDefaultLanguage(e.target.value)}
+                placeholder="es-CO"
+              />
             </div>
           </div>
           <SheetFooter className="px-4">
-            <Button variant="outline" onClick={() => setEditOpen(false)}>{t('common:actions.cancel')}</Button>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              {t('common:actions.cancel')}
+            </Button>
             <Button onClick={handleSave} disabled={update.isPending} data-testid="cs-submit">
-              {update.isPending ? t('admin:partner.customerDetail.actions.saving') : t('admin:partner.customerDetail.actions.save')}
+              {update.isPending
+                ? t('admin:partner.customerDetail.actions.saving')
+                : t('admin:partner.customerDetail.actions.save')}
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -502,7 +558,12 @@ function CustomerInvoicesTab({ customerId }: Readonly<{ customerId: string }>) {
   const [genOpen, setGenOpen] = useState(false);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [margin, setMargin] = useState<{ gross: number; cost: number; margin: number; currency: string } | null>(null);
+  const [margin, setMargin] = useState<{
+    gross: number;
+    cost: number;
+    margin: number;
+    currency: string;
+  } | null>(null);
 
   function handleGenerate() {
     if (!from || !to) return;
@@ -534,26 +595,55 @@ function CustomerInvoicesTab({ customerId }: Readonly<{ customerId: string }>) {
       </div>
 
       {margin && (
-        <div className="rounded-md border border-green-300 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950" data-testid="last-invoice-margin">
-          <p className="text-sm font-medium text-green-900 dark:text-green-100">{t('admin:partner.customerDetail.margin.latestInvoice')}</p>
+        <div
+          className="rounded-md border border-green-300 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950"
+          data-testid="last-invoice-margin"
+        >
+          <p className="text-sm font-medium text-green-900 dark:text-green-100">
+            {t('admin:partner.customerDetail.margin.latestInvoice')}
+          </p>
           <div className="mt-2 grid grid-cols-3 gap-3 text-sm">
-            <div><p className="text-xs text-muted-foreground">{t('admin:partner.customerDetail.margin.gross')}</p><p className="font-medium">{formatCurrency(margin.gross, margin.currency)}</p></div>
-            <div><p className="text-xs text-muted-foreground">{t('admin:partner.customerDetail.margin.platformCost')}</p><p className="font-medium">{formatCurrency(margin.cost, margin.currency)}</p></div>
-            <div><p className="text-xs text-muted-foreground">{t('admin:partner.customerDetail.margin.yourMargin')}</p><p className="font-semibold text-green-700 dark:text-green-300">{formatCurrency(margin.margin, margin.currency)}</p></div>
+            <div>
+              <p className="text-xs text-muted-foreground">
+                {t('admin:partner.customerDetail.margin.gross')}
+              </p>
+              <p className="font-medium">{formatCurrency(margin.gross, margin.currency)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">
+                {t('admin:partner.customerDetail.margin.platformCost')}
+              </p>
+              <p className="font-medium">{formatCurrency(margin.cost, margin.currency)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">
+                {t('admin:partner.customerDetail.margin.yourMargin')}
+              </p>
+              <p className="font-semibold text-green-700 dark:text-green-300">
+                {formatCurrency(margin.margin, margin.currency)}
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {invoices.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('admin:partner.customerDetail.invoiceEmpty')}</p>
+        <p className="text-sm text-muted-foreground">
+          {t('admin:partner.customerDetail.invoiceEmpty')}
+        </p>
       ) : (
         <div className="space-y-1">
           {invoices.map((inv) => (
-            <div key={inv.invoiceId} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm" data-testid={`invoice-row-${inv.invoiceId}`}>
+            <div
+              key={inv.invoiceId}
+              className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
+              data-testid={`invoice-row-${inv.invoiceId}`}
+            >
               <div>
                 <p className="font-mono text-xs">{inv.invoiceId.slice(0, 8)}...</p>
                 <p className="text-xs text-muted-foreground">
-                  {format(new Date(inv.periodStart), 'MMM d')} — {format(new Date(inv.periodEnd), 'MMM d, yyyy')}
+                  {format(new Date(inv.periodStart), 'MMM d')} —{' '}
+                  {format(new Date(inv.periodEnd), 'MMM d, yyyy')}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -569,22 +659,46 @@ function CustomerInvoicesTab({ customerId }: Readonly<{ customerId: string }>) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('admin:partner.customerDetail.generateDialog.title')}</DialogTitle>
-            <DialogDescription>{t('admin:partner.customerDetail.generateDialog.description')}</DialogDescription>
+            <DialogDescription>
+              {t('admin:partner.customerDetail.generateDialog.description')}
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-3 py-4">
             <div className="space-y-1.5">
-              <Label htmlFor="gen-from">{t('admin:partner.customerDetail.generateDialog.from')}</Label>
-              <Input id="gen-from" type="datetime-local" data-testid="gen-from" value={from} onChange={(e) => setFrom(e.target.value)} />
+              <Label htmlFor="gen-from">
+                {t('admin:partner.customerDetail.generateDialog.from')}
+              </Label>
+              <Input
+                id="gen-from"
+                type="datetime-local"
+                data-testid="gen-from"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="gen-to">{t('admin:partner.customerDetail.generateDialog.to')}</Label>
-              <Input id="gen-to" type="datetime-local" data-testid="gen-to" value={to} onChange={(e) => setTo(e.target.value)} />
+              <Input
+                id="gen-to"
+                type="datetime-local"
+                data-testid="gen-to"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setGenOpen(false)}>{t('common:actions.cancel')}</Button>
-            <Button onClick={handleGenerate} disabled={!from || !to || generate.isPending} data-testid="gen-submit">
-              {generate.isPending ? t('admin:partner.customerDetail.generateDialog.generating') : t('admin:partner.customerDetail.generateDialog.generate')}
+            <Button variant="outline" onClick={() => setGenOpen(false)}>
+              {t('common:actions.cancel')}
+            </Button>
+            <Button
+              onClick={handleGenerate}
+              disabled={!from || !to || generate.isPending}
+              data-testid="gen-submit"
+            >
+              {generate.isPending
+                ? t('admin:partner.customerDetail.generateDialog.generating')
+                : t('admin:partner.customerDetail.generateDialog.generate')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -598,18 +712,27 @@ function CustomerUsageTab({ customerId }: Readonly<{ customerId: string }>) {
   const { data: usage = [] } = useCustomerUsage(customerId);
 
   if (usage.length === 0) {
-    return <p className="text-sm text-muted-foreground" data-testid="customer-usage-empty">No usage recorded yet.</p>;
+    return (
+      <p className="text-sm text-muted-foreground" data-testid="customer-usage-empty">
+        No usage recorded yet.
+      </p>
+    );
   }
 
   return (
     <div className="space-y-3" data-testid="customer-usage-tab">
       {usage.map((u) => (
-        <div key={u.usageType} className="rounded-md border p-3" data-testid={`usage-${u.usageType}`}>
+        <div
+          key={u.usageType}
+          className="rounded-md border p-3"
+          data-testid={`usage-${u.usageType}`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">{u.usageType}</p>
               <p className="text-xs text-muted-foreground">
-                {format(new Date(u.periodStart), 'MMM d')} — {format(new Date(u.periodEnd), 'MMM d, yyyy')}
+                {format(new Date(u.periodStart), 'MMM d')} —{' '}
+                {format(new Date(u.periodEnd), 'MMM d, yyyy')}
               </p>
             </div>
             <div className="text-right">

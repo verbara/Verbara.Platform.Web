@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Plus, Pencil, Trash2, Save, X, Check } from 'lucide-react';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -214,9 +215,7 @@ function KeywordRulesSection() {
     updateRules.mutate(localRules);
   };
 
-  if (isLoading) {
-    return <p className="text-sm text-muted-foreground">{t('common:status.loading')}</p>;
-  }
+  if (isLoading) return <PageSkeleton variant="form" rows={3} />;
 
   return (
     <div className="space-y-4">
@@ -541,9 +540,7 @@ function ComplianceRulesSection() {
     updateRules.mutate(localRules);
   };
 
-  if (isLoading) {
-    return <p className="text-sm text-muted-foreground">{t('common:status.loading')}</p>;
-  }
+  if (isLoading) return <PageSkeleton variant="form" rows={3} />;
 
   return (
     <div className="space-y-4">
@@ -880,35 +877,8 @@ export default function AgentAssistConfigPage() {
   const queueOptions = queues.map((q) => ({ value: q.name, label: q.name }));
   const agentOptions = agents.map((a) => ({ value: a.id, label: a.displayName }));
 
-  if (isLoading) {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="font-heading text-2xl font-semibold">{t('admin:agentAssist.title')}</h1>
-            <p className="text-sm text-muted-foreground">{t('admin:agentAssist.description')}</p>
-          </div>
-        </div>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('common:status.loading')}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6" data-testid="agent-assist-config-page">
-      {/* Coming Soon banner */}
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-          Coming Soon — Agent Assist requires speech recognition configuration. This feature will be
-          available in a future release.
-        </p>
-      </div>
-
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -920,216 +890,238 @@ export default function AgentAssistConfigPage() {
         </div>
       </div>
 
-      <fieldset disabled className="space-y-6 opacity-50 pointer-events-none">
-        {/* Section 1 — Engine Status */}
-        <SectionCard
-          title={t('admin:agentAssist.status.title')}
-          description={t('admin:agentAssist.status.description')}
-          testId="agent-assist-section-status"
-        >
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <p className="text-sm font-medium">{t('admin:agentAssist.status.enableLabel')}</p>
-              <p className="text-xs text-muted-foreground">
-                {t('admin:agentAssist.status.enableHint')}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant={form.enabled ? 'default' : 'secondary'}>
-                {form.enabled
-                  ? t('admin:agentAssist.status.active')
-                  : t('admin:agentAssist.status.inactive')}
-              </Badge>
-              <Switch
-                checked={form.enabled}
-                onCheckedChange={(checked) => update('enabled', checked)}
-                aria-label={t('admin:agentAssist.aria.engineEnabled')}
-              />
-            </div>
+      {isLoading ? (
+        <PageSkeleton variant="form" />
+      ) : (
+        <>
+          {/* Coming Soon banner */}
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              Coming Soon — Agent Assist requires speech recognition configuration. This feature
+              will be available in a future release.
+            </p>
           </div>
-        </SectionCard>
 
-        {/* Section 2 — Filters */}
-        <SectionCard
-          title={t('admin:agentAssist.filters.title')}
-          description={t('admin:agentAssist.filters.description')}
-        >
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <Label>{t('admin:agentAssist.filters.queues')}</Label>
-              <MultiSelect
-                options={queueOptions}
-                selected={form.queueNames}
-                onChange={(v) => update('queueNames', v)}
-                placeholder={t('admin:agentAssist.filters.allCalls')}
-              />
-              <p className="text-xs text-muted-foreground">
-                {t('admin:agentAssist.filters.emptyNote')}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('admin:agentAssist.filters.agents')}</Label>
-              <MultiSelect
-                options={agentOptions}
-                selected={form.agentIds}
-                onChange={(v) => update('agentIds', v)}
-                placeholder={t('admin:agentAssist.filters.allAgents')}
-              />
-              <p className="text-xs text-muted-foreground">
-                {t('admin:agentAssist.filters.emptyNote')}
-              </p>
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* Section 3 — Timeouts */}
-        <SectionCard
-          title={t('admin:agentAssist.timeouts.title')}
-          description={t('admin:agentAssist.timeouts.description')}
-        >
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="suggestionTimeout">
-                {t('admin:agentAssist.timeouts.suggestion')}
-              </Label>
-              <Input
-                id="suggestionTimeout"
-                type="number"
-                min={100}
-                step={100}
-                value={form.suggestionTimeoutMs}
-                onChange={(e) => update('suggestionTimeoutMs', Number(e.target.value))}
-              />
-              <p className="text-xs text-muted-foreground">ms</p>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="sentimentTimeout">{t('admin:agentAssist.timeouts.sentiment')}</Label>
-              <Input
-                id="sentimentTimeout"
-                type="number"
-                min={100}
-                step={100}
-                value={form.sentimentTimeoutMs}
-                onChange={(e) => update('sentimentTimeoutMs', Number(e.target.value))}
-              />
-              <p className="text-xs text-muted-foreground">ms</p>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="complianceTimeout">
-                {t('admin:agentAssist.timeouts.compliance')}
-              </Label>
-              <Input
-                id="complianceTimeout"
-                type="number"
-                min={100}
-                step={100}
-                value={form.complianceTimeoutMs}
-                onChange={(e) => update('complianceTimeoutMs', Number(e.target.value))}
-              />
-              <p className="text-xs text-muted-foreground">ms</p>
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* Section 4 — Whisper */}
-        <SectionCard
-          title={t('admin:agentAssist.whisper.title')}
-          description={t('admin:agentAssist.whisper.description')}
-        >
-          <div className="space-y-5">
-            {/* Enable toggle */}
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium">{t('admin:agentAssist.whisper.enableLabel')}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t('admin:agentAssist.whisper.enableHint')}
-                </p>
+          <fieldset disabled className="space-y-6 opacity-50 pointer-events-none">
+            {/* Section 1 — Engine Status */}
+            <SectionCard
+              title={t('admin:agentAssist.status.title')}
+              description={t('admin:agentAssist.status.description')}
+              testId="agent-assist-section-status"
+            >
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">{t('admin:agentAssist.status.enableLabel')}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('admin:agentAssist.status.enableHint')}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={form.enabled ? 'default' : 'secondary'}>
+                    {form.enabled
+                      ? t('admin:agentAssist.status.active')
+                      : t('admin:agentAssist.status.inactive')}
+                  </Badge>
+                  <Switch
+                    checked={form.enabled}
+                    onCheckedChange={(checked) => update('enabled', checked)}
+                    aria-label={t('admin:agentAssist.aria.engineEnabled')}
+                  />
+                </div>
               </div>
-              <Switch
-                checked={form.whisperEnabled}
-                onCheckedChange={(checked) => update('whisperEnabled', checked)}
-                aria-label={t('admin:agentAssist.aria.whisperEnabled')}
-              />
+            </SectionCard>
+
+            {/* Section 2 — Filters */}
+            <SectionCard
+              title={t('admin:agentAssist.filters.title')}
+              description={t('admin:agentAssist.filters.description')}
+            >
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label>{t('admin:agentAssist.filters.queues')}</Label>
+                  <MultiSelect
+                    options={queueOptions}
+                    selected={form.queueNames}
+                    onChange={(v) => update('queueNames', v)}
+                    placeholder={t('admin:agentAssist.filters.allCalls')}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('admin:agentAssist.filters.emptyNote')}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{t('admin:agentAssist.filters.agents')}</Label>
+                  <MultiSelect
+                    options={agentOptions}
+                    selected={form.agentIds}
+                    onChange={(v) => update('agentIds', v)}
+                    placeholder={t('admin:agentAssist.filters.allAgents')}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('admin:agentAssist.filters.emptyNote')}
+                  </p>
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* Section 3 — Timeouts */}
+            <SectionCard
+              title={t('admin:agentAssist.timeouts.title')}
+              description={t('admin:agentAssist.timeouts.description')}
+            >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="suggestionTimeout">
+                    {t('admin:agentAssist.timeouts.suggestion')}
+                  </Label>
+                  <Input
+                    id="suggestionTimeout"
+                    type="number"
+                    min={100}
+                    step={100}
+                    value={form.suggestionTimeoutMs}
+                    onChange={(e) => update('suggestionTimeoutMs', Number(e.target.value))}
+                  />
+                  <p className="text-xs text-muted-foreground">ms</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="sentimentTimeout">
+                    {t('admin:agentAssist.timeouts.sentiment')}
+                  </Label>
+                  <Input
+                    id="sentimentTimeout"
+                    type="number"
+                    min={100}
+                    step={100}
+                    value={form.sentimentTimeoutMs}
+                    onChange={(e) => update('sentimentTimeoutMs', Number(e.target.value))}
+                  />
+                  <p className="text-xs text-muted-foreground">ms</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="complianceTimeout">
+                    {t('admin:agentAssist.timeouts.compliance')}
+                  </Label>
+                  <Input
+                    id="complianceTimeout"
+                    type="number"
+                    min={100}
+                    step={100}
+                    value={form.complianceTimeoutMs}
+                    onChange={(e) => update('complianceTimeoutMs', Number(e.target.value))}
+                  />
+                  <p className="text-xs text-muted-foreground">ms</p>
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* Section 4 — Whisper */}
+            <SectionCard
+              title={t('admin:agentAssist.whisper.title')}
+              description={t('admin:agentAssist.whisper.description')}
+            >
+              <div className="space-y-5">
+                {/* Enable toggle */}
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-medium">
+                      {t('admin:agentAssist.whisper.enableLabel')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('admin:agentAssist.whisper.enableHint')}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.whisperEnabled}
+                    onCheckedChange={(checked) => update('whisperEnabled', checked)}
+                    aria-label={t('admin:agentAssist.aria.whisperEnabled')}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {/* Priority threshold */}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="whisperPriority">
+                      {t('admin:agentAssist.whisper.priorityThreshold')}
+                    </Label>
+                    <Select
+                      value={form.whisperPriorityThreshold}
+                      onValueChange={(v) => update('whisperPriorityThreshold', v as Priority)}
+                    >
+                      <SelectTrigger id="whisperPriority" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRIORITY_OPTIONS.map((p) => (
+                          <SelectItem key={p} value={p}>
+                            {p}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      {t('admin:agentAssist.whisper.priorityHint')}
+                    </p>
+                  </div>
+
+                  {/* Queue capacity */}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="whisperCapacity">
+                      {t('admin:agentAssist.whisper.queueCapacity')}
+                    </Label>
+                    <Input
+                      id="whisperCapacity"
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={form.whisperQueueCapacity}
+                      onChange={(e) => update('whisperQueueCapacity', Number(e.target.value))}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {t('admin:agentAssist.whisper.capacityHint')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* Save button for sections 1-4 */}
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={handleSave}
+                disabled={!dirty || updateConfig.isPending}
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {updateConfig.isPending
+                  ? t('admin:agentAssist.saving')
+                  : t('admin:agentAssist.saveConfig')}
+              </Button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {/* Priority threshold */}
-              <div className="space-y-1.5">
-                <Label htmlFor="whisperPriority">
-                  {t('admin:agentAssist.whisper.priorityThreshold')}
-                </Label>
-                <Select
-                  value={form.whisperPriorityThreshold}
-                  onValueChange={(v) => update('whisperPriorityThreshold', v as Priority)}
-                >
-                  <SelectTrigger id="whisperPriority" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITY_OPTIONS.map((p) => (
-                      <SelectItem key={p} value={p}>
-                        {p}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {t('admin:agentAssist.whisper.priorityHint')}
-                </p>
-              </div>
+            {/* Section 5 — Keyword Rules */}
+            <SectionCard
+              title={t('admin:agentAssist.rules.title')}
+              description={t('admin:agentAssist.rules.description')}
+              testId="agent-assist-section-keyword-rules"
+            >
+              <KeywordRulesSection />
+            </SectionCard>
 
-              {/* Queue capacity */}
-              <div className="space-y-1.5">
-                <Label htmlFor="whisperCapacity">
-                  {t('admin:agentAssist.whisper.queueCapacity')}
-                </Label>
-                <Input
-                  id="whisperCapacity"
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={form.whisperQueueCapacity}
-                  onChange={(e) => update('whisperQueueCapacity', Number(e.target.value))}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t('admin:agentAssist.whisper.capacityHint')}
-                </p>
-              </div>
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* Save button for sections 1-4 */}
-        <div className="flex justify-end">
-          <Button type="button" onClick={handleSave} disabled={!dirty || updateConfig.isPending}>
-            <Save className="mr-2 h-4 w-4" />
-            {updateConfig.isPending
-              ? t('admin:agentAssist.saving')
-              : t('admin:agentAssist.saveConfig')}
-          </Button>
-        </div>
-
-        {/* Section 5 — Keyword Rules */}
-        <SectionCard
-          title={t('admin:agentAssist.rules.title')}
-          description={t('admin:agentAssist.rules.description')}
-          testId="agent-assist-section-keyword-rules"
-        >
-          <KeywordRulesSection />
-        </SectionCard>
-
-        {/* Section 6 — Compliance Rules */}
-        <SectionCard
-          title={t('admin:agentAssist.complianceRules.title')}
-          description={t('admin:agentAssist.complianceRules.description')}
-          testId="agent-assist-section-compliance-rules"
-        >
-          <ComplianceRulesSection />
-        </SectionCard>
-      </fieldset>
+            {/* Section 6 — Compliance Rules */}
+            <SectionCard
+              title={t('admin:agentAssist.complianceRules.title')}
+              description={t('admin:agentAssist.complianceRules.description')}
+              testId="agent-assist-section-compliance-rules"
+            >
+              <ComplianceRulesSection />
+            </SectionCard>
+          </fieldset>
+        </>
+      )}
     </div>
   );
 }
