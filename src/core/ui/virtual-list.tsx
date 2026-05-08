@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -77,6 +77,37 @@ function VirtualList<T>({
       el.scrollTop = el.scrollHeight - el.clientHeight;
     }
   }, [items.length, stickToBottom]);
+
+  const prevFirstKeyRef = useRef<string | number | undefined>(undefined);
+  const prevScrollHeightRef = useRef<number>(0);
+
+  useLayoutEffect(() => {
+    const el = parentRef.current;
+    if (!el) return;
+    let firstKey: string | number | undefined;
+    if (items.length === 0) {
+      firstKey = undefined;
+    } else if (getItemKey) {
+      firstKey = getItemKey(items[0] as T, 0);
+    } else {
+      firstKey = 0;
+    }
+    const prevFirstKey = prevFirstKeyRef.current;
+    const prevScrollHeight = prevScrollHeightRef.current;
+    if (
+      prevFirstKey !== undefined &&
+      firstKey !== undefined &&
+      firstKey !== prevFirstKey &&
+      prevScrollHeight > 0
+    ) {
+      const delta = el.scrollHeight - prevScrollHeight;
+      if (delta > 0) {
+        el.scrollTop = el.scrollTop + delta;
+      }
+    }
+    prevFirstKeyRef.current = firstKey;
+    prevScrollHeightRef.current = el.scrollHeight;
+  }, [items, getItemKey]);
 
   return (
     <div ref={parentRef} data-virtual-scroller className={cn('h-full overflow-auto', className)}>

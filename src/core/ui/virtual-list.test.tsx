@@ -145,6 +145,63 @@ describe('VirtualList', () => {
     expect(onEndReached).toHaveBeenCalled();
   });
 
+  it('PreservesScrollPosition_WhenItemsPrepended', () => {
+    const items = Array.from({ length: 30 }, (_, i) => ({ id: i }));
+    const { container, rerender } = render(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={items}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+        />
+      </div>,
+    );
+    const scroller = container.querySelector('[data-virtual-scroller]') as HTMLDivElement;
+    Object.defineProperty(scroller, 'scrollHeight', {
+      configurable: true,
+      writable: true,
+      value: 1200,
+    });
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 200 });
+    Object.defineProperty(scroller, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 500,
+    });
+    // Trigger initial layout-effect snapshot of prev scrollHeight via a rerender
+    // with the same items, then prepend.
+    rerender(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={items}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+        />
+      </div>,
+    );
+
+    const prepended = [...Array.from({ length: 10 }, (_, i) => ({ id: -10 + i })), ...items];
+    Object.defineProperty(scroller, 'scrollHeight', {
+      configurable: true,
+      writable: true,
+      value: 1600,
+    });
+
+    rerender(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={prepended}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+        />
+      </div>,
+    );
+    expect(scroller.scrollTop).toBe(900);
+  });
+
   it('FiresOnStartReached_WhenFirstItemEntersOverscan', () => {
     const onStartReached = vi.fn();
     const items = Array.from({ length: 30 }, (_, i) => ({ id: i }));
