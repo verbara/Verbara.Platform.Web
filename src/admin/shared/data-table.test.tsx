@@ -69,3 +69,27 @@ describe('DataTable virtualized mode', () => {
     expect(container.querySelectorAll('tbody tr').length).toBe(10);
   });
 });
+
+describe('DataTable a11y', () => {
+  it('StandardMode_HeaderCells_HaveScopeCol', () => {
+    const data = [{ id: 1, name: 'A' }];
+    const { container } = render(
+      <I18nextProvider i18n={i18n}>
+        <DataTable data={data} columns={columns} />
+      </I18nextProvider>,
+    );
+    const ths = container.querySelectorAll('th');
+    expect(ths.length).toBeGreaterThan(0);
+    ths.forEach((th) => expect(th.getAttribute('scope')).toBe('col'));
+  });
+
+  it('SearchInput_HasAriaLabel_FromPlaceholder', () => {
+    const { container } = render(
+      <I18nextProvider i18n={i18n}>
+        <DataTable data={[]} columns={[]} searchPlaceholder="Search users" />
+      </I18nextProvider>,
+    );
+    const input = container.querySelector('[data-testid="data-table-search"]') as HTMLInputElement;
+    expect(input.getAttribute('aria-label')).toBe('Search users');
+  });
+});

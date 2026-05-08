@@ -75,6 +75,7 @@ export function DataTable<T>({
         <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={resolvedSearchPlaceholder}
+          aria-label={resolvedSearchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-8"
@@ -92,6 +93,7 @@ export function DataTable<T>({
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
+                      scope="col"
                       className="px-4 py-3 text-left font-medium text-muted-foreground"
                     >
                       {header.isPlaceholder
