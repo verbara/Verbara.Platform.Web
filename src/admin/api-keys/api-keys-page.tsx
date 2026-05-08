@@ -25,13 +25,10 @@ import { Button } from '@/core/ui/button';
 import { StatusBadge } from '@/core/ui/status-badge';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PageHeader } from '@/admin/shared/page-header';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { DataTable } from '@/admin/shared/data-table';
 import { useFormatDate } from '@/core/i18n/use-format';
-import {
-  useApiKeys,
-  useRevokeApiKey,
-  type ManagementApiKey,
-} from '@/core/api/hooks/use-api-keys';
+import { useApiKeys, useRevokeApiKey, type ManagementApiKey } from '@/core/api/hooks/use-api-keys';
 import { CreateApiKeyDialog } from './create-api-key-dialog';
 import { RotateApiKeyDialog } from './rotate-api-key-dialog';
 import { resolveApiKeyStatus } from './resolve-status';
@@ -52,11 +49,7 @@ interface ListSectionProps {
 
 function ListSection({ isLoading, keys, columns, t, onCreate }: ListSectionProps) {
   if (isLoading) {
-    return (
-      <p className="text-sm text-muted-foreground" data-testid="api-keys-loading">
-        {t('admin:api-keys.loading')}
-      </p>
-    );
+    return <PageSkeleton />;
   }
   if (keys.length === 0) {
     return (
@@ -65,9 +58,7 @@ function ListSection({ isLoading, keys, columns, t, onCreate }: ListSectionProps
         data-testid="api-keys-empty"
       >
         <KeyRound className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
-        <p className="text-sm text-muted-foreground">
-          {t('admin:api-keys.empty')}
-        </p>
+        <p className="text-sm text-muted-foreground">{t('admin:api-keys.empty')}</p>
         <Button variant="outline" onClick={onCreate}>
           <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
           {t('admin:api-keys.create')}
@@ -120,13 +111,19 @@ export default function ApiKeysPage() {
           const value = info.getValue();
           if (!value) {
             return (
-              <span className="text-muted-foreground" data-testid={`api-key-last-used-${info.row.original.keyId}`}>
+              <span
+                className="text-muted-foreground"
+                data-testid={`api-key-last-used-${info.row.original.keyId}`}
+              >
                 {t('admin:api-keys.last_used_never')}
               </span>
             );
           }
           return (
-            <span title={formatDate(value)} data-testid={`api-key-last-used-${info.row.original.keyId}`}>
+            <span
+              title={formatDate(value)}
+              data-testid={`api-key-last-used-${info.row.original.keyId}`}
+            >
               {formatRelative(value)}
             </span>
           );
@@ -138,9 +135,7 @@ export default function ApiKeysPage() {
           const value = info.getValue();
           if (!value) {
             return (
-              <span className="text-muted-foreground">
-                {t('admin:api-keys.expiration.never')}
-              </span>
+              <span className="text-muted-foreground">{t('admin:api-keys.expiration.never')}</span>
             );
           }
           return <span title={formatDate(value)}>{formatRelative(value)}</span>;
@@ -149,9 +144,7 @@ export default function ApiKeysPage() {
       col.accessor('createdAt', {
         header: () => t('admin:api-keys.columns.created'),
         cell: (info) => (
-          <span title={formatDate(info.getValue())}>
-            {formatRelative(info.getValue())}
-          </span>
+          <span title={formatDate(info.getValue())}>{formatRelative(info.getValue())}</span>
         ),
       }),
       col.display({
@@ -193,14 +186,8 @@ export default function ApiKeysPage() {
 
   return (
     <div className="space-y-6" data-testid="api-keys-page">
-      <PageHeader
-        title={t('admin:api-keys.title')}
-        description={t('admin:api-keys.description')}
-      >
-        <Button
-          onClick={() => setCreateOpen(true)}
-          data-testid="api-keys-create-btn"
-        >
+      <PageHeader title={t('admin:api-keys.title')} description={t('admin:api-keys.description')}>
+        <Button onClick={() => setCreateOpen(true)} data-testid="api-keys-create-btn">
           <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
           {t('admin:api-keys.create')}
         </Button>

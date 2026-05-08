@@ -25,6 +25,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PageHeader } from '@/admin/shared/page-header';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { DataTable } from '@/admin/shared/data-table';
 import { useFormatDate } from '@/core/i18n/use-format';
 import {
@@ -53,11 +54,7 @@ interface ListSectionProps {
 
 function ListSection({ isLoading, users, columns, t }: ListSectionProps) {
   if (isLoading) {
-    return (
-      <p className="text-sm text-muted-foreground" data-testid="mfa-admin-loading">
-        {t('admin:security_admin.mfa.loading')}
-      </p>
-    );
+    return <PageSkeleton rows={3} />;
   }
   if (users.length === 0) {
     return (
@@ -66,9 +63,7 @@ function ListSection({ isLoading, users, columns, t }: ListSectionProps) {
         data-testid="mfa-admin-empty"
       >
         <ShieldOff className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
-        <p className="text-sm text-muted-foreground">
-          {t('admin:security_admin.mfa.empty')}
-        </p>
+        <p className="text-sm text-muted-foreground">{t('admin:security_admin.mfa.empty')}</p>
       </div>
     );
   }
@@ -82,7 +77,10 @@ function ListSection({ isLoading, users, columns, t }: ListSectionProps) {
 }
 
 function StatusBadge({ status, t }: { readonly status: MfaUserStatus; readonly t: TFunction }) {
-  const map: Record<MfaUserStatus, { variant: 'default' | 'secondary' | 'destructive'; key: string; icon: typeof ShieldCheck }> = {
+  const map: Record<
+    MfaUserStatus,
+    { variant: 'default' | 'secondary' | 'destructive'; key: string; icon: typeof ShieldCheck }
+  > = {
     enrolled: {
       variant: 'default',
       key: 'admin:security_admin.mfa.status.enrolled',
@@ -136,19 +134,14 @@ export default function MfaAdminPage() {
       col.accessor('username', {
         header: () => t('admin:security_admin.mfa.columns.user'),
         cell: (info) => (
-          <span
-            className="font-medium"
-            data-testid={`mfa-admin-user-${info.row.original.userId}`}
-          >
+          <span className="font-medium" data-testid={`mfa-admin-user-${info.row.original.userId}`}>
             {info.getValue()}
           </span>
         ),
       }),
       col.accessor('tenantName', {
         header: () => t('admin:security_admin.mfa.columns.tenant'),
-        cell: (info) => (
-          <span className="text-sm text-muted-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="text-sm text-muted-foreground">{info.getValue()}</span>,
       }),
       col.accessor('status', {
         header: () => t('admin:security_admin.mfa.columns.status'),

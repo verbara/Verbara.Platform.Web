@@ -35,6 +35,7 @@ import {
   DialogClose,
 } from '@/core/ui/dialog';
 import { PageHeader } from '@/admin/shared/page-header';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { DataTable } from '@/admin/shared/data-table';
 import { useFormatDate } from '@/core/i18n/use-format';
 import {
@@ -447,11 +448,7 @@ interface SectionProps {
 
 function ActiveSection({ isLoading, sessions, columns, t }: SectionProps) {
   if (isLoading) {
-    return (
-      <p className="text-sm text-muted-foreground" data-testid="impersonation-admin-loading">
-        {t('admin:security_admin.impersonation.loading')}
-      </p>
-    );
+    return <PageSkeleton rows={3} />;
   }
   if (sessions.length === 0) {
     return (
@@ -471,11 +468,7 @@ function ActiveSection({ isLoading, sessions, columns, t }: SectionProps) {
 
 function HistorySection({ isLoading, sessions, columns, t }: SectionProps) {
   if (isLoading) {
-    return (
-      <p className="text-sm text-muted-foreground" data-testid="impersonation-admin-loading">
-        {t('admin:security_admin.impersonation.loading')}
-      </p>
-    );
+    return <PageSkeleton rows={3} />;
   }
   if (sessions.length === 0) {
     return (

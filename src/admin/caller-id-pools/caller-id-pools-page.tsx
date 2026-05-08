@@ -6,15 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/core/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
@@ -45,9 +40,7 @@ export default function CallerIdPoolsPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('caller-id-pools.columns.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.display({
         id: 'actions',
@@ -90,14 +83,22 @@ export default function CallerIdPoolsPage() {
     [t],
   );
 
+  const isEmpty = !isLoading && pools.length === 0;
+
+  let content: React.ReactNode;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('caller-id-pools.title')} />
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('caller-id-pools.loading')}
-        </div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={Phone} message={t('caller-id-pools.empty')} />;
+  } else {
+    content = (
+      <DataTable
+        data={pools}
+        columns={columns}
+        searchPlaceholder={t('caller-id-pools.search_placeholder')}
+        noResultsMessage={t('caller-id-pools.no_results')}
+        onRowClick={(pool) => navigate(`/admin/caller-id-pools/${pool.id}`)}
+      />
     );
   }
 
@@ -105,28 +106,28 @@ export default function CallerIdPoolsPage() {
     <div className="space-y-6" data-testid="caller-id-pools-page">
       <PageHeader title={t('caller-id-pools.title')} description={t('caller-id-pools.description')}>
         <PermissionGuard requires="campaigns:callerid:manage">
-          <Button size="sm" data-testid="caller-id-pools-create-btn" onClick={() => { setEditingPool(null); setFormData({ name: '' }); setFormOpen(true); }}>
+          <Button
+            size="sm"
+            data-testid="caller-id-pools-create-btn"
+            onClick={() => {
+              setEditingPool(null);
+              setFormData({ name: '' });
+              setFormOpen(true);
+            }}
+          >
             <Plus className="mr-1.5 h-4 w-4" />
             {t('caller-id-pools.create')}
           </Button>
         </PermissionGuard>
       </PageHeader>
 
-      {pools.length === 0 ? (
-        <EmptyState icon={Phone} message={t('caller-id-pools.empty')} />
-      ) : (
-        <DataTable
-          data={pools}
-          columns={columns}
-          searchPlaceholder={t('caller-id-pools.search_placeholder')}
-          noResultsMessage={t('caller-id-pools.no_results')}
-          onRowClick={(pool) => navigate(`/admin/caller-id-pools/${pool.id}`)}
-        />
-      )}
+      {content}
 
       <ConfirmDeleteDialog
         open={deletingPool !== null}
-        onOpenChange={(open) => { if (!open) setDeletingPool(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeletingPool(null);
+        }}
         onConfirm={() => {
           if (!deletingPool) return;
           deletePool.mutate(deletingPool.id, {
@@ -141,7 +142,11 @@ export default function CallerIdPoolsPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingPool ? t('caller-id-pools.form.edit_title') : t('caller-id-pools.form.create_title')}</DialogTitle>
+            <DialogTitle>
+              {editingPool
+                ? t('caller-id-pools.form.edit_title')
+                : t('caller-id-pools.form.create_title')}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
@@ -155,19 +160,28 @@ export default function CallerIdPoolsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>{t('caller-id-pools.form.cancel')}</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>
+              {t('caller-id-pools.form.cancel')}
+            </Button>
             <Button
               data-testid="pool-form-submit"
               disabled={!formData.name.trim() || createPool.isPending || updatePool.isPending}
               onClick={() => {
                 if (editingPool) {
-                  updatePool.mutate({ id: editingPool.id, ...formData }, { onSuccess: () => setFormOpen(false) });
+                  updatePool.mutate(
+                    { id: editingPool.id, ...formData },
+                    { onSuccess: () => setFormOpen(false) },
+                  );
                 } else {
                   createPool.mutate(formData, { onSuccess: () => setFormOpen(false) });
                 }
               }}
             >
-              {createPool.isPending || updatePool.isPending ? t('caller-id-pools.form.saving') : editingPool ? t('caller-id-pools.form.update') : t('caller-id-pools.form.create')}
+              {createPool.isPending || updatePool.isPending
+                ? t('caller-id-pools.form.saving')
+                : editingPool
+                  ? t('caller-id-pools.form.update')
+                  : t('caller-id-pools.form.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

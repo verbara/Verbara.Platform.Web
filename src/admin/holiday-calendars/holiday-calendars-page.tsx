@@ -6,15 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/core/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
@@ -45,9 +40,7 @@ export default function HolidayCalendarsPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('holiday-calendars.columns.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.display({
         id: 'actions',
@@ -89,14 +82,22 @@ export default function HolidayCalendarsPage() {
     [t],
   );
 
+  const isEmpty = !isLoading && calendars.length === 0;
+
+  let listContent: React.ReactNode;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('holiday-calendars.title')} />
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('holiday-calendars.loading')}
-        </div>
-      </div>
+    listContent = <PageSkeleton />;
+  } else if (isEmpty) {
+    listContent = <EmptyState icon={CalendarOff} message={t('holiday-calendars.empty')} />;
+  } else {
+    listContent = (
+      <DataTable
+        data={calendars}
+        columns={columns}
+        searchPlaceholder={t('holiday-calendars.search_placeholder')}
+        noResultsMessage={t('holiday-calendars.no_results')}
+        onRowClick={(calendar) => navigate(`/admin/holiday-calendars/${calendar.id}`)}
+      />
     );
   }
 
@@ -107,28 +108,28 @@ export default function HolidayCalendarsPage() {
         description={t('holiday-calendars.description')}
       >
         <PermissionGuard requires="campaigns:calendar:manage">
-          <Button data-testid="holiday-calendars-create-btn" size="sm" onClick={() => { setEditingCalendar(null); setFormData({ name: '' }); setFormOpen(true); }}>
+          <Button
+            data-testid="holiday-calendars-create-btn"
+            size="sm"
+            onClick={() => {
+              setEditingCalendar(null);
+              setFormData({ name: '' });
+              setFormOpen(true);
+            }}
+          >
             <Plus className="mr-1.5 h-4 w-4" />
             {t('holiday-calendars.create')}
           </Button>
         </PermissionGuard>
       </PageHeader>
 
-      {calendars.length === 0 ? (
-        <EmptyState icon={CalendarOff} message={t('holiday-calendars.empty')} />
-      ) : (
-        <DataTable
-          data={calendars}
-          columns={columns}
-          searchPlaceholder={t('holiday-calendars.search_placeholder')}
-          noResultsMessage={t('holiday-calendars.no_results')}
-          onRowClick={(calendar) => navigate(`/admin/holiday-calendars/${calendar.id}`)}
-        />
-      )}
+      {listContent}
 
       <ConfirmDeleteDialog
         open={deletingCalendar !== null}
-        onOpenChange={(open) => { if (!open) setDeletingCalendar(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeletingCalendar(null);
+        }}
         onConfirm={() => {
           if (!deletingCalendar) return;
           deleteCalendar.mutate(deletingCalendar.id, {
@@ -143,7 +144,11 @@ export default function HolidayCalendarsPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingCalendar ? t('holiday-calendars.form.edit_title') : t('holiday-calendars.form.create_title')}</DialogTitle>
+            <DialogTitle>
+              {editingCalendar
+                ? t('holiday-calendars.form.edit_title')
+                : t('holiday-calendars.form.create_title')}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
@@ -157,19 +162,30 @@ export default function HolidayCalendarsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>{t('holiday-calendars.form.cancel')}</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>
+              {t('holiday-calendars.form.cancel')}
+            </Button>
             <Button
               data-testid="calendar-form-submit"
-              disabled={!formData.name.trim() || createCalendar.isPending || updateCalendar.isPending}
+              disabled={
+                !formData.name.trim() || createCalendar.isPending || updateCalendar.isPending
+              }
               onClick={() => {
                 if (editingCalendar) {
-                  updateCalendar.mutate({ id: editingCalendar.id, ...formData }, { onSuccess: () => setFormOpen(false) });
+                  updateCalendar.mutate(
+                    { id: editingCalendar.id, ...formData },
+                    { onSuccess: () => setFormOpen(false) },
+                  );
                 } else {
                   createCalendar.mutate(formData, { onSuccess: () => setFormOpen(false) });
                 }
               }}
             >
-              {createCalendar.isPending || updateCalendar.isPending ? t('holiday-calendars.form.saving') : editingCalendar ? t('holiday-calendars.form.update') : t('holiday-calendars.form.create')}
+              {createCalendar.isPending || updateCalendar.isPending
+                ? t('holiday-calendars.form.saving')
+                : editingCalendar
+                  ? t('holiday-calendars.form.update')
+                  : t('holiday-calendars.form.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

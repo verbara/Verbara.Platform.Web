@@ -22,6 +22,7 @@ import {
 } from '@/core/ui/sheet';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
@@ -314,24 +315,26 @@ export default function TenantsPage() {
     [t, activateTenant, handleManageBilling, setDeleteTarget],
   );
 
+  const isEmpty = !isLoading && tenants.length === 0;
+
+  let content: React.ReactNode;
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title={t('tenants.list.title')}>
-          <Button data-testid="tenants-create-button" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('tenants.list.create')}
-          </Button>
-        </PageHeader>
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          {t('tenants.list.loading')}
-        </div>
-      </div>
+    content = <PageSkeleton />;
+  } else if (isEmpty) {
+    content = <EmptyState icon={Building2} message={t('tenants.list.empty')} />;
+  } else {
+    content = (
+      <DataTable
+        data={tenants}
+        columns={columns}
+        searchPlaceholder={t('tenants.list.search_placeholder')}
+        noResultsMessage={t('tenants.list.no_results')}
+      />
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="tenants-page">
       <PageHeader title={t('tenants.list.title')}>
         <Button data-testid="tenants-create-button" onClick={() => setCreateOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
@@ -339,16 +342,7 @@ export default function TenantsPage() {
         </Button>
       </PageHeader>
 
-      {tenants.length === 0 ? (
-        <EmptyState icon={Building2} message={t('tenants.list.empty')} />
-      ) : (
-        <DataTable
-          data={tenants}
-          columns={columns}
-          searchPlaceholder={t('tenants.list.search_placeholder')}
-          noResultsMessage={t('tenants.list.no_results')}
-        />
-      )}
+      {content}
 
       {/* Create sheet */}
       <Sheet
