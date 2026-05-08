@@ -39,4 +39,83 @@ describe('VirtualList', () => {
     expect(renderedRows.length).toBeLessThanOrEqual(30);
     expect(renderedRows.length).toBeGreaterThan(0);
   });
+
+  it('AutoScrollsToBottom_WhenStickToBottom_AndUserNearBottom', async () => {
+    const items = Array.from({ length: 50 }, (_, i) => ({ id: i }));
+    const { container, rerender } = render(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={items}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+          stickToBottom
+        />
+      </div>,
+    );
+    const scroller = container.querySelector('[data-virtual-scroller]') as HTMLDivElement;
+    // Simulate user is at bottom (within 50px threshold)
+    Object.defineProperty(scroller, 'scrollHeight', { configurable: true, value: 2000 });
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 200 });
+    Object.defineProperty(scroller, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 1750,
+    });
+
+    const longer = [...items, { id: 50 }, { id: 51 }];
+    rerender(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={longer}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+          stickToBottom
+        />
+      </div>,
+    );
+    // Auto-scroll should have moved scrollTop to ≥ scrollHeight - clientHeight
+    expect(scroller.scrollTop).toBeGreaterThanOrEqual(1800 - 200);
+  });
+
+  it('DoesNotAutoScroll_WhenStickToBottom_AndUserScrolledUp', async () => {
+    const items = Array.from({ length: 50 }, (_, i) => ({ id: i }));
+    const { container, rerender } = render(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={items}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+          stickToBottom
+        />
+      </div>,
+    );
+    const scroller = container.querySelector('[data-virtual-scroller]') as HTMLDivElement;
+    Object.defineProperty(scroller, 'scrollHeight', { configurable: true, value: 2000 });
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 200 });
+    Object.defineProperty(scroller, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 100,
+    });
+    // Manually trigger scroll event to register isNearBottom = false
+    scroller.dispatchEvent(new Event('scroll'));
+
+    const longer = [...items, { id: 50 }];
+    rerender(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={longer}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+          stickToBottom
+        />
+      </div>,
+    );
+    // scrollTop unchanged
+    expect(scroller.scrollTop).toBe(100);
+  });
 });
