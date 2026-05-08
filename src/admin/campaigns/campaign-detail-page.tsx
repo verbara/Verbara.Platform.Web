@@ -51,6 +51,7 @@ import {
 import type { DispositionCode } from '@/core/api/hooks/use-campaigns';
 import type { CampaignStatus } from './campaign-list-page';
 import { CallbacksTab } from './callbacks-tab';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { useFormatNumber } from '@/core/i18n/use-format';
 
 interface DispositionFormState {
@@ -307,11 +308,7 @@ export default function CampaignDetailPage() {
   const stopCampaign = useStopCampaign();
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('common:status.loading')}
-      </div>
-    );
+    return <PageSkeleton variant="form" />;
   }
 
   if (!campaign) {

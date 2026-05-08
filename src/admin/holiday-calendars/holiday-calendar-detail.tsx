@@ -6,6 +6,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { PageHeader } from '@/admin/shared/page-header';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import {
   useHolidayCalendar,
   useHolidayCalendarHolidays,
@@ -45,11 +46,7 @@ export default function HolidayCalendarDetailPage() {
   const isLoading = calendarLoading || holidaysLoading;
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('holiday-calendars.detail.loading')}
-      </div>
-    );
+    return <PageSkeleton variant="form" />;
   }
 
   if (!calendar) {
@@ -139,7 +136,9 @@ export default function HolidayCalendarDetailPage() {
               disabled={addHoliday.isPending || !form.name.trim() || !form.date}
             >
               <Plus className="mr-1.5 h-4 w-4" />
-              {addHoliday.isPending ? t('holiday-calendars.detail.adding') : t('holiday-calendars.detail.add')}
+              {addHoliday.isPending
+                ? t('holiday-calendars.detail.adding')
+                : t('holiday-calendars.detail.add')}
             </Button>
           </div>
         </div>
@@ -180,12 +179,8 @@ export default function HolidayCalendarDetailPage() {
                   <tr key={h.id} className="border-t hover:bg-muted/30">
                     <td className="px-3 py-2 font-medium">{h.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">{h.date}</td>
-                    <td className="px-3 py-2 text-muted-foreground">
-                      {h.allowedStartTime ?? '—'}
-                    </td>
-                    <td className="px-3 py-2 text-muted-foreground">
-                      {h.allowedEndTime ?? '—'}
-                    </td>
+                    <td className="px-3 py-2 text-muted-foreground">{h.allowedStartTime ?? '—'}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{h.allowedEndTime ?? '—'}</td>
                     <td className="px-3 py-2">
                       <Button
                         size="sm"

@@ -7,6 +7,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
 import { PageHeader } from '@/admin/shared/page-header';
+import { PageSkeleton } from '@/core/ui/page-skeleton';
 import {
   useCallerIdPool,
   useCallerIdPoolEntries,
@@ -38,11 +39,7 @@ export default function CallerIdPoolDetailPage() {
   const isLoading = poolLoading || entriesLoading;
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        {t('caller-id-pools.detail.loading')}
-      </div>
-    );
+    return <PageSkeleton variant="form" />;
   }
 
   if (!pool) {
@@ -56,7 +53,12 @@ export default function CallerIdPoolDetailPage() {
   const handleAdd = () => {
     if (!form.phoneNumber.trim()) return;
     addEntry.mutate(
-      { poolId: poolIdNum, phoneNumber: form.phoneNumber.trim(), areaCode: form.areaCode.trim(), isActive: true },
+      {
+        poolId: poolIdNum,
+        phoneNumber: form.phoneNumber.trim(),
+        areaCode: form.areaCode.trim(),
+        isActive: true,
+      },
       { onSuccess: () => setForm(DEFAULT_FORM) },
     );
   };
@@ -96,12 +98,11 @@ export default function CallerIdPoolDetailPage() {
               placeholder="555"
             />
           </div>
-          <Button
-            onClick={handleAdd}
-            disabled={addEntry.isPending || !form.phoneNumber.trim()}
-          >
+          <Button onClick={handleAdd} disabled={addEntry.isPending || !form.phoneNumber.trim()}>
             <Plus className="mr-1.5 h-4 w-4" />
-            {addEntry.isPending ? t('caller-id-pools.detail.adding') : t('caller-id-pools.detail.add')}
+            {addEntry.isPending
+              ? t('caller-id-pools.detail.adding')
+              : t('caller-id-pools.detail.add')}
           </Button>
         </div>
       </div>
@@ -113,9 +114,7 @@ export default function CallerIdPoolDetailPage() {
         </p>
 
         {entries.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t('caller-id-pools.detail.no_entries')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('caller-id-pools.detail.no_entries')}</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-sm">
@@ -150,9 +149,7 @@ export default function CallerIdPoolDetailPage() {
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                        onClick={() =>
-                          removeEntry.mutate({ poolId: poolIdNum, entryId: entry.id })
-                        }
+                        onClick={() => removeEntry.mutate({ poolId: poolIdNum, entryId: entry.id })}
                         disabled={removeEntry.isPending}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

@@ -4,13 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/core/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
+import { Skeleton } from '@/core/ui/skeleton';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { useCallbacks, useCreateCallback } from '@/core/api/hooks/use-campaigns';
 import { useFormatDate } from '@/core/i18n/use-format';
@@ -27,7 +22,15 @@ export function CallbacksTab({ campaignId }: CallbacksTabProps) {
   const [form, setForm] = useState({ contactId: '', phone: '', scheduledAt: '', agentId: '' });
   const createCallback = useCreateCallback();
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">{t('campaigns.callbacks.loading')}</p>;
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -51,12 +54,17 @@ export function CallbacksTab({ campaignId }: CallbacksTabProps) {
             <div key={i} className="flex items-center gap-4 rounded-md border p-3">
               <Phone className="h-4 w-4 text-muted-foreground" />
               <div className="flex-1">
-                <p className="text-sm font-medium">{t('campaigns.callbacks.contact_label', { id: cb.contactId })}</p>
+                <p className="text-sm font-medium">
+                  {t('campaigns.callbacks.contact_label', { id: cb.contactId })}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   <Calendar className="mr-1 inline h-3 w-3" />
                   {formatDateTime(cb.scheduledAt)}
                   {cb.agentId && (
-                    <><User className="ml-2 mr-1 inline h-3 w-3" />{cb.agentId}</>
+                    <>
+                      <User className="ml-2 mr-1 inline h-3 w-3" />
+                      {cb.agentId}
+                    </>
                   )}
                 </p>
               </div>
@@ -109,25 +117,37 @@ export function CallbacksTab({ campaignId }: CallbacksTabProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>{t('campaigns.callbacks.cancel')}</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+              {t('campaigns.callbacks.cancel')}
+            </Button>
             <Button
-              disabled={!form.phone.trim() || !form.contactId.trim() || !form.scheduledAt || createCallback.isPending}
+              disabled={
+                !form.phone.trim() ||
+                !form.contactId.trim() ||
+                !form.scheduledAt ||
+                createCallback.isPending
+              }
               onClick={() => {
-                createCallback.mutate({
-                  campaignId,
-                  contactId: Number(form.contactId),
-                  phone: form.phone,
-                  scheduledAt: new Date(form.scheduledAt).toISOString(),
-                  agentId: form.agentId || undefined,
-                }, {
-                  onSuccess: () => {
-                    setCreateOpen(false);
-                    setForm({ contactId: '', phone: '', scheduledAt: '', agentId: '' });
+                createCallback.mutate(
+                  {
+                    campaignId,
+                    contactId: Number(form.contactId),
+                    phone: form.phone,
+                    scheduledAt: new Date(form.scheduledAt).toISOString(),
+                    agentId: form.agentId || undefined,
                   },
-                });
+                  {
+                    onSuccess: () => {
+                      setCreateOpen(false);
+                      setForm({ contactId: '', phone: '', scheduledAt: '', agentId: '' });
+                    },
+                  },
+                );
               }}
             >
-              {createCallback.isPending ? t('campaigns.callbacks.scheduling') : t('campaigns.callbacks.confirm')}
+              {createCallback.isPending
+                ? t('campaigns.callbacks.scheduling')
+                : t('campaigns.callbacks.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
