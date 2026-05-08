@@ -7,6 +7,8 @@ import { Plus, X } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Checkbox } from '@/core/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
@@ -85,6 +87,8 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     defaultValues: defaults,
   });
 
+  const nameA11y = useFieldA11y(errors.name, 'queue-name', { required: true });
+
   const {
     fields: skillFields,
     append: appendSkill,
@@ -161,17 +165,20 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
             {/* Tab 1: General */}
             <TabsContent value="general" className="space-y-4 pt-4">
               <div className="space-y-1.5">
-                <Label htmlFor="name">{t('admin:queues.name')}</Label>
+                <Label htmlFor="queue-name" required>
+                  {t('admin:queues.name')}
+                </Label>
                 <Input
-                  id="name"
+                  id="queue-name"
                   data-testid="queue-form-name"
                   placeholder={t('admin:queues.namePlaceholder')}
-                  aria-invalid={!!errors.name}
+                  {...nameA11y.inputProps}
                   {...register('name')}
                 />
-                {errors.name && (
-                  <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-                )}
+                <FieldError
+                  id={nameA11y.errorId}
+                  message={errors.name?.message ? t(errors.name.message) : undefined}
+                />
               </div>
 
               <div className="space-y-1.5">

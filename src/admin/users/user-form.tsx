@@ -6,13 +6,9 @@ import { z } from 'zod';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -62,6 +58,9 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
     },
   });
 
+  const emailA11y = useFieldA11y(errors.email, 'user-email', { required: true });
+  const displayNameA11y = useFieldA11y(errors.displayName, 'user-displayName', { required: true });
+
   useEffect(() => {
     if (open) {
       reset({
@@ -87,45 +86,49 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>
-            {mode === 'create'
-              ? 'Add a new user to the platform.'
-              : 'Update user details.'}
+            {mode === 'create' ? 'Add a new user to the platform.' : 'Update user details.'}
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 px-4">
           {/* Email */}
           <div className="space-y-1.5">
-            <Label htmlFor="email">{t('admin:users.email')}</Label>
+            <Label htmlFor="user-email" required>
+              {t('admin:users.email')}
+            </Label>
             <Input
-              id="email"
+              id="user-email"
               type="email"
               placeholder="user@example.com"
-              aria-invalid={!!errors.email}
               data-testid="user-form-email"
+              {...emailA11y.inputProps}
               {...register('email')}
             />
-            {errors.email && (
-              <p className="text-xs text-destructive">{t(errors.email.message ?? '')}</p>
-            )}
+            <FieldError
+              id={emailA11y.errorId}
+              message={errors.email?.message ? t(errors.email.message) : undefined}
+            />
           </div>
 
           {/* Display Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="displayName">{t('admin:users.name')}</Label>
+            <Label htmlFor="user-displayName" required>
+              {t('admin:users.name')}
+            </Label>
             <Input
-              id="displayName"
+              id="user-displayName"
               placeholder={t('admin:users.namePlaceholder')}
-              aria-invalid={!!errors.displayName}
               data-testid="user-form-displayName"
+              {...displayNameA11y.inputProps}
               {...register('displayName')}
             />
-            {errors.displayName && (
-              <p className="text-xs text-destructive">{t(errors.displayName.message ?? '')}</p>
-            )}
+            <FieldError
+              id={displayNameA11y.errorId}
+              message={errors.displayName?.message ? t(errors.displayName.message) : undefined}
+            />
           </div>
 
-          {/* Role */}
+          {/* Role — Controller/Select: inputProps cannot be spread onto SelectTrigger (no aria-* passthrough); Label has no htmlFor match */}
           <div className="space-y-1.5">
             <Label>{t('admin:users.role')}</Label>
             <Controller
@@ -151,7 +154,7 @@ export function UserForm({ open, onOpenChange, mode, defaultValues, onSubmit }: 
             )}
           </div>
 
-          {/* Status */}
+          {/* Status — Controller/Select optional field; inputProps cannot be spread onto SelectTrigger */}
           <div className="space-y-1.5">
             <Label>{t('admin:users.status')}</Label>
             <Controller

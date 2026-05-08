@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { ArrowLeft, CircleCheckBig } from 'lucide-react';
 
 export function ForgotPasswordPage() {
@@ -12,6 +14,8 @@ export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const emailA11y = useFieldA11y(undefined, 'forgot-email', { required: true });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,17 +57,21 @@ export function ForgotPasswordPage() {
           ) : (
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">{t('auth.email')}</Label>
+                <Label htmlFor="forgot-email" required>
+                  {t('auth.email')}
+                </Label>
                 <Input
-                  id="email"
+                  id="forgot-email"
                   type="email"
                   placeholder={t('auth.email_placeholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  {...emailA11y.inputProps}
                   // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus first field on mount for keyboard users
                   autoFocus
                 />
+                <FieldError id={emailA11y.errorId} />
               </div>
               <Button
                 type="submit"

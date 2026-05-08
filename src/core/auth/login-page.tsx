@@ -7,10 +7,12 @@ import { resolveDefaultTenant } from '../tenant/resolve-tenant';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
 import { Checkbox } from '@/core/ui/checkbox';
 import { LanguageSwitcher } from '@/core/i18n/language-switcher';
 import { MfaVerify } from './mfa-verify';
 import { ChevronDown } from 'lucide-react';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import type { UserProfile, Features } from './auth-store';
 
 interface LoginResponse {
@@ -36,6 +38,10 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showTenant, setShowTenant] = useState(!resolveDefaultTenant());
+
+  const emailA11y = useFieldA11y(undefined, 'login-email', { required: true });
+  const passwordA11y = useFieldA11y(undefined, 'login-password', { required: true });
+  const apiKeyA11y = useFieldA11y(undefined, 'login-api-key', { required: true });
 
   const mfaPending = useAuthStore((s) => s.mfaPending);
   const rememberMe = useAuthStore((s) => s.rememberMe);
@@ -262,23 +268,29 @@ export function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">{t('auth.email')}</Label>
+            <Label htmlFor="login-email" required>
+              {t('auth.email')}
+            </Label>
             <Input
-              id="email"
+              id="login-email"
               type="email"
               placeholder={t('auth.email_placeholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              {...emailA11y.inputProps}
               // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus first field on mount for keyboard users
               autoFocus
               data-testid="login-email"
             />
+            <FieldError id={emailA11y.errorId} />
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">{t('auth.password')}</Label>
+              <Label htmlFor="login-password" required>
+                {t('auth.password')}
+              </Label>
               <button
                 type="button"
                 onClick={() => navigate('/forgot-password')}
@@ -289,14 +301,16 @@ export function LoginPage() {
               </button>
             </div>
             <Input
-              id="password"
+              id="login-password"
               type="password"
               placeholder={t('auth.password_placeholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              {...passwordA11y.inputProps}
               data-testid="login-password"
             />
+            <FieldError id={passwordA11y.errorId} />
           </div>
 
           <div className="flex items-center gap-2">
@@ -367,16 +381,20 @@ export function LoginPage() {
               className="border-t border-slate-200 p-6 space-y-4 dark:border-slate-800"
             >
               <div className="space-y-2">
-                <Label htmlFor="api-key">{t('auth.api_key')}</Label>
+                <Label htmlFor="login-api-key" required>
+                  {t('auth.api_key')}
+                </Label>
                 <Input
-                  id="api-key"
+                  id="login-api-key"
                   type="password"
                   placeholder={t('auth.api_key_placeholder')}
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   required
+                  {...apiKeyA11y.inputProps}
                   data-testid="login-apikey-input"
                 />
+                <FieldError id={apiKeyA11y.errorId} />
               </div>
               <Button
                 type="submit"

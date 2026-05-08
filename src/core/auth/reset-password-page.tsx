@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { usePasswordPolicy, type PasswordPolicy } from '@/core/api/hooks/use-auth-admin';
 
@@ -90,6 +92,14 @@ export function ResetPasswordPage() {
   const passwordsMatch = newPassword === confirmPassword;
   const canSubmit = newPassword.length >= effectivePolicy.minLength && passwordsMatch && !loading;
 
+  const mismatchError =
+    confirmPassword && !passwordsMatch ? { message: 'auth.passwords_do_not_match' } : undefined;
+
+  const newPasswordA11y = useFieldA11y(undefined, 'reset-new-password', { required: true });
+  const confirmPasswordA11y = useFieldA11y(mismatchError, 'reset-confirm-password', {
+    required: true,
+  });
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!passwordsMatch) return;
@@ -142,31 +152,39 @@ export function ResetPasswordPage() {
           className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4 dark:border-slate-800 dark:bg-slate-900"
         >
           <div className="space-y-2">
-            <Label htmlFor="new-password">{t('auth.new_password')}</Label>
+            <Label htmlFor="reset-new-password" required>
+              {t('auth.new_password')}
+            </Label>
             <Input
-              id="new-password"
+              id="reset-new-password"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
+              {...newPasswordA11y.inputProps}
               // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus first field on mount for keyboard users
               autoFocus
             />
             <PasswordStrength password={newPassword} policy={effectivePolicy} />
+            <FieldError id={newPasswordA11y.errorId} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirm-password">{t('auth.confirm_password')}</Label>
+            <Label htmlFor="reset-confirm-password" required>
+              {t('auth.confirm_password')}
+            </Label>
             <Input
-              id="confirm-password"
+              id="reset-confirm-password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              {...confirmPasswordA11y.inputProps}
             />
-            {confirmPassword && !passwordsMatch && (
-              <p className="text-xs text-red-500">{t('auth.passwords_do_not_match')}</p>
-            )}
+            <FieldError
+              id={confirmPasswordA11y.errorId}
+              message={mismatchError ? t(mismatchError.message) : undefined}
+            />
           </div>
 
           {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
