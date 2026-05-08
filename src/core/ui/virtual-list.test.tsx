@@ -118,4 +118,56 @@ describe('VirtualList', () => {
     // scrollTop unchanged
     expect(scroller.scrollTop).toBe(100);
   });
+
+  it('FiresOnEndReached_WhenLastItemEntersOverscan', () => {
+    const onEndReached = vi.fn();
+    const items = Array.from({ length: 30 }, (_, i) => ({ id: i }));
+    const { container } = render(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={items}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+          onEndReached={onEndReached}
+        />
+      </div>,
+    );
+    const scroller = container.querySelector('[data-virtual-scroller]') as HTMLDivElement;
+    Object.defineProperty(scroller, 'scrollHeight', { configurable: true, value: 1200 });
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 200 });
+    Object.defineProperty(scroller, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 1000,
+    });
+    scroller.dispatchEvent(new Event('scroll'));
+    expect(onEndReached).toHaveBeenCalled();
+  });
+
+  it('FiresOnStartReached_WhenFirstItemEntersOverscan', () => {
+    const onStartReached = vi.fn();
+    const items = Array.from({ length: 30 }, (_, i) => ({ id: i }));
+    const { container } = render(
+      <div style={{ height: 200 }}>
+        <VirtualList
+          items={items}
+          renderItem={(item) => <div style={{ height: 40 }}>Row {item.id}</div>}
+          estimateSize={() => 40}
+          getItemKey={(item) => item.id}
+          onStartReached={onStartReached}
+        />
+      </div>,
+    );
+    const scroller = container.querySelector('[data-virtual-scroller]') as HTMLDivElement;
+    Object.defineProperty(scroller, 'scrollHeight', { configurable: true, value: 1200 });
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 200 });
+    Object.defineProperty(scroller, 'scrollTop', {
+      configurable: true,
+      writable: true,
+      value: 0,
+    });
+    scroller.dispatchEvent(new Event('scroll'));
+    expect(onStartReached).toHaveBeenCalled();
+  });
 });

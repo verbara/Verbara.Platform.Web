@@ -11,9 +11,12 @@ interface VirtualListProps<T> {
   readonly overscan?: number;
   readonly className?: string;
   readonly stickToBottom?: boolean;
+  readonly onEndReached?: () => void;
+  readonly onStartReached?: () => void;
 }
 
 const NEAR_BOTTOM_THRESHOLD_PX = 50;
+const END_REACHED_THRESHOLD_PX = 200;
 
 function VirtualList<T>({
   items,
@@ -23,6 +26,8 @@ function VirtualList<T>({
   overscan = 5,
   className,
   stickToBottom = false,
+  onEndReached,
+  onStartReached,
 }: VirtualListProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
@@ -38,13 +43,31 @@ function VirtualList<T>({
   useEffect(() => {
     const el = parentRef.current;
     if (!el) return;
+    let firedEnd = false;
+    let firedStart = false;
     const onScroll = () => {
       const distanceFromBottom = el.scrollHeight - el.clientHeight - el.scrollTop;
       isNearBottomRef.current = distanceFromBottom <= NEAR_BOTTOM_THRESHOLD_PX;
+      if (onEndReached && distanceFromBottom <= END_REACHED_THRESHOLD_PX) {
+        if (!firedEnd) {
+          firedEnd = true;
+          onEndReached();
+        }
+      } else {
+        firedEnd = false;
+      }
+      if (onStartReached && el.scrollTop <= END_REACHED_THRESHOLD_PX) {
+        if (!firedStart) {
+          firedStart = true;
+          onStartReached();
+        }
+      } else {
+        firedStart = false;
+      }
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [onEndReached, onStartReached]);
 
   useEffect(() => {
     if (!stickToBottom) return;
