@@ -475,5 +475,23 @@
   "table": {
     "col_actions": "Actions",
     "col_drag_handle": "Drag to reorder"
+  },
+  "print": {
+    "button": "Print",
+    "buttonAriaLabel": "Print this page"
+  },
+  "export": {
+    "pdf": {
+      "button": "Download PDF",
+      "buttonAriaLabel": "Download as PDF",
+      "preparing": "Preparing PDF…",
+      "ready": "PDF ready",
+      "failed": "Could not generate PDF",
+      "header": {
+        "exportedBy": "Exported by",
+        "exportedAt": "Exported at",
+        "page": "Page {{current}} of {{total}}"
+      }
+    }
   }
 }

@@ -475,5 +475,23 @@
   "table": {
     "col_actions": "Ações",
     "col_drag_handle": "Arrastar para reordenar"
+  },
+  "print": {
+    "button": "Imprimir",
+    "buttonAriaLabel": "Imprimir esta página"
+  },
+  "export": {
+    "pdf": {
+      "button": "Baixar PDF",
+      "buttonAriaLabel": "Baixar como PDF",
+      "preparing": "Gerando PDF…",
+      "ready": "PDF pronto",
+      "failed": "Não foi possível gerar o PDF",
+      "header": {
+        "exportedBy": "Exportado por",
+        "exportedAt": "Exportado em",
+        "page": "Página {{current}} de {{total}}"
+      }
+    }
   }
 }
