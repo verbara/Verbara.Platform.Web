@@ -5,6 +5,7 @@ import { router } from './router';
 import { ApiQueryProvider } from '@/core/api/query-provider';
 import { Toaster } from '@/core/ui/sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useHtmlLang } from '@/core/i18n/use-html-lang';
 import { startPlatformHub, stopPlatformHub } from '@/core/realtime';
 
 function useRealtimeBootstrap() {
@@ -25,6 +26,7 @@ function useRealtimeBootstrap() {
 
 export function App() {
   useRealtimeBootstrap();
+  useHtmlLang();
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
