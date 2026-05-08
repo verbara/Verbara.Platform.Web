@@ -30,9 +30,18 @@ describe('Skeleton', () => {
     expect(el.className).toContain('w-40');
   });
 
-  it('Renders_AsDiv_WithNoContent', () => {
+  it('Renders_AsDiv_WithSrOnlyLoadingText', () => {
     const { container } = render(<Skeleton />);
     expect(container.firstChild?.nodeName).toBe('DIV');
-    expect(container.firstChild?.textContent).toBe('');
+    // sr-only "Loading" is required by WCAG so screen readers announce
+    // the busy state. Visually still empty due to .sr-only utility.
+    expect(container.firstChild?.textContent).toBe('Loading');
+  });
+
+  it('Has_RoleStatus_AndAriaBusy', () => {
+    const { container } = render(<Skeleton />);
+    const el = container.firstChild as HTMLElement;
+    expect(el.getAttribute('role')).toBe('status');
+    expect(el.getAttribute('aria-busy')).toBe('true');
   });
 });

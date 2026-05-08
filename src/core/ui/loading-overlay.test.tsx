@@ -32,6 +32,7 @@ describe('LoadingOverlay', () => {
     const overlay = screen.getByTestId('loading-overlay');
     expect(overlay.getAttribute('role')).toBe('status');
     expect(overlay.getAttribute('aria-label')).toBe('Loading');
+    expect(overlay.getAttribute('aria-busy')).toBe('true');
   });
 
   it('Wraps_InRelativeContainer_WhenActive', () => {

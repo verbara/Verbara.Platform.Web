@@ -16,6 +16,7 @@ function LoadingOverlay({ active, children }: LoadingOverlayProps) {
         data-testid="loading-overlay"
         role="status"
         aria-label="Loading"
+        aria-busy="true"
         className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px]"
       >
         <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
