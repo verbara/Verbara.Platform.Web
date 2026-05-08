@@ -7,13 +7,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { DataTable } from '@/admin/shared/data-table';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   useUsageSummary,
   useUsageDetails,
@@ -101,7 +95,9 @@ export default function UsagePage() {
       <div className="flex h-64 items-center justify-center">
         <p className="text-sm text-muted-foreground" data-testid="no-tenant-message">
           <Trans i18nKey="billing.select_tenant_usage_prefix" ns="admin" />
-          <a href="/admin/tenants" className="text-brand underline">{t('billing.tenants_link')}</a>
+          <a href="/admin/tenants" className="text-brand underline">
+            {t('billing.tenants_link')}
+          </a>
           <Trans i18nKey="billing.select_tenant_usage_suffix" ns="admin" />
         </p>
       </div>
@@ -113,14 +109,20 @@ export default function UsagePage() {
       <PageHeader title={t('billing.usage.title')} description={t('billing.usage.description')} />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-end gap-3 rounded-md border bg-card p-4" data-testid="usage-filters">
+      <div
+        className="flex flex-wrap items-end gap-3 rounded-md border bg-card p-4"
+        data-testid="usage-filters"
+      >
         <div className="space-y-1.5">
           <Label htmlFor="usage-from">{t('billing.usage.filters_from')}</Label>
           <Input
             id="usage-from"
             type="datetime-local"
             value={from}
-            onChange={(e) => { setFrom(e.target.value); setDetailPage(1); }}
+            onChange={(e) => {
+              setFrom(e.target.value);
+              setDetailPage(1);
+            }}
             className="w-52"
           />
         </div>
@@ -130,20 +132,31 @@ export default function UsagePage() {
             id="usage-until"
             type="datetime-local"
             value={until}
-            onChange={(e) => { setUntil(e.target.value); setDetailPage(1); }}
+            onChange={(e) => {
+              setUntil(e.target.value);
+              setDetailPage(1);
+            }}
             className="w-52"
           />
         </div>
         <div className="space-y-1.5">
           <Label>{t('billing.usage.type')}</Label>
-          <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v ?? 'all'); setDetailPage(1); }}>
+          <Select
+            value={typeFilter}
+            onValueChange={(v) => {
+              setTypeFilter(v ?? 'all');
+              setDetailPage(1);
+            }}
+          >
             <SelectTrigger className="w-48" data-testid="usage-type-filter">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('billing.usage.all_types')}</SelectItem>
               {USAGE_TYPES.map((ut) => (
-                <SelectItem key={ut} value={ut}>{ut}</SelectItem>
+                <SelectItem key={ut} value={ut}>
+                  {ut}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -153,7 +166,7 @@ export default function UsagePage() {
       {/* Summary Chart */}
       {summaries.length > 0 && (
         <div className="rounded-md border bg-card p-4" data-testid="usage-chart">
-          <h3 className="mb-3 text-sm font-medium">{t('billing.usage.by_type')}</h3>
+          <h2 className="mb-3 text-sm font-medium">{t('billing.usage.by_type')}</h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={chartData} margin={{ top: 5, right: 20, bottom: 60, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -174,12 +187,17 @@ export default function UsagePage() {
 
       {/* Summary Cards */}
       {summaries.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" data-testid="usage-summary-cards">
+        <div
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+          data-testid="usage-summary-cards"
+        >
           {summaries.map((s) => (
             <div key={s.usageType} className="rounded-md border bg-card p-3">
               <p className="text-xs text-muted-foreground">{s.usageType}</p>
               <p className="text-lg font-semibold">{formatNumber(s.totalQuantity)}</p>
-              <p className="text-xs text-muted-foreground">{t('billing.usage.records_count', { count: s.recordCount })}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('billing.usage.records_count', { count: s.recordCount })}
+              </p>
             </div>
           ))}
         </div>
@@ -187,7 +205,7 @@ export default function UsagePage() {
 
       {/* Detailed Records */}
       <div data-testid="usage-records-section">
-        <h3 className="mb-3 text-sm font-medium">{t('billing.usage.detailed_records')}</h3>
+        <h2 className="mb-3 text-sm font-medium">{t('billing.usage.detailed_records')}</h2>
         <DataTable
           data={records}
           columns={columns}

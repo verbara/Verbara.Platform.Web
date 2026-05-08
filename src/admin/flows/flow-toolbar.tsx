@@ -32,6 +32,7 @@ export default function FlowToolbar({
       <Input
         value={flowName}
         onChange={(e) => onNameChange(e.target.value)}
+        aria-label={t('admin:flows.toolbar.flow_name_aria', 'Flow name')}
         className="h-8 w-56 text-sm font-medium"
       />
 

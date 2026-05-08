@@ -125,14 +125,14 @@ export default function RolesPage() {
                 <td className="px-4 py-2.5">{role.permissions?.length ?? 0}</td>
                 <td className="px-4 py-2.5">{role.userCount ?? 0}</td>
                 <td className="px-4 py-2.5">
-                  {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- event-stop container only; interactive children are <Button> elements */}
-                  <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex gap-1">
                     <Button
                       variant="ghost"
                       size="icon-sm"
                       aria-label={t('admin:roles.clone', 'Clone Role')}
                       data-testid={`clone-role-${role.roleId}`}
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setCloneTarget({ id: role.roleId, name: role.name });
                         setCloneName(`${role.name} (copy)`);
                       }}
@@ -145,7 +145,10 @@ export default function RolesPage() {
                         size="icon-sm"
                         aria-label={t('common:actions.delete')}
                         data-testid={`delete-role-${role.roleId}`}
-                        onClick={() => setDeleteTarget({ id: role.roleId, name: role.name })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget({ id: role.roleId, name: role.name });
+                        }}
                       >
                         <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>

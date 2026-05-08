@@ -124,9 +124,10 @@ export default function PartnerRevenuePage() {
     const csv = buildCsv(details);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const filenameSuffix = appliedFrom || appliedUntil
-      ? `_${(appliedFrom ?? '').slice(0, 10)}_${(appliedUntil ?? '').slice(0, 10)}`
-      : '';
+    const filenameSuffix =
+      appliedFrom || appliedUntil
+        ? `_${(appliedFrom ?? '').slice(0, 10)}_${(appliedUntil ?? '').slice(0, 10)}`
+        : '';
     const a = document.createElement('a');
     a.href = url;
     a.download = `partner-revenue${filenameSuffix}.csv`;
@@ -188,11 +189,15 @@ export default function PartnerRevenuePage() {
       }),
       col.accessor('platformCost', {
         header: () => t('partner.revenue.col.cost', 'Cost'),
-        cell: (info) => <span className="text-muted-foreground">{formatCurrency(info.getValue(), 'USD')}</span>,
+        cell: (info) => (
+          <span className="text-muted-foreground">{formatCurrency(info.getValue(), 'USD')}</span>
+        ),
       }),
       col.accessor('partnerMargin', {
         header: () => t('partner.revenue.col.margin', 'Margin'),
-        cell: (info) => <span className="font-medium">{formatCurrency(info.getValue(), 'USD')}</span>,
+        cell: (info) => (
+          <span className="font-medium">{formatCurrency(info.getValue(), 'USD')}</span>
+        ),
       }),
       col.display({
         id: 'marginPct',
@@ -200,7 +205,14 @@ export default function PartnerRevenuePage() {
         cell: ({ row }) => {
           const r = row.original;
           const pct = r.grossAmount > 0 ? (r.partnerMargin / r.grossAmount) * 100 : 0;
-          return <span className={`font-semibold ${marginColor(pct)}`} data-testid={`margin-${r.revenueId}`}>{pct.toFixed(1)}%</span>;
+          return (
+            <span
+              className={`font-semibold ${marginColor(pct)}`}
+              data-testid={`margin-${r.revenueId}`}
+            >
+              {pct.toFixed(1)}%
+            </span>
+          );
         },
       }),
       col.accessor('periodStart', {
@@ -209,7 +221,8 @@ export default function PartnerRevenuePage() {
           const r = info.row.original;
           return (
             <span className="text-xs">
-              {format(new Date(r.periodStart), 'MMM d')} — {format(new Date(r.periodEnd), 'MMM d, yyyy')}
+              {format(new Date(r.periodStart), 'MMM d')} —{' '}
+              {format(new Date(r.periodEnd), 'MMM d, yyyy')}
             </span>
           );
         },
@@ -222,13 +235,18 @@ export default function PartnerRevenuePage() {
     <div className="space-y-6" data-testid="partner-revenue-page">
       <PageHeader
         title={t('partner.revenue.title', 'Revenue')}
-        description={t('partner.revenue.description', 'Track revenue and margin across all your customers.')}
+        description={t(
+          'partner.revenue.description',
+          'Track revenue and margin across all your customers.',
+        )}
       />
 
       {/* Date range filter */}
       <div className="flex items-end gap-3 rounded-md border bg-muted/30 p-3">
         <div className="space-y-1.5">
-          <Label htmlFor="rev-from" className="text-xs">{t('partner.revenue.from', 'From')}</Label>
+          <Label htmlFor="rev-from" className="text-xs">
+            {t('partner.revenue.from', 'From')}
+          </Label>
           <Input
             id="rev-from"
             type="date"
@@ -239,7 +257,9 @@ export default function PartnerRevenuePage() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="rev-until" className="text-xs">{t('partner.revenue.until', 'Until')}</Label>
+          <Label htmlFor="rev-until" className="text-xs">
+            {t('partner.revenue.until', 'Until')}
+          </Label>
           <Input
             id="rev-until"
             type="date"
@@ -303,11 +323,14 @@ export default function PartnerRevenuePage() {
 
       {/* Trend chart */}
       <div className="rounded-md border p-4" data-testid="revenue-trend-chart">
-        <h3 className="mb-3 text-sm font-medium text-muted-foreground">
+        <h2 className="mb-3 text-sm font-medium text-muted-foreground">
           {t('partner.revenue.chart.title', 'Revenue & margin trend')}
-        </h3>
+        </h2>
         {trendData.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground" data-testid="revenue-chart-empty">
+          <p
+            className="py-8 text-center text-sm text-muted-foreground"
+            data-testid="revenue-chart-empty"
+          >
             {t('partner.revenue.chart.empty', 'No trend data for the selected period.')}
           </p>
         ) : (
@@ -349,18 +372,24 @@ export default function PartnerRevenuePage() {
       </div>
 
       <div>
-        <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+        <h2 className="mb-2 text-sm font-medium text-muted-foreground">
           {t('partner.revenue.detailsHeading', 'Revenue details')}
-        </h3>
+        </h2>
         {details.length === 0 ? (
-          <p className="rounded-md border p-6 text-center text-sm text-muted-foreground" data-testid="revenue-empty">
+          <p
+            className="rounded-md border p-6 text-center text-sm text-muted-foreground"
+            data-testid="revenue-empty"
+          >
             {t('partner.revenue.empty', 'No revenue records for the selected period.')}
           </p>
         ) : (
           <DataTable
             data={details}
             columns={columns}
-            searchPlaceholder={t('partner.revenue.searchPlaceholder', 'Search by customer or invoice...')}
+            searchPlaceholder={t(
+              'partner.revenue.searchPlaceholder',
+              'Search by customer or invoice...',
+            )}
             onRowClick={handleRowClick}
           />
         )}

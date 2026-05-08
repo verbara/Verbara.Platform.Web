@@ -60,7 +60,7 @@ export default function PartnerSettingsPage() {
         <PageSkeleton variant="form" />
       ) : (
         <div className="max-w-2xl rounded-md border p-6">
-          <h3 className="mb-4 text-sm font-medium">{t('partner.settings.operational')}</h3>
+          <h2 className="mb-4 text-sm font-medium">{t('partner.settings.operational')}</h2>
           <div className="grid grid-cols-2 gap-4">
             <Field
               label={t('partner.settings.platform_name')}

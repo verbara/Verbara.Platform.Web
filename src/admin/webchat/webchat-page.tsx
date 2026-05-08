@@ -36,7 +36,7 @@ export default function WebChatPage() {
 
       <div className="rounded-lg border bg-card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium">{t('webchat.embed_snippet')}</h3>
+          <h2 className="font-medium">{t('webchat.embed_snippet')}</h2>
           <Badge variant="secondary">{t('webchat.html')}</Badge>
         </div>
         <p className="text-sm text-muted-foreground">
@@ -58,7 +58,7 @@ export default function WebChatPage() {
       </div>
 
       <div className="rounded-lg border bg-card p-6 space-y-4">
-        <h3 className="font-medium">{t('webchat.configuration')}</h3>
+        <h2 className="font-medium">{t('webchat.configuration')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label>{t('webchat.api_url')}</Label>

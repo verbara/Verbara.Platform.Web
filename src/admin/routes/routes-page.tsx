@@ -54,7 +54,7 @@ function SortableRow({
   trunkMap: Map<number, string>;
   onDelete: (route: OutboundRouteSummary) => void;
 }>) {
-  const { t } = useTranslation(['admin']);
+  const { t } = useTranslation(['admin', 'common']);
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: route.id,
   });
@@ -70,6 +70,8 @@ function SortableRow({
     <tr ref={setNodeRef} style={style} className="border-t hover:bg-muted/30">
       <td className="px-3 py-2">
         <button
+          type="button"
+          aria-label={t('common:a11y.dragToReorder')}
           className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
           {...attributes}
           {...listeners}

@@ -126,6 +126,7 @@ export default function TrunksPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t('admin:trunks.searchByNamePlaceholder')}
+            aria-label={t('admin:trunks.searchByNamePlaceholder')}
             className="pl-9"
             value={searchName}
             data-testid="trunks-search"

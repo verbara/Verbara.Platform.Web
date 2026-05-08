@@ -41,12 +41,13 @@ export default function WallboardPage() {
     <div className="space-y-6" data-testid="wallboard-page">
       <MetricsAvailabilityBanner isAvailable={isMetricsAvailable} />
       <GlobalKpis totalActive={totalActive} totalAgents={totalAgents} globalSla={globalSla} />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="wallboard-queue-cards">
+      <div
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        data-testid="wallboard-queue-cards"
+      >
         {sortedQueues.length === 0 ? (
           <div className="col-span-full rounded-lg border border-dashed p-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              {t('wallboard.empty')}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('wallboard.empty')}</p>
           </div>
         ) : (
           sortedQueues.map((q) => <QueueCard key={q.queueId} queue={q} />)
@@ -55,9 +56,9 @@ export default function WallboardPage() {
 
       {liveStates.length > 0 && (
         <div className="space-y-3" data-testid="wallboard-live-states">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             {t('wallboard.live_queue_states')}
-          </h3>
+          </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {liveStates.map((state) => (
               <div key={state.queueName} className="rounded-lg border bg-card p-4">
@@ -65,31 +66,39 @@ export default function WallboardPage() {
                 <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-muted-foreground">{t('wallboard.waiting')}</span>
-                    <p className={`text-lg font-bold ${state.callsWaiting > 5 ? 'text-red-500' : 'text-foreground'}`}>
+                    <p
+                      className={`text-lg font-bold ${state.callsWaiting > 5 ? 'text-red-500' : 'text-foreground'}`}
+                    >
                       {state.callsWaiting}
                     </p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t('wallboard.longest_wait')}</span>
-                    <p className="text-lg font-bold">
-                      {Math.round(state.longestWaitMs / 1000)}s
-                    </p>
+                    <p className="text-lg font-bold">{Math.round(state.longestWaitMs / 1000)}s</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-muted-foreground">{t('wallboard.available')}: {state.agentsAvailable}</span>
+                    <span className="text-muted-foreground">
+                      {t('wallboard.available')}: {state.agentsAvailable}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-red-500" />
-                    <span className="text-muted-foreground">{t('wallboard.on_call')}: {state.agentsOnCall}</span>
+                    <span className="text-muted-foreground">
+                      {t('wallboard.on_call')}: {state.agentsOnCall}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-amber-500" />
-                    <span className="text-muted-foreground">{t('wallboard.paused')}: {state.agentsPaused}</span>
+                    <span className="text-muted-foreground">
+                      {t('wallboard.paused')}: {state.agentsPaused}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-purple-500" />
-                    <span className="text-muted-foreground">{t('wallboard.wrap_up')}: {state.agentsInWrapUp}</span>
+                    <span className="text-muted-foreground">
+                      {t('wallboard.wrap_up')}: {state.agentsInWrapUp}
+                    </span>
                   </div>
                 </div>
               </div>

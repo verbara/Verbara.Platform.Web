@@ -29,7 +29,7 @@ function StatusCard({ title, icon: Icon, status, children, testId }: StatusCardP
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">{title}</h3>
+          <h2 className="text-sm font-semibold">{title}</h2>
         </div>
         <span
           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[status]}`}

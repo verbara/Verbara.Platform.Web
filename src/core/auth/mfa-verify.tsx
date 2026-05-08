@@ -139,6 +139,8 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
               }}
               type="text"
               inputMode="numeric"
+              pattern="[0-9]*"
+              {...(i === 0 ? { autoComplete: 'one-time-code' } : { autoComplete: 'off' })}
               maxLength={1}
               value={digit}
               onChange={(e) => handleDigitChange(i, e.target.value)}

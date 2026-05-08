@@ -222,9 +222,9 @@ export default function SseDiagnosticPage() {
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           {t('sseDiagnostic.eventCounters')}
-        </h3>
+        </h2>
         <div className="flex flex-wrap gap-2" data-testid="event-counters">
           {SSE_EVENT_TYPES.map((type) => (
             <Badge key={type} variant="secondary">
@@ -235,9 +235,9 @@ export default function SseDiagnosticPage() {
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           {t('sseDiagnostic.eventLog')}
-        </h3>
+        </h2>
         <div className="max-h-96 overflow-auto rounded-lg border" data-testid="event-log">
           <table className="w-full text-sm">
             <thead className="sticky top-0 border-b bg-muted/50">

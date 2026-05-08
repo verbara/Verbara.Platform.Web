@@ -4,13 +4,7 @@ import { Download } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Badge } from '@/core/ui/badge';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/core/ui/select';
 import { useAuthEvents } from '@/core/api/hooks/use-auth-admin';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -91,8 +85,15 @@ export default function AuthEventsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-heading text-xl font-semibold">{t('admin:auth.events_title', 'Authentication Events')}</h1>
-          <p className="text-sm text-muted-foreground">{t('admin:auth.events_description', 'View login attempts, password changes, and security events')}</p>
+          <h1 className="font-heading text-xl font-semibold">
+            {t('admin:auth.events_title', 'Authentication Events')}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t(
+              'admin:auth.events_description',
+              'View login attempts, password changes, and security events',
+            )}
+          </p>
         </div>
         <Button data-testid="auth-events-export" variant="outline" onClick={exportCsv}>
           <Download className="mr-1.5 h-4 w-4" />
@@ -115,7 +116,9 @@ export default function AuthEventsPage() {
           <SelectContent>
             <SelectItem value="">{t('admin:auth.all_events', 'All events')}</SelectItem>
             {EVENT_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>{type}</SelectItem>
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -123,6 +126,7 @@ export default function AuthEventsPage() {
           data-testid="auth-events-filter-user"
           className="w-48"
           placeholder={t('admin:auth.search_user', 'Search by user...')}
+          aria-label={t('admin:auth.search_user', 'Search by user')}
           value={userSearch}
           onChange={(e) => setUserSearch(e.target.value)}
         />
@@ -130,6 +134,7 @@ export default function AuthEventsPage() {
           type="date"
           data-testid="auth-events-filter-start"
           className="w-40"
+          aria-label={t('admin:auth.filter_start_date', 'Filter start date')}
           value={startDate}
           onChange={(e) => {
             setStartDate(e.target.value);
@@ -140,6 +145,7 @@ export default function AuthEventsPage() {
           type="date"
           data-testid="auth-events-filter-end"
           className="w-40"
+          aria-label={t('admin:auth.filter_end_date', 'Filter end date')}
           value={endDate}
           onChange={(e) => {
             setEndDate(e.target.value);
@@ -147,7 +153,9 @@ export default function AuthEventsPage() {
           }}
         />
         {isFetching && (
-          <span className="text-sm text-muted-foreground animate-pulse">{t('common:status.loading')}</span>
+          <span className="text-sm text-muted-foreground animate-pulse">
+            {t('common:status.loading')}
+          </span>
         )}
       </div>
 

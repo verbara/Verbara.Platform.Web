@@ -148,7 +148,7 @@ function MfaSection({ me, locked }: Readonly<{ me: Me; locked: boolean }>) {
             <Shield className="h-5 w-5 text-muted-foreground" />
           )}
           <div>
-            <h3 className="font-medium">{t('admin:security.mfa')}</h3>
+            <h2 className="font-medium">{t('admin:security.mfa')}</h2>
             <p className="text-sm text-muted-foreground">{t('admin:security.mfa_description')}</p>
           </div>
         </div>
@@ -423,7 +423,7 @@ function PasswordSection({ locked }: Readonly<{ locked: boolean }>) {
     <div className="rounded-lg border bg-card p-6 space-y-4">
       <div className="flex items-center gap-2">
         <KeyRound className="h-5 w-5 text-muted-foreground" />
-        <h3 className="font-medium">{t('admin:security.change_password')}</h3>
+        <h2 className="font-medium">{t('admin:security.change_password')}</h2>
       </div>
 
       <div className="space-y-3">
@@ -533,7 +533,7 @@ function SessionsSection({ locked }: Readonly<{ locked: boolean }>) {
     <div className="rounded-lg border bg-card p-6 space-y-4">
       <div className="flex items-center gap-2">
         <Lock className="h-5 w-5 text-muted-foreground" />
-        <h3 className="font-medium">{t('admin:security.active_sessions')}</h3>
+        <h2 className="font-medium">{t('admin:security.active_sessions')}</h2>
       </div>
 
       <div data-testid="security-sessions-list" className="overflow-x-auto rounded-md border">

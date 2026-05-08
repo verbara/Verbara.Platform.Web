@@ -23,6 +23,7 @@ export function ContactSearchPanel() {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t('shared.contact_search.placeholder')}
+          aria-label={t('shared.contact_search.placeholder')}
           className="pl-9"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -32,7 +33,9 @@ export function ContactSearchPanel() {
       {debouncedQuery.length >= 2 && (
         <div className="space-y-2">
           {searching && (
-            <p className="py-4 text-sm text-muted-foreground">{t('shared.contact_search.searching')}</p>
+            <p className="py-4 text-sm text-muted-foreground">
+              {t('shared.contact_search.searching')}
+            </p>
           )}
           {!searching && searchResults.length === 0 && (
             <p className="py-4 text-sm text-muted-foreground">
@@ -54,8 +57,12 @@ export function ContactSearchPanel() {
 
 function ContactRow({ contact }: { contact: Contact }) {
   const { t } = useTranslation('admin');
-  const displayName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || t('shared.contact_search.unknown');
-  const phone = contact.addresses.find((a) => a.channel === 'voice' || a.channel === 'sms')?.address;
+  const displayName =
+    [contact.firstName, contact.lastName].filter(Boolean).join(' ') ||
+    t('shared.contact_search.unknown');
+  const phone = contact.addresses.find(
+    (a) => a.channel === 'voice' || a.channel === 'sms',
+  )?.address;
   const email = contact.addresses.find((a) => a.channel === 'email')?.address;
 
   return (
@@ -86,9 +93,7 @@ function ContactRow({ contact }: { contact: Contact }) {
           )}
         </div>
       </div>
-      {contact.segment && (
-        <Badge variant="outline">{contact.segment}</Badge>
-      )}
+      {contact.segment && <Badge variant="outline">{contact.segment}</Badge>}
     </div>
   );
 }

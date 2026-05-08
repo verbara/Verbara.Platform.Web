@@ -21,9 +21,7 @@ function ArticleCard({ article }: { article: ArticleSearchResult }) {
         className="flex w-full items-start justify-between gap-2 px-3 py-2.5 text-left"
       >
         <div className="flex flex-1 flex-col gap-1 min-w-0">
-          <span className="truncate text-sm font-semibold text-foreground">
-            {article.title}
-          </span>
+          <span className="truncate text-sm font-semibold text-foreground">{article.title}</span>
           <div className="flex flex-wrap items-center gap-1">
             <Badge variant="secondary" className="text-xs">
               {scorePercent}%
@@ -81,6 +79,7 @@ export function KnowledgeTab() {
         <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t('agent:knowledge.search_placeholder')}
+          aria-label={t('agent:knowledge.search_placeholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-8"
@@ -95,9 +94,7 @@ export function KnowledgeTab() {
       )}
 
       {showNoResults && (
-        <p className="py-4 text-center text-sm text-slate-400">
-          {t('agent:knowledge.no_results')}
-        </p>
+        <p className="py-4 text-center text-sm text-slate-400">{t('agent:knowledge.no_results')}</p>
       )}
 
       {!showEmpty && results.length > 0 && (

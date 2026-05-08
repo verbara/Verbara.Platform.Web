@@ -19,8 +19,7 @@ import {
 export default function RetentionAdminPage() {
   const { t } = useTranslation(['admin']);
   const { formatDateTime } = useFormatDate();
-  const formatTimestamp = (iso: string | null): string =>
-    iso ? formatDateTime(iso) : '—';
+  const formatTimestamp = (iso: string | null): string => (iso ? formatDateTime(iso) : '—');
   const permissions = useAuthStore((s) => s.permissions);
   const canManage = permissions.includes('retention.manage');
 
@@ -37,18 +36,12 @@ export default function RetentionAdminPage() {
   };
 
   const onDryRun = () => {
-    runRetention.mutate(
-      { dryRun: true },
-      { onSuccess: (result) => setLastRun(result) },
-    );
+    runRetention.mutate({ dryRun: true }, { onSuccess: (result) => setLastRun(result) });
   };
 
   const onPurge = () => {
     setPurgeConfirmOpen(false);
-    runRetention.mutate(
-      { dryRun: false },
-      { onSuccess: (result) => setLastRun(result) },
-    );
+    runRetention.mutate({ dryRun: false }, { onSuccess: (result) => setLastRun(result) });
   };
 
   if (targetsError) {
@@ -71,7 +64,10 @@ export default function RetentionAdminPage() {
           className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
           data-testid="retention-dryrun-banner"
         >
-          {t('admin:retention.dryRunActive', 'Currently in DRY-RUN MODE — no rows will be deleted.')}
+          {t(
+            'admin:retention.dryRunActive',
+            'Currently in DRY-RUN MODE — no rows will be deleted.',
+          )}
         </div>
       )}
 
@@ -96,37 +92,70 @@ export default function RetentionAdminPage() {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-3 py-2 text-left font-medium">{t('admin:retention.col.name', 'Target')}</th>
-              <th className="px-3 py-2 text-left font-medium">{t('admin:retention.col.table', 'Schema.Table')}</th>
-              <th className="px-3 py-2 text-left font-medium">{t('admin:retention.col.window', 'Window (days)')}</th>
-              <th className="px-3 py-2 text-left font-medium">{t('admin:retention.col.lastRun', 'Last execution')}</th>
-              <th className="px-3 py-2 text-left font-medium">{t('admin:retention.col.status', 'Last status')}</th>
-              <th className="px-3 py-2 text-right font-medium">{t('admin:retention.col.rows', 'Rows purged')}</th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t('admin:retention.col.name', 'Target')}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t('admin:retention.col.table', 'Schema.Table')}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t('admin:retention.col.window', 'Window (days)')}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t('admin:retention.col.lastRun', 'Last execution')}
+              </th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t('admin:retention.col.status', 'Last status')}
+              </th>
+              <th className="px-3 py-2 text-right font-medium">
+                {t('admin:retention.col.rows', 'Rows purged')}
+              </th>
             </tr>
           </thead>
           <tbody>
             {targetsLoading ? (
-              <tr><td colSpan={6} className="px-3 py-4 text-center text-gray-500">{t('admin:retention.loading', 'Loading...')}</td></tr>
+              <tr>
+                <td colSpan={6} className="px-3 py-4 text-center text-gray-500">
+                  {t('admin:retention.loading', 'Loading...')}
+                </td>
+              </tr>
             ) : !targets || targets.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-center text-gray-500" data-testid="retention-empty-state">
-                  {t('admin:retention.empty', 'No retention targets registered in this deployment.')}
+                <td
+                  colSpan={6}
+                  className="px-3 py-4 text-center text-gray-500"
+                  data-testid="retention-empty-state"
+                >
+                  {t(
+                    'admin:retention.empty',
+                    'No retention targets registered in this deployment.',
+                  )}
                 </td>
               </tr>
             ) : (
               targets.map((target) => (
-                <tr key={target.name} className="border-t" data-testid={`retention-target-${target.name}`}>
+                <tr
+                  key={target.name}
+                  className="border-t"
+                  data-testid={`retention-target-${target.name}`}
+                >
                   <td className="px-3 py-2 font-medium">{target.name}</td>
-                  <td className="px-3 py-2 text-gray-600">{target.schema}.{target.table}</td>
+                  <td className="px-3 py-2 text-gray-600">
+                    {target.schema}.{target.table}
+                  </td>
                   <td className="px-3 py-2">{target.windowDays}</td>
                   <td className="px-3 py-2">{formatTimestamp(target.lastExecutionAt)}</td>
                   <td className="px-3 py-2">
                     {target.lastStatus ? (
-                      <span className={`text-xs ${target.lastStatus === 'success' ? 'text-green-700' : target.lastStatus === 'error' ? 'text-red-700' : 'text-gray-600'}`}>
+                      <span
+                        className={`text-xs ${target.lastStatus === 'success' ? 'text-green-700' : target.lastStatus === 'error' ? 'text-red-700' : 'text-gray-600'}`}
+                      >
                         {target.lastStatus}
                         {target.lastWasDryRun && ' (dry-run)'}
                       </span>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </td>
                   <td className="px-3 py-2 text-right">{target.lastRowsPurged ?? '—'}</td>
                 </tr>
@@ -151,7 +180,11 @@ export default function RetentionAdminPage() {
             type="button"
             onClick={() => setPurgeConfirmOpen(true)}
             disabled={runRetention.isPending || configLoading || (config?.dryRun ?? true)}
-            title={config?.dryRun ? t('admin:retention.purgeBlockedByDryRun', 'Disable DryRun first') : ''}
+            title={
+              config?.dryRun
+                ? t('admin:retention.purgeBlockedByDryRun', 'Disable DryRun first')
+                : ''
+            }
             className="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50"
             data-testid="retention-run-purge"
           >
@@ -163,9 +196,12 @@ export default function RetentionAdminPage() {
       {lastRun && (
         <div className="rounded-md border bg-gray-50 p-3 text-sm" data-testid="retention-last-run">
           <strong>{t('admin:retention.lastRun', 'Last run')}:</strong>{' '}
-          {lastRun.dryRun ? t('admin:retention.dryRun', 'dry-run') : t('admin:retention.purged', 'purged')} ·{' '}
-          {lastRun.targets.length} {t('admin:retention.targetsProcessed', 'targets')} ·{' '}
-          {lastRun.targets.reduce((sum, target) => sum + target.rowsPurged, 0)} {t('admin:retention.totalRows', 'rows')}
+          {lastRun.dryRun
+            ? t('admin:retention.dryRun', 'dry-run')
+            : t('admin:retention.purged', 'purged')}{' '}
+          · {lastRun.targets.length} {t('admin:retention.targetsProcessed', 'targets')} ·{' '}
+          {lastRun.targets.reduce((sum, target) => sum + target.rowsPurged, 0)}{' '}
+          {t('admin:retention.totalRows', 'rows')}
         </div>
       )}
 
@@ -175,11 +211,14 @@ export default function RetentionAdminPage() {
           data-testid="retention-confirm-purge-dialog"
         >
           <div className="rounded-md bg-white p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold">
+            <h2 className="text-lg font-semibold">
               {t('admin:retention.confirmPurgeTitle', 'Confirm purge')}
-            </h3>
+            </h2>
             <p className="mt-2 text-sm text-gray-700">
-              {t('admin:retention.confirmPurgeBody', 'This will permanently delete rows beyond the retention window. Continue?')}
+              {t(
+                'admin:retention.confirmPurgeBody',
+                'This will permanently delete rows beyond the retention window. Continue?',
+              )}
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button

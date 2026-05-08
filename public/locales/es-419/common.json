@@ -162,7 +162,8 @@
   "a11y": {
     "skipToMain": "Saltar al contenido principal",
     "required": "obligatorio",
-    "notificationsRegion": "Notificaciones"
+    "notificationsRegion": "Notificaciones",
+    "dragToReorder": "Arrastra para reordenar"
   },
   "errors": {
     "unauthorized_title": "403 — No autorizado",

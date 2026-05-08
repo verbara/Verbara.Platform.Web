@@ -152,9 +152,9 @@ export default function RoleDetailPage() {
 
       {/* Permissions by category */}
       <div className="rounded-lg border bg-card p-6 space-y-6">
-        <h3 className="font-heading text-base font-semibold">
+        <h2 className="font-heading text-base font-semibold">
           {t('admin:roles.permissions', 'Permissions')}
-        </h3>
+        </h2>
 
         {categories.map((cat) => (
           <div key={cat.category}>

@@ -24,7 +24,15 @@ const stateBadgeVariant: Record<string, 'default' | 'secondary' | 'outline' | 'd
   offline: 'outline',
 };
 
-function InfoRow({ icon: Icon, label, children }: { icon: typeof Mail; label: string; children: React.ReactNode }) {
+function InfoRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Mail;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start gap-3 py-3">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -131,9 +139,7 @@ export default function AgentDetailPage() {
           )}
         </InfoRow>
         <InfoRow icon={CircleDot} label={t('admin:agents.state')}>
-          <Badge variant={stateBadgeVariant[agent.state] ?? 'outline'}>
-            {agent.state}
-          </Badge>
+          <Badge variant={stateBadgeVariant[agent.state] ?? 'outline'}>{agent.state}</Badge>
         </InfoRow>
       </div>
 
@@ -143,11 +149,16 @@ export default function AgentDetailPage() {
         <Separator className="my-3" />
 
         {skills.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">{t('admin:agents.noSkills')}</p>
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            {t('admin:agents.noSkills')}
+          </p>
         ) : (
           <div className="space-y-2">
             {skills.map((skill) => (
-              <div key={skill.name} className="flex items-center justify-between rounded-md border px-3 py-2">
+              <div
+                key={skill.name}
+                className="flex items-center justify-between rounded-md border px-3 py-2"
+              >
                 <div className="flex items-center gap-2">
                   <Zap className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{skill.name}</span>
@@ -170,6 +181,7 @@ export default function AgentDetailPage() {
         <div className="mt-3 flex items-center gap-2">
           <Input
             placeholder={t('admin:agents.skillName')}
+            aria-label={t('admin:agents.skillName')}
             value={newSkillName}
             onChange={(e) => setNewSkillName(e.target.value)}
             className="flex-1"
@@ -179,6 +191,7 @@ export default function AgentDetailPage() {
             min={1}
             max={10}
             placeholder="1-10"
+            aria-label={t('admin:agents.skillProficiency', 'Skill proficiency 1-10')}
             value={newSkillProf}
             onChange={(e) => setNewSkillProf(e.target.value)}
             className="w-20"
@@ -196,7 +209,9 @@ export default function AgentDetailPage() {
         <Separator className="my-3" />
 
         {queueCount === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">{t('admin:agents.noQueues')}</p>
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            {t('admin:agents.noQueues')}
+          </p>
         ) : (
           <p className="py-4 text-center text-sm text-muted-foreground">
             {queueCount} queue{queueCount !== 1 ? 's' : ''} assigned
@@ -255,8 +270,8 @@ export default function AgentDetailPage() {
         title={t('admin:agents.deleteTitle')}
         description={
           <>
-            Are you sure you want to delete <strong>{agent.displayName}</strong>? This action
-            cannot be undone.
+            Are you sure you want to delete <strong>{agent.displayName}</strong>? This action cannot
+            be undone.
           </>
         }
         onConfirm={handleDelete}

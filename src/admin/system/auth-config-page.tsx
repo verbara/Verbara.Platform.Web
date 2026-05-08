@@ -7,7 +7,11 @@ import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
 import { Checkbox } from '@/core/ui/checkbox';
 import { Separator } from '@/core/ui/separator';
-import { useAuthConfig, useUpdateAuthConfig, type AuthConfig } from '@/core/api/hooks/use-auth-admin';
+import {
+  useAuthConfig,
+  useUpdateAuthConfig,
+  type AuthConfig,
+} from '@/core/api/hooks/use-auth-admin';
 import { useRoles } from '@/core/api/hooks/use-rbac';
 
 export default function AuthConfigPage() {
@@ -54,10 +58,21 @@ export default function AuthConfigPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-heading text-xl font-semibold">{t('admin:auth.config_title', 'Authentication Settings')}</h1>
-          <p className="text-sm text-muted-foreground">{t('admin:auth.config_description', 'Configure authentication policies and security settings')}</p>
+          <h1 className="font-heading text-xl font-semibold">
+            {t('admin:auth.config_title', 'Authentication Settings')}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t(
+              'admin:auth.config_description',
+              'Configure authentication policies and security settings',
+            )}
+          </p>
         </div>
-        <Button data-testid="auth-config-save" onClick={handleSave} disabled={!dirty || updateConfig.isPending}>
+        <Button
+          data-testid="auth-config-save"
+          onClick={handleSave}
+          disabled={!dirty || updateConfig.isPending}
+        >
           <Save className="mr-1.5 h-4 w-4" />
           {t('actions.save', 'Save')}
         </Button>
@@ -65,7 +80,7 @@ export default function AuthConfigPage() {
 
       {/* MFA Policy */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
-        <h3 className="font-medium">{t('admin:auth.mfa_policy', 'MFA Policy')}</h3>
+        <h2 className="font-medium">{t('admin:auth.mfa_policy', 'MFA Policy')}</h2>
         <div className="space-y-2">
           {(['optional', 'required_for_roles', 'required_all'] as const).map((policy) => (
             <label key={policy} className="flex items-center gap-2 cursor-pointer">
@@ -106,7 +121,7 @@ export default function AuthConfigPage() {
 
       {/* Password Policy */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
-        <h3 className="font-medium">{t('admin:auth.password_policy', 'Password Policy')}</h3>
+        <h2 className="font-medium">{t('admin:auth.password_policy', 'Password Policy')}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>{t('admin:auth.min_length', 'Minimum Length')}</Label>
@@ -150,7 +165,7 @@ export default function AuthConfigPage() {
 
       {/* Lockout */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
-        <h3 className="font-medium">{t('admin:auth.lockout', 'Account Lockout')}</h3>
+        <h2 className="font-medium">{t('admin:auth.lockout', 'Account Lockout')}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>{t('admin:auth.lockout_threshold', 'Failed Attempts Threshold')}</Label>
@@ -179,7 +194,7 @@ export default function AuthConfigPage() {
 
       {/* Session Timeouts */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
-        <h3 className="font-medium">{t('admin:auth.session_timeouts', 'Session Timeouts')}</h3>
+        <h2 className="font-medium">{t('admin:auth.session_timeouts', 'Session Timeouts')}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>{t('admin:auth.idle_timeout', 'Idle Timeout')}</Label>
@@ -213,7 +228,7 @@ export default function AuthConfigPage() {
       {/* OIDC Config */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-medium">{t('admin:auth.oidc_config', 'OpenID Connect (SSO)')}</h3>
+          <h2 className="font-medium">{t('admin:auth.oidc_config', 'OpenID Connect (SSO)')}</h2>
           <Switch
             data-testid="auth-config-oidcEnabled"
             checked={form.oidcEnabled ?? false}
