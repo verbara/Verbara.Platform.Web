@@ -1,3 +1,17 @@
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: ({ count }: { count: number }) => ({
+    getVirtualItems: () =>
+      Array.from({ length: count }, (_, i) => ({
+        index: i,
+        start: i * 80,
+        size: 80,
+      })),
+    getTotalSize: () => count * 80,
+    scrollToIndex: () => {},
+    measureElement: () => {},
+  }),
+}));
+
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { I18nextProvider, initReactI18next } from 'react-i18next';

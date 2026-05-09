@@ -1,3 +1,19 @@
+import { vi } from 'vitest';
+
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: ({ count }: { count: number }) => ({
+    getVirtualItems: () =>
+      Array.from({ length: count }, (_, i) => ({
+        index: i,
+        start: i * 80,
+        size: 80,
+      })),
+    getTotalSize: () => count * 80,
+    scrollToIndex: () => {},
+    measureElement: () => {},
+  }),
+}));
+
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
@@ -39,5 +55,22 @@ describe('MessageList', () => {
     );
     const log = screen.getByRole('log');
     expect(log).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('Renders1000Messages_WithoutJank', () => {
+    const big: ChatMessage[] = Array.from({ length: 1000 }, (_, i) => ({
+      id: `m${i}`,
+      text: `Message ${i}`,
+      from: i % 2 === 0 ? ('visitor' as const) : ('agent' as const),
+      timestamp: '2026-05-09T10:00:00Z',
+    }));
+    const start = performance.now();
+    render(
+      <I18nextProvider i18n={i18n}>
+        <MessageList messages={big} />
+      </I18nextProvider>,
+    );
+    const elapsed = performance.now() - start;
+    expect(elapsed).toBeLessThan(2000); // generous; real virtualizer handles this much faster
   });
 });
