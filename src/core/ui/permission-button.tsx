@@ -1,9 +1,11 @@
-import { useId, type ComponentProps, type MouseEvent, type ReactNode } from 'react';
+import { useId, type ComponentProps, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { useHasPermission, useHasAnyPermission } from '@/core/auth/use-has-permission';
 
 type ButtonOwnProps = ComponentProps<typeof Button>;
+type ButtonClickHandler = NonNullable<ButtonOwnProps['onClick']>;
+type ButtonClickEvent = Parameters<ButtonClickHandler>[0];
 
 interface PermissionButtonProps extends Omit<ButtonOwnProps, 'disabled'> {
   /** Single permission required (mutually exclusive with `requiresAny`) */
@@ -37,7 +39,7 @@ export function PermissionButton({
       : t('permission.button.requiresAny', { permissions: (requiresAny ?? []).join(', ') })
     : undefined;
 
-  function handleClick(e: MouseEvent<HTMLButtonElement>) {
+  function handleClick(e: ButtonClickEvent) {
     if (isDisabled) {
       e.preventDefault();
       e.stopPropagation();
