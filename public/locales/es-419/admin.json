@@ -1049,7 +1049,49 @@
     "runNow": "Ejecutar ahora",
     "executionHistory": "Historial de ejecuciones",
     "historyTitle": "Historial de ejecuciones",
-    "noExecutions": "Aún no hay ejecuciones"
+    "noExecutions": "Aún no hay ejecuciones",
+    "downloadPdf": "Descargar PDF",
+    "preparingPdf": "Generando PDF…",
+    "pdfNotYetSupported": "PDF para este tipo de reporte aún no está disponible",
+    "pdf": {
+      "cdr": {
+        "documentTitle": "Resumen de CDR — {{name}}",
+        "kpiTitle": "Métricas clave",
+        "rowsTitle": "Llamadas",
+        "period": "Período",
+        "totalCalls": "Total de llamadas",
+        "totalDuration": "Duración total",
+        "avgDuration": "Duración promedio",
+        "slaPercent": "SLA cumplido",
+        "col": {
+          "startTime": "Hora de inicio",
+          "contact": "Contacto",
+          "queue": "Cola",
+          "agent": "Agente",
+          "duration": "Duración",
+          "disposition": "Disposición",
+          "slaMet": "SLA"
+        }
+      },
+      "qa": {
+        "documentTitle": "Resumen de QA — {{name}}",
+        "distributionTitle": "Distribución de puntuaciones",
+        "perAgentTitle": "Desglose por agente",
+        "period": "Período",
+        "totalEvaluations": "Total de evaluaciones",
+        "avgScore": "Puntuación promedio",
+        "violations": "Violaciones",
+        "excellent": "Excelente (≥ 90)",
+        "good": "Bueno (80–89)",
+        "fair": "Regular (70–79)",
+        "poor": "Bajo (< 70)",
+        "col": {
+          "agent": "Agente",
+          "evaluations": "Evaluaciones",
+          "avgScore": "Puntuación promedio"
+        }
+      }
+    }
   },
   "security": {
     "title": "Seguridad",

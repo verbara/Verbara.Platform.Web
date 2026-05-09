@@ -1049,7 +1049,49 @@
     "runNow": "Run now",
     "executionHistory": "Execution history",
     "historyTitle": "Execution History",
-    "noExecutions": "No executions yet"
+    "noExecutions": "No executions yet",
+    "downloadPdf": "Download PDF",
+    "preparingPdf": "Preparing PDF…",
+    "pdfNotYetSupported": "PDF for this report type is not yet available",
+    "pdf": {
+      "cdr": {
+        "documentTitle": "CDR Summary — {{name}}",
+        "kpiTitle": "Key Metrics",
+        "rowsTitle": "Calls",
+        "period": "Period",
+        "totalCalls": "Total calls",
+        "totalDuration": "Total duration",
+        "avgDuration": "Average duration",
+        "slaPercent": "SLA met",
+        "col": {
+          "startTime": "Start time",
+          "contact": "Contact",
+          "queue": "Queue",
+          "agent": "Agent",
+          "duration": "Duration",
+          "disposition": "Disposition",
+          "slaMet": "SLA"
+        }
+      },
+      "qa": {
+        "documentTitle": "QA Summary — {{name}}",
+        "distributionTitle": "Score Distribution",
+        "perAgentTitle": "Per-agent breakdown",
+        "period": "Period",
+        "totalEvaluations": "Total evaluations",
+        "avgScore": "Average score",
+        "violations": "Violations",
+        "excellent": "Excellent (≥ 90)",
+        "good": "Good (80–89)",
+        "fair": "Fair (70–79)",
+        "poor": "Poor (< 70)",
+        "col": {
+          "agent": "Agent",
+          "evaluations": "Evaluations",
+          "avgScore": "Avg score"
+        }
+      }
+    }
   },
   "security": {
     "title": "Security",
