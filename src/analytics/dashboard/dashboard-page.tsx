@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PrintButton } from '@/core/ui/print-button';
 import { KpiCard } from './kpi-card';
 import { TrendChart } from './trend-chart';
 import { OverlayChart, type OverlayChartPoint } from './overlay-chart';
@@ -30,6 +32,7 @@ export default function DashboardPage() {
   const { t } = useTranslation('analytics');
   const { formatNumber } = useFormatNumber();
   const { from, to, queue } = useAnalyticsFilterStore();
+  const printRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading } = useDashboard(from, to, queue || undefined);
   const { data: intervalsData } = useIntervals(from, to, queue || undefined);
@@ -38,7 +41,8 @@ export default function DashboardPage() {
   const prev = data?.previousPeriodKpis;
 
   const kpiDeltas = (current: DashboardKpis | undefined, previous: DashboardKpis | undefined) => {
-    if (!current || !previous) return { handled: undefined, wait: undefined, handle: undefined, sla: undefined };
+    if (!current || !previous)
+      return { handled: undefined, wait: undefined, handle: undefined, sla: undefined };
     return {
       handled: computeDelta(current.conversationsHandled, previous.conversationsHandled),
       wait: computeDelta(current.avgWaitMs, previous.avgWaitMs),
@@ -51,7 +55,10 @@ export default function DashboardPage() {
 
   const volumeData = (data?.volumeTrend ?? []).map((p) => ({ name: p.label, value: p.value }));
   const slaTrendData = (data?.slaTrend ?? []).map((p) => ({ name: p.label, value: p.value }));
-  const channelData = (data?.channelDistribution ?? []).map((d) => ({ name: d.channel, value: d.count }));
+  const channelData = (data?.channelDistribution ?? []).map((d) => ({
+    name: d.channel,
+    value: d.count,
+  }));
 
   // Overlay chart: zip volumeTrend + slaTrend by index (same labels expected)
   const overlayData: OverlayChartPoint[] = (data?.volumeTrend ?? []).map((p, i) => ({
@@ -73,10 +80,13 @@ export default function DashboardPage() {
     <div className="space-y-6" data-testid="dashboard-page">
       <FilterBar />
 
-      <div className="px-6 space-y-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          {t('dashboard.title')}
-        </h1>
+      <div ref={printRef} data-print="target" className="px-6 space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            {t('dashboard.title')}
+          </h1>
+          <PrintButton contentRef={printRef} documentTitle="dashboard" />
+        </div>
 
         {/* KPI Cards */}
         {isLoading ? (
@@ -89,7 +99,10 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="dashboard-kpis">
+          <div
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+            data-testid="dashboard-kpis"
+          >
             <KpiCard
               label={t('dashboard.conversations_handled')}
               value={kpis ? formatNumber(kpis.conversationsHandled) : '—'}
