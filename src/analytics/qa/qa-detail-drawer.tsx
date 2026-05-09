@@ -1,6 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
+import { PrintButton } from '@/core/ui/print-button';
+import { PdfDownloadButton } from '@/core/ui/pdf-download-button';
+import { renderQaPdf } from './qa-pdf-template';
 import {
   AreaChart,
   Area,
@@ -11,13 +14,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from 'recharts';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/core/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/core/ui/sheet';
 import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
 import { ScoreGauge } from './score-gauge';
@@ -123,9 +120,15 @@ function sentimentAverage(points: readonly SentimentPoint[]): number {
   return sum / points.length;
 }
 
+function makeQaFilename(sessionId: string): string {
+  const stamp = new Date().toISOString().slice(0, 16).replaceAll(/[:T-]/g, '');
+  return `qa-${sessionId}-${stamp}.pdf`;
+}
+
 export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawerProps) {
   const { t } = useTranslation('analytics');
   const { formatDateShort } = useFormatDate();
+  const printRef = useRef<HTMLDivElement>(null);
 
   const { data: detail, isLoading } = useQaDetail(sessionId ?? '');
 
@@ -152,6 +155,24 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
           )}
         </SheetHeader>
 
+        {sessionId && detail && (
+          <div data-print="hide" className="flex items-center gap-2 px-4 pt-2">
+            <PrintButton contentRef={printRef} documentTitle={`qa-${sessionId}`} />
+            <PdfDownloadButton
+              filename={makeQaFilename(sessionId)}
+              documentTitle={t('qa.pdf.documentTitle', { id: sessionId })}
+              onGenerate={async ({ doc, helpers }) => {
+                renderQaPdf({
+                  doc,
+                  helpers,
+                  qa: detail,
+                  t: (key) => t(key.replace(/^analytics\./, '')),
+                });
+              }}
+            />
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex items-center justify-center py-12 text-muted-foreground">
             {t('loading', { ns: 'common' })}
@@ -159,7 +180,11 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
         )}
 
         {!isLoading && detail && (
-          <div className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
+          <div
+            ref={printRef}
+            data-print="target"
+            className="flex-1 space-y-5 overflow-y-auto px-4 pb-4"
+          >
             {/* Score gauge */}
             <div className="flex justify-center">
               <ScoreGauge score={detail.qaScore} />
@@ -288,7 +313,10 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
             <section data-testid="qa-sentiment-chart">
               <h3
                 className="mb-1 text-sm font-medium"
-                title={t('qa.sentiment_timeline_tooltip', 'Sentiment evolution per conversation turn')}
+                title={t(
+                  'qa.sentiment_timeline_tooltip',
+                  'Sentiment evolution per conversation turn',
+                )}
               >
                 {t('qa.sentiment')}
               </h3>
@@ -321,7 +349,10 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
                   data-points={sentimentData.length}
                 >
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={sentimentData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                    <AreaChart
+                      data={sentimentData}
+                      margin={{ top: 4, right: 8, left: 0, bottom: 4 }}
+                    >
                       <defs>
                         <linearGradient id="qaSentimentGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#16a34a" stopOpacity={0.6} />
@@ -336,7 +367,8 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
                       <Tooltip
                         formatter={(value, _name, item) => {
                           const v = typeof value === 'number' ? value : Number(value ?? 0);
-                          const payload = (item as { payload?: SentimentPoint } | undefined)?.payload;
+                          const payload = (item as { payload?: SentimentPoint } | undefined)
+                            ?.payload;
                           return [
                             `${v.toFixed(2)} (${payload?.label ?? ''})`,
                             payload?.speaker ?? '',
@@ -369,7 +401,9 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
                 {t('qa.topics')}
               </h3>
               {detail.allTopics.length === 0 ? (
-                <p className="text-xs text-muted-foreground">{t('qa.no_topics', 'No topics detected')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('qa.no_topics', 'No topics detected')}
+                </p>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {detail.allTopics.map((topic) => (
