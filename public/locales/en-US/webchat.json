@@ -1,0 +1,56 @@
+{
+  "bubble": {
+    "openLabel": "Open chat",
+    "closeLabel": "Close chat",
+    "unreadBadge": "{{count}} unread message",
+    "unreadBadgeMany": "{{count}} unread messages"
+  },
+  "preChat": {
+    "title": "Start a conversation",
+    "subtitle": "Tell us a bit about yourself so we can help.",
+    "name": "Your name",
+    "namePlaceholder": "Jane Doe",
+    "email": "Email",
+    "emailPlaceholder": "you@company.com",
+    "submit": "Start chat",
+    "validation": {
+      "nameRequired": "Please enter your name",
+      "emailRequired": "Please enter your email",
+      "emailInvalid": "Please enter a valid email"
+    }
+  },
+  "composer": {
+    "placeholder": "Type a message…",
+    "send": "Send",
+    "sendAriaLabel": "Send message",
+    "characterLimit": "{{count}} / {{max}}"
+  },
+  "status": {
+    "online": "Online — typical response 2 min",
+    "offline": "Offline — leave a message",
+    "connecting": "Connecting…",
+    "reconnecting": "Reconnecting…",
+    "typing": "Agent is typing…",
+    "timeout": "Agent is away. Leave a message and we'll respond by email."
+  },
+  "messages": {
+    "delivered": "Delivered",
+    "failed": "Failed to send. Tap to retry.",
+    "queued": "Queued — will send when reconnected",
+    "newMessage": "New message"
+  },
+  "errors": {
+    "sessionFailed": "Could not start chat. Please try again.",
+    "transportFailed": "Connection lost. We're trying to reconnect.",
+    "fileTooLarge": "File is too large to display ({{size}})."
+  },
+  "settings": {
+    "soundOn": "Notifications on",
+    "soundOff": "Notifications off",
+    "reset": "Reset chat",
+    "resetConfirm": "This will clear your conversation history. Continue?"
+  },
+  "branding": {
+    "poweredBy": "Powered by Verbara"
+  }
+}

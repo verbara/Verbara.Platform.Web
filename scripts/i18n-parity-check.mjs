@@ -8,7 +8,7 @@ const localesDir = join(__dirname, '..', 'public', 'locales');
 
 const BASELINE = 'es-419';
 const LOCALES = ['es-419', 'en-US', 'pt-BR'];
-const NAMESPACES = ['common', 'admin', 'agent', 'analytics', 'operations'];
+const NAMESPACES = ['common', 'admin', 'agent', 'analytics', 'operations', 'webchat'];
 
 function flatten(obj, prefix = '') {
   if (obj === null || typeof obj !== 'object') return new Set([prefix]);

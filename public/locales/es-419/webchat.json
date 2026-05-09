@@ -1,0 +1,56 @@
+{
+  "bubble": {
+    "openLabel": "Abrir chat",
+    "closeLabel": "Cerrar chat",
+    "unreadBadge": "{{count}} mensaje sin leer",
+    "unreadBadgeMany": "{{count}} mensajes sin leer"
+  },
+  "preChat": {
+    "title": "Iniciar conversación",
+    "subtitle": "Cuéntanos un poco sobre ti para ayudarte mejor.",
+    "name": "Tu nombre",
+    "namePlaceholder": "Juana Pérez",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@empresa.com",
+    "submit": "Iniciar chat",
+    "validation": {
+      "nameRequired": "Por favor ingresa tu nombre",
+      "emailRequired": "Por favor ingresa tu correo",
+      "emailInvalid": "Por favor ingresa un correo válido"
+    }
+  },
+  "composer": {
+    "placeholder": "Escribe un mensaje…",
+    "send": "Enviar",
+    "sendAriaLabel": "Enviar mensaje",
+    "characterLimit": "{{count}} / {{max}}"
+  },
+  "status": {
+    "online": "En línea — respuesta típica 2 min",
+    "offline": "Fuera de línea — deja un mensaje",
+    "connecting": "Conectando…",
+    "reconnecting": "Reconectando…",
+    "typing": "El agente está escribiendo…",
+    "timeout": "El agente está ausente. Deja un mensaje y te responderemos por correo."
+  },
+  "messages": {
+    "delivered": "Entregado",
+    "failed": "No se pudo enviar. Toca para reintentar.",
+    "queued": "En cola — se enviará al reconectar",
+    "newMessage": "Mensaje nuevo"
+  },
+  "errors": {
+    "sessionFailed": "No se pudo iniciar el chat. Por favor intenta de nuevo.",
+    "transportFailed": "Conexión perdida. Intentando reconectar.",
+    "fileTooLarge": "El archivo es muy grande para mostrarse ({{size}})."
+  },
+  "settings": {
+    "soundOn": "Notificaciones activadas",
+    "soundOff": "Notificaciones desactivadas",
+    "reset": "Reiniciar chat",
+    "resetConfirm": "Esto borrará el historial de tu conversación. ¿Continuar?"
+  },
+  "branding": {
+    "poweredBy": "Powered by Verbara"
+  }
+}
