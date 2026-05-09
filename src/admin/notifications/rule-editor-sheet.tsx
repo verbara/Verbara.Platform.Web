@@ -6,6 +6,8 @@ import { ChevronDown, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import {
   Sheet,
   SheetContent,
@@ -125,6 +127,9 @@ export function RuleEditorSheet({ open, onOpenChange, rule }: RuleEditorSheetPro
 
   const scheduleMode = watch('schedule.mode');
 
+  const ruleNameA11y = useFieldA11y(errors.name, 'rule-name', { required: true });
+  const eventTypeA11y = useFieldA11y(errors.eventType, 'rule-eventType', { required: true });
+
   function onSubmit(data: NotificationRuleFormValues) {
     if (isEdit && rule) {
       updateRule.mutate(
@@ -188,13 +193,19 @@ export function RuleEditorSheet({ open, onOpenChange, rule }: RuleEditorSheetPro
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="rule-name">{t('notifications.rules.form.name')}</Label>
+            <Label htmlFor="rule-name" required>
+              {t('notifications.rules.form.name')}
+            </Label>
             <Input
               id="rule-name"
               placeholder={t('notifications.rules.form.namePlaceholder')}
+              {...ruleNameA11y.inputProps}
               {...register('name')}
             />
-            {errors.name && <p className="text-sm text-destructive">{t(errors.name.message!)}</p>}
+            <FieldError
+              id={ruleNameA11y.errorId}
+              message={errors.name ? t(errors.name.message!) : undefined}
+            />
           </div>
 
           <div className="space-y-2">
@@ -208,13 +219,16 @@ export function RuleEditorSheet({ open, onOpenChange, rule }: RuleEditorSheetPro
 
           {/* Section 1: Trigger */}
           <CollapsibleSection title={t('notifications.rules.form.sections.trigger')}>
-            <Label>{t('notifications.rules.form.trigger.eventType')}</Label>
+            <Label htmlFor="rule-eventType" required>
+              {t('notifications.rules.form.trigger.eventType')}
+            </Label>
+            {/* limitation: Base UI Select doesn't forward aria-* through Controller */}
             <Controller
               control={control}
               name="eventType"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
+                  <SelectTrigger id="rule-eventType">
                     <SelectValue
                       placeholder={t('notifications.rules.form.trigger.eventTypePlaceholder')}
                     />
@@ -229,9 +243,10 @@ export function RuleEditorSheet({ open, onOpenChange, rule }: RuleEditorSheetPro
                 </Select>
               )}
             />
-            {errors.eventType && (
-              <p className="text-sm text-destructive">{t(errors.eventType.message!)}</p>
-            )}
+            <FieldError
+              id={eventTypeA11y.errorId}
+              message={errors.eventType ? t(errors.eventType.message!) : undefined}
+            />
           </CollapsibleSection>
 
           {/* Section 2: Conditions */}

@@ -15,6 +15,8 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
 import { Separator } from '@/core/ui/separator';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import {
   Sheet,
   SheetContent,
@@ -148,6 +150,7 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
   const { t } = useTranslation('admin');
   const value = watch(config.name);
   const enabled = value !== null;
+  const inputId = `retention-${config.name}`;
 
   function handleToggle(checked: boolean) {
     setValue(config.name, checked ? 365 : null, { shouldValidate: true });
@@ -157,7 +160,7 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
     <div className="space-y-3 rounded-md border bg-card p-4">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label className="text-sm font-medium">
+          <Label htmlFor={inputId} className="text-sm font-medium" required={enabled}>
             {t(`retention.policy.fields.${config.i18nKey}.label`)}
           </Label>
           <p className="text-xs text-muted-foreground">
@@ -174,24 +177,10 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
             <Controller
               name={config.name}
               control={control}
-              render={({ field, fieldState }) => (
-                <div className="flex-1 space-y-1">
-                  <Input
-                    type="number"
-                    min={1}
-                    max={3650}
-                    value={field.value ?? ''}
-                    onChange={(e) => {
-                      const num = e.target.value === '' ? null : Number(e.target.value);
-                      field.onChange(num);
-                    }}
-                    placeholder={t('retention.policy.days_placeholder')}
-                  />
-                  {fieldState.error && (
-                    <p className="text-xs text-destructive">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
+              render={({ field, fieldState }) => {
+                // Hook usage scoped per-render of Controller is allowed in Verbara codebase pattern.
+                return <RetentionInput inputId={inputId} field={field} fieldState={fieldState} />;
+              }}
             />
             <span className="text-sm text-muted-foreground">
               {t('retention.policy.days_suffix')}
@@ -199,6 +188,40 @@ function RetentionFieldRow({ config, control, watch, setValue }: RetentionFieldR
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function RetentionInput({
+  inputId,
+  field,
+  fieldState,
+}: {
+  readonly inputId: string;
+  readonly field: {
+    value: number | null;
+    onChange: (value: number | null) => void;
+  };
+  readonly fieldState: { error?: { message?: string } };
+}) {
+  const { t } = useTranslation('admin');
+  const a11y = useFieldA11y(fieldState.error, inputId, { required: true });
+  return (
+    <div className="flex-1 space-y-1">
+      <Input
+        id={inputId}
+        type="number"
+        min={1}
+        max={3650}
+        value={field.value ?? ''}
+        onChange={(e) => {
+          const num = e.target.value === '' ? null : Number(e.target.value);
+          field.onChange(num);
+        }}
+        placeholder={t('retention.policy.days_placeholder')}
+        {...a11y.inputProps}
+      />
+      <FieldError id={a11y.errorId} message={fieldState.error?.message} />
     </div>
   );
 }
