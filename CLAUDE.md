@@ -10,11 +10,11 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~350 TS/TSX files · 60+ pages · 56 API hooks · 35 UI components · 12 Zustand stores · 64+ E2E specs · 910/910 Vitest · Version 2.0.4** (Nivel 5 Track 5C-a11y done).
+**~350 TS/TSX files · 60+ pages · 56 API hooks · 37 UI components · 12 Zustand stores · 66+ E2E specs · 939/939 Vitest · Version 2.1.0** (Nivel 5 Track 5C-export done).
 
-Niveles 1-4 complete (tags `v1.14.5-web` through `v1.17.5-web`). Track 5A (Loading States) done 2026-05-08. Track 5B (Virtualization) done 2026-05-08, tag `v2.0.2-web`. Track 5C-a11y (WCAG 2.1 AA Foundation) done 2026-05-08: `<SkipLink>`, `<LiveRegion>`, `<FieldError>` primitives + `useFieldA11y`, `useDocumentTitle`, `useHtmlLang` hooks + `<Label required>` + `eslint-plugin-jsx-a11y` (CI gate) + `@axe-core/playwright` baseline + 8 Tier 1 forms migrated + `prefers-reduced-motion` + button disabled contrast fix. Tag `v2.0.4-web`.
+Niveles 1-4 complete (tags `v1.14.5-web` through `v1.17.5-web`). Track 5A (Loading States) done 2026-05-08. Track 5B (Virtualization) done 2026-05-08, tag `v2.0.2-web`. Track 5C-a11y (WCAG 2.1 AA Foundation) done 2026-05-08, tag `v2.0.4-web`. Track 5C-export (Print + PDF Export) done 2026-05-08, tag `v2.1.0-web`: `<PrintButton>` + `<PdfDownloadButton>` primitives, `src/styles/print.css` foundation (@media print, @page A4, data-print conventions), 5 PDF templates (CDR detail, QA detail, CDR Summary, QA Summary, plus engine helpers), CDR + QA detail drawers wired, Reports page Run Now → Download PDF flow, Analytics Dashboard PrintButton. Bundle: shell +0.10 kB gzip, lazy `vendor-pdf` chunk ~186 kB gzip. ~30 unit tests + 2 Playwright E2E.
 
-**Next: Track 5C-export** (print stylesheets + PDF export) or Track 5D (Forms UX + multi-tenant indicator). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
+**Next: Track 5D** (Forms UX + multi-tenant indicator) closes Nivel 5 with `v2.1.x-web`. See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
