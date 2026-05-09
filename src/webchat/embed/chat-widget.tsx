@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PreChatForm } from './pre-chat-form';
 import { Composer } from './composer';
@@ -9,6 +9,7 @@ import { createWsClient, type WsClient, type WsMessage } from './transport/ws-cl
 import { createOfflineQueue } from './transport/offline-queue';
 import { parseAttachments } from './transport/parse-attachments';
 import { loadCachedMessages, saveCachedMessages } from './message-cache';
+import { playNotificationSound, loadSoundPreference, setSoundEnabled } from './notifications';
 
 export interface InitConfigPayload {
   tenantId: string;
@@ -34,7 +35,11 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   );
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [wsClient, setWsClient] = useState<WsClient | null>(null);
+  const [soundOn, setSoundOn] = useState(() => loadSoundPreference());
   const apiBase = config.apiBase ?? '/api/v1';
+
+  const TIMEOUT_MS = 5 * 60 * 1000;
+  const lastAgentActivityRef = useRef<number>(Date.now());
 
   // Hydrate cached messages once profile is known (returning visitor)
   useEffect(() => {
@@ -60,6 +65,16 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         /* graceful */
       });
   }, [sessionId, apiBase]);
+
+  useEffect(() => {
+    if (!profile) return;
+    const interval = setInterval(() => {
+      if (Date.now() - lastAgentActivityRef.current > TIMEOUT_MS && status !== 'timeout') {
+        setStatus('timeout');
+      }
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [profile, status, TIMEOUT_MS]);
 
   const handlePreChatSubmit = useCallback(
     async (values: { name: string; email: string }) => {
@@ -104,6 +119,9 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
               };
               setMessages((prev) => [...prev, incoming]);
               onUnreadChange(1);
+              playNotificationSound();
+              lastAgentActivityRef.current = Date.now();
+              if (status === 'timeout') setStatus('online');
             } else if (msg.type === 'typing') {
               setStatus('typing');
               setTimeout(() => setStatus('online'), 2000);
@@ -164,10 +182,23 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     <div className="flex h-full flex-col">
       <header className="flex items-center justify-between border-b px-3 py-2 text-sm font-medium">
         <span>{t('preChat.title')}</span>
+        <button
+          type="button"
+          aria-label={soundOn ? t('settings.soundOff') : t('settings.soundOn')}
+          onClick={() => {
+            const next = !soundOn;
+            setSoundOn(next);
+            setSoundEnabled(next);
+          }}
+          className="text-xs"
+          data-testid="webchat-sound-toggle"
+        >
+          {soundOn ? '🔔' : '🔕'}
+        </button>
       </header>
       <StatusBanner status={status} />
       <MessageList messages={messages} />
-      <Composer disabled={status === 'offline'} onSend={handleSend} />
+      <Composer disabled={status === 'offline'} onSend={handleSend} autoFocus />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { initWebchatI18n } from './i18n-init';
 import { initWebchatSentry } from './sentry-init';
 import { App } from './app';
-import { setupTitleFlash, setSoundEnabled } from './notifications';
+import { setupTitleFlash, setSoundEnabled, loadSoundPreference } from './notifications';
 
 initWebchatSentry();
 setupTitleFlash();
@@ -20,4 +20,4 @@ createRoot(rootEl).render(
   </StrictMode>,
 );
 
-setSoundEnabled(false);
+setSoundEnabled(loadSoundPreference());

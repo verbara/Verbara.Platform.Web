@@ -38,7 +38,18 @@ export function stopFlash() {
 let audioCtx: AudioContext | null = null;
 let soundEnabled = false;
 
+const SOUND_KEY = 'verbara-webchat-sound';
+
+export function loadSoundPreference(): boolean {
+  return localStorage.getItem(SOUND_KEY) === 'on';
+}
+
+export function isSoundEnabled(): boolean {
+  return soundEnabled;
+}
+
 export function setSoundEnabled(enabled: boolean) {
+  localStorage.setItem(SOUND_KEY, enabled ? 'on' : 'off');
   soundEnabled = enabled;
   if (enabled && !audioCtx) {
     try {
