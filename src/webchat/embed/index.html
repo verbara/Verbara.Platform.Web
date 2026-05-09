@@ -11,6 +11,14 @@
       content="default-src 'self'; connect-src 'self' wss:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self'"
     />
     <title>Verbara Chat</title>
+    <style>
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          transition-duration: 0.001ms !important;
+          animation-duration: 0.001ms !important;
+        }
+      }
+    </style>
   </head>
   <body class="m-0 p-0 h-screen w-screen overflow-hidden bg-transparent">
     <div id="root"></div>
