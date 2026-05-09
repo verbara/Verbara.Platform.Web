@@ -493,5 +493,18 @@
         "page": "Página {{current}} de {{total}}"
       }
     }
+  },
+  "permission": {
+    "button": {
+      "requires": "Requer permissão: {{permission}}",
+      "requiresAny": "Requer uma de: {{permissions}}"
+    }
+  },
+  "tenant": {
+    "badge": {
+      "tooltip": "Tenant: {{name}} ({{id}})",
+      "impersonating": "Impersonificando: {{name}}",
+      "loading": "Carregando tenant…"
+    }
   }
 }
