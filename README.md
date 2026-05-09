@@ -2,6 +2,8 @@
 
 > Frontend for the **Verbara** open-core contact-center platform.
 > Repository rebranded to **Verbara** ([ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)).
+>
+> **Visibility status (2026-05-08):** This repository is currently **private**. The Apache 2.0 license has been chosen (see [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)) with a planned transition to public when all triggers in [ADR-0007](docs/decisions/0007-visibility-decision-3-private-now-public-on-trigger.md) are met. Tier 0 (Community) self-host and the Tier 0.5 Developer self-issue portal become available at that time.
 
 React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 

@@ -31,17 +31,21 @@ Once `Accepted`, never edit the body — supersede with a new ADR that reference
 - **Related:** ADR-XXXX, spec file, plan file
 
 ## Context
+
 What problem are we solving? What forces / constraints are in play?
 
 ## Decision
+
 The decision, stated in one or two sentences.
 
 ## Consequences
+
 - Positive: …
 - Negative: …
 - Neutral / trade-off: …
 
 ## Alternatives considered
+
 - **Option B:** … — rejected because …
 - **Option C:** … — rejected because …
 ```
@@ -54,3 +58,4 @@ The decision, stated in one or two sentences.
 - [ADR-0004](0004-backend-to-ui-bridge-as-track.md) — Backend-to-UI Bridge as a dedicated track (Accepted, 2026-05-03)
 - [ADR-0005](0005-versioning-track-end-tags.md) — Track-end versioning policy (Accepted, 2026-05-03)
 - [ADR-0006](0006-license-and-commercial-tier-strategy.md) — License (Apache 2.0) + 5-tier commercial strategy + rebrand to **Verbara** (Accepted, 2026-05-03)
+- [ADR-0007](0007-visibility-decision-3-private-now-public-on-trigger.md) — Visibility: private now, public on trigger checklist (Decision 3) (Accepted, 2026-05-08)
