@@ -24,10 +24,15 @@ describe('useFormatDate timezone arg', () => {
   it('FormatDateTime_AcceptsTimezone_AndReturnsZoneShiftedString', () => {
     const { result } = renderHook(() => useFormatDate(), { wrapper });
     const utc = '2026-05-08T14:30:00Z';
-    const browserZone = result.current.formatDateTime(utc);
+    // Compare distinct explicit zones — host timezone is environment-dependent.
+    const utcZone = result.current.formatDateTime(utc, 'UTC');
     const bogotaZone = result.current.formatDateTime(utc, 'America/Bogota');
-    expect(bogotaZone).not.toBe(browserZone);
+    const tokyoZone = result.current.formatDateTime(utc, 'Asia/Tokyo');
+    // 14:30 UTC = 09:30 Bogota = 23:30 Tokyo — three distinct strings expected.
+    expect(utcZone).not.toBe(bogotaZone);
+    expect(bogotaZone).not.toBe(tokyoZone);
     expect(bogotaZone).toMatch(/9:30/);
+    expect(tokyoZone).toMatch(/11:30/); // Tokyo (UTC+9) at 23:30 = 11:30 PM in 12h locale
   });
 
   it('FormatDateTime_WithoutTimezone_KeepsBrowserZone_BackwardCompat', () => {
