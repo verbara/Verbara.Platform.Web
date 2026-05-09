@@ -10,9 +10,9 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~370 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 67+ E2E specs · 1020/1020 Vitest · Version 3.0.0** (Niveles 1-7 CLOSED — ROADMAP COMPLETE 🎉).
+**~375 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 67+ E2E specs · 1047/1047 Vitest · Version 3.0.1** (Niveles 1-7 CLOSED — ROADMAP COMPLETE 🎉).
 
-Niveles 1-7 complete (tags `v1.14.5-web` through `v3.0.0-web`). **Track 7C (WebChat customer widget) tag `v3.0.0-web`**: vanilla JS SDK (`/webchat/v1/verbara-webchat.js`, ~3 kB gzip eager) + React iframe app (`/webchat/embed/`, ~118 kB gzip lazy) with native WebSocket transport, pre-chat form, visitor persistence (localStorage), mobile responsive (full-screen takeover ≤ 600px), DOMPurify-safe markdown rendering, browser title flash + favicon badge, sound notifications, programmatic API (`init`/`open`/`close`/`sendMessage`/`setVisitor`/`on`/`off`/`destroy`), WCAG 2.1 AA baseline, 3-locale i18n (separate `webchat` namespace). Same-origin distribution via existing nginx. Closes Nivel 7 + the entire v1.14.x → v3.0.0-web roadmap.
+Niveles 1-7 complete (tags `v1.14.5-web` through `v3.0.1-web`). **Track 7C-polish (`v3.0.1-web`)** cerró 12 gaps de auditoría post-ship del v3.0.0 (theming inyectado real, attachments propagation, offline queue drain, message cache localStorage para resume, sound toggle UI funcional, focus-on-open, conversation timeout 5min, favicon badge, reduced-motion en iframe, pre-chat a11y Track 5C parity, Sentry breadcrumbs, virtualización de message-list). **Bloqueados por backend** (tracked aparte): availability/office-hours endpoint, history endpoint, tenant config endpoint, `CreateSessionRequest` field acceptance.
 
 **Roadmap status: COMPLETE.** All 25 tracks across 7 niveles shipped. Production-readiness: 60/100 (pre-roadmap) → ~98/100 (post-roadmap). Future work tracked separately as enhancement requests (file uploads, voice/video, NPM package, external CDN, etc.).
 
