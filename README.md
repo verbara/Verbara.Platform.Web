@@ -139,12 +139,12 @@ This repository is licensed under the **[Apache License 2.0](LICENSE)**. See [`N
 
 This is the open-source UI of the **Verbara** open-core contact-center stack:
 
-| Repository                        | License        | Role                                                              |
-| --------------------------------- | -------------- | ----------------------------------------------------------------- |
-| **Verbara Sdk**                   | MIT            | Telephony primitives (AMI/ARI/SIP wrappers) — community attractor |
-| **Verbara Web** (this repository) | **Apache 2.0** | Frontend UI (admin / agent / analytics / operations)              |
-| **Verbara Platform**              | Apache 2.0     | Backend application — full contact-center engine                  |
-| **Verbara Sdk Pro**               | Commercial     | Enterprise overlays (multi-tenant, analytics, cluster, licensing) |
+| Repository                        | License        | Role                                                                                          |
+| --------------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| **Verbara Sdk**                   | MIT            | Telephony primitives (AMI / AGI / ARI / Live API / Sessions / Voice AI) — community attractor |
+| **Verbara Web** (this repository) | **Apache 2.0** | Frontend UI (admin / agent / analytics / operations)                                          |
+| **Verbara Platform**              | Apache 2.0     | Backend application — full contact-center engine                                              |
+| **Verbara Sdk Pro**               | Commercial     | Enterprise overlays (multi-tenant, analytics, cluster, licensing)                             |
 
 **Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md) for the full rationale (license decision + 5-tier commercial model).
 
