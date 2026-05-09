@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verbara WebChat — Demo</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        padding: 40px;
+        max-width: 720px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+      h1 {
+        color: #0d9488;
+      }
+      pre {
+        background: #f3f4f6;
+        padding: 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Verbara WebChat — Demo</h1>
+    <p>
+      This page demonstrates the embedded WebChat widget. Click the bubble in the bottom-right
+      corner to start a conversation.
+    </p>
+
+    <h2>Embed snippet</h2>
+    <pre><code>&lt;script
+  src="https://your-domain/webchat/v1/verbara-webchat.js"
+  data-tenant-id="demo-tenant"
+  data-locale="auto"
+  data-position="bottom-right"&gt;&lt;/script&gt;</code></pre>
+
+    <h2>Programmatic API</h2>
+    <p>Open the chat from a button click:</p>
+    <button onclick="VerbaraWebChat.open()">Open chat</button>
+
+    <h2>Locale demo</h2>
+    <p>
+      Try different locales: <a href="?locale=en-US">en-US</a> ·
+      <a href="?locale=es-419">es-419</a> · <a href="?locale=pt-BR">pt-BR</a>
+    </p>
+
+    <script
+      src="/webchat/v1/verbara-webchat.js"
+      data-tenant-id="demo-tenant"
+      data-locale="auto"
+      data-position="bottom-right"
+      data-greeting="Hi! How can we help?"
+    ></script>
+  </body>
+</html>
