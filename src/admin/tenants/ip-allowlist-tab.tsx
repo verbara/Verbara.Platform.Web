@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import {
   useIpAllowlist,
@@ -48,6 +50,9 @@ export function IpAllowlistTab({ tenantId }: Readonly<{ tenantId: string }>) {
     defaultValues: { cidr: '', description: '' },
   });
 
+  const cidrA11y = useFieldA11y(errors.cidr, 'cidr', { required: true });
+  const descriptionA11y = useFieldA11y(errors.description, 'description', { required: true });
+
   const onAdd = handleSubmit((values) => {
     addEntry.mutate(values, { onSuccess: () => reset() });
   });
@@ -67,26 +72,35 @@ export function IpAllowlistTab({ tenantId }: Readonly<{ tenantId: string }>) {
     <div className="max-w-2xl space-y-6" data-testid="ip-allowlist-tab">
       <form onSubmit={onAdd} className="flex items-end gap-3">
         <div className="flex-1 space-y-1.5">
-          <Label htmlFor="cidr">{t('tenants.ipAllowlist.cidr', 'CIDR')}</Label>
+          <Label htmlFor="cidr" required>
+            {t('tenants.ipAllowlist.cidr', 'CIDR')}
+          </Label>
           <Input
             id="cidr"
             data-testid="ip-cidr-input"
             placeholder="192.168.1.0/24"
-            aria-invalid={!!errors.cidr}
+            {...cidrA11y.inputProps}
             {...register('cidr')}
           />
-          {errors.cidr && (
-            <p className="text-xs text-destructive">{t(errors.cidr.message ?? '')}</p>
-          )}
+          <FieldError
+            id={cidrA11y.errorId}
+            message={errors.cidr ? t(errors.cidr.message ?? '') : undefined}
+          />
         </div>
         <div className="flex-1 space-y-1.5">
-          <Label htmlFor="description">{t('tenants.ipAllowlist.description', 'Description')}</Label>
+          <Label htmlFor="description" required>
+            {t('tenants.ipAllowlist.description', 'Description')}
+          </Label>
           <Input
             id="description"
             data-testid="ip-description-input"
             placeholder={t('tenants.ipAllowlist.description_placeholder', 'Office VPN')}
-            aria-invalid={!!errors.description}
+            {...descriptionA11y.inputProps}
             {...register('description')}
+          />
+          <FieldError
+            id={descriptionA11y.errorId}
+            message={errors.description ? t(errors.description.message ?? '') : undefined}
           />
         </div>
         <Button type="submit" data-testid="ip-add-button" disabled={addEntry.isPending}>

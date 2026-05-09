@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import {
   Dialog,
   DialogContent,
@@ -54,6 +56,8 @@ export default function TeamsPage() {
     defaultValues: { name: '' },
   });
 
+  const teamNameA11y = useFieldA11y(errors.name, 'teamName', { required: true });
+
   const openCreate = () => {
     setEditingTeam(null);
     reset({ name: '' });
@@ -81,10 +85,7 @@ export default function TeamsPage() {
         { onSuccess: () => setDialogOpen(false) },
       );
     } else {
-      createTeam.mutate(
-        { name: values.name },
-        { onSuccess: () => setDialogOpen(false) },
-      );
+      createTeam.mutate({ name: values.name }, { onSuccess: () => setDialogOpen(false) });
     }
   });
 
@@ -104,9 +105,7 @@ export default function TeamsPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('admin:teams.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('memberCount', {
         header: () => t('admin:teams.members'),
@@ -115,7 +114,11 @@ export default function TeamsPage() {
           if (count === 0) {
             return <span className="text-muted-foreground">&mdash;</span>;
           }
-          return <span>{count} member{count !== 1 ? 's' : ''}</span>;
+          return (
+            <span>
+              {count} member{count !== 1 ? 's' : ''}
+            </span>
+          );
         },
       }),
       columnHelper.display({
@@ -166,10 +169,7 @@ export default function TeamsPage() {
       </PageHeader>
 
       {isEmpty ? (
-        <EmptyState
-          icon={Users}
-          message="No teams yet &mdash; Create your first team"
-        />
+        <EmptyState icon={Users} message="No teams yet &mdash; Create your first team" />
       ) : (
         <DataTable
           data={teams}
@@ -187,24 +187,25 @@ export default function TeamsPage() {
               {editingTeam ? t('admin:teams.edit') : t('admin:teams.create')}
             </DialogTitle>
             <DialogDescription>
-              {editingTeam
-                ? t('admin:teams.editDescription')
-                : t('admin:teams.createDescription')}
+              {editingTeam ? t('admin:teams.editDescription') : t('admin:teams.createDescription')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="teamName">{t('admin:teams.name')}</Label>
+              <Label htmlFor="teamName" required>
+                {t('admin:teams.name')}
+              </Label>
               <Input
                 id="teamName"
                 data-testid="team-form-name"
                 placeholder="e.g. Support"
-                aria-invalid={!!errors.name}
+                {...teamNameA11y.inputProps}
                 {...register('name')}
               />
-              {errors.name && (
-                <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-              )}
+              <FieldError
+                id={teamNameA11y.errorId}
+                message={errors.name ? t(errors.name.message ?? '') : undefined}
+              />
             </div>
             <DialogFooter>
               <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>

@@ -9,6 +9,8 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
 import { Separator } from '@/core/ui/separator';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { useDialerSettings, useUpdateDialerSettings } from '@/core/api/hooks/use-dialer-settings';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
 
@@ -67,6 +69,37 @@ export default function DialerSettingsPage() {
 
   const blendModeEnabled = useWatch({ control, name: 'blendModeEnabled' });
 
+  const maxGlobalChannelsA11y = useFieldA11y(errors.maxGlobalChannels, 'maxGlobalChannels', {
+    required: true,
+  });
+  const maxConcurrentCampaignsA11y = useFieldA11y(
+    errors.maxConcurrentCampaigns,
+    'maxConcurrentCampaigns',
+    { required: true },
+  );
+  const defaultRingTimeoutA11y = useFieldA11y(
+    errors.defaultRingTimeoutSeconds,
+    'defaultRingTimeoutSeconds',
+    { required: true },
+  );
+  const campaignPollIntervalA11y = useFieldA11y(
+    errors.campaignPollIntervalSeconds,
+    'campaignPollIntervalSeconds',
+    { required: true },
+  );
+  const scheduledCallbackPollA11y = useFieldA11y(
+    errors.scheduledCallbackPollSeconds,
+    'scheduledCallbackPollSeconds',
+    { required: true },
+  );
+  const ahtCacheDurationA11y = useFieldA11y(
+    errors.ahtCacheDurationSeconds,
+    'ahtCacheDurationSeconds',
+    { required: true },
+  );
+  const jitterMinA11y = useFieldA11y(errors.jitterMinMs, 'jitterMinMs', { required: true });
+  const jitterMaxA11y = useFieldA11y(errors.jitterMaxMs, 'jitterMaxMs', { required: true });
+
   return (
     <div className="space-y-8" data-testid="dialer-settings-page">
       {/* Header */}
@@ -90,35 +123,37 @@ export default function DialerSettingsPage() {
               {t('dialer-settings.sections.capacity')}
             </h2>
             <div className="space-y-1.5">
-              <Label htmlFor="maxGlobalChannels">
+              <Label htmlFor="maxGlobalChannels" required>
                 {t('dialer-settings.fields.max_global_channels')}
               </Label>
               <Input
                 id="maxGlobalChannels"
                 type="number"
                 min={1}
-                aria-invalid={!!errors.maxGlobalChannels}
+                {...maxGlobalChannelsA11y.inputProps}
                 {...register('maxGlobalChannels', { valueAsNumber: true })}
               />
-              {errors.maxGlobalChannels && (
-                <p className="text-xs text-destructive">{errors.maxGlobalChannels.message}</p>
-              )}
+              <FieldError
+                id={maxGlobalChannelsA11y.errorId}
+                message={errors.maxGlobalChannels?.message}
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="maxConcurrentCampaigns">
+              <Label htmlFor="maxConcurrentCampaigns" required>
                 {t('dialer-settings.fields.max_concurrent_campaigns')}
               </Label>
               <Input
                 id="maxConcurrentCampaigns"
                 type="number"
                 min={1}
-                aria-invalid={!!errors.maxConcurrentCampaigns}
+                {...maxConcurrentCampaignsA11y.inputProps}
                 {...register('maxConcurrentCampaigns', { valueAsNumber: true })}
               />
-              {errors.maxConcurrentCampaigns && (
-                <p className="text-xs text-destructive">{errors.maxConcurrentCampaigns.message}</p>
-              )}
+              <FieldError
+                id={maxConcurrentCampaignsA11y.errorId}
+                message={errors.maxConcurrentCampaigns?.message}
+              />
             </div>
           </section>
 
@@ -130,73 +165,71 @@ export default function DialerSettingsPage() {
               {t('dialer-settings.sections.timing')}
             </h2>
             <div className="space-y-1.5">
-              <Label htmlFor="defaultRingTimeoutSeconds">
+              <Label htmlFor="defaultRingTimeoutSeconds" required>
                 {t('dialer-settings.fields.default_ring_timeout')}
               </Label>
               <Input
                 id="defaultRingTimeoutSeconds"
                 type="number"
                 min={1}
-                aria-invalid={!!errors.defaultRingTimeoutSeconds}
+                {...defaultRingTimeoutA11y.inputProps}
                 {...register('defaultRingTimeoutSeconds', { valueAsNumber: true })}
               />
-              {errors.defaultRingTimeoutSeconds && (
-                <p className="text-xs text-destructive">
-                  {errors.defaultRingTimeoutSeconds.message}
-                </p>
-              )}
+              <FieldError
+                id={defaultRingTimeoutA11y.errorId}
+                message={errors.defaultRingTimeoutSeconds?.message}
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="campaignPollIntervalSeconds">
+              <Label htmlFor="campaignPollIntervalSeconds" required>
                 {t('dialer-settings.fields.campaign_poll_interval')}
               </Label>
               <Input
                 id="campaignPollIntervalSeconds"
                 type="number"
                 min={1}
-                aria-invalid={!!errors.campaignPollIntervalSeconds}
+                {...campaignPollIntervalA11y.inputProps}
                 {...register('campaignPollIntervalSeconds', { valueAsNumber: true })}
               />
-              {errors.campaignPollIntervalSeconds && (
-                <p className="text-xs text-destructive">
-                  {errors.campaignPollIntervalSeconds.message}
-                </p>
-              )}
+              <FieldError
+                id={campaignPollIntervalA11y.errorId}
+                message={errors.campaignPollIntervalSeconds?.message}
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="scheduledCallbackPollSeconds">
+              <Label htmlFor="scheduledCallbackPollSeconds" required>
                 {t('dialer-settings.fields.scheduled_callback_poll')}
               </Label>
               <Input
                 id="scheduledCallbackPollSeconds"
                 type="number"
                 min={1}
-                aria-invalid={!!errors.scheduledCallbackPollSeconds}
+                {...scheduledCallbackPollA11y.inputProps}
                 {...register('scheduledCallbackPollSeconds', { valueAsNumber: true })}
               />
-              {errors.scheduledCallbackPollSeconds && (
-                <p className="text-xs text-destructive">
-                  {errors.scheduledCallbackPollSeconds.message}
-                </p>
-              )}
+              <FieldError
+                id={scheduledCallbackPollA11y.errorId}
+                message={errors.scheduledCallbackPollSeconds?.message}
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="ahtCacheDurationSeconds">
+              <Label htmlFor="ahtCacheDurationSeconds" required>
                 {t('dialer-settings.fields.aht_cache_duration')}
               </Label>
               <Input
                 id="ahtCacheDurationSeconds"
                 type="number"
                 min={1}
-                aria-invalid={!!errors.ahtCacheDurationSeconds}
+                {...ahtCacheDurationA11y.inputProps}
                 {...register('ahtCacheDurationSeconds', { valueAsNumber: true })}
               />
-              {errors.ahtCacheDurationSeconds && (
-                <p className="text-xs text-destructive">{errors.ahtCacheDurationSeconds.message}</p>
-              )}
+              <FieldError
+                id={ahtCacheDurationA11y.errorId}
+                message={errors.ahtCacheDurationSeconds?.message}
+              />
             </div>
           </section>
 
@@ -210,30 +243,30 @@ export default function DialerSettingsPage() {
             <p className="text-sm text-muted-foreground">{t('dialer-settings.jitter_help')}</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="jitterMinMs">{t('dialer-settings.fields.min_jitter')}</Label>
+                <Label htmlFor="jitterMinMs" required>
+                  {t('dialer-settings.fields.min_jitter')}
+                </Label>
                 <Input
                   id="jitterMinMs"
                   type="number"
                   min={0}
-                  aria-invalid={!!errors.jitterMinMs}
+                  {...jitterMinA11y.inputProps}
                   {...register('jitterMinMs', { valueAsNumber: true })}
                 />
-                {errors.jitterMinMs && (
-                  <p className="text-xs text-destructive">{errors.jitterMinMs.message}</p>
-                )}
+                <FieldError id={jitterMinA11y.errorId} message={errors.jitterMinMs?.message} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="jitterMaxMs">{t('dialer-settings.fields.max_jitter')}</Label>
+                <Label htmlFor="jitterMaxMs" required>
+                  {t('dialer-settings.fields.max_jitter')}
+                </Label>
                 <Input
                   id="jitterMaxMs"
                   type="number"
                   min={0}
-                  aria-invalid={!!errors.jitterMaxMs}
+                  {...jitterMaxA11y.inputProps}
                   {...register('jitterMaxMs', { valueAsNumber: true })}
                 />
-                {errors.jitterMaxMs && (
-                  <p className="text-xs text-destructive">{errors.jitterMaxMs.message}</p>
-                )}
+                <FieldError id={jitterMaxA11y.errorId} message={errors.jitterMaxMs?.message} />
               </div>
             </div>
           </section>

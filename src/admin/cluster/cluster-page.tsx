@@ -25,6 +25,8 @@ import { Badge } from '@/core/ui/badge';
 import { StatusBadge } from '@/core/ui/status-badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import {
   Sheet,
@@ -159,6 +161,12 @@ function AddNodeSheet({
     },
   });
 
+  const nodeIdA11y = useFieldA11y(errors.nodeId, 'cn-nodeId', { required: true });
+  const hostnameA11y = useFieldA11y(errors.amiHostname, 'cn-hostname', { required: true });
+  const portA11y = useFieldA11y(errors.amiPort, 'cn-port', { required: true });
+  const usernameA11y = useFieldA11y(errors.amiUsername, 'cn-username', { required: true });
+  const passwordA11y = useFieldA11y(errors.amiPassword, 'cn-password', { required: true });
+
   useEffect(() => {
     if (open) reset();
   }, [open, reset]);
@@ -186,41 +194,50 @@ function AddNodeSheet({
         </SheetHeader>
         <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           <div className="space-y-1.5">
-            <Label htmlFor="cn-nodeId">{t('cluster.add_sheet.node_id')}</Label>
+            <Label htmlFor="cn-nodeId" required>
+              {t('cluster.add_sheet.node_id')}
+            </Label>
             <Input
               id="cn-nodeId"
               data-testid="cluster-node-id-input"
               placeholder={t('cluster.add_sheet.node_id_placeholder')}
+              {...nodeIdA11y.inputProps}
               {...register('nodeId')}
             />
-            {errors.nodeId && (
-              <p className="text-xs text-destructive">{t(errors.nodeId.message ?? '')}</p>
-            )}
+            <FieldError
+              id={nodeIdA11y.errorId}
+              message={errors.nodeId ? t(errors.nodeId.message ?? '') : undefined}
+            />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cn-hostname">{t('cluster.add_sheet.ami_hostname')}</Label>
+            <Label htmlFor="cn-hostname" required>
+              {t('cluster.add_sheet.ami_hostname')}
+            </Label>
             <Input
               id="cn-hostname"
               data-testid="cluster-ami-hostname-input"
               placeholder={t('cluster.add_sheet.ami_hostname_placeholder')}
+              {...hostnameA11y.inputProps}
               {...register('amiHostname')}
             />
-            {errors.amiHostname && (
-              <p className="text-xs text-destructive">{t(errors.amiHostname.message ?? '')}</p>
-            )}
+            <FieldError
+              id={hostnameA11y.errorId}
+              message={errors.amiHostname ? t(errors.amiHostname.message ?? '') : undefined}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="cn-port">{t('cluster.add_sheet.ami_port')}</Label>
+              <Label htmlFor="cn-port" required>
+                {t('cluster.add_sheet.ami_port')}
+              </Label>
               <Input
                 id="cn-port"
                 type="number"
                 data-testid="cluster-ami-port-input"
+                {...portA11y.inputProps}
                 {...register('amiPort')}
               />
-              {errors.amiPort && (
-                <p className="text-xs text-destructive">{errors.amiPort.message}</p>
-              )}
+              <FieldError id={portA11y.errorId} message={errors.amiPort?.message} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cn-weight">{t('cluster.add_sheet.weight')}</Label>
@@ -233,27 +250,35 @@ function AddNodeSheet({
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cn-username">{t('cluster.add_sheet.ami_username')}</Label>
+            <Label htmlFor="cn-username" required>
+              {t('cluster.add_sheet.ami_username')}
+            </Label>
             <Input
               id="cn-username"
               data-testid="cluster-ami-username-input"
+              {...usernameA11y.inputProps}
               {...register('amiUsername')}
             />
-            {errors.amiUsername && (
-              <p className="text-xs text-destructive">{t(errors.amiUsername.message ?? '')}</p>
-            )}
+            <FieldError
+              id={usernameA11y.errorId}
+              message={errors.amiUsername ? t(errors.amiUsername.message ?? '') : undefined}
+            />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cn-password">{t('cluster.add_sheet.ami_password')}</Label>
+            <Label htmlFor="cn-password" required>
+              {t('cluster.add_sheet.ami_password')}
+            </Label>
             <Input
               id="cn-password"
               type="password"
               data-testid="cluster-ami-password-input"
+              {...passwordA11y.inputProps}
               {...register('amiPassword')}
             />
-            {errors.amiPassword && (
-              <p className="text-xs text-destructive">{t(errors.amiPassword.message ?? '')}</p>
-            )}
+            <FieldError
+              id={passwordA11y.errorId}
+              message={errors.amiPassword ? t(errors.amiPassword.message ?? '') : undefined}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -313,6 +338,10 @@ function EditNodeSheet({
     defaultValues: { weight: 100, priorityTier: 1, maxCapacity: 100 },
   });
 
+  const enWeightA11y = useFieldA11y(errors.weight, 'en-weight', { required: true });
+  const enTierA11y = useFieldA11y(errors.priorityTier, 'en-tier', { required: true });
+  const enCapacityA11y = useFieldA11y(errors.maxCapacity, 'en-capacity', { required: true });
+
   useEffect(() => {
     if (open && node) {
       reset({
@@ -345,38 +374,43 @@ function EditNodeSheet({
         </SheetHeader>
         <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           <div className="space-y-1.5">
-            <Label htmlFor="en-weight">{t('cluster.edit_sheet.weight')}</Label>
+            <Label htmlFor="en-weight" required>
+              {t('cluster.edit_sheet.weight')}
+            </Label>
             <Input
               id="en-weight"
               type="number"
               data-testid="cluster-edit-weight"
+              {...enWeightA11y.inputProps}
               {...register('weight')}
             />
-            {errors.weight && <p className="text-xs text-destructive">{errors.weight.message}</p>}
+            <FieldError id={enWeightA11y.errorId} message={errors.weight?.message} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="en-tier">{t('cluster.edit_sheet.priority_tier')}</Label>
+            <Label htmlFor="en-tier" required>
+              {t('cluster.edit_sheet.priority_tier')}
+            </Label>
             <Input
               id="en-tier"
               type="number"
               data-testid="cluster-edit-tier"
+              {...enTierA11y.inputProps}
               {...register('priorityTier')}
             />
-            {errors.priorityTier && (
-              <p className="text-xs text-destructive">{errors.priorityTier.message}</p>
-            )}
+            <FieldError id={enTierA11y.errorId} message={errors.priorityTier?.message} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="en-capacity">{t('cluster.edit_sheet.max_capacity')}</Label>
+            <Label htmlFor="en-capacity" required>
+              {t('cluster.edit_sheet.max_capacity')}
+            </Label>
             <Input
               id="en-capacity"
               type="number"
               data-testid="cluster-edit-capacity"
+              {...enCapacityA11y.inputProps}
               {...register('maxCapacity')}
             />
-            {errors.maxCapacity && (
-              <p className="text-xs text-destructive">{errors.maxCapacity.message}</p>
-            )}
+            <FieldError id={enCapacityA11y.errorId} message={errors.maxCapacity?.message} />
           </div>
           <SheetFooter className="mt-auto px-0">
             <Button
@@ -416,6 +450,8 @@ function DrainDialog({
     defaultValues: { gracePeriodSeconds: 300 },
   });
 
+  const graceA11y = useFieldA11y(errors.gracePeriodSeconds, 'drain-grace', { required: true });
+
   useEffect(() => {
     if (open) reset({ gracePeriodSeconds: 300 });
   }, [open, reset]);
@@ -442,16 +478,17 @@ function DrainDialog({
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="drain-grace">{t('cluster.drain_dialog.grace_period')}</Label>
+            <Label htmlFor="drain-grace" required>
+              {t('cluster.drain_dialog.grace_period')}
+            </Label>
             <Input
               id="drain-grace"
               type="number"
               data-testid="cluster-drain-grace-input"
+              {...graceA11y.inputProps}
               {...register('gracePeriodSeconds')}
             />
-            {errors.gracePeriodSeconds && (
-              <p className="text-xs text-destructive">{errors.gracePeriodSeconds.message}</p>
-            )}
+            <FieldError id={graceA11y.errorId} message={errors.gracePeriodSeconds?.message} />
           </div>
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>

@@ -12,6 +12,8 @@ import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import {
   Sheet,
   SheetContent,
@@ -139,6 +141,9 @@ export default function TenantsPage() {
       maxActiveCampaigns: 10,
     },
   });
+
+  const tenantIdA11y = useFieldA11y(errors.tenantId, 'tenantId', { required: true });
+  const nameA11y = useFieldA11y(errors.name, 'name', { required: true });
 
   const onCreateSubmit = handleSubmit((values) => {
     createTenant.mutate(
@@ -360,31 +365,37 @@ export default function TenantsPage() {
 
           <form onSubmit={onCreateSubmit} className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="tenantId">{t('tenants.list.create_sheet.tenant_id')}</Label>
+              <Label htmlFor="tenantId" required>
+                {t('tenants.list.create_sheet.tenant_id')}
+              </Label>
               <Input
                 id="tenantId"
                 data-testid="tenants-form-tenantId"
                 placeholder={t('tenants.list.create_sheet.tenant_id_placeholder')}
-                aria-invalid={!!errors.tenantId}
+                {...tenantIdA11y.inputProps}
                 {...register('tenantId')}
               />
-              {errors.tenantId && (
-                <p className="text-xs text-destructive">{t(errors.tenantId.message ?? '')}</p>
-              )}
+              <FieldError
+                id={tenantIdA11y.errorId}
+                message={errors.tenantId ? t(errors.tenantId.message ?? '') : undefined}
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="name">{t('tenants.list.create_sheet.name')}</Label>
+              <Label htmlFor="name" required>
+                {t('tenants.list.create_sheet.name')}
+              </Label>
               <Input
                 id="name"
                 data-testid="tenants-form-name"
                 placeholder={t('tenants.list.create_sheet.name_placeholder')}
-                aria-invalid={!!errors.name}
+                {...nameA11y.inputProps}
                 {...register('name')}
               />
-              {errors.name && (
-                <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-              )}
+              <FieldError
+                id={nameA11y.errorId}
+                message={errors.name ? t(errors.name.message ?? '') : undefined}
+              />
             </div>
 
             <div className="space-y-1.5">
