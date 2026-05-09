@@ -506,5 +506,27 @@
       "impersonating": "Impersonificando: {{name}}",
       "loading": "Carregando tenant…"
     }
+  },
+  "phone": {
+    "placeholder": "+1 (555) 555-0100",
+    "ariaLabel": "Número de telefone",
+    "invalidFormat": "Número de telefone inválido"
+  },
+  "timezone": {
+    "autoDetect": "Detectado automaticamente ({{zone}})",
+    "search": "Buscar fusos horários",
+    "region": {
+      "Africa": "África",
+      "America": "Américas",
+      "Antarctica": "Antártida",
+      "Arctic": "Ártico",
+      "Asia": "Ásia",
+      "Atlantic": "Atlântico",
+      "Australia": "Austrália",
+      "Europe": "Europa",
+      "Indian": "Oceano Índico",
+      "Pacific": "Pacífico",
+      "UTC": "UTC"
+    }
   }
 }
