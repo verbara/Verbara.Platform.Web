@@ -3,6 +3,7 @@ import { ChatWidget, type InitConfigPayload } from './chat-widget';
 import { flashUnread, stopFlash, playNotificationSound } from './notifications';
 import { setupKeyboardShortcuts } from './a11y';
 import { createPostMessageBridge } from '@/webchat/sdk/postmessage-bridge';
+import { applyTheme } from './theme-apply';
 
 export function App() {
   const [config, setConfig] = useState<InitConfigPayload | null>(null);
@@ -18,7 +19,9 @@ export function App() {
     bridge.send('ready');
 
     bridge.on('init-config', (payload) => {
-      setConfig(payload as InitConfigPayload);
+      const cfg = payload as InitConfigPayload;
+      applyTheme(cfg.theme);
+      setConfig(cfg);
     });
 
     bridge.on('open', () => {

@@ -7,6 +7,7 @@ import { StatusBanner, type Status } from './status-banner';
 import { createSession, fetchHistory, type ChatMessage } from './transport/session-api';
 import { createWsClient, type WsClient, type WsMessage } from './transport/ws-client';
 import { createOfflineQueue } from './transport/offline-queue';
+import { parseAttachments } from './transport/parse-attachments';
 
 export interface InitConfigPayload {
   tenantId: string;
@@ -15,6 +16,7 @@ export interface InitConfigPayload {
   visitor?: { name?: string; email?: string };
   pageContext: { url: string; title: string; referrer: string };
   greeting?: string;
+  theme?: { primaryColor?: string; fontFamily?: string };
 }
 
 interface Props {
@@ -67,11 +69,13 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
           onOpen: () => setStatus('online'),
           onMessage: (msg: WsMessage) => {
             if (msg.type === 'message') {
+              const attachments = parseAttachments(msg.attachments);
               const incoming: ChatMessage = {
                 id: String(msg.id ?? crypto.randomUUID()),
                 text: String(msg.body ?? ''),
                 from: 'agent',
                 timestamp: String(msg.timestamp ?? new Date().toISOString()),
+                ...(attachments ? { attachments } : {}),
               };
               setMessages((prev) => [...prev, incoming]);
               onUnreadChange(1);
