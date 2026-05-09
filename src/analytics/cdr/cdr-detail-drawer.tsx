@@ -6,6 +6,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { Separator } from '@/core/ui/separator';
+import { PrintButton } from '@/core/ui/print-button';
+import { PdfDownloadButton } from '@/core/ui/pdf-download-button';
+import { renderCdrPdf } from './cdr-pdf-template';
 import { AudioPlayer } from './audio-player';
 
 const StereoWaveformPlayer = lazy(() => import('./stereo-waveform-player'));
@@ -13,6 +16,11 @@ import { SyncedTranscript } from './synced-transcript';
 import type { CdrRow } from './cdr-page';
 import { useCdrDetail, useTranscript } from '@/core/api/hooks/use-analytics';
 import { useFormatDate } from '@/core/i18n/use-format';
+
+function makeCdrFilename(sessionId: string): string {
+  const stamp = new Date().toISOString().slice(0, 16).replaceAll(/[:T-]/g, '');
+  return `cdr-${sessionId}-${stamp}.pdf`;
+}
 
 function formatMs(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
@@ -90,6 +98,7 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
   const { formatDateTime } = useFormatDate();
   const [currentTime, setCurrentTime] = useState(0);
   const seekRef = useRef<((time: number) => void) | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const { data: detail, isLoading } = useCdrDetail(sessionId ?? '');
   const hasTranscript = detail?.hasTranscript ?? false;
@@ -141,7 +150,32 @@ export function CdrDetailDrawer({ sessionId, row, open, onOpenChange }: CdrDetai
           <SheetDescription>{row.contact}</SheetDescription>
         </SheetHeader>
 
-        <div className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
+        {sessionId && (
+          <div data-print="hide" className="flex items-center gap-2 px-4 pt-2">
+            <PrintButton contentRef={printRef} documentTitle={`cdr-${sessionId}`} />
+            {detail && (
+              <PdfDownloadButton
+                filename={makeCdrFilename(sessionId)}
+                documentTitle={t('cdr.pdf.documentTitle', { id: sessionId })}
+                onGenerate={async ({ doc, helpers }) => {
+                  renderCdrPdf({
+                    doc,
+                    helpers,
+                    detail,
+                    transcript: transcriptSegments,
+                    t: (key) => t(key.replace(/^analytics\./, '')),
+                  });
+                }}
+              />
+            )}
+          </div>
+        )}
+
+        <div
+          ref={printRef}
+          data-print="target"
+          className="flex-1 space-y-5 overflow-y-auto px-4 pb-4"
+        >
           {isLoading && <p className="text-sm text-muted-foreground py-2">Loading detail…</p>}
 
           {/* Fields */}
