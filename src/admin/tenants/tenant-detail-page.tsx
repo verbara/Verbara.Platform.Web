@@ -11,6 +11,7 @@ import { useTenantSettings } from '@/admin/tenants/use-tenant-settings';
 import { TenantSettingsForm } from '@/admin/tenants/tenant-settings-form';
 import { RetentionPolicySection } from '@/admin/gdpr/retention-policy-section';
 import { IpAllowlistTab } from '@/admin/tenants/ip-allowlist-tab';
+import { SsoTab } from '@/admin/tenants/sso-tab';
 
 interface StatusConfig {
   variant: 'default' | 'secondary' | 'destructive' | 'outline';
@@ -108,6 +109,9 @@ export default function TenantDetailPage() {
           <TabsTrigger value="retention" data-testid="tab-retention">
             {t('tenants.detail.tabs.retention', 'Retention')}
           </TabsTrigger>
+          <TabsTrigger value="sso" data-testid="tab-sso">
+            {t('tenants.detail.tabs.sso', 'SSO')}
+          </TabsTrigger>
           <TabsTrigger value="ip-allowlist" data-testid="tab-ip-allowlist">
             {t('tenants.detail.tabs.ipAllowlist', 'IP Allowlist')}
           </TabsTrigger>
@@ -173,6 +177,10 @@ export default function TenantDetailPage() {
             </Button>
             <TenantSettingsForm tenantId={tenantId} section="retention" />
           </div>
+        </TabsContent>
+
+        <TabsContent value="sso" className="pt-4" data-testid="tab-content-sso">
+          <SsoTab tenantId={tenantId} />
         </TabsContent>
 
         <TabsContent value="ip-allowlist" className="pt-4" data-testid="tab-content-ip-allowlist">
