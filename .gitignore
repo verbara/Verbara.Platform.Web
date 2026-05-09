@@ -40,3 +40,7 @@ coverage/
 # claudelint
 .claudelint-cache/
 .superpowers/
+
+# Track 7C — webchat build outputs
+public/webchat/v1/
+public/webchat/embed/

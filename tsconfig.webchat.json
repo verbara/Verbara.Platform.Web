@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.webchat.tsbuildinfo",
+    "noEmit": true
+  },
+  "include": ["src/webchat"],
+  "exclude": ["src/webchat/**/*.test.ts", "src/webchat/**/*.test.tsx"]
+}
