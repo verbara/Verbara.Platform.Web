@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { useFieldA11y } from './use-field-a11y';
 
 const schema = z.object({
   name: z.string().min(1, 'webchat:preChat.validation.nameRequired'),
@@ -29,6 +30,9 @@ export function PreChatForm({ defaultValues, onSubmit }: PreChatFormProps) {
     defaultValues: { name: '', email: '', ...defaultValues },
   });
 
+  const nameA11y = useFieldA11y(!!errors.name, 'webchat-name', { required: true });
+  const emailA11y = useFieldA11y(!!errors.email, 'webchat-email', { required: true });
+
   return (
     <form
       onSubmit={handleSubmit((data) => onSubmit(data))}
@@ -49,14 +53,12 @@ export function PreChatForm({ defaultValues, onSubmit }: PreChatFormProps) {
           type="text"
           autoComplete="name"
           placeholder={t('preChat.namePlaceholder')}
-          aria-required="true"
-          aria-invalid={!!errors.name}
-          aria-describedby={errors.name ? 'webchat-name-error' : undefined}
           className="w-full rounded border px-3 py-2 text-sm"
+          {...nameA11y.fieldProps}
           {...register('name')}
         />
         {errors.name && (
-          <p id="webchat-name-error" role="alert" className="text-xs text-red-600">
+          <p id={nameA11y.errorId} role="alert" className="text-xs text-red-600">
             {t(errors.name.message ?? '')}
           </p>
         )}
@@ -71,14 +73,12 @@ export function PreChatForm({ defaultValues, onSubmit }: PreChatFormProps) {
           type="email"
           autoComplete="email"
           placeholder={t('preChat.emailPlaceholder')}
-          aria-required="true"
-          aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? 'webchat-email-error' : undefined}
           className="w-full rounded border px-3 py-2 text-sm"
+          {...emailA11y.fieldProps}
           {...register('email')}
         />
         {errors.email && (
-          <p id="webchat-email-error" role="alert" className="text-xs text-red-600">
+          <p id={emailA11y.errorId} role="alert" className="text-xs text-red-600">
             {t(errors.email.message ?? '')}
           </p>
         )}
