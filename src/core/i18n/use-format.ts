@@ -21,17 +21,25 @@ export function useFormatDate() {
   return {
     /** Default full datetime, locale-aware (replaces `.toLocaleString()`) */
     formatDate: (date: string | Date, fmt = 'PPp') => format(toDate(date), fmt, { locale }),
-    /** Full date + time using browser Intl with the selected language */
-    formatDateTime: (date: string | Date) =>
-      new Intl.DateTimeFormat(language, { dateStyle: 'short', timeStyle: 'short' }).format(
-        toDate(date),
-      ),
-    /** Date only, short form (replaces `.toLocaleDateString()`) */
-    formatDateShort: (date: string | Date) =>
-      new Intl.DateTimeFormat(language, { dateStyle: 'short' }).format(toDate(date)),
-    /** Time only, short form (replaces `.toLocaleTimeString()`) */
-    formatTimeShort: (date: string | Date) =>
-      new Intl.DateTimeFormat(language, { timeStyle: 'short' }).format(toDate(date)),
+    /** Full date + time using browser Intl with the selected language. Optional IANA timezone. */
+    formatDateTime: (date: string | Date, timezone?: string) =>
+      new Intl.DateTimeFormat(language, {
+        dateStyle: 'short',
+        timeStyle: 'short',
+        ...(timezone ? { timeZone: timezone } : {}),
+      }).format(toDate(date)),
+    /** Date only, short form. Optional IANA timezone. */
+    formatDateShort: (date: string | Date, timezone?: string) =>
+      new Intl.DateTimeFormat(language, {
+        dateStyle: 'short',
+        ...(timezone ? { timeZone: timezone } : {}),
+      }).format(toDate(date)),
+    /** Time only, short form. Optional IANA timezone. */
+    formatTimeShort: (date: string | Date, timezone?: string) =>
+      new Intl.DateTimeFormat(language, {
+        timeStyle: 'short',
+        ...(timezone ? { timeZone: timezone } : {}),
+      }).format(toDate(date)),
     /** "5 minutes ago" / "hace 5 minutos" / "há 5 minutos" */
     formatRelative: (date: string | Date) =>
       formatDistanceToNow(toDate(date), { addSuffix: true, locale }),
