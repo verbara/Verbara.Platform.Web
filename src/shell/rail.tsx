@@ -5,6 +5,7 @@ import { UserMenu } from './user-menu';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
+import { TenantBadge } from '@/core/ui/tenant-badge';
 import { Settings, Activity, ChartColumn, MessageSquare, Hexagon, Command } from 'lucide-react';
 
 export function Rail() {
@@ -58,6 +59,7 @@ export function Rail() {
       </div>
 
       <div className="flex flex-col items-center gap-1">
+        <TenantBadge size="sm" />
         <TooltipProvider delay={200}>
           <Tooltip>
             <TooltipTrigger
