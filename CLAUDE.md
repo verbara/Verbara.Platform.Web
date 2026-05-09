@@ -10,11 +10,11 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~350 TS/TSX files · 60+ pages · 56 API hooks · 37 UI components · 12 Zustand stores · 66+ E2E specs · 939/939 Vitest · Version 2.1.0** (Nivel 5 Track 5C-export done).
+**~350 TS/TSX files · 60+ pages · 56 API hooks · 39 UI components · 12 Zustand stores · 66+ E2E specs · 947/947 Vitest · Version 2.2.0** (Nivel 5 UX Maturity CLOSED).
 
-Niveles 1-4 complete (tags `v1.14.5-web` through `v1.17.5-web`). Track 5A (Loading States) done 2026-05-08. Track 5B (Virtualization) done 2026-05-08, tag `v2.0.2-web`. Track 5C-a11y (WCAG 2.1 AA Foundation) done 2026-05-08, tag `v2.0.4-web`. Track 5C-export (Print + PDF Export) done 2026-05-08, tag `v2.1.0-web`: `<PrintButton>` + `<PdfDownloadButton>` primitives, `src/styles/print.css` foundation (@media print, @page A4, data-print conventions), 5 PDF templates (CDR detail, QA detail, CDR Summary, QA Summary, plus engine helpers), CDR + QA detail drawers wired, Reports page Run Now → Download PDF flow, Analytics Dashboard PrintButton. Bundle: shell +0.10 kB gzip, lazy `vendor-pdf` chunk ~186 kB gzip. ~30 unit tests + 2 Playwright E2E.
+Niveles 1-5 complete (tags `v1.14.5-web` through `v2.2.0-web`). Track 5A (Loading States) done 2026-05-08. Track 5B (Virtualization) tag `v2.0.2-web`. Track 5C-a11y tag `v2.0.4-web`. Track 5C-export tag `v2.1.0-web`. **Track 5D (Forms UX + multi-tenant indicator + permission UX) tag `v2.2.0-web`**: `<PermissionButton>` primitive (aria-disabled + sr-only tooltip when permission missing), `<TenantBadge>` primitive (persistent tenant identity in rail with impersonation visual), 14 dedicated forms migrated to `useFieldA11y` + `<FieldError>` + `<Label required>` (queue-form + user-form already done in 5C-a11y), Tier 2/3 a11y migration of setup/campaign wizards + admin inline create-edit forms + notifications/gdpr forms, 14 action-button migrations from `<PermissionGuard>` hide-only to `<PermissionButton>` disabled+tooltip. Shell delta: -2.09 kB gzip (cleanup from migrations).
 
-**Next: Track 5D** (Forms UX + multi-tenant indicator) closes Nivel 5 with `v2.1.x-web`. See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
+**Next: Nivel 6** (Track 6A — phone/address/timezone formatters via `libphonenumber-js`) or **Nivel 7** (customer-facing tracks 7A IP allowlist UI, 7B SAML SSO admin, 7C WebChat customer widget). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
