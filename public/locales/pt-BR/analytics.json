@@ -63,6 +63,49 @@
     "acw_duration": "ACW",
     "aria": {
       "hasRecording": "Tem gravação"
+    },
+    "pdf": {
+      "documentTitle": "Detalhe da chamada — {{id}}",
+      "summaryTitle": "Resumo da chamada",
+      "qaSummaryTitle": "Resumo de QA",
+      "timelineTitle": "Linha do tempo",
+      "transcriptTitle": "Transcrição",
+      "yes": "Sim",
+      "no": "Não",
+      "field": {
+        "sessionId": "ID da sessão",
+        "startTime": "Hora de início",
+        "endTime": "Hora de término",
+        "contact": "Contato",
+        "channel": "Canal",
+        "queue": "Fila",
+        "agent": "Agente",
+        "duration": "Duração",
+        "talkTime": "Tempo de conversa",
+        "waitTime": "Tempo de espera",
+        "disposition": "Disposição",
+        "slaMet": "SLA atendido",
+        "qaScore": "Pontuação QA",
+        "sentiment": "Sentimento",
+        "campaign": "Campanha"
+      },
+      "qa": {
+        "reason": "Motivo",
+        "outcome": "Resultado",
+        "narrative": "Narrativa"
+      },
+      "timeline": {
+        "timestamp": "Hora",
+        "event": "Evento",
+        "detail": "Detalhe"
+      },
+      "transcript": {
+        "at": "Em",
+        "speaker": "Participante",
+        "text": "Texto",
+        "agent": "Agente",
+        "caller": "Cliente"
+      }
     }
   },
   "qa": {
