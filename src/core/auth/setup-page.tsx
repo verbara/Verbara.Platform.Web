@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { useSetup, type SetupResponse } from '@/core/api/hooks/use-system';
 
@@ -34,6 +36,9 @@ export default function SetupPage() {
     resolver: zodResolver(setupSchema),
     defaultValues: { email: '', password: '', displayName: '', platformName: '' },
   });
+
+  const emailA11y = useFieldA11y(errors.email, 'email', { required: true });
+  const passwordA11y = useFieldA11y(errors.password, 'password', { required: true });
 
   const onSubmit = handleSubmit((values) => {
     setup.mutate(values, {
@@ -70,28 +75,30 @@ export default function SetupPage() {
           <fieldset className="space-y-4">
             <legend className="text-sm font-medium">Admin Account</legend>
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" required>
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
                 data-testid="setup-email"
-                aria-invalid={!!errors.email}
+                {...emailA11y.inputProps}
                 {...register('email')}
               />
-              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+              <FieldError id={emailA11y.errorId} message={errors.email?.message} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" required>
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
                 data-testid="setup-password"
-                aria-invalid={!!errors.password}
+                {...passwordA11y.inputProps}
                 {...register('password')}
               />
-              {errors.password && (
-                <p className="text-xs text-destructive">{errors.password.message}</p>
-              )}
+              <FieldError id={passwordA11y.errorId} message={errors.password?.message} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="displayName">Display Name</Label>

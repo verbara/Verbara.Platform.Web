@@ -3,23 +3,30 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { useCallerIdPools } from '@/core/api/hooks/use-caller-id-pools';
 import { useDialerSettings } from '@/core/api/hooks/use-dialer-settings';
 import type { CampaignFormValues, DialingMode, PacingStrategy } from '../campaign-wizard';
 
-const DIALING_MODE_VALUES: DialingMode[] = ['preview', 'progressive', 'predictive', 'power', 'agentless'];
+const DIALING_MODE_VALUES: DialingMode[] = [
+  'preview',
+  'progressive',
+  'predictive',
+  'power',
+  'agentless',
+];
 const PACING_STRATEGY_VALUES: PacingStrategy[] = ['fixed', 'adaptive', 'timeBased'];
 
 export default function DialingStep() {
   const { t } = useTranslation('admin');
-  const { register, watch, setValue, formState: { errors } } = useFormContext<CampaignFormValues>();
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<CampaignFormValues>();
   const selectedMode = watch('mode');
   const selectedPacing = watch('pacingStrategy');
   const callerIdPoolId = watch('callerIdPoolId');
@@ -27,6 +34,8 @@ export default function DialingStep() {
 
   const { data: pools = [] } = useCallerIdPools();
   const { data: globalSettings } = useDialerSettings();
+
+  const maxChannelsA11y = useFieldA11y(errors.maxChannels, 'maxChannels', { required: true });
 
   return (
     <div className="space-y-6">
@@ -43,14 +52,13 @@ export default function DialingStep() {
                   : 'border-input hover:border-primary/50'
               }`}
             >
-              <input
-                type="radio"
-                value={mode}
-                className="sr-only"
-                {...register('mode')}
-              />
-              <span className="text-sm font-medium">{t(`campaigns.dialing_step.modes.${mode}`)}</span>
-              <p className="mt-1 text-xs text-muted-foreground">{t(`campaigns.dialing_step.modes.${mode}_desc`)}</p>
+              <input type="radio" value={mode} className="sr-only" {...register('mode')} />
+              <span className="text-sm font-medium">
+                {t(`campaigns.dialing_step.modes.${mode}`)}
+              </span>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t(`campaigns.dialing_step.modes.${mode}_desc`)}
+              </p>
             </label>
           ))}
         </div>
@@ -69,14 +77,13 @@ export default function DialingStep() {
                   : 'border-input hover:border-primary/50'
               }`}
             >
-              <input
-                type="radio"
-                value={ps}
-                className="sr-only"
-                {...register('pacingStrategy')}
-              />
-              <span className="text-sm font-medium">{t(`campaigns.dialing_step.pacings.${ps}`)}</span>
-              <p className="mt-1 text-xs text-muted-foreground">{t(`campaigns.dialing_step.pacings.${ps}_desc`)}</p>
+              <input type="radio" value={ps} className="sr-only" {...register('pacingStrategy')} />
+              <span className="text-sm font-medium">
+                {t(`campaigns.dialing_step.pacings.${ps}`)}
+              </span>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t(`campaigns.dialing_step.pacings.${ps}_desc`)}
+              </p>
             </label>
           ))}
         </div>
@@ -102,15 +109,21 @@ export default function DialingStep() {
           <div className="grid gap-5 sm:grid-cols-3 rounded-lg border border-dashed p-4 opacity-70">
             <div className="space-y-1.5">
               <Label>{t('campaigns.dialing_step.max_global_channels')}</Label>
-              <p className="text-sm font-medium text-muted-foreground">{globalSettings.maxGlobalChannels}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                {globalSettings.maxGlobalChannels}
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label>{t('campaigns.dialing_step.ring_timeout')}</Label>
-              <p className="text-sm font-medium text-muted-foreground">{globalSettings.defaultRingTimeoutSeconds}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                {globalSettings.defaultRingTimeoutSeconds}
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label>{t('campaigns.dialing_step.max_concurrent_campaigns')}</Label>
-              <p className="text-sm font-medium text-muted-foreground">{globalSettings.maxConcurrentCampaigns}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                {globalSettings.maxConcurrentCampaigns}
+              </p>
             </div>
           </div>
         )
@@ -143,15 +156,21 @@ export default function DialingStep() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="maxChannels">{t('campaigns.dialing_step.max_channels')}</Label>
+            <Label htmlFor="maxChannels" required>
+              {t('campaigns.dialing_step.max_channels')}
+            </Label>
             <Input
               id="maxChannels"
               type="number"
               min={1}
               max={500}
+              {...maxChannelsA11y.inputProps}
               {...register('maxChannels', { valueAsNumber: true })}
             />
-            {errors.maxChannels && <p className="text-sm text-destructive">{t(errors.maxChannels.message ?? '')}</p>}
+            <FieldError
+              id={maxChannelsA11y.errorId}
+              message={errors.maxChannels ? t(errors.maxChannels.message ?? '') : undefined}
+            />
           </div>
         </div>
       )}
@@ -164,9 +183,7 @@ export default function DialingStep() {
         </p>
         <Select
           value={callerIdPoolId !== null ? String(callerIdPoolId) : 'none'}
-          onValueChange={(val) =>
-            setValue('callerIdPoolId', val === 'none' ? null : Number(val))
-          }
+          onValueChange={(val) => setValue('callerIdPoolId', val === 'none' ? null : Number(val))}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('campaigns.dialing_step.select_pool_placeholder')} />

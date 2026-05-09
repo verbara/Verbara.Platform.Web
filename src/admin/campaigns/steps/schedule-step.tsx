@@ -4,13 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Button } from '@/core/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { useHolidayCalendars } from '@/core/api/hooks/use-holiday-calendars';
 import type { CampaignFormValues } from '../campaign-wizard';
 
@@ -29,13 +25,22 @@ const TIMEZONES = [
 
 export default function ScheduleStep() {
   const { t } = useTranslation('admin');
-  const { register, control, watch, setValue, formState: { errors } } = useFormContext<CampaignFormValues>();
+  const {
+    register,
+    control,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<CampaignFormValues>();
   const holidays = watch('holidays') ?? [];
   const holidayCalendarId = watch('holidayCalendarId');
   const { data: calendars = [] } = useHolidayCalendars();
 
   const { fields: scheduleFields } = useFieldArray({ control, name: 'schedule' as never });
   const schedule = watch('schedule');
+
+  const timezoneA11y = useFieldA11y(errors.timezone, 'timezone', { required: true });
+  const campaignStartA11y = useFieldA11y(errors.campaignStart, 'campaignStart', { required: true });
 
   const addHoliday = () => {
     const input = document.getElementById('holiday-input') as HTMLInputElement;
@@ -47,7 +52,10 @@ export default function ScheduleStep() {
   };
 
   const removeHoliday = (date: string) => {
-    setValue('holidays', holidays.filter((h) => h !== date));
+    setValue(
+      'holidays',
+      holidays.filter((h) => h !== date),
+    );
   };
 
   return (
@@ -74,7 +82,9 @@ export default function ScheduleStep() {
                   disabled={!day?.enabled}
                   {...register(`schedule.${idx}.start` as const)}
                 />
-                <span className="text-sm text-muted-foreground">{t('campaigns.schedule_step.to')}</span>
+                <span className="text-sm text-muted-foreground">
+                  {t('campaigns.schedule_step.to')}
+                </span>
                 <Input
                   type="time"
                   className="w-32"
@@ -89,25 +99,43 @@ export default function ScheduleStep() {
 
       {/* Timezone */}
       <div className="space-y-1.5">
-        <Label htmlFor="timezone">{t('campaigns.schedule_step.timezone')}</Label>
+        <Label htmlFor="timezone" required>
+          {t('campaigns.schedule_step.timezone')}
+        </Label>
         <select
           id="timezone"
           className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+          {...timezoneA11y.inputProps}
           {...register('timezone')}
         >
           {TIMEZONES.map((tz) => (
-            <option key={tz} value={tz}>{tz}</option>
+            <option key={tz} value={tz}>
+              {tz}
+            </option>
           ))}
         </select>
-        {errors.timezone && <p className="text-sm text-destructive">{t(errors.timezone.message ?? '')}</p>}
+        <FieldError
+          id={timezoneA11y.errorId}
+          message={errors.timezone ? t(errors.timezone.message ?? '') : undefined}
+        />
       </div>
 
       {/* Campaign Dates */}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="campaignStart">{t('campaigns.schedule_step.start_date')}</Label>
-          <Input id="campaignStart" type="date" {...register('campaignStart')} />
-          {errors.campaignStart && <p className="text-sm text-destructive">{t(errors.campaignStart.message ?? '')}</p>}
+          <Label htmlFor="campaignStart" required>
+            {t('campaigns.schedule_step.start_date')}
+          </Label>
+          <Input
+            id="campaignStart"
+            type="date"
+            {...campaignStartA11y.inputProps}
+            {...register('campaignStart')}
+          />
+          <FieldError
+            id={campaignStartA11y.errorId}
+            message={errors.campaignStart ? t(errors.campaignStart.message ?? '') : undefined}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="campaignEnd">{t('campaigns.schedule_step.end_date')}</Label>
@@ -159,7 +187,11 @@ export default function ScheduleStep() {
                 className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs"
               >
                 {date}
-                <button type="button" onClick={() => removeHoliday(date)} className="text-muted-foreground hover:text-foreground">
+                <button
+                  type="button"
+                  onClick={() => removeHoliday(date)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
                   <X className="h-3 w-3" />
                 </button>
               </span>

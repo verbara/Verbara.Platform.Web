@@ -16,9 +16,12 @@ import {
   Video,
   MessageCircle,
 } from 'lucide-react';
+import type { UseFormRegister, FieldValues } from 'react-hook-form';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { ChannelTestButton } from '@/admin/channels/channel-test-button';
 import {
   channelFields,
@@ -27,6 +30,30 @@ import {
   type FieldDef,
 } from '@/admin/channels/channel-fields';
 import type { SetupFormValues } from '../setup-wizard';
+
+interface ChannelConfigFieldProps {
+  readonly field: FieldDef;
+  readonly register: UseFormRegister<FieldValues>;
+  readonly error: { message?: string } | undefined;
+}
+
+function ChannelConfigField({ field, register, error }: ChannelConfigFieldProps) {
+  const a11y = useFieldA11y(error, `channel-${field.key}`, { required: true });
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={`channel-${field.key}`} required>
+        {field.label}
+      </Label>
+      <Input
+        id={`channel-${field.key}`}
+        type={field.type}
+        {...a11y.inputProps}
+        {...register(field.key)}
+      />
+      <FieldError id={a11y.errorId} message={error?.message?.toString()} />
+    </div>
+  );
+}
 
 const CHANNELS = [
   { id: 'whatsapp', name: 'WhatsApp', icon: MessageSquare },
@@ -86,18 +113,12 @@ function ChannelConfigFields({
       </h3>
 
       {fields.map((field) => (
-        <div key={field.key} className="space-y-1.5">
-          <Label htmlFor={`channel-${field.key}`}>{field.label}</Label>
-          <Input
-            id={`channel-${field.key}`}
-            type={field.type}
-            aria-invalid={!!errors[field.key]}
-            {...register(field.key)}
-          />
-          {errors[field.key] && (
-            <p className="text-xs text-destructive">{String(errors[field.key]?.message ?? '')}</p>
-          )}
-        </div>
+        <ChannelConfigField
+          key={field.key}
+          field={field}
+          register={register}
+          error={errors[field.key]}
+        />
       ))}
 
       <ChannelTestButton channelId={channelId} />
