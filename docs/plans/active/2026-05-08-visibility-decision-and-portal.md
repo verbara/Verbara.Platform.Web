@@ -17,7 +17,9 @@ This plan mirrors the Platform plan (`Verbara.Platform/docs/plans/active/2026-05
 
 ## Goal
 
-By end of this plan: Web has (a) an Accepted ADR formalizing Decision 3 (mirror of Platform ADR-0018) with shared trigger checklist, (b) README updated to clarify current visibility, (c) Tier 0.5 portal page designed (form + flow) ready to wire up once the issuer service exists, (d) public-facing licensing pages (`/legal/eula`, `/legal/privacy`, `/legal/terms`) skeleton.
+By end of this plan: Web has (a) an Accepted ADR formalizing Decision 3 (mirror of Platform ADR-0018) with shared trigger checklist, (b) README updated to clarify current visibility, (c) trigger checklist tracked toward the coordinated public flip with Platform.
+
+**Out of scope (clarified 2026-05-09):** the Tier 0.5 Developer portal, public legal pages, and pricing page do NOT live in this repo. They belong on the future verbara.io marketing site (separate repository). This repo is the contact-center operator UI; it serves authenticated customers, not public prospects. See "Phase 1 + Phase 2 — REMOVED" below.
 
 ## Non-goals
 
@@ -62,55 +64,23 @@ By end of this plan: Web has (a) an Accepted ADR formalizing Decision 3 (mirror 
 
 ---
 
-## Phase 1 — Tier 0.5 Developer portal page (Wk 2-3, ~10-15h)
+## Phase 1 + Phase 2 — REMOVED (scope correction 2026-05-09)
 
-### 1.1 — Page design
+**Original (incorrect) scope:** build the Tier 0.5 Developer portal (`/developer-license`), the legal pages (`/legal/eula`, `/legal/privacy`, `/legal/terms`), and the public pricing page (`/pricing`) inside this repository.
 
-- [ ] Spec page route `/developer-license` (public, on `verbara.io` apex when launched, mirrored as a draft route in this repo for dev)
-- [ ] Form fields: email (required), full name (required), company (optional), use case (optional, free text), checkbox "I agree to EULA + Privacy"
-- [ ] Honeypot + reCAPTCHA invisible v3 (anti-spam baseline)
-- [ ] Success state: "Check your email — you'll receive a 30-day developer license within 5 minutes. To extend, request a renewal from this same form anytime."
-- [ ] Error states: invalid email, rate-limited (1 license per email per 30 days), service down
+**Correction (maintainer-flagged 2026-05-09):** these are **public marketing-site pages** that belong on `verbara.io`, NOT inside `Verbara.Platform.Web`.
 
-### 1.2 — Page implementation
+Why this was wrong:
 
-- [ ] React component `src/pages/legal/DeveloperLicense.tsx`
-- [ ] React Hook Form + Zod schema for validation
-- [ ] TanStack Query mutation hooks/`useRequestDeveloperLicense.ts` posting to issuer endpoint (URL configurable via env var; placeholder until issuer service exists)
-- [ ] Vitest unit test for component + hook
-- [ ] Playwright E2E test stubbed (skipped until issuer service exists)
-- [ ] i18n strings: en-US, es-419, pt-BR per existing parity gate
+- `Verbara.Platform.Web` is the **operator UI** of the contact-center product. Its routes (`/admin/*`, `/agent/*`, `/operations/*`, `/analytics/*`, plus auth flows `/login` / `/setup`) are all in-product surfaces consumed by deployed customers' operators and agents.
+- Public marketing pages (pricing, EULA, license-request portal) are consumed by **prospects who have not yet adopted the product**. Bundling them into the operator UI conflates two audiences, increases bundle size, and creates a confusing surface (operators looking up settings should not be one click away from a "buy now" page).
+- The verbara.io marketing site is a separate concern with its own repository, deploy, and tech-stack choice (likely a static-site generator like Astro / Next.js / MkDocs, not a heavy SPA).
 
-### 1.3 — Issuer service contract (this side: define what we call)
+**Where this work moves instead:** a NEW separate repository for the verbara.io marketing site, to be created when verbara.io brand setup is in progress (per Platform ADR-0018 / this repo's ADR-0007 trigger 6). Suggested name: `verbara-website` or `verbara-marketing` (avoid `verbara-web` due to confusion with `Verbara.Platform.Web`).
 
-- [ ] Document `POST https://issuer.verbara.io/api/developer-license` contract:
-  - Request: `{ email, fullName, company?, useCase?, eulaAccepted: true, captchaToken }`
-  - Response 202: `{ requestId, message: "License will be emailed shortly" }`
-  - Response 429: rate-limited
-  - Response 4xx: validation error per field
-- [ ] Issuer service implementation deferred to Pro plan / separate `verbara-licensing-issuer` repo
+**Pro Phase 3.3** (issuer API contract spec at `Verbara.Sdk.Pro/docs/specs/2026-05-09-developer-license-issuer-contract.md`) remains the authoritative consumer-side spec — when the marketing repo is built, its `/developer-license` page implements that contract. The spec is portable and does not depend on living in any particular repo.
 
-**Phase 1 exit:** portal page implemented + tested; issuer integration ready to wire when service exists.
-
----
-
-## Phase 2 — Public-facing legal pages (Wk 3, ~6-8h)
-
-### 2.1 — Page skeletons (content waits for lawyer)
-
-- [ ] `/legal/eula` — placeholder page that renders the EULA.md from Pro repo (or fetches via build-time copy)
-- [ ] `/legal/privacy` — placeholder until Privacy Policy drafted (Pro plan Phase 1.1)
-- [ ] `/legal/terms` — Terms of Service for SaaS tiers (Tier 3-5 hosted)
-- [ ] Footer link on every page → `/legal/*` routes
-
-### 2.2 — Pricing page (Tier 0 → 5 visualized)
-
-- [ ] `/pricing` — public page rendering the 6 tiers (Tier 0 free, Tier 0.5 free → CTA "Get developer license", Tier 1+ → Stripe Payment Link or contact sales)
-- [ ] Match Pro plan Phase 2 ADR (canonical 6-tier model)
-- [ ] Tier comparison feature matrix table (which Pro features each tier unlocks)
-- [ ] i18n parity for the 3 locales
-
-**Phase 2 exit:** legal + pricing surface area exists, content ready to fill in as Pro plan Phase 1 (EULA) ships.
+**Phase 1 + 2 status 2026-05-09:** ❌ REMOVED from this plan. Tracked instead in the future verbara.io marketing repo. No work occurs in `Verbara.Platform.Web` for these pages.
 
 ---
 
@@ -140,28 +110,24 @@ Same 7 triggers as Platform ADR-0018; tracked there. Web-specific gating:
 - [ ] Trigger checklist fully green per ADR-0007
 - [ ] `gh api -X PATCH repos/verbara/Verbara.Platform.Web -f visibility=public`
 - [ ] Re-enable secret scanning + push protection
-- [ ] Wire Tier 0.5 portal to live issuer endpoint
-- [ ] Wire `/legal/*` pages to actual lawyer-drafted EULA/Privacy/ToS
+- [ ] Verify no in-product surface accidentally exposes admin-only / billing internals to unauthenticated users (separate readiness task; out of scope for this checklist)
+- (Removed: "Wire Tier 0.5 portal" / "Wire /legal/\* pages" — those live in the verbara.io marketing repo, not here)
 
 ### 4.2 — Launch checklist
 
-- [ ] HN "Show HN" post (open-core honest contact center)
-- [ ] verbara.io blog post
-- [ ] Twitter/Mastodon announcement
-- [ ] ProductHunt scheduled
+(Marketing announcements — HN "Show HN", verbara.io blog, ProductHunt, social — coordinated from the marketing-site repo, not this one. They reference the now-public Platform.Web operator UI as one of the open-source artifacts of the Verbara stack, alongside SDK and Platform.)
 
-**Phase 4 exit:** Web is public, Apache 2.0, portal live, customers can self-serve Tier 0.5 in <2 minutes.
+**Phase 4 exit:** this repo is public + Apache 2.0; the operator UI is auditable by enterprise evaluators. The marketing-site launch (which is what evaluators actually visit first) is a separate gating event tracked in the marketing-site repo.
 
 ---
 
 ## Risks & mitigations
 
-| Risk                                                     | Mitigation                                                                                                       |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Issuer service not ready when portal page is             | Portal renders "Coming soon" state, captures email, queues for later issuance                                    |
-| EULA not ready (lawyer slow)                             | `/legal/eula` shows "Coming soon — for licensing inquiries email licensing@verbara.io"                           |
-| First public-launch traffic spike crashes issuer service | Issuer is on serverless (e.g. Cloudflare Workers / Lambda); rate-limit at ingress; queue-then-issue if backed up |
-| Tier 0.5 form abused for spam                            | reCAPTCHA + 1-license-per-email-per-30-days + email verification (click link before .lic ships)                  |
+| Risk                                                                                                             | Mitigation                                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Marketing-site repo not started when this repo is ready to flip                                                  | Decoupled flip: this repo can flip public independently of the marketing site. Operators and evaluators reach this repo only after they have the product running.             |
+| Confusion between "Verbara.Platform.Web" (this repo) and the future "verbara-website" / "verbara-marketing" repo | Naming: avoid `verbara-web` as the marketing repo name (collides). Document the distinction in the marketing-site repo's README + in this repo's README.                      |
+| Operator UI exposes information meant only for authenticated users post-flip                                     | Pre-flip readiness check: confirm `AuthGuard` blocks all in-product routes; only `/login`, `/forgot-password`, `/reset-password`, `/setup`, `/unauthorized` remain anonymous. |
 
 ## Dependencies
 
