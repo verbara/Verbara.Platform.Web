@@ -7,13 +7,9 @@ import { Plus, X } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -74,6 +70,9 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
 
   const { fields, append, remove } = useFieldArray({ control, name: 'skills' });
 
+  const userIdA11y = useFieldA11y(errors.userId, 'agent-userId', { required: true });
+  const displayNameA11y = useFieldA11y(errors.displayName, 'agent-displayName', { required: true });
+
   useEffect(() => {
     if (open) {
       reset({
@@ -92,10 +91,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
   });
 
   /* Users not yet assigned as agents, plus the currently-edited user */
-  const assignedUserIds = useMemo(
-    () => new Set(agents.map((a) => a.userId)),
-    [agents],
-  );
+  const assignedUserIds = useMemo(() => new Set(agents.map((a) => a.userId)), [agents]);
   const availableUsers = useMemo(() => {
     const available = allUsers.filter(
       (u) => !assignedUserIds.has(u.id) || u.id === defaultValues?.userId,
@@ -117,10 +113,13 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
-          {/* User select */}
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
+        >
+          {/* User select — Controller/Select: aria-* not forwarded through SelectTrigger */}
           <div className="space-y-1.5">
-            <Label>{t('admin:agents.user')}</Label>
+            <Label required>{t('admin:agents.user')}</Label>
             <Controller
               name="userId"
               control={control}
@@ -139,23 +138,27 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                 </Select>
               )}
             />
-            {errors.userId && (
-              <p className="text-xs text-destructive">{t(errors.userId.message ?? '')}</p>
-            )}
+            <FieldError
+              id={userIdA11y.errorId}
+              message={errors.userId?.message ? t(errors.userId.message) : undefined}
+            />
           </div>
 
           {/* Display Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="displayName">{t('admin:agents.displayName')}</Label>
+            <Label htmlFor="agent-displayName" required>
+              {t('admin:agents.displayName')}
+            </Label>
             <Input
-              id="displayName"
+              id="agent-displayName"
               placeholder={t('admin:agents.displayNamePlaceholder')}
-              aria-invalid={!!errors.displayName}
+              {...displayNameA11y.inputProps}
               {...register('displayName')}
             />
-            {errors.displayName && (
-              <p className="text-xs text-destructive">{errors.displayName.message}</p>
-            )}
+            <FieldError
+              id={displayNameA11y.errorId}
+              message={errors.displayName?.message?.toString()}
+            />
           </div>
 
           {/* Team select */}
