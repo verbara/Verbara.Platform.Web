@@ -10,11 +10,11 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~350 TS/TSX files · 60+ pages · 56 API hooks · 39 UI components · 12 Zustand stores · 66+ E2E specs · 947/947 Vitest · Version 2.2.0** (Nivel 5 UX Maturity CLOSED).
+**~350 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 66+ E2E specs · 962/962 Vitest · Version 2.3.0** (Niveles 1-6 CLOSED).
 
-Niveles 1-5 complete (tags `v1.14.5-web` through `v2.2.0-web`). Track 5A (Loading States) done 2026-05-08. Track 5B (Virtualization) tag `v2.0.2-web`. Track 5C-a11y tag `v2.0.4-web`. Track 5C-export tag `v2.1.0-web`. **Track 5D (Forms UX + multi-tenant indicator + permission UX) tag `v2.2.0-web`**: `<PermissionButton>` primitive (aria-disabled + sr-only tooltip when permission missing), `<TenantBadge>` primitive (persistent tenant identity in rail with impersonation visual), 14 dedicated forms migrated to `useFieldA11y` + `<FieldError>` + `<Label required>` (queue-form + user-form already done in 5C-a11y), Tier 2/3 a11y migration of setup/campaign wizards + admin inline create-edit forms + notifications/gdpr forms, 14 action-button migrations from `<PermissionGuard>` hide-only to `<PermissionButton>` disabled+tooltip. Shell delta: -2.09 kB gzip (cleanup from migrations).
+Niveles 1-6 complete (tags `v1.14.5-web` through `v2.3.0-web`). Track 5A (Loading States). Track 5B (Virtualization) tag `v2.0.2-web`. Track 5C-a11y tag `v2.0.4-web`. Track 5C-export tag `v2.1.0-web`. Track 5D tag `v2.2.0-web`. **Track 6A (i18n Expansion: phone/timezone/currency) tag `v2.3.0-web`**: `useFormatPhone()` hook + `<PhoneInput>` primitive (lazy `libphonenumber-js/min` ~36 kB gzip lazy chunk), `<TimezoneSelect>` primitive (`Intl.supportedValuesOf` + browser auto-detect, ~440 IANA zones grouped by region), `useFormatDate(timezone?)` enhancement, 3 timezone surfaces migrated, 1 phone input + 6 phone display sites migrated, 1 raw `toFixed(2)` currency case fixed. Shell delta: +0.07 kB gzip eager. Address picker descopeada (backend lacks structured fields).
 
-**Next: Nivel 6** (Track 6A — phone/address/timezone formatters via `libphonenumber-js`) or **Nivel 7** (customer-facing tracks 7A IP allowlist UI, 7B SAML SSO admin, 7C WebChat customer widget). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
+**Next: Nivel 7** (customer-facing tracks 7A IP Allowlist UI verify, 7B SAML SSO admin, 7C WebChat customer widget). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
