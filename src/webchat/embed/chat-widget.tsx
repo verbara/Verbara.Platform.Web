@@ -64,9 +64,17 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         const wsUrl = session.wsUrl.startsWith('ws')
           ? session.wsUrl
           : `${location.origin.replace(/^http/, 'ws')}${session.wsUrl}`;
-        const client = createWsClient({
+        const queue = createOfflineQueue(config.tenantId);
+        let client: WsClient | null = null;
+        client = createWsClient({
           url: wsUrl,
-          onOpen: () => setStatus('online'),
+          onOpen: () => {
+            setStatus('online');
+            const queued = queue.drain();
+            for (const m of queued) {
+              client?.send({ type: 'message', body: m.text, id: m.id });
+            }
+          },
           onMessage: (msg: WsMessage) => {
             if (msg.type === 'message') {
               const attachments = parseAttachments(msg.attachments);
