@@ -79,6 +79,10 @@ export default defineConfig({
               name: 'vendor-pdf',
               test: /[\\/]node_modules[\\/](jspdf|jspdf-autotable|html2canvas|raf|css-line-break|text-segmentation|fflate|atob)[\\/]/,
             },
+            {
+              name: 'vendor-phone',
+              test: /[\\/]node_modules[\\/]libphonenumber-js[\\/]/,
+            },
           ],
         },
       },
