@@ -5,15 +5,9 @@ import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/core/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
-import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
 
@@ -74,8 +68,13 @@ export function ContactInfo() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editForm, setEditForm] = useState<ContactEditForm>({
-    firstName: '', lastName: '', company: '', segment: '',
-    preferredChannel: '', preferredLanguage: '', timezone: '',
+    firstName: '',
+    lastName: '',
+    company: '',
+    segment: '',
+    preferredChannel: '',
+    preferredLanguage: '',
+    timezone: '',
   });
   const updateContact = useUpdateContact();
   const deleteContact = useDeleteContact();
@@ -107,7 +106,8 @@ export function ContactInfo() {
   }
 
   const displayName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || '—';
-  const phone = contact.addresses.find((a) => a.channel === 'voice' || a.channel === 'sms')?.address ?? '—';
+  const phone =
+    contact.addresses.find((a) => a.channel === 'voice' || a.channel === 'sms')?.address ?? '—';
   const email = contact.addresses.find((a) => a.channel === 'email')?.address ?? '—';
 
   return (
@@ -115,28 +115,41 @@ export function ContactInfo() {
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Contact</span>
         <div className="flex items-center gap-0.5">
-          <PermissionGuard requires="contacts:contact:edit">
-            <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={openEditDialog}>
-              <Pencil className="mr-1 h-3 w-3" />
-              Edit
-            </Button>
-          </PermissionGuard>
-          <PermissionGuard requires="contacts:contact:delete">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-1.5 text-xs text-red-500 hover:text-red-600"
-              data-testid="contact-delete-btn"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </PermissionGuard>
+          <PermissionButton
+            requires="contacts:contact:edit"
+            variant="ghost"
+            size="sm"
+            className="h-6 px-1.5 text-xs"
+            onClick={openEditDialog}
+          >
+            <Pencil className="mr-1 h-3 w-3" />
+            Edit
+          </PermissionButton>
+          <PermissionButton
+            requires="contacts:contact:delete"
+            variant="ghost"
+            size="sm"
+            className="h-6 px-1.5 text-xs text-red-500 hover:text-red-600"
+            data-testid="contact-delete-btn"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </PermissionButton>
         </div>
       </div>
       <InfoRow icon={User} label={t('agent:context.name')} value={displayName} />
-      <InfoRow icon={Phone} label={t('agent:context.phone')} value={phone} copyable={phone !== '—'} />
-      <InfoRow icon={Mail} label={t('agent:context.email')} value={email} copyable={email !== '—'} />
+      <InfoRow
+        icon={Phone}
+        label={t('agent:context.phone')}
+        value={phone}
+        copyable={phone !== '—'}
+      />
+      <InfoRow
+        icon={Mail}
+        label={t('agent:context.email')}
+        value={email}
+        copyable={email !== '—'}
+      />
       <InfoRow icon={Building2} label={t('agent:context.company')} value={contact.company ?? '—'} />
       <InfoRow
         icon={MessageSquare}
@@ -155,8 +168,13 @@ export function ContactInfo() {
             {t('agent:context.addresses')}
           </p>
           {contact.addresses.map((addr) => (
-            <div key={`${addr.channel}-${addr.address}`} className="flex items-center justify-between py-1">
-              <span className="text-xs text-slate-500 capitalize">{channelLabels[addr.channel] ?? addr.channel}</span>
+            <div
+              key={`${addr.channel}-${addr.address}`}
+              className="flex items-center justify-between py-1"
+            >
+              <span className="text-xs text-slate-500 capitalize">
+                {channelLabels[addr.channel] ?? addr.channel}
+              </span>
               <span className="text-xs text-slate-700 dark:text-slate-300">{addr.address}</span>
             </div>
           ))}
@@ -185,55 +203,94 @@ export function ContactInfo() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-firstName">{t('agent:context.contactEdit.firstName')}</Label>
-                <Input id="edit-firstName" value={editForm.firstName} onChange={(e) => setEditForm((f) => ({ ...f, firstName: e.target.value }))} />
+                <Input
+                  id="edit-firstName"
+                  value={editForm.firstName}
+                  onChange={(e) => setEditForm((f) => ({ ...f, firstName: e.target.value }))}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-lastName">{t('agent:context.contactEdit.lastName')}</Label>
-                <Input id="edit-lastName" value={editForm.lastName} onChange={(e) => setEditForm((f) => ({ ...f, lastName: e.target.value }))} />
+                <Input
+                  id="edit-lastName"
+                  value={editForm.lastName}
+                  onChange={(e) => setEditForm((f) => ({ ...f, lastName: e.target.value }))}
+                />
               </div>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-company">{t('agent:context.contactEdit.company')}</Label>
-              <Input id="edit-company" value={editForm.company} onChange={(e) => setEditForm((f) => ({ ...f, company: e.target.value }))} />
+              <Input
+                id="edit-company"
+                value={editForm.company}
+                onChange={(e) => setEditForm((f) => ({ ...f, company: e.target.value }))}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-segment">{t('agent:context.contactEdit.segment')}</Label>
-              <Input id="edit-segment" value={editForm.segment} onChange={(e) => setEditForm((f) => ({ ...f, segment: e.target.value }))} />
+              <Input
+                id="edit-segment"
+                value={editForm.segment}
+                onChange={(e) => setEditForm((f) => ({ ...f, segment: e.target.value }))}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-prefChannel">{t('agent:context.contactEdit.preferredChannel')}</Label>
-              <Input id="edit-prefChannel" value={editForm.preferredChannel} onChange={(e) => setEditForm((f) => ({ ...f, preferredChannel: e.target.value }))} />
+              <Label htmlFor="edit-prefChannel">
+                {t('agent:context.contactEdit.preferredChannel')}
+              </Label>
+              <Input
+                id="edit-prefChannel"
+                value={editForm.preferredChannel}
+                onChange={(e) => setEditForm((f) => ({ ...f, preferredChannel: e.target.value }))}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-prefLang">{t('agent:context.contactEdit.preferredLanguage')}</Label>
-              <Input id="edit-prefLang" value={editForm.preferredLanguage} onChange={(e) => setEditForm((f) => ({ ...f, preferredLanguage: e.target.value }))} />
+              <Label htmlFor="edit-prefLang">
+                {t('agent:context.contactEdit.preferredLanguage')}
+              </Label>
+              <Input
+                id="edit-prefLang"
+                value={editForm.preferredLanguage}
+                onChange={(e) => setEditForm((f) => ({ ...f, preferredLanguage: e.target.value }))}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-tz">{t('agent:context.contactEdit.timezone')}</Label>
-              <Input id="edit-tz" value={editForm.timezone} onChange={(e) => setEditForm((f) => ({ ...f, timezone: e.target.value }))} />
+              <Input
+                id="edit-tz"
+                value={editForm.timezone}
+                onChange={(e) => setEditForm((f) => ({ ...f, timezone: e.target.value }))}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>{t('common:actions.cancel')}</Button>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              {t('common:actions.cancel')}
+            </Button>
             <Button
               disabled={updateContact.isPending}
               onClick={() => {
                 if (!contact) return;
-                updateContact.mutate({
-                  id: contact.id,
-                  firstName: editForm.firstName || undefined,
-                  lastName: editForm.lastName || undefined,
-                  company: editForm.company || undefined,
-                  segment: editForm.segment || undefined,
-                  preferredChannel: editForm.preferredChannel || undefined,
-                  preferredLanguage: editForm.preferredLanguage || undefined,
-                  timezone: editForm.timezone || undefined,
-                }, {
-                  onSuccess: () => setEditOpen(false),
-                });
+                updateContact.mutate(
+                  {
+                    id: contact.id,
+                    firstName: editForm.firstName || undefined,
+                    lastName: editForm.lastName || undefined,
+                    company: editForm.company || undefined,
+                    segment: editForm.segment || undefined,
+                    preferredChannel: editForm.preferredChannel || undefined,
+                    preferredLanguage: editForm.preferredLanguage || undefined,
+                    timezone: editForm.timezone || undefined,
+                  },
+                  {
+                    onSuccess: () => setEditOpen(false),
+                  },
+                );
               }}
             >
-              {updateContact.isPending ? t('agent:context.contactEdit.saving') : t('agent:context.contactEdit.update')}
+              {updateContact.isPending
+                ? t('agent:context.contactEdit.saving')
+                : t('agent:context.contactEdit.update')}
             </Button>
           </DialogFooter>
         </DialogContent>
