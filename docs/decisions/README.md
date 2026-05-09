@@ -59,3 +59,4 @@ The decision, stated in one or two sentences.
 - [ADR-0005](0005-versioning-track-end-tags.md) — Track-end versioning policy (Accepted, 2026-05-03)
 - [ADR-0006](0006-license-and-commercial-tier-strategy.md) — License (Apache 2.0) + 5-tier commercial strategy + rebrand to **Verbara** (Accepted, 2026-05-03)
 - [ADR-0007](0007-visibility-decision-3-private-now-public-on-trigger.md) — Visibility: private now, public on trigger checklist (Decision 3) (Accepted, 2026-05-08)
+- [ADR-0008](0008-ip-allowlist-per-tenant-tab-over-standalone-page.md) — IP Allowlist: per-tenant tab over standalone admin page (Accepted, 2026-05-08)
