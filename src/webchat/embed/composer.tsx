@@ -5,17 +5,17 @@ export interface ComposerProps {
   readonly disabled?: boolean;
   readonly onSend: (text: string) => void;
   readonly maxLength?: number;
-  readonly autoFocus?: boolean;
+  readonly shouldFocus?: boolean;
 }
 
-export function Composer({ disabled, onSend, maxLength = 4000, autoFocus }: ComposerProps) {
+export function Composer({ disabled, onSend, maxLength = 4000, shouldFocus }: ComposerProps) {
   const { t } = useTranslation('webchat');
   const [value, setValue] = useState('');
   const ref = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (autoFocus) ref.current?.focus();
-  }, [autoFocus]);
+    if (shouldFocus) ref.current?.focus();
+  }, [shouldFocus]);
 
   function submit() {
     const trimmed = value.trim();

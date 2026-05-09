@@ -57,10 +57,10 @@ describe('Composer', () => {
     expect(screen.getByRole('button', { name: /send message/i })).toBeDisabled();
   });
 
-  it('Autofocuses_WhenAutoFocusTrue', () => {
+  it('Focuses_WhenShouldFocusTrue', () => {
     render(
       <I18nextProvider i18n={i18n}>
-        <Composer onSend={vi.fn()} autoFocus />
+        <Composer onSend={vi.fn()} shouldFocus />
       </I18nextProvider>,
     );
     expect(screen.getByPlaceholderText(/type/i)).toHaveFocus();

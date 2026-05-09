@@ -40,13 +40,21 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const apiBase = config.apiBase ?? '/api/v1';
 
   const TIMEOUT_MS = 5 * 60 * 1000;
-  const lastAgentActivityRef = useRef<number>(Date.now());
+  const lastAgentActivityRef = useRef<number | null>(null);
 
-  // Hydrate cached messages once profile is known (returning visitor)
+  // Initialize agent-activity timestamp on first mount.
+  useEffect(() => {
+    lastAgentActivityRef.current = Date.now();
+  }, []);
+
+  // Hydrate cached messages once profile is known (returning visitor).
+  // Defer setMessages to a microtask so it's not synchronous within the effect body.
   useEffect(() => {
     if (profile && messages.length === 0) {
       const cached = loadCachedMessages(config.tenantId);
-      if (cached.length > 0) setMessages(cached);
+      if (cached.length > 0) {
+        queueMicrotask(() => setMessages(cached));
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
@@ -70,7 +78,10 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   useEffect(() => {
     if (!profile) return;
     const interval = setInterval(() => {
-      if (Date.now() - lastAgentActivityRef.current > TIMEOUT_MS && status !== 'timeout') {
+      if (
+        Date.now() - (lastAgentActivityRef.current ?? Date.now()) > TIMEOUT_MS &&
+        status !== 'timeout'
+      ) {
         setStatus('timeout');
         breadcrumb('timeout');
       }
@@ -208,7 +219,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
       </header>
       <StatusBanner status={status} />
       <MessageList messages={messages} />
-      <Composer disabled={status === 'offline'} onSend={handleSend} autoFocus />
+      <Composer disabled={status === 'offline'} onSend={handleSend} shouldFocus />
     </div>
   );
 }
