@@ -1,10 +1,17 @@
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useForm, useWatch } from 'react-hook-form';
+import {
+  useForm,
+  useWatch,
+  type FieldError as RHFFieldError,
+  type UseFormRegisterReturn,
+} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import {
   Sheet,
@@ -23,6 +30,29 @@ interface ChannelConfigFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   channelId: string | null;
+}
+
+interface DynamicCredentialFieldProps {
+  field: { key: string; label: string; type: 'text' | 'password' };
+  error: RHFFieldError | undefined;
+  register: UseFormRegisterReturn;
+}
+
+function DynamicCredentialField({ field, error, register }: Readonly<DynamicCredentialFieldProps>) {
+  const { t } = useTranslation(['admin']);
+  const a11y = useFieldA11y(error, `channel-${field.key}`, { required: true });
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={`channel-${field.key}`} required>
+        {field.label}
+      </Label>
+      <Input id={`channel-${field.key}`} type={field.type} {...a11y.inputProps} {...register} />
+      <FieldError
+        id={a11y.errorId}
+        message={error?.message ? t(String(error.message), { field: field.label }) : undefined}
+      />
+    </div>
+  );
 }
 
 export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConfigFormProps) {
@@ -89,20 +119,12 @@ export function ChannelConfigForm({ open, onOpenChange, channelId }: ChannelConf
 
           {/* Dynamic credential fields */}
           {fields.map((field) => (
-            <div key={field.key} className="space-y-1.5">
-              <Label htmlFor={field.key}>{field.label}</Label>
-              <Input
-                id={field.key}
-                type={field.type}
-                aria-invalid={!!errors[field.key]}
-                {...register(field.key)}
-              />
-              {errors[field.key] && (
-                <p className="text-xs text-destructive">
-                  {t(String(errors[field.key]?.message ?? ''), { field: field.label })}
-                </p>
-              )}
-            </div>
+            <DynamicCredentialField
+              key={field.key}
+              field={field}
+              error={errors[field.key] as RHFFieldError | undefined}
+              register={register(field.key)}
+            />
           ))}
 
           <SheetFooter className="mt-auto flex-row gap-2 px-0">

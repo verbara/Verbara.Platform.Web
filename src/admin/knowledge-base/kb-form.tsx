@@ -6,13 +6,9 @@ import { z } from 'zod';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -79,6 +75,9 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
     },
   });
 
+  const titleA11y = useFieldA11y(errors.title, 'kb-title', { required: true });
+  const contentA11y = useFieldA11y(errors.content, 'kb-content', { required: true });
+
   useEffect(() => {
     if (open) {
       reset({
@@ -98,9 +97,7 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
   });
 
   const title =
-    mode === 'create'
-      ? t('admin:knowledge.createArticle')
-      : t('admin:knowledge.editArticle');
+    mode === 'create' ? t('admin:knowledge.createArticle') : t('admin:knowledge.editArticle');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -117,34 +114,40 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
         <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 px-4">
           {/* Title */}
           <div className="space-y-1.5">
-            <Label htmlFor="kb-title">{t('admin:knowledge.title')}</Label>
+            <Label htmlFor="kb-title" required>
+              {t('admin:knowledge.title')}
+            </Label>
             <Input
               id="kb-title"
               data-testid="article-form-title"
               placeholder={t('admin:knowledge.titlePlaceholder')}
-              aria-invalid={!!errors.title}
+              {...titleA11y.inputProps}
               {...register('title')}
             />
-            {errors.title && (
-              <p className="text-xs text-destructive">{t(errors.title.message ?? '')}</p>
-            )}
+            <FieldError
+              id={titleA11y.errorId}
+              message={errors.title?.message ? t(errors.title.message) : undefined}
+            />
           </div>
 
           {/* Content */}
           <div className="space-y-1.5">
-            <Label htmlFor="kb-content">{t('admin:knowledge.content')}</Label>
+            <Label htmlFor="kb-content" required>
+              {t('admin:knowledge.content')}
+            </Label>
             <textarea
               id="kb-content"
               data-testid="article-form-content"
               rows={8}
               placeholder={t('admin:knowledge.contentPlaceholder')}
-              aria-invalid={!!errors.content}
               className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              {...contentA11y.inputProps}
               {...register('content')}
             />
-            {errors.content && (
-              <p className="text-xs text-destructive">{t(errors.content.message ?? '')}</p>
-            )}
+            <FieldError
+              id={contentA11y.errorId}
+              message={errors.content?.message ? t(errors.content.message) : undefined}
+            />
           </div>
 
           {/* Tags */}
@@ -156,9 +159,7 @@ export function KbForm({ open, onOpenChange, mode, defaultValues, onSubmit }: Kb
               placeholder={t('admin:knowledge.tagsPlaceholder')}
               {...register('tags')}
             />
-            <p className="text-xs text-muted-foreground">
-              {t('admin:knowledge.tagsHint')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('admin:knowledge.tagsHint')}</p>
           </div>
 
           {/* Language */}

@@ -7,6 +7,8 @@ import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import { Checkbox } from '@/core/ui/checkbox';
 import {
@@ -87,6 +89,9 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
     defaultValues: DEFAULT_VALUES,
   });
 
+  const nameA11y = useFieldA11y(errors.name, 'wh-name', { required: true });
+  const urlA11y = useFieldA11y(errors.endpointUrl, 'wh-url', { required: true });
+
   useEffect(() => {
     if (open) {
       reset(subscription ? mapToForm(subscription) : DEFAULT_VALUES);
@@ -138,28 +143,40 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
 
           <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
             <div className="space-y-1.5">
-              <Label htmlFor="wh-name">{t('webhooks.form.name')}</Label>
+              <Label htmlFor="wh-name" required>
+                {t('webhooks.form.name')}
+              </Label>
               <Input
                 id="wh-name"
                 data-testid="webhook-form-name"
                 placeholder={t('webhooks.form.name_placeholder')}
+                {...nameA11y.inputProps}
                 {...register('name')}
               />
-              {errors.name && (
-                <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-              )}
+              <FieldError
+                id={nameA11y.errorId}
+                message={errors.name?.message ? t(errors.name.message) : undefined}
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="wh-url">{t('webhooks.form.endpoint_url')}</Label>
+              <Label htmlFor="wh-url" required>
+                {t('webhooks.form.endpoint_url')}
+              </Label>
               <Input
                 id="wh-url"
                 data-testid="webhook-form-url"
                 placeholder={t('webhooks.form.endpoint_url_placeholder')}
+                {...urlA11y.inputProps}
                 {...register('endpointUrl')}
               />
               {errors.endpointUrl && (
-                <p data-testid="webhook-form-url-error" className="text-xs text-destructive">
+                <p
+                  id={urlA11y.errorId}
+                  role="alert"
+                  data-testid="webhook-form-url-error"
+                  className="text-xs text-destructive"
+                >
                   {t(errors.endpointUrl.message ?? '')}
                 </p>
               )}

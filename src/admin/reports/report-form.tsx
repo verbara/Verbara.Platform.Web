@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import { Textarea } from '@/core/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
@@ -91,6 +93,8 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
 
   const schedule = useWatch({ control, name: 'schedule' });
 
+  const nameA11y = useFieldA11y(errors.name, 'report-name', { required: true });
+
   useEffect(() => {
     if (open) {
       reset(report ? mapReportToForm(report) : DEFAULT_VALUES);
@@ -137,16 +141,19 @@ export function ReportForm({ open, onOpenChange, mode, report }: ReportFormProps
         >
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="report-name">{t('admin:reports.name')}</Label>
+            <Label htmlFor="report-name" required>
+              {t('admin:reports.name')}
+            </Label>
             <Input
               id="report-name"
               placeholder={t('admin:reports.namePlaceholder')}
-              aria-invalid={!!errors.name}
+              {...nameA11y.inputProps}
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-            )}
+            <FieldError
+              id={nameA11y.errorId}
+              message={errors.name?.message ? t(errors.name.message) : undefined}
+            />
           </div>
 
           {/* Report Type */}

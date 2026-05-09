@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
@@ -74,6 +76,17 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
     },
   });
 
+  const nameA11y = useFieldA11y(errors.name, 'profile-name', { required: true });
+  const transportA11y = useFieldA11y(errors.transport, 'profile-transport', { required: true });
+  const codecsA11y = useFieldA11y(errors.codecs, 'profile-codecs', { required: true });
+  const maxContactsA11y = useFieldA11y(errors.maxContacts, 'profile-maxContacts', {
+    required: true,
+  });
+  const contextA11y = useFieldA11y(errors.context, 'profile-context', { required: true });
+  const qualifyA11y = useFieldA11y(errors.qualifyFrequency, 'profile-qualifyFrequency', {
+    required: true,
+  });
+
   useEffect(() => {
     if (open) {
       reset(
@@ -133,16 +146,19 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
         >
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-name">{t('realtime.form.name')}</Label>
+            <Label htmlFor="profile-name" required>
+              {t('realtime.form.name')}
+            </Label>
             <Input
               id="profile-name"
               placeholder={t('realtime.form.name_placeholder')}
-              aria-invalid={!!errors.name}
+              {...nameA11y.inputProps}
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-            )}
+            <FieldError
+              id={nameA11y.errorId}
+              message={errors.name?.message ? t(errors.name.message) : undefined}
+            />
           </div>
 
           {/* Type */}
@@ -172,76 +188,93 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           {/* Transport */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-transport">{t('realtime.form.transport')}</Label>
+            <Label htmlFor="profile-transport" required>
+              {t('realtime.form.transport')}
+            </Label>
             <Input
               id="profile-transport"
               placeholder="transport-udp"
-              aria-invalid={!!errors.transport}
+              {...transportA11y.inputProps}
               {...register('transport')}
             />
-            {errors.transport && (
-              <p className="text-xs text-destructive">{t(errors.transport.message ?? '')}</p>
-            )}
+            <FieldError
+              id={transportA11y.errorId}
+              message={errors.transport?.message ? t(errors.transport.message) : undefined}
+            />
           </div>
 
           {/* Codecs */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-codecs">{t('realtime.form.codecs')}</Label>
+            <Label htmlFor="profile-codecs" required>
+              {t('realtime.form.codecs')}
+            </Label>
             <Input
               id="profile-codecs"
               placeholder="ulaw,alaw,g722"
-              aria-invalid={!!errors.codecs}
+              {...codecsA11y.inputProps}
               {...register('codecs')}
             />
-            {errors.codecs && (
-              <p className="text-xs text-destructive">{t(errors.codecs.message ?? '')}</p>
-            )}
+            <FieldError
+              id={codecsA11y.errorId}
+              message={errors.codecs?.message ? t(errors.codecs.message) : undefined}
+            />
           </div>
 
           {/* Max Contacts */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-maxContacts">{t('realtime.form.max_contacts')}</Label>
+            <Label htmlFor="profile-maxContacts" required>
+              {t('realtime.form.max_contacts')}
+            </Label>
             <Input
               id="profile-maxContacts"
               type="number"
               min={1}
               placeholder="1"
-              aria-invalid={!!errors.maxContacts}
+              {...maxContactsA11y.inputProps}
               {...register('maxContacts')}
             />
-            {errors.maxContacts && (
-              <p className="text-xs text-destructive">{t(errors.maxContacts.message ?? '')}</p>
-            )}
+            <FieldError
+              id={maxContactsA11y.errorId}
+              message={errors.maxContacts?.message ? t(errors.maxContacts.message) : undefined}
+            />
           </div>
 
           {/* Context */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-context">{t('realtime.form.context')}</Label>
+            <Label htmlFor="profile-context" required>
+              {t('realtime.form.context')}
+            </Label>
             <Input
               id="profile-context"
               placeholder="from-internal"
-              aria-invalid={!!errors.context}
+              {...contextA11y.inputProps}
               {...register('context')}
             />
-            {errors.context && (
-              <p className="text-xs text-destructive">{t(errors.context.message ?? '')}</p>
-            )}
+            <FieldError
+              id={contextA11y.errorId}
+              message={errors.context?.message ? t(errors.context.message) : undefined}
+            />
           </div>
 
           {/* Qualify Frequency */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-qualifyFrequency">{t('realtime.form.qualify_frequency')}</Label>
+            <Label htmlFor="profile-qualifyFrequency" required>
+              {t('realtime.form.qualify_frequency')}
+            </Label>
             <Input
               id="profile-qualifyFrequency"
               type="number"
               min={0}
               placeholder="30"
-              aria-invalid={!!errors.qualifyFrequency}
+              {...qualifyA11y.inputProps}
               {...register('qualifyFrequency')}
             />
-            {errors.qualifyFrequency && (
-              <p className="text-xs text-destructive">{t(errors.qualifyFrequency.message ?? '')}</p>
-            )}
+            <FieldError
+              id={qualifyA11y.errorId}
+              message={
+                errors.qualifyFrequency?.message ? t(errors.qualifyFrequency.message) : undefined
+              }
+            />
           </div>
 
           {/* WebRTC */}

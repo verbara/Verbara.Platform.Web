@@ -8,6 +8,8 @@ import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import { Textarea } from '@/core/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
@@ -111,6 +113,8 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
     name: 'questions',
   });
 
+  const nameA11y = useFieldA11y(errors.name, 'survey-name', { required: true });
+
   useEffect(() => {
     if (open) {
       reset(survey ? mapSurveyToForm(survey) : DEFAULT_VALUES);
@@ -175,17 +179,20 @@ export function SurveyForm({ open, onOpenChange, mode, survey }: SurveyFormProps
         >
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="survey-name">{t('admin:surveys.name')}</Label>
+            <Label htmlFor="survey-name" required>
+              {t('admin:surveys.name')}
+            </Label>
             <Input
               id="survey-name"
               placeholder={t('admin:surveys.namePlaceholder')}
-              aria-invalid={!!errors.name}
               data-testid="survey-form-name"
+              {...nameA11y.inputProps}
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-            )}
+            <FieldError
+              id={nameA11y.errorId}
+              message={errors.name?.message ? t(errors.name.message) : undefined}
+            />
           </div>
 
           {/* Type */}
