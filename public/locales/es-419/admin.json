@@ -2227,7 +2227,8 @@
     "instructions_suffix": " de su sitio web.",
     "configuration": "Configuración",
     "api_url": "URL de API",
-    "ws_url": "URL de WebSocket"
+    "ws_url": "URL de WebSocket",
+    "live_preview": "Vista previa"
   },
   "caller-id-pools": {
     "title": "Grupos de Caller ID",

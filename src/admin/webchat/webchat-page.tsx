@@ -1,28 +1,27 @@
-import { MessageCircle } from 'lucide-react';
+import { ExternalLink, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Badge } from '@/core/ui/badge';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import { Badge } from '@/core/ui/badge';
+import { useTenantStore } from '@/core/tenant/tenant-store';
 
 export default function WebChatPage() {
   const { t } = useTranslation('admin');
   const apiBase = window.location.origin;
+  const activeTenantId = useTenantStore((s) => s.activeTenantId);
+  const tenantId = activeTenantId ?? 'YOUR_TENANT_ID';
+
   const snippet = `<!-- Verbara WebChat Widget -->
-<script>
-(function() {
-  var s = document.createElement('script');
-  s.src = '${apiBase}/webchat-widget.js';
-  s.async = true;
-  s.onload = function() {
-    VerbaraWebChat.init({
-      apiUrl: '${apiBase}/api/v1/webchat',
-      wsUrl: '${apiBase.replace(/^http/, 'ws')}/ws/webchat',
-    });
-  };
-  document.body.appendChild(s);
-})();
-</script>`;
+<script
+  src="${apiBase}/webchat/v1/verbara-webchat.js"
+  data-tenant-id="${tenantId}"
+  data-locale="auto"
+  data-position="bottom-right"
+  async
+></script>`;
+
+  const previewUrl = `${apiBase}/webchat/demo.html?tenantId=${encodeURIComponent(tenantId)}`;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -54,6 +53,18 @@ export default function WebChatPage() {
           <div className="absolute right-2 top-2" data-testid="webchat-copy">
             <CopyButton value={snippet} variant="outline" />
           </div>
+        </div>
+        <div className="flex justify-end">
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="webchat-preview-link"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-[0.8rem] font-medium hover:bg-muted hover:text-foreground"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {t('webchat.live_preview')}
+          </a>
         </div>
       </div>
 

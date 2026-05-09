@@ -2227,7 +2227,8 @@
     "instructions_suffix": " do seu site.",
     "configuration": "Configuração",
     "api_url": "URL da API",
-    "ws_url": "URL do WebSocket"
+    "ws_url": "URL do WebSocket",
+    "live_preview": "Visualização ao vivo"
   },
   "caller-id-pools": {
     "title": "Pools de Caller ID",
