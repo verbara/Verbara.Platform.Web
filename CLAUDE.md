@@ -10,11 +10,11 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~350 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 66+ E2E specs · 962/962 Vitest · Version 2.3.0** (Niveles 1-6 CLOSED).
+**~350 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 66+ E2E specs · 968/968 Vitest · Version 2.4.0** (Niveles 1-6 CLOSED + Tracks 7A/7B done).
 
-Niveles 1-6 complete (tags `v1.14.5-web` through `v2.3.0-web`). Track 5A (Loading States). Track 5B (Virtualization) tag `v2.0.2-web`. Track 5C-a11y tag `v2.0.4-web`. Track 5C-export tag `v2.1.0-web`. Track 5D tag `v2.2.0-web`. **Track 6A (i18n Expansion: phone/timezone/currency) tag `v2.3.0-web`**: `useFormatPhone()` hook + `<PhoneInput>` primitive (lazy `libphonenumber-js/min` ~36 kB gzip lazy chunk), `<TimezoneSelect>` primitive (`Intl.supportedValuesOf` + browser auto-detect, ~440 IANA zones grouped by region), `useFormatDate(timezone?)` enhancement, 3 timezone surfaces migrated, 1 phone input + 6 phone display sites migrated, 1 raw `toFixed(2)` currency case fixed. Shell delta: +0.07 kB gzip eager. Address picker descopeada (backend lacks structured fields).
+Niveles 1-6 complete (tags `v1.14.5-web` through `v2.3.0-web`). Track 6A (i18n Expansion) tag `v2.3.0-web`. Track 7A (IP Allowlist UI) closed via Track 4A + ADR-0008. **Track 7B (per-tenant OIDC SSO admin) tag `v2.4.0-web`**: `<SsoTab>` in tenant-detail-page exposing all OIDC fields (authority, client ID, client secret write-only, autoCreateUsers, defaultRole), feature-gated by `OidcSso` plan flag. Test sign-in button validates IdP config without affecting session. `UpdateAuthPayload` extended with write-only `oidcClientSecret`. Roadmap label corrected SAML → OIDC (backend implements OIDC only). Per ADR-0008: tab in tenant-detail (no standalone page).
 
-**Track 7A** (IP Allowlist UI) closed 2026-05-08 vía Track 4A + ADR-0008 (per-tenant tab over standalone page — backend only exposes per-tenant endpoints; standalone page would be redundant). **Next: Nivel 7** (Track 7B SAML SSO admin, Track 7C WebChat customer widget). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
+**Next: Track 7C** (WebChat customer widget — greenfield embeddable, expected `v3.0.0-web`). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
