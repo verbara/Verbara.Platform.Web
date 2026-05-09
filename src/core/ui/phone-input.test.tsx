@@ -60,16 +60,24 @@ describe('PhoneInput', () => {
   });
 
   it('CallsOnChange_WhenUserTypes', async () => {
-    let captured = '';
+    const onChange = vi.fn();
     function Wrapped() {
       const [val, setVal] = useState('');
-      captured = val;
-      return <PhoneInput value={val} onChange={setVal} data-testid="phone" />;
+      return (
+        <PhoneInput
+          value={val}
+          onChange={(v) => {
+            setVal(v);
+            onChange(v);
+          }}
+          data-testid="phone"
+        />
+      );
     }
     render(wrap(<Wrapped />));
     const input = screen.getByTestId('phone') as HTMLInputElement;
     fireEvent.change(input, { target: { value: '+19255550100' } });
-    await waitFor(() => expect(captured).toBe('+19255550100'));
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith('+19255550100'));
   });
 
   it('HasI18nAriaLabel', () => {
