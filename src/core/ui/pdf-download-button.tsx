@@ -71,7 +71,6 @@ export function PdfDownloadButton({
       addSentryBreadcrumb('pdf.export', `${documentTitle} (${filename}, ${durationMs}ms)`, 'info');
     } catch (err) {
       toast.error(t('export.pdf.failed'));
-      // eslint-disable-next-line no-console -- surface generation errors for diagnostics
       console.error('[pdf-download]', err);
     } finally {
       setBusy(false);

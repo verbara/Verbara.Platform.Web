@@ -12,6 +12,7 @@ import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { ReportForm } from './report-form';
+import { ReportPdfButton } from './report-pdf-button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
 import {
   useReports,
@@ -130,6 +131,7 @@ export default function ReportsPage() {
             >
               <Play className="h-3.5 w-3.5" />
             </Button>
+            <ReportPdfButton report={info.row.original} />
             <Button
               variant="ghost"
               size="sm"
