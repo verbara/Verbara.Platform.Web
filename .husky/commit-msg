@@ -28,8 +28,8 @@ case "$commit_msg" in
     ;;
 esac
 
-# Conventional Commits regex.
-pattern='^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([a-z0-9_./-]+\))?!?: .+'
+# Conventional Commits regex (allows nested scopes like Dependabot's "(ci)(deps)").
+pattern='^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([a-z0-9_./-]+\))*!?: .+'
 
 if ! echo "$commit_msg" | grep -qE "$pattern"; then
   printf '\n\033[31mERROR\033[0m: commit message does not follow Conventional Commits.\n\n'
