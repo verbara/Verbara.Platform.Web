@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     target: 'es2020',
-    minify: 'terser',
+    minify: true,
     sourcemap: 'hidden',
     outDir: resolve(__dirname, 'public/webchat/embed'),
     emptyOutDir: true,
