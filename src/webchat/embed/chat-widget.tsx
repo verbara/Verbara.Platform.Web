@@ -8,6 +8,7 @@ import { createSession, fetchHistory, type ChatMessage } from './transport/sessi
 import { createWsClient, type WsClient, type WsMessage } from './transport/ws-client';
 import { createOfflineQueue } from './transport/offline-queue';
 import { parseAttachments } from './transport/parse-attachments';
+import { loadCachedMessages, saveCachedMessages } from './message-cache';
 
 export interface InitConfigPayload {
   tenantId: string;
@@ -34,6 +35,22 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [wsClient, setWsClient] = useState<WsClient | null>(null);
   const apiBase = config.apiBase ?? '/api/v1';
+
+  // Hydrate cached messages once profile is known (returning visitor)
+  useEffect(() => {
+    if (profile && messages.length === 0) {
+      const cached = loadCachedMessages(config.tenantId);
+      if (cached.length > 0) setMessages(cached);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile]);
+
+  // Persist on every messages update
+  useEffect(() => {
+    if (profile) {
+      saveCachedMessages(config.tenantId, messages);
+    }
+  }, [messages, profile, config.tenantId]);
 
   useEffect(() => {
     if (!sessionId) return;
