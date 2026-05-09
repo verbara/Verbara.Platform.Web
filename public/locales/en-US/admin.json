@@ -1719,7 +1719,8 @@
         "features": "Features",
         "billing": "Billing overrides",
         "retention": "Retention",
-        "ipAllowlist": "IP Allowlist"
+        "ipAllowlist": "IP Allowlist",
+        "sso": "SSO"
       },
       "fields": {
         "tenantId": "Tenant ID",
@@ -1853,6 +1854,34 @@
         "cidrRequired": "CIDR is required",
         "cidrFormat": "Must be valid IPv4 CIDR (e.g. 192.168.1.0/24)",
         "descriptionRequired": "Description is required"
+      }
+    },
+    "sso": {
+      "tabTitle": "OpenID Connect (SSO)",
+      "description": "Configure an external identity provider for this tenant. Users authenticate via your IdP and are provisioned into Verbara.",
+      "enabled": "Enable OIDC sign-in",
+      "authority": "Authority URL",
+      "authorityHint": "e.g., https://login.microsoftonline.com/{tenant}/v2.0 or your Auth0 domain",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "clientSecretConfigured": "Configured",
+      "clientSecretNotConfigured": "Not configured",
+      "clientSecretHint": "Leave blank to keep the existing secret. Enter a value to overwrite.",
+      "autoCreateUsers": "Auto-create users on first sign-in",
+      "autoCreateUsersHint": "When enabled, new users from the IdP are provisioned into this tenant with the default role below.",
+      "defaultRole": "Default role for auto-created users",
+      "save": "Save SSO configuration",
+      "savedToast": "SSO configuration updated",
+      "testSignIn": "Test sign-in",
+      "testSignInHint": "Opens a new tab to test your IdP configuration without affecting this session.",
+      "validation": {
+        "authorityRequired": "Authority URL is required when OIDC is enabled",
+        "clientIdRequired": "Client ID is required when OIDC is enabled",
+        "authorityInvalid": "Must be a valid URL"
+      },
+      "upgrade": {
+        "title": "OIDC SSO not enabled",
+        "body": "Single Sign-On with OIDC is not part of your current plan. Contact your account manager to upgrade."
       }
     }
   },

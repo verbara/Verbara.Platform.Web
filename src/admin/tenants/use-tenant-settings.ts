@@ -94,6 +94,8 @@ export interface UpdateAuthPayload {
   oidcEnabled?: boolean;
   oidcAuthority?: string | null;
   oidcClientId?: string | null;
+  /** Write-only: backend never returns this in GET responses. Omit to keep current secret. */
+  oidcClientSecret?: string | null;
   oidcAutoCreateUsers?: boolean;
   oidcDefaultRole?: string;
   impersonationMaxConcurrentSessions?: number;

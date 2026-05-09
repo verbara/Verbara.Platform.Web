@@ -1719,7 +1719,8 @@
         "features": "Recursos",
         "billing": "Sobrescrições de faturamento",
         "retention": "Retenção",
-        "ipAllowlist": "Lista de IPs permitidos"
+        "ipAllowlist": "Lista de IPs permitidos",
+        "sso": "SSO"
       },
       "fields": {
         "tenantId": "ID do tenant",
@@ -1853,6 +1854,34 @@
         "cidrRequired": "O CIDR é obrigatório",
         "cidrFormat": "Deve ser um CIDR IPv4 válido (ex. 192.168.1.0/24)",
         "descriptionRequired": "A descrição é obrigatória"
+      }
+    },
+    "sso": {
+      "tabTitle": "OpenID Connect (SSO)",
+      "description": "Configure um provedor de identidade externo para este tenant. Os usuários autenticam via seu IdP e são provisionados no Verbara.",
+      "enabled": "Ativar login OIDC",
+      "authority": "URL do Authority",
+      "authorityHint": "ex., https://login.microsoftonline.com/{tenant}/v2.0 ou seu domínio Auth0",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "clientSecretConfigured": "Configurado",
+      "clientSecretNotConfigured": "Não configurado",
+      "clientSecretHint": "Deixe em branco para manter o segredo atual. Insira um valor para sobrescrever.",
+      "autoCreateUsers": "Criar usuários automaticamente no primeiro login",
+      "autoCreateUsersHint": "Quando ativado, novos usuários do IdP são provisionados neste tenant com o papel padrão abaixo.",
+      "defaultRole": "Papel padrão para usuários auto-criados",
+      "save": "Salvar configuração SSO",
+      "savedToast": "Configuração SSO atualizada",
+      "testSignIn": "Testar login",
+      "testSignInHint": "Abre uma nova aba para testar a configuração do IdP sem afetar esta sessão.",
+      "validation": {
+        "authorityRequired": "URL do Authority é obrigatória quando OIDC está ativo",
+        "clientIdRequired": "Client ID é obrigatório quando OIDC está ativo",
+        "authorityInvalid": "Deve ser uma URL válida"
+      },
+      "upgrade": {
+        "title": "OIDC SSO não ativado",
+        "body": "Single Sign-On com OIDC não faz parte do seu plano atual. Entre em contato com seu account manager para fazer upgrade."
       }
     }
   },

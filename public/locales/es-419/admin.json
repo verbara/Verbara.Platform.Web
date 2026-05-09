@@ -1719,7 +1719,8 @@
         "features": "Funcionalidades",
         "billing": "Sobrescrituras de facturación",
         "retention": "Retención",
-        "ipAllowlist": "Lista IP permitidas"
+        "ipAllowlist": "Lista IP permitidas",
+        "sso": "SSO"
       },
       "fields": {
         "tenantId": "ID del tenant",
@@ -1853,6 +1854,34 @@
         "cidrRequired": "El CIDR es requerido",
         "cidrFormat": "Debe ser un CIDR IPv4 válido (ej. 192.168.1.0/24)",
         "descriptionRequired": "La descripción es requerida"
+      }
+    },
+    "sso": {
+      "tabTitle": "OpenID Connect (SSO)",
+      "description": "Configura un proveedor de identidad externo para este tenant. Los usuarios se autentican vía tu IdP y son provisionados en Verbara.",
+      "enabled": "Activar inicio de sesión OIDC",
+      "authority": "URL de Authority",
+      "authorityHint": "p.ej., https://login.microsoftonline.com/{tenant}/v2.0 o tu dominio Auth0",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "clientSecretConfigured": "Configurado",
+      "clientSecretNotConfigured": "No configurado",
+      "clientSecretHint": "Déjalo en blanco para mantener el secreto actual. Ingresa un valor para sobrescribir.",
+      "autoCreateUsers": "Crear usuarios automáticamente al primer inicio de sesión",
+      "autoCreateUsersHint": "Cuando está activado, los usuarios nuevos del IdP se provisionan en este tenant con el rol por defecto.",
+      "defaultRole": "Rol por defecto para usuarios auto-creados",
+      "save": "Guardar configuración SSO",
+      "savedToast": "Configuración SSO actualizada",
+      "testSignIn": "Probar inicio de sesión",
+      "testSignInHint": "Abre una pestaña nueva para probar la configuración del IdP sin afectar esta sesión.",
+      "validation": {
+        "authorityRequired": "La URL de Authority es requerida cuando OIDC está activo",
+        "clientIdRequired": "El Client ID es requerido cuando OIDC está activo",
+        "authorityInvalid": "Debe ser una URL válida"
+      },
+      "upgrade": {
+        "title": "OIDC SSO no activado",
+        "body": "Single Sign-On con OIDC no está incluido en tu plan actual. Contacta a tu account manager para hacer upgrade."
       }
     }
   },
