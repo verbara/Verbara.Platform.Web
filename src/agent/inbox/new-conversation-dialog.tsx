@@ -1,24 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/core/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/core/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Textarea } from '@/core/ui/textarea';
 import { useSearchContacts, type Contact } from '@/core/api/hooks/use-contacts';
 import { useCreateConversation } from '@/core/api/hooks/use-conversations';
+import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 const CHANNELS = [
   { value: 'WhatsApp', label: 'WhatsApp' },
@@ -34,8 +24,12 @@ interface NewConversationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConversationDialogProps>) {
+export function NewConversationDialog({
+  open,
+  onOpenChange,
+}: Readonly<NewConversationDialogProps>) {
   const { t } = useTranslation('agent');
+  const { formatPhone } = useFormatPhone();
   const [contactSearch, setContactSearch] = useState('');
 
   function contactDisplayName(c: Contact): string {
@@ -130,7 +124,10 @@ export function NewConversationDialog({ open, onOpenChange }: Readonly<NewConver
                             <div className="font-medium">{contactDisplayName(c)}</div>
                             {primary && (
                               <div className="text-xs text-muted-foreground">
-                                {primary.channel} · {primary.address}
+                                {primary.channel} ·{' '}
+                                {primary.channel === 'voice' || primary.channel === 'sms'
+                                  ? formatPhone(primary.address)
+                                  : primary.address}
                               </div>
                             )}
                           </button>

@@ -18,6 +18,7 @@ import {
   type DncEntry,
 } from '@/core/api/hooks/use-dnc-lists';
 import { useFormatDate } from '@/core/i18n/use-format';
+import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 const PAGE_SIZE = 50;
 
@@ -43,6 +44,7 @@ function parsePhonesFromCsv(text: string): string[] {
 export default function DncListDetail() {
   const { t } = useTranslation('admin');
   const { formatDateShort } = useFormatDate();
+  const { formatPhone } = useFormatPhone();
   const { listId } = useParams<{ listId: string }>();
   const navigate = useNavigate();
 
@@ -238,7 +240,7 @@ export default function DncListDetail() {
                   <Trans
                     i18nKey="dnc-lists.detail.blocked_message"
                     ns="admin"
-                    values={{ phone: checkResult.phoneNumber }}
+                    values={{ phone: formatPhone(checkResult.phoneNumber) }}
                     components={[<strong key="phone" />]}
                   />
                   {checkResult.matchedListName &&
@@ -253,7 +255,7 @@ export default function DncListDetail() {
                   <Trans
                     i18nKey="dnc-lists.detail.not_blocked"
                     ns="admin"
-                    values={{ phone: checkResult.phoneNumber }}
+                    values={{ phone: formatPhone(checkResult.phoneNumber) }}
                     components={[<strong key="phone" />]}
                   />
                 </span>
@@ -315,7 +317,9 @@ export default function DncListDetail() {
               <tbody>
                 {entries.map((entry: DncEntry) => (
                   <tr key={entry.id} className="border-t hover:bg-muted/30">
-                    <td className="px-3 py-2 font-mono text-xs">{entry.phoneNumber}</td>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      {formatPhone(entry.phoneNumber)}
+                    </td>
                     <td className="px-3 py-2 text-muted-foreground">
                       {entry.reason ?? <span className="italic text-muted-foreground/50">—</span>}
                     </td>

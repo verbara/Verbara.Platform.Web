@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Badge } from '@/core/ui/badge';
 import { useSearchContacts, type Contact } from '@/core/api/hooks/use-contacts';
+import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 export function ContactSearchPanel() {
   const { t } = useTranslation('admin');
@@ -57,12 +58,14 @@ export function ContactSearchPanel() {
 
 function ContactRow({ contact }: { contact: Contact }) {
   const { t } = useTranslation('admin');
+  const { formatPhone } = useFormatPhone();
   const displayName =
     [contact.firstName, contact.lastName].filter(Boolean).join(' ') ||
     t('shared.contact_search.unknown');
-  const phone = contact.addresses.find(
+  const rawPhone = contact.addresses.find(
     (a) => a.channel === 'voice' || a.channel === 'sms',
   )?.address;
+  const phone = rawPhone ? formatPhone(rawPhone) : undefined;
   const email = contact.addresses.find((a) => a.channel === 'email')?.address;
 
   return (

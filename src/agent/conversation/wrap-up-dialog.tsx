@@ -5,14 +5,9 @@ import { RotateCcw, PhoneForwarded } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { PhoneInput } from '@/core/ui/phone-input';
 import { Textarea } from '@/core/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -33,11 +28,7 @@ interface WrapUpDialogProps {
   conversationId: string;
 }
 
-export function WrapUpDialog({
-  open,
-  onOpenChange,
-  conversationId,
-}: WrapUpDialogProps) {
+export function WrapUpDialog({ open, onOpenChange, conversationId }: WrapUpDialogProps) {
   const { t } = useTranslation('agent');
   const removeConversation = useConversationStore((s) => s.removeConversation);
   const conversation = useConversationStore((s) => s.conversations[conversationId]);
@@ -102,10 +93,7 @@ export function WrapUpDialog({
           {/* Disposition code */}
           <div className="flex flex-col gap-1.5">
             <Label>{t('wrap_up.disposition')}</Label>
-            <Select
-              value={disposition ?? undefined}
-              onValueChange={(v) => setDisposition(v)}
-            >
+            <Select value={disposition ?? undefined} onValueChange={(v) => setDisposition(v)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('wrap_up.select_disposition')} />
               </SelectTrigger>
@@ -146,12 +134,7 @@ export function WrapUpDialog({
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label>{t('wrap_up.callbackPhone', 'Callback phone')}</Label>
-                <Input
-                  type="tel"
-                  value={callbackPhone}
-                  onChange={(e) => setCallbackPhone(e.target.value)}
-                  placeholder="+1234567890"
-                />
+                <PhoneInput value={callbackPhone} onChange={setCallbackPhone} />
               </div>
             </div>
           )}

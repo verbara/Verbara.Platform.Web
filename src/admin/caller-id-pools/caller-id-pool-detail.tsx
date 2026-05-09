@@ -14,6 +14,7 @@ import {
   useAddPoolEntry,
   useRemovePoolEntry,
 } from '@/core/api/hooks/use-caller-id-pools';
+import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 interface AddEntryForm {
   phoneNumber: string;
@@ -24,6 +25,7 @@ const DEFAULT_FORM: AddEntryForm = { phoneNumber: '', areaCode: '' };
 
 export default function CallerIdPoolDetailPage() {
   const { t } = useTranslation('admin');
+  const { formatPhone } = useFormatPhone();
   const { poolId } = useParams<{ poolId: string }>();
   const navigate = useNavigate();
   const poolIdNum = Number(poolId);
@@ -135,7 +137,9 @@ export default function CallerIdPoolDetailPage() {
               <tbody>
                 {entries.map((entry) => (
                   <tr key={entry.id} className="border-t hover:bg-muted/30">
-                    <td className="px-3 py-2 font-mono text-sm">{entry.phoneNumber}</td>
+                    <td className="px-3 py-2 font-mono text-sm">
+                      {formatPhone(entry.phoneNumber)}
+                    </td>
                     <td className="px-3 py-2 text-muted-foreground">{entry.areaCode}</td>
                     <td className="px-3 py-2 text-center">
                       <Switch

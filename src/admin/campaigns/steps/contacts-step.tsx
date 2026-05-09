@@ -4,6 +4,7 @@ import { Upload, FileText, CircleCheck, TriangleAlert, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Label } from '@/core/ui/label';
+import { useFormatPhone } from '@/core/i18n/use-format-phone';
 import type { CampaignFormValues } from '../campaign-wizard';
 import type { ContactImportRow } from '@/core/api/hooks/use-campaigns';
 
@@ -162,6 +163,7 @@ function computeValidation(
 
 export default function ContactsStep() {
   const { t } = useTranslation('admin');
+  const { formatPhone } = useFormatPhone();
   const { watch, setValue } = useFormContext<CampaignFormValues>();
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -367,15 +369,19 @@ export default function ContactsStep() {
             <tbody>
               {previewRows.map((row, i) => (
                 <tr key={i} className="border-t">
-                  {previewCols.map((col) => (
-                    <td key={col} className="px-3 py-1.5 text-muted-foreground">
-                      {row[col] || (
-                        <span className="italic text-muted-foreground/50">
-                          {t('campaigns.contacts_step.empty')}
-                        </span>
-                      )}
-                    </td>
-                  ))}
+                  {previewCols.map((col) => {
+                    const raw = row[col] ?? '';
+                    const display = columnMapping[col] === 'phone' && raw ? formatPhone(raw) : raw;
+                    return (
+                      <td key={col} className="px-3 py-1.5 text-muted-foreground">
+                        {display || (
+                          <span className="italic text-muted-foreground/50">
+                            {t('campaigns.contacts_step.empty')}
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
                   {parseResult.columns.length > 6 && (
                     <td className="px-3 py-1.5" aria-hidden="true" />
                   )}
