@@ -20,6 +20,7 @@ import { Separator } from '@/core/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import { AuditTimeline } from '@/core/ui/audit-timeline';
 import { UserForm } from './user-form';
 import { useUser, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
@@ -121,12 +122,15 @@ export default function UserDetailPage() {
             <Pencil className="mr-1.5 h-4 w-4" />
             Edit
           </Button>
-          <PermissionGuard requires="system:auth:configure">
-            <Button variant="outline" size="sm" onClick={() => setLogoutOpen(true)}>
-              <LogOut className="mr-1.5 h-4 w-4" />
-              {t('admin:users.force_logout', 'Force Logout')}
-            </Button>
-          </PermissionGuard>
+          <PermissionButton
+            requires="system:auth:configure"
+            variant="outline"
+            size="sm"
+            onClick={() => setLogoutOpen(true)}
+          >
+            <LogOut className="mr-1.5 h-4 w-4" />
+            {t('admin:users.force_logout', 'Force Logout')}
+          </PermissionButton>
           <Button
             data-testid="user-delete-btn"
             variant="destructive"
