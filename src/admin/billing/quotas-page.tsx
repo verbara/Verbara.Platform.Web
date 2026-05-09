@@ -101,6 +101,7 @@ function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
 
 export default function QuotasPage() {
   const { t } = useTranslation('admin');
+  const { formatCurrency } = useFormatNumber();
   const activeTenantId = useTenantStore((s) => s.activeTenantId);
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
@@ -203,7 +204,8 @@ export default function QuotasPage() {
                   {' '}
                   &mdash;{' '}
                   {t('billing.quotas.dunning.amount', {
-                    amount: `$${dunning.overdueAmount.toFixed(2)}`,
+                    // DunningStatus has no currency field — default to USD
+                    amount: formatCurrency(dunning.overdueAmount, 'USD'),
                   })}
                 </>
               )}
