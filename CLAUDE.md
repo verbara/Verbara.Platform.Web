@@ -10,11 +10,11 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~350 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 66+ E2E specs · 968/968 Vitest · Version 2.4.0** (Niveles 1-6 CLOSED + Tracks 7A/7B done).
+**~370 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 67+ E2E specs · 1020/1020 Vitest · Version 3.0.0** (Niveles 1-7 CLOSED — ROADMAP COMPLETE 🎉).
 
-Niveles 1-6 complete (tags `v1.14.5-web` through `v2.3.0-web`). Track 6A (i18n Expansion) tag `v2.3.0-web`. Track 7A (IP Allowlist UI) closed via Track 4A + ADR-0008. **Track 7B (per-tenant OIDC SSO admin) tag `v2.4.0-web`**: `<SsoTab>` in tenant-detail-page exposing all OIDC fields (authority, client ID, client secret write-only, autoCreateUsers, defaultRole), feature-gated by `OidcSso` plan flag. Test sign-in button validates IdP config without affecting session. `UpdateAuthPayload` extended with write-only `oidcClientSecret`. Roadmap label corrected SAML → OIDC (backend implements OIDC only). Per ADR-0008: tab in tenant-detail (no standalone page).
+Niveles 1-7 complete (tags `v1.14.5-web` through `v3.0.0-web`). **Track 7C (WebChat customer widget) tag `v3.0.0-web`**: vanilla JS SDK (`/webchat/v1/verbara-webchat.js`, ~3 kB gzip eager) + React iframe app (`/webchat/embed/`, ~118 kB gzip lazy) with native WebSocket transport, pre-chat form, visitor persistence (localStorage), mobile responsive (full-screen takeover ≤ 600px), DOMPurify-safe markdown rendering, browser title flash + favicon badge, sound notifications, programmatic API (`init`/`open`/`close`/`sendMessage`/`setVisitor`/`on`/`off`/`destroy`), WCAG 2.1 AA baseline, 3-locale i18n (separate `webchat` namespace). Same-origin distribution via existing nginx. Closes Nivel 7 + the entire v1.14.x → v3.0.0-web roadmap.
 
-**Next: Track 7C** (WebChat customer widget — greenfield embeddable, expected `v3.0.0-web`). See [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md).
+**Roadmap status: COMPLETE.** All 25 tracks across 7 niveles shipped. Production-readiness: 60/100 (pre-roadmap) → ~98/100 (post-roadmap). Future work tracked separately as enhancement requests (file uploads, voice/video, NPM package, external CDN, etc.).
 
 See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
 
