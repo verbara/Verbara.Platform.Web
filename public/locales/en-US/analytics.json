@@ -131,7 +131,47 @@
     "conversation_metrics": "Conversation Metrics",
     "agent_talk_ratio": "Agent talk ratio",
     "silence_events": "Silence events",
-    "interruptions": "Interruptions"
+    "interruptions": "Interruptions",
+    "pdf": {
+      "documentTitle": "QA Evaluation — {{id}}",
+      "summaryTitle": "Evaluation Summary",
+      "contextTitle": "Context",
+      "criteriaTitle": "Scoring Criteria",
+      "violationsTitle": "Compliance Violations",
+      "actionItemsTitle": "Action Items",
+      "passed": "Passed",
+      "failed": "Failed",
+      "yes": "Yes",
+      "no": "No",
+      "field": {
+        "sessionId": "Session ID",
+        "analyzedAt": "Analyzed at",
+        "agent": "Agent",
+        "queue": "Queue",
+        "score": "Score",
+        "result": "Result",
+        "sentiment": "Sentiment",
+        "primaryTopic": "Primary topic"
+      },
+      "context": {
+        "reason": "Reason",
+        "outcome": "Outcome",
+        "narrative": "Narrative"
+      },
+      "criteria": {
+        "category": "Category",
+        "weight": "Weight",
+        "score": "Score",
+        "passed": "Passed",
+        "feedback": "Feedback"
+      },
+      "violations": {
+        "rule": "Rule",
+        "severity": "Severity",
+        "description": "Description",
+        "evidence": "Evidence"
+      }
+    }
   },
   "surveys": {
     "title": "Survey Results",

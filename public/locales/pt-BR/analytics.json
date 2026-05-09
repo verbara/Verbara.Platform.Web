@@ -131,7 +131,47 @@
     "conversation_metrics": "Metricas de conversa",
     "agent_talk_ratio": "Proporcao de fala do agente",
     "silence_events": "Eventos de silencio",
-    "interruptions": "Interrupcoes"
+    "interruptions": "Interrupcoes",
+    "pdf": {
+      "documentTitle": "Avaliação QA — {{id}}",
+      "summaryTitle": "Resumo da avaliação",
+      "contextTitle": "Contexto",
+      "criteriaTitle": "Critérios de avaliação",
+      "violationsTitle": "Violações de conformidade",
+      "actionItemsTitle": "Ações a executar",
+      "passed": "Aprovado",
+      "failed": "Reprovado",
+      "yes": "Sim",
+      "no": "Não",
+      "field": {
+        "sessionId": "ID da sessão",
+        "analyzedAt": "Analisado em",
+        "agent": "Agente",
+        "queue": "Fila",
+        "score": "Pontuação",
+        "result": "Resultado",
+        "sentiment": "Sentimento",
+        "primaryTopic": "Tópico principal"
+      },
+      "context": {
+        "reason": "Motivo",
+        "outcome": "Resultado",
+        "narrative": "Narrativa"
+      },
+      "criteria": {
+        "category": "Categoria",
+        "weight": "Peso",
+        "score": "Pontuação",
+        "passed": "Aprovado",
+        "feedback": "Feedback"
+      },
+      "violations": {
+        "rule": "Regra",
+        "severity": "Severidade",
+        "description": "Descrição",
+        "evidence": "Evidência"
+      }
+    }
   },
   "surveys": {
     "title": "Resultados de pesquisas",
