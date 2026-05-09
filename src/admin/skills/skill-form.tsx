@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import {
   Sheet,
   SheetContent,
@@ -49,6 +51,8 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     },
   });
 
+  const nameA11y = useFieldA11y(errors.name, 'skill-name', { required: true });
+
   useEffect(() => {
     if (open) {
       reset({
@@ -69,9 +73,7 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
       <SheetContent side="right" className="sm:max-w-md">
         <SheetHeader>
           <SheetTitle>
-            {mode === 'create'
-              ? t('admin:skills.createSkill')
-              : t('admin:skills.editSkill')}
+            {mode === 'create' ? t('admin:skills.createSkill') : t('admin:skills.editSkill')}
           </SheetTitle>
           <SheetDescription>
             {mode === 'create'
@@ -83,22 +85,23 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
         <form onSubmit={handleFormSubmit} className="flex flex-1 flex-col gap-4 px-4">
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="skill-name">{t('admin:skills.name')}</Label>
+            <Label htmlFor="skill-name" required>
+              {t('admin:skills.name')}
+            </Label>
             <Input
               id="skill-name"
               data-testid="skill-form-name"
               placeholder={t('admin:skills.namePlaceholder')}
-              aria-invalid={!!errors.name}
               disabled={mode === 'edit'}
+              {...nameA11y.inputProps}
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-            )}
+            <FieldError
+              id={nameA11y.errorId}
+              message={errors.name?.message ? t(errors.name.message) : undefined}
+            />
             {mode === 'edit' && (
-              <p className="text-xs text-muted-foreground">
-                {t('admin:skills.nameReadOnly')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('admin:skills.nameReadOnly')}</p>
             )}
           </div>
 
@@ -128,9 +131,7 @@ export function SkillForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
 
           <SheetFooter className="mt-auto px-0">
             <Button type="submit" data-testid="skill-form-submit" disabled={isSubmitting}>
-              {mode === 'create'
-                ? t('admin:skills.createSkill')
-                : t('admin:skills.save')}
+              {mode === 'create' ? t('admin:skills.createSkill') : t('admin:skills.save')}
             </Button>
           </SheetFooter>
         </form>

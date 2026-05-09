@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
@@ -63,6 +65,12 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
       maxTurns: 20,
       isActive: true,
     },
+  });
+
+  const nameA11y = useFieldA11y(errors.name, 'bot-name', { required: true });
+  const maxTurnsA11y = useFieldA11y(errors.maxTurns, 'bot-maxTurns', { required: true });
+  const confidenceA11y = useFieldA11y(errors.confidenceThreshold, 'bot-confidence', {
+    required: true,
   });
 
   useEffect(() => {
@@ -123,17 +131,20 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
         >
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="bot-name">{t('admin:bots.name')}</Label>
+            <Label htmlFor="bot-name" required>
+              {t('admin:bots.name')}
+            </Label>
             <Input
               id="bot-name"
               data-testid="bot-form-name"
               placeholder="my-bot"
-              aria-invalid={!!errors.name}
+              {...nameA11y.inputProps}
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-            )}
+            <FieldError
+              id={nameA11y.errorId}
+              message={errors.name?.message ? t(errors.name.message) : undefined}
+            />
           </div>
 
           {/* Default Flow */}
@@ -192,7 +203,9 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
 
           {/* Confidence Threshold */}
           <div className="space-y-1.5">
-            <Label htmlFor="bot-confidence">{t('admin:bots.confidenceThreshold')}</Label>
+            <Label htmlFor="bot-confidence" required>
+              {t('admin:bots.confidenceThreshold')}
+            </Label>
             <Controller
               name="confidenceThreshold"
               control={control}
@@ -207,6 +220,7 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
                     value={field.value}
                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                     className="flex-1 accent-brand"
+                    {...confidenceA11y.inputProps}
                   />
                   <span className="w-10 text-right text-sm tabular-nums text-muted-foreground">
                     {field.value.toFixed(2)}
@@ -214,26 +228,27 @@ export function BotForm({ open, onOpenChange, mode, bot }: BotFormProps) {
                 </div>
               )}
             />
-            {errors.confidenceThreshold && (
-              <p className="text-xs text-destructive">{errors.confidenceThreshold.message}</p>
-            )}
+            <FieldError
+              id={confidenceA11y.errorId}
+              message={errors.confidenceThreshold?.message?.toString()}
+            />
           </div>
 
           {/* Max Turns */}
           <div className="space-y-1.5">
-            <Label htmlFor="bot-maxTurns">{t('admin:bots.maxTurns')}</Label>
+            <Label htmlFor="bot-maxTurns" required>
+              {t('admin:bots.maxTurns')}
+            </Label>
             <Input
               id="bot-maxTurns"
               data-testid="bot-form-maxTurns"
               type="number"
               min={1}
               placeholder="20"
-              aria-invalid={!!errors.maxTurns}
+              {...maxTurnsA11y.inputProps}
               {...register('maxTurns')}
             />
-            {errors.maxTurns && (
-              <p className="text-xs text-destructive">{errors.maxTurns.message}</p>
-            )}
+            <FieldError id={maxTurnsA11y.errorId} message={errors.maxTurns?.message?.toString()} />
           </div>
 
           {/* Active */}

@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   Sheet,
@@ -65,6 +67,10 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
       dialPrefix: '',
     },
   });
+
+  const priorityA11y = useFieldA11y(errors.priority, 'route-priority', { required: true });
+  const patternA11y = useFieldA11y(errors.pattern, 'route-pattern', { required: true });
+  const trunkIdA11y = useFieldA11y(errors.trunkId, 'route-trunkId', { required: true });
 
   useEffect(() => {
     if (open) {
@@ -128,34 +134,40 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
         >
           {/* Priority */}
           <div className="space-y-1.5">
-            <Label htmlFor="route-priority">{t('routes.priority')}</Label>
+            <Label htmlFor="route-priority" required>
+              {t('routes.priority')}
+            </Label>
             <Input
               id="route-priority"
               type="number"
               min={0}
               placeholder="10"
-              aria-invalid={!!errors.priority}
               data-testid="route-form-priority"
+              {...priorityA11y.inputProps}
               {...register('priority')}
             />
-            {errors.priority && (
-              <p className="text-xs text-destructive">{t(errors.priority.message ?? '')}</p>
-            )}
+            <FieldError
+              id={priorityA11y.errorId}
+              message={errors.priority?.message ? t(errors.priority.message) : undefined}
+            />
           </div>
 
           {/* Pattern */}
           <div className="space-y-1.5">
-            <Label htmlFor="route-pattern">{t('routes.pattern')}</Label>
+            <Label htmlFor="route-pattern" required>
+              {t('routes.pattern')}
+            </Label>
             <Input
               id="route-pattern"
               placeholder="+1"
-              aria-invalid={!!errors.pattern}
               data-testid="route-form-pattern"
+              {...patternA11y.inputProps}
               {...register('pattern')}
             />
-            {errors.pattern && (
-              <p className="text-xs text-destructive">{t(errors.pattern.message ?? '')}</p>
-            )}
+            <FieldError
+              id={patternA11y.errorId}
+              message={errors.pattern?.message ? t(errors.pattern.message) : undefined}
+            />
           </div>
 
           {/* Pattern Type */}
@@ -181,9 +193,9 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
             />
           </div>
 
-          {/* Trunk */}
+          {/* Trunk — Controller/Select: aria-* not forwarded through SelectTrigger */}
           <div className="space-y-1.5">
-            <Label>{t('routes.trunk')}</Label>
+            <Label required>{t('routes.trunk')}</Label>
             <Controller
               name="trunkId"
               control={control}
@@ -205,9 +217,10 @@ export function RouteForm({ open, onOpenChange, mode, route }: RouteFormProps) {
                 </Select>
               )}
             />
-            {errors.trunkId && (
-              <p className="text-xs text-destructive">{t(errors.trunkId.message ?? '')}</p>
-            )}
+            <FieldError
+              id={trunkIdA11y.errorId}
+              message={errors.trunkId?.message ? t(errors.trunkId.message) : undefined}
+            />
           </div>
 
           {/* Overflow Trunk (optional) */}

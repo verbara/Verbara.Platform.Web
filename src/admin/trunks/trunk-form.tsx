@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
@@ -59,6 +61,10 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
     },
   });
 
+  const nameA11y = useFieldA11y(errors.name, 'trunk-name', { required: true });
+  const displayNameA11y = useFieldA11y(errors.displayName, 'trunk-displayName', { required: true });
+  const maxChannelsA11y = useFieldA11y(errors.maxChannels, 'trunk-maxChannels', { required: true });
+
   useEffect(() => {
     if (open) {
       reset(
@@ -110,32 +116,38 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
         >
           {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="trunk-name">{t('trunks.name')}</Label>
+            <Label htmlFor="trunk-name" required>
+              {t('trunks.name')}
+            </Label>
             <Input
               id="trunk-name"
               placeholder={t('trunks.form.name_placeholder')}
-              aria-invalid={!!errors.name}
               data-testid="trunk-form-name"
+              {...nameA11y.inputProps}
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-            )}
+            <FieldError
+              id={nameA11y.errorId}
+              message={errors.name?.message ? t(errors.name.message) : undefined}
+            />
           </div>
 
           {/* Display Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="trunk-displayName">{t('trunks.displayName')}</Label>
+            <Label htmlFor="trunk-displayName" required>
+              {t('trunks.displayName')}
+            </Label>
             <Input
               id="trunk-displayName"
               placeholder={t('trunks.form.display_name_placeholder')}
-              aria-invalid={!!errors.displayName}
               data-testid="trunk-form-displayName"
+              {...displayNameA11y.inputProps}
               {...register('displayName')}
             />
-            {errors.displayName && (
-              <p className="text-xs text-destructive">{t(errors.displayName.message ?? '')}</p>
-            )}
+            <FieldError
+              id={displayNameA11y.errorId}
+              message={errors.displayName?.message ? t(errors.displayName.message) : undefined}
+            />
           </div>
 
           {/* Type */}
@@ -163,19 +175,22 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
 
           {/* Max Channels */}
           <div className="space-y-1.5">
-            <Label htmlFor="trunk-maxChannels">{t('trunks.maxChannels')}</Label>
+            <Label htmlFor="trunk-maxChannels" required>
+              {t('trunks.maxChannels')}
+            </Label>
             <Input
               id="trunk-maxChannels"
               type="number"
               min={1}
               placeholder="10"
-              aria-invalid={!!errors.maxChannels}
               data-testid="trunk-form-maxChannels"
+              {...maxChannelsA11y.inputProps}
               {...register('maxChannels')}
             />
-            {errors.maxChannels && (
-              <p className="text-xs text-destructive">{t(errors.maxChannels.message ?? '')}</p>
-            )}
+            <FieldError
+              id={maxChannelsA11y.errorId}
+              message={errors.maxChannels?.message ? t(errors.maxChannels.message) : undefined}
+            />
           </div>
 
           {/* Is Active */}
