@@ -33,6 +33,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import { AuditTimeline } from '@/core/ui/audit-timeline';
 import {
   useCampaign,
@@ -394,17 +395,16 @@ export default function CampaignDetailPage() {
               {t('admin:campaigns.stop')}
             </Button>
           )}
-          <PermissionGuard requires="campaigns:campaign:delete">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className="mr-1.5 h-4 w-4" />
-              {t('admin:campaigns.detail.delete_btn')}
-            </Button>
-          </PermissionGuard>
+          <PermissionButton
+            requires="campaigns:campaign:delete"
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="mr-1.5 h-4 w-4" />
+            {t('admin:campaigns.detail.delete_btn')}
+          </PermissionButton>
         </div>
       </div>
 

@@ -26,7 +26,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
-import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import { useHasPermission } from '@/core/auth/use-has-permission';
 import { RouteForm } from './route-form';
 import {
@@ -201,21 +201,20 @@ export default function RoutesPage() {
         id: 'actions',
         header: () => '',
         cell: (info) => (
-          <PermissionGuard requires="campaigns:route:manage">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-              aria-label={t('admin:routes.delete_route')}
-              data-testid={`delete-route-${info.row.original.id}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeletingRoute(info.row.original);
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </PermissionGuard>
+          <PermissionButton
+            requires="campaigns:route:manage"
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+            aria-label={t('admin:routes.delete_route')}
+            data-testid={`delete-route-${info.row.original.id}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeletingRoute(info.row.original);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </PermissionButton>
         ),
       }),
     ],

@@ -10,7 +10,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
-import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import { ReportForm } from './report-form';
 import { ReportPdfButton } from './report-pdf-button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
@@ -145,20 +145,19 @@ export default function ReportsPage() {
             >
               <Clock className="h-3.5 w-3.5" />
             </Button>
-            <PermissionGuard requires="reporting:dashboard:edit">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                data-testid={`delete-report-${info.row.original.id}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeletingReport(info.row.original);
-                }}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </PermissionGuard>
+            <PermissionButton
+              requires="reporting:dashboard:edit"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              data-testid={`delete-report-${info.row.original.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingReport(info.row.original);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </PermissionButton>
           </div>
         ),
       }),

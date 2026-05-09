@@ -6,7 +6,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { Skeleton } from '@/core/ui/skeleton';
-import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import { useCallbacks, useCreateCallback } from '@/core/api/hooks/use-campaigns';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -38,12 +38,15 @@ export function CallbacksTab({ campaignId }: CallbacksTabProps) {
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('campaigns.callbacks.title')}
         </p>
-        <PermissionGuard requires="campaigns:campaign:edit">
-          <Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('campaigns.callbacks.schedule')}
-          </Button>
-        </PermissionGuard>
+        <PermissionButton
+          requires="campaigns:campaign:edit"
+          size="sm"
+          variant="outline"
+          onClick={() => setCreateOpen(true)}
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          {t('campaigns.callbacks.schedule')}
+        </PermissionButton>
       </div>
 
       {callbacks.length === 0 ? (
