@@ -10,6 +10,7 @@ import { createOfflineQueue } from './transport/offline-queue';
 import { parseAttachments } from './transport/parse-attachments';
 import { loadCachedMessages, saveCachedMessages } from './message-cache';
 import { playNotificationSound, loadSoundPreference, setSoundEnabled } from './notifications';
+import { breadcrumb } from './sentry-breadcrumbs';
 
 export interface InitConfigPayload {
   tenantId: string;
@@ -71,6 +72,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     const interval = setInterval(() => {
       if (Date.now() - lastAgentActivityRef.current > TIMEOUT_MS && status !== 'timeout') {
         setStatus('timeout');
+        breadcrumb('timeout');
       }
     }, 30_000);
     return () => clearInterval(interval);
@@ -92,19 +94,25 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
           pageContext: config.pageContext,
         });
         setSessionId(session.sessionId);
+        breadcrumb('session-created', { sessionId: session.sessionId });
         setStatus('online');
         const wsUrl = session.wsUrl.startsWith('ws')
           ? session.wsUrl
           : `${location.origin.replace(/^http/, 'ws')}${session.wsUrl}`;
         const queue = createOfflineQueue(config.tenantId);
+        let openCount = 0;
         let client: WsClient | null = null;
         client = createWsClient({
           url: wsUrl,
           onOpen: () => {
+            openCount++;
             setStatus('online');
             const queued = queue.drain();
             for (const m of queued) {
               client?.send({ type: 'message', body: m.text, id: m.id });
+            }
+            if (openCount > 1) {
+              breadcrumb('reconnected');
             }
           },
           onMessage: (msg: WsMessage) => {
@@ -121,6 +129,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
               onUnreadChange(1);
               playNotificationSound();
               lastAgentActivityRef.current = Date.now();
+              breadcrumb('message-received');
               if (status === 'timeout') setStatus('online');
             } else if (msg.type === 'typing') {
               setStatus('typing');
@@ -164,6 +173,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
       if (!ok) {
         queue.push({ id: msg.id, text, timestamp: msg.timestamp });
       }
+      breadcrumb('message-sent');
       window.parent.postMessage(
         { source: 'verbara-webchat-iframe', type: 'message-sent', payload: { text } },
         window.location.origin,

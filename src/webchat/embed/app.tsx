@@ -4,6 +4,7 @@ import { flashUnread, stopFlash, playNotificationSound } from './notifications';
 import { setupKeyboardShortcuts } from './a11y';
 import { createPostMessageBridge } from '@/webchat/sdk/postmessage-bridge';
 import { applyTheme } from './theme-apply';
+import { breadcrumb } from './sentry-breadcrumbs';
 
 export function App() {
   const [config, setConfig] = useState<InitConfigPayload | null>(null);
@@ -27,10 +28,11 @@ export function App() {
     bridge.on('open', () => {
       stopFlash();
       setUnread(0);
+      breadcrumb('opened');
     });
 
     bridge.on('close', () => {
-      // no-op
+      breadcrumb('closed');
     });
 
     bridge.on('send-message', (_payload) => {
