@@ -2,6 +2,42 @@ let originalTitle = '';
 let flashInterval: ReturnType<typeof setInterval> | null = null;
 let unreadCount = 0;
 
+let originalFavicon: string | null = null;
+
+function ensureFaviconLink(): HTMLLinkElement {
+  let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  if (originalFavicon === null) originalFavicon = link.href || '';
+  return link;
+}
+
+export function setFaviconBadge(count: number): void {
+  const link = ensureFaviconLink();
+  if (count <= 0) {
+    link.href = originalFavicon ?? '';
+    return;
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = 32;
+  canvas.height = 32;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.fillStyle = '#ef4444';
+  ctx.beginPath();
+  ctx.arc(16, 16, 14, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 16px system-ui';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(count > 9 ? '9+' : String(count), 16, 17);
+  link.href = canvas.toDataURL('image/png');
+}
+
 export function setupTitleFlash() {
   originalTitle = document.title || 'Verbara Chat';
   document.addEventListener('visibilitychange', () => {
@@ -17,6 +53,7 @@ export function flashUnread(count: number) {
     stopFlash();
     return;
   }
+  setFaviconBadge(count);
   if (flashInterval) return;
   flashInterval = setInterval(() => {
     document.title =
@@ -33,6 +70,7 @@ export function stopFlash() {
   }
   document.title = originalTitle;
   unreadCount = 0;
+  setFaviconBadge(0);
 }
 
 let audioCtx: AudioContext | null = null;
