@@ -15,6 +15,7 @@ import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import {
   useDncLists,
   useCreateDncList,
@@ -126,20 +127,19 @@ export default function DncListsPage() {
   return (
     <div className="space-y-6" data-testid="dnc-lists-page">
       <PageHeader title={t('dnc-lists.title')}>
-        <PermissionGuard requires="campaigns:dnc:manage">
-          <Button
-            data-testid="dnc-lists-create-btn"
-            size="sm"
-            onClick={() => {
-              setEditingList(null);
-              setFormData({ name: '', scope: 'global' });
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('dnc-lists.create')}
-          </Button>
-        </PermissionGuard>
+        <PermissionButton
+          requires="campaigns:dnc:manage"
+          data-testid="dnc-lists-create-btn"
+          size="sm"
+          onClick={() => {
+            setEditingList(null);
+            setFormData({ name: '', scope: 'global' });
+            setFormOpen(true);
+          }}
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          {t('dnc-lists.create')}
+        </PermissionButton>
       </PageHeader>
 
       {content}

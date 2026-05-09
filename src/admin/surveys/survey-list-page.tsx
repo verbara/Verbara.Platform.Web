@@ -10,7 +10,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
-import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import { SurveyForm } from './survey-form';
 import {
   useSurveys,
@@ -81,20 +81,19 @@ export default function SurveyListPage() {
         id: 'actions',
         header: () => '',
         cell: (info) => (
-          <PermissionGuard requires="system:integration:manage">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-              data-testid={`delete-survey-${info.row.original.id}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeletingSurvey(info.row.original);
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </PermissionGuard>
+          <PermissionButton
+            requires="system:integration:manage"
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+            data-testid={`delete-survey-${info.row.original.id}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeletingSurvey(info.row.original);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </PermissionButton>
         ),
       }),
     ],

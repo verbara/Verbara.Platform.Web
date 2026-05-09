@@ -6,7 +6,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
-import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import { DncImportWizard } from './dnc-import-wizard';
 import {
   useDncList,
@@ -152,12 +152,15 @@ export default function DncListDetail() {
             {t('dnc-lists.detail.scope_summary', { scope: list.scope, count: list.entryCount })}
           </p>
         </div>
-        <PermissionGuard requires="campaigns:dnc:manage">
-          <Button size="sm" variant="outline" onClick={() => setImportWizardOpen(true)}>
-            <Upload className="mr-1.5 h-4 w-4" />
-            {t('dnc-lists.detail.import_numbers')}
-          </Button>
-        </PermissionGuard>
+        <PermissionButton
+          requires="campaigns:dnc:manage"
+          size="sm"
+          variant="outline"
+          onClick={() => setImportWizardOpen(true)}
+        >
+          <Upload className="mr-1.5 h-4 w-4" />
+          {t('dnc-lists.detail.import_numbers')}
+        </PermissionButton>
       </div>
 
       {/* Add Number */}

@@ -13,6 +13,7 @@ import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import {
   useHolidayCalendars,
   useCreateCalendar,
@@ -107,20 +108,19 @@ export default function HolidayCalendarsPage() {
         title={t('holiday-calendars.title')}
         description={t('holiday-calendars.description')}
       >
-        <PermissionGuard requires="campaigns:calendar:manage">
-          <Button
-            data-testid="holiday-calendars-create-btn"
-            size="sm"
-            onClick={() => {
-              setEditingCalendar(null);
-              setFormData({ name: '' });
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('holiday-calendars.create')}
-          </Button>
-        </PermissionGuard>
+        <PermissionButton
+          requires="campaigns:calendar:manage"
+          data-testid="holiday-calendars-create-btn"
+          size="sm"
+          onClick={() => {
+            setEditingCalendar(null);
+            setFormData({ name: '' });
+            setFormOpen(true);
+          }}
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          {t('holiday-calendars.create')}
+        </PermissionButton>
       </PageHeader>
 
       {listContent}

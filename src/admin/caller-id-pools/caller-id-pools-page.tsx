@@ -13,6 +13,7 @@ import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
+import { PermissionButton } from '@/core/ui/permission-button';
 import {
   useCallerIdPools,
   useCreatePool,
@@ -105,20 +106,19 @@ export default function CallerIdPoolsPage() {
   return (
     <div className="space-y-6" data-testid="caller-id-pools-page">
       <PageHeader title={t('caller-id-pools.title')} description={t('caller-id-pools.description')}>
-        <PermissionGuard requires="campaigns:callerid:manage">
-          <Button
-            size="sm"
-            data-testid="caller-id-pools-create-btn"
-            onClick={() => {
-              setEditingPool(null);
-              setFormData({ name: '' });
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t('caller-id-pools.create')}
-          </Button>
-        </PermissionGuard>
+        <PermissionButton
+          requires="campaigns:callerid:manage"
+          size="sm"
+          data-testid="caller-id-pools-create-btn"
+          onClick={() => {
+            setEditingPool(null);
+            setFormData({ name: '' });
+            setFormOpen(true);
+          }}
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          {t('caller-id-pools.create')}
+        </PermissionButton>
       </PageHeader>
 
       {content}
