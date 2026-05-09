@@ -5,11 +5,13 @@ import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { TimezoneSelect } from '@/core/ui/timezone-select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
+import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 function InfoRow({
   icon: Icon,
@@ -63,6 +65,7 @@ interface ContactEditForm {
 
 export function ContactInfo() {
   const { t } = useTranslation(['agent']);
+  const { formatPhone } = useFormatPhone();
   const selectedId = useConversationStore((s) => s.selectedId);
   const conversations = useConversationStore((s) => s.conversations);
   const [editOpen, setEditOpen] = useState(false);
@@ -106,8 +109,9 @@ export function ContactInfo() {
   }
 
   const displayName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || '—';
-  const phone =
+  const rawPhone =
     contact.addresses.find((a) => a.channel === 'voice' || a.channel === 'sms')?.address ?? '—';
+  const phone = rawPhone === '—' ? rawPhone : formatPhone(rawPhone);
   const email = contact.addresses.find((a) => a.channel === 'email')?.address ?? '—';
 
   return (
@@ -167,17 +171,21 @@ export function ContactInfo() {
           <p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">
             {t('agent:context.addresses')}
           </p>
-          {contact.addresses.map((addr) => (
-            <div
-              key={`${addr.channel}-${addr.address}`}
-              className="flex items-center justify-between py-1"
-            >
-              <span className="text-xs text-slate-500 capitalize">
-                {channelLabels[addr.channel] ?? addr.channel}
-              </span>
-              <span className="text-xs text-slate-700 dark:text-slate-300">{addr.address}</span>
-            </div>
-          ))}
+          {contact.addresses.map((addr) => {
+            const isPhoneChannel = addr.channel === 'voice' || addr.channel === 'sms';
+            const displayAddress = isPhoneChannel ? formatPhone(addr.address) : addr.address;
+            return (
+              <div
+                key={`${addr.channel}-${addr.address}`}
+                className="flex items-center justify-between py-1"
+              >
+                <span className="text-xs text-slate-500 capitalize">
+                  {channelLabels[addr.channel] ?? addr.channel}
+                </span>
+                <span className="text-xs text-slate-700 dark:text-slate-300">{displayAddress}</span>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -256,10 +264,10 @@ export function ContactInfo() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-tz">{t('agent:context.contactEdit.timezone')}</Label>
-              <Input
+              <TimezoneSelect
                 id="edit-tz"
                 value={editForm.timezone}
-                onChange={(e) => setEditForm((f) => ({ ...f, timezone: e.target.value }))}
+                onChange={(zone) => setEditForm((f) => ({ ...f, timezone: zone }))}
               />
             </div>
           </div>

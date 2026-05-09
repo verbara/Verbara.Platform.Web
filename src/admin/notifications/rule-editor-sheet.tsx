@@ -7,6 +7,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { FieldError } from '@/core/ui/field-error';
+import { TimezoneSelect } from '@/core/ui/timezone-select';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import {
   Sheet,
@@ -399,7 +400,17 @@ export function RuleEditorSheet({ open, onOpenChange, rule }: RuleEditorSheetPro
             {scheduleMode === 'custom' && (
               <div className="mt-2 space-y-2">
                 <Label>{t('notifications.rules.form.schedule.timezone')}</Label>
-                <Input {...register('schedule.timezone')} placeholder="UTC" />
+                <Controller
+                  control={control}
+                  name="schedule.timezone"
+                  render={({ field }) => (
+                    <TimezoneSelect
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      autoDetect
+                    />
+                  )}
+                />
               </div>
             )}
           </CollapsibleSection>

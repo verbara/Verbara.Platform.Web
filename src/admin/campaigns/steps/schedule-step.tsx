@@ -1,27 +1,15 @@
-import { useFormContext, useFieldArray } from 'react-hook-form';
+import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
 import { Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Button } from '@/core/ui/button';
 import { FieldError } from '@/core/ui/field-error';
+import { TimezoneSelect } from '@/core/ui/timezone-select';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { useHolidayCalendars } from '@/core/api/hooks/use-holiday-calendars';
 import type { CampaignFormValues } from '../campaign-wizard';
-
-const TIMEZONES = [
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Bogota',
-  'America/Mexico_City',
-  'America/Sao_Paulo',
-  'Europe/London',
-  'Europe/Madrid',
-  'UTC',
-];
 
 export default function ScheduleStep() {
   const { t } = useTranslation('admin');
@@ -102,18 +90,20 @@ export default function ScheduleStep() {
         <Label htmlFor="timezone" required>
           {t('campaigns.schedule_step.timezone')}
         </Label>
-        <select
-          id="timezone"
-          className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-          {...timezoneA11y.inputProps}
-          {...register('timezone')}
-        >
-          {TIMEZONES.map((tz) => (
-            <option key={tz} value={tz}>
-              {tz}
-            </option>
-          ))}
-        </select>
+        <Controller
+          control={control}
+          name="timezone"
+          render={({ field }) => (
+            <TimezoneSelect
+              id="timezone"
+              value={field.value ?? ''}
+              onChange={field.onChange}
+              autoDetect
+              aria-invalid={timezoneA11y.inputProps['aria-invalid']}
+              aria-describedby={timezoneA11y.inputProps['aria-describedby']}
+            />
+          )}
+        />
         <FieldError
           id={timezoneA11y.errorId}
           message={errors.timezone ? t(errors.timezone.message ?? '') : undefined}
