@@ -1,16 +1,21 @@
-import { useState, useRef, type KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export interface ComposerProps {
   readonly disabled?: boolean;
   readonly onSend: (text: string) => void;
   readonly maxLength?: number;
+  readonly autoFocus?: boolean;
 }
 
-export function Composer({ disabled, onSend, maxLength = 4000 }: ComposerProps) {
+export function Composer({ disabled, onSend, maxLength = 4000, autoFocus }: ComposerProps) {
   const { t } = useTranslation('webchat');
   const [value, setValue] = useState('');
   const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (autoFocus) ref.current?.focus();
+  }, [autoFocus]);
 
   function submit() {
     const trimmed = value.trim();

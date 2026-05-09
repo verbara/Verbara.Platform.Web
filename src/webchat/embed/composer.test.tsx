@@ -56,4 +56,13 @@ describe('Composer', () => {
     );
     expect(screen.getByRole('button', { name: /send message/i })).toBeDisabled();
   });
+
+  it('Autofocuses_WhenAutoFocusTrue', () => {
+    render(
+      <I18nextProvider i18n={i18n}>
+        <Composer onSend={vi.fn()} autoFocus />
+      </I18nextProvider>,
+    );
+    expect(screen.getByPlaceholderText(/type/i)).toHaveFocus();
+  });
 });
