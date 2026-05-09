@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { FieldError } from '@/core/ui/field-error';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
@@ -91,6 +93,10 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
 
   const { fields, append, remove } = useFieldArray({ control, name: 'rates' });
 
+  const nameA11y = useFieldA11y(errors.name, 'rc-name', { required: true });
+  const currencyA11y = useFieldA11y(errors.currency, 'rc-currency', { required: true });
+  const effectiveFromA11y = useFieldA11y(errors.effectiveFrom, 'rc-from', { required: true });
+
   useEffect(() => {
     if (open) {
       reset(rateCard ? mapToForm(rateCard) : DEFAULT_VALUES);
@@ -142,43 +148,57 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
 
         <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto px-4">
           <div className="space-y-1.5">
-            <Label htmlFor="rc-name">{t('billing.rate_cards.form.name')}</Label>
+            <Label htmlFor="rc-name" required>
+              {t('billing.rate_cards.form.name')}
+            </Label>
             <Input
               id="rc-name"
               data-testid="rate-card-name"
               placeholder={t('billing.rate_cards.form.name_placeholder')}
+              {...nameA11y.inputProps}
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{t(errors.name.message ?? '')}</p>
-            )}
+            <FieldError
+              id={nameA11y.errorId}
+              message={errors.name?.message ? t(errors.name.message) : undefined}
+            />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="rc-currency">{t('billing.rate_cards.form.currency')}</Label>
+            <Label htmlFor="rc-currency" required>
+              {t('billing.rate_cards.form.currency')}
+            </Label>
             <Input
               id="rc-currency"
               data-testid="rate-card-currency"
               placeholder={t('billing.rate_cards.form.currency_placeholder')}
+              {...currencyA11y.inputProps}
               {...register('currency')}
             />
-            {errors.currency && (
-              <p className="text-xs text-destructive">{t(errors.currency.message ?? '')}</p>
-            )}
+            <FieldError
+              id={currencyA11y.errorId}
+              message={errors.currency?.message ? t(errors.currency.message) : undefined}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="rc-from">{t('billing.rate_cards.form.effective_from')}</Label>
+              <Label htmlFor="rc-from" required>
+                {t('billing.rate_cards.form.effective_from')}
+              </Label>
               <Input
                 id="rc-from"
                 type="datetime-local"
                 data-testid="rate-card-from"
+                {...effectiveFromA11y.inputProps}
                 {...register('effectiveFrom')}
               />
-              {errors.effectiveFrom && (
-                <p className="text-xs text-destructive">{t(errors.effectiveFrom.message ?? '')}</p>
-              )}
+              <FieldError
+                id={effectiveFromA11y.errorId}
+                message={
+                  errors.effectiveFrom?.message ? t(errors.effectiveFrom.message) : undefined
+                }
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="rc-to">{t('billing.rate_cards.form.effective_to')}</Label>

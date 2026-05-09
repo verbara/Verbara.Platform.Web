@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Switch } from '@/core/ui/switch';
 import {
   useTenantSettings,
@@ -82,6 +83,17 @@ function OperationalSection({ settings, update, t }: SectionProps) {
   );
   const [errors, setErrors] = useState<FieldErrors>({});
 
+  const maxChannelsA11y = useFieldA11y(
+    errors.maxConcurrentChannels ? { message: errors.maxConcurrentChannels } : undefined,
+    'ts-max-channels',
+    { required: true },
+  );
+  const maxCampaignsA11y = useFieldA11y(
+    errors.maxActiveCampaigns ? { message: errors.maxActiveCampaigns } : undefined,
+    'ts-max-campaigns',
+    { required: true },
+  );
+
   function validate(): FieldErrors {
     const next: FieldErrors = {};
     if (maxConcurrentChannels === '' || Number(maxConcurrentChannels) < 1) {
@@ -133,7 +145,7 @@ function OperationalSection({ settings, update, t }: SectionProps) {
       data-testid="tenant-settings-form-operational"
     >
       <div className="space-y-1.5">
-        <Label htmlFor="ts-max-channels">
+        <Label htmlFor="ts-max-channels" required>
           {t('tenants.settings.fields.maxConcurrentChannels', 'Max concurrent channels')}
         </Label>
         <Input
@@ -143,10 +155,12 @@ function OperationalSection({ settings, update, t }: SectionProps) {
           data-testid="field-maxConcurrentChannels"
           value={maxConcurrentChannels}
           onChange={(e) => setMaxConcurrentChannels(e.target.value)}
-          aria-invalid={!!errors.maxConcurrentChannels}
+          {...maxChannelsA11y.inputProps}
         />
         {errors.maxConcurrentChannels && (
           <p
+            id={maxChannelsA11y.errorId}
+            role="alert"
             className="text-xs text-destructive"
             data-testid="field-error-maxConcurrentChannels"
           >
@@ -156,7 +170,7 @@ function OperationalSection({ settings, update, t }: SectionProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="ts-max-campaigns">
+        <Label htmlFor="ts-max-campaigns" required>
           {t('tenants.settings.fields.maxActiveCampaigns', 'Max active campaigns')}
         </Label>
         <Input
@@ -166,10 +180,12 @@ function OperationalSection({ settings, update, t }: SectionProps) {
           data-testid="field-maxActiveCampaigns"
           value={maxActiveCampaigns}
           onChange={(e) => setMaxActiveCampaigns(e.target.value)}
-          aria-invalid={!!errors.maxActiveCampaigns}
+          {...maxCampaignsA11y.inputProps}
         />
         {errors.maxActiveCampaigns && (
           <p
+            id={maxCampaignsA11y.errorId}
+            role="alert"
             className="text-xs text-destructive"
             data-testid="field-error-maxActiveCampaigns"
           >
@@ -214,6 +230,12 @@ function AuthSection({ settings, update, t }: SectionProps) {
   );
   const [oidcEnabled, setOidcEnabled] = useState<boolean>(settings.auth.oidcEnabled);
   const [errors, setErrors] = useState<FieldErrors>({});
+
+  const passwordMinLengthA11y = useFieldA11y(
+    errors.passwordMinLength ? { message: errors.passwordMinLength } : undefined,
+    'ts-pwd-min',
+    { required: true },
+  );
 
   function validate(): FieldErrors {
     const next: FieldErrors = {};
@@ -270,7 +292,7 @@ function AuthSection({ settings, update, t }: SectionProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="ts-pwd-min">
+        <Label htmlFor="ts-pwd-min" required>
           {t('tenants.settings.fields.passwordMinLength', 'Minimum password length')}
         </Label>
         <Input
@@ -280,10 +302,15 @@ function AuthSection({ settings, update, t }: SectionProps) {
           data-testid="field-passwordMinLength"
           value={passwordMinLength}
           onChange={(e) => setPasswordMinLength(e.target.value)}
-          aria-invalid={!!errors.passwordMinLength}
+          {...passwordMinLengthA11y.inputProps}
         />
         {errors.passwordMinLength && (
-          <p className="text-xs text-destructive" data-testid="field-error-passwordMinLength">
+          <p
+            id={passwordMinLengthA11y.errorId}
+            role="alert"
+            className="text-xs text-destructive"
+            data-testid="field-error-passwordMinLength"
+          >
             {errors.passwordMinLength}
           </p>
         )}
