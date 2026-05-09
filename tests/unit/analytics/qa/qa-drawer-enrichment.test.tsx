@@ -33,6 +33,20 @@ vi.mock('@/core/api/hooks/use-analytics', () => ({
   useQaDetail: () => ({ data: detailMock.value, isLoading: false }),
 }));
 
+// ─── Mock PdfDownloadButton dependencies (added in Track 5C-export) ─────────
+vi.mock('@/core/api/hooks/use-tenants', () => ({
+  useTenant: () => ({ data: { tenantId: 't1', name: 'Test Tenant' } }),
+}));
+vi.mock('@/core/auth/auth-store', () => ({
+  useAuthStore: (selector: (s: { user: { email: string } }) => unknown) =>
+    selector({ user: { email: 'test@example.com' } }),
+}));
+vi.mock('@/core/tenant/tenant-store', () => ({
+  useTenantStore: (selector: (s: { activeTenantId: string }) => unknown) =>
+    selector({ activeTenantId: 't1' }),
+}));
+vi.mock('@/core/observability/sentry', () => ({ addSentryBreadcrumb: vi.fn() }));
+
 // ─── Component under test (must import after mocks) ─────────────────────────
 import { QaDetailDrawer } from '@/analytics/qa/qa-detail-drawer';
 
