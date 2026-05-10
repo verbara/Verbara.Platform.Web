@@ -93,6 +93,10 @@ Same as Platform ADR-0018:
 
   **Trigger dashboard delta (Web view, 2026-05-09):** identical to Platform — 5/7 GREEN (1, 2, 4, 6, 7), 1/7 PARTIAL (5), 1/7 BLOCKED (3).
 
+- **2026-05-09 (later — Trigger 3 ✅ GREEN; Platform v1.13.0 ships closures)**: Platform ADR-0018 Status update of even date records all 6 P0+P1 findings closed in v1.13.0; full Platform slnx test suite passes; new ADR-0019 documents the management-key permission model change (back-compat through v1.15.x). No Web code work was needed for the remediation. From this repo's perspective the coordinated-flip requirement is now satisfied for Trigger 3.
+
+  **Trigger dashboard delta (Web view, 2026-05-09 end of session):** mirrors Platform — 6/7 GREEN (1, 2, 3, 4, 6, 7), 1/7 PARTIAL (5 — Pro v2.3.x execution), 0/7 BLOCKED. Visibility flip is now gated **only** by Trigger 5.
+
 ## References
 
 - ADR-0006 (this repo) — license + 5-tier commercial strategy
