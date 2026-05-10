@@ -101,6 +101,8 @@ Same as Platform ADR-0018:
 
   **Trigger dashboard delta (Web view, 2026-05-10):** mirrors Platform — **✅ 7/7 GREEN** (1, 2, 3, 4, 5, 6, 7) · 🟡 0/7 · ❌ 0/7. Visibility flip can proceed at the maintainer's discretion (coordinated `gh api` PATCH on Platform + Web).
 
+- **2026-05-10 19:04 UTC (🎉 visibility flip EXECUTED — coordinated with Platform)**: `gh api -X PATCH repos/verbara/Verbara.Platform.Web -f visibility=public` succeeded. Secret scanning + push protection enabled (free tier post-flip). License `Apache-2.0` declared in repo metadata. Web active plan `docs/plans/active/2026-05-08-visibility-decision-and-portal.md` moves to `docs/plans/completed/` with closure status header. See Platform ADR-0018 Status update of even date for the full operations log + state at flip time + next-quarter follow-ups.
+
 ## References
 
 - ADR-0006 (this repo) — license + 5-tier commercial strategy

@@ -1,7 +1,7 @@
 # Web Visibility Decision (Decision 3) + Customer Portal Surface
 
 **Created:** 2026-05-08
-**Status:** Active (planning, not yet executed)
+**Status:** ✅ **COMPLETE** — coordinated visibility flip executed 2026-05-10 19:04 UTC alongside Platform per ADR-0007 / ADR-0018. `gh api -X PATCH repos/verbara/Verbara.Platform.Web -f visibility=public` succeeded; secret scanning + push protection enabled. Plan moves to `completed/` with this status header.
 **Repo:** `/media/Data/Source/Verbara/Verbara.Platform.Web/`
 **Origin:** Cross-repo licensing & visibility audit run 2026-05-08 in `Verbara.Sdk` session. Full findings in SDK auto-memory `project_2026_05_08_licensing_audit.md`.
 
