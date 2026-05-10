@@ -97,6 +97,10 @@ Same as Platform ADR-0018:
 
   **Trigger dashboard delta (Web view, 2026-05-09 end of session):** mirrors Platform — 6/7 GREEN (1, 2, 3, 4, 6, 7), 1/7 PARTIAL (5 — Pro v2.3.x execution), 0/7 BLOCKED. Visibility flip is now gated **only** by Trigger 5.
 
+- **2026-05-10 (Trigger 5 ✅ GREEN; visibility flip 7/7 across both repos)**: Platform ADR-0018 Status update of even date records the closure of Trigger 5: Pro v2.3.0-pro shipped, Verbara.Platform v2.1.0 tagged + workflow run 25636962512 published the first signed image (`ghcr.io/verbara/platform/api@sha256:f82a9041dc7f26018f6b6b11addf3ddbda6a7833827434f6b8d5ca2486349902`), digest registered in `verbara-website/data/authorized-digests.json` (commit `2e41314`). RC1-RC4 cycle pivoted from file-based digest baking to operator-side `IMAGE_DIGEST` env var (Pro ADR-0011 Status update). Web code unchanged for this trigger; the Web side of the visibility flip is operationally gated on the same `gh api -X PATCH ... visibility=public` step but no Web release is required.
+
+  **Trigger dashboard delta (Web view, 2026-05-10):** mirrors Platform — **✅ 7/7 GREEN** (1, 2, 3, 4, 5, 6, 7) · 🟡 0/7 · ❌ 0/7. Visibility flip can proceed at the maintainer's discretion (coordinated `gh api` PATCH on Platform + Web).
+
 ## References
 
 - ADR-0006 (this repo) — license + 5-tier commercial strategy
