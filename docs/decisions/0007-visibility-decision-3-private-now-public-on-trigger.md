@@ -87,6 +87,12 @@ Same as Platform ADR-0018:
 
 - **2026-05-08**: ADR Accepted. Trigger checklist active. Tracking in `docs/plans/active/2026-05-08-visibility-decision-and-portal.md`.
 
+- **2026-05-09 (Trigger 7 met by Option B per Platform ADR-0018)**: This ADR mirrors Platform ADR-0018 trigger 7. The Platform ADR's 2026-05-09 Status update declares Trigger 7 ✅ GREEN via Option B (Tier 0.5 e2e validation through verbara.io self-issuance loop in lieu of waiting for a paying-Tier 1+ customer). Web side has nothing additional to validate for this trigger (the issuer Worker lives in the verbara-website repo; this repo consumes nothing from it). Trigger 7 is therefore ✅ GREEN for the coordinated flip from this repo's perspective as well.
+
+- **2026-05-09 (Trigger 3 ❌ BLOCKED on Platform side)**: Platform ADR-0018 Status update (2026-05-09) records that Trigger 3 reverted to BLOCKED by 2 P0 + 4 P1 findings in the Platform repo. The coordinated-flip requirement of this ADR (Web does not flip without Platform) means this repo also remains 🟡 PARTIAL until the Platform v1.13.x remediation lands. No Web-side code work is needed for that remediation; this is a wait gate.
+
+  **Trigger dashboard delta (Web view, 2026-05-09):** identical to Platform — 5/7 GREEN (1, 2, 4, 6, 7), 1/7 PARTIAL (5), 1/7 BLOCKED (3).
+
 ## References
 
 - ADR-0006 (this repo) — license + 5-tier commercial strategy
