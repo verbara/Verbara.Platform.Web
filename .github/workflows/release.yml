@@ -1,0 +1,132 @@
+# Release workflow: build the Verbara.Platform.Web (React + nginx) Docker image,
+# push to ghcr.io, and Sigstore-cosign-sign it. Triggered by pushing a `v*` tag
+# (e.g. `v3.0.2`, `v3.1.0`).
+#
+# Mirrors the API release workflow (`Verbara.Platform/.github/workflows/
+# release.yml`) so a customer who already verifies the API image can use the
+# same `cosign.pub` to verify Web. The keypair is shared across both repos by
+# design (see `.github/cosign.pub` — same fingerprint as the API repo).
+#
+# Verification by a customer / operator:
+#   cosign verify --key cosign.pub \
+#     ghcr.io/verbara/platform/web@sha256:<digest>
+#
+# Or via the verification helper bundled in the platform repo
+# (docker/verbara-verify-image.sh ghcr.io/verbara/platform/web:3.0.2).
+#
+# Differences vs the API workflow:
+#   - No NUGET auth (no private packages in the build context — pure npm).
+#   - No IMAGE_DIGEST baked / authorized-digests.json registration: Pro
+#     licensing image binding only applies to Platform.Api (it's the binary
+#     that consumes Pro packages). Web is a static asset bundle served by
+#     nginx; signature verification is sufficient.
+
+name: Release
+
+'on':
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: verbara/platform/web
+
+jobs:
+  release:
+    name: Build, push, and sign Web image
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [ -z "$TAG" ]; then
+            echo "GITHUB_REF_NAME is empty; cannot derive release tag" >&2
+            exit 1
+          fi
+          echo "release_tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.release_tag }}
+          provenance: false
+          # VITE_DEFAULT_TENANT_ID is a build-time hint (used as a UI default
+          # in the tenant picker, not a runtime auth boundary). Left empty
+          # by default so the binary is generic; operators can rebuild with
+          # --build-arg VITE_DEFAULT_TENANT_ID=their-tenant if they want a
+          # branded experience baked in.
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          # Pin v2.5.2 (matches the API workflow). cosign v3.x changed the
+          # detached-signature distribution model and breaks the installer
+          # action's bootstrap. See API release.yml for the full rationale.
+          cosign-release: 'v2.5.2'
+
+      - name: Sign final image with cosign
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          umask 077
+          KEY_FILE="$(mktemp -t cosign-key.XXXXXX)"
+          trap 'shred -u "$KEY_FILE" 2>/dev/null || rm -f "$KEY_FILE"' EXIT
+          printf '%s' "$COSIGN_PRIVATE_KEY" > "$KEY_FILE"
+          cosign sign \
+            --key "$KEY_FILE" \
+            --yes \
+            --tlog-upload=false \
+            "$IMAGE_REF"
+
+      - name: Verify cosign signature against committed public key
+        env:
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          cosign verify \
+            --key .github/cosign.pub \
+            --insecure-ignore-tlog \
+            "$IMAGE_REF"
+
+      - name: Print final image reference
+        env:
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        run: |
+          echo "Signed image manifest-list digest: ${{ steps.build.outputs.digest }}"
+          echo "Final image reference: $IMAGE_REF"
+          echo ""
+          echo "Pull command for customers:"
+          echo "  docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.release_tag }}"
+          echo ""
+          echo "Verify signature (operator-side):"
+          echo "  cosign verify --key cosign.pub $IMAGE_REF"
+          echo ""
+          echo "This image is consumed by docker/docker-compose.reference-smb.yml"
+          echo "as the 'web' service. Tag must match the Platform.Api release."
