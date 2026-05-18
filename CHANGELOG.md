@@ -13,6 +13,17 @@ _No unreleased changes._
 
 ---
 
+> **Note on the gap between [1.13.17] (2026-04-30) and the 3.x series**: the
+> v1.14.x → v2.4.x cycles + the v3.0.0-web Verbara rebrand + v3.0.x post-rebrand
+> tags shipped without inline CHANGELOG entries. The v3.x entries below are
+> **backfilled 2026-05-18** sourced from `git log` ranges between tags +
+> GitHub Releases page (https://github.com/verbara/Verbara.Platform.Web/releases)
+>
+> - cross-repo memory cross-refs. The v1.14 → v2.4 gap remains and may be
+>   backfilled in a separate sweep if/when needed.
+
+---
+
 ## [3.1.0] — 2026-05-18 — License upgrade modal (HTTP 402 UX) — closes Platform v2.2.0 follow-up
 
 MINOR bump because this release introduces a new global modal that surfaces actionable upgrade / trial / contact-sales CTAs when the Platform API returns **HTTP 402 Payment Required** (the contract shipped in Platform v2.2.0 + Pro v2.4.0-pro per ADR-0012). Before this release, the Web client surfaced 402 errors via the generic Sonner error toast — losing the `tier_required` / `trial_url` / `upgrade_url` / `contact_sales_url` extension members that Pro v2.4.0-pro's `LicenseGuard.Evaluate` populates. Web 3.1.0 closes the loop end-to-end.
@@ -57,6 +68,113 @@ MINOR bump because this release introduces a new global modal that surfaces acti
 
 - Closes the follow-up explicitly called out in **Platform v2.2.0 CHANGELOG** "Risks / open questions": _"a follow-up Web PR should detect 402 + parse `upgrade_url` to render an upgrade modal instead of the generic error toast"._
 - No Platform-side changes required.
+
+---
+
+## [3.0.3] — 2026-05-17 — CI + Dependabot bootstrap + ADR-0007 trigger mirroring
+
+Backfilled 2026-05-18. **Operations + CI hardening release**, no new product
+surface. Closes the post-rebrand setup gap between v3.0.1-web (2026-05-09)
+and the v2.2.0 Platform consumer migration of v3.1.0-web (2026-05-18).
+
+### Added
+
+- **`feat(ci): release workflow for ghcr.io/verbara/platform/web image`** ([c67ef1e](https://github.com/verbara/Verbara.Platform.Web/commit/c67ef1e)) — first GitHub Actions release workflow for the Web repo. Triggered on `v*-web` tags; builds + pushes cosign-signed image to `ghcr.io/verbara/platform/web`. Mirrors the Platform API release pipeline so Web image-binding (ADR-0011 cascade) can verify the Web side of the deploy.
+- **Dependabot bootstrap** — 9 incoming PRs ([#1-5, #15, #16, #18, #20, #21](https://github.com/verbara/Verbara.Platform.Web/pulls?q=is%3Apr)) covering: GitHub Actions version bumps (actions/checkout 5→6, github-script 7→9, upload-artifact 4→7, setup-node 5→6, dependabot/fetch-metadata 2→3); npm dependencies (`@tanstack/react-query` group, `i18next` group, `vite-toolchain` group, `@playwright/test` group, `msw 2.14.5→2.14.6`).
+- **`fix(hooks): allow nested scopes in commit-msg`** ([763d1f9](https://github.com/verbara/Verbara.Platform.Web/commit/763d1f9)) — relaxes Commitlint to accept Dependabot's `chore(ci)(deps)` nested-scope convention.
+
+### Changed
+
+- **`fix(ci): add .npmrc with legacy-peer-deps`** ([c2a2478](https://github.com/verbara/Verbara.Platform.Web/commit/c2a2478)) — unblocks `npm ci` on the new release workflow against the current `@base-ui/react` peer-dep graph.
+- **`fix(docker): copy .npmrc into build stage`** ([ed6c0e6](https://github.com/verbara/Verbara.Platform.Web/commit/ed6c0e6)) — Dockerfile build stage was missing the `.npmrc`, causing peer-dep resolution failures in CI build.
+
+### Docs
+
+- **ADR-0007 trigger mirroring** ([43ee6f8](https://github.com/verbara/Verbara.Platform.Web/commit/43ee6f8), [f4ee9b9](https://github.com/verbara/Verbara.Platform.Web/commit/f4ee9b9), [c51a053](https://github.com/verbara/Verbara.Platform.Web/commit/c51a053)) — mirrors Platform [ADR-0018](https://github.com/verbara/Verbara.Platform/blob/main/docs/decisions/0018-visibility-decision-3-private-now-public-on-trigger.md) visibility-flip trigger status into the Web repo's own ADR-0007 so the Web repo has an authoritative record of its share of the visibility-flip closure. Triggers 3, 5, 7 marked GREEN.
+- **Plan archival** — Verbara rebrand + v1.14.x roadmap moved to `docs/plans/completed/` post-flip cleanup.
+
+### Versioning note
+
+v3.0.2-web was skipped intentionally — no functional work between v3.0.1-web (Track 7C-polish, 2026-05-09) and v3.0.3-web (this release, 2026-05-17) other than CI/deps housekeeping that didn't warrant a dedicated patch.
+
+---
+
+## [3.0.1] — 2026-05-09 — Track 7C-polish — 12 audit gaps + missing tests for WebChat Widget v1
+
+Backfilled 2026-05-18. **Polish patch for v3.0.0-web's WebChat Widget v1**. Closes 12 quality-audit gaps identified in the post-3.0.0 review + the missing-tests gap for the new webchat-embed surface.
+
+### Added
+
+- **Sentry breadcrumbs at key lifecycle events** ([dce1a15](https://github.com/verbara/Verbara.Platform.Web/commit/dce1a15)) — webchat-embed iframe emits breadcrumbs at session-create / WS-open / WS-close / agent-message-received / visitor-message-sent for observability.
+- **Virtualized message list** ([0a701f6](https://github.com/verbara/Verbara.Platform.Web/commit/0a701f6)) — `@tanstack/react-virtual` integration so long conversations (>500 messages) don't degrade scroll perf on low-end devices.
+- **`prefers-reduced-motion` support** ([26d2635](https://github.com/verbara/Verbara.Platform.Web/commit/26d2635)) — iframe respects OS-level motion preference; disables transitions for accessibility.
+- **Favicon badge for unread messages** ([c3e5cb4](https://github.com/verbara/Verbara.Platform.Web/commit/c3e5cb4)) — visitor sees count badge on the host page tab favicon when the iframe is in the background.
+- **Inactivity timeout banner** ([b8b0aec](https://github.com/verbara/Verbara.Platform.Web/commit/b8b0aec)) — after 5 min of no agent activity, banner appears with "still here?" prompt.
+- **Composer auto-focus on chat transition** ([fadaab2](https://github.com/verbara/Verbara.Platform.Web/commit/fadaab2)) — a11y: when pre-chat form completes, composer receives focus automatically.
+- **Sound notifications with toggle UI** ([00869a5](https://github.com/verbara/Verbara.Platform.Web/commit/00869a5)) — visitor can mute incoming-message sound; preference persisted in localStorage.
+- **Cross-visit message cache** ([23646de](https://github.com/verbara/Verbara.Platform.Web/commit/23646de)) — messages stored in localStorage so resumed visits show prior conversation history.
+- **Theme CSS-var injection** ([327b1a3](https://github.com/verbara/Verbara.Platform.Web/commit/327b1a3)) — iframe consumes theme tokens (primary, accent, font) from the SDK init-config so each tenant brands the widget.
+
+### Fixed
+
+- **Drain offline queue on WS reconnect** ([837e963](https://github.com/verbara/Verbara.Platform.Web/commit/837e963)) — visitor messages queued while offline now drain reliably when the WebSocket reconnects.
+- **`useFieldA11y` adoption in pre-chat-form** ([89e7178](https://github.com/verbara/Verbara.Platform.Web/commit/89e7178)) — pre-chat form now uses the same a11y field hook as the main app for parity with Track 5C accessibility baseline.
+- **Lint cleanup** ([2a49e11](https://github.com/verbara/Verbara.Platform.Web/commit/2a49e11)) — rename `autoFocus`, defer `setMessages`, init ref in effect; satisfies the WebChat iframe's stricter ESLint config.
+- **WebSocket attachment propagation** ([51b4f2d](https://github.com/verbara/Verbara.Platform.Web/commit/51b4f2d)) — agent-side attachments now propagate from WS frames into the message list (previously dropped).
+
+---
+
+## [3.0.0] — 2026-05-09 — WebChat Widget v1 + ROADMAP COMPLETE 🎉
+
+Backfilled 2026-05-18. **MAJOR release closing the entire Web product roadmap.** Track 7C ships the customer-facing WebChat Widget v1 (embeddable iframe + JS SDK + shadow-DOM bubble + admin embed-snippet UI) — the last remaining roadmap item. All 7 niveles closed; the Web ROADMAP is declared **COMPLETE 🎉**.
+
+The release is delivered as a 28-commit train, structured in 7 phases per the active spec at `docs/plans/completed/2026-05-08-track-7c-webchat-widget-mvp-spec.md`.
+
+### Added — WebChat SDK (host page side)
+
+- **`src/webchat/sdk/`** — JS SDK consumed by tenant host pages via `<script src="…/webchat-sdk.js">`. Auto-init on `[data-verbara-tenant]` body attribute.
+- Shadow-DOM bubble button ([7247e99](https://github.com/verbara/Verbara.Platform.Web/commit/7247e99)) with unread count badge.
+- Lazy iframe loader ([bd4d47e](https://github.com/verbara/Verbara.Platform.Web/commit/bd4d47e)) — sandbox, mobile breakpoint detection, responsive positioning.
+- postMessage bridge ([b8c1092](https://github.com/verbara/Verbara.Platform.Web/commit/b8c1092)) with origin + source validation for security.
+- Visitor-storage ([bd859ba](https://github.com/verbara/Verbara.Platform.Web/commit/bd859ba)) — localStorage UUID + profile so returning visitors resume sessions cleanly.
+- API surface + index entrypoint ([469d3e9](https://github.com/verbara/Verbara.Platform.Web/commit/469d3e9)) with auto-init wiring.
+
+### Added — WebChat embed (iframe side)
+
+- **`src/webchat/embed/`** — isolated React app loaded inside the iframe; separate i18n bundle + Sentry init.
+- iframe entrypoint with isolated i18n + Sentry ([76b846c](https://github.com/verbara/Verbara.Platform.Web/commit/76b846c)).
+- DOMPurify-safe markdown renderer ([d565cde](https://github.com/verbara/Verbara.Platform.Web/commit/d565cde)).
+- Pre-chat form (RHF + Zod, a11y baseline) ([b96a958](https://github.com/verbara/Verbara.Platform.Web/commit/b96a958)).
+- Composer, message-list, message-bubble (a11y log + markdown) ([069c0da](https://github.com/verbara/Verbara.Platform.Web/commit/069c0da)).
+- Chat-widget shell + status banner ([5ff3862](https://github.com/verbara/Verbara.Platform.Web/commit/5ff3862)).
+- Notifications + a11y wiring ([19a8703](https://github.com/verbara/Verbara.Platform.Web/commit/19a8703)).
+- Session-API client ([2fc82cd](https://github.com/verbara/Verbara.Platform.Web/commit/2fc82cd)) — createSession + fetchHistory.
+- WebSocket client with exponential-backoff reconnect ([b52ee11](https://github.com/verbara/Verbara.Platform.Web/commit/b52ee11)).
+- Offline message queue with localStorage + cap ([65de279](https://github.com/verbara/Verbara.Platform.Web/commit/65de279)).
+
+### Added — Admin + demo
+
+- **Admin embed-snippet UI** ([4dbdd42](https://github.com/verbara/Verbara.Platform.Web/commit/4dbdd42)) — replaces the `webchat-page` placeholder with a real UI that generates the per-tenant embed `<script>` snippet, copy-to-clipboard, preview.
+- **`demo.html` page** ([181c440](https://github.com/verbara/Verbara.Platform.Web/commit/181c440)) — public demo page bundled with the SDK so E2E + customer pre-sales demos have a stable target.
+- **Embedding guide README** ([3e0a758](https://github.com/verbara/Verbara.Platform.Web/commit/3e0a758)).
+
+### Added — i18n + infrastructure
+
+- **New `webchat` namespace** ([7eab2a0](https://github.com/verbara/Verbara.Platform.Web/commit/7eab2a0)) — 3 locales (en-US, es-419, pt-BR); parity check extended to enforce 6 namespaces (was 5).
+- **Multi-config Vite build** ([d15009b](https://github.com/verbara/Verbara.Platform.Web/commit/d15009b)) — separate Vite configs for main app + webchat-sdk + webchat-embed iframe so each ships as an independent bundle.
+- **Nginx location blocks** ([608758f](https://github.com/verbara/Verbara.Platform.Web/commit/608758f)) — `/webchat/sdk/*`, `/webchat/embed/*`, `/webchat/demo/*` served with appropriate CSP + cache headers.
+
+### Tests
+
+- **E2E Playwright spec** ([de5a6df](https://github.com/verbara/Verbara.Platform.Web/commit/de5a6df)) — full visitor flow: host page loads, bubble appears, click → iframe opens, pre-chat form, message exchange, close.
+- **Integration test for full visitor flow** ([aef03e8](https://github.com/verbara/Verbara.Platform.Web/commit/aef03e8)) — exercises the cross-frame postMessage protocol end-to-end.
+
+### Docs
+
+- **Track 7C spec** ([7704280](https://github.com/verbara/Verbara.Platform.Web/commit/7704280)) — comprehensive design doc for the MVP (~600 lines): 7 phases, 25 tasks, security model, theming, embed UX, accessibility.
+- **Track 7C plan** ([5f15287](https://github.com/verbara/Verbara.Platform.Web/commit/5f15287)) — execution plan, 25 tasks.
+- **Scope correction** ([6f09fba](https://github.com/verbara/Verbara.Platform.Web/commit/6f09fba)) — marketing pages moved out of Platform.Web scope (handled by `verbara-website` repo).
+- **Roadmap closure** ([b08b22b](https://github.com/verbara/Verbara.Platform.Web/commit/b08b22b)) — Nivel 7 marked complete, roadmap declared **COMPLETE**, plan moved to `docs/plans/completed/`. **End of the multi-month Web roadmap arc.**
 
 ---
 
