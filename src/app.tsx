@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
 import { router } from './router';
@@ -32,7 +32,27 @@ export function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ApiQueryProvider>
-        <RouterProvider router={router} />
+        {/*
+          Top-level Suspense boundary so react-i18next (configured with
+          useSuspense: true) can suspend on the first paint while
+          i18next-http-backend fetches /locales/{lng}/{ns}.json. Without
+          this boundary the thrown Promise bubbles to the root ErrorBoundary
+          which silently falls back, rendering raw translation keys
+          (auth.email, app.name, etc.) instead of localized strings —
+          the visible bug fixed in v3.1.1-web.
+
+          Non-i18n Suspense fallbacks (lazy-loaded admin/agent pages) keep
+          their inner LazyLoad wrappers per router.tsx.
+        */}
+        <Suspense
+          fallback={
+            <div className="flex h-screen items-center justify-center text-slate-400 dark:text-slate-600">
+              Loading...
+            </div>
+          }
+        >
+          <RouterProvider router={router} />
+        </Suspense>
         <Toaster richColors position="top-right" />
         <PaymentRequiredDialogHost />
       </ApiQueryProvider>
