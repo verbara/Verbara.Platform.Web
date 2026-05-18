@@ -13,6 +13,38 @@ _No unreleased changes._
 
 ---
 
+## [3.1.1-web] — 2026-05-18 — Critical UX fix: missing top-level Suspense boundary caused unauthenticated routes to render raw i18next keys
+
+PATCH bump for a one-line UX bug visible on every unauthenticated route (login, forgot-password, reset-password, unauthorized). The i18next runtime was configured with `react: { useSuspense: true }` but the App tree had **NO** top-level `<Suspense>` boundary. When `useTranslation()` was called before `i18next-http-backend` finished fetching `/locales/{lng}/{ns}.json`, the thrown Promise (React Suspense protocol) bubbled past the only Suspense in the tree (which lives inside `router.tsx` `LazyLoad` and wraps lazy-loaded admin/agent pages only). The root `ErrorBoundary` silently absorbed the throw, the hook fell back to `ready: false`, and every `t('...')` call returned the raw key string.
+
+### Symptom (reproduced via Playwright against the K8s lab v3.1.0-web image)
+
+- `/login` rendered: `app.name` (header), `auth.sign_in` (subtitle), `auth.email`, `auth.password`, `auth.remember_me`, `auth.forgot_password`, `auth.sign_in`, `auth.or`, `auth.sign_in_sso`, `auth.use_api_key`, `a11y.required` — all as raw key strings
+- Translation values WITH explicit `t(key, fallback)` defaults rendered the fallback (`'e.g. demo, platform'` for tenant placeholder)
+- `0` network requests to `/locales/*` during initial page load (HttpBackend never fired)
+- A manual `fetch('/locales/en-US/common.json')` in DevTools returned HTTP 200 + correct JSON → backend perfectly fine
+- `localStorage.verbara.lang = 'en-US'`, `navigator.language = 'en-US'`, both supported
+
+### Fix
+
+`src/app.tsx` wraps `<RouterProvider>` in a top-level `<Suspense fallback={...}>` boundary so the Suspense protocol works as designed. This unblocks i18next-http-backend's first fetch + lets React resume the render once translations are loaded.
+
+The router-internal `<LazyLoad>` wrappers for lazy-loaded admin/agent pages remain untouched (they catch the dynamic-import suspense for those routes specifically).
+
+### Affected versions
+
+- All v3.x-web releases prior to v3.1.1-web: the same gap existed since the original app.tsx scaffolding. Pre-v3 (Asterisk-rebrand era) had different routing + may have had different defaults; not investigated.
+- Single-line gap: adding `import { Suspense }` + wrapping `<RouterProvider>` is the entire fix.
+
+### Validation
+
+- `npm run build` succeeded (8 chunks, dist size unchanged)
+- Playwright reproduction against rebuilt image confirms every `auth.*` and `app.*` key now resolves to its English value
+- Network panel: `/locales/en-US/common.json` HTTP 200, 16965 bytes, fired within ~10 ms of page load
+- No regression in lazy-loaded admin/agent routes (their inner Suspense boundaries still fire for dynamic imports)
+
+---
+
 > **Note on the gap between [1.13.17] (2026-04-30) and the 3.x series**: the
 > v1.14.x → v2.4.x cycles + the v3.0.0-web Verbara rebrand + v3.0.x post-rebrand
 > tags shipped without inline CHANGELOG entries. The v3.x entries below are
