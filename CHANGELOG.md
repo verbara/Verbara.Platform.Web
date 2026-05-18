@@ -13,7 +13,77 @@ _No unreleased changes._
 
 ---
 
+## [3.1.3-web] — 2026-05-18 — Dependency hygiene track: 20 Dependabot bumps (runtime + dev + CI), no product-surface changes
+
+PATCH bump closing the v3.1.x dependency-hygiene track that accumulated after the `v3.0.3-web` Dependabot bootstrap (CI + Dependabot config landed 2026-05-17). All 20 PRs auto-merged or were merged manually after `build`, `test`, `coverage`, `i18n`, `audit`, `lint` checks passed. **No product-surface changes** — pure dependency hygiene. Follows the precedent set by `v3.0.3-web` ("Operations + CI hardening release, no new product surface").
+
+### Runtime dependency bumps (npm)
+
+- `@fontsource-variable/geist` 5.2.8 → 5.2.9 ([#39](https://github.com/verbara/Verbara.Platform.Web/pull/39))
+- `@tanstack/react-query` group ([#29](https://github.com/verbara/Verbara.Platform.Web/pull/29))
+- `ag-grid-community` 35.2.1 → 35.3.0 ([#34](https://github.com/verbara/Verbara.Platform.Web/pull/34))
+- `ag-grid-react` 35.2.1 → 35.3.0 ([#33](https://github.com/verbara/Verbara.Platform.Web/pull/33))
+- `date-fns` 4.1.0 → 4.2.1 ([#42](https://github.com/verbara/Verbara.Platform.Web/pull/42))
+- `dompurify` 3.4.2 → 3.4.5 ([#41](https://github.com/verbara/Verbara.Platform.Web/pull/41)) — XSS sanitizer used by markdown rendering in WebChat
+- `i18next` + ecosystem group ([#31](https://github.com/verbara/Verbara.Platform.Web/pull/31))
+- `jspdf-autotable` 5.0.7 → 5.0.8 ([#38](https://github.com/verbara/Verbara.Platform.Web/pull/38))
+- `lucide-react` 1.14.0 → 1.16.0 ([#40](https://github.com/verbara/Verbara.Platform.Web/pull/40))
+- `react-hook-form` forms group ([#32](https://github.com/verbara/Verbara.Platform.Web/pull/32))
+- `react-router-dom` react-ecosystem group ([#27](https://github.com/verbara/Verbara.Platform.Web/pull/27))
+- `wavesurfer.js` 7.12.6 → 7.12.7 ([#37](https://github.com/verbara/Verbara.Platform.Web/pull/37)) — voice recording playback
+
+### Dev dependency bumps (npm)
+
+- `@sentry/react` 10.52.0 → 10.53.1 ([#36](https://github.com/verbara/Verbara.Platform.Web/pull/36))
+- `@sentry/vite-plugin` 5.2.1 → 5.3.0 ([#43](https://github.com/verbara/Verbara.Platform.Web/pull/43))
+- `@types/node` 24.12.3 → 24.12.4 ([#35](https://github.com/verbara/Verbara.Platform.Web/pull/35))
+- `eslint-toolchain` group ([#28](https://github.com/verbara/Verbara.Platform.Web/pull/28))
+- `vite-toolchain` group ([#30](https://github.com/verbara/Verbara.Platform.Web/pull/30))
+
+### CI / GitHub Actions bumps
+
+- `docker/build-push-action` 6 → 7 ([#25](https://github.com/verbara/Verbara.Platform.Web/pull/25))
+- `docker/login-action` 3 → 4 ([#26](https://github.com/verbara/Verbara.Platform.Web/pull/26))
+- `docker/setup-buildx-action` 3 → 4 ([#24](https://github.com/verbara/Verbara.Platform.Web/pull/24))
+
+### Validation
+
+- All 20 PRs passed CI (`build`, `test`, `coverage`, `i18n`, `audit`, `lint`) before merge
+- 1047/1047 Vitest tests remain passing
+- `release.yml` rebuilt successfully against the new docker-action major versions
+
+### Coordinated cross-repo state (post-ship)
+
+SDK `2.1.2` · Pro `2.4.0-pro` · Platform `2.2.0` · Web **`3.1.3`** (this release).
+
+---
+
+## [3.1.2-web] — 2026-05-18 — Follow-up i18n hotfix: drop `nonExplicitSupportedLngs` + `load: 'currentOnly'` (closes i18n hotfix track)
+
+PATCH bump. Track-end closure for the v3.1.x i18n hotfix track (2 patches: 3.1.1 Suspense boundary + 3.1.2 supported-languages chain). Backfilled CHANGELOG entry — annotated tag not retroactively applied because the ghcr.io image `ghcr.io/verbara/platform/web:v3.1.2-web` was already built + cosign-signed against the existing lightweight tag (commit `8f2bf36`); the GitHub release was created post-hoc against that same tag to preserve image-tag mapping.
+
+### Problem
+
+After `v3.1.1-web` shipped the top-level `<Suspense>` boundary, a second i18n defect surfaced: the configured `supportedLngs: ['en-US', 'es-419', 'pt-BR']` chain was being silently emptied at runtime because i18next's `nonExplicitSupportedLngs: true` was promoting partial matches (`'en'`, `'es'`, `'pt'`) into the supported list, then the language-detection pipeline failed to converge on any of them and fell back to an empty languages array. The result was the same Suspense throw + raw-key render, just for a different reason.
+
+### Fix
+
+`src/core/i18n/init.ts`:
+
+- **Removed** `nonExplicitSupportedLngs: true` (was overriding the explicit 3-locale list)
+- **Changed** `load: 'currentOnly'` (was the default `'all'`, which queried `/locales/en/common.json` and `/locales/en-US/common.json` — the unqualified-language fetches always 404'd, polluting devtools + slowing first paint)
+
+### Validation
+
+- Playwright reproduction against rebuilt image confirms every `auth.*` and `app.*` key resolves
+- Single fetch per locale (`/locales/en-US/common.json` only — no more `/locales/en/common.json` 404)
+- `npm run build` succeeded, 1047/1047 Vitest pass
+
+---
+
 ## [3.1.1-web] — 2026-05-18 — Critical UX fix: missing top-level Suspense boundary caused unauthenticated routes to render raw i18next keys
+
+> **Superseded by [3.1.2-web]** — this patch fixed the Suspense protocol but left the supported-languages chain broken. Track closed at 3.1.2.
 
 PATCH bump for a one-line UX bug visible on every unauthenticated route (login, forgot-password, reset-password, unauthorized). The i18next runtime was configured with `react: { useSuspense: true }` but the App tree had **NO** top-level `<Suspense>` boundary. When `useTranslation()` was called before `i18next-http-backend` finished fetching `/locales/{lng}/{ns}.json`, the thrown Promise (React Suspense protocol) bubbled past the only Suspense in the tree (which lives inside `router.tsx` `LazyLoad` and wraps lazy-loaded admin/agent pages only). The root `ErrorBoundary` silently absorbed the throw, the hook fell back to `ready: false`, and every `t('...')` call returned the raw key string.
 
