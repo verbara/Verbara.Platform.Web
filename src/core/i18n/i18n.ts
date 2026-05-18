@@ -8,6 +8,14 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 export const LANGUAGE_STORAGE_KEY = 'verbara.lang';
 
+// v3.1.2-web fix: drop `nonExplicitSupportedLngs: true` + `load: 'currentOnly'`
+// which together with i18next v26.x + LanguageDetector v8.x produced
+// `languages: []` (empty language chain) at runtime, causing
+// HttpBackend to never fetch any namespace JSON. Resolved by using
+// i18next's default load strategy ('all', meaning load detected lang +
+// fallback) and explicit-only supportedLngs match. Verified via Playwright
+// against the K8s lab — `auth.*`, `app.*`, etc. now resolve from the
+// pre-existing common.json bundle in /usr/share/nginx/html/locales/.
 i18n
   .use(HttpBackend)
   .use(LanguageDetector)
@@ -15,8 +23,6 @@ i18n
   .init({
     fallbackLng: 'es-419',
     supportedLngs: [...SUPPORTED_LANGUAGES],
-    nonExplicitSupportedLngs: true,
-    load: 'currentOnly',
     ns: ['common', 'admin', 'agent', 'operations', 'analytics'],
     defaultNS: 'common',
     backend: { loadPath: '/locales/{{lng}}/{{ns}}.json' },
