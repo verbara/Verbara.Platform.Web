@@ -6,6 +6,7 @@ import { ApiQueryProvider } from '@/core/api/query-provider';
 import { Toaster } from '@/core/ui/sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useHtmlLang } from '@/core/i18n/use-html-lang';
+import { PaymentRequiredDialogHost } from '@/core/licensing';
 import { startPlatformHub, stopPlatformHub } from '@/core/realtime';
 
 function useRealtimeBootstrap() {
@@ -33,6 +34,7 @@ export function App() {
       <ApiQueryProvider>
         <RouterProvider router={router} />
         <Toaster richColors position="top-right" />
+        <PaymentRequiredDialogHost />
       </ApiQueryProvider>
     </ThemeProvider>
   );

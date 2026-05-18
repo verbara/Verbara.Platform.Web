@@ -1,5 +1,10 @@
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import {
+  PaymentRequiredError,
+  isPaymentRequiredProblemDetails,
+  usePaymentRequiredStore,
+} from '@/core/licensing';
 
 interface RequestConfig {
   url: string;
@@ -98,6 +103,23 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
     throw new UnauthorizedError();
   }
 
+  // Pro v2.4.0-pro + Platform v2.2.0 — LicenseGate middleware returns 402
+  // Payment Required with RFC 9457 ProblemDetails carrying tier_required /
+  // trial_url / upgrade_url / contact_sales_url extension members. Surface
+  // them via the global PaymentRequiredDialogHost so the user sees an
+  // actionable upgrade modal instead of a generic error toast.
+  if (response.status === 402) {
+    const body = await response.json().catch(() => null);
+    if (isPaymentRequiredProblemDetails(body)) {
+      usePaymentRequiredStore.getState().show(body);
+      throw new PaymentRequiredError(body);
+    }
+    // Defensive fallback — Platform should never return 402 without a
+    // ProblemDetails body, but if it ever does, fail closed with a generic
+    // error rather than swallowing it silently.
+    throw new Error('Payment Required (malformed response)');
+  }
+
   if (response.status === 204) {
     return { data: undefined as T, headers: response.headers };
   }
@@ -152,9 +174,7 @@ export async function customFetch<T>(config: RequestConfig): Promise<T> {
  * {@link customFetch}; existing call-sites should keep using `customFetch`
  * unless they need to read response headers.
  */
-export async function customFetchWithHeaders<T>(
-  config: RequestConfig,
-): Promise<FetchResult<T>> {
+export async function customFetchWithHeaders<T>(config: RequestConfig): Promise<FetchResult<T>> {
   if (useAuthStore.getState().isTokenExpired() && useAuthStore.getState().accessToken) {
     const refreshed = await refreshAccessToken();
     if (!refreshed) {

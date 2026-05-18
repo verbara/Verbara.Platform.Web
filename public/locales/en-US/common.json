@@ -165,6 +165,16 @@
     "notificationsRegion": "Notifications",
     "dragToReorder": "Drag to reorder"
   },
+  "license_required": {
+    "title": "Pro feature requires a license",
+    "default_detail": "This feature is not included in your current license. Acquire a free Developer license or upgrade your plan to unlock it.",
+    "tier_required": "Required tier: {{tier}}",
+    "dismiss": "Not now",
+    "acknowledge": "OK",
+    "start_trial": "Start free trial",
+    "upgrade": "View pricing",
+    "contact_sales": "Contact sales"
+  },
   "errors": {
     "unauthorized_title": "403 — Unauthorized",
     "unauthorized_description": "Your role doesn't have access",

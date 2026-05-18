@@ -165,6 +165,16 @@
     "notificationsRegion": "Notificaciones",
     "dragToReorder": "Arrastra para reordenar"
   },
+  "license_required": {
+    "title": "Esta función Pro requiere licencia",
+    "default_detail": "Esta función no está incluida en tu licencia actual. Obtén una licencia gratuita de Desarrollador o actualiza tu plan para desbloquearla.",
+    "tier_required": "Plan requerido: {{tier}}",
+    "dismiss": "Ahora no",
+    "acknowledge": "Entendido",
+    "start_trial": "Iniciar prueba gratuita",
+    "upgrade": "Ver planes",
+    "contact_sales": "Contactar a ventas"
+  },
   "errors": {
     "unauthorized_title": "403 — No autorizado",
     "unauthorized_description": "Tu rol no tiene acceso",

@@ -13,6 +13,53 @@ _No unreleased changes._
 
 ---
 
+## [3.1.0] — 2026-05-18 — License upgrade modal (HTTP 402 UX) — closes Platform v2.2.0 follow-up
+
+MINOR bump because this release introduces a new global modal that surfaces actionable upgrade / trial / contact-sales CTAs when the Platform API returns **HTTP 402 Payment Required** (the contract shipped in Platform v2.2.0 + Pro v2.4.0-pro per ADR-0012). Before this release, the Web client surfaced 402 errors via the generic Sonner error toast — losing the `tier_required` / `trial_url` / `upgrade_url` / `contact_sales_url` extension members that Pro v2.4.0-pro's `LicenseGuard.Evaluate` populates. Web 3.1.0 closes the loop end-to-end.
+
+**Coordinated cross-repo state (post-ship):** SDK `2.1.2` · Pro `2.4.0-pro` · Platform `2.2.0` · Web **`3.1.0`** (this release).
+
+### Added
+
+- New cross-cutting module [`src/core/licensing/`](src/core/licensing/) with 6 files:
+  - `types.ts` — `PaymentRequiredProblemDetails` interface mirroring the RFC 9457 ProblemDetails contract Platform v2.2.0 emits + `isPaymentRequiredProblemDetails` type-guard.
+  - `payment-required-error.ts` — `PaymentRequiredError` typed exception (mirrors the existing `UnauthorizedError` pattern in `core/api/client.ts`).
+  - `payment-required-store.ts` — Zustand singleton (`usePaymentRequiredStore`) bridging non-React API errors into the React render tree. Most-recent-wins semantics on concurrent 402s.
+  - `payment-required-dialog.tsx` — `<PaymentRequiredDialog />` built on the existing `@base-ui/react` Dialog primitive. Renders tiered CTAs based on which extension members Pro populated (NotLicensed/Expired/GraceExhausted → Trial + Upgrade; Revoked → Contact Sales; UnauthorizedImage → acknowledge-only, no actionable URLs).
+  - `payment-required-host.tsx` — `<PaymentRequiredDialogHost />` mounted once near app root, subscribes to the store, renders the dialog.
+  - `index.ts` — barrel export.
+
+### Changed
+
+- [`src/core/api/client.ts`](src/core/api/client.ts) — `executeRequestRaw` now detects `response.status === 402`, parses the body via `isPaymentRequiredProblemDetails`, calls `usePaymentRequiredStore.getState().show(body)` to display the modal, then throws `PaymentRequiredError` so mutation/query callers still receive a typed error. Malformed 402 bodies fall through to a generic throw (defensive fail-closed).
+- [`src/app.tsx`](src/app.tsx) — mount `<PaymentRequiredDialogHost />` inside `<ApiQueryProvider>` next to the existing `<Toaster />`. Order: theme → query → router + toaster + payment-required-host.
+
+### i18n
+
+- Added 8 new keys under `common:license_required.*` (3-locale parity enforced by `scripts/i18n-parity-check.mjs`):
+  - `title` · `default_detail` · `tier_required` (with `{{tier}}` interpolation) · `dismiss` · `acknowledge` · `start_trial` · `upgrade` · `contact_sales`
+- Translations for **en-US**, **es-419** (baseline), **pt-BR**. `npm run i18n:check` passes.
+
+### Tests
+
+- 17 new unit tests across 3 files:
+  - `payment-required-store.test.ts` — 5 tests (init, show, replace-on-second-show, dismiss-keeps-payload, reopen).
+  - `types.test.ts` — 7 tests for the `isPaymentRequiredProblemDetails` type-guard (valid shape, omitted extensions, wrong status, missing fields, null/primitive defenses).
+  - `payment-required-dialog.test.tsx` — 5 render tests (NotLicensed → Trial+Upgrade buttons; Revoked → ContactSales; UnauthorizedImage → no CTAs; tier label interpolation; null-payload safety).
+
+### What this release does NOT do
+
+- No changes to existing 401/403/404/5xx handling paths — those continue to flow through the existing `UnauthorizedError` refresh-retry, route-error boundary, and per-mutation `onError → toast.error` patterns.
+- No global TanStack Query `onError` override at the `QueryClient` defaults level — the 402 path is handled directly in the fetch layer (`client.ts`) before the error reaches TanStack Query.
+- No new locale namespace — the new keys live in the existing `common` namespace under `license_required.*`.
+
+### Cross-repo coordination
+
+- Closes the follow-up explicitly called out in **Platform v2.2.0 CHANGELOG** "Risks / open questions": _"a follow-up Web PR should detect 402 + parse `upgrade_url` to render an upgrade modal instead of the generic error toast"._
+- No Platform-side changes required.
+
+---
+
 ## [1.13.17] — 2026-04-30 — i18n Coverage Phase 4K (campaign-detail extraction)
 
 **Extracts the largest remaining hardcoded-string concentration.**

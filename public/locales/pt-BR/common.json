@@ -165,6 +165,16 @@
     "notificationsRegion": "Notificações",
     "dragToReorder": "Arraste para reordenar"
   },
+  "license_required": {
+    "title": "Este recurso Pro requer licença",
+    "default_detail": "Este recurso não está incluído na sua licença atual. Obtenha uma licença gratuita de Desenvolvedor ou faça upgrade do seu plano para desbloqueá-lo.",
+    "tier_required": "Plano necessário: {{tier}}",
+    "dismiss": "Agora não",
+    "acknowledge": "Entendi",
+    "start_trial": "Iniciar avaliação gratuita",
+    "upgrade": "Ver planos",
+    "contact_sales": "Falar com vendas"
+  },
   "errors": {
     "unauthorized_title": "403 — Não autorizado",
     "unauthorized_description": "Sua função não tem acesso",
