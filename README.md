@@ -7,7 +7,39 @@
 
 React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**Version:** 1.15.5 — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
+**Version:** 3.1.3 — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
+
+## Install (Docker image)
+
+For **operators / self-hosters** running Verbara end-to-end, the React frontend ships as a public, cosign-signed nginx image on `ghcr.io/verbara/platform/web`. Built for **`linux/amd64`** and **`linux/arm64`** (Apple Silicon, AWS Graviton, Raspberry Pi 5, ARM cloud) from a single manifest list — `docker pull` auto-resolves to the host's architecture.
+
+### Quick try (`:latest` — mutable, evaluation only)
+
+```bash
+# Verify signature (no clone needed; key lives at verbara.io)
+cosign verify --key https://verbara.io/keys/cosign.pub --insecure-ignore-tlog \
+  ghcr.io/verbara/platform/web:latest
+
+# Pull + run (point VITE_API_BASE_URL at a Platform.Api instance)
+docker run -d --name verbara-web -p 8080:80 \
+  ghcr.io/verbara/platform/web:latest
+# → http://localhost:8080
+```
+
+### Reproducible install (pinned `vX.Y.Z-web` — recommended for production)
+
+```bash
+TAG=v3.1.3-web   # ← bump per release; see https://github.com/verbara/Verbara.Platform.Web/releases
+
+cosign verify --key https://verbara.io/keys/cosign.pub --insecure-ignore-tlog \
+  ghcr.io/verbara/platform/web:$TAG
+
+docker pull ghcr.io/verbara/platform/web:$TAG
+```
+
+`:latest` is **not signed for pinned reproducibility** — it's an alias that moves to the most recent release at each tag push. The pinned `vX.Y.Z-web` reference is the canonical install used by `docker-compose.reference-smb.yml`, the Helm chart, and the customer manuales in [`Verbara.Platform`](https://github.com/verbara/Verbara.Platform). cosign signs by manifest-list digest, so both tag references at release-time inherit the same signature.
+
+For the full SMB on-premise deployment context (Asterisk + Postgres + Redis + Realtime + nginx-gateway + Web), see [`Verbara.Platform/docs/manuales/smb/`](https://github.com/verbara/Verbara.Platform/tree/main/docs/manuales/smb).
 
 ## Stack
 

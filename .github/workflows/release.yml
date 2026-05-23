@@ -1,18 +1,33 @@
 # Release workflow: build the Verbara.Platform.Web (React + nginx) Docker image,
 # push to ghcr.io, and Sigstore-cosign-sign it. Triggered by pushing a `v*` tag
-# (e.g. `v3.0.2`, `v3.1.0`).
+# (e.g. `v3.1.4-web`, `v3.2.0-web`).
 #
 # Mirrors the API release workflow (`Verbara.Platform/.github/workflows/
 # release.yml`) so a customer who already verifies the API image can use the
 # same `cosign.pub` to verify Web. The keypair is shared across both repos by
 # design (see `.github/cosign.pub` — same fingerprint as the API repo).
 #
-# Verification by a customer / operator:
-#   cosign verify --key cosign.pub \
-#     ghcr.io/verbara/platform/web@sha256:<digest>
+# Web-image-adoption plan (`docs/plans/active/2026-05-23-web-image-adoption.md`)
+# refinements baked in here:
+#   - MULTI-ARCH: builds for linux/amd64 AND linux/arm64 in one pass (QEMU
+#     emulated). Web is a static nginx-served bundle so this is essentially
+#     free build-side. Unlocks Mac Mini M-series, AWS Graviton, Raspberry Pi
+#     5, Hetzner/OVH ARM hosts.
+#   - `:latest` MUTABLE ALIAS pushed alongside the pinned `vX.Y.Z-web` tag.
+#     cosign signs by manifest-list digest (NOT by tag), so the single sign
+#     call covers both tag references — verifying `ghcr.io/verbara/platform/
+#     web:latest` resolves to the same digest as the pinned tag at release
+#     time and inherits its signature. Customers should still pin in
+#     reference-smb / helm / manuales for reproducibility; `:latest` is the
+#     "quick-try" onramp.
 #
-# Or via the verification helper bundled in the platform repo
-# (docker/verbara-verify-image.sh ghcr.io/verbara/platform/web:3.0.2).
+# Verification by a customer / operator (works for any tag — pinned or :latest):
+#   cosign verify --key https://verbara.io/keys/cosign.pub --insecure-ignore-tlog \
+#     ghcr.io/verbara/platform/web:v3.1.4-web
+#
+# Or by digest for absolute reproducibility:
+#   cosign verify --key .github/cosign.pub --insecure-ignore-tlog \
+#     ghcr.io/verbara/platform/web@sha256:<digest>
 #
 # Differences vs the API workflow:
 #   - No NUGET auth (no private packages in the build context — pure npm).
@@ -20,6 +35,9 @@
 #     licensing image binding only applies to Platform.Api (it's the binary
 #     that consumes Pro packages). Web is a static asset bundle served by
 #     nginx; signature verification is sufficient.
+#   - Multi-arch + :latest is currently a Web-only posture (API is amd64-only
+#     because Native AOT publishes per-arch). If/when API adopts the same,
+#     consider unifying via a reusable workflow.
 
 name: Release
 
@@ -55,6 +73,12 @@ jobs:
           fi
           echo "release_tag=${TAG}" >> "$GITHUB_OUTPUT"
 
+      - name: Set up QEMU (for cross-arch emulation)
+        # Required so the amd64 runner can build linux/arm64 layers via
+        # binfmt_misc + qemu-user-static. The action installs the missing
+        # binfmt registrations on the runner; no-op if already installed.
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -65,14 +89,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push image
+      - name: Build and push image (multi-arch + :latest alias)
         id: build
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.release_tag }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.release_tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           provenance: false
           # VITE_DEFAULT_TENANT_ID is a build-time hint (used as a UI default
           # in the tenant picker, not a runtime auth boundary). Left empty
@@ -122,11 +149,20 @@ jobs:
           echo "Signed image manifest-list digest: ${{ steps.build.outputs.digest }}"
           echo "Final image reference: $IMAGE_REF"
           echo ""
-          echo "Pull command for customers:"
+          echo "Tag references (both resolve to the same digest above):"
+          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.release_tag }}   (pinned — recommend for reproducible installs)"
+          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest                                  (mutable — for quick-try / evaluation)"
+          echo ""
+          echo "Architectures bundled in the manifest list:"
+          echo "  linux/amd64   linux/arm64"
+          echo ""
+          echo "Pull command for customers (auto-resolves to the host's architecture):"
           echo "  docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.release_tag }}"
           echo ""
-          echo "Verify signature (operator-side):"
-          echo "  cosign verify --key cosign.pub $IMAGE_REF"
+          echo "Verify signature (customer-friendly, no clone needed):"
+          echo "  cosign verify --key https://verbara.io/keys/cosign.pub --insecure-ignore-tlog \\"
+          echo "    ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.release_tag }}"
           echo ""
-          echo "This image is consumed by docker/docker-compose.reference-smb.yml"
-          echo "as the 'web' service. Tag must match the Platform.Api release."
+          echo "This image is consumed by Verbara.Platform's docker/docker-compose.reference-smb.yml"
+          echo "as the 'web' service. Pin the tag in customer-facing references; :latest is for"
+          echo "ad-hoc experimentation only."
