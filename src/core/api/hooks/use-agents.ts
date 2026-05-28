@@ -68,16 +68,34 @@ export function useAgent(id: string | undefined) {
 export function useAgentMe() {
   return useQuery({
     queryKey: ['agent-me'],
-    queryFn: () =>
-      customFetch<Agent>({ url: '/api/v1/agents/me', method: 'GET' }),
+    queryFn: () => customFetch<Agent>({ url: '/api/v1/agents/me', method: 'GET' }),
   });
 }
+
+// ADR-0026 Phase A.1 — channel-aware queue membership at agent creation.
+// AllowedChannels=undefined (omitted) means the agent is a member for all
+// channels the queue accepts (preserves implicit pre-v2.6.0 behavior).
+// A populated list restricts membership to the listed channels only.
+// Empty arrays are rejected server-side (use IsExcluded=true for that).
+export type QueueMembershipInput = {
+  queueId: string;
+  allowedChannels?: string[];
+  penalty?: number;
+};
+
+export type CreateAgentInput = {
+  userId: string;
+  displayName: string;
+  extension?: string;
+  sipPassword?: string;
+  queueMemberships?: QueueMembershipInput[];
+};
 
 export function useCreateAgent() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: (data: { userId: string; displayName: string }) =>
+    mutationFn: (data: CreateAgentInput) =>
       customFetch<Agent>({ url: '/api/v1/admin/agents', method: 'POST', data }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents'] });

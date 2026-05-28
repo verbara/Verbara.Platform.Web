@@ -159,24 +159,32 @@ Click **Crear queue y continuar / Next**.
 
 ## Paso 8 — Crear el primer Agente
 
-Un **agente** es un usuario con permisos para atender conversaciones. El
-wizard crea uno con permisos básicos (role template `Agent`) — podés
-promoverlo a `Supervisor`, `QualityAnalyst`, etc. después.
+Un **agente** es un usuario con permisos para atender conversaciones,
+**distinto del platform admin** que administra la plataforma. El wizard
+te pide email y nombre para crear una cuenta nueva con role `Agent`.
 
 | Campo | Valor sugerido |
 |---|---|
-| **User ID (login)** | `agente1` |
-| **Display name** | `María González` |
 | **Email** | `maria@tu-empresa.com` |
+| **Display name** | `María González` |
 
 {{step:08-wizard-agent}}
 
-> El wizard genera una **contraseña temporal** y la muestra en pantalla.
-> Anotala — la vas a necesitar para loguearte como agente en el step 10
-> (validación E2E). Después de loguearse por primera vez, el agente
-> debería cambiarla en `/profile/security`.
+> 🆕 **A partir de v2.5.5 (ADR-0026 Phase A.4):** el wizard ya no ofrece
+> seleccionar un usuario existente como agente — siempre crea uno nuevo
+> con role Agent. El platform admin queda separado del operador que
+> atiende conversaciones, lo cual es la separación de roles correcta.
+> Para promover un usuario existente a agente, usá `/admin/agents/new`
+> después del setup.
 
 Click **Crear agente y continuar / Next**.
+
+> 🔗 **A partir de v2.5.5 (ADR-0026 Phase A.1 + A.3):** el wizard asocia
+> automáticamente al agente con la queue del paso anterior creando una
+> `QueueMembership(source=manual)`. Por defecto el agente queda habilitado
+> para **todos los canales** que la queue acepte (`allowed_channels=NULL`);
+> podés restringirlo a canales específicos después en
+> `/admin/agents/{id}/queues`.
 
 ## Paso 9 — Habilitar el canal WebChat
 
@@ -202,58 +210,37 @@ validar el flujo end-to-end en < 5 min.
 
 Click **Habilitar canal y continuar / Next**.
 
-## Paso 10 — Bug conocido en v2.5.4: el wizard no se puede completar
+## Paso 10 — Validar con un mensaje de prueba
 
-> ⚠️ **Bug del producto descubierto por el living-docs en v2.5.4:** Al
-> hacer click en **Siguiente** en el step Canal, el frontend dispara
-> internamente un `GET /api/v1/admin/channels/webchat` que devuelve
-> **HTTP 500** con el error:
->
-> ```
-> System.NotSupportedException: JsonTypeInfo metadata for type
-> 'Verbara.Platform.Channels.Core.TenantChannelConfig' was not
-> provided by TypeInfoResolver of type 'ApiJsonContext'.
-> ```
->
-> Es un bug de **Native AOT serialization**: el DTO `TenantChannelConfig`
-> no está registrado en `ApiJsonContext` con `[JsonSerializable]`. Como
-> resultado el handler del wizard cae al `catch` silencioso y el step no
-> avanza al paso 5 (Prueba).
->
-> **Workaround para v2.5.4:** click **Omitir, lo configuro después**
-> (`setup-skip`) para salir del wizard. Después configurá el canal vía API
-> directa con el `accessToken` o el `managementApiKey` del paso 3:
->
-> ```bash
-> $ TOKEN={accessToken-del-paso-3}
-> $ curl -sS -X PUT http://{server-ip}/api/v1/admin/channels/webchat \
->     -H "Authorization: Bearer $TOKEN" \
->     -H "X-Tenant-Id: platform" \
->     -H "Content-Type: application/json" \
->     -d '{
->       "isActive": true,
->       "credentials": {
->         "WidgetKey": "demo-key-day1",
->         "AllowedOrigins": "http://localhost"
->       }
->     }'
-> ```
->
-> Este bug está pendiente de fix en una versión posterior. Cuando el
-> living-docs detecte que el wizard avanza limpio, esta sección
-> desaparecerá automáticamente del manual regenerado.
-
-Después del **Omitir**, Verbara te lleva de vuelta al admin dashboard:
+El último paso del wizard te muestra un resumen y te invita a enviar
+un mensaje de prueba al canal recién configurado. La pantalla incluye
+un panel de testing para validar que el widget WebChat responde
+correctamente:
 
 {{step:10-wizard-test-step}}
 
-## Paso 11 — Ver el snippet HTML del widget
+Click **Finalizar wizard / Finish**.
+
+> ✅ **A partir de v2.5.5 (ADR-0026 Phase A.2):** el wizard ahora se puede
+> completar end-to-end sin workarounds. Antes (v2.5.4), un bug AOT en la
+> serialización de `TenantChannelConfig` y los anonymous types del audit
+> trail bloqueaba este paso — ver historial en
+> [docs/decisions/0026-queue-membership-executive-routing.md](../../../docs/decisions/0026-queue-membership-executive-routing.md).
+
+## Paso 11 — Confirmar que el wizard se completó
+
+Verbara te lleva de vuelta a `/admin` con todos los counters actualizados:
+queue creada, agente provisionado y atado a la queue, canal habilitado.
+
+{{step:11-wizard-done}}
+
+## Paso 12 — Ver el snippet HTML del widget
 
 Navegá a `/admin/channels` y entrá a la fila **WebChat**, o directo a
 `/admin/webchat`. Vas a ver el snippet HTML que tenés que pegar en el
 sitio del cliente, antes del cierre de `</body>`:
 
-{{step:11-admin-channels-webchat}}
+{{step:12-admin-channels-webchat}}
 
 | Atributo | Valor | Notas |
 |---|---|---|
@@ -264,13 +251,13 @@ sitio del cliente, antes del cierre de `</body>`:
 
 Click el botón **Copiar snippet** y pegalo en el HTML de prueba.
 
-## Paso 12 — Probar el widget con la página demo
+## Paso 13 — Probar el widget con la página demo
 
 Verbara incluye una página de prueba en `/webchat/demo.html` con el
 snippet ya embebido. Útil para validar antes de tocar el sitio del
 cliente:
 
-{{step:12-webchat-snippet-visible}}
+{{step:13-webchat-snippet-visible}}
 
 La burbuja flotante (bottom-right por defecto) abre el iframe del widget
 al hacer click. Desde allí cualquier visitante anónimo puede iniciar una

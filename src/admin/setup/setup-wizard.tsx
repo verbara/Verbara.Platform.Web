@@ -55,6 +55,12 @@ export default function SetupWizard() {
     defaultValues: DEFAULT_VALUES,
   });
   const [loading, setLoading] = useState(false);
+  // ADR-0026 Phase A.3 — remember the queue created in step 2 so the agent
+  // step can materialize a QueueMembership in the same wizard flow.
+  // AllowedChannels defaults to undefined (= all channels the queue accepts)
+  // for pedagogical simplicity in the Day 1 wizard; channel restrictions
+  // are exposed in /admin/agents/{id}/queues for advanced operators.
+  const [createdQueueId, setCreatedQueueId] = useState<string | null>(null);
   const completeOnboarding = useCompleteOnboarding();
   const createQueue = useCreateQueue();
   const createAgent = useCreateAgent();
@@ -77,7 +83,9 @@ export default function SetupWizard() {
     try {
       if (currentStepKey === 'queue') {
         try {
-          await createQueue.mutateAsync({ name: values.queueName, isActive: true });
+          const queue = await createQueue.mutateAsync({ name: values.queueName, isActive: true });
+          // ADR-0026 Phase A.3 — remember queueId for the agent step
+          setCreatedQueueId(queue.id);
         } catch {
           return;
         }
@@ -98,7 +106,16 @@ export default function SetupWizard() {
             });
             userId = user.id;
           }
-          await createAgent.mutateAsync({ userId, displayName: values.agentDisplayName });
+          // ADR-0026 Phase A.3 — materialize QueueMembership for the queue
+          // created in the previous step. AllowedChannels omitted = NULL
+          // = all channels the queue accepts (intentional default for the
+          // Day 1 wizard pedagogical simplicity; channel restrictions live
+          // in /admin/agents/{id}/queues).
+          await createAgent.mutateAsync({
+            userId,
+            displayName: values.agentDisplayName,
+            queueMemberships: createdQueueId ? [{ queueId: createdQueueId }] : undefined,
+          });
         } catch {
           return;
         }
@@ -139,10 +156,7 @@ export default function SetupWizard() {
     <div className="space-y-6">
       <PageHeader
         title={t('admin:setup.wizardTitle', 'Setup Wizard')}
-        description={t(
-          'admin:setup.wizardDescription',
-          'Configure the essentials to get started.',
-        )}
+        description={t('admin:setup.wizardDescription', 'Configure the essentials to get started.')}
       />
 
       {/* Step indicator */}
@@ -174,7 +188,12 @@ export default function SetupWizard() {
           <div className="flex items-center justify-between border-t pt-4">
             <div>
               {!isFirst && (
-                <Button data-testid="setup-back" variant="outline" disabled={loading} onClick={() => setStep((s) => s - 1)}>
+                <Button
+                  data-testid="setup-back"
+                  variant="outline"
+                  disabled={loading}
+                  onClick={() => setStep((s) => s - 1)}
+                >
                   <ArrowLeft className="mr-1.5 h-4 w-4" />
                   {t('admin:setup.previous', 'Back')}
                 </Button>
@@ -197,7 +216,11 @@ export default function SetupWizard() {
                   {t('admin:setup.getStarted', "Let's get started")}
                 </Button>
               ) : isLast ? (
-                <Button data-testid="setup-finish" disabled={loading} onClick={() => void handleFinish()}>
+                <Button
+                  data-testid="setup-finish"
+                  disabled={loading}
+                  onClick={() => void handleFinish()}
+                >
                   <Check className="mr-1.5 h-4 w-4" />
                   {t('admin:setup.finish', 'Finish Setup')}
                 </Button>
