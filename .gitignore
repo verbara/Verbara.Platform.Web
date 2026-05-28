@@ -29,6 +29,7 @@ dist-ssr
 tests/e2e/.auth-*.json
 playwright-report/
 test-results/
+allure-results/
 
 # Vitest coverage (Track 2A)
 coverage/
