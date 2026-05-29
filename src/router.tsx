@@ -15,6 +15,7 @@ const UsersPage = lazy(() => import('@/admin/users/users-page'));
 const UserDetailPage = lazy(() => import('@/admin/users/user-detail'));
 const AgentsPage = lazy(() => import('@/admin/agents/agents-page'));
 const AgentDetailPage = lazy(() => import('@/admin/agents/agent-detail'));
+const AgentQueuesPage = lazy(() => import('@/admin/agents/agent-queues'));
 const TeamsPage = lazy(() => import('@/admin/agents/teams-page'));
 const QueuesPage = lazy(() => import('@/admin/queues/queues-page'));
 const QueueDetailPage = lazy(() => import('@/admin/queues/queue-detail'));
@@ -218,6 +219,17 @@ export const router = createBrowserRouter([
               <PermissionGuard requiresAny={['users:user:view', 'queues:member:assign']} redirect>
                 <LazyLoad>
                   <AgentDetailPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            // ADR-0026 Phase A.6 — channel-aware membership editor.
+            path: 'agents/:agentId/queues',
+            element: (
+              <PermissionGuard requires="queues:member:assign" redirect>
+                <LazyLoad>
+                  <AgentQueuesPage />
                 </LazyLoad>
               </PermissionGuard>
             ),

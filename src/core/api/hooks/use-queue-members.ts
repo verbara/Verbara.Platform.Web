@@ -12,6 +12,13 @@ export interface QueueMember {
   isPaused: boolean;
   pauseReason?: string | null;
   source: 'Skill' | 'Manual';
+  /**
+   * ADR-0026 Phase A.6 channel-aware membership. `null` means the agent is
+   * a member for all channels the queue accepts (pre-v2.6.0 implicit
+   * behavior). A populated list restricts membership to the listed channels
+   * only and gates Asterisk sync (voice in list ⇒ sync; voice out ⇒ no sync).
+   */
+  allowedChannels?: string[] | null;
 }
 
 /**
@@ -38,16 +45,28 @@ export function useAddQueueMember() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({ queueId, agentId, penalty }: { queueId: string; agentId: string; penalty?: number }) =>
+    mutationFn: ({
+      queueId,
+      agentId,
+      penalty,
+      allowedChannels,
+    }: {
+      queueId: string;
+      agentId: string;
+      penalty?: number;
+      /** ADR-0026 Phase A.6: omit (or null) = all channels; populated = restrict. */
+      allowedChannels?: string[] | null;
+    }) =>
       customFetch<QueueMember>({
         url: `/api/v1/queues/${queueId}/members`,
         method: 'POST',
-        data: { agentId, penalty },
+        data: { agentId, penalty, allowedChannels: allowedChannels ?? undefined },
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['queue-members', variables.queueId] });
       qc.invalidateQueries({ queryKey: ['queues'] });
       qc.invalidateQueries({ queryKey: ['agents'] });
+      qc.invalidateQueries({ queryKey: ['agent-memberships', variables.agentId] });
       toast.success(t('toasts.queueMembers.added'));
     },
     onError: (err: Error) => toast.error(err.message),
@@ -67,13 +86,21 @@ export function useRemoveQueueMember() {
       qc.invalidateQueries({ queryKey: ['queue-members', variables.queueId] });
       qc.invalidateQueries({ queryKey: ['queues'] });
       qc.invalidateQueries({ queryKey: ['agents'] });
+      qc.invalidateQueries({ queryKey: ['agent-memberships', variables.agentId] });
       toast.success(t('toasts.queueMembers.removed'));
     },
     onError: (err: Error) => toast.error(err.message),
   });
 }
 
-export function useUpdateQueueMemberPenalty() {
+/**
+ * Unified PATCH hook for queue membership updates. PATCH semantics mirror
+ * the backend (ADR-0026 Phase A.6):
+ * - `clearAllowedChannels: true` resets channels to NULL (= all channels)
+ * - `allowedChannels` populated replaces the existing list
+ * - both omitted preserves the existing value
+ */
+export function useUpdateQueueMember() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
@@ -82,19 +109,24 @@ export function useUpdateQueueMemberPenalty() {
       agentId,
       penalty,
       isExcluded,
+      allowedChannels,
+      clearAllowedChannels,
     }: {
       queueId: string;
       agentId: string;
       penalty?: number;
       isExcluded?: boolean;
+      allowedChannels?: string[];
+      clearAllowedChannels?: boolean;
     }) =>
       customFetch<QueueMember>({
         url: `/api/v1/queues/${queueId}/members/${agentId}`,
         method: 'PATCH',
-        data: { penalty, isExcluded },
+        data: { penalty, isExcluded, allowedChannels, clearAllowedChannels },
       }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['queue-members', variables.queueId] });
+      qc.invalidateQueries({ queryKey: ['agent-memberships', variables.agentId] });
       toast.success(t('toasts.queueMembers.updated'));
     },
     onError: (err: Error) => toast.error(err.message),
@@ -105,7 +137,15 @@ export function useQueueMemberPause() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({ queueId, agentId, reason }: { queueId: string; agentId: string; reason?: string }) =>
+    mutationFn: ({
+      queueId,
+      agentId,
+      reason,
+    }: {
+      queueId: string;
+      agentId: string;
+      reason?: string;
+    }) =>
       customFetch<unknown>({
         url: `/api/v1/queues/${queueId}/members/${agentId}/pause`,
         method: 'POST',

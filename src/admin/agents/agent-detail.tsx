@@ -1,7 +1,19 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Pencil, Trash2, Mail, Users, Zap, CircleDot, Plus, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Mail,
+  Users,
+  Zap,
+  CircleDot,
+  Plus,
+  X,
+  Headset,
+  ArrowRight,
+} from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
@@ -96,10 +108,6 @@ export default function AgentDetailPage() {
   const handleRemoveSkill = (name: string) => {
     setSkills(skills.filter((s) => s.name !== name));
   };
-
-  /* Queue memberships are resolved separately; backend agent DTO does not
-     embed queueIds (see IAgentQueueStore for the canonical relation). */
-  const queueCount = 0;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -203,21 +211,27 @@ export default function AgentDetailPage() {
         </div>
       </div>
 
-      {/* Queue memberships (read-only) */}
+      {/* Queue memberships — ADR-0026 Phase A.6 channel-aware editor lives at
+          /admin/agents/{agentId}/queues. */}
       <div className="rounded-lg border bg-card p-6">
         <h3 className="font-heading text-lg font-semibold">{t('admin:agents.queues')}</h3>
         <Separator className="my-3" />
-
-        {queueCount === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            {t('admin:agents.noQueues')}
-          </p>
-        ) : (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            {queueCount} queue{queueCount !== 1 ? 's' : ''} assigned
-          </p>
-        )}
-        <p className="mt-2 text-xs text-muted-foreground">{t('admin:agents.queuesNote')}</p>
+        <p className="text-sm text-muted-foreground">
+          {t(
+            'admin:agents.queuesEditorIntro',
+            'Manage which queues this agent serves and restrict membership per channel (Voice gates the Asterisk PBX sync).',
+          )}
+        </p>
+        <Button
+          data-testid="agent-detail-manage-queues"
+          variant="outline"
+          className="mt-4"
+          onClick={() => navigate(`/admin/agents/${agent.id}/queues`)}
+        >
+          <Headset className="mr-1.5 h-4 w-4" />
+          {t('admin:agents.manageQueues', 'Manage queues')}
+          <ArrowRight className="ml-1.5 h-4 w-4" />
+        </Button>
       </div>
 
       {/* Skills & Proficiency (from routing system) */}
