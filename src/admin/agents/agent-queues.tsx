@@ -307,7 +307,10 @@ function MembershipEditor({ membership, onUpdate, onRemove }: MembershipEditorPr
   const isSkill = membership.source === 'Skill';
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div
+      className="rounded-lg border bg-card p-4"
+      data-testid={`membership-card-${membership.queueId}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
