@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,17 +14,37 @@ import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { useSetup, type SetupResponse } from '@/core/api/hooks/use-system';
 
-const setupSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  displayName: z.string().optional(),
-  platformName: z.string().optional(),
-});
+const passwordPolicy = z
+  .string()
+  .min(12, 'setupPage.validation.passwordPolicy')
+  .regex(/[A-Z]/, 'setupPage.validation.passwordPolicy')
+  .regex(/[0-9]/, 'setupPage.validation.passwordPolicy');
+
+const setupSchema = z
+  .object({
+    email: z.string().email('setupPage.validation.emailInvalid'),
+    password: passwordPolicy,
+    displayName: z.string().optional(),
+    platformName: z.string().optional(),
+    customerName: z.string().min(1, 'setupPage.validation.required'),
+    customerTenantId: z
+      .string()
+      .min(1, 'setupPage.validation.required')
+      .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, 'setupPage.validation.tenantIdSlug'),
+    customerAdminEmail: z.string().email('setupPage.validation.emailInvalid'),
+    customerAdminPassword: passwordPolicy,
+    customerAdminDisplayName: z.string().optional(),
+  })
+  .refine((v) => v.email.toLowerCase() !== v.customerAdminEmail.toLowerCase(), {
+    path: ['customerAdminEmail'],
+    message: 'setupPage.validation.emailsMustDiffer',
+  });
 
 type SetupFormValues = z.infer<typeof setupSchema>;
 
 export default function SetupPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const setup = useSetup();
   const [apiKeyResponse, setApiKeyResponse] = useState<SetupResponse | null>(null);
   const [copied, setCopied] = useState(false);
@@ -34,11 +55,33 @@ export default function SetupPage() {
     formState: { errors },
   } = useForm<SetupFormValues>({
     resolver: zodResolver(setupSchema),
-    defaultValues: { email: '', password: '', displayName: '', platformName: '' },
+    defaultValues: {
+      email: '',
+      password: '',
+      displayName: '',
+      platformName: '',
+      customerName: '',
+      customerTenantId: '',
+      customerAdminEmail: '',
+      customerAdminPassword: '',
+      customerAdminDisplayName: '',
+    },
   });
 
   const emailA11y = useFieldA11y(errors.email, 'email', { required: true });
   const passwordA11y = useFieldA11y(errors.password, 'password', { required: true });
+  const customerNameA11y = useFieldA11y(errors.customerName, 'customerName', { required: true });
+  const customerTenantIdA11y = useFieldA11y(errors.customerTenantId, 'customerTenantId', {
+    required: true,
+  });
+  const customerAdminEmailA11y = useFieldA11y(errors.customerAdminEmail, 'customerAdminEmail', {
+    required: true,
+  });
+  const customerAdminPasswordA11y = useFieldA11y(
+    errors.customerAdminPassword,
+    'customerAdminPassword',
+    { required: true },
+  );
 
   const onSubmit = handleSubmit((values) => {
     setup.mutate(values, {
@@ -56,7 +99,7 @@ export default function SetupPage() {
   };
 
   const handleDone = () => {
-    toast.success('Platform initialized successfully');
+    toast.success(t('setupPage.successToast'));
     navigate('/login');
   };
 
@@ -65,18 +108,16 @@ export default function SetupPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Building2 className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="mt-4 text-2xl font-bold">Platform Setup</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Configure your contact center platform
-          </p>
+          <h1 className="mt-4 text-2xl font-bold">{t('setupPage.title')}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t('setupPage.subtitle')}</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-6">
           <fieldset className="space-y-4">
-            <legend className="text-sm font-medium">Admin Account</legend>
+            <legend className="text-sm font-medium">{t('setupPage.platformAdminLegend')}</legend>
             <div className="space-y-1.5">
               <Label htmlFor="email" required>
-                Email
+                {t('setupPage.email')}
               </Label>
               <Input
                 id="email"
@@ -85,11 +126,14 @@ export default function SetupPage() {
                 {...emailA11y.inputProps}
                 {...register('email')}
               />
-              <FieldError id={emailA11y.errorId} message={errors.email?.message} />
+              <FieldError
+                id={emailA11y.errorId}
+                message={errors.email?.message ? t(errors.email.message) : undefined}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password" required>
-                Password
+                {t('setupPage.password')}
               </Label>
               <Input
                 id="password"
@@ -98,10 +142,13 @@ export default function SetupPage() {
                 {...passwordA11y.inputProps}
                 {...register('password')}
               />
-              <FieldError id={passwordA11y.errorId} message={errors.password?.message} />
+              <FieldError
+                id={passwordA11y.errorId}
+                message={errors.password?.message ? t(errors.password.message) : undefined}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="displayName">Display Name</Label>
+              <Label htmlFor="displayName">{t('setupPage.displayName')}</Label>
               <Input
                 id="displayName"
                 data-testid="setup-display-name"
@@ -111,21 +158,108 @@ export default function SetupPage() {
           </fieldset>
 
           <fieldset className="space-y-4">
-            <legend className="text-sm font-medium">Platform</legend>
+            <legend className="text-sm font-medium">{t('setupPage.platformLegend')}</legend>
             <div className="space-y-1.5">
-              <Label htmlFor="platformName">Platform Name</Label>
+              <Label htmlFor="platformName">{t('setupPage.platformName')}</Label>
               <Input
                 id="platformName"
                 data-testid="setup-platform-name"
-                placeholder="My Contact Center"
+                placeholder={t('setupPage.platformNamePlaceholder')}
                 {...register('platformName')}
+              />
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-4">
+            <legend className="text-sm font-medium">{t('setupPage.customerLegend')}</legend>
+            <div className="space-y-1.5">
+              <Label htmlFor="customerName" required>
+                {t('setupPage.customerName')}
+              </Label>
+              <Input
+                id="customerName"
+                data-testid="setup-customer-name"
+                {...customerNameA11y.inputProps}
+                {...register('customerName')}
+              />
+              <FieldError
+                id={customerNameA11y.errorId}
+                message={errors.customerName?.message ? t(errors.customerName.message) : undefined}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="customerTenantId" required>
+                {t('setupPage.customerTenantId')}
+              </Label>
+              <Input
+                id="customerTenantId"
+                data-testid="setup-customer-tenant-id"
+                placeholder={t('setupPage.customerTenantIdPlaceholder')}
+                {...customerTenantIdA11y.inputProps}
+                {...register('customerTenantId')}
+              />
+              <FieldError
+                id={customerTenantIdA11y.errorId}
+                message={
+                  errors.customerTenantId?.message ? t(errors.customerTenantId.message) : undefined
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="customerAdminEmail" required>
+                {t('setupPage.customerAdminEmail')}
+              </Label>
+              <Input
+                id="customerAdminEmail"
+                type="email"
+                data-testid="setup-customer-admin-email"
+                {...customerAdminEmailA11y.inputProps}
+                {...register('customerAdminEmail')}
+              />
+              <FieldError
+                id={customerAdminEmailA11y.errorId}
+                message={
+                  errors.customerAdminEmail?.message
+                    ? t(errors.customerAdminEmail.message)
+                    : undefined
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="customerAdminPassword" required>
+                {t('setupPage.customerAdminPassword')}
+              </Label>
+              <Input
+                id="customerAdminPassword"
+                type="password"
+                data-testid="setup-customer-admin-password"
+                {...customerAdminPasswordA11y.inputProps}
+                {...register('customerAdminPassword')}
+              />
+              <FieldError
+                id={customerAdminPasswordA11y.errorId}
+                message={
+                  errors.customerAdminPassword?.message
+                    ? t(errors.customerAdminPassword.message)
+                    : undefined
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="customerAdminDisplayName">
+                {t('setupPage.customerAdminDisplayName')}
+              </Label>
+              <Input
+                id="customerAdminDisplayName"
+                data-testid="setup-customer-admin-display-name"
+                {...register('customerAdminDisplayName')}
               />
             </div>
           </fieldset>
 
           {setup.isError && (
             <p className="text-sm text-destructive" data-testid="setup-error">
-              {setup.error?.message ?? 'Setup failed. The platform may already be configured.'}
+              {setup.error?.message ?? t('setupPage.genericError')}
             </p>
           )}
 
@@ -135,14 +269,14 @@ export default function SetupPage() {
             data-testid="setup-submit"
             disabled={setup.isPending}
           >
-            {setup.isPending ? 'Initializing...' : 'Initialize Platform'}
+            {setup.isPending ? t('setupPage.submitting') : t('setupPage.submit')}
           </Button>
         </form>
 
         <p className="text-center text-xs text-muted-foreground">
-          Already configured?{' '}
+          {t('setupPage.alreadyConfigured')}{' '}
           <a href="/login" className="text-primary underline">
-            Sign in
+            {t('setupPage.signIn')}
           </a>
         </p>
       </div>
@@ -150,11 +284,9 @@ export default function SetupPage() {
       <Dialog open={apiKeyResponse !== null} onOpenChange={() => {}}>
         <DialogContent className="sm:max-w-md" data-testid="api-key-dialog" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>Management API Key</DialogTitle>
+            <DialogTitle>{t('setupPage.apiKeyTitle')}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Save this key now — it cannot be retrieved again.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('setupPage.apiKeyWarning')}</p>
           <div className="flex items-center gap-2 rounded border bg-muted p-3">
             <code className="flex-1 break-all text-xs" data-testid="api-key-value">
               {apiKeyResponse?.managementApiKey}
@@ -165,7 +297,7 @@ export default function SetupPage() {
           </div>
           <DialogFooter>
             <Button onClick={handleDone} data-testid="api-key-done">
-              I&apos;ve saved my key — Continue
+              {t('setupPage.apiKeyDone')}
             </Button>
           </DialogFooter>
         </DialogContent>
