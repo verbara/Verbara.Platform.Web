@@ -11,7 +11,13 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    exclude: ['**/tests/e2e/**', '**/node_modules/**'],
+    // Exclude ALL of tests/** — that dir holds Playwright specs (tests/e2e/**
+    // and tests/manuales/personas/**) which call test.describe() and crash the
+    // vitest collector ("did not expect test.describe() to be called here").
+    // Vitest unit tests are co-located under src/**/*.test.{ts,tsx}, so excluding
+    // tests/** never drops a unit test. Widened from '**/tests/e2e/**' which
+    // missed tests/manuales/** and kept CI red.
+    exclude: ['**/tests/**', '**/node_modules/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json', 'json-summary', 'lcov'],
