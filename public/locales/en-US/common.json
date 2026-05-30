@@ -538,5 +538,38 @@
       "Pacific": "Pacific",
       "UTC": "UTC"
     }
+  },
+  "setupPage": {
+    "title": "Platform Setup",
+    "subtitle": "Configure your contact center platform",
+    "platformAdminLegend": "Platform Admin Account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display Name",
+    "platformLegend": "Platform",
+    "platformName": "Platform Name",
+    "platformNamePlaceholder": "My Contact Center",
+    "customerLegend": "Your Company (Customer)",
+    "customerName": "Company Name",
+    "customerTenantId": "Tenant Id",
+    "customerTenantIdPlaceholder": "acme",
+    "customerAdminEmail": "Company Admin Email",
+    "customerAdminPassword": "Company Admin Password",
+    "submit": "Initialize Platform",
+    "submitting": "Initializing...",
+    "genericError": "Setup failed. The platform may already be configured.",
+    "apiKeyTitle": "Management API Key",
+    "apiKeyWarning": "Save this key now — it cannot be retrieved again.",
+    "apiKeyDone": "I've saved my key — Continue",
+    "successToast": "Platform initialized successfully",
+    "alreadyConfigured": "Already configured?",
+    "signIn": "Sign in",
+    "validation": {
+      "emailInvalid": "Please enter a valid email address",
+      "passwordPolicy": "Password must be at least 12 characters with an uppercase letter and a number",
+      "required": "This field is required",
+      "tenantIdSlug": "Use lowercase letters, digits and hyphens only",
+      "emailsMustDiffer": "Company admin email must differ from the platform admin email"
+    }
   }
 }

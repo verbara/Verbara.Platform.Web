@@ -538,5 +538,38 @@
       "Pacific": "Pacífico",
       "UTC": "UTC"
     }
+  },
+  "setupPage": {
+    "title": "Configuração da Plataforma",
+    "subtitle": "Configure sua plataforma de contact center",
+    "platformAdminLegend": "Conta de Administrador da Plataforma",
+    "email": "Email",
+    "password": "Senha",
+    "displayName": "Nome de exibição",
+    "platformLegend": "Plataforma",
+    "platformName": "Nome da Plataforma",
+    "platformNamePlaceholder": "Meu Contact Center",
+    "customerLegend": "Sua Empresa (Customer)",
+    "customerName": "Nome da Empresa",
+    "customerTenantId": "Identificador (Tenant Id)",
+    "customerTenantIdPlaceholder": "acme",
+    "customerAdminEmail": "Email do Administrador da Empresa",
+    "customerAdminPassword": "Senha do Administrador da Empresa",
+    "submit": "Inicializar Plataforma",
+    "submitting": "Inicializando...",
+    "genericError": "Falha na configuração. A plataforma pode já estar configurada.",
+    "apiKeyTitle": "Chave de API de Gerenciamento",
+    "apiKeyWarning": "Salve esta chave agora — ela não pode ser recuperada depois.",
+    "apiKeyDone": "Salvei minha chave — Continuar",
+    "successToast": "Plataforma inicializada com sucesso",
+    "alreadyConfigured": "Já está configurada?",
+    "signIn": "Entrar",
+    "validation": {
+      "emailInvalid": "Insira um email válido",
+      "passwordPolicy": "A senha deve ter pelo menos 12 caracteres, uma letra maiúscula e um número",
+      "required": "Este campo é obrigatório",
+      "tenantIdSlug": "Use apenas minúsculas, dígitos e hifens",
+      "emailsMustDiffer": "O email do admin da empresa deve ser diferente do admin da plataforma"
+    }
   }
 }

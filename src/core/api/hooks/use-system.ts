@@ -125,6 +125,11 @@ export interface SetupInput {
   password: string;
   displayName?: string;
   platformName?: string;
+  customerTenantId: string;
+  customerName: string;
+  customerAdminEmail: string;
+  customerAdminPassword: string;
+  customerAdminDisplayName?: string;
 }
 
 export interface SetupResponse {
@@ -132,6 +137,8 @@ export interface SetupResponse {
   userId: string;
   accessToken: string;
   managementApiKey: string;
+  customerTenantId: string;
+  customerUserId: string;
 }
 
 export function useSetup() {
