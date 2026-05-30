@@ -36,7 +36,6 @@ const ssoSchema = z
     (d) => {
       if (d.oidcAuthority.length === 0) return true;
       try {
-        // eslint-disable-next-line no-new -- we only need URL constructor's validation side effect
         new URL(d.oidcAuthority);
         return true;
       } catch {

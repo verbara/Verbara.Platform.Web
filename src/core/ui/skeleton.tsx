@@ -21,7 +21,6 @@ function Skeleton({ className, variant = 'text', style }: SkeletonProps) {
       // <output> isn't semantically correct here (it expects a `for` form
       // association for calculation outputs); aria-live status div is the
       // canonical SR-friendly skeleton placeholder pattern.
-      // eslint-disable-next-line jsx-a11y/prefer-tag-over-role -- see comment
       role="status"
       aria-busy="true"
       className={cn('animate-pulse bg-muted', VARIANT_CLASSES[variant], className)}

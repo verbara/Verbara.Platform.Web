@@ -10,7 +10,6 @@ interface LabelProps extends React.ComponentProps<'label'> {
 function Label({ className, required, children, ...props }: Readonly<LabelProps>) {
   const { t } = useTranslation();
   return (
-    // eslint-disable-next-line jsx-a11y/label-has-associated-control -- Label primitive; consumers wire htmlFor at call-site
     <label
       data-slot="label"
       className={cn(
