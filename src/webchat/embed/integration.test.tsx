@@ -12,7 +12,7 @@ vi.mock('@tanstack/react-virtual', () => ({
   }),
 }));
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
 import i18n from 'i18next';
@@ -119,5 +119,58 @@ describe('Integration — full visitor flow', () => {
     fireEvent.keyDown(ta, { key: 'Enter' });
 
     await waitFor(() => expect(screen.getByText('hello')).toBeInTheDocument());
+  });
+
+  // Regression: the WS onMessage callback is created once (memoized
+  // handlePreChatSubmit) and used to read `status`. Reading the captured value
+  // left the widget stuck on 'timeout' forever because the closure never saw
+  // the current status. statusRef fixes it — an incoming agent message must
+  // bring the banner back to 'online'.
+  it('RecoversToOnline_WhenAgentMessageArrives_AfterTimeout', async () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <I18nextProvider i18n={i18n}>
+          <ChatWidget config={config} onUnreadChange={vi.fn()} />
+        </I18nextProvider>,
+      );
+
+      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Jane' } });
+      fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'jane@x.com' } });
+
+      // Submit pre-chat and flush the async createSession() promise.
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /start chat/i }));
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      // WS opens → online.
+      const ws = FakeWebSocket.last;
+      if (!ws) throw new Error('WebSocket was not created');
+      act(() => {
+        ws.readyState = 1;
+        ws.onopen?.(new Event('open'));
+      });
+      expect(screen.getByText('Online')).toBeInTheDocument();
+
+      // 5+ minutes with no agent activity → the inactivity interval flips to timeout.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(6 * 60 * 1000);
+      });
+      expect(screen.getByText('Timeout')).toBeInTheDocument();
+
+      // Incoming agent message must reset the banner to online (the regression).
+      await act(async () => {
+        ws.onmessage?.(
+          new MessageEvent('message', {
+            data: JSON.stringify({ type: 'message', body: 'hi', id: 'm1' }),
+          }),
+        );
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(screen.getByText('Online')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

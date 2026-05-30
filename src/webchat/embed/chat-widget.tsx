@@ -31,6 +31,14 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const { t } = useTranslation('webchat');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<Status>('connecting');
+  // Mirror `status` into a ref so long-lived WS callbacks (created once via the
+  // memoized handlePreChatSubmit) read the *current* status instead of the value
+  // captured at callback-creation time — fixes a stale closure that prevented
+  // recovery from the 'timeout' state on an incoming message.
+  const statusRef = useRef<Status>(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
   const [profile, setProfile] = useState<{ name?: string; email?: string } | null>(
     config.visitor?.name && config.visitor?.email ? config.visitor : null,
   );
@@ -141,7 +149,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
               playNotificationSound();
               lastAgentActivityRef.current = Date.now();
               breadcrumb('message-received');
-              if (status === 'timeout') setStatus('online');
+              if (statusRef.current === 'timeout') setStatus('online');
             } else if (msg.type === 'typing') {
               setStatus('typing');
               setTimeout(() => setStatus('online'), 2000);
