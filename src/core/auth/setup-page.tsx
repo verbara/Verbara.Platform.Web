@@ -14,32 +14,30 @@ import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { useSetup, type SetupResponse } from '@/core/api/hooks/use-system';
 
+const passwordPolicy = z
+  .string()
+  .min(12, 'setupPage.validation.passwordPolicy')
+  .regex(/[A-Z]/, 'setupPage.validation.passwordPolicy')
+  .regex(/[0-9]/, 'setupPage.validation.passwordPolicy');
+
 const setupSchema = z
   .object({
-    email: z.string().email('common:setupPage.validation.emailInvalid'),
-    password: z
-      .string()
-      .min(12, 'common:setupPage.validation.passwordPolicy')
-      .regex(/[A-Z]/, 'common:setupPage.validation.passwordPolicy')
-      .regex(/[0-9]/, 'common:setupPage.validation.passwordPolicy'),
+    email: z.string().email('setupPage.validation.emailInvalid'),
+    password: passwordPolicy,
     displayName: z.string().optional(),
     platformName: z.string().optional(),
-    customerName: z.string().min(1, 'common:setupPage.validation.required'),
+    customerName: z.string().min(1, 'setupPage.validation.required'),
     customerTenantId: z
       .string()
-      .min(1, 'common:setupPage.validation.required')
-      .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, 'common:setupPage.validation.tenantIdSlug'),
-    customerAdminEmail: z.string().email('common:setupPage.validation.emailInvalid'),
-    customerAdminPassword: z
-      .string()
-      .min(12, 'common:setupPage.validation.passwordPolicy')
-      .regex(/[A-Z]/, 'common:setupPage.validation.passwordPolicy')
-      .regex(/[0-9]/, 'common:setupPage.validation.passwordPolicy'),
+      .min(1, 'setupPage.validation.required')
+      .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, 'setupPage.validation.tenantIdSlug'),
+    customerAdminEmail: z.string().email('setupPage.validation.emailInvalid'),
+    customerAdminPassword: passwordPolicy,
     customerAdminDisplayName: z.string().optional(),
   })
   .refine((v) => v.email.toLowerCase() !== v.customerAdminEmail.toLowerCase(), {
     path: ['customerAdminEmail'],
-    message: 'common:setupPage.validation.emailsMustDiffer',
+    message: 'setupPage.validation.emailsMustDiffer',
   });
 
 type SetupFormValues = z.infer<typeof setupSchema>;
@@ -72,6 +70,18 @@ export default function SetupPage() {
 
   const emailA11y = useFieldA11y(errors.email, 'email', { required: true });
   const passwordA11y = useFieldA11y(errors.password, 'password', { required: true });
+  const customerNameA11y = useFieldA11y(errors.customerName, 'customerName', { required: true });
+  const customerTenantIdA11y = useFieldA11y(errors.customerTenantId, 'customerTenantId', {
+    required: true,
+  });
+  const customerAdminEmailA11y = useFieldA11y(errors.customerAdminEmail, 'customerAdminEmail', {
+    required: true,
+  });
+  const customerAdminPasswordA11y = useFieldA11y(
+    errors.customerAdminPassword,
+    'customerAdminPassword',
+    { required: true },
+  );
 
   const onSubmit = handleSubmit((values) => {
     setup.mutate(values, {
@@ -169,10 +179,11 @@ export default function SetupPage() {
               <Input
                 id="customerName"
                 data-testid="setup-customer-name"
+                {...customerNameA11y.inputProps}
                 {...register('customerName')}
               />
               <FieldError
-                id="customerName-error"
+                id={customerNameA11y.errorId}
                 message={errors.customerName?.message ? t(errors.customerName.message) : undefined}
               />
             </div>
@@ -184,10 +195,11 @@ export default function SetupPage() {
                 id="customerTenantId"
                 data-testid="setup-customer-tenant-id"
                 placeholder={t('setupPage.customerTenantIdPlaceholder')}
+                {...customerTenantIdA11y.inputProps}
                 {...register('customerTenantId')}
               />
               <FieldError
-                id="customerTenantId-error"
+                id={customerTenantIdA11y.errorId}
                 message={
                   errors.customerTenantId?.message ? t(errors.customerTenantId.message) : undefined
                 }
@@ -201,10 +213,11 @@ export default function SetupPage() {
                 id="customerAdminEmail"
                 type="email"
                 data-testid="setup-customer-admin-email"
+                {...customerAdminEmailA11y.inputProps}
                 {...register('customerAdminEmail')}
               />
               <FieldError
-                id="customerAdminEmail-error"
+                id={customerAdminEmailA11y.errorId}
                 message={
                   errors.customerAdminEmail?.message
                     ? t(errors.customerAdminEmail.message)
@@ -220,15 +233,26 @@ export default function SetupPage() {
                 id="customerAdminPassword"
                 type="password"
                 data-testid="setup-customer-admin-password"
+                {...customerAdminPasswordA11y.inputProps}
                 {...register('customerAdminPassword')}
               />
               <FieldError
-                id="customerAdminPassword-error"
+                id={customerAdminPasswordA11y.errorId}
                 message={
                   errors.customerAdminPassword?.message
                     ? t(errors.customerAdminPassword.message)
                     : undefined
                 }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="customerAdminDisplayName">
+                {t('setupPage.customerAdminDisplayName')}
+              </Label>
+              <Input
+                id="customerAdminDisplayName"
+                data-testid="setup-customer-admin-display-name"
+                {...register('customerAdminDisplayName')}
               />
             </div>
           </fieldset>

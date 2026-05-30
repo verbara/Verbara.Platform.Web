@@ -50,7 +50,7 @@ describe('SetupPage', () => {
 
   it('should show sign in link', () => {
     render(<SetupPage />, { wrapper });
-    // react-i18next is globally mocked (src/test/setup.ts): t(key) => key.
+    // i18next returns the raw key as fallback when no resources are loaded in tests.
     expect(screen.getByText('setupPage.signIn')).toBeInTheDocument();
   });
 

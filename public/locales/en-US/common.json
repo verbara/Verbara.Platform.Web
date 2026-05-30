@@ -555,6 +555,7 @@
     "customerTenantIdPlaceholder": "acme",
     "customerAdminEmail": "Company Admin Email",
     "customerAdminPassword": "Company Admin Password",
+    "customerAdminDisplayName": "Company Admin Display Name",
     "submit": "Initialize Platform",
     "submitting": "Initializing...",
     "genericError": "Setup failed. The platform may already be configured.",

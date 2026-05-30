@@ -555,6 +555,7 @@
     "customerTenantIdPlaceholder": "acme",
     "customerAdminEmail": "Email del Administrador de la Empresa",
     "customerAdminPassword": "Contraseña del Administrador de la Empresa",
+    "customerAdminDisplayName": "Nombre del Administrador de la Empresa (opcional)",
     "submit": "Inicializar Plataforma",
     "submitting": "Inicializando...",
     "genericError": "Falló la configuración. La plataforma puede que ya esté configurada.",
