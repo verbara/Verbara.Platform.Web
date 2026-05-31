@@ -5,6 +5,7 @@ import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { initConversationSSE } from '@/agent/stores/conversation-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { useSoftphone } from '@/core/voice/use-softphone';
+import { CallCard } from '@/agent/voice/call-card';
 import { InboxPanel } from '@/agent/inbox/inbox-panel';
 import { ContextPanel } from '@/agent/context/context-panel';
 import { AgentTour } from '@/agent/tour/agent-tour';
@@ -47,6 +48,7 @@ export default function AgentLayout() {
     <AreaErrorBoundary areaName="agent">
       <div className="flex h-full flex-col">
         <SupervisionBanner />
+        <CallCard />
         <div className="flex min-h-0 flex-1">
           {/* Inbox Panel */}
           <aside

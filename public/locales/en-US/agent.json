@@ -157,5 +157,13 @@
     "empty_state": "No knowledge articles available.",
     "no_results": "No articles match your search.",
     "search_placeholder": "Search knowledge base..."
+  },
+  "voice": {
+    "incoming": "Incoming call",
+    "in_call": "On call",
+    "answer": "Answer",
+    "reject": "Reject",
+    "hangup": "Hang up",
+    "unknown_caller": "Unknown caller"
   }
 }

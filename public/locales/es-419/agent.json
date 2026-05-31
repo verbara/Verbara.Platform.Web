@@ -157,5 +157,13 @@
     "empty_state": "No hay artículos de conocimiento disponibles.",
     "no_results": "Ningún artículo coincide con su búsqueda.",
     "search_placeholder": "Buscar base de conocimiento..."
+  },
+  "voice": {
+    "incoming": "Llamada entrante",
+    "in_call": "En llamada",
+    "answer": "Atender",
+    "reject": "Rechazar",
+    "hangup": "Colgar",
+    "unknown_caller": "Llamante desconocido"
   }
 }
