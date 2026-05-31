@@ -1,5 +1,6 @@
 {
   "apiBaseUrl": "/api/v1",
   "version": "0.1.0",
-  "defaultLocale": "es-419"
+  "defaultLocale": "es-419",
+  "asteriskWssUrl": ""
 }

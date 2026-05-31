@@ -12,10 +12,19 @@ export interface Agent {
    */
   id: string;
   userId: string;
+  /** Owning tenant id — needed to build the softphone SIP identity. */
+  tenantId?: string;
   displayName: string;
   state: string;
   skills: string[];
   extension?: string | null;
+  /**
+   * The agent's own plaintext SIP password — populated ONLY by `GET /agents/me`
+   * (self-scoped) so the in-browser softphone can REGISTER. The admin list/detail
+   * endpoints (`useAgents`/`useAgent`) never return it; it stays in the TanStack
+   * `['agent-me']` cache in memory and is never persisted to storage.
+   */
+  sipPassword?: string | null;
   teamId?: string | null;
   teamName?: string | null;
   userEmail?: string | null;
