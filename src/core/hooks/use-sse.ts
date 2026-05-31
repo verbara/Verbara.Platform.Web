@@ -65,6 +65,40 @@ export function useSSE() {
       }
     });
 
+    // A queued conversation offered to this agent (QueueDistributionWorker). Unlike
+    // conversation.assigned (accept/transfer), an Offered conversation keeps Owner=Queue, so the
+    // agent inbox query can't surface it — the card is rendered from this event payload.
+    source.addEventListener('conversation.offered', (e) => {
+      try {
+        const data = JSON.parse(e.data) as {
+          conversationId: string;
+          agentId: string;
+          queueId: string;
+          channel: string;
+        };
+        const currentUserId = useAuthStore.getState().user?.id;
+        if (!currentUserId || data.agentId !== currentUserId) return;
+
+        const isInAgentRoute = window.location.pathname.startsWith('/agent');
+
+        toast.info(`New ${data.channel} conversation offered`, {
+          duration: 6000,
+          action: {
+            label: 'Open',
+            onClick: () => navigate(`/agent/conversation/${data.conversationId}`),
+          },
+        });
+
+        if (!isInAgentRoute) {
+          useAgentAlertsStore.getState().increment();
+        }
+
+        handlers['conversation.offered']?.forEach((h) => h(data));
+      } catch {
+        // Malformed payload — skip
+      }
+    });
+
     source.addEventListener('conversation.message', (e) => {
       try {
         const data = JSON.parse(e.data);

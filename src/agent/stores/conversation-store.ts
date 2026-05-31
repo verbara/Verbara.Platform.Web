@@ -147,6 +147,23 @@ export function initConversationSSE() {
     });
   });
 
+  onSseEvent('conversation.offered', (data) => {
+    const event = data as { conversationId: string; channel: string };
+    const existing = useConversationStore.getState().conversations[event.conversationId];
+    store.upsertConversation({
+      id: event.conversationId,
+      contactId: existing?.contactId ?? '',
+      contactName: existing?.contactName ?? '',
+      channel: event.channel,
+      queueName: existing?.queueName ?? '',
+      state: 'offered',
+      lastMessage: existing?.lastMessage ?? '',
+      lastMessageAt: existing?.lastMessageAt ?? new Date().toISOString(),
+      unread: true,
+      assignedAt: new Date().toISOString(),
+    });
+  });
+
   onSseEvent('conversation.message', (data) => {
     const event = data as {
       conversationId: string;
