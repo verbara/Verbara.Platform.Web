@@ -13,6 +13,7 @@ import {
   X,
   Headset,
   ArrowRight,
+  Phone,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
@@ -149,6 +150,15 @@ export default function AgentDetailPage() {
         <InfoRow icon={CircleDot} label={t('admin:agents.state')}>
           <Badge variant={stateBadgeVariant[agent.state] ?? 'outline'}>{agent.state}</Badge>
         </InfoRow>
+        <InfoRow icon={Phone} label={t('admin:agents.extension')}>
+          {agent.extension ? (
+            <span data-testid="agent-detail-extension" className="font-mono">
+              {agent.extension}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">&mdash;</span>
+          )}
+        </InfoRow>
       </div>
 
       {/* Skills section */}
@@ -273,8 +283,18 @@ export default function AgentDetailPage() {
           displayName: agent.displayName,
           teamId: agent.teamId ?? '',
           skills: (agent.skills ?? []).map((name) => ({ name, proficiency: 5 })),
+          extension: agent.extension ?? '',
         }}
-        onSubmit={(v) => updateAgent.mutate({ id: agent.id, ...v })}
+        onSubmit={(v) => {
+          // sipPassword is write-only: a blank field means "keep the current
+          // password" (the API never returns it), so omit it from the update.
+          const { sipPassword, ...rest } = v;
+          updateAgent.mutate({
+            id: agent.id,
+            ...rest,
+            ...(sipPassword ? { sipPassword } : {}),
+          });
+        }}
       />
 
       {/* Delete confirmation dialog */}

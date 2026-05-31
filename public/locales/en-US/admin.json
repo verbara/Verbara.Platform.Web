@@ -183,6 +183,11 @@
     "noQueues": "Not assigned to any queues.",
     "queuesNote": "Queue assignment is managed from queue configuration.",
     "extension": "Extension",
+    "extensionPlaceholder": "e.g. 1001",
+    "sipPassword": "SIP password",
+    "sipPasswordPlaceholder": "Generate or enter",
+    "generatePassword": "Generate",
+    "sipPasswordEditHint": "Leave blank to keep the current password.",
     "validation": {
       "skillNameRequired": "Skill name is required",
       "userRequired": "User is required"

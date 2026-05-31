@@ -126,6 +126,8 @@ export function useUpdateAgent() {
       displayName?: string;
       teamId?: string;
       skills?: { name: string; proficiency: number }[];
+      extension?: string;
+      sipPassword?: string;
     }) =>
       customFetch<Agent>({
         url: `/api/v1/admin/agents/${id}`,

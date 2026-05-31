@@ -183,6 +183,11 @@
     "noQueues": "Não atribuído a nenhuma fila.",
     "queuesNote": "A atribuição de filas é gerenciada na configuração de filas.",
     "extension": "Ramal",
+    "extensionPlaceholder": "ex. 1001",
+    "sipPassword": "Senha SIP",
+    "sipPasswordPlaceholder": "Gerar ou inserir",
+    "generatePassword": "Gerar",
+    "sipPasswordEditHint": "Deixe em branco para manter a senha atual.",
     "validation": {
       "skillNameRequired": "Nome da habilidade é obrigatório",
       "userRequired": "Usuário é obrigatório"

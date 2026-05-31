@@ -21,6 +21,7 @@ import {
 import { useUsers } from '@/core/api/hooks/use-users';
 import { useAgents } from '@/core/api/hooks/use-agents';
 import { useTeams } from '@/core/api/hooks/use-teams';
+import { generateSipPassword } from './sip-password';
 
 const skillSchema = z.object({
   name: z.string().min(1, 'admin:agents.validation.skillNameRequired'),
@@ -32,6 +33,12 @@ const agentSchema = z.object({
   displayName: z.string().min(2),
   teamId: z.string().optional(),
   skills: z.array(skillSchema),
+  // Phase 3A — SIP credentials for the in-browser softphone. Optional: an agent
+  // without them is digital-only. The extension is the SIP user number; the
+  // password is write-only (never returned by the API) — leave blank on edit to
+  // keep the current one.
+  extension: z.string().optional(),
+  sipPassword: z.string().optional(),
 });
 
 export type AgentFormValues = z.infer<typeof agentSchema>;
@@ -56,6 +63,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<AgentFormValues>({
     resolver: zodResolver(agentSchema),
@@ -64,6 +72,8 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
       displayName: '',
       teamId: '',
       skills: [],
+      extension: '',
+      sipPassword: '',
       ...defaultValues,
     },
   });
@@ -80,6 +90,8 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
         displayName: '',
         teamId: '',
         skills: [],
+        extension: '',
+        sipPassword: '',
         ...defaultValues,
       });
     }
@@ -114,6 +126,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
         </SheetHeader>
 
         <form
+          data-testid="agent-form"
           onSubmit={handleFormSubmit}
           className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
         >
@@ -183,6 +196,47 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                 </Select>
               )}
             />
+          </div>
+
+          {/* SIP credentials (Phase 3A — in-browser softphone) */}
+          <div className="space-y-1.5">
+            <Label htmlFor="agent-extension">{t('admin:agents.extension')}</Label>
+            <Input
+              id="agent-extension"
+              data-testid="agent-extension"
+              placeholder={t('admin:agents.extensionPlaceholder', 'e.g. 1001')}
+              {...register('extension')}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="agent-sipPassword">{t('admin:agents.sipPassword')}</Label>
+            <div className="flex gap-2">
+              <Input
+                id="agent-sipPassword"
+                data-testid="agent-sipPassword"
+                type="text"
+                autoComplete="off"
+                placeholder={t('admin:agents.sipPasswordPlaceholder', 'Generate or enter')}
+                className="flex-1"
+                {...register('sipPassword')}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                data-testid="agent-generate-sip"
+                onClick={() =>
+                  setValue('sipPassword', generateSipPassword(), { shouldDirty: true })
+                }
+              >
+                {t('admin:agents.generatePassword', 'Generate')}
+              </Button>
+            </div>
+            {mode === 'edit' && (
+              <p className="text-xs text-muted-foreground">
+                {t('admin:agents.sipPasswordEditHint', 'Leave blank to keep the current password.')}
+              </p>
+            )}
           </div>
 
           {/* Skills */}

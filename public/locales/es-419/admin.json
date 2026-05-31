@@ -183,6 +183,11 @@
     "noQueues": "No asignado a ninguna cola.",
     "queuesNote": "La asignación de colas se gestiona desde la configuración de colas.",
     "extension": "Extensión",
+    "extensionPlaceholder": "ej. 1001",
+    "sipPassword": "Contraseña SIP",
+    "sipPasswordPlaceholder": "Generar o ingresar",
+    "generatePassword": "Generar",
+    "sipPasswordEditHint": "Dejá en blanco para mantener la contraseña actual.",
     "validation": {
       "skillNameRequired": "El nombre de la habilidad es obligatorio",
       "userRequired": "El usuario es obligatorio"
