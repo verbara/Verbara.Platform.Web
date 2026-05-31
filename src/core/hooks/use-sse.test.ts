@@ -1,5 +1,26 @@
 import { describe, it, expect } from 'vitest';
-import { isForCurrentAgent } from './use-sse';
+import { isForCurrentAgent, resolveAgentId } from './use-sse';
+
+describe('resolveAgentId', () => {
+  it('reads agentId — the shape /agents/me actually returns', () => {
+    // Regression: GET /agents/me serializes the raw Agent as `agentId`, not `id`.
+    // Reading only `.id` left currentAgentId() undefined and dropped every offer.
+    expect(resolveAgentId({ agentId: 'agent-786d14bb' })).toBe('agent-786d14bb');
+  });
+
+  it('falls back to id when agentId is absent (normalized hooks)', () => {
+    expect(resolveAgentId({ id: 'agent-786d14bb' })).toBe('agent-786d14bb');
+  });
+
+  it('prefers agentId over id when both present', () => {
+    expect(resolveAgentId({ agentId: 'real', id: 'other' })).toBe('real');
+  });
+
+  it('returns undefined when nothing is cached (admin / not loaded yet)', () => {
+    expect(resolveAgentId(undefined)).toBeUndefined();
+    expect(resolveAgentId({})).toBeUndefined();
+  });
+});
 
 describe('isForCurrentAgent', () => {
   it('returns true when the event agentId equals my agentId', () => {

@@ -29,7 +29,7 @@ export function useSSE() {
 
     // The logged-in agent's AgentId (NOT the user id) — populated in the query
     // cache by useAgentMe() on the agent surfaces; undefined for non-agent users.
-    const currentAgentId = () => queryClient.getQueryData<{ id?: string }>(['agent-me'])?.id;
+    const currentAgentId = () => resolveAgentId(queryClient.getQueryData(['agent-me']));
 
     const url = `/api/v1/events/stream?token=${encodeURIComponent(accessToken)}`;
     const source = new EventSource(url);
@@ -278,6 +278,19 @@ export function isForCurrentAgent(
   myAgentId: string | undefined,
 ): boolean {
   return !!myAgentId && eventAgentId === myAgentId;
+}
+
+/**
+ * Resolve the current agent's AgentId from the cached /agents/me payload.
+ * GET /agents/me serializes the raw Agent domain object as `agentId` (it does
+ * NOT follow the `id` DTO convention the other agent hooks normalize to), so
+ * accept either key — otherwise currentAgentId() is undefined and every
+ * agent-targeted SSE event (incl. the WebChat offer card) is dropped.
+ */
+export function resolveAgentId(
+  cached: { id?: string; agentId?: string } | undefined,
+): string | undefined {
+  return cached?.agentId ?? cached?.id;
 }
 
 export function onSseEvent(type: string, handler: SseEventHandler) {
