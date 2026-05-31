@@ -27,6 +27,10 @@ export function useSSE() {
   const connect = useCallback(() => {
     if (!accessToken || sourceRef.current) return;
 
+    // The logged-in agent's AgentId (NOT the user id) — populated in the query
+    // cache by useAgentMe() on the agent surfaces; undefined for non-agent users.
+    const currentAgentId = () => queryClient.getQueryData<{ id?: string }>(['agent-me'])?.id;
+
     const url = `/api/v1/events/stream?token=${encodeURIComponent(accessToken)}`;
     const source = new EventSource(url);
     sourceRef.current = source;
@@ -42,8 +46,7 @@ export function useSSE() {
           agentId: string;
           contactName: string;
         };
-        const currentUserId = useAuthStore.getState().user?.id;
-        if (!currentUserId || data.agentId !== currentUserId) return;
+        if (!isForCurrentAgent(data.agentId, currentAgentId())) return;
 
         const isInAgentRoute = window.location.pathname.startsWith('/agent');
 
@@ -76,8 +79,7 @@ export function useSSE() {
           queueId: string;
           channel: string;
         };
-        const currentUserId = useAuthStore.getState().user?.id;
-        if (!currentUserId || data.agentId !== currentUserId) return;
+        if (!isForCurrentAgent(data.agentId, currentAgentId())) return;
 
         const isInAgentRoute = window.location.pathname.startsWith('/agent');
 
@@ -149,8 +151,7 @@ export function useSSE() {
     source.addEventListener('agentassist.suggestion', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        const currentUserId = useAuthStore.getState().user?.id;
-        if (data.agentId === currentUserId) {
+        if (isForCurrentAgent(data.agentId, currentAgentId())) {
           useAgentAiStore.getState().addSuggestion(data.suggestion ?? data);
         }
         handlers['agentassist.suggestion']?.forEach((h) => h(data));
@@ -162,8 +163,7 @@ export function useSSE() {
     source.addEventListener('agentassist.sentiment', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        const currentUserId = useAuthStore.getState().user?.id;
-        if (data.agentId === currentUserId) {
+        if (isForCurrentAgent(data.agentId, currentAgentId())) {
           useAgentAiStore.getState().updateSentiment(data.sentiment ?? data);
         }
         handlers['agentassist.sentiment']?.forEach((h) => h(data));
@@ -175,8 +175,7 @@ export function useSSE() {
     source.addEventListener('agentassist.compliance_alert', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        const currentUserId = useAuthStore.getState().user?.id;
-        if (data.agentId === currentUserId) {
+        if (isForCurrentAgent(data.agentId, currentAgentId())) {
           useAgentAiStore.getState().addComplianceAlert(data.alert ?? data);
         }
         handlers['agentassist.compliance_alert']?.forEach((h) => h(data));
@@ -188,8 +187,7 @@ export function useSSE() {
     source.addEventListener('agentassist.transcript', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        const currentUserId = useAuthStore.getState().user?.id;
-        if (data.agentId === currentUserId) {
+        if (isForCurrentAgent(data.agentId, currentAgentId())) {
           useAgentAiStore.getState().addTranscript(data.segment ?? data);
         }
         handlers['agentassist.transcript']?.forEach((h) => h(data));
@@ -265,6 +263,21 @@ export function useSSE() {
       sourceRef.current = null;
     };
   }, [connect]);
+}
+
+/**
+ * An agent-targeted SSE event (conversation.offered / .assigned / agentassist.*)
+ * is for the current connection iff its `agentId` equals the logged-in agent's
+ * AgentId. NOTE: this is Agent.AgentId — a distinct EntityId from User.UserId in
+ * the auth store. Matching the event agentId against the user id silently dropped
+ * every agent-targeted notification: the offered WebChat card (which has no inbox
+ * fallback because Owner stays Queue) never rendered for the agent.
+ */
+export function isForCurrentAgent(
+  eventAgentId: string | undefined,
+  myAgentId: string | undefined,
+): boolean {
+  return !!myAgentId && eventAgentId === myAgentId;
 }
 
 export function onSseEvent(type: string, handler: SseEventHandler) {
