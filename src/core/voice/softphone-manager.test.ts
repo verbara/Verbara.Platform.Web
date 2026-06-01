@@ -18,6 +18,11 @@ const { SimpleUserMock, lastInstance } = vi.hoisted(() => {
       answer: vi.fn().mockResolvedValue(undefined),
       decline: vi.fn().mockResolvedValue(undefined),
       hangup: vi.fn().mockResolvedValue(undefined),
+      hold: vi.fn().mockResolvedValue(undefined),
+      unhold: vi.fn().mockResolvedValue(undefined),
+      mute: vi.fn(),
+      unmute: vi.fn(),
+      sendDTMF: vi.fn().mockResolvedValue(undefined),
       unregister: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
     };
@@ -34,6 +39,11 @@ import {
   stopSoftphone,
   answerCall,
   hangupCall,
+  holdCall,
+  unholdCall,
+  muteCall,
+  unmuteCall,
+  sendDtmf,
   isSoftphoneRunning,
 } from './softphone-manager';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
@@ -121,5 +131,50 @@ describe('softphone-manager', () => {
     expect(inst.disconnect).toHaveBeenCalled();
     expect(useVoiceCallStore.getState().phase).toBe('idle');
     expect(isSoftphoneRunning()).toBe(false);
+  });
+
+  it('holdCall_ShouldCallSimpleUserHold_AndMirrorStore', async () => {
+    await startSoftphone(baseConfig);
+    await holdCall();
+    expect(lastInstance.current.hold).toHaveBeenCalled();
+    expect(useVoiceCallStore.getState().isHeld).toBe(true);
+  });
+
+  it('unholdCall_ShouldCallSimpleUserUnhold_AndMirrorStore', async () => {
+    await startSoftphone(baseConfig);
+    await holdCall();
+    await unholdCall();
+    expect(lastInstance.current.unhold).toHaveBeenCalled();
+    expect(useVoiceCallStore.getState().isHeld).toBe(false);
+  });
+
+  it('muteCall_ShouldCallSimpleUserMute_AndMirrorStore', async () => {
+    await startSoftphone(baseConfig);
+    muteCall();
+    expect(lastInstance.current.mute).toHaveBeenCalled();
+    expect(useVoiceCallStore.getState().isMuted).toBe(true);
+  });
+
+  it('unmuteCall_ShouldCallSimpleUserUnmute_AndMirrorStore', async () => {
+    await startSoftphone(baseConfig);
+    muteCall();
+    unmuteCall();
+    expect(lastInstance.current.unmute).toHaveBeenCalled();
+    expect(useVoiceCallStore.getState().isMuted).toBe(false);
+  });
+
+  it('sendDtmf_ShouldCallSimpleUserSendDTMF_WithTone', async () => {
+    await startSoftphone(baseConfig);
+    await sendDtmf('5');
+    expect(lastInstance.current.sendDTMF).toHaveBeenCalledWith('5');
+  });
+
+  it('callControl_ShouldNoOp_WhenNoSoftphone', async () => {
+    // No startSoftphone — every control is a guarded no-op (no throw, store untouched).
+    await holdCall();
+    muteCall();
+    await sendDtmf('1');
+    expect(useVoiceCallStore.getState().isHeld).toBe(false);
+    expect(useVoiceCallStore.getState().isMuted).toBe(false);
   });
 });

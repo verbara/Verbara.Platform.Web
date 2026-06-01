@@ -167,6 +167,11 @@
     "unknown_caller": "Unknown caller",
     "call_in_progress": "Voice call in progress",
     "controls_in_card": "Call controls are in the call card",
-    "open_conversation": "Open conversation"
+    "open_conversation": "Open conversation",
+    "hold": "Hold",
+    "resume": "Resume",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "dialpad": "Dialpad"
   }
 }

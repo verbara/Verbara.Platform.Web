@@ -119,6 +119,42 @@ export async function hangupCall(): Promise<void> {
   await simpleUser.hangup();
 }
 
+/**
+ * Call control (3B.2a) — pure-media operations SimpleUser already exposes. SimpleUser is the source
+ * of truth; each wrapper mirrors the resulting state into the voice-call-store for the UI toggles.
+ * All no-op when no softphone is running. Hold (SIP re-INVITE) and mute (local track) are
+ * independent; do not couple them.
+ */
+export async function holdCall(): Promise<void> {
+  if (!simpleUser) return;
+  await simpleUser.hold();
+  useVoiceCallStore.getState().setHeld(true);
+}
+
+export async function unholdCall(): Promise<void> {
+  if (!simpleUser) return;
+  await simpleUser.unhold();
+  useVoiceCallStore.getState().setHeld(false);
+}
+
+export function muteCall(): void {
+  if (!simpleUser) return;
+  simpleUser.mute();
+  useVoiceCallStore.getState().setMuted(true);
+}
+
+export function unmuteCall(): void {
+  if (!simpleUser) return;
+  simpleUser.unmute();
+  useVoiceCallStore.getState().setMuted(false);
+}
+
+/** Send a single DTMF tone (0-9, *, #) on the active call — drives the dialpad. */
+export async function sendDtmf(tone: string): Promise<void> {
+  if (!simpleUser) return;
+  await simpleUser.sendDTMF(tone);
+}
+
 export async function stopSoftphone(): Promise<void> {
   const su = simpleUser;
   simpleUser = null;

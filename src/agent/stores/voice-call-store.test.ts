@@ -104,4 +104,32 @@ describe('VoiceCallStore', () => {
     useVoiceCallStore.getState().incoming('', '');
     expect(useVoiceCallStore.getState().wrapUpPromptedFor).toBeNull();
   });
+
+  it('setHeld_ShouldMirrorHoldState', () => {
+    useVoiceCallStore.getState().setHeld(true);
+    expect(useVoiceCallStore.getState().isHeld).toBe(true);
+    useVoiceCallStore.getState().setHeld(false);
+    expect(useVoiceCallStore.getState().isHeld).toBe(false);
+  });
+
+  it('setMuted_ShouldMirrorMuteState', () => {
+    useVoiceCallStore.getState().setMuted(true);
+    expect(useVoiceCallStore.getState().isMuted).toBe(true);
+  });
+
+  it('incoming_ShouldReArmHoldAndMute_ForFreshCall', () => {
+    useVoiceCallStore.getState().setHeld(true);
+    useVoiceCallStore.getState().setMuted(true);
+    useVoiceCallStore.getState().incoming('', '');
+    expect(useVoiceCallStore.getState().isHeld).toBe(false);
+    expect(useVoiceCallStore.getState().isMuted).toBe(false);
+  });
+
+  it('reset_ShouldClearHoldAndMute', () => {
+    useVoiceCallStore.getState().setHeld(true);
+    useVoiceCallStore.getState().setMuted(true);
+    useVoiceCallStore.getState().reset();
+    expect(useVoiceCallStore.getState().isHeld).toBe(false);
+    expect(useVoiceCallStore.getState().isMuted).toBe(false);
+  });
 });

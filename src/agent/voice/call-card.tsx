@@ -1,11 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Phone, PhoneOff, PhoneIncoming } from 'lucide-react';
+import { Phone, PhoneOff, PhoneIncoming, Pause, Play, Mic, MicOff, Grid3x3 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-import { answerCall, rejectCall, hangupCall } from '@/core/voice/softphone-manager';
+import {
+  answerCall,
+  rejectCall,
+  hangupCall,
+  holdCall,
+  unholdCall,
+  muteCall,
+  unmuteCall,
+} from '@/core/voice/softphone-manager';
+import { DtmfDialpad } from './dtmf-dialpad';
 
 function formatElapsed(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -28,11 +37,14 @@ export function CallCard() {
   const callerId = useVoiceCallStore((s) => s.callerId);
   const associatedConversationId = useVoiceCallStore((s) => s.associatedConversationId);
   const startedAt = useVoiceCallStore((s) => s.startedAt);
+  const isHeld = useVoiceCallStore((s) => s.isHeld);
+  const isMuted = useVoiceCallStore((s) => s.isMuted);
   const navigate = useNavigate();
   const select = useConversationStore((s) => s.select);
   // Tick `now` once per second while in call; elapsed is derived during render
   // so we never call setState synchronously inside the effect.
   const [now, setNow] = useState(() => Date.now());
+  const [dialpadOpen, setDialpadOpen] = useState(false);
 
   useEffect(() => {
     if (phase !== 'active' || startedAt == null) return;
@@ -112,6 +124,48 @@ export function CallCard() {
           </Button>
         )}
       </div>
+
+      {/* In-call control row (3B.2a) — hold/mute/dialpad. Client-side via SIP.js; the store mirrors
+          the toggle state. Only while a call is active. */}
+      {!ringing && (
+        <>
+          <div className="mt-2 flex gap-2">
+            <Button
+              data-testid="voice-hold-btn"
+              variant={isHeld ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              aria-pressed={isHeld}
+              onClick={() => void (isHeld ? unholdCall() : holdCall())}
+            >
+              {isHeld ? <Play data-icon="inline-start" /> : <Pause data-icon="inline-start" />}
+              {isHeld ? t('voice.resume') : t('voice.hold')}
+            </Button>
+            <Button
+              data-testid="voice-mute-btn"
+              variant={isMuted ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              aria-pressed={isMuted}
+              onClick={() => (isMuted ? unmuteCall() : muteCall())}
+            >
+              {isMuted ? <MicOff data-icon="inline-start" /> : <Mic data-icon="inline-start" />}
+              {isMuted ? t('voice.unmute') : t('voice.mute')}
+            </Button>
+            <Button
+              data-testid="voice-dialpad-btn"
+              variant={dialpadOpen ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={dialpadOpen}
+              aria-label={t('voice.dialpad')}
+              onClick={() => setDialpadOpen((open) => !open)}
+            >
+              <Grid3x3 />
+            </Button>
+          </div>
+          {dialpadOpen && <DtmfDialpad />}
+        </>
+      )}
 
       {/* Re-entry to the screen-popped voice Conversation (3B.1 G3) — available once the call is
           correlated to its tracked Conversation. */}

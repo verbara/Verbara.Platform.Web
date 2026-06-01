@@ -2,16 +2,35 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { answerCallMock, rejectCallMock, hangupCallMock } = vi.hoisted(() => ({
+const {
+  answerCallMock,
+  rejectCallMock,
+  hangupCallMock,
+  holdCallMock,
+  unholdCallMock,
+  muteCallMock,
+  unmuteCallMock,
+  sendDtmfMock,
+} = vi.hoisted(() => ({
   answerCallMock: vi.fn(),
   rejectCallMock: vi.fn(),
   hangupCallMock: vi.fn(),
+  holdCallMock: vi.fn(),
+  unholdCallMock: vi.fn(),
+  muteCallMock: vi.fn(),
+  unmuteCallMock: vi.fn(),
+  sendDtmfMock: vi.fn(),
 }));
 
 vi.mock('@/core/voice/softphone-manager', () => ({
   answerCall: answerCallMock,
   rejectCall: rejectCallMock,
   hangupCall: hangupCallMock,
+  holdCall: holdCallMock,
+  unholdCall: unholdCallMock,
+  muteCall: muteCallMock,
+  unmuteCall: unmuteCallMock,
+  sendDtmf: sendDtmfMock,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -78,5 +97,50 @@ describe('CallCard', () => {
     renderCard();
     fireEvent.click(screen.getByTestId('voice-hangup-btn'));
     expect(hangupCallMock).toHaveBeenCalled();
+  });
+
+  it('CallCard_ShouldShowControlRow_WhenActive', () => {
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    useVoiceCallStore.getState().answered();
+    renderCard();
+    expect(screen.getByTestId('voice-hold-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('voice-mute-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('voice-dialpad-btn')).toBeInTheDocument();
+  });
+
+  it('CallCard_ShouldNotShowControlRow_WhenRinging', () => {
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    renderCard();
+    expect(screen.queryByTestId('voice-hold-btn')).toBeNull();
+  });
+
+  it('CallCard_ShouldHold_WhenHoldClicked_AndResume_WhenHeld', () => {
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    useVoiceCallStore.getState().answered();
+    const { rerender } = renderCard();
+    fireEvent.click(screen.getByTestId('voice-hold-btn'));
+    expect(holdCallMock).toHaveBeenCalled();
+    // When held, the button resumes instead.
+    useVoiceCallStore.getState().setHeld(true);
+    rerender(<CallCard />);
+    fireEvent.click(screen.getByTestId('voice-hold-btn'));
+    expect(unholdCallMock).toHaveBeenCalled();
+  });
+
+  it('CallCard_ShouldMute_WhenMuteClicked', () => {
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    useVoiceCallStore.getState().answered();
+    renderCard();
+    fireEvent.click(screen.getByTestId('voice-mute-btn'));
+    expect(muteCallMock).toHaveBeenCalled();
+  });
+
+  it('CallCard_ShouldToggleDialpad_WhenDialpadClicked', () => {
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    useVoiceCallStore.getState().answered();
+    renderCard();
+    expect(screen.queryByTestId('voice-dtmf-dialpad')).toBeNull();
+    fireEvent.click(screen.getByTestId('voice-dialpad-btn'));
+    expect(screen.getByTestId('voice-dtmf-dialpad')).toBeInTheDocument();
   });
 });

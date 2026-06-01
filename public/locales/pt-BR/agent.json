@@ -167,6 +167,11 @@
     "unknown_caller": "Chamador desconhecido",
     "call_in_progress": "Chamada de voz em andamento",
     "controls_in_card": "Os controles da chamada estão no cartão de chamada",
-    "open_conversation": "Abrir conversa"
+    "open_conversation": "Abrir conversa",
+    "hold": "Em espera",
+    "resume": "Retomar",
+    "mute": "Mudo",
+    "unmute": "Ativar microfone",
+    "dialpad": "Teclado"
   }
 }

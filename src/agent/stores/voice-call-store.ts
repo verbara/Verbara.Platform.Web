@@ -30,6 +30,14 @@ interface VoiceCallState {
   wrapUpPromptedFor: string | null;
   /** Epoch ms when the call was answered, for the in-call timer. */
   startedAt: number | null;
+  /**
+   * UI mirror of the SIP.js hold state (SimpleUser is the source of truth). Hold is a sub-state of
+   * the `active` phase — NOT a lifecycle phase — so the 3B.1 wrap-up/association logic is untouched.
+   * Re-armed to false on every fresh call (`incoming`/`reset`).
+   */
+  isHeld: boolean;
+  /** UI mirror of the SIP.js local-mute state. Independent of hold. Re-armed on `incoming`/`reset`. */
+  isMuted: boolean;
   /** Last softphone error surfaced to the UI. */
   error: string | null;
 
@@ -37,6 +45,10 @@ interface VoiceCallState {
   incoming: (callerId: string, callerNumber: string) => void;
   answered: () => void;
   ended: () => void;
+  /** Mirror the SIP.js hold state into the store (the softphone-manager wrapper drives this). */
+  setHeld: (held: boolean) => void;
+  /** Mirror the SIP.js local-mute state into the store. */
+  setMuted: (muted: boolean) => void;
   /**
    * Correlate the live call with its tracked voice Conversation + populate the caller identity
    * (from the screen-pop event). Does NOT change `phase` — the event may arrive just after the
@@ -60,6 +72,8 @@ const idle = {
   associatedConversationId: null as string | null,
   wrapUpPromptedFor: null as string | null,
   startedAt: null as number | null,
+  isHeld: false,
+  isMuted: false,
 };
 
 export const useVoiceCallStore = create<VoiceCallState>()((set) => ({
@@ -77,10 +91,16 @@ export const useVoiceCallStore = create<VoiceCallState>()((set) => ({
       associatedConversationId: null,
       wrapUpPromptedFor: null,
       startedAt: null,
+      isHeld: false,
+      isMuted: false,
       error: null,
     }),
 
   answered: () => set({ phase: 'active', startedAt: Date.now() }),
+
+  setHeld: (isHeld) => set({ isHeld }),
+
+  setMuted: (isMuted) => set({ isMuted }),
 
   ended: () => set({ phase: 'ended' }),
 
