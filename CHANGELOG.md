@@ -13,6 +13,22 @@ _No unreleased changes._
 
 ---
 
+## [3.3.0-web] — 2026-06-01 — In-browser voice softphone (Inbound Conversation Delivery)
+
+MINOR bump shipping the in-browser voice agent — pairs with **Platform v2.7.0**. An inbound call rings the agent's tab, they answer with two-way WebRTC audio, and the call is a tracked voice Conversation (screen-pop + agent-assist + wrap-up) with full in-call control.
+
+### Added
+
+- **SIP.js/WebRTC softphone (3A).** `core/voice/softphone-manager.ts` (`Web.SimpleUser` REGISTER over WSS from `config.json` `asteriskWssUrl`, path `/ws`), `voice-call-store`, floating `call-card` (ringing/active/timer), `<audio>` sink. Starts only when the agent has `extension` + `sipPassword` (self-scoped from `/agents/me`). Admin UI provisions agent extension + SIP password (generate button).
+- **Voice as a tracked Conversation (3B.1).** `voice.screenpop` SSE → upsert voice Conversation + auto-nav; per-conversation agent-assist (transcript/sentiment/suggestions keyed by conversationId); wrap-up on hangup.
+- **In-call control (3B.2).** hold/unhold, mute/unmute, DTMF dialpad; per-agent + per-queue **auto-answer** cascade (tri-state Select + zip-tone, gated on secure-context + granted mic); **blind transfer** dialog (queue/agent/external); **outbound click-to-dial** from contact info + "Dialing" call-card variant; tenant outbound caller-ID setting.
+
+### Notes
+
+- The agent app must run in a **secure context** (`https://` or `http://localhost`) for the microphone; the self-signed WSS cert at `https://host:8089` must be accepted once. i18n parity EN-US/ES-419/PT-BR maintained.
+
+---
+
 ## [3.1.3-web] — 2026-05-18 — Dependency hygiene track: 20 Dependabot bumps (runtime + dev + CI), no product-surface changes
 
 PATCH bump closing the v3.1.x dependency-hygiene track that accumulated after the `v3.0.3-web` Dependabot bootstrap (CI + Dependabot config landed 2026-05-17). All 20 PRs auto-merged or were merged manually after `build`, `test`, `coverage`, `i18n`, `audit`, `lint` checks passed. **No product-surface changes** — pure dependency hygiene. Follows the precedent set by `v3.0.3-web` ("Operations + CI hardening release, no new product surface").
