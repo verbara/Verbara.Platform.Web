@@ -28,6 +28,8 @@ export interface Queue {
     forceWrapUp: boolean;
   };
   requiredSkills: string[];
+  /** Per-queue auto-answer default (3B.2b) — agents whose own override is unset inherit this. */
+  autoAnswerDefault?: boolean;
   createdAt: string;
 }
 
@@ -55,8 +57,7 @@ export function useQueues() {
 export function useQueue(id: string | undefined) {
   return useQuery({
     queryKey: ['queues', id],
-    queryFn: () =>
-      customFetch<Queue>({ url: `/api/v1/admin/queues/${id}`, method: 'GET' }),
+    queryFn: () => customFetch<Queue>({ url: `/api/v1/admin/queues/${id}`, method: 'GET' }),
     enabled: !!id,
   });
 }
@@ -79,10 +80,7 @@ export function useUpdateQueue() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({
-      id,
-      ...data
-    }: { id: string } & Partial<Omit<Queue, 'id' | 'createdAt'>>) =>
+    mutationFn: ({ id, ...data }: { id: string } & Partial<Omit<Queue, 'id' | 'createdAt'>>) =>
       customFetch<Queue>({
         url: `/api/v1/admin/queues/${id}`,
         method: 'PUT',

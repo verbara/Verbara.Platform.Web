@@ -38,6 +38,14 @@ interface VoiceCallState {
   isHeld: boolean;
   /** UI mirror of the SIP.js local-mute state. Independent of hold. Re-armed on `incoming`/`reset`. */
   isMuted: boolean;
+  /**
+   * The call's queue auto-answer default (3B.2b), delivered by the `voice.screenpop` event. Combined
+   * with the agent's own override to decide auto-answer (effective = agent ?? queueDefault). Defaults
+   * false and is re-armed on each fresh call.
+   */
+  queueAutoAnswerDefault: boolean;
+  /** One-shot guard so auto-answer fires at most once per call. Re-armed on `incoming`/`reset`. */
+  autoAnswered: boolean;
   /** Last softphone error surfaced to the UI. */
   error: string | null;
 
@@ -58,9 +66,12 @@ interface VoiceCallState {
     conversationId: string;
     callerName: string;
     callerNumber: string;
+    queueAutoAnswerDefault?: boolean;
   }) => void;
   /** Records that the hangup wrap-up dialog was auto-opened for a conversation (one-shot guard). */
   markWrapUpPrompted: (conversationId: string) => void;
+  /** Records that auto-answer has been triggered for the current call (one-shot guard). */
+  markAutoAnswered: () => void;
   setError: (msg: string | null) => void;
   reset: () => void;
 }
@@ -74,6 +85,8 @@ const idle = {
   startedAt: null as number | null,
   isHeld: false,
   isMuted: false,
+  queueAutoAnswerDefault: false,
+  autoAnswered: false,
 };
 
 export const useVoiceCallStore = create<VoiceCallState>()((set) => ({
@@ -93,6 +106,8 @@ export const useVoiceCallStore = create<VoiceCallState>()((set) => ({
       startedAt: null,
       isHeld: false,
       isMuted: false,
+      queueAutoAnswerDefault: false,
+      autoAnswered: false,
       error: null,
     }),
 
@@ -102,10 +117,17 @@ export const useVoiceCallStore = create<VoiceCallState>()((set) => ({
 
   setMuted: (isMuted) => set({ isMuted }),
 
+  markAutoAnswered: () => set({ autoAnswered: true }),
+
   ended: () => set({ phase: 'ended' }),
 
-  associateConversation: ({ conversationId, callerName, callerNumber }) =>
-    set({ associatedConversationId: conversationId, callerId: callerName, callerNumber }),
+  associateConversation: ({ conversationId, callerName, callerNumber, queueAutoAnswerDefault }) =>
+    set({
+      associatedConversationId: conversationId,
+      callerId: callerName,
+      callerNumber,
+      ...(queueAutoAnswerDefault !== undefined ? { queueAutoAnswerDefault } : {}),
+    }),
 
   markWrapUpPrompted: (conversationId) => set({ wrapUpPromptedFor: conversationId }),
 

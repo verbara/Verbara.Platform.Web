@@ -155,6 +155,68 @@ export async function sendDtmf(tone: string): Promise<void> {
   await simpleUser.sendDTMF(tone);
 }
 
+/**
+ * The effective auto-answer decision (3B.2b): the agent's own override wins, else the call's queue
+ * default. `agentFlag` is tri-state (null/undefined = inherit). Pure + exported for unit testing.
+ */
+export function isAutoAnswerEffective(
+  agentFlag: boolean | null | undefined,
+  queueDefault: boolean,
+): boolean {
+  return (agentFlag ?? queueDefault) === true;
+}
+
+/** Outcome of an auto-answer attempt so the caller can surface the right UX (toast on skip). */
+export type AutoAnswerResult = 'answered' | 'no-softphone' | 'insecure-context' | 'mic-not-granted';
+
+async function isMicGranted(): Promise<boolean> {
+  try {
+    if (!navigator.permissions?.query) return false;
+    const status = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+    return status.state === 'granted';
+  } catch {
+    // Browsers that don't support querying the microphone permission: treat as not-granted so we
+    // never auto-answer into a permission prompt.
+    return false;
+  }
+}
+
+/** Short local zip-tone so the agent notices a call was auto-answered. Best-effort, local-only. */
+function playZipTone(): void {
+  try {
+    const Ctx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = 880;
+    gain.gain.value = 0.05;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.18);
+    osc.onended = () => void ctx.close();
+  } catch {
+    /* best-effort — a zip-tone failure must never block the answer */
+  }
+}
+
+/**
+ * Auto-accept the ringing call (3B.2b). Gated on a secure context + an ALREADY-granted microphone —
+ * we never auto-answer into a permission prompt; the caller leaves the call ringing for manual answer
+ * and surfaces a toast. Plays a local zip-tone before answering.
+ */
+export async function autoAnswerCall(): Promise<AutoAnswerResult> {
+  if (!simpleUser) return 'no-softphone';
+  if (!window.isSecureContext) return 'insecure-context';
+  if (!(await isMicGranted())) return 'mic-not-granted';
+  playZipTone();
+  await answerCall();
+  return 'answered';
+}
+
 export async function stopSoftphone(): Promise<void> {
   const su = simpleUser;
   simpleUser = null;

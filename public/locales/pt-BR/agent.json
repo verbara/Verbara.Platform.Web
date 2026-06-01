@@ -172,6 +172,7 @@
     "resume": "Retomar",
     "mute": "Mudo",
     "unmute": "Ativar microfone",
-    "dialpad": "Teclado"
+    "dialpad": "Teclado",
+    "auto_answer_skipped": "Resposta automática ignorada (microfone indisponível)"
   }
 }

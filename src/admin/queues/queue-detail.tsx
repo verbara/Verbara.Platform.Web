@@ -20,13 +20,7 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Separator } from '@/core/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { QueueForm } from './queue-form';
 import { useQueue, useQueues, useDeleteQueue, useUpdateQueue } from '@/core/api/hooks/use-queues';
@@ -39,7 +33,15 @@ import {
   useRemoveQueueMember,
 } from '@/core/api/hooks/use-queue-members';
 
-function InfoRow({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: React.ReactNode }) {
+function InfoRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Clock;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start gap-3 py-3">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -119,10 +121,7 @@ export default function QueueDetailPage() {
   const handleConfirmRemove = () => {
     if (!queueId || !removeTargetAgentId) return;
     const agentId = removeTargetAgentId;
-    removeMember.mutate(
-      { queueId, agentId },
-      { onSettled: () => setRemoveTargetAgentId(null) },
-    );
+    removeMember.mutate({ queueId, agentId }, { onSettled: () => setRemoveTargetAgentId(null) });
   };
 
   const handleConfirmPause = () => {
@@ -157,10 +156,12 @@ export default function QueueDetailPage() {
     requiredSkills: queue.requiredSkills.map((s) => ({ name: s })),
     defaultWrapUpSeconds: (queue.wrapUp?.defaultWrapUpSeconds ?? 30).toString(),
     forceWrapUp: queue.wrapUp?.forceWrapUp ?? false,
+    autoAnswerDefault: queue.autoAnswerDefault ?? false,
   };
 
   const overflowTarget = queue.overflowRule
-    ? allQueues.find((q) => q.id === queue.overflowRule!.overflowQueueId)?.name ?? queue.overflowRule.overflowQueueId
+    ? (allQueues.find((q) => q.id === queue.overflowRule!.overflowQueueId)?.name ??
+      queue.overflowRule.overflowQueueId)
     : null;
 
   return (
@@ -236,7 +237,9 @@ export default function QueueDetailPage() {
               <InfoRow icon={Tags} label={t('admin:queues.skills')}>
                 <div className="flex flex-wrap gap-1">
                   {queue.requiredSkills.map((skill) => (
-                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                    <Badge key={skill} variant="secondary">
+                      {skill}
+                    </Badge>
                   ))}
                 </div>
               </InfoRow>
@@ -264,14 +267,11 @@ export default function QueueDetailPage() {
             </InfoRow>
           </>
         )}
-
       </div>
 
       {/* Agent membership */}
       <div data-testid="queue-members-card" className="rounded-lg border bg-card p-6">
-        <h3 className="font-heading text-sm font-semibold">
-          {t('admin:queue-members.assigned')}
-        </h3>
+        <h3 className="font-heading text-sm font-semibold">{t('admin:queue-members.assigned')}</h3>
         <Separator className="my-3" />
         {assignedMembers.length > 0 ? (
           <div className="space-y-2" data-testid="queue-members-list">
@@ -427,18 +427,28 @@ export default function QueueDetailPage() {
             isActive: values.isActive,
             maxWaiting: values.maxWaiting ? Number(values.maxWaiting) : undefined,
             slaTargets: {
-              answerWithinSeconds: values.answerWithinSeconds ? Number(values.answerWithinSeconds) : undefined,
-              firstResponseWithinSeconds: values.firstResponseWithinSeconds ? Number(values.firstResponseWithinSeconds) : undefined,
-              resolutionWithinSeconds: values.resolutionWithinSeconds ? Number(values.resolutionWithinSeconds) : undefined,
+              answerWithinSeconds: values.answerWithinSeconds
+                ? Number(values.answerWithinSeconds)
+                : undefined,
+              firstResponseWithinSeconds: values.firstResponseWithinSeconds
+                ? Number(values.firstResponseWithinSeconds)
+                : undefined,
+              resolutionWithinSeconds: values.resolutionWithinSeconds
+                ? Number(values.resolutionWithinSeconds)
+                : undefined,
             },
             overflowRule: values.overflowQueueId
-              ? { overflowQueueId: values.overflowQueueId, overflowAfterSeconds: Number(values.overflowAfterSeconds) || 120 }
+              ? {
+                  overflowQueueId: values.overflowQueueId,
+                  overflowAfterSeconds: Number(values.overflowAfterSeconds) || 120,
+                }
               : undefined,
             wrapUp: {
               defaultWrapUpSeconds: Number(values.defaultWrapUpSeconds) || 30,
               forceWrapUp: values.forceWrapUp,
             },
             requiredSkills: values.requiredSkills.map((s) => s.name),
+            autoAnswerDefault: values.autoAnswerDefault,
           })
         }
       />
@@ -450,8 +460,8 @@ export default function QueueDetailPage() {
         title={t('admin:queues.deleteTitle')}
         description={
           <>
-            Are you sure you want to delete <strong>{queue.name}</strong>? This action
-            cannot be undone.
+            Are you sure you want to delete <strong>{queue.name}</strong>? This action cannot be
+            undone.
           </>
         }
         onConfirm={handleDelete}

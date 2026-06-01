@@ -132,4 +132,32 @@ describe('VoiceCallStore', () => {
     expect(useVoiceCallStore.getState().isHeld).toBe(false);
     expect(useVoiceCallStore.getState().isMuted).toBe(false);
   });
+
+  it('associateConversation_ShouldCarryQueueAutoAnswerDefault', () => {
+    useVoiceCallStore.getState().associateConversation({
+      conversationId: 'c1',
+      callerName: 'Ada',
+      callerNumber: '+1',
+      queueAutoAnswerDefault: true,
+    });
+    expect(useVoiceCallStore.getState().queueAutoAnswerDefault).toBe(true);
+  });
+
+  it('markAutoAnswered_ShouldSetGuard', () => {
+    useVoiceCallStore.getState().markAutoAnswered();
+    expect(useVoiceCallStore.getState().autoAnswered).toBe(true);
+  });
+
+  it('incoming_ShouldReArmAutoAnswerState_ForFreshCall', () => {
+    useVoiceCallStore.getState().associateConversation({
+      conversationId: 'c1',
+      callerName: 'Ada',
+      callerNumber: '+1',
+      queueAutoAnswerDefault: true,
+    });
+    useVoiceCallStore.getState().markAutoAnswered();
+    useVoiceCallStore.getState().incoming('', '');
+    expect(useVoiceCallStore.getState().queueAutoAnswerDefault).toBe(false);
+    expect(useVoiceCallStore.getState().autoAnswered).toBe(false);
+  });
 });

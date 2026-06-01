@@ -192,7 +192,12 @@
       "skillNameRequired": "El nombre de la habilidad es obligatorio",
       "userRequired": "El usuario es obligatorio"
     },
-    "displayNamePlaceholder": "Juan Pérez"
+    "displayNamePlaceholder": "Juan Pérez",
+    "autoAnswer": "Auto-respuesta",
+    "autoAnswerInherit": "Heredar valor de la cola",
+    "autoAnswerOn": "Siempre",
+    "autoAnswerOff": "Nunca",
+    "autoAnswerHint": "Aceptar llamadas entrantes automáticamente sin hacer clic en Atender."
   },
   "teams": {
     "title": "Equipos",
@@ -251,7 +256,8 @@
     "validation": {
       "nameRequired": "El nombre es obligatorio"
     },
-    "namePlaceholder": "Soporte"
+    "namePlaceholder": "Soporte",
+    "autoAnswerDefault": "Auto-respuesta por defecto"
   },
   "queue-members": {
     "add": "Agregar agente",

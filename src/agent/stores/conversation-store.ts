@@ -176,6 +176,7 @@ export function initConversationSSE() {
         contactId: string;
         contactName: string;
         callerNumber: string;
+        queueAutoAnswerDefault?: boolean;
       },
     ),
   );
@@ -234,6 +235,7 @@ export function applyVoiceScreenPop(event: {
   contactId: string;
   contactName: string;
   callerNumber: string;
+  queueAutoAnswerDefault?: boolean;
 }): void {
   const store = useConversationStore.getState();
   const existing = store.conversations[event.conversationId];
@@ -254,6 +256,7 @@ export function applyVoiceScreenPop(event: {
     conversationId: event.conversationId,
     callerName: event.contactName,
     callerNumber: event.callerNumber,
+    queueAutoAnswerDefault: event.queueAutoAnswerDefault,
   });
 }
 

@@ -192,7 +192,12 @@
       "skillNameRequired": "Nome da habilidade é obrigatório",
       "userRequired": "Usuário é obrigatório"
     },
-    "displayNamePlaceholder": "João Silva"
+    "displayNamePlaceholder": "João Silva",
+    "autoAnswer": "Resposta automática",
+    "autoAnswerInherit": "Herdar padrão da fila",
+    "autoAnswerOn": "Sempre",
+    "autoAnswerOff": "Nunca",
+    "autoAnswerHint": "Aceitar chamadas recebidas automaticamente sem clicar em Atender."
   },
   "teams": {
     "title": "Equipes",
@@ -251,7 +256,8 @@
     "validation": {
       "nameRequired": "Nome é obrigatório"
     },
-    "namePlaceholder": "Suporte"
+    "namePlaceholder": "Suporte",
+    "autoAnswerDefault": "Resposta automática por padrão"
   },
   "queue-members": {
     "add": "Adicionar agente",

@@ -27,9 +27,7 @@ export default function QueuesPage() {
     () => [
       columnHelper.accessor('name', {
         header: () => t('admin:queues.name'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.display({
         id: 'active',
@@ -78,10 +76,7 @@ export default function QueuesPage() {
       </PageHeader>
 
       {isEmpty ? (
-        <EmptyState
-          icon={ListOrdered}
-          message="No queues yet &mdash; Create your first queue"
-        />
+        <EmptyState icon={ListOrdered} message="No queues yet &mdash; Create your first queue" />
       ) : (
         <DataTable
           data={queues}
@@ -103,18 +98,28 @@ export default function QueuesPage() {
             isActive: values.isActive,
             maxWaiting: values.maxWaiting ? Number(values.maxWaiting) : undefined,
             slaTargets: {
-              answerWithinSeconds: values.answerWithinSeconds ? Number(values.answerWithinSeconds) : undefined,
-              firstResponseWithinSeconds: values.firstResponseWithinSeconds ? Number(values.firstResponseWithinSeconds) : undefined,
-              resolutionWithinSeconds: values.resolutionWithinSeconds ? Number(values.resolutionWithinSeconds) : undefined,
+              answerWithinSeconds: values.answerWithinSeconds
+                ? Number(values.answerWithinSeconds)
+                : undefined,
+              firstResponseWithinSeconds: values.firstResponseWithinSeconds
+                ? Number(values.firstResponseWithinSeconds)
+                : undefined,
+              resolutionWithinSeconds: values.resolutionWithinSeconds
+                ? Number(values.resolutionWithinSeconds)
+                : undefined,
             },
             overflowRule: values.overflowQueueId
-              ? { overflowQueueId: values.overflowQueueId, overflowAfterSeconds: Number(values.overflowAfterSeconds) || 120 }
+              ? {
+                  overflowQueueId: values.overflowQueueId,
+                  overflowAfterSeconds: Number(values.overflowAfterSeconds) || 120,
+                }
               : undefined,
             wrapUp: {
               defaultWrapUpSeconds: Number(values.defaultWrapUpSeconds) || 30,
               forceWrapUp: values.forceWrapUp,
             },
             requiredSkills: values.requiredSkills.map((s) => s.name),
+            autoAnswerDefault: values.autoAnswerDefault,
           })
         }
       />

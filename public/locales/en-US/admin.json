@@ -192,7 +192,12 @@
       "skillNameRequired": "Skill name is required",
       "userRequired": "User is required"
     },
-    "displayNamePlaceholder": "John Smith"
+    "displayNamePlaceholder": "John Smith",
+    "autoAnswer": "Auto-answer",
+    "autoAnswerInherit": "Inherit queue default",
+    "autoAnswerOn": "Always",
+    "autoAnswerOff": "Never",
+    "autoAnswerHint": "Automatically accept incoming calls without clicking Answer."
   },
   "teams": {
     "title": "Teams",
@@ -251,7 +256,8 @@
     "validation": {
       "nameRequired": "Name is required"
     },
-    "namePlaceholder": "Support"
+    "namePlaceholder": "Support",
+    "autoAnswerDefault": "Auto-answer by default"
   },
   "queue-members": {
     "add": "Add agent",

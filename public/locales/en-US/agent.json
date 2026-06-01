@@ -172,6 +172,7 @@
     "resume": "Resume",
     "mute": "Mute",
     "unmute": "Unmute",
-    "dialpad": "Dialpad"
+    "dialpad": "Dialpad",
+    "auto_answer_skipped": "Auto-answer skipped (microphone not available)"
   }
 }

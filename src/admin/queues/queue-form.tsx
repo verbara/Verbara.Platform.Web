@@ -44,6 +44,8 @@ const queueSchema = z.object({
   requiredSkills: z.array(z.object({ name: z.string().min(1) })),
   defaultWrapUpSeconds: z.string(),
   forceWrapUp: z.boolean(),
+  // 3B.2b — default auto-answer for calls delivered from this queue (agents inherit unless overridden).
+  autoAnswerDefault: z.boolean(),
 });
 
 export type QueueFormValues = z.infer<typeof queueSchema>;
@@ -73,6 +75,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     requiredSkills: [],
     defaultWrapUpSeconds: '30',
     forceWrapUp: false,
+    autoAnswerDefault: false,
     ...defaultValues,
   };
 
@@ -341,6 +344,21 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                   )}
                 />
                 <Label>{t('admin:queues.forceWrapUp')}</Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Controller
+                  name="autoAnswerDefault"
+                  control={control}
+                  render={({ field }) => (
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      data-testid="queue-auto-answer-default"
+                    />
+                  )}
+                />
+                <Label>{t('admin:queues.autoAnswerDefault', 'Auto-answer by default')}</Label>
               </div>
             </TabsContent>
           </Tabs>

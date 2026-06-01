@@ -45,6 +45,8 @@ import {
   unmuteCall,
   sendDtmf,
   isSoftphoneRunning,
+  isAutoAnswerEffective,
+  autoAnswerCall,
 } from './softphone-manager';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 
@@ -176,5 +178,71 @@ describe('softphone-manager', () => {
     await sendDtmf('1');
     expect(useVoiceCallStore.getState().isHeld).toBe(false);
     expect(useVoiceCallStore.getState().isMuted).toBe(false);
+  });
+});
+
+describe('isAutoAnswerEffective', () => {
+  it('isAutoAnswerEffective_ShouldHonorAgentOverride_OverQueueDefault', () => {
+    // Explicit agent override always wins over the queue default.
+    expect(isAutoAnswerEffective(true, false)).toBe(true);
+    expect(isAutoAnswerEffective(false, true)).toBe(false);
+  });
+
+  it('isAutoAnswerEffective_ShouldInheritQueueDefault_WhenAgentUnset', () => {
+    expect(isAutoAnswerEffective(null, true)).toBe(true);
+    expect(isAutoAnswerEffective(undefined, true)).toBe(true);
+    expect(isAutoAnswerEffective(null, false)).toBe(false);
+    expect(isAutoAnswerEffective(undefined, false)).toBe(false);
+  });
+});
+
+describe('autoAnswerCall (gating)', () => {
+  const originalSecure = Object.getOwnPropertyDescriptor(window, 'isSecureContext');
+
+  function setSecureContext(value: boolean) {
+    Object.defineProperty(window, 'isSecureContext', { value, configurable: true });
+  }
+
+  function setMicPermission(state: PermissionState | null) {
+    Object.defineProperty(navigator, 'permissions', {
+      value: state === null ? undefined : { query: vi.fn().mockResolvedValue({ state }) },
+      configurable: true,
+    });
+  }
+
+  afterEach(async () => {
+    await stopSoftphone();
+    SimpleUserMock.mockClear();
+    if (originalSecure) Object.defineProperty(window, 'isSecureContext', originalSecure);
+  });
+
+  it('autoAnswerCall_ShouldReturnNoSoftphone_WhenNotRunning', async () => {
+    setSecureContext(true);
+    setMicPermission('granted');
+    expect(await autoAnswerCall()).toBe('no-softphone');
+  });
+
+  it('autoAnswerCall_ShouldReturnInsecureContext_WhenNotSecure', async () => {
+    await startSoftphone(baseConfig);
+    setSecureContext(false);
+    setMicPermission('granted');
+    expect(await autoAnswerCall()).toBe('insecure-context');
+    expect(lastInstance.current.answer).not.toHaveBeenCalled();
+  });
+
+  it('autoAnswerCall_ShouldReturnMicNotGranted_WhenPermissionDenied', async () => {
+    await startSoftphone(baseConfig);
+    setSecureContext(true);
+    setMicPermission('denied');
+    expect(await autoAnswerCall()).toBe('mic-not-granted');
+    expect(lastInstance.current.answer).not.toHaveBeenCalled();
+  });
+
+  it('autoAnswerCall_ShouldAnswer_WhenSecureAndMicGranted', async () => {
+    await startSoftphone(baseConfig);
+    setSecureContext(true);
+    setMicPermission('granted');
+    expect(await autoAnswerCall()).toBe('answered');
+    expect(lastInstance.current.answer).toHaveBeenCalled();
   });
 });

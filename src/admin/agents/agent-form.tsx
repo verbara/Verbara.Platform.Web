@@ -39,6 +39,10 @@ const agentSchema = z.object({
   // keep the current one.
   extension: z.string().optional(),
   sipPassword: z.string().optional(),
+  // Phase 3B.2b — per-agent auto-answer override. Tri-state: null = inherit the call's queue
+  // default, true/false = explicit. Stored as bool|null so it passes straight through to the
+  // create/update payload (the parent forwards form values verbatim).
+  autoAnswer: z.boolean().nullable().optional(),
 });
 
 export type AgentFormValues = z.infer<typeof agentSchema>;
@@ -74,6 +78,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
       skills: [],
       extension: '',
       sipPassword: '',
+      autoAnswer: null,
       ...defaultValues,
     },
   });
@@ -92,6 +97,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
         skills: [],
         extension: '',
         sipPassword: '',
+        autoAnswer: null,
         ...defaultValues,
       });
     }
@@ -237,6 +243,40 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                 {t('admin:agents.sipPasswordEditHint', 'Leave blank to keep the current password.')}
               </p>
             )}
+          </div>
+
+          {/* Auto-answer (3B.2b) — tri-state: inherit the queue default / always / never. */}
+          <div className="space-y-1.5">
+            <Label htmlFor="agent-auto-answer">{t('admin:agents.autoAnswer', 'Auto-answer')}</Label>
+            <Controller
+              name="autoAnswer"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value === true ? 'on' : field.value === false ? 'off' : 'inherit'}
+                  onValueChange={(v) =>
+                    field.onChange(v === 'on' ? true : v === 'off' ? false : null)
+                  }
+                >
+                  <SelectTrigger className="w-full" data-testid="agent-auto-answer">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inherit">
+                      {t('admin:agents.autoAnswerInherit', 'Inherit queue default')}
+                    </SelectItem>
+                    <SelectItem value="on">{t('admin:agents.autoAnswerOn', 'Always')}</SelectItem>
+                    <SelectItem value="off">{t('admin:agents.autoAnswerOff', 'Never')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t(
+                'admin:agents.autoAnswerHint',
+                'Automatically accept incoming calls without clicking Answer.',
+              )}
+            </p>
           </div>
 
           {/* Skills */}

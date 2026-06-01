@@ -25,6 +25,12 @@ export interface Agent {
    * `['agent-me']` cache in memory and is never persisted to storage.
    */
   sipPassword?: string | null;
+  /**
+   * Per-agent auto-answer override (3B.2b). Tri-state: `null`/`undefined` = inherit the call's queue
+   * default; `true`/`false` = explicit override. The softphone reads this from `GET /agents/me` and
+   * combines it with the screen-pop's queue default to decide whether to auto-accept an inbound call.
+   */
+  autoAnswer?: boolean | null;
   teamId?: string | null;
   teamName?: string | null;
   userEmail?: string | null;
@@ -97,6 +103,7 @@ export type CreateAgentInput = {
   displayName: string;
   extension?: string;
   sipPassword?: string;
+  autoAnswer?: boolean | null;
   queueMemberships?: QueueMembershipInput[];
 };
 
@@ -128,6 +135,7 @@ export function useUpdateAgent() {
       skills?: { name: string; proficiency: number }[];
       extension?: string;
       sipPassword?: string;
+      autoAnswer?: boolean | null;
     }) =>
       customFetch<Agent>({
         url: `/api/v1/admin/agents/${id}`,
