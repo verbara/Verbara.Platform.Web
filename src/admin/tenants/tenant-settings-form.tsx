@@ -81,6 +81,9 @@ function OperationalSection({ settings, update, t }: SectionProps) {
   const [dialplanContextPrefix, setDialplanContextPrefix] = useState<string>(
     settings.operational.dialplanContextPrefix ?? '',
   );
+  const [outboundCallerId, setOutboundCallerId] = useState<string>(
+    settings.operational.outboundCallerId ?? '',
+  );
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const maxChannelsA11y = useFieldA11y(
@@ -123,6 +126,7 @@ function OperationalSection({ settings, update, t }: SectionProps) {
         maxActiveCampaigns: Number(maxActiveCampaigns),
         dialplanContextPrefix:
           dialplanContextPrefix.trim() === '' ? null : dialplanContextPrefix.trim(),
+        outboundCallerId: outboundCallerId.trim() === '' ? null : outboundCallerId.trim(),
       },
     };
 
@@ -208,6 +212,28 @@ function OperationalSection({ settings, update, t }: SectionProps) {
             'tenant-prefix (optional)',
           )}
         />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="ts-outbound-caller-id">
+          {t('tenants.settings.fields.outboundCallerId', 'Outbound caller ID')}
+        </Label>
+        <Input
+          id="ts-outbound-caller-id"
+          data-testid="field-outboundCallerId"
+          value={outboundCallerId}
+          onChange={(e) => setOutboundCallerId(e.target.value)}
+          placeholder={t(
+            'tenants.settings.placeholders.outboundCallerId',
+            '+1 555 010 0000 (optional)',
+          )}
+        />
+        <p className="text-xs text-muted-foreground">
+          {t(
+            'tenants.settings.hints.outboundCallerId',
+            'Number shown on agent click-to-dial and external transfers. Falls back to the trunk default when empty.',
+          )}
+        </p>
       </div>
 
       <div className="flex justify-end">

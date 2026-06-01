@@ -1756,6 +1756,7 @@
         "maxConcurrentChannels": "Max concurrent channels",
         "maxActiveCampaigns": "Max active campaigns",
         "dialplanContextPrefix": "Dialplan context prefix",
+        "outboundCallerId": "Outbound caller ID",
         "mfaPolicy": "MFA policy",
         "passwordMinLength": "Minimum password length",
         "oidcEnabled": "Enable OIDC sign-in",
@@ -1767,8 +1768,12 @@
       },
       "placeholders": {
         "dialplanContextPrefix": "tenant-prefix (optional)",
+        "outboundCallerId": "+1 555 010 0000 (optional)",
         "unlimited": "Leave empty for unlimited",
         "useDefault": "Use platform default"
+      },
+      "hints": {
+        "outboundCallerId": "Number shown on agent click-to-dial and external transfers. Falls back to the trunk default when empty."
       },
       "errors": {
         "maxConcurrentChannelsRequired": "Must be 1 or greater",

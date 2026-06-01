@@ -16,6 +16,8 @@ export interface OperationalSettings {
   dialplanContextPrefix: string | null;
   nodeAffinity: string[] | null;
   allowedDialingModes: number[] | null;
+  /** Tenant-level outbound caller ID for agent click-to-dial + external blind transfer (3B.2d). */
+  outboundCallerId: string | null;
 }
 
 export interface AuthSettings {
@@ -79,6 +81,7 @@ export interface UpdateOperationalPayload {
   dialplanContextPrefix?: string | null;
   nodeAffinity?: string[] | null;
   allowedDialingModes?: number[] | null;
+  outboundCallerId?: string | null;
 }
 
 export interface UpdateAuthPayload {
