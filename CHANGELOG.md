@@ -13,6 +13,23 @@ _No unreleased changes._
 
 ---
 
+## [3.4.0-web] — 2026-06-01 — Telephony admin UX: trunk form, DID module, wizard, connectivity test
+
+Pairs with **Platform v2.8.0**. Makes SIP telephony configurable from the admin UI (previously curl-only).
+
+### Added
+
+- **Complete trunk form** — connection/auth/IP-ACL fields (`matchHost`, `authUsername`/`authPassword`, `registrationUri`, `clientUri`) as Basic + `codecs`/`transport`/`context` as Advanced; `authPassword` write-only; client IP/CIDR validation. (Was a 5-field stub that couldn't create a working trunk.)
+- **DID / inbound-routes module** (`/admin/did-routes`) — list + form + sidebar entry; target queue mandatory (no DID without destination).
+- **Guided trunk creation wizard** — provider templates (Twilio/Telnyx/Flowroute/VoIP.ms/genérico) → connection/auth → media → outbound route → DID → summary, creating trunk + route + DID in one flow (reusable `WizardLayout`).
+- **Trunk connectivity test** — "Probar conectividad" per trunk + result dialog (semaphore + per-check + server diagnostics).
+
+### Notes
+
+- i18n parity EN-US/ES-419/PT-BR maintained.
+
+---
+
 ## [3.3.0-web] — 2026-06-01 — In-browser voice softphone (Inbound Conversation Delivery)
 
 MINOR bump shipping the in-browser voice agent — pairs with **Platform v2.7.0**. An inbound call rings the agent's tab, they answer with two-way WebRTC audio, and the call is a tracked voice Conversation (screen-pop + agent-assist + wrap-up) with full in-call control.
