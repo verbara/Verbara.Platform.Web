@@ -1,4 +1,4 @@
-import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION } from '@/agent/stores/agent-ai-store';
 
 function getSentimentDot(score: number): string {
   if (score > 0.3) return 'bg-green-500';
@@ -6,8 +6,8 @@ function getSentimentDot(score: number): string {
   return 'bg-yellow-400';
 }
 
-export function SentimentGauge() {
-  const sentiment = useAgentAiStore((s) => s.sentiment);
+export function SentimentGauge({ conversationId }: { conversationId: string }) {
+  const sentiment = useAgentAiStore((s) => (s.sessions[conversationId] ?? EMPTY_SESSION).sentiment);
 
   if (!sentiment) return null;
 

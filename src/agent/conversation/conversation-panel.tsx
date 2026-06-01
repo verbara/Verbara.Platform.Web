@@ -93,6 +93,9 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
       voiceConversationId === conversationId &&
       wrapUpPromptedFor !== conversationId
     ) {
+      // Syncing UI to an external system (the softphone call-ended transition); the wrapUpPromptedFor
+      // one-shot guard means this fires at most once per call, so no cascading renders.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWrapUpOpen(true);
       useVoiceCallStore.getState().markWrapUpPrompted(conversationId);
     }
@@ -149,7 +152,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
           <span className="text-xs text-slate-400 dark:text-slate-500">
             {conversation.queueName}
           </span>
-          <SentimentGauge />
+          <SentimentGauge conversationId={conversationId} />
         </div>
 
         {/* Action buttons */}
@@ -225,9 +228,9 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
         </div>
       </div>
 
-      {/* AI Banners */}
-      <SuggestionBanner />
-      <ComplianceAlert />
+      {/* AI Banners (scoped to this conversation — 3B.1 Phase C) */}
+      <SuggestionBanner conversationId={conversationId} />
+      <ComplianceAlert conversationId={conversationId} />
 
       {/* Body: voice calls have no message thread — they show a live-call indicator (controls live
           in the floating call card); contact + history hydrate in the right-side ContextPanel. */}

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { TriangleAlert, ShieldAlert, Info } from 'lucide-react';
-import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION } from '@/agent/stores/agent-ai-store';
 import { Button } from '@/core/ui/button';
 
 const SEVERITY_ICON = {
@@ -9,9 +9,11 @@ const SEVERITY_ICON = {
   Critical: ShieldAlert,
 };
 
-export function ComplianceAlert() {
+export function ComplianceAlert({ conversationId }: { conversationId: string }) {
   const { t } = useTranslation('agent');
-  const complianceAlerts = useAgentAiStore((s) => s.complianceAlerts);
+  const complianceAlerts = useAgentAiStore(
+    (s) => (s.sessions[conversationId] ?? EMPTY_SESSION).complianceAlerts,
+  );
   const acknowledgeAlert = useAgentAiStore((s) => s.acknowledgeAlert);
 
   if (complianceAlerts.length === 0) return null;
@@ -52,7 +54,7 @@ export function ComplianceAlert() {
             <Button
               size="sm"
               variant="destructive"
-              onClick={() => acknowledgeAlert(alert.ruleId)}
+              onClick={() => acknowledgeAlert(conversationId, alert.ruleId)}
               className="shrink-0 text-xs"
             >
               {t('ai.acknowledge')}

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { onSseEvent } from '@/core/hooks/use-sse';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
 
 export interface Conversation {
   id: string;
@@ -210,6 +211,11 @@ export function initConversationSSE() {
     const mapped = mapServerConversationState(event.newState);
     if (mapped === 'terminal') {
       store.removeConversation(event.conversationId);
+      // Release the per-conversation agent-assist session too (3B.1 Phase C). Without this the
+      // keyed store would accumulate the suggestions/sentiment/transcript of every closed
+      // conversation for the lifetime of the tab. WrapUp is NOT terminal, so the transcript stays
+      // available while the agent dispositions the call.
+      useAgentAiStore.getState().clearSession(event.conversationId);
     } else if (mapped) {
       store.upsertConversation({ ...existing, state: mapped });
     }

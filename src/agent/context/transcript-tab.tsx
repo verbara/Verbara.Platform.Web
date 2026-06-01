@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION } from '@/agent/stores/agent-ai-store';
 
-export function TranscriptTab() {
+export function TranscriptTab({ conversationId }: { conversationId: string | null }) {
   const { t, i18n } = useTranslation('agent');
-  const transcript = useAgentAiStore((s) => s.transcript);
+  const transcript = useAgentAiStore((s) =>
+    conversationId
+      ? (s.sessions[conversationId] ?? EMPTY_SESSION).transcript
+      : EMPTY_SESSION.transcript,
+  );
   const timeFmt = new Intl.DateTimeFormat(i18n.language, {
     hour: '2-digit',
     minute: '2-digit',

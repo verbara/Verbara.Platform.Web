@@ -1,7 +1,7 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Send, Headphones, Eye, Square } from 'lucide-react';
-import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, flattenAiSessions } from '@/agent/stores/agent-ai-store';
 import { Button } from '@/core/ui/button';
 import { useSupervisorActions } from '@/core/realtime';
 
@@ -29,7 +29,14 @@ const alertSeverityColors: Record<string, string> = {
 
 export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
   const { t } = useTranslation('operations');
-  const { transcript, suggestions, sentiment, complianceAlerts } = useAgentAiStore();
+  // Agent-assist is now keyed per conversation (3B.1 Phase C); this supervisor monitor has no
+  // per-conversation scoping, so it flattens across whatever sessions exist in this browser. See
+  // flattenAiSessions for the known-incomplete supervisor live-mirror caveat.
+  const sessions = useAgentAiStore((s) => s.sessions);
+  const { transcript, suggestions, sentiment, complianceAlerts } = useMemo(
+    () => flattenAiSessions(sessions),
+    [sessions],
+  );
   const { startSupervision, whisper, stopSupervision } = useSupervisorActions(sessionId);
   const [whisperText, setWhisperText] = useState('');
   const [supervising, setSupervising] = useState(false);
@@ -169,11 +176,7 @@ export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
           onChange={(e) => setWhisperText(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <Button
-          size="sm"
-          onClick={handleSend}
-          disabled={!whisperText.trim() || sending}
-        >
+        <Button size="sm" onClick={handleSend} disabled={!whisperText.trim() || sending}>
           <Send className="mr-1.5 h-3.5 w-3.5" />
           {t('monitor.send')}
         </Button>

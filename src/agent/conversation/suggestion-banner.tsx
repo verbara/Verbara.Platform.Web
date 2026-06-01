@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION } from '@/agent/stores/agent-ai-store';
 
 const PRIORITY_STYLES: Record<string, string> = {
   Informational: 'border-blue-400 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-500',
@@ -19,9 +19,11 @@ const PRIORITY_BADGE: Record<string, string> = {
 
 const AUTO_DISMISS_MS = 15_000;
 
-export function SuggestionBanner() {
+export function SuggestionBanner({ conversationId }: { conversationId: string }) {
   const { t } = useTranslation('agent');
-  const suggestions = useAgentAiStore((s) => s.suggestions);
+  const suggestions = useAgentAiStore(
+    (s) => (s.sessions[conversationId] ?? EMPTY_SESSION).suggestions,
+  );
   const dismissSuggestion = useAgentAiStore((s) => s.dismissSuggestion);
 
   // Track timers by suggestion id
@@ -43,7 +45,7 @@ export function SuggestionBanner() {
     for (const suggestion of visible) {
       if (!timersRef.current.has(suggestion.id)) {
         const timer = setTimeout(() => {
-          dismissSuggestion(suggestion.id);
+          dismissSuggestion(conversationId, suggestion.id);
           timersRef.current.delete(suggestion.id);
         }, AUTO_DISMISS_MS);
         timersRef.current.set(suggestion.id, timer);
@@ -53,7 +55,7 @@ export function SuggestionBanner() {
     return () => {
       // Cleanup on unmount
     };
-  }, [suggestions, dismissSuggestion]);
+  }, [suggestions, dismissSuggestion, conversationId]);
 
   const visible = suggestions.slice(0, 3);
 
@@ -64,8 +66,7 @@ export function SuggestionBanner() {
       {visible.map((suggestion) => {
         const borderStyle =
           PRIORITY_STYLES[suggestion.priority] ?? PRIORITY_STYLES['Informational'];
-        const badgeStyle =
-          PRIORITY_BADGE[suggestion.priority] ?? PRIORITY_BADGE['Informational'];
+        const badgeStyle = PRIORITY_BADGE[suggestion.priority] ?? PRIORITY_BADGE['Informational'];
 
         return (
           <div
@@ -74,7 +75,9 @@ export function SuggestionBanner() {
           >
             <div className="flex-1 space-y-0.5">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${badgeStyle}`}>
+                <span
+                  className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${badgeStyle}`}
+                >
                   {t('ai.suggestion')} · {suggestion.priority}
                 </span>
                 {suggestion.source && (
@@ -86,7 +89,7 @@ export function SuggestionBanner() {
               <p className="text-slate-800 dark:text-slate-100">{suggestion.text}</p>
             </div>
             <button
-              onClick={() => dismissSuggestion(suggestion.id)}
+              onClick={() => dismissSuggestion(conversationId, suggestion.id)}
               className="mt-0.5 shrink-0 rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
               aria-label={t('ai.dismiss')}
             >

@@ -179,11 +179,15 @@ export function useSSE() {
       }
     });
 
+    // agentassist.* events route into the per-conversation slice of useAgentAiStore (3B.1 Phase C).
+    // The server stamps every event with `conversationId`; without it we drop the store write (a
+    // legacy/malformed event must not bleed into an arbitrary conversation) but still fan out to any
+    // manual handlers.
     source.addEventListener('agentassist.suggestion', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        if (isForCurrentAgent(data.agentId, currentAgentId())) {
-          useAgentAiStore.getState().addSuggestion(data.suggestion ?? data);
+        if (isForCurrentAgent(data.agentId, currentAgentId()) && data.conversationId) {
+          useAgentAiStore.getState().addSuggestion(data.conversationId, data.suggestion ?? data);
         }
         handlers['agentassist.suggestion']?.forEach((h) => h(data));
       } catch {
@@ -194,8 +198,8 @@ export function useSSE() {
     source.addEventListener('agentassist.sentiment', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        if (isForCurrentAgent(data.agentId, currentAgentId())) {
-          useAgentAiStore.getState().updateSentiment(data.sentiment ?? data);
+        if (isForCurrentAgent(data.agentId, currentAgentId()) && data.conversationId) {
+          useAgentAiStore.getState().updateSentiment(data.conversationId, data.sentiment ?? data);
         }
         handlers['agentassist.sentiment']?.forEach((h) => h(data));
       } catch {
@@ -206,8 +210,8 @@ export function useSSE() {
     source.addEventListener('agentassist.compliance_alert', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        if (isForCurrentAgent(data.agentId, currentAgentId())) {
-          useAgentAiStore.getState().addComplianceAlert(data.alert ?? data);
+        if (isForCurrentAgent(data.agentId, currentAgentId()) && data.conversationId) {
+          useAgentAiStore.getState().addComplianceAlert(data.conversationId, data.alert ?? data);
         }
         handlers['agentassist.compliance_alert']?.forEach((h) => h(data));
       } catch {
@@ -218,8 +222,8 @@ export function useSSE() {
     source.addEventListener('agentassist.transcript', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data);
-        if (isForCurrentAgent(data.agentId, currentAgentId())) {
-          useAgentAiStore.getState().addTranscript(data.segment ?? data);
+        if (isForCurrentAgent(data.agentId, currentAgentId()) && data.conversationId) {
+          useAgentAiStore.getState().addTranscript(data.conversationId, data.segment ?? data);
         }
         handlers['agentassist.transcript']?.forEach((h) => h(data));
       } catch {
