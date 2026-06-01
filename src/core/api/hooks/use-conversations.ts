@@ -150,14 +150,7 @@ export function useTransferConversation() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({
-      id,
-      ...data
-    }: {
-      id: string;
-      targetQueueId?: string;
-      targetAgentId?: string;
-    }) =>
+    mutationFn: ({ id, ...data }: { id: string; targetQueueId?: string; targetAgentId?: string }) =>
       customFetch<void>({
         url: `/api/v1/conversations/${id}/transfer`,
         method: 'POST',
@@ -168,6 +161,30 @@ export function useTransferConversation() {
       toast.success(t('toasts.conversations.transferred'));
     },
     onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+/** Server result of a blind voice transfer (3B.2c). On success `accepted` is true. */
+export interface VoiceTransferResult {
+  accepted: boolean;
+  error?: string | null;
+}
+
+/**
+ * Blind-transfer a live VOICE call to a queue or another agent (3B.2c). Distinct from
+ * {@link useTransferConversation} (the digital re-queue): the backend redirects the customer's
+ * trunk leg via AMI (the browser softphone is a single SIP.js session and cannot REFER), so this
+ * is a thin POST. Success/close UX lives in `voice-transfer-dialog` — the agent leg then drops and
+ * the existing hangup→wrap-up flow takes over. External targets arrive in 3B.2d.
+ */
+export function useVoiceTransfer() {
+  return useMutation({
+    mutationFn: ({ id, kind, target }: { id: string; kind: 'queue' | 'agent'; target: string }) =>
+      customFetch<VoiceTransferResult>({
+        url: `/api/v1/conversations/${id}/voice-transfer`,
+        method: 'POST',
+        data: { kind, target },
+      }),
   });
 }
 

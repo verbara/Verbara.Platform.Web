@@ -40,6 +40,13 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+// Stub the transfer dialog (its own suite covers the picker) — here we only assert the call-card
+// surfaces the trigger and opens it.
+vi.mock('./voice-transfer-dialog', () => ({
+  VoiceTransferDialog: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="voice-transfer-dialog-stub" /> : null,
+}));
+
 import { CallCard } from './call-card';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 
@@ -142,5 +149,40 @@ describe('CallCard', () => {
     expect(screen.queryByTestId('voice-dtmf-dialpad')).toBeNull();
     fireEvent.click(screen.getByTestId('voice-dialpad-btn'));
     expect(screen.getByTestId('voice-dtmf-dialpad')).toBeInTheDocument();
+  });
+
+  it('CallCard_ShouldNotShowTransfer_WhenNotAssociated', () => {
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    useVoiceCallStore.getState().answered();
+    renderCard();
+    // Transfer POSTs to /conversations/{id}/voice-transfer — without the screen-pop correlation
+    // there is no conversation id, so the trigger stays hidden.
+    expect(screen.queryByTestId('voice-transfer-btn')).toBeNull();
+  });
+
+  it('CallCard_ShouldShowTransfer_WhenActiveAndAssociated', () => {
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    useVoiceCallStore.getState().answered();
+    useVoiceCallStore.getState().associateConversation({
+      conversationId: 'conv-1',
+      callerName: 'Acme',
+      callerNumber: '123',
+    });
+    renderCard();
+    expect(screen.getByTestId('voice-transfer-btn')).toBeInTheDocument();
+  });
+
+  it('CallCard_ShouldOpenTransferDialog_WhenTransferClicked', () => {
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    useVoiceCallStore.getState().answered();
+    useVoiceCallStore.getState().associateConversation({
+      conversationId: 'conv-1',
+      callerName: 'Acme',
+      callerNumber: '123',
+    });
+    renderCard();
+    expect(screen.queryByTestId('voice-transfer-dialog-stub')).toBeNull();
+    fireEvent.click(screen.getByTestId('voice-transfer-btn'));
+    expect(screen.getByTestId('voice-transfer-dialog-stub')).toBeInTheDocument();
   });
 });

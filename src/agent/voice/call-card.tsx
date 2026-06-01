@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Phone, PhoneOff, PhoneIncoming, Pause, Play, Mic, MicOff, Grid3x3 } from 'lucide-react';
+import {
+  Phone,
+  PhoneOff,
+  PhoneIncoming,
+  Pause,
+  Play,
+  Mic,
+  MicOff,
+  Grid3x3,
+  ArrowRightLeft,
+} from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 import { useConversationStore } from '@/agent/stores/conversation-store';
@@ -15,6 +25,7 @@ import {
   unmuteCall,
 } from '@/core/voice/softphone-manager';
 import { DtmfDialpad } from './dtmf-dialpad';
+import { VoiceTransferDialog } from './voice-transfer-dialog';
 
 function formatElapsed(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -45,6 +56,7 @@ export function CallCard() {
   // so we never call setState synchronously inside the effect.
   const [now, setNow] = useState(() => Date.now());
   const [dialpadOpen, setDialpadOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
 
   useEffect(() => {
     if (phase !== 'active' || startedAt == null) return;
@@ -164,6 +176,21 @@ export function CallCard() {
             </Button>
           </div>
           {dialpadOpen && <DtmfDialpad />}
+          {/* Blind transfer (3B.2c) — only once the call is correlated to its tracked Conversation
+              (the transfer POSTs to /conversations/{id}/voice-transfer). Server-side AMI redirect of
+              the customer leg; the agent leg then drops into the existing wrap-up flow. */}
+          {associatedConversationId && (
+            <Button
+              data-testid="voice-transfer-btn"
+              variant="outline"
+              size="sm"
+              className="mt-2 w-full"
+              onClick={() => setTransferOpen(true)}
+            >
+              <ArrowRightLeft data-icon="inline-start" />
+              {t('voice.transfer.open', 'Transfer')}
+            </Button>
+          )}
         </>
       )}
 
@@ -181,6 +208,14 @@ export function CallCard() {
         >
           {t('voice.open_conversation')}
         </button>
+      )}
+
+      {associatedConversationId && (
+        <VoiceTransferDialog
+          open={transferOpen}
+          onOpenChange={setTransferOpen}
+          conversationId={associatedConversationId}
+        />
       )}
     </div>
   );

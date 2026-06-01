@@ -173,6 +173,19 @@
     "mute": "Mute",
     "unmute": "Unmute",
     "dialpad": "Dialpad",
-    "auto_answer_skipped": "Auto-answer skipped (microphone not available)"
+    "auto_answer_skipped": "Auto-answer skipped (microphone not available)",
+    "transfer": {
+      "open": "Transfer",
+      "title": "Transfer call",
+      "description": "Forward this call to a queue or another agent. Your line is released on confirm.",
+      "to_queue": "To a queue",
+      "to_agent": "To an agent",
+      "search": "Search destination…",
+      "no_results": "No results",
+      "submit": "Transfer",
+      "cancel": "Cancel",
+      "success": "Call transferred",
+      "failed": "Could not transfer the call"
+    }
   }
 }

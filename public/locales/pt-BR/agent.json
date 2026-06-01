@@ -173,6 +173,19 @@
     "mute": "Mudo",
     "unmute": "Ativar microfone",
     "dialpad": "Teclado",
-    "auto_answer_skipped": "Resposta automática ignorada (microfone indisponível)"
+    "auto_answer_skipped": "Resposta automática ignorada (microfone indisponível)",
+    "transfer": {
+      "open": "Transferir",
+      "title": "Transferir chamada",
+      "description": "Encaminhe esta chamada para uma fila ou outro agente. Sua linha é liberada ao confirmar.",
+      "to_queue": "Para uma fila",
+      "to_agent": "Para um agente",
+      "search": "Buscar destino…",
+      "no_results": "Sem resultados",
+      "submit": "Transferir",
+      "cancel": "Cancelar",
+      "success": "Chamada transferida",
+      "failed": "Não foi possível transferir a chamada"
+    }
   }
 }
