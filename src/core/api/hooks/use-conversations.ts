@@ -188,6 +188,30 @@ export function useVoiceTransfer() {
   });
 }
 
+/** Server result of an agent click-to-dial (3B.2d). On success `correlationId` is the outbound Conversation id. */
+export interface VoiceDialResult {
+  accepted: boolean;
+  correlationId?: string | null;
+  error?: string | null;
+}
+
+/**
+ * Agent click-to-dial (3B.2d): server-side AMI Originate of an outbound call (reusing the Pro Dialer
+ * stack — caller-ID, route→trunk, DNC). The Originate rings the agent's OWN softphone leg; the returned
+ * `correlationId` (the tracked outbound Conversation id) is handed to `voice-call-store.startOutbound`
+ * so the call card shows "Dialing …" optimistically and the softphone auto-answers the agent leg.
+ */
+export function useVoiceDial() {
+  return useMutation({
+    mutationFn: ({ toNumber, contactId }: { toNumber?: string; contactId?: string }) =>
+      customFetch<VoiceDialResult>({
+        url: '/api/v1/voice/dial',
+        method: 'POST',
+        data: { toNumber, contactId },
+      }),
+  });
+}
+
 export function useCloseConversation() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');

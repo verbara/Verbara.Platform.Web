@@ -6,6 +6,17 @@ export type SoftphoneRegistration = 'offline' | 'connecting' | 'registered' | 'd
 /** Lifecycle of the single in-browser voice call (Phase 3A — one call at a time). */
 export type VoiceCallPhase = 'idle' | 'ringing' | 'active' | 'ended';
 
+/** Who initiated the call (3B.2d). Inbound = a customer rang in; outbound = the agent clicked-to-dial. */
+export type VoiceCallDirection = 'inbound' | 'outbound';
+
+/** Optimistic outbound state set the moment the dial POST returns, before the SIP leg rings (3B.2d). */
+export interface PendingDial {
+  /** The dialed number (shown as "Dialing …" until the agent leg connects). */
+  number: string;
+  /** The tracked outbound Conversation id returned by POST /voice/dial — used to correlate the SIP leg. */
+  correlationId: string;
+}
+
 interface VoiceCallState {
   /** Softphone REGISTER state, driven by the SIP.js delegate. */
   registration: SoftphoneRegistration;
@@ -46,11 +57,29 @@ interface VoiceCallState {
   queueAutoAnswerDefault: boolean;
   /** One-shot guard so auto-answer fires at most once per call. Re-armed on `incoming`/`reset`. */
   autoAnswered: boolean;
+  /**
+   * Direction of the live call (3B.2d). Inbound is the default (a customer rang in); set to outbound by
+   * {@link startOutbound} when the agent clicks-to-dial. Re-armed to inbound on every fresh call.
+   */
+  direction: VoiceCallDirection;
+  /**
+   * Outbound dial in flight (3B.2d): set optimistically when POST /voice/dial returns, before the SIP
+   * leg rings, so the card can show "Dialing {number}" immediately. The softphone delegate reads it to
+   * recognise the inbound INVITE as the agent's own outbound leg and auto-answer it. Cleared on a fresh
+   * inbound call / reset.
+   */
+  pendingDial: PendingDial | null;
   /** Last softphone error surfaced to the UI. */
   error: string | null;
 
   setRegistration: (r: SoftphoneRegistration) => void;
   incoming: (callerId: string, callerNumber: string) => void;
+  /**
+   * Begin an agent-initiated outbound call (3B.2d): goes straight to a ringing/"Dialing" card and links
+   * the tracked outbound Conversation (its id is the dial's correlation id) up front — the screen-pop is
+   * not needed on the initiating client. The softphone auto-answers the agent leg when the INVITE lands.
+   */
+  startOutbound: (args: { number: string; correlationId: string }) => void;
   answered: () => void;
   ended: () => void;
   /** Mirror the SIP.js hold state into the store (the softphone-manager wrapper drives this). */
@@ -87,6 +116,8 @@ const idle = {
   isMuted: false,
   queueAutoAnswerDefault: false,
   autoAnswered: false,
+  direction: 'inbound' as VoiceCallDirection,
+  pendingDial: null as PendingDial | null,
 };
 
 export const useVoiceCallStore = create<VoiceCallState>()((set) => ({
@@ -99,9 +130,30 @@ export const useVoiceCallStore = create<VoiceCallState>()((set) => ({
   incoming: (callerId, callerNumber) =>
     set({
       phase: 'ringing',
+      direction: 'inbound',
+      pendingDial: null,
       callerId,
       callerNumber,
       associatedConversationId: null,
+      wrapUpPromptedFor: null,
+      startedAt: null,
+      isHeld: false,
+      isMuted: false,
+      queueAutoAnswerDefault: false,
+      autoAnswered: false,
+      error: null,
+    }),
+
+  startOutbound: ({ number, correlationId }) =>
+    set({
+      phase: 'ringing',
+      direction: 'outbound',
+      pendingDial: { number, correlationId },
+      // The dial response carries the tracked Conversation id, so the initiating client correlates up
+      // front — no server screen-pop needed for re-entry/transfer affordances on this call.
+      associatedConversationId: correlationId,
+      callerId: number,
+      callerNumber: number,
       wrapUpPromptedFor: null,
       startedAt: null,
       isHeld: false,

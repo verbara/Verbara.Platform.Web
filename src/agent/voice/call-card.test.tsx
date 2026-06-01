@@ -185,4 +185,23 @@ describe('CallCard', () => {
     fireEvent.click(screen.getByTestId('voice-transfer-btn'));
     expect(screen.getByTestId('voice-transfer-dialog-stub')).toBeInTheDocument();
   });
+
+  it('CallCard_ShouldShowDialingVariant_WhenOutboundRinging', () => {
+    useVoiceCallStore
+      .getState()
+      .startOutbound({ number: '+15551234567', correlationId: 'conv-out' });
+    renderCard();
+    // Outbound ringing = "Dialing": a cancel button, NOT answer/reject.
+    expect(screen.getByTestId('voice-cancel-dial-btn')).toBeInTheDocument();
+    expect(screen.queryByTestId('voice-answer-btn')).toBeNull();
+    expect(screen.queryByTestId('voice-reject-btn')).toBeNull();
+    expect(screen.getByTestId('voice-caller-id')).toHaveTextContent('+15551234567');
+  });
+
+  it('CallCard_ShouldHangup_WhenCancelDialClicked', () => {
+    useVoiceCallStore.getState().startOutbound({ number: '+1', correlationId: 'conv-out' });
+    renderCard();
+    fireEvent.click(screen.getByTestId('voice-cancel-dial-btn'));
+    expect(hangupCallMock).toHaveBeenCalled();
+  });
 });

@@ -174,6 +174,10 @@
     "unmute": "Activar micrófono",
     "dialpad": "Teclado",
     "auto_answer_skipped": "Auto-respuesta omitida (micrófono no disponible)",
+    "dialing": "Marcando",
+    "cancel_dial": "Cancelar",
+    "call_contact": "Llamar",
+    "dial_failed": "No se pudo realizar la llamada",
     "transfer": {
       "open": "Transferir",
       "title": "Transferir llamada",

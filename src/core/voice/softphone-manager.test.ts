@@ -102,6 +102,21 @@ describe('softphone-manager', () => {
     await startSoftphone(baseConfig);
     lastInstance.current.delegate.onCallReceived();
     expect(useVoiceCallStore.getState().phase).toBe('ringing');
+    expect(useVoiceCallStore.getState().direction).toBe('inbound');
+  });
+
+  it('onCallReceived_ShouldKeepOutboundContext_WhenDialing', async () => {
+    // 3B.2d: an in-flight click-to-dial means the INVITE is the agent's own outbound leg — the delegate
+    // must NOT reset it to a fresh inbound call (which would wipe direction/pendingDial).
+    await startSoftphone(baseConfig);
+    useVoiceCallStore
+      .getState()
+      .startOutbound({ number: '+15551234567', correlationId: 'conv-out' });
+    lastInstance.current.delegate.onCallReceived();
+    const s = useVoiceCallStore.getState();
+    expect(s.direction).toBe('outbound');
+    expect(s.pendingDial).toEqual({ number: '+15551234567', correlationId: 'conv-out' });
+    expect(s.associatedConversationId).toBe('conv-out');
   });
 
   it('onRegistered_ShouldSetStoreRegistered', async () => {

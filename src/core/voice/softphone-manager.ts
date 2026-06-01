@@ -83,7 +83,18 @@ export async function startSoftphone(config: SoftphoneConfig): Promise<void> {
     onUnregistered: () => useVoiceCallStore.getState().setRegistration('disconnected'),
     // 3A: caller identity is not exposed by SimpleUser; the call card shows a
     // generic "incoming call". 3B populates callerId from the Conversation.
-    onCallReceived: () => useVoiceCallStore.getState().incoming('', ''),
+    // 3B.2d: an in-flight click-to-dial (pendingDial set by startOutbound) means this INVITE is the
+    // agent's OWN outbound leg — auto-answer it (intent is implicit) rather than offering answer/reject.
+    onCallReceived: () => {
+      const store = useVoiceCallStore.getState();
+      if (store.direction === 'outbound' && store.pendingDial) {
+        // Agent-initiated outbound: the INVITE is our own A-leg — auto-accept it (intent is implicit).
+        // On the rare mic-not-granted case the leg simply keeps ringing for the agent to answer/cancel.
+        void autoAnswerCall();
+        return;
+      }
+      store.incoming('', '');
+    },
     onCallAnswered: () => useVoiceCallStore.getState().answered(),
     onCallHangup: () => useVoiceCallStore.getState().ended(),
   };

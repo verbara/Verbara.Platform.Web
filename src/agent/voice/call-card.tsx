@@ -45,6 +45,7 @@ function formatElapsed(ms: number): string {
 export function CallCard() {
   const { t } = useTranslation('agent');
   const phase = useVoiceCallStore((s) => s.phase);
+  const direction = useVoiceCallStore((s) => s.direction);
   const callerId = useVoiceCallStore((s) => s.callerId);
   const associatedConversationId = useVoiceCallStore((s) => s.associatedConversationId);
   const startedAt = useVoiceCallStore((s) => s.startedAt);
@@ -67,6 +68,7 @@ export function CallCard() {
   if (phase !== 'ringing' && phase !== 'active') return null;
 
   const ringing = phase === 'ringing';
+  const dialing = ringing && direction === 'outbound';
   const elapsed =
     phase === 'active' && startedAt != null ? formatElapsed(now - startedAt) : '00:00';
   const caller = callerId || t('voice.unknown_caller', 'Unknown caller');
@@ -79,11 +81,15 @@ export function CallCard() {
     >
       <div className="mb-3 flex items-center gap-2">
         <span className="flex size-9 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-          {ringing ? <PhoneIncoming size={18} /> : <Phone size={18} />}
+          {ringing && !dialing ? <PhoneIncoming size={18} /> : <Phone size={18} />}
         </span>
         <div className="min-w-0">
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            {ringing ? t('voice.incoming') : t('voice.in_call')}
+            {dialing
+              ? t('voice.dialing', 'Dialing')
+              : ringing
+                ? t('voice.incoming')
+                : t('voice.in_call')}
           </p>
           <p
             data-testid="voice-caller-id"
@@ -103,7 +109,17 @@ export function CallCard() {
       </div>
 
       <div className="flex gap-2">
-        {ringing ? (
+        {dialing ? (
+          <Button
+            data-testid="voice-cancel-dial-btn"
+            variant="destructive"
+            className="flex-1"
+            onClick={() => void hangupCall()}
+          >
+            <PhoneOff data-icon="inline-start" />
+            {t('voice.cancel_dial', 'Cancel')}
+          </Button>
+        ) : ringing ? (
           <>
             <Button
               data-testid="voice-answer-btn"

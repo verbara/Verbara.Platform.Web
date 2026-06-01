@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { User, Phone, Mail, Building2, Globe, MessageSquare, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
@@ -10,7 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { useConversationStore } from '@/agent/stores/conversation-store';
+import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
+import { useVoiceDial } from '@/core/api/hooks/use-conversations';
 import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 function InfoRow({
@@ -82,6 +85,13 @@ export function ContactInfo() {
   const updateContact = useUpdateContact();
   const deleteContact = useDeleteContact();
 
+  // Click-to-dial (3B.2d): only when the softphone is registered and no call is in progress
+  // (single-session). The dial response carries the tracked outbound Conversation id.
+  const registration = useVoiceCallStore((s) => s.registration);
+  const callPhase = useVoiceCallStore((s) => s.phase);
+  const startOutbound = useVoiceCallStore((s) => s.startOutbound);
+  const dial = useVoiceDial();
+
   const conversation = selectedId ? conversations[selectedId] : null;
   const contactId = conversation?.contactId;
   const { data: contact } = useContact(contactId);
@@ -148,6 +158,33 @@ export function ContactInfo() {
         value={phone}
         copyable={phone !== '—'}
       />
+      {rawPhone !== '—' && registration === 'registered' && (
+        <Button
+          data-testid="contact-call-btn"
+          variant="outline"
+          size="sm"
+          className="mt-1 w-full"
+          disabled={dial.isPending || callPhase !== 'idle'}
+          onClick={() => {
+            dial.mutate(
+              { toNumber: rawPhone, contactId: contact.id },
+              {
+                onSuccess: (res) => {
+                  if (res.accepted && res.correlationId) {
+                    startOutbound({ number: rawPhone, correlationId: res.correlationId });
+                  } else {
+                    toast.error(t('voice.dial_failed', 'Could not place the call'));
+                  }
+                },
+                onError: () => toast.error(t('voice.dial_failed', 'Could not place the call')),
+              },
+            );
+          }}
+        >
+          <Phone data-icon="inline-start" />
+          {t('voice.call_contact', 'Call')}
+        </Button>
+      )}
       <InfoRow
         icon={Mail}
         label={t('agent:context.email')}

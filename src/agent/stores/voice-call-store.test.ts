@@ -148,6 +148,39 @@ describe('VoiceCallStore', () => {
     expect(useVoiceCallStore.getState().autoAnswered).toBe(true);
   });
 
+  it('direction_ShouldDefaultInbound', () => {
+    expect(useVoiceCallStore.getState().direction).toBe('inbound');
+  });
+
+  it('startOutbound_ShouldEnterDialing_AndLinkConversationUpFront', () => {
+    useVoiceCallStore
+      .getState()
+      .startOutbound({ number: '+15551234567', correlationId: 'conv-out' });
+    const s = useVoiceCallStore.getState();
+    expect(s.phase).toBe('ringing');
+    expect(s.direction).toBe('outbound');
+    expect(s.callerId).toBe('+15551234567');
+    expect(s.pendingDial).toEqual({ number: '+15551234567', correlationId: 'conv-out' });
+    // The dial response carries the tracked Conversation id — correlated immediately, no screen-pop.
+    expect(s.associatedConversationId).toBe('conv-out');
+  });
+
+  it('incoming_ShouldResetDirectionAndPendingDial_ForFreshInbound', () => {
+    useVoiceCallStore.getState().startOutbound({ number: '+1', correlationId: 'c' });
+    useVoiceCallStore.getState().incoming('Acme', '123');
+    const s = useVoiceCallStore.getState();
+    expect(s.direction).toBe('inbound');
+    expect(s.pendingDial).toBeNull();
+  });
+
+  it('reset_ShouldClearDirectionAndPendingDial', () => {
+    useVoiceCallStore.getState().startOutbound({ number: '+1', correlationId: 'c' });
+    useVoiceCallStore.getState().reset();
+    const s = useVoiceCallStore.getState();
+    expect(s.direction).toBe('inbound');
+    expect(s.pendingDial).toBeNull();
+  });
+
   it('incoming_ShouldReArmAutoAnswerState_ForFreshCall', () => {
     useVoiceCallStore.getState().associateConversation({
       conversationId: 'c1',
