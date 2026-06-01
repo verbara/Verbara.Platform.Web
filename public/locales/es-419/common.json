@@ -216,7 +216,13 @@
     "trunks": {
       "created": "Trunk creado",
       "updated": "Trunk actualizado",
-      "deleted": "Trunk eliminado"
+      "deleted": "Trunk eliminado",
+      "connectivityNotFound": "Troncal no encontrada"
+    },
+    "didRoutes": {
+      "created": "DID creado",
+      "updated": "DID actualizado",
+      "deleted": "DID eliminado"
     },
     "flows": {
       "created": "Flujo creado",

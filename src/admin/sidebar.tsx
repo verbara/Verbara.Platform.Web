@@ -11,6 +11,7 @@ import {
   Megaphone,
   Cable,
   Route,
+  PhoneIncoming,
   Phone,
   ShieldBan,
   ShieldCheck,
@@ -190,6 +191,13 @@ const groups: SidebarGroup[] = [
         labelKey: 'admin:sidebar.routes',
         to: '/admin/routes',
         icon: Route,
+        requiredPermission: 'system:integration:manage',
+      },
+      {
+        key: 'did-routes',
+        labelKey: 'admin:sidebar.didRoutes',
+        to: '/admin/did-routes',
+        icon: PhoneIncoming,
         requiredPermission: 'system:integration:manage',
       },
       {

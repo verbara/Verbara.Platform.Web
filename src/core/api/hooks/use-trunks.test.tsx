@@ -9,6 +9,8 @@ import {
   useDeleteTrunk,
   useActiveTrunks,
   useTrunkByName,
+  useTestTrunkConnectivity,
+  type TrunkConnectivityResult,
 } from './use-trunks';
 import * as client from '@/core/api/client';
 
@@ -227,6 +229,58 @@ describe('useTrunkByName', () => {
   it('should handle error when fetch fails', async () => {
     vi.mocked(client.customFetch).mockRejectedValue(new Error('Not found'));
     const { result } = renderHook(() => useTrunkByName('trunk-main'), { wrapper });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useTestTrunkConnectivity', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const okReport: TrunkConnectivityResult = {
+    trunkId: 7,
+    endpointId: 't-7',
+    endpointFound: true,
+    authMode: 'register',
+    registered: true,
+    identifyPresent: null,
+    reachable: true,
+    ok: true,
+    messages: ['Registrado contra el carrier'],
+  };
+
+  it('should POST to the test-connectivity endpoint with no body', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(okReport);
+    const { result } = renderHook(() => useTestTrunkConnectivity(), { wrapper });
+    act(() => {
+      result.current.mutate(7);
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/trunks/7/test-connectivity',
+      method: 'POST',
+    });
+    expect(result.current.data).toEqual(okReport);
+  });
+
+  it('should return the report even when ok is false (200 diagnostic)', async () => {
+    const failReport: TrunkConnectivityResult = { ...okReport, ok: false, registered: false };
+    vi.mocked(client.customFetch).mockResolvedValue(failReport);
+    const { result } = renderHook(() => useTestTrunkConnectivity(), { wrapper });
+    act(() => {
+      result.current.mutate(7);
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.ok).toBe(false);
+  });
+
+  it('should surface an error when the trunk is missing (404)', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new Error('API error: 404'));
+    const { result } = renderHook(() => useTestTrunkConnectivity(), { wrapper });
+    act(() => {
+      result.current.mutate(999);
+    });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

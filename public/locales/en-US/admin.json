@@ -12,6 +12,7 @@
     "telephony": "Telephony",
     "trunks": "Trunks",
     "routes": "Routes",
+    "didRoutes": "DID / Inbound numbers",
     "callerIdPools": "Caller ID Pools",
     "compliance": "Compliance",
     "dncLists": "DNC Lists",
@@ -690,6 +691,14 @@
     "displayName": "Display Name",
     "type": "Type",
     "maxChannels": "Max Channels",
+    "matchHost": "Provider IP / CIDR",
+    "authUsername": "Auth Username",
+    "authPassword": "Auth Password",
+    "registrationUri": "Registration URI",
+    "clientUri": "Client URI",
+    "codecs": "Codecs",
+    "transport": "Transport",
+    "context": "Context",
     "status": "Status",
     "searchPlaceholder": "Search trunks...",
     "save": "Save Changes",
@@ -702,6 +711,20 @@
       "display_name_placeholder": "My Primary Trunk",
       "select_type": "Select type",
       "active": "Active",
+      "match_host_placeholder": "203.0.113.10 or 203.0.113.0/24",
+      "match_host_hint": "Carrier source IP or CIDR allowed to send calls (IP-ACL).",
+      "auth_username_placeholder": "carrier-username",
+      "auth_password_placeholder": "Carrier secret",
+      "auth_password_edit_placeholder": "Leave blank to keep current password",
+      "auth_password_hint": "Stored encrypted and never displayed. Leave blank to keep the existing one.",
+      "registration_uri_placeholder": "sip:user@carrier.example.com",
+      "client_uri_placeholder": "sip:user@carrier.example.com",
+      "advanced": "Advanced settings",
+      "codecs_placeholder": "ulaw,alaw",
+      "transport_placeholder": "Server default",
+      "transport_hint": "Leave empty to use the server default transport.",
+      "context_placeholder": "from-trunk",
+      "context_hint": "Do not change unless you know what you are doing.",
       "submit_create": "Add Trunk",
       "submit_edit": "Save Changes"
     },
@@ -709,9 +732,162 @@
     "validation": {
       "nameRequired": "Name is required",
       "displayNameRequired": "Display name is required",
-      "maxChannelsAtLeastOne": "Must be at least 1"
+      "maxChannelsAtLeastOne": "Must be at least 1",
+      "matchHostInvalid": "Enter a valid IP address or CIDR range"
     },
-    "searchByNamePlaceholder": "Search trunk by name..."
+    "searchByNamePlaceholder": "Search trunk by name...",
+    "connectivity": {
+      "button": "Test connectivity",
+      "dialogTitle": "Trunk connectivity test",
+      "loading": "Testing connectivity…",
+      "verdictOk": "Trunk is reachable",
+      "verdictFail": "Trunk has issues",
+      "noMessages": "No diagnostics returned.",
+      "pass": "OK",
+      "fail": "Failed",
+      "notApplicable": "N/A",
+      "checks": {
+        "endpoint": "Endpoint",
+        "reachable": "Reachable",
+        "registered": "Registration",
+        "identify": "IP-ACL identify",
+        "authMode": "Auth mode"
+      },
+      "authMode": {
+        "ip-acl": "By IP (IP-ACL)",
+        "register": "With registration",
+        "none": "None"
+      }
+    },
+    "wizard": {
+      "launchButton": "New trunk (guided)",
+      "title": "Trunk wizard",
+      "subtitle": "Set up a working SIP trunk step by step: provider, authentication, outbound route and inbound DID.",
+      "creating": "Creating...",
+      "finish": "Create and activate",
+      "steps": {
+        "provider": "Provider",
+        "connection": "Connection",
+        "media": "Codecs",
+        "outbound": "Outbound route",
+        "inbound": "Inbound DID",
+        "review": "Review"
+      },
+      "authMode": {
+        "ip-acl": "By IP (IP-ACL)",
+        "register": "With registration"
+      },
+      "provider": {
+        "description": "Pick your SIP provider. We seed the recommended values; you can tweak them later."
+      },
+      "providers": {
+        "twilio": {
+          "name": "Twilio",
+          "hint": "Twilio Elastic SIP Trunking (Termination/Origination).",
+          "ipHint": "Use Twilio Edge IP ranges from Console → Elastic SIP Trunking → IP Access Control Lists.",
+          "credHint": "Twilio uses IP-ACL by default; credentials are optional."
+        },
+        "telnyx": {
+          "name": "Telnyx",
+          "hint": "Telnyx SIP Trunking (FQDN / IP authentication).",
+          "ipHint": "Configure the authorized IP group in the Telnyx portal → SIP Connections.",
+          "credHint": "Telnyx authenticates by IP by default."
+        },
+        "flowroute": {
+          "name": "Flowroute",
+          "hint": "Flowroute Inbound/Outbound trunk.",
+          "ipHint": "Flowroute authorizes by IP/CIDR; add the range under Preferences → SIP.",
+          "credHint": "Flowroute authenticates by IP by default."
+        },
+        "voipms": {
+          "name": "VoIP.ms",
+          "hint": "VoIP.ms sub-account (username/password authentication).",
+          "ipHint": "VoIP.ms allows an optional static IP under Main Menu → Account Settings.",
+          "credHint": "Use your VoIP.ms sub-account username and password."
+        },
+        "generic": {
+          "name": "Generic SIP",
+          "hint": "Any other SIP/PJSIP provider.",
+          "ipHint": "Enter the source IP or CIDR authorized by your provider.",
+          "credHint": "Enter the SIP credentials your provider gave you."
+        }
+      },
+      "connection": {
+        "authModeLabel": "Authentication mode"
+      },
+      "media": {
+        "description": "The default codecs work for most providers. Adjust only if needed.",
+        "codecsHint": "Comma-separated list, e.g. ulaw,alaw,opus.",
+        "tlsNotSupported": "TLS/SRTP is not supported yet."
+      },
+      "outbound": {
+        "description": "The outbound route decides which calls use this trunk.",
+        "addLabel": "Create outbound route now",
+        "patternLabel": "Dial pattern",
+        "patternHint": "Prefix of the numbers that use this trunk. + matches everything in E.164 format.",
+        "dialPrefixLabel": "Dial prefix (optional)",
+        "dialPrefixHint": "Digits prepended before sending to the provider.",
+        "skipWarning": "Without an outbound route you won't be able to make calls. You can configure it later under Routes."
+      },
+      "inbound": {
+        "description": "The DID routes inbound calls from a number to a queue.",
+        "addLabel": "Add an inbound DID now",
+        "skipWarning": "Without a DID you won't receive calls. You can configure it later under DID / Inbound numbers."
+      },
+      "review": {
+        "trunkSection": "Trunk",
+        "outboundSection": "Outbound route",
+        "inboundSection": "Inbound DID",
+        "provider": "Provider",
+        "skipped": "Will be configured later",
+        "connectivityHint": "After creating, verify the registration/identify from the trunks list — use the \"Test connectivity\" action on the new trunk's row."
+      },
+      "validation": {
+        "providerRequired": "Pick a provider",
+        "matchHostRequired": "The IP / CIDR is required",
+        "authUsernameRequired": "Username is required",
+        "authPasswordRequired": "Password is required",
+        "registrationUriRequired": "Registration URI is required",
+        "patternRequired": "Pattern is required"
+      },
+      "errors": {
+        "routeFailed": "Could not create the outbound route.",
+        "didFailed": "Could not create the inbound DID.",
+        "trunkCreatedOnly": "The trunk was created. Configure the outbound route under Routes.",
+        "trunkAndRouteCreated": "The trunk and route were created. Configure the DID under DID / Inbound numbers.",
+        "allCreated": "Trunk configured successfully."
+      }
+    }
+  },
+  "didRoutes": {
+    "title": "DID / Inbound numbers",
+    "create": "Add DID",
+    "did": "Number (DID)",
+    "queue": "Destination queue",
+    "status": "Status",
+    "entity_type": "DID",
+    "empty": "No DIDs yet — add your first inbound number",
+    "searchPlaceholder": "Search DIDs...",
+    "noResults": "No matching DIDs found.",
+    "form": {
+      "create_title": "Add DID",
+      "edit_title": "Edit DID",
+      "create_description": "Map an inbound number to the queue that should answer it.",
+      "edit_description": "Update the destination or status of this inbound number.",
+      "did_placeholder": "+541143218765",
+      "did_hint": "As it arrives in the INVITE, in E.164 format.",
+      "select_queue": "Select queue",
+      "queue_hint": "Required. A DID must always have a destination queue.",
+      "active": "Active",
+      "submit_create": "Add DID",
+      "submit_edit": "Save changes",
+      "duplicate_error": "That DID already exists in this tenant."
+    },
+    "validation": {
+      "didRequired": "The number is required",
+      "didInvalid": "Enter a valid E.164 number (e.g. +541143218765)",
+      "queueRequired": "Select a destination queue"
+    }
   },
   "routes": {
     "title": "Outbound Routes",

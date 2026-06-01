@@ -12,6 +12,7 @@
     "telephony": "Telefonía",
     "trunks": "Troncales",
     "routes": "Rutas",
+    "didRoutes": "DID / Números entrantes",
     "callerIdPools": "Grupos de Caller ID",
     "compliance": "Cumplimiento",
     "dncLists": "Listas DNC",
@@ -690,6 +691,14 @@
     "displayName": "Nombre visible",
     "type": "Tipo",
     "maxChannels": "Canales máx.",
+    "matchHost": "IP / CIDR del proveedor",
+    "authUsername": "Usuario de autenticación",
+    "authPassword": "Contraseña de autenticación",
+    "registrationUri": "URI de registro",
+    "clientUri": "URI de cliente",
+    "codecs": "Códecs",
+    "transport": "Transporte",
+    "context": "Contexto",
     "status": "Estado",
     "searchPlaceholder": "Buscar troncales...",
     "save": "Guardar cambios",
@@ -702,6 +711,20 @@
       "display_name_placeholder": "Mi troncal principal",
       "select_type": "Seleccionar tipo",
       "active": "Activa",
+      "match_host_placeholder": "203.0.113.10 o 203.0.113.0/24",
+      "match_host_hint": "IP de origen del proveedor o CIDR autorizado a enviar llamadas (IP-ACL).",
+      "auth_username_placeholder": "usuario-proveedor",
+      "auth_password_placeholder": "Secreto del proveedor",
+      "auth_password_edit_placeholder": "Deje en blanco para conservar la contraseña actual",
+      "auth_password_hint": "Se guarda cifrada y nunca se muestra. Deje en blanco para conservar la existente.",
+      "registration_uri_placeholder": "sip:usuario@proveedor.ejemplo.com",
+      "client_uri_placeholder": "sip:usuario@proveedor.ejemplo.com",
+      "advanced": "Configuración avanzada",
+      "codecs_placeholder": "ulaw,alaw",
+      "transport_placeholder": "Predeterminado del servidor",
+      "transport_hint": "Deje vacío para usar el transporte predeterminado del servidor.",
+      "context_placeholder": "from-trunk",
+      "context_hint": "No cambiar salvo que sepas lo que haces.",
       "submit_create": "Agregar troncal",
       "submit_edit": "Guardar cambios"
     },
@@ -709,9 +732,162 @@
     "validation": {
       "nameRequired": "El nombre es obligatorio",
       "displayNameRequired": "El nombre para mostrar es obligatorio",
-      "maxChannelsAtLeastOne": "Debe ser al menos 1"
+      "maxChannelsAtLeastOne": "Debe ser al menos 1",
+      "matchHostInvalid": "Ingrese una dirección IP o rango CIDR válido"
     },
-    "searchByNamePlaceholder": "Buscar trunk por nombre..."
+    "searchByNamePlaceholder": "Buscar trunk por nombre...",
+    "connectivity": {
+      "button": "Probar conectividad",
+      "dialogTitle": "Prueba de conectividad de la troncal",
+      "loading": "Probando conectividad…",
+      "verdictOk": "La troncal está accesible",
+      "verdictFail": "La troncal tiene problemas",
+      "noMessages": "No se devolvieron diagnósticos.",
+      "pass": "OK",
+      "fail": "Falló",
+      "notApplicable": "No aplica",
+      "checks": {
+        "endpoint": "Endpoint",
+        "reachable": "Accesible",
+        "registered": "Registro",
+        "identify": "Identify IP-ACL",
+        "authMode": "Modo de autenticación"
+      },
+      "authMode": {
+        "ip-acl": "Por IP (IP-ACL)",
+        "register": "Con registro",
+        "none": "Ninguno"
+      }
+    },
+    "wizard": {
+      "launchButton": "Nuevo trunk (guiado)",
+      "title": "Asistente de troncal",
+      "subtitle": "Configurá una troncal SIP funcional paso a paso: proveedor, autenticación, ruta saliente y DID entrante.",
+      "creating": "Creando...",
+      "finish": "Crear y activar",
+      "steps": {
+        "provider": "Proveedor",
+        "connection": "Conexión",
+        "media": "Códecs",
+        "outbound": "Ruta saliente",
+        "inbound": "DID entrante",
+        "review": "Resumen"
+      },
+      "authMode": {
+        "ip-acl": "Por IP (IP-ACL)",
+        "register": "Con registro"
+      },
+      "provider": {
+        "description": "Elegí tu proveedor SIP. Cargamos los valores recomendados; podés ajustarlos después."
+      },
+      "providers": {
+        "twilio": {
+          "name": "Twilio",
+          "hint": "Twilio Elastic SIP Trunking (Termination/Origination).",
+          "ipHint": "Usá los rangos de Twilio Edge desde Console → Elastic SIP Trunking → IP Access Control Lists.",
+          "credHint": "Twilio usa IP-ACL por defecto; las credenciales son opcionales."
+        },
+        "telnyx": {
+          "name": "Telnyx",
+          "hint": "Telnyx SIP Trunking (FQDN / IP authentication).",
+          "ipHint": "Configurá el grupo de IPs autorizadas en el portal de Telnyx → SIP Connections.",
+          "credHint": "Telnyx autentica por IP por defecto."
+        },
+        "flowroute": {
+          "name": "Flowroute",
+          "hint": "Flowroute Inbound/Outbound trunk.",
+          "ipHint": "Flowroute autoriza por IP/CIDR; cargá el rango desde Preferences → SIP.",
+          "credHint": "Flowroute autentica por IP por defecto."
+        },
+        "voipms": {
+          "name": "VoIP.ms",
+          "hint": "VoIP.ms sub-cuenta (autenticación con usuario/contraseña).",
+          "ipHint": "VoIP.ms permite IP estática opcional desde Main Menu → Account Settings.",
+          "credHint": "Usá el usuario y contraseña de tu sub-cuenta VoIP.ms."
+        },
+        "generic": {
+          "name": "SIP genérico",
+          "hint": "Cualquier otro proveedor SIP/PJSIP.",
+          "ipHint": "Ingresá la IP o CIDR de origen autorizada por tu proveedor.",
+          "credHint": "Ingresá las credenciales SIP que te dio tu proveedor."
+        }
+      },
+      "connection": {
+        "authModeLabel": "Modo de autenticación"
+      },
+      "media": {
+        "description": "Los códecs predeterminados funcionan para la mayoría de los proveedores. Ajustá solo si hace falta.",
+        "codecsHint": "Lista separada por comas, p. ej. ulaw,alaw,opus.",
+        "tlsNotSupported": "TLS/SRTP no está soportado todavía."
+      },
+      "outbound": {
+        "description": "La ruta saliente decide qué llamadas usan esta troncal.",
+        "addLabel": "Crear ruta saliente ahora",
+        "patternLabel": "Patrón de marcado",
+        "patternHint": "Prefijo de los números que usan esta troncal. + coincide con todo en formato E.164.",
+        "dialPrefixLabel": "Prefijo de marcado (opcional)",
+        "dialPrefixHint": "Dígitos que se anteponen antes de enviar al proveedor.",
+        "skipWarning": "Sin ruta saliente no vas a poder hacer llamadas. Podés configurarla después en Rutas."
+      },
+      "inbound": {
+        "description": "El DID enruta las llamadas entrantes de un número a una cola.",
+        "addLabel": "Agregar un DID entrante ahora",
+        "skipWarning": "Sin DID no vas a recibir llamadas. Podés configurarlo después en DID / Números entrantes."
+      },
+      "review": {
+        "trunkSection": "Troncal",
+        "outboundSection": "Ruta saliente",
+        "inboundSection": "DID entrante",
+        "provider": "Proveedor",
+        "skipped": "Se configurará después",
+        "connectivityHint": "Tras crear, verificá el registro/identify desde la lista de troncales — usá la acción \"Probar conectividad\" en la fila de la nueva troncal."
+      },
+      "validation": {
+        "providerRequired": "Elegí un proveedor",
+        "matchHostRequired": "La IP / CIDR es obligatoria",
+        "authUsernameRequired": "El usuario es obligatorio",
+        "authPasswordRequired": "La contraseña es obligatoria",
+        "registrationUriRequired": "La URI de registro es obligatoria",
+        "patternRequired": "El patrón es obligatorio"
+      },
+      "errors": {
+        "routeFailed": "No se pudo crear la ruta saliente.",
+        "didFailed": "No se pudo crear el DID entrante.",
+        "trunkCreatedOnly": "La troncal se creó. Configurá la ruta saliente desde Rutas.",
+        "trunkAndRouteCreated": "La troncal y la ruta se crearon. Configurá el DID desde DID / Números entrantes.",
+        "allCreated": "Troncal configurada correctamente."
+      }
+    }
+  },
+  "didRoutes": {
+    "title": "DID / Números entrantes",
+    "create": "Agregar DID",
+    "did": "Número (DID)",
+    "queue": "Cola destino",
+    "status": "Estado",
+    "entity_type": "DID",
+    "empty": "Aún no hay DID — agregue su primer número entrante",
+    "searchPlaceholder": "Buscar DID...",
+    "noResults": "No se encontraron DID que coincidan.",
+    "form": {
+      "create_title": "Agregar DID",
+      "edit_title": "Editar DID",
+      "create_description": "Asigne un número entrante a la cola que debe atenderlo.",
+      "edit_description": "Actualice el destino o el estado de este número entrante.",
+      "did_placeholder": "+541143218765",
+      "did_hint": "Tal como llega en el INVITE, en formato E.164.",
+      "select_queue": "Seleccionar cola",
+      "queue_hint": "Obligatorio. Un DID siempre debe tener una cola destino.",
+      "active": "Activo",
+      "submit_create": "Agregar DID",
+      "submit_edit": "Guardar cambios",
+      "duplicate_error": "Ese DID ya existe en este tenant."
+    },
+    "validation": {
+      "didRequired": "El número es obligatorio",
+      "didInvalid": "Ingrese un número E.164 válido (ej. +541143218765)",
+      "queueRequired": "Seleccione una cola destino"
+    }
   },
   "routes": {
     "title": "Rutas salientes",

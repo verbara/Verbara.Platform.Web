@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, Cable, Trash2, Search } from 'lucide-react';
+import { Plus, Cable, Trash2, Search, Wand2, PlugZap } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
@@ -12,11 +13,13 @@ import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { TrunkForm } from './trunk-form';
+import { TrunkConnectivityDialog } from './trunk-connectivity-dialog';
 import {
   useTrunks,
   useActiveTrunks,
   useDeleteTrunk,
   useTrunkByName,
+  useTestTrunkConnectivity,
   type TrunkSummary,
 } from '@/core/api/hooks/use-trunks';
 
@@ -24,13 +27,25 @@ const columnHelper = createColumnHelper<TrunkSummary>();
 
 export default function TrunksPage() {
   const { t } = useTranslation(['admin']);
+  const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
   const [editTrunk, setEditTrunk] = useState<TrunkSummary | null>(null);
   const [deletingTrunk, setDeletingTrunk] = useState<TrunkSummary | null>(null);
+  const [testingTrunk, setTestingTrunk] = useState<TrunkSummary | null>(null);
   const [activeOnly, setActiveOnly] = useState(false);
   const [searchName, setSearchName] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const deleteTrunk = useDeleteTrunk();
+  const testConnectivity = useTestTrunkConnectivity();
+
+  const handleTestConnectivity = useCallback(
+    (trunk: TrunkSummary) => {
+      setTestingTrunk(trunk);
+      testConnectivity.reset();
+      testConnectivity.mutate(trunk.id);
+    },
+    [testConnectivity],
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchName), 300);
@@ -73,23 +88,40 @@ export default function TrunksPage() {
         id: 'actions',
         header: () => '',
         cell: (info) => (
-          <PermissionButton
-            requires="campaigns:trunk:manage"
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-            data-testid={`delete-trunk-${info.row.original.id}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeletingTrunk(info.row.original);
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </PermissionButton>
+          <div className="flex items-center justify-end gap-1">
+            <PermissionButton
+              requires="campaigns:trunk:manage"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              title={t('admin:trunks.connectivity.button')}
+              aria-label={t('admin:trunks.connectivity.button')}
+              data-testid={`trunk-test-${info.row.original.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTestConnectivity(info.row.original);
+              }}
+            >
+              <PlugZap className="h-3.5 w-3.5" />
+            </PermissionButton>
+            <PermissionButton
+              requires="campaigns:trunk:manage"
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+              data-testid={`delete-trunk-${info.row.original.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingTrunk(info.row.original);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </PermissionButton>
+          </div>
         ),
       }),
     ],
-    [t],
+    [t, handleTestConnectivity],
   );
 
   const isEmpty = !isLoading && trunks.length === 0;
@@ -114,7 +146,17 @@ export default function TrunksPage() {
   return (
     <div className="space-y-6" data-testid="trunks-page">
       <PageHeader title={t('admin:trunks.title')}>
-        <Button data-testid="trunks-create-btn" onClick={() => setCreateOpen(true)}>
+        {/* Primary path: the guided wizard orchestrates trunk + outbound route +
+            DID in one flow. The flat form below stays the expert/edit path. */}
+        <Button data-testid="trunks-wizard-btn" onClick={() => navigate('/admin/trunks/new')}>
+          <Wand2 className="mr-1.5 h-4 w-4" />
+          {t('admin:trunks.wizard.launchButton')}
+        </Button>
+        <Button
+          variant="outline"
+          data-testid="trunks-create-btn"
+          onClick={() => setCreateOpen(true)}
+        >
           <Plus className="mr-1.5 h-4 w-4" />
           {t('admin:trunks.create')}
         </Button>
@@ -172,6 +214,19 @@ export default function TrunksPage() {
         entityName={deletingTrunk?.name ?? ''}
         entityType={t('admin:trunks.entity_type')}
         isPending={deleteTrunk.isPending}
+      />
+
+      {/* Connectivity-test result panel — opens while a trunk is being tested. */}
+      <TrunkConnectivityDialog
+        trunkName={testingTrunk?.name ?? null}
+        result={testConnectivity.data ?? null}
+        isPending={testConnectivity.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setTestingTrunk(null);
+            testConnectivity.reset();
+          }
+        }}
       />
     </div>
   );

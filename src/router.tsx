@@ -34,7 +34,9 @@ const HolidayCalendarDetailPage = lazy(
   () => import('@/admin/holiday-calendars/holiday-calendar-detail'),
 );
 const TrunksPage = lazy(() => import('@/admin/trunks/trunks-page'));
+const TrunkWizard = lazy(() => import('@/admin/trunks/trunk-wizard'));
 const RoutesPage = lazy(() => import('@/admin/routes/routes-page'));
+const DidRoutesPage = lazy(() => import('@/admin/did-routes/did-routes-page'));
 const DialerSettingsPage = lazy(() => import('@/admin/dialer-settings/dialer-settings-page'));
 const BotListPage = lazy(() => import('@/admin/bots/bot-list-page'));
 const KbListPage = lazy(() => import('@/admin/knowledge-base/kb-list-page'));
@@ -395,11 +397,31 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: 'trunks/new',
+            element: (
+              <PermissionGuard requires="system:integration:manage" redirect>
+                <LazyLoad>
+                  <TrunkWizard />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
             path: 'routes',
             element: (
               <PermissionGuard requires="system:integration:manage" redirect>
                 <LazyLoad>
                   <RoutesPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'did-routes',
+            element: (
+              <PermissionGuard requires="system:integration:manage" redirect>
+                <LazyLoad>
+                  <DidRoutesPage />
                 </LazyLoad>
               </PermissionGuard>
             ),
