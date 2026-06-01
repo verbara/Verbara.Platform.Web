@@ -101,6 +101,37 @@ export function useSSE() {
       }
     });
 
+    // Inbound voice call answered (3B.1) → screen-pop the tracked voice Conversation for THIS agent.
+    // Mirrors conversation.offered (tenant-broadcast + client AgentId filter); subscribers upsert the
+    // voice Conversation + correlate the live softphone call, then we auto-navigate to the panel.
+    source.addEventListener('voice.screenpop', (e) => {
+      try {
+        const data = JSON.parse(e.data) as {
+          conversationId: string;
+          agentId: string;
+          channel: string;
+          contactId: string;
+          contactName: string;
+          callerNumber: string;
+          voiceLinkedId: string;
+        };
+        if (!isForCurrentAgent(data.agentId, currentAgentId())) return;
+
+        // Subscribers (conversation-store upsert + voice-call-store association) react first so the
+        // conversation is in the store before we navigate to it.
+        handlers['voice.screenpop']?.forEach((h) => h(data));
+
+        // Auto-navigate (D2) — but only within the agent surface, so an admin/ops view isn't yanked.
+        if (window.location.pathname.startsWith('/agent')) {
+          navigate(`/agent/conversation/${data.conversationId}`);
+        } else {
+          useAgentAlertsStore.getState().increment();
+        }
+      } catch {
+        // Malformed payload — skip
+      }
+    });
+
     source.addEventListener('conversation.message', (e) => {
       try {
         const data = JSON.parse(e.data);

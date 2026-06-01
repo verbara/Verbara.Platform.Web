@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Phone, PhoneOff, PhoneIncoming } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useConversationStore } from '@/agent/stores/conversation-store';
 import { answerCall, rejectCall, hangupCall } from '@/core/voice/softphone-manager';
 
 function formatElapsed(ms: number): string {
@@ -24,7 +26,10 @@ export function CallCard() {
   const { t } = useTranslation('agent');
   const phase = useVoiceCallStore((s) => s.phase);
   const callerId = useVoiceCallStore((s) => s.callerId);
+  const associatedConversationId = useVoiceCallStore((s) => s.associatedConversationId);
   const startedAt = useVoiceCallStore((s) => s.startedAt);
+  const navigate = useNavigate();
+  const select = useConversationStore((s) => s.select);
   // Tick `now` once per second while in call; elapsed is derived during render
   // so we never call setState synchronously inside the effect.
   const [now, setNow] = useState(() => Date.now());
@@ -107,6 +112,22 @@ export function CallCard() {
           </Button>
         )}
       </div>
+
+      {/* Re-entry to the screen-popped voice Conversation (3B.1 G3) — available once the call is
+          correlated to its tracked Conversation. */}
+      {!ringing && associatedConversationId && (
+        <button
+          type="button"
+          data-testid="voice-open-conversation"
+          onClick={() => {
+            select(associatedConversationId);
+            navigate(`/agent/conversation/${associatedConversationId}`);
+          }}
+          className="mt-2 w-full text-center text-xs text-sky-600 hover:underline dark:text-sky-400"
+        >
+          {t('voice.open_conversation')}
+        </button>
+      )}
     </div>
   );
 }

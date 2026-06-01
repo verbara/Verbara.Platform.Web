@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { onSseEvent } from '@/core/hooks/use-sse';
+import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 
 export interface Conversation {
   id: string;
@@ -164,6 +165,20 @@ export function initConversationSSE() {
     });
   });
 
+  // Inbound voice call answered (3B.1): upsert the tracked voice Conversation so the panel +
+  // ContextPanel (contact/history) hydrate, and correlate the live softphone call. Spread-merge
+  // over any existing record so we never wipe contactId/queueName (the P1 blank-inbox lesson).
+  onSseEvent('voice.screenpop', (data) =>
+    applyVoiceScreenPop(
+      data as {
+        conversationId: string;
+        contactId: string;
+        contactName: string;
+        callerNumber: string;
+      },
+    ),
+  );
+
   onSseEvent('conversation.message', (data) => {
     const event = data as {
       conversationId: string;
@@ -185,12 +200,94 @@ export function initConversationSSE() {
 
   onSseEvent('conversation.state_changed', (data) => {
     const event = data as { conversationId: string; newState: string };
-    const existing = store.conversations[event.conversationId];
-    if (existing) {
-      store.upsertConversation({
-        ...existing,
-        state: event.newState as Conversation['state'],
-      });
+    const existing = useConversationStore.getState().conversations[event.conversationId];
+    if (!existing) return;
+
+    // The server sends the ConversationState enum name (PascalCase, e.g. "Active"/"WrapUp"); the
+    // store uses lowercase/snake states. Map it (a raw cast would store an invalid state that no
+    // filter matches — a latent bug the voice WrapUp transition would otherwise hit). Terminal
+    // states (Closed/Abandoned/…) drop the conversation from the agent's working set.
+    const mapped = mapServerConversationState(event.newState);
+    if (mapped === 'terminal') {
+      store.removeConversation(event.conversationId);
+    } else if (mapped) {
+      store.upsertConversation({ ...existing, state: mapped });
     }
   });
+}
+
+/**
+ * Applies a voice screen-pop event: spread-merge-upserts the tracked voice Conversation (so the panel
+ * + ContextPanel hydrate, never wiping an existing record's contactId/queueName — the P1 blank-inbox
+ * lesson) and correlates the live softphone call. Exported for direct unit testing (the SSE handlers
+ * are registered once behind initConversationSSE's module guard). The right ContextPanel is synced
+ * via the route→selectedId effect in conversation-view (the auto-nav fires after this).
+ */
+export function applyVoiceScreenPop(event: {
+  conversationId: string;
+  contactId: string;
+  contactName: string;
+  callerNumber: string;
+}): void {
+  const store = useConversationStore.getState();
+  const existing = store.conversations[event.conversationId];
+  store.upsertConversation({
+    id: event.conversationId,
+    contactId: event.contactId || existing?.contactId || '',
+    contactName: event.contactName || existing?.contactName || '',
+    channel: 'voice',
+    queueName: existing?.queueName ?? '',
+    state: 'active',
+    lastMessage: existing?.lastMessage ?? '',
+    lastMessageAt: existing?.lastMessageAt ?? new Date().toISOString(),
+    unread: existing?.unread ?? false,
+    assignedAt: existing?.assignedAt ?? new Date().toISOString(),
+    metadata: existing?.metadata,
+  });
+  useVoiceCallStore.getState().associateConversation({
+    conversationId: event.conversationId,
+    callerName: event.contactName,
+    callerNumber: event.callerNumber,
+  });
+}
+
+/** Maps the server ConversationState enum name (PascalCase) to the client store state. */
+const SERVER_STATE_TO_CLIENT: Record<string, Conversation['state'] | undefined> = {
+  Queued: 'queued',
+  Offered: 'offered',
+  Active: 'active',
+  OnHold: 'on_hold',
+  Consulting: 'consulting',
+  WaitingForCustomer: 'waiting_for_customer',
+  Snoozed: 'snoozed',
+  WrapUp: 'wrap_up',
+};
+
+/**
+ * Server states that take the conversation OUT of the agent's working set. Escalated/Resolved are
+ * not "live" agent states (the agent loses ownership: Active→Escalated→Queued, Active→Resolved); the
+ * terminal closed/merged/spam states likewise. Dropping them keeps the inbox filters correct (a raw
+ * cast of an unmapped name would store a state no filter matches — review finding #16).
+ */
+const TERMINAL_SERVER_STATES = new Set([
+  'Resolved',
+  'Closed',
+  'Abandoned',
+  'Merged',
+  'Spam',
+  'Escalated',
+]);
+
+/**
+ * Normalizes a server ConversationState enum name to the client store state: a mapped live state,
+ * `'terminal'` (the conversation should be dropped), or `null` (unknown — ignore). The server sends
+ * PascalCase enum names; a raw cast would store an invalid state that no inbox filter matches.
+ */
+export function mapServerConversationState(
+  serverState: string,
+): Conversation['state'] | 'terminal' | null {
+  const mapped = SERVER_STATE_TO_CLIENT[serverState];
+  if (mapped) return mapped;
+  if (TERMINAL_SERVER_STATES.has(serverState)) return 'terminal';
+  return null;
 }

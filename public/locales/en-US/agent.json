@@ -164,6 +164,9 @@
     "answer": "Answer",
     "reject": "Reject",
     "hangup": "Hang up",
-    "unknown_caller": "Unknown caller"
+    "unknown_caller": "Unknown caller",
+    "call_in_progress": "Voice call in progress",
+    "controls_in_card": "Call controls are in the call card",
+    "open_conversation": "Open conversation"
   }
 }

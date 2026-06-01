@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   MessageSquare,
@@ -21,6 +21,7 @@ import {
 import { Button } from '@/core/ui/button';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { useConversationStore } from '@/agent/stores/conversation-store';
+import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 import {
   useAcceptConversation,
   useRejectConversation,
@@ -72,6 +73,30 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
   const [wrapUpOpen, setWrapUpOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
+
+  // Voice (3B.1): the call is controlled by the floating call card / softphone, not the messaging
+  // action buttons; the panel surfaces contact context + disposition. Hooks run before the early
+  // return (rules of hooks). `conversation` is already resolved above so the channel read is safe.
+  const isVoice = conversation?.channel === 'voice';
+  const voicePhase = useVoiceCallStore((s) => s.phase);
+  const voiceConversationId = useVoiceCallStore((s) => s.associatedConversationId);
+  const wrapUpPromptedFor = useVoiceCallStore((s) => s.wrapUpPromptedFor);
+
+  // Auto-open the wrap-up dialog ONCE when THIS voice call ends (the bridge already moved the
+  // Conversation to WrapUp server-side; the channel-agnostic WrapUpDialog disposes it). A store-level
+  // one-shot (wrapUpPromptedFor) so it does not re-open on revisit/remount after the agent dismisses
+  // it (finding #3), yet still opens once when the agent returns to a just-ended call (finding #14).
+  useEffect(() => {
+    if (
+      isVoice &&
+      voicePhase === 'ended' &&
+      voiceConversationId === conversationId &&
+      wrapUpPromptedFor !== conversationId
+    ) {
+      setWrapUpOpen(true);
+      useVoiceCallStore.getState().markWrapUpPrompted(conversationId);
+    }
+  }, [isVoice, voicePhase, voiceConversationId, wrapUpPromptedFor, conversationId]);
 
   if (!conversation) {
     return (
@@ -129,7 +154,16 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
 
         {/* Action buttons */}
         <div className="flex items-center gap-1">
-          {isOffered && (
+          {/* Voice: the call is controlled by the floating call card (mute/hold/transfer = 3B.2).
+              The panel only offers disposition; messaging actions are suppressed. */}
+          {isVoice && (isActive || isWrapUp) && (
+            <Button size="sm" onClick={() => setWrapUpOpen(true)} data-testid="voice-wrapup-btn">
+              <ClipboardCheck className="h-3.5 w-3.5" data-icon="inline-start" />
+              {isWrapUp ? t('conversation.complete_wrap_up') : t('conversation.wrap_up')}
+            </Button>
+          )}
+
+          {!isVoice && isOffered && (
             <>
               <Button size="sm" onClick={handleAccept}>
                 <Check className="h-3.5 w-3.5" data-icon="inline-start" />
@@ -142,7 +176,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
             </>
           )}
 
-          {isActive && (
+          {!isVoice && isActive && (
             <>
               {conversation.state === 'on_hold' ? (
                 <Button
@@ -182,7 +216,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
             </>
           )}
 
-          {isWrapUp && (
+          {!isVoice && isWrapUp && (
             <Button size="sm" onClick={() => setWrapUpOpen(true)}>
               <ClipboardCheck className="h-3.5 w-3.5" data-icon="inline-start" />
               {t('conversation.complete_wrap_up')}
@@ -195,15 +229,27 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
       <SuggestionBanner />
       <ComplianceAlert />
 
-      {/* Message Thread */}
-      <MessageThread conversationId={conversationId} />
-
-      {/* Reply Composer */}
-      <ReplyComposer
-        key={conversationId}
-        conversationId={conversationId}
-        contactName={conversation.contactName}
-      />
+      {/* Body: voice calls have no message thread — they show a live-call indicator (controls live
+          in the floating call card); contact + history hydrate in the right-side ContextPanel. */}
+      {isVoice ? (
+        <div
+          className="flex flex-1 flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500"
+          data-testid="voice-call-body"
+        >
+          <Phone className="h-8 w-8" />
+          <p className="text-sm font-medium">{t('voice.call_in_progress')}</p>
+          <p className="text-xs">{t('voice.controls_in_card')}</p>
+        </div>
+      ) : (
+        <>
+          <MessageThread conversationId={conversationId} />
+          <ReplyComposer
+            key={conversationId}
+            conversationId={conversationId}
+            contactName={conversation.contactName}
+          />
+        </>
+      )}
 
       {/* Dialogs */}
       <ConfirmDialog

@@ -164,6 +164,9 @@
     "answer": "Atender",
     "reject": "Rechazar",
     "hangup": "Colgar",
-    "unknown_caller": "Llamante desconocido"
+    "unknown_caller": "Llamante desconocido",
+    "call_in_progress": "Llamada de voz en curso",
+    "controls_in_card": "Los controles de llamada están en la tarjeta de llamada",
+    "open_conversation": "Abrir conversación"
   }
 }

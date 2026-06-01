@@ -49,4 +49,59 @@ describe('VoiceCallStore', () => {
     useVoiceCallStore.getState().setRegistration('registered');
     expect(useVoiceCallStore.getState().registration).toBe('registered');
   });
+
+  it('associateConversation_ShouldSetConversationAndCaller_WithoutChangingPhase', () => {
+    useVoiceCallStore.getState().incoming('', '');
+    useVoiceCallStore.getState().associateConversation({
+      conversationId: 'conv-9',
+      callerName: 'Ada Lovelace',
+      callerNumber: '+15551234',
+    });
+    const s = useVoiceCallStore.getState();
+    expect(s.associatedConversationId).toBe('conv-9');
+    expect(s.callerId).toBe('Ada Lovelace');
+    expect(s.callerNumber).toBe('+15551234');
+    expect(s.phase).toBe('ringing'); // association does not change the call lifecycle
+  });
+
+  it('associatedConversationId_ShouldSurviveEnded_ForWrapUp', () => {
+    useVoiceCallStore.getState().incoming('', '');
+    useVoiceCallStore.getState().associateConversation({
+      conversationId: 'conv-9',
+      callerName: 'Ada',
+      callerNumber: '+1',
+    });
+    useVoiceCallStore.getState().answered();
+    useVoiceCallStore.getState().ended();
+    // Persists through `ended` so the wrap-up dialog can use it.
+    expect(useVoiceCallStore.getState().associatedConversationId).toBe('conv-9');
+  });
+
+  it('incoming_ShouldClearStaleAssociation_ForFreshCall', () => {
+    useVoiceCallStore.getState().associateConversation({
+      conversationId: 'old-conv',
+      callerName: 'Old',
+      callerNumber: '+0',
+    });
+    useVoiceCallStore.getState().incoming('', '');
+    expect(useVoiceCallStore.getState().associatedConversationId).toBeNull();
+  });
+
+  it('reset_ShouldClearAssociation', () => {
+    useVoiceCallStore.getState().associateConversation({
+      conversationId: 'conv-9',
+      callerName: 'Ada',
+      callerNumber: '+1',
+    });
+    useVoiceCallStore.getState().reset();
+    expect(useVoiceCallStore.getState().associatedConversationId).toBeNull();
+  });
+
+  it('markWrapUpPrompted_ShouldRecordConversation_AndIncomingReArms', () => {
+    useVoiceCallStore.getState().markWrapUpPrompted('conv-9');
+    expect(useVoiceCallStore.getState().wrapUpPromptedFor).toBe('conv-9');
+    // A fresh call re-arms the one-shot wrap-up auto-open.
+    useVoiceCallStore.getState().incoming('', '');
+    expect(useVoiceCallStore.getState().wrapUpPromptedFor).toBeNull();
+  });
 });
