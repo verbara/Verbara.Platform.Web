@@ -184,6 +184,8 @@
       "description": "Reenviá esta llamada a una cola o a otro agente. Tu línea se libera al confirmar.",
       "to_queue": "A una cola",
       "to_agent": "A un agente",
+      "to_external": "Externo",
+      "external_placeholder": "+1 555 010 0000",
       "search": "Buscar destino…",
       "no_results": "Sin resultados",
       "submit": "Transferir",

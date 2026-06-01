@@ -184,6 +184,8 @@
       "description": "Encaminhe esta chamada para uma fila ou outro agente. Sua linha é liberada ao confirmar.",
       "to_queue": "Para uma fila",
       "to_agent": "Para um agente",
+      "to_external": "Externo",
+      "external_placeholder": "+1 555 010 0000",
       "search": "Buscar destino…",
       "no_results": "Sem resultados",
       "submit": "Transferir",

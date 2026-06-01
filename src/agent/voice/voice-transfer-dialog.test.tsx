@@ -99,6 +99,33 @@ describe('VoiceTransferDialog', () => {
     );
   });
 
+  it('VoiceTransferDialog_ShouldShowExternalNumberInput_WhenExternalToggleClicked', async () => {
+    renderOpen();
+    fireEvent.click(await screen.findByTestId('voice-transfer-to-external'));
+    expect(await screen.findByTestId('voice-transfer-external-number')).toBeInTheDocument();
+    // The queue/agent picker is hidden in external mode.
+    expect(screen.queryByTestId('voice-transfer-search')).toBeNull();
+  });
+
+  it('VoiceTransferDialog_ShouldMutateWithExternalTarget_WhenExternalSubmitted', async () => {
+    renderOpen();
+    fireEvent.click(await screen.findByTestId('voice-transfer-to-external'));
+    fireEvent.change(await screen.findByTestId('voice-transfer-external-number'), {
+      target: { value: '+15559998888' },
+    });
+    fireEvent.click(screen.getByTestId('voice-transfer-submit'));
+    expect(mutateMock).toHaveBeenCalledWith(
+      { id: 'conv-1', kind: 'external', target: '+15559998888' },
+      expect.any(Object),
+    );
+  });
+
+  it('VoiceTransferDialog_ShouldDisableSubmit_WhenExternalNumberEmpty', async () => {
+    renderOpen();
+    fireEvent.click(await screen.findByTestId('voice-transfer-to-external'));
+    expect(screen.getByTestId('voice-transfer-submit')).toBeDisabled();
+  });
+
   it('VoiceTransferDialog_ShouldNotSelectBusyAgent_WhenBusy', async () => {
     renderOpen();
     fireEvent.click(await screen.findByTestId('voice-transfer-to-agent'));

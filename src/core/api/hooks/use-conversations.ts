@@ -179,7 +179,15 @@ export interface VoiceTransferResult {
  */
 export function useVoiceTransfer() {
   return useMutation({
-    mutationFn: ({ id, kind, target }: { id: string; kind: 'queue' | 'agent'; target: string }) =>
+    mutationFn: ({
+      id,
+      kind,
+      target,
+    }: {
+      id: string;
+      kind: 'queue' | 'agent' | 'external';
+      target: string;
+    }) =>
       customFetch<VoiceTransferResult>({
         url: `/api/v1/conversations/${id}/voice-transfer`,
         method: 'POST',

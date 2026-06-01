@@ -23,7 +23,7 @@ interface VoiceTransferDialogProps {
   conversationId: string;
 }
 
-type TargetKind = 'queue' | 'agent';
+type TargetKind = 'queue' | 'agent' | 'external';
 
 /**
  * Blind-transfer picker for a LIVE voice call (3B.2c). Deliberately NOT the digital
@@ -47,6 +47,7 @@ export function VoiceTransferDialog({
   const [kind, setKind] = useState<TargetKind>('queue');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [externalNumber, setExternalNumber] = useState('');
 
   const term = search.trim().toLowerCase();
   const items: Array<{ id: string; name: string; state?: string }> =
@@ -62,19 +63,24 @@ export function VoiceTransferDialog({
     setKind(next);
     setSelectedId(null);
     setSearch('');
+    setExternalNumber('');
   }
 
   function resetAndClose() {
     setKind('queue');
     setSelectedId(null);
     setSearch('');
+    setExternalNumber('');
     onOpenChange(false);
   }
 
+  // External targets a free-typed number; queue/agent target the picked id.
+  const target = kind === 'external' ? externalNumber.trim() : selectedId;
+
   function handleSubmit() {
-    if (!selectedId) return;
+    if (!target) return;
     voiceTransfer.mutate(
-      { id: conversationId, kind, target: selectedId },
+      { id: conversationId, kind, target },
       {
         onSuccess: () => {
           toast.success(t('voice.transfer.success', 'Call transferred'));
@@ -96,7 +102,7 @@ export function VoiceTransferDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-3">
-          {/* Target-kind toggle (Queue | Agent). External is added in 3B.2d. */}
+          {/* Target-kind toggle: Queue | Agent (3B.2c) | External number (3B.2d). */}
           <div className="flex gap-2">
             <Button
               data-testid="voice-transfer-to-queue"
@@ -118,55 +124,76 @@ export function VoiceTransferDialog({
             >
               {t('voice.transfer.to_agent', 'To an agent')}
             </Button>
+            <Button
+              data-testid="voice-transfer-to-external"
+              variant={kind === 'external' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              aria-pressed={kind === 'external'}
+              onClick={() => switchKind('external')}
+            >
+              {t('voice.transfer.to_external', 'External')}
+            </Button>
           </div>
 
-          <div className="relative">
-            <Search className="absolute top-2 left-2.5 size-4 text-slate-400" />
+          {kind === 'external' ? (
             <Input
-              data-testid="voice-transfer-search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('voice.transfer.search', 'Search destination…')}
-              className="pl-8"
+              data-testid="voice-transfer-external-number"
+              value={externalNumber}
+              onChange={(e) => setExternalNumber(e.target.value)}
+              placeholder={t('voice.transfer.external_placeholder', '+1 555 010 0000')}
             />
-          </div>
+          ) : (
+            <>
+              <div className="relative">
+                <Search className="absolute top-2 left-2.5 size-4 text-slate-400" />
+                <Input
+                  data-testid="voice-transfer-search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t('voice.transfer.search', 'Search destination…')}
+                  className="pl-8"
+                />
+              </div>
 
-          <div className="flex max-h-48 flex-col gap-1 overflow-y-auto rounded-lg border border-slate-200 p-1 dark:border-slate-700">
-            {items.length === 0 && (
-              <span className="px-2 py-3 text-center text-xs text-slate-400">
-                {t('voice.transfer.no_results', 'No results')}
-              </span>
-            )}
-            {items.map((item) => {
-              const isAgent = item.state !== undefined;
-              const isBusy = item.state === 'busy';
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  data-testid={`voice-transfer-item-${item.id}`}
-                  disabled={isBusy}
-                  onClick={() => setSelectedId(item.id)}
-                  className={`flex items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
-                    selectedId === item.id
-                      ? 'bg-primary/10 text-primary'
-                      : 'hover:bg-slate-100 dark:hover:bg-slate-800'
-                  } ${isBusy ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                >
-                  <span>{item.name}</span>
-                  {isAgent && (
-                    <span
-                      className={`text-[10px] font-medium ${
-                        item.state === 'available' ? 'text-green-600' : 'text-amber-500'
-                      }`}
+              <div className="flex max-h-48 flex-col gap-1 overflow-y-auto rounded-lg border border-slate-200 p-1 dark:border-slate-700">
+                {items.length === 0 && (
+                  <span className="px-2 py-3 text-center text-xs text-slate-400">
+                    {t('voice.transfer.no_results', 'No results')}
+                  </span>
+                )}
+                {items.map((item) => {
+                  const isAgent = item.state !== undefined;
+                  const isBusy = item.state === 'busy';
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      data-testid={`voice-transfer-item-${item.id}`}
+                      disabled={isBusy}
+                      onClick={() => setSelectedId(item.id)}
+                      className={`flex items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+                        selectedId === item.id
+                          ? 'bg-primary/10 text-primary'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                      } ${isBusy ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                     >
-                      {String(item.state)}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                      <span>{item.name}</span>
+                      {isAgent && (
+                        <span
+                          className={`text-[10px] font-medium ${
+                            item.state === 'available' ? 'text-green-600' : 'text-amber-500'
+                          }`}
+                        >
+                          {String(item.state)}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
         <DialogFooter>
@@ -176,7 +203,7 @@ export function VoiceTransferDialog({
           <Button
             data-testid="voice-transfer-submit"
             onClick={handleSubmit}
-            disabled={!selectedId || voiceTransfer.isPending}
+            disabled={!target || voiceTransfer.isPending}
           >
             <ArrowRightLeft data-icon="inline-start" />
             {t('voice.transfer.submit', 'Transfer')}

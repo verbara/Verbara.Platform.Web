@@ -184,6 +184,8 @@
       "description": "Forward this call to a queue or another agent. Your line is released on confirm.",
       "to_queue": "To a queue",
       "to_agent": "To an agent",
+      "to_external": "External",
+      "external_placeholder": "+1 555 010 0000",
       "search": "Search destination…",
       "no_results": "No results",
       "submit": "Transfer",
