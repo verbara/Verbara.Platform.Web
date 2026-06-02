@@ -46,7 +46,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.26",
     "@wavesurfer/react": "^1.0.12",
-    "@xyflow/react": "^12.10.2",
+    "@xyflow/react": "^12.11.0",
     "ag-grid-community": "^35.3.0",
     "ag-grid-react": "^35.3.0",
     "class-variance-authority": "^0.7.1",
