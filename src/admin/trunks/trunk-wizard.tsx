@@ -13,6 +13,7 @@ import { useCreateTrunk, type TrunkWriteFields } from '@/core/api/hooks/use-trun
 import { useCreateRoute, useRoutes, type OutboundRouteSummary } from '@/core/api/hooks/use-routes';
 import { useCreateDidRoute, type CreateDidRouteFields } from '@/core/api/hooks/use-did-routes';
 import { useQueues } from '@/core/api/hooks/use-queues';
+import { CodecSelector } from '@/core/voice/codec-selector';
 import {
   PROVIDER_TEMPLATES,
   PROVIDER_ORDER,
@@ -338,7 +339,7 @@ function ConnectionStep() {
 // ─────────────────────────────────────────────────────────────────────────────
 function MediaStep() {
   const { t } = useTranslation('admin');
-  const { register, control, watch } = useFormContext<TrunkWizardValues>();
+  const { control, watch } = useFormContext<TrunkWizardValues>();
   const [open, setOpen] = useState(false);
   const transport = watch('transport');
 
@@ -364,13 +365,17 @@ function MediaStep() {
         <div className="space-y-4" data-testid="trunk-wizard-media-section">
           <div className="space-y-1.5">
             <Label htmlFor="trunk-wizard-codecs">{t('trunks.codecs')}</Label>
-            <Input
-              id="trunk-wizard-codecs"
-              placeholder={t('trunks.form.codecs_placeholder')}
-              data-testid="trunk-wizard-codecs"
-              {...register('codecs')}
+            <Controller
+              name="codecs"
+              control={control}
+              render={({ field }) => (
+                <CodecSelector
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  testId="trunk-wizard-codecs"
+                />
+              )}
             />
-            <p className="text-xs text-muted-foreground">{t('trunks.wizard.media.codecsHint')}</p>
           </div>
 
           <div className="space-y-1.5">
