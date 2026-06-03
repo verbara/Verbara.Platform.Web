@@ -88,8 +88,12 @@ test.describe('Trunk wizard — CodecSelector', () => {
     await expect(page.getByTestId('trunk-wizard-codecs-selected-ulaw')).toBeVisible();
     await expect(page.getByTestId('trunk-wizard-codecs-selected-g722')).toBeVisible();
 
-    // Assert the new order by checking the down button of g722 (now index 0) is enabled,
-    // and the up button of g722 is disabled (it is at the top).
+    // Assert the new order directly: the first selected row must now be g722.
+    await expect(
+      page.locator('[data-testid^="trunk-wizard-codecs-selected-"]').first(),
+    ).toHaveAttribute('data-testid', 'trunk-wizard-codecs-selected-g722');
+
+    // Supplementary: check button disabled state (g722 is at the top, so up-0 is disabled).
     await expect(page.getByTestId('trunk-wizard-codecs-up-0')).toBeDisabled();
     await expect(page.getByTestId('trunk-wizard-codecs-down-0')).toBeEnabled();
 
@@ -135,6 +139,8 @@ test.describe('Trunk wizard — CodecSelector', () => {
 
     // After creation the wizard navigates back to /admin/trunks.
     await expect(page).toHaveURL(/\/admin\/trunks/);
+    // Guard: wait for the React tree to mount before interacting with the page.
+    await expect(page.getByTestId('trunks-page')).toBeVisible();
 
     // Search by the unique name to confirm the trunk appears in the list.
     await page.getByTestId('trunks-search').fill(trunkName);
