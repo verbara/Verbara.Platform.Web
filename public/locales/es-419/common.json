@@ -578,5 +578,77 @@
       "tenantIdSlug": "Usá solo minúsculas, dígitos y guiones",
       "emailsMustDiffer": "El email del admin de la empresa debe ser distinto al del admin de plataforma"
     }
+  },
+  "voice": {
+    "codecs": {
+      "preset": "Preset",
+      "search": "Buscar códec…",
+      "showAll": "Mostrar todos los códecs",
+      "showLess": "Mostrar menos códecs",
+      "add": "Agregar",
+      "addCustom": "Agregar códec personalizado",
+      "addCustomPlaceholder": "p. ej. speex",
+      "remove": "Quitar códec",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "dragHandle": "Arrastrar para reordenar",
+      "fallbackNote": "No se pudo verificar contra el servidor; se muestra el catálogo estándar.",
+      "presets": {
+        "recommended": "Recomendado (compatibilidad)",
+        "hd": "Alta calidad (HD)",
+        "lowband": "Bajo ancho de banda",
+        "webrtc": "WebRTC / Navegador",
+        "custom": "Personalizado"
+      },
+      "tiers": {
+        "standard": "Telefonía estándar",
+        "hd": "Audio de alta definición",
+        "lowband": "Bajo ancho de banda",
+        "legacy": "Heredados / compatibilidad",
+        "video": "Video / WebRTC",
+        "others": "Otros (instalados)"
+      },
+      "badges": {
+        "hd": "HD",
+        "webrtc": "WebRTC",
+        "license": "licencia",
+        "module": "módulo",
+        "notInstalled": "no instalado",
+        "outsideCatalog": "fuera de catálogo"
+      },
+      "guardrails": {
+        "empty": "Seleccioná al menos un códec.",
+        "no-g711": "Sin G.711 (ulaw/alaw): algunas operadoras pueden rechazar llamadas.",
+        "duplicate": "Códec duplicado: {{token}}.",
+        "not-installed": "{{token}} no está instalado en el servidor."
+      },
+      "names": {
+        "ulaw": "Estándar — máxima compatibilidad",
+        "alaw": "Estándar (A-law)",
+        "g722": "Voz HD",
+        "opus": "Opus (HD / WebRTC)",
+        "g729": "Bajo ancho de banda",
+        "gsm": "GSM (bajo ancho de banda)",
+        "ilbc": "iLBC (bajo ancho de banda)",
+        "g726": "G.726",
+        "g726aal2": "G.726 AAL2",
+        "adpcm": "ADPCM (heredado)",
+        "speex": "Speex",
+        "speex16": "Speex (HD)",
+        "siren7": "Siren7 (HD)",
+        "siren14": "Siren14 (HD)",
+        "g719": "G.719 (HD)",
+        "g723": "G.723.1",
+        "lpc10": "LPC-10 (heredado)",
+        "silk": "SILK (HD)",
+        "vp8": "Video VP8",
+        "vp9": "Video VP9",
+        "h264": "Video H.264",
+        "h263p": "Video H.263+",
+        "h263": "Video H.263",
+        "h261": "Video H.261",
+        "mpeg4": "Video MPEG-4"
+      }
+    }
   }
 }

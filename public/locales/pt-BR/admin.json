@@ -720,9 +720,8 @@
       "registration_uri_placeholder": "sip:usuario@provedor.exemplo.com",
       "client_uri_placeholder": "sip:usuario@provedor.exemplo.com",
       "advanced": "Configurações avançadas",
-      "codecs_placeholder": "ulaw,alaw",
-      "transport_placeholder": "Padrão do servidor",
-      "transport_hint": "Deixe vazio para usar o transporte padrão do servidor.",
+      "transport_placeholder": "Padrão do servidor (UDP)",
+      "transport_hint": "Deixe vazio para usar UDP — o transporte padrão do servidor.",
       "context_placeholder": "from-trunk",
       "context_hint": "Não altere a menos que saiba o que está fazendo.",
       "submit_create": "Adicionar troncal",
@@ -817,7 +816,6 @@
       },
       "media": {
         "description": "Os codecs padrão funcionam para a maioria dos provedores. Ajuste apenas se necessário.",
-        "codecsHint": "Lista separada por vírgulas, ex.: ulaw,alaw,opus.",
         "tlsNotSupported": "TLS/SRTP ainda não é suportado."
       },
       "outbound": {
