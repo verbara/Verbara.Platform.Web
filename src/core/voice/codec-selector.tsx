@@ -246,15 +246,18 @@ export function CodecSelector({ value, onChange, testId = 'codec' }: Readonly<Co
       )}
 
       {/* Guardrails */}
-      {guardrails.map((g) => (
-        <p
-          key={`${g.kind}-${g.token ?? ''}`}
-          className="text-xs text-amber-600 dark:text-amber-500"
-          data-testid={`${testId}-guardrail-${g.kind}`}
-        >
-          {t(`voice.codecs.guardrails.${g.kind}`, g.kind, { token: g.token })}
-        </p>
-      ))}
+      {guardrails.map((g) => {
+        const tokenSuffix = g.token ? `-${g.token}` : '';
+        return (
+          <p
+            key={`${g.kind}-${g.token ?? ''}`}
+            className="text-xs text-amber-600 dark:text-amber-500"
+            data-testid={`${testId}-guardrail-${g.kind}${tokenSuffix}`}
+          >
+            {t(`voice.codecs.guardrails.${g.kind}`, g.kind, { token: g.token })}
+          </p>
+        );
+      })}
 
       {isFallback && (
         <p className="text-xs text-muted-foreground" data-testid={`${testId}-fallback-note`}>

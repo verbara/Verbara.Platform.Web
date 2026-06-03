@@ -41,6 +41,11 @@ describe('codec-utils', () => {
     });
   });
 
+  it('computeGuardrails_ShouldEmitSingleDuplicate_WhenTokenRepeatedThrice', () => {
+    const g = computeGuardrails(['opus', 'opus', 'opus'], null);
+    expect(g.filter((x) => x.kind === 'duplicate' && x.token === 'opus')).toHaveLength(1);
+  });
+
   it('availableToAdd_ShouldExcludeSelected', () => {
     const entries = availableToAdd(['ulaw'], null, false);
     expect(entries.find((e) => e.token === 'ulaw')).toBeUndefined();

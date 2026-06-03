@@ -56,6 +56,11 @@ describe('CodecSelector', () => {
     expect(screen.getByTestId('cs-guardrail-no-g711')).toBeInTheDocument();
   });
 
+  it('CodecSelector_ShouldRenderUniqueDuplicateGuardrail_WhenTokenRepeatedThrice', () => {
+    render(<CodecSelector value="opus,opus,opus" onChange={() => {}} testId="cs" />);
+    expect(screen.getByTestId('cs-guardrail-duplicate-opus')).toBeInTheDocument();
+  });
+
   it('CodecSelector_ShouldRevealNonCuratedCodecs_WhenShowAllClicked', () => {
     render(<CodecSelector value="ulaw" onChange={() => {}} testId="cs" />);
     expect(screen.queryByTestId('cs-add-gsm')).not.toBeNull(); // gsm is curated + installed → visible

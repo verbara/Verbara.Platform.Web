@@ -24,18 +24,26 @@ export function computeGuardrails(
   if (selected.length === 0) return [{ kind: 'empty' }];
 
   const out: CodecGuardrail[] = [];
-  if (!selected.includes('ulaw') && !selected.includes('alaw')) out.push({ kind: 'no-g711' });
+  const emitted = new Set<string>();
+  const push = (g: CodecGuardrail) => {
+    const dedupeKey = `${g.kind}:${g.token ?? ''}`;
+    if (emitted.has(dedupeKey)) return;
+    emitted.add(dedupeKey);
+    out.push(g);
+  };
+
+  if (!selected.includes('ulaw') && !selected.includes('alaw')) push({ kind: 'no-g711' });
 
   const seen = new Set<string>();
   for (const token of selected) {
-    if (seen.has(token)) out.push({ kind: 'duplicate', token });
+    if (seen.has(token)) push({ kind: 'duplicate', token });
     seen.add(token);
   }
 
   if (installed) {
     const installedSet = new Set(installed);
     for (const token of selected) {
-      if (!installedSet.has(token)) out.push({ kind: 'not-installed', token });
+      if (!installedSet.has(token)) push({ kind: 'not-installed', token });
     }
   }
 
