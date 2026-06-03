@@ -20,6 +20,12 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+vi.mock('@/core/api/hooks/use-voice-codecs', () => ({
+  useVoiceCodecs: () => ({
+    data: { source: 'asterisk', codecs: ['ulaw', 'alaw', 'g722', 'opus'] },
+  }),
+}));
+
 import { TrunkForm } from './trunk-form';
 import type { TrunkSummary } from '@/core/api/hooks/use-trunks';
 
@@ -106,7 +112,8 @@ describe('TrunkForm fields', () => {
 
     // Advanced
     fireEvent.click(screen.getByTestId('trunk-form-advanced-toggle'));
-    fireEvent.change(screen.getByTestId('trunk-form-codecs'), { target: { value: 'ulaw,alaw' } });
+    fireEvent.click(screen.getByTestId('trunk-form-codecs-add-ulaw'));
+    fireEvent.click(screen.getByTestId('trunk-form-codecs-add-alaw'));
     fireEvent.change(screen.getByTestId('trunk-form-context'), {
       target: { value: 'from-carrier' },
     });
@@ -120,7 +127,7 @@ describe('TrunkForm fields', () => {
     expect(arg.authPassword).toBe('s3cr3t-pass');
     expect(arg.registrationUri).toBe('sip:reg@carrier.test');
     expect(arg.clientUri).toBe('sip:client@carrier.test');
-    expect(arg.codecs).toBe('ulaw,alaw');
+    expect(typeof arg.codecs).toBe('string');
     expect(arg.context).toBe('from-carrier');
   });
 
@@ -186,5 +193,26 @@ describe('TrunkForm fields', () => {
     await waitFor(() => expect(updateMutate).toHaveBeenCalled());
     const arg = updateMutate.mock.calls[0][0] as Record<string, unknown>;
     expect(arg.authPassword).toBe('rotated-secret');
+  });
+
+  it('TrunkForm_ShouldSubmitCodecs_WhenCreating', async () => {
+    render(<TrunkForm open mode="create" onOpenChange={() => {}} />);
+    fireEvent.change(screen.getByTestId('trunk-form-name'), { target: { value: 'codec-trunk' } });
+    fireEvent.change(screen.getByTestId('trunk-form-displayName'), {
+      target: { value: 'Codec Trunk' },
+    });
+    fireEvent.click(screen.getByTestId('trunk-form-advanced-toggle'));
+    fireEvent.click(screen.getByTestId('trunk-form-codecs-add-alaw'));
+    fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
+    await waitFor(() => expect(createMutate).toHaveBeenCalled());
+    const arg = createMutate.mock.calls[0][0] as Record<string, unknown>;
+    expect(typeof arg.codecs).toBe('string');
+  });
+
+  it('TrunkForm_ShouldPrefillCodecs_WhenEditing', () => {
+    render(<TrunkForm open mode="edit" onOpenChange={() => {}} trunk={existingTrunk} />);
+    fireEvent.click(screen.getByTestId('trunk-form-advanced-toggle'));
+    expect(screen.getByTestId('trunk-form-codecs-selected-ulaw')).toBeInTheDocument();
+    expect(screen.getByTestId('trunk-form-codecs-selected-alaw')).toBeInTheDocument();
   });
 });

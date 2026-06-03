@@ -25,6 +25,7 @@ import {
   type TrunkSummary,
   type TrunkWriteFields,
 } from '@/core/api/hooks/use-trunks';
+import { CodecSelector } from '@/core/voice/codec-selector';
 
 const TRUNK_TYPES = ['SIP', 'PJSIP', 'IAX2', 'DAHDI'] as const;
 
@@ -387,12 +388,18 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               >
                 {/* Codecs */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="trunk-codecs">{t('trunks.codecs')}</Label>
-                  <Input
-                    id="trunk-codecs"
-                    placeholder={t('trunks.form.codecs_placeholder')}
-                    data-testid="trunk-form-codecs"
-                    {...register('codecs')}
+                  <Label id="trunk-codecs-label">{t('trunks.codecs')}</Label>
+                  <Controller
+                    name="codecs"
+                    control={control}
+                    render={({ field }) => (
+                      <CodecSelector
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        testId="trunk-form-codecs"
+                        ariaLabelledBy="trunk-codecs-label"
+                      />
+                    )}
                   />
                 </div>
 
