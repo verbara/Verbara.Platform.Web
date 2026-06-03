@@ -364,7 +364,7 @@ function MediaStep() {
       {open && (
         <div className="space-y-4" data-testid="trunk-wizard-media-section">
           <div className="space-y-1.5">
-            <Label htmlFor="trunk-wizard-codecs">{t('trunks.codecs')}</Label>
+            <Label id="trunk-wizard-codecs-label">{t('trunks.codecs')}</Label>
             <Controller
               name="codecs"
               control={control}
@@ -373,6 +373,7 @@ function MediaStep() {
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   testId="trunk-wizard-codecs"
+                  ariaLabelledBy="trunk-wizard-codecs-label"
                 />
               )}
             />

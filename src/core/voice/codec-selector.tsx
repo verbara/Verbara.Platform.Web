@@ -30,11 +30,17 @@ interface CodecSelectorProps {
   readonly value: string;
   readonly onChange: (value: string) => void;
   readonly testId?: string;
+  readonly ariaLabelledBy?: string;
 }
 
 const CUSTOM_TOKEN_RE = /^[a-z0-9]+$/;
 
-export function CodecSelector({ value, onChange, testId = 'codec' }: Readonly<CodecSelectorProps>) {
+export function CodecSelector({
+  value,
+  onChange,
+  testId = 'codec',
+  ariaLabelledBy,
+}: Readonly<CodecSelectorProps>) {
   const { t } = useTranslation('common');
   const { data } = useVoiceCodecs();
   const installed = data?.codecs ?? null;
@@ -115,7 +121,11 @@ export function CodecSelector({ value, onChange, testId = 'codec' }: Readonly<Co
   const guardrails = useMemo(() => computeGuardrails(selected, installed), [selected, installed]);
 
   return (
-    <div className="space-y-3" data-testid={testId}>
+    <fieldset
+      className="space-y-3 border-0 p-0 m-0"
+      data-testid={testId}
+      aria-labelledby={ariaLabelledBy}
+    >
       {/* Preset */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">{t('voice.codecs.preset', 'Preset')}</span>
@@ -267,7 +277,7 @@ export function CodecSelector({ value, onChange, testId = 'codec' }: Readonly<Co
           )}
         </p>
       )}
-    </div>
+    </fieldset>
   );
 }
 
