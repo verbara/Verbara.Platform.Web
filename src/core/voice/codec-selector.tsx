@@ -52,6 +52,7 @@ export function CodecSelector({
   const [showAll, setShowAll] = useState(false);
   const [search, setSearch] = useState('');
   const [customToken, setCustomToken] = useState('');
+  const [announcement, setAnnouncement] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -74,6 +75,23 @@ export function CodecSelector({
     [t],
   );
 
+  const announceMove = useCallback(
+    (token: string, newIndex: number, total: number) => {
+      setAnnouncement(
+        t(
+          'voice.codecs.reordered',
+          `${codecName(token)} moved to position ${newIndex + 1} of ${total}`,
+          {
+            codec: codecName(token),
+            position: newIndex + 1,
+            total,
+          },
+        ),
+      );
+    },
+    [codecName, t],
+  );
+
   const setTokens = (tokens: string[]) => onChange(serializeCodecs(tokens));
 
   const applyPreset = (key: string | null) => {
@@ -92,13 +110,22 @@ export function CodecSelector({
   const move = (index: number, dir: -1 | 1) => {
     const target = index + dir;
     if (target < 0 || target >= selected.length) return;
+    const token = selected[index];
+    if (token === undefined) return;
+    announceMove(token, target, selected.length);
     setTokens(arrayMove(selected, index, target));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    setTokens(arrayMove(selected, Number(active.id), Number(over.id)));
+    const oldIndex = Number(active.id);
+    const newIndex = Number(over.id);
+    const token = selected[oldIndex];
+    if (token !== undefined) {
+      announceMove(token, newIndex, selected.length);
+    }
+    setTokens(arrayMove(selected, oldIndex, newIndex));
   };
 
   const addCustom = () => {
@@ -175,7 +202,7 @@ export function CodecSelector({
                 dragLabel={t('voice.codecs.dragHandle', 'Drag to reorder')}
                 upLabel={t('voice.codecs.moveUp', 'Move up')}
                 downLabel={t('voice.codecs.moveDown', 'Move down')}
-                removeLabel={t('voice.codecs.remove', 'Remove')}
+                removeLabel={t('voice.codecs.remove', 'Remove codec')}
               />
             ))}
           </ul>
@@ -280,6 +307,10 @@ export function CodecSelector({
           )}
         </p>
       )}
+
+      <div role="status" aria-live="polite" className="sr-only" data-testid={`${testId}-announcer`}>
+        {announcement}
+      </div>
     </fieldset>
   );
 }

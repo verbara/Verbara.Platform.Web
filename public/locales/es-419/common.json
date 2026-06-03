@@ -589,6 +589,7 @@
       "addCustom": "Agregar códec personalizado",
       "addCustomPlaceholder": "p. ej. speex",
       "remove": "Quitar códec",
+      "reordered": "{{codec}} movido a la posición {{position}} de {{total}}",
       "moveUp": "Subir",
       "moveDown": "Bajar",
       "dragHandle": "Arrastrar para reordenar",

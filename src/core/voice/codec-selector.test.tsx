@@ -69,4 +69,11 @@ describe('CodecSelector', () => {
     // speex non-curated but NOT in installed list → shown disabled under showAll
     expect(screen.getByTestId('cs-add-speex')).toBeDisabled();
   });
+
+  it('CodecSelector_ShouldAnnounceReorder_WhenMovedDown', () => {
+    render(<CodecSelector value="ulaw,alaw" onChange={() => {}} testId="cs" />);
+    expect(screen.getByTestId('cs-announcer')).toHaveTextContent('');
+    fireEvent.click(screen.getByTestId('cs-down-0'));
+    expect(screen.getByTestId('cs-announcer').textContent ?? '').not.toBe('');
+  });
 });

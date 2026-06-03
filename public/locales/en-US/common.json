@@ -589,6 +589,7 @@
       "addCustom": "Add custom codec",
       "addCustomPlaceholder": "e.g. speex",
       "remove": "Remove codec",
+      "reordered": "{{codec}} moved to position {{position}} of {{total}}",
       "moveUp": "Move up",
       "moveDown": "Move down",
       "dragHandle": "Drag to reorder",
