@@ -16,7 +16,7 @@ function wrapper({ children }: { children: ReactNode }) {
 describe('useVoiceCodecs', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('useVoiceCodecs_ShouldGetCodecsEndpoint', async () => {
+  it('useVoiceCodecs_ShouldQueryCodecsEndpoint_WhenInvoked', async () => {
     fetchMock.mockResolvedValue({ source: 'asterisk', codecs: ['ulaw', 'alaw'] });
     const { result } = renderHook(() => useVoiceCodecs(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
