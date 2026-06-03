@@ -31,6 +31,7 @@ interface CodecSelectorProps {
   readonly onChange: (value: string) => void;
   readonly testId?: string;
   readonly ariaLabelledBy?: string;
+  readonly ariaDescribedBy?: string;
 }
 
 const CUSTOM_TOKEN_RE = /^[a-z0-9]+$/;
@@ -40,6 +41,7 @@ export function CodecSelector({
   onChange,
   testId = 'codec',
   ariaLabelledBy,
+  ariaDescribedBy,
 }: Readonly<CodecSelectorProps>) {
   const { t } = useTranslation('common');
   const { data } = useVoiceCodecs();
@@ -125,6 +127,7 @@ export function CodecSelector({
       className="space-y-3 border-0 p-0 m-0"
       data-testid={testId}
       aria-labelledby={ariaLabelledBy}
+      aria-describedby={ariaDescribedBy}
     >
       {/* Preset */}
       <div className="flex items-center gap-2">
