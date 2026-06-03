@@ -127,7 +127,7 @@ describe('TrunkForm fields', () => {
     expect(arg.authPassword).toBe('s3cr3t-pass');
     expect(arg.registrationUri).toBe('sip:reg@carrier.test');
     expect(arg.clientUri).toBe('sip:client@carrier.test');
-    expect(typeof arg.codecs).toBe('string');
+    expect(arg.codecs).toBe('ulaw,alaw');
     expect(arg.context).toBe('from-carrier');
   });
 
@@ -206,7 +206,7 @@ describe('TrunkForm fields', () => {
     fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
     await waitFor(() => expect(createMutate).toHaveBeenCalled());
     const arg = createMutate.mock.calls[0][0] as Record<string, unknown>;
-    expect(typeof arg.codecs).toBe('string');
+    expect(arg.codecs).toBe('alaw');
   });
 
   it('TrunkForm_ShouldPrefillCodecs_WhenEditing', () => {
