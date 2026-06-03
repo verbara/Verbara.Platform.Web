@@ -163,7 +163,7 @@ export function CodecSelector({
                 index={index}
                 total={selected.length}
                 label={codecName(token)}
-                badges={<CodecBadges token={token} installed={installed} t={t} />}
+                badges={<CodecBadges token={token} installed={installed} />}
                 onRemove={() => removeAt(index)}
                 onUp={() => move(index, -1)}
                 onDown={() => move(index, 1)}
@@ -287,10 +287,10 @@ export function CodecSelector({
 interface CodecBadgesProps {
   readonly token: string;
   readonly installed: readonly string[] | null;
-  readonly t: (key: string, def?: string) => string;
 }
 
-function CodecBadges({ token, installed, t }: Readonly<CodecBadgesProps>) {
+function CodecBadges({ token, installed }: Readonly<CodecBadgesProps>) {
+  const { t } = useTranslation('common');
   const meta = CODEC_CATALOG[token];
   const notInstalled = installed !== null && !installed.includes(token);
   return (
