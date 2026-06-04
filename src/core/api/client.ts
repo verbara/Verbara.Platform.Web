@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { SessionChannel } from '@/core/session/session-channel';
 import {
   PaymentRequiredError,
   isPaymentRequiredProblemDetails,
@@ -24,41 +25,94 @@ class UnauthorizedError extends Error {
 
 let _refreshPromise: Promise<boolean> | null = null;
 
-async function refreshAccessToken(): Promise<boolean> {
+/**
+ * Lazily-created cross-tab bus. Built on first successful refresh so SSR /
+ * test environments without `window` (or `BroadcastChannel`) never construct
+ * one eagerly. `SessionChannel` itself degrades to a no-op when the underlying
+ * `BroadcastChannel` is unavailable.
+ */
+let _sessionChannel: SessionChannel | null = null;
+
+function getSessionChannel(): SessionChannel | null {
+  if (typeof window === 'undefined') return null;
+  if (!_sessionChannel) {
+    _sessionChannel = new SessionChannel();
+  }
+  return _sessionChannel;
+}
+
+/**
+ * Performs the actual network refresh: POST `/auth/refresh`, parse the new
+ * token, push it into the auth store, and broadcast `'refreshed'` to other
+ * tabs so they reschedule their proactive-refresh timers. Returns `true` when
+ * the token is now valid, `false` on any failure. Never throws.
+ *
+ * This is the body extracted from the original `refreshAccessToken`; the
+ * existing `sessionIdleTimeoutMinutes` handling is preserved verbatim.
+ */
+async function doRefresh(): Promise<boolean> {
+  try {
+    const res = await fetch('/api/v1/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!res.ok) return false;
+
+    const data = (await res.json()) as {
+      accessToken: string;
+      expiresAt: string;
+      permissions?: string[];
+      sessionIdleTimeoutMinutes?: number;
+    };
+
+    const store = useAuthStore.getState();
+    if (store.user && store.tenantId) {
+      store.setAuth(
+        data.accessToken,
+        new Date(data.expiresAt).getTime(),
+        store.user,
+        store.tenantId,
+        data.permissions ?? store.permissions,
+        store.features,
+        data.sessionIdleTimeoutMinutes ?? store.sessionIdleTimeoutMinutes,
+      );
+    }
+
+    // Tell other tabs a fresh token landed so they reschedule (and don't each
+    // race to refresh). Only on success — a failed refresh broadcasts nothing.
+    getSessionChannel()?.post('refreshed');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Refreshes the access token, deduplicated per-tab via `_refreshPromise` and
+ * serialized across tabs via the Web Locks API (`'verbara-refresh'`). When
+ * `navigator.locks` is unavailable the per-tab dedupe still applies and we fall
+ * straight through to {@link doRefresh}.
+ *
+ * Contract is unchanged for callers: resolves `true` when the token is now
+ * valid (including the "another tab already refreshed" fast-path) and `false`
+ * when the refresh failed (callers then log out). Exported so the session
+ * manager can trigger proactive refreshes.
+ */
+export async function refreshAccessToken(): Promise<boolean> {
   if (_refreshPromise) return _refreshPromise;
 
   _refreshPromise = (async () => {
     try {
-      const res = await fetch('/api/v1/auth/refresh', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!res.ok) return false;
-
-      const data = (await res.json()) as {
-        accessToken: string;
-        expiresAt: string;
-        permissions?: string[];
-        sessionIdleTimeoutMinutes?: number;
-      };
-
-      const store = useAuthStore.getState();
-      if (store.user && store.tenantId) {
-        store.setAuth(
-          data.accessToken,
-          new Date(data.expiresAt).getTime(),
-          store.user,
-          store.tenantId,
-          data.permissions ?? store.permissions,
-          store.features,
-          data.sessionIdleTimeoutMinutes ?? store.sessionIdleTimeoutMinutes,
-        );
+      if (typeof navigator !== 'undefined' && navigator.locks) {
+        return await navigator.locks.request('verbara-refresh', async () => {
+          // Another tab may have refreshed while we waited for the lock.
+          if (!useAuthStore.getState().isTokenExpired()) return true;
+          return doRefresh();
+        });
       }
-      return true;
-    } catch {
-      return false;
+      return await doRefresh();
     } finally {
       _refreshPromise = null;
     }
