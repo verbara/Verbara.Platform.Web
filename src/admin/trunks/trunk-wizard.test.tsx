@@ -58,6 +58,12 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+vi.mock('@/core/api/hooks/use-voice-codecs', () => ({
+  useVoiceCodecs: () => ({
+    data: { source: 'asterisk', codecs: ['ulaw', 'alaw', 'g722', 'opus', 'vp8', 'h264'] },
+  }),
+}));
+
 import TrunkWizard from './trunk-wizard';
 
 function renderWizard() {

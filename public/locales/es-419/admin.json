@@ -720,9 +720,8 @@
       "registration_uri_placeholder": "sip:usuario@proveedor.ejemplo.com",
       "client_uri_placeholder": "sip:usuario@proveedor.ejemplo.com",
       "advanced": "Configuración avanzada",
-      "codecs_placeholder": "ulaw,alaw",
-      "transport_placeholder": "Predeterminado del servidor",
-      "transport_hint": "Deje vacío para usar el transporte predeterminado del servidor.",
+      "transport_placeholder": "Predeterminado del servidor (UDP)",
+      "transport_hint": "Deje vacío para usar UDP, el transporte predeterminado del servidor.",
       "context_placeholder": "from-trunk",
       "context_hint": "No cambiar salvo que sepas lo que haces.",
       "submit_create": "Agregar troncal",
@@ -817,7 +816,6 @@
       },
       "media": {
         "description": "Los códecs predeterminados funcionan para la mayoría de los proveedores. Ajustá solo si hace falta.",
-        "codecsHint": "Lista separada por comas, p. ej. ulaw,alaw,opus.",
         "tlsNotSupported": "TLS/SRTP no está soportado todavía."
       },
       "outbound": {

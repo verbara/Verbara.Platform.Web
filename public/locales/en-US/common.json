@@ -578,5 +578,78 @@
       "tenantIdSlug": "Use lowercase letters, digits and hyphens only",
       "emailsMustDiffer": "Company admin email must differ from the platform admin email"
     }
+  },
+  "voice": {
+    "codecs": {
+      "preset": "Preset",
+      "search": "Search codec…",
+      "showAll": "Show all codecs",
+      "showLess": "Show fewer codecs",
+      "add": "Add",
+      "addCustom": "Add custom codec",
+      "addCustomPlaceholder": "e.g. speex",
+      "remove": "Remove codec",
+      "reordered": "{{codec}} moved to position {{position}} of {{total}}",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "dragHandle": "Drag to reorder",
+      "fallbackNote": "Couldn't verify against the server; showing the standard catalog.",
+      "presets": {
+        "recommended": "Recommended (compatibility)",
+        "hd": "High quality (HD)",
+        "lowband": "Low bandwidth",
+        "webrtc": "WebRTC / Browser",
+        "custom": "Custom"
+      },
+      "tiers": {
+        "standard": "Standard telephony",
+        "hd": "High-definition audio",
+        "lowband": "Low bandwidth",
+        "legacy": "Legacy / compatibility",
+        "video": "Video / WebRTC",
+        "others": "Others (installed)"
+      },
+      "badges": {
+        "hd": "HD",
+        "webrtc": "WebRTC",
+        "license": "license",
+        "module": "module",
+        "notInstalled": "not installed",
+        "outsideCatalog": "outside catalog"
+      },
+      "guardrails": {
+        "empty": "Select at least one codec.",
+        "no-g711": "No G.711 (ulaw/alaw): some carriers may reject calls.",
+        "duplicate": "Duplicate codec: {{token}}.",
+        "not-installed": "{{token}} is not installed on the server."
+      },
+      "names": {
+        "ulaw": "Standard — best compatibility",
+        "alaw": "Standard (A-law)",
+        "g722": "HD voice",
+        "opus": "Opus (HD / WebRTC)",
+        "g729": "Low bandwidth",
+        "gsm": "GSM (low bandwidth)",
+        "ilbc": "iLBC (low bandwidth)",
+        "g726": "G.726",
+        "g726aal2": "G.726 AAL2",
+        "adpcm": "ADPCM (legacy)",
+        "speex": "Speex",
+        "speex16": "Speex (HD)",
+        "siren7": "Siren7 (HD)",
+        "siren14": "Siren14 (HD)",
+        "g719": "G.719 (HD)",
+        "g723": "G.723.1",
+        "lpc10": "LPC-10 (legacy)",
+        "silk": "SILK (HD)",
+        "vp8": "VP8 video",
+        "vp9": "VP9 video",
+        "h264": "H.264 video",
+        "h263p": "H.263+ video",
+        "h263": "H.263 video",
+        "h261": "H.261 video",
+        "mpeg4": "MPEG-4 video"
+      }
+    }
   }
 }

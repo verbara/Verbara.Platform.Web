@@ -23,6 +23,7 @@ import {
   useUpdateEndpointProfile,
   type EndpointProfile,
 } from '@/core/api/hooks/use-endpoint-profiles';
+import { CodecSelector } from '@/core/voice/codec-selector';
 
 const PROFILE_TYPES = ['agent', 'trunk'] as const;
 
@@ -205,14 +206,21 @@ export function ProfileForm({ open, onOpenChange, mode, profile }: ProfileFormPr
 
           {/* Codecs */}
           <div className="space-y-1.5">
-            <Label htmlFor="profile-codecs" required>
+            <Label id="profile-codecs-label" required>
               {t('realtime.form.codecs')}
             </Label>
-            <Input
-              id="profile-codecs"
-              placeholder="ulaw,alaw,g722"
-              {...codecsA11y.inputProps}
-              {...register('codecs')}
+            <Controller
+              name="codecs"
+              control={control}
+              render={({ field }) => (
+                <CodecSelector
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  testId="profile-codecs"
+                  ariaLabelledBy="profile-codecs-label"
+                  ariaDescribedBy={codecsA11y.errorId}
+                />
+              )}
             />
             <FieldError
               id={codecsA11y.errorId}

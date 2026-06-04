@@ -720,9 +720,8 @@
       "registration_uri_placeholder": "sip:user@carrier.example.com",
       "client_uri_placeholder": "sip:user@carrier.example.com",
       "advanced": "Advanced settings",
-      "codecs_placeholder": "ulaw,alaw",
-      "transport_placeholder": "Server default",
-      "transport_hint": "Leave empty to use the server default transport.",
+      "transport_placeholder": "Server default (UDP)",
+      "transport_hint": "Leave empty to use UDP — the server's default transport.",
       "context_placeholder": "from-trunk",
       "context_hint": "Do not change unless you know what you are doing.",
       "submit_create": "Add Trunk",
@@ -817,7 +816,6 @@
       },
       "media": {
         "description": "The default codecs work for most providers. Adjust only if needed.",
-        "codecsHint": "Comma-separated list, e.g. ulaw,alaw,opus.",
         "tlsNotSupported": "TLS/SRTP is not supported yet."
       },
       "outbound": {

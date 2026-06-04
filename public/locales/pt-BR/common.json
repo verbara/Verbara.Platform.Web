@@ -578,5 +578,78 @@
       "tenantIdSlug": "Use apenas minúsculas, dígitos e hifens",
       "emailsMustDiffer": "O email do admin da empresa deve ser diferente do admin da plataforma"
     }
+  },
+  "voice": {
+    "codecs": {
+      "preset": "Predefinição",
+      "search": "Buscar codec…",
+      "showAll": "Mostrar todos os codecs",
+      "showLess": "Mostrar menos codecs",
+      "add": "Adicionar",
+      "addCustom": "Adicionar codec personalizado",
+      "addCustomPlaceholder": "ex.: speex",
+      "remove": "Remover codec",
+      "reordered": "{{codec}} movido para a posição {{position}} de {{total}}",
+      "moveUp": "Mover para cima",
+      "moveDown": "Mover para baixo",
+      "dragHandle": "Arraste para reordenar",
+      "fallbackNote": "Não foi possível verificar com o servidor; exibindo o catálogo padrão.",
+      "presets": {
+        "recommended": "Recomendado (compatibilidade)",
+        "hd": "Alta qualidade (HD)",
+        "lowband": "Baixa largura de banda",
+        "webrtc": "WebRTC / Navegador",
+        "custom": "Personalizado"
+      },
+      "tiers": {
+        "standard": "Telefonia padrão",
+        "hd": "Áudio de alta definição",
+        "lowband": "Baixa largura de banda",
+        "legacy": "Legado / compatibilidade",
+        "video": "Vídeo / WebRTC",
+        "others": "Outros (instalados)"
+      },
+      "badges": {
+        "hd": "HD",
+        "webrtc": "WebRTC",
+        "license": "licença",
+        "module": "módulo",
+        "notInstalled": "não instalado",
+        "outsideCatalog": "fora do catálogo"
+      },
+      "guardrails": {
+        "empty": "Selecione pelo menos um codec.",
+        "no-g711": "Sem G.711 (ulaw/alaw): algumas operadoras podem rejeitar chamadas.",
+        "duplicate": "Codec duplicado: {{token}}.",
+        "not-installed": "{{token}} não está instalado no servidor."
+      },
+      "names": {
+        "ulaw": "Padrão — máxima compatibilidade",
+        "alaw": "Padrão (A-law)",
+        "g722": "Voz HD",
+        "opus": "Opus (HD / WebRTC)",
+        "g729": "Baixa largura de banda",
+        "gsm": "GSM (baixa largura de banda)",
+        "ilbc": "iLBC (baixa largura de banda)",
+        "g726": "G.726",
+        "g726aal2": "G.726 AAL2",
+        "adpcm": "ADPCM (legado)",
+        "speex": "Speex",
+        "speex16": "Speex (HD)",
+        "siren7": "Siren7 (HD)",
+        "siren14": "Siren14 (HD)",
+        "g719": "G.719 (HD)",
+        "g723": "G.723.1",
+        "lpc10": "LPC-10 (legado)",
+        "silk": "SILK (HD)",
+        "vp8": "Vídeo VP8",
+        "vp9": "Vídeo VP9",
+        "h264": "Vídeo H.264",
+        "h263p": "Vídeo H.263+",
+        "h263": "Vídeo H.263",
+        "h261": "Vídeo H.261",
+        "mpeg4": "Vídeo MPEG-4"
+      }
+    }
   }
 }
