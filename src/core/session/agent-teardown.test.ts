@@ -6,6 +6,10 @@ import type { Agent } from '@/core/api/hooks/use-agents';
 
 vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
 
+// Fixtures use the REAL PascalCase `/agents/me` wire casing on purpose
+// (`AgentState` enum names: Available, Busy, DND, …) so the suite guards the
+// actual contract — these pass WITH the .toLowerCase() normalization and would
+// FAIL without it (a literal `has("Busy")` against the lowercase set is false).
 function makeAgent(state: string): Agent {
   return {
     agentId: 'a1',
@@ -33,7 +37,7 @@ describe('safeAgentTeardown', () => {
 
   it('SafeAgentTeardown_ShouldPutOffline_WhenAgentRoutable', async () => {
     const qc = newQueryClient();
-    qc.setQueryData<Agent>(['agent-me'], makeAgent('busy'));
+    qc.setQueryData<Agent>(['agent-me'], makeAgent('Busy'));
     vi.mocked(client.customFetch).mockResolvedValue(undefined);
 
     await safeAgentTeardown(qc);
@@ -48,7 +52,7 @@ describe('safeAgentTeardown', () => {
 
   it('SafeAgentTeardown_ShouldPutOffline_WhenAgentAvailable', async () => {
     const qc = newQueryClient();
-    qc.setQueryData<Agent>(['agent-me'], makeAgent('available'));
+    qc.setQueryData<Agent>(['agent-me'], makeAgent('Available'));
     vi.mocked(client.customFetch).mockResolvedValue(undefined);
 
     await safeAgentTeardown(qc);
@@ -62,7 +66,7 @@ describe('safeAgentTeardown', () => {
 
   it('SafeAgentTeardown_ShouldNotPut_WhenAgentDeliberatelyNonRoutable', async () => {
     const qc = newQueryClient();
-    qc.setQueryData<Agent>(['agent-me'], makeAgent('dnd'));
+    qc.setQueryData<Agent>(['agent-me'], makeAgent('DND'));
 
     await safeAgentTeardown(qc);
 
@@ -79,7 +83,7 @@ describe('safeAgentTeardown', () => {
 
   it('SafeAgentTeardown_ShouldResolve_WhenPutRejects', async () => {
     const qc = newQueryClient();
-    qc.setQueryData<Agent>(['agent-me'], makeAgent('busy'));
+    qc.setQueryData<Agent>(['agent-me'], makeAgent('Busy'));
     vi.mocked(client.customFetch).mockRejectedValue(new Error('network down'));
 
     await expect(safeAgentTeardown(qc)).resolves.toBeUndefined();
@@ -89,7 +93,7 @@ describe('safeAgentTeardown', () => {
   it('SafeAgentTeardown_ShouldResolveAtCap_WhenPutHangs', async () => {
     vi.useFakeTimers();
     const qc = newQueryClient();
-    qc.setQueryData<Agent>(['agent-me'], makeAgent('available'));
+    qc.setQueryData<Agent>(['agent-me'], makeAgent('Available'));
     // A PUT that never settles — the 1.5s cap must let teardown resolve anyway.
     vi.mocked(client.customFetch).mockReturnValue(new Promise<void>(() => {}));
 

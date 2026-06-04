@@ -15,10 +15,12 @@
  *    already tore down + broadcast, so we only clear local auth + redirect. No
  *    teardown PUT, no broadcast.
  *
- * `shouldSuppressWarning`: deliberate aux states (`on_break`/`lunch`/`training`/
- * `dnd`/`acw`) mean the agent stepped away on purpose and is non-routable — we
- * suppress the idle nag rather than logging them out. Non-agents and routable
- * agents (`available`/`busy`) are NOT suppressed.
+ * `shouldSuppressWarning`: deliberate aux states (`Break`/`Lunch`/`Training`/
+ * `DND`/`ACW` — the `/agents/me` `AgentState` enum names) mean the agent
+ * stepped away on purpose and is non-routable — we suppress the idle nag rather
+ * than logging them out. Non-agents and routable agents (`Available`/`Busy`)
+ * are NOT suppressed. The wire value is normalized to lowercase before the
+ * comparison, so the literal set is lowercase.
  */
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -29,8 +31,12 @@ import { refreshAccessToken } from '@/core/api/client';
 import { useAuthStore } from '@/core/auth/auth-store';
 import type { Agent } from '@/core/api/hooks/use-agents';
 
-/** Deliberate, non-routable aux states — the idle warning is suppressed for these. */
-const SUPPRESS_WARNING_STATES = new Set(['on_break', 'lunch', 'training', 'dnd', 'acw']);
+/**
+ * Deliberate, non-routable aux states — the idle warning is suppressed for these.
+ * Lowercased `AgentState` enum names (`/agents/me` emits PascalCase, e.g. "DND"),
+ * compared against a lowercased copy of `agent.state`.
+ */
+const SUPPRESS_WARNING_STATES = new Set(['break', 'lunch', 'training', 'acw', 'dnd']);
 
 export function SessionManager() {
   const queryClient = useQueryClient();
@@ -57,7 +63,11 @@ export function SessionManager() {
 
   const shouldSuppressWarning = useCallback(() => {
     const agent = queryClient.getQueryData<Agent>(['agent-me']);
-    return agent ? SUPPRESS_WARNING_STATES.has(agent.state) : false;
+    if (!agent) return false;
+    // `/agents/me` returns PascalCase `AgentState` enum names (e.g. "DND"), so
+    // normalize before comparing against the lowercase suppression set.
+    const state = (agent.state ?? '').toLowerCase();
+    return SUPPRESS_WARNING_STATES.has(state);
   }, [queryClient]);
 
   const { warningOpen, secondsLeft, stayConnected, signOut } = useSessionManager({

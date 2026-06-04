@@ -21,6 +21,10 @@ vi.mock('@/core/api/client', () => ({
 const IDLE_MINUTES = 2;
 const WARNING_AT = warningAtMs(IDLE_MINUTES);
 
+// Fixtures use the REAL PascalCase `/agents/me` wire casing on purpose
+// (`AgentState` enum names: Busy, DND, …) so the suite guards the actual
+// contract — suppression/teardown only behave correctly because the production
+// code normalizes the state to lowercase before comparing.
 function makeAgent(state: string): Agent {
   return {
     agentId: 'a1',
@@ -102,7 +106,7 @@ describe('SessionManager', () => {
       order.push('auth-logout');
     });
 
-    renderManager(makeAgent('busy'));
+    renderManager(makeAgent('Busy'));
 
     // Cross the warning deadline, then run the full countdown to expiry.
     act(() => {
@@ -130,7 +134,7 @@ describe('SessionManager', () => {
 
   it('IdleWarning_ShouldStaySuppressed_WhenDeliberateAuxState', () => {
     vi.useFakeTimers();
-    const { container } = renderManager(makeAgent('dnd'));
+    const { container } = renderManager(makeAgent('DND'));
 
     // Advance well past the warning deadline AND the full countdown window.
     act(() => {
@@ -146,7 +150,7 @@ describe('SessionManager', () => {
 
   it('RemoteLogout_ShouldLogoutWithoutTeardownPut_WhenLogoutMessageReceived', async () => {
     // Real timers here: BroadcastChannel delivery is event-loop driven.
-    const { qc } = renderManager(makeAgent('busy'));
+    const { qc } = renderManager(makeAgent('Busy'));
     expect(qc.getQueryData(['agent-me'])).toBeDefined();
 
     // A sibling tab broadcasts a logout. The component's internal SessionChannel

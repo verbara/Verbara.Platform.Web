@@ -11,6 +11,8 @@ interface LoginResponse {
   tenantId?: string;
   permissions?: string[];
   features?: Record<string, boolean>;
+  /** Per-tenant idle-logout threshold; carried through `completeLogin` so MFA logins honor it. */
+  sessionIdleTimeoutMinutes?: number;
 }
 
 interface MfaVerifyProps {

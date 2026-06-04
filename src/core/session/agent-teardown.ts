@@ -24,7 +24,12 @@ import type { Agent } from '@/core/api/hooks/use-agents';
 /** TanStack Query cache key for the self-scoped agent profile (`GET /agents/me`). */
 const AGENT_ME_KEY = ['agent-me'] as const;
 
-/** Agent states the ACD will route NEW contacts to. */
+/**
+ * Agent states the ACD will route NEW contacts to. Compared against a
+ * lowercased copy of `agent.state` so it matches the real `/agents/me` wire
+ * casing (PascalCase `AgentState` enum names, e.g. `"Busy"`) as well as any
+ * already-lowercase value.
+ */
 const ROUTABLE_STATES = new Set(['available', 'busy']);
 
 /** Hard cap (ms) on the teardown PUT so a slow/failing call never hangs logout. */
@@ -45,7 +50,10 @@ function timeout(ms: number): Promise<void> {
  */
 export async function safeAgentTeardown(queryClient: QueryClient): Promise<void> {
   const agent = queryClient.getQueryData<Agent>(AGENT_ME_KEY);
-  if (!agent || !ROUTABLE_STATES.has(agent.state)) {
+  // `/agents/me` returns PascalCase `AgentState` enum names (e.g. "Busy"), so
+  // normalize before comparing against the lowercase routable set.
+  const state = (agent?.state ?? '').toLowerCase();
+  if (!agent || !ROUTABLE_STATES.has(state)) {
     // Not an agent, or deliberately non-routable already — nothing to tear down.
     return;
   }
