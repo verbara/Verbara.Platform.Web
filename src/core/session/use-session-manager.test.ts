@@ -282,6 +282,23 @@ describe('useSessionManager', () => {
     expect(injected.closed).toBe(false);
   });
 
+  it('SignOut_ShouldRunLocalLogoutPathOnce_WhenCalled', () => {
+    const { result, onLogout, onRemoteLogout, channel } = setup();
+
+    act(() => {
+      result.current.signOut();
+    });
+    expect(onLogout).toHaveBeenCalledTimes(1);
+    expect(onRemoteLogout).not.toHaveBeenCalled();
+    expect(channel.posted).toContain('logout');
+
+    // Idempotent: a second call (or a later countdown) does not re-fire.
+    act(() => {
+      result.current.signOut();
+    });
+    expect(onLogout).toHaveBeenCalledTimes(1);
+  });
+
   it('SuppressedAtWarningTime_ShouldKeepWatching_WhenSuppressionLifts', () => {
     // A voice call active at warning time suppresses; once it ends and the
     // re-armed deadline passes again with no activity, the warning opens.

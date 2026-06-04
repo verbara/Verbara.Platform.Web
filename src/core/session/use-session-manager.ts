@@ -74,6 +74,13 @@ export interface SessionManagerResult {
   secondsLeft: number;
   /** Dismiss the warning, re-arm the idle clock, broadcast activity, and refresh the token. */
   stayConnected: () => void;
+  /**
+   * Tear down the session NOW (the same local-logout path the countdown takes):
+   * clears timers, broadcasts `'logout'` once, and invokes `onLogout`. Wired to
+   * the warning dialog's "Sign out now" so an explicit sign-out and an idle
+   * expiry follow the identical, idempotent path.
+   */
+  signOut: () => void;
 }
 
 /** True when a voice call is ringing or connected. */
@@ -364,5 +371,5 @@ export function useSessionManager(opts: SessionManagerOptions): SessionManagerRe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [warningOpen]);
 
-  return { warningOpen, secondsLeft, stayConnected };
+  return { warningOpen, secondsLeft, stayConnected, signOut: doLocalLogout };
 }
