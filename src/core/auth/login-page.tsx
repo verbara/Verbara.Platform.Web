@@ -24,6 +24,7 @@ interface LoginResponse {
   tenantId?: string;
   permissions?: string[];
   features?: Features;
+  sessionIdleTimeoutMinutes?: number;
 }
 
 export function LoginPage() {
@@ -117,6 +118,7 @@ export function LoginPage() {
         data.tenantId,
         data.permissions ?? [],
         data.features ?? {},
+        data.sessionIdleTimeoutMinutes ?? null,
       );
     useTenantStore.getState().setActiveTenant(data.tenantId);
 

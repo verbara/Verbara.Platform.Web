@@ -41,6 +41,7 @@ async function refreshAccessToken(): Promise<boolean> {
         accessToken: string;
         expiresAt: string;
         permissions?: string[];
+        sessionIdleTimeoutMinutes?: number;
       };
 
       const store = useAuthStore.getState();
@@ -52,6 +53,7 @@ async function refreshAccessToken(): Promise<boolean> {
           store.tenantId,
           data.permissions ?? store.permissions,
           store.features,
+          data.sessionIdleTimeoutMinutes ?? store.sessionIdleTimeoutMinutes,
         );
       }
       return true;
