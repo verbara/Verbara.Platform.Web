@@ -10,7 +10,7 @@
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~375 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 67+ E2E specs · 1244/1244 Vitest · Version 3.1.3** (Niveles 1-7 CLOSED — ROADMAP COMPLETE 🎉). Post-roadmap: Session/Auth Overhaul **W1+W2** delivered (agent-aware idle-timeout + refresh-cookie fix; new `src/core/session/*`), PR #75 open — see [ADR-0009](docs/decisions/0009-agent-presence-session-work-continuity.md); W3–W6 north-star pending.
+**~375 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 67+ E2E specs · 1244/1244 Vitest · Version 3.1.3** (Niveles 1-7 CLOSED — ROADMAP COMPLETE 🎉). Post-roadmap: Session/Auth Overhaul **W1+W2** ✅ SHIPPED 2026-06-05 (agent-aware idle-timeout + refresh-cookie fix; new `src/core/session/*`; PR #75 merged) — see [ADR-0009](docs/decisions/0009-agent-presence-session-work-continuity.md); W3–W6 north-star pending.
 
 Niveles 1-7 complete (tags `v1.14.5-web` through `v3.0.1-web`). **Track 7C-polish (`v3.0.1-web`)** cerró 12 gaps de auditoría post-ship del v3.0.0 (theming inyectado real, attachments propagation, offline queue drain, message cache localStorage para resume, sound toggle UI funcional, focus-on-open, conversation timeout 5min, favicon badge, reduced-motion en iframe, pre-chat a11y Track 5C parity, Sentry breadcrumbs, virtualización de message-list). **Bloqueados por backend** (tracked aparte): availability/office-hours endpoint, history endpoint, tenant config endpoint, `CreateSessionRequest` field acceptance.
 
