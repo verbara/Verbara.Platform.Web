@@ -5,6 +5,7 @@ import { CommandPalette } from './command-palette';
 import { useSSE } from '@/core/hooks/use-sse';
 import { ImpersonationBanner } from '@/core/auth/impersonation-banner';
 import { SkipLink } from '@/core/ui/skip-link';
+import { SessionManager } from '@/core/session/session-manager';
 
 export function AppShell() {
   useSSE();
@@ -12,6 +13,7 @@ export function AppShell() {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <SkipLink targetId="main-content">{t('a11y.skipToMain')}</SkipLink>
+      <SessionManager />
       <ImpersonationBanner />
       <div className="flex flex-1 overflow-hidden">
         <Rail />

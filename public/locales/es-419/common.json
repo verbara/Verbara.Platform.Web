@@ -1,4 +1,14 @@
 {
+  "session": {
+    "warning": {
+      "title": "¿Sigues ahí?",
+      "description": "Tu sesión está por cerrarse por inactividad.",
+      "countdown": "Se cerrará en {{seconds}} s",
+      "stayConnected": "Seguir conectado",
+      "signOutNow": "Cerrar sesión",
+      "srCountdown": "La sesión expirará en {{seconds}} segundos"
+    }
+  },
   "app": {
     "name": "Verbara"
   },

@@ -32,6 +32,7 @@ interface AuthState {
   rememberMe: boolean;
   mfaPending: { mfaToken: string; email: string } | null;
   impersonation: ImpersonationState | null;
+  sessionIdleTimeoutMinutes: number | null;
 
   setAuth: (
     accessToken: string,
@@ -40,6 +41,7 @@ interface AuthState {
     tenantId: string,
     permissions: string[],
     features: Features,
+    sessionIdleTimeoutMinutes?: number | null,
   ) => void;
   setMfaPending: (mfaToken: string, email: string) => void;
   clearMfaPending: () => void;
@@ -73,9 +75,33 @@ export const useAuthStore = create<AuthState>()(
       rememberMe: false,
       mfaPending: null,
       impersonation: null,
+      sessionIdleTimeoutMinutes: null,
 
-      setAuth: (accessToken, tokenExpiry, user, tenantId, permissions, features) =>
-        set({ accessToken, tokenExpiry, user, tenantId, permissions, features, mfaPending: null }),
+      setAuth: (
+        accessToken,
+        tokenExpiry,
+        user,
+        tenantId,
+        permissions,
+        features,
+        sessionIdleTimeoutMinutes,
+      ) =>
+        set((state) => ({
+          accessToken,
+          tokenExpiry,
+          user,
+          tenantId,
+          permissions,
+          features,
+          mfaPending: null,
+          // `undefined` means "not provided" — preserve the current value so a
+          // refresh that omits the field never wipes it. An explicit `null`
+          // (or a number) is applied as-is.
+          sessionIdleTimeoutMinutes:
+            sessionIdleTimeoutMinutes === undefined
+              ? state.sessionIdleTimeoutMinutes
+              : sessionIdleTimeoutMinutes,
+        })),
       setMfaPending: (mfaToken, email) => set({ mfaPending: { mfaToken, email } }),
       clearMfaPending: () => set({ mfaPending: null }),
       setRememberMe: (value) => set({ rememberMe: value }),
@@ -89,6 +115,7 @@ export const useAuthStore = create<AuthState>()(
           features: {},
           mfaPending: null,
           impersonation: null,
+          sessionIdleTimeoutMinutes: null,
         }),
       hasPermission: (permission) => get().permissions.includes(permission),
       isTokenExpired: () => {
