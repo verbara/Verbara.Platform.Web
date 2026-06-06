@@ -29,8 +29,11 @@ const AGENT_ME_KEY = ['agent-me'] as const;
  * lowercased copy of `agent.state` so it matches the real `/agents/me` wire
  * casing (PascalCase `AgentState` enum names, e.g. `"Busy"`) as well as any
  * already-lowercase value.
+ *
+ * Exported so the W3 graceful-departure beacon (`core/presence/agent-departure`)
+ * reuses the SAME routable set + casing convention — do not duplicate it.
  */
-const ROUTABLE_STATES = new Set(['available', 'busy']);
+export const ROUTABLE_STATES = new Set(['available', 'busy']);
 
 /** Hard cap (ms) on the teardown PUT so a slow/failing call never hangs logout. */
 const TEARDOWN_TIMEOUT_MS = 1_500;
