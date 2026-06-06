@@ -5,6 +5,8 @@ import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { initConversationSSE } from '@/agent/stores/conversation-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { useSoftphone } from '@/core/voice/use-softphone';
+import { useAgentHeartbeat } from '@/core/presence/use-agent-heartbeat';
+import { useAgentDeparture } from '@/core/presence/agent-departure';
 import { CallCard } from '@/agent/voice/call-card';
 import { InboxPanel } from '@/agent/inbox/inbox-panel';
 import { ContextPanel } from '@/agent/context/context-panel';
@@ -20,6 +22,12 @@ export default function AgentLayout() {
 
   // Phase 3A — boot the in-browser softphone for voice-capable agents.
   useSoftphone();
+
+  // W3 — agent liveness: fixed-interval heartbeat while on `/agent`, plus a
+  // graceful-departure beacon on tab close. Scoped here so both are torn down
+  // on route exit (non-agents never reach `/agent`).
+  useAgentHeartbeat();
+  useAgentDeparture();
 
   const toggleContext = useCallback(() => {
     setContextOpen((prev) => !prev);
