@@ -181,14 +181,18 @@ export function useUpdateAgentState() {
   const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { state: string }) =>
-      customFetch<void>({
+      customFetch<Agent>({
         url: '/api/v1/agents/me/state',
         method: 'PUT',
         data,
       }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ['agent-me'] });
-      toast.success(t('toasts.agents.stateUpdated'));
+      // W4 — a deferrable state requested while the agent has active work becomes a
+      // PENDING pause (state unchanged) rather than applying now; toast accordingly.
+      toast.success(
+        result?.pendingState ? t('toasts.agents.pausePending') : t('toasts.agents.stateUpdated'),
+      );
     },
     onError: (err: Error) => toast.error(err.message),
   });

@@ -497,7 +497,8 @@
       "stateUpdated": "Estado atualizado",
       "agentStateUpdated": "Estado do agente atualizado",
       "pauseCancelled": "Pausa cancelada",
-      "pauseApplied": "Pausa aplicada"
+      "pauseApplied": "Pausa aplicada",
+      "pausePending": "Pausa pendente — conclua seu trabalho ativo"
     }
   },
   "table": {
