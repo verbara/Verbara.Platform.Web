@@ -7,6 +7,7 @@ import {
   useCancelPendingPause,
   useForcePendingPause,
 } from '@/core/api/hooks/use-agents';
+import { normalizeStateToken, toWireState } from './agent-status-tokens';
 
 interface AgentStatus {
   value: string;
@@ -27,18 +28,6 @@ const AGENT_STATUSES: AgentStatus[] = [
 
 function StatusDot({ color }: { readonly color: string }) {
   return <span className={`inline-block size-2 shrink-0 rounded-full ${color}`} />;
-}
-
-/**
- * The backend serializes `state` / `pendingState` in PascalCase ("Available",
- * "Break"), but the UI tokens in {@link AGENT_STATUSES} are lowercase and the
- * Break aux state maps to the `on_break` token. Normalize before any lookup —
- * skipping this is the long-standing casing bug that fell every PascalCase state
- * through to the "offline" fallback in {@link getStatus}.
- */
-function normalizeStateToken(s?: string | null): string {
-  const t = (s ?? '').toLowerCase();
-  return t === 'break' ? 'on_break' : t;
 }
 
 function getStatus(value: string | undefined): AgentStatus {
@@ -72,7 +61,7 @@ export function AgentStatusSelector() {
           // The backend decides pending vs immediate (it defers deferrable aux states while
           // the agent has active work). The client just sends the request and reflects the
           // invalidated ['agent-me']; no client-side special-casing.
-          if (newState) updateState.mutate({ state: newState });
+          if (newState) updateState.mutate({ state: toWireState(newState) });
         }}
         data-testid="agent-status-selector"
       >

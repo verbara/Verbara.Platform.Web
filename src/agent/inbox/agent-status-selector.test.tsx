@@ -50,6 +50,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 import { AgentStatusSelector } from './agent-status-selector';
+import { toWireState } from './agent-status-tokens';
 
 function makeAgent(overrides: Partial<Agent>): Agent {
   return {
@@ -127,5 +128,18 @@ describe('AgentStatusSelector', () => {
     expect(screen.queryByTestId('agent-status-pending-label')).toBeNull();
     expect(screen.queryByTestId('pause-apply-now')).toBeNull();
     expect(screen.queryByTestId('pause-cancel')).toBeNull();
+  });
+
+  // C2 contract: the UI's Break token is `on_break`, but the backend AgentState enum
+  // member is `Break` (NOT a case variant), so the request path MUST map it or the
+  // "On Break" deferred pause 400s. Other tokens round-trip via case-insensitive enum binding.
+  it('toWireState_ShouldMapOnBreakToBreak_WhenSending', () => {
+    expect(toWireState('on_break')).toBe('Break');
+  });
+
+  it('toWireState_ShouldPassThroughOtherTokens_WhenSending', () => {
+    for (const token of ['available', 'busy', 'lunch', 'training', 'dnd', 'acw', 'offline']) {
+      expect(toWireState(token)).toBe(token);
+    }
   });
 });
