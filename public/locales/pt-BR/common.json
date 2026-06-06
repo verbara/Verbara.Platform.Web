@@ -495,7 +495,9 @@
       "updated": "Agente atualizado",
       "deleted": "Agente excluído",
       "stateUpdated": "Estado atualizado",
-      "agentStateUpdated": "Estado do agente atualizado"
+      "agentStateUpdated": "Estado do agente atualizado",
+      "pauseCancelled": "Pausa cancelada",
+      "pauseApplied": "Pausa aplicada"
     }
   },
   "table": {
