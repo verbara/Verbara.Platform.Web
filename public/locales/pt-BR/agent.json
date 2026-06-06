@@ -140,7 +140,11 @@
     "training": "Treinamento",
     "dnd": "Não perturbe",
     "acw": "Pós-atendimento",
-    "offline": "Offline"
+    "offline": "Offline",
+    "pending_label": "{{state}} (pendente)",
+    "finish_active_items": "Conclua seus {{count}} item(ns) ativo(s) para aplicar",
+    "apply_now": "Aplicar agora",
+    "cancel_pending": "Cancelar"
   },
   "tour": {
     "inbox": "Sua caixa de entrada",

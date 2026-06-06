@@ -31,6 +31,18 @@ export interface Agent {
    * combines it with the screen-pop's queue default to decide whether to auto-accept an inbound call.
    */
   autoAnswer?: boolean | null;
+  /**
+   * W4 deferred pause — populated by `GET /agents/me`. When the agent requests a
+   * deferrable aux state (Break/Lunch/Training/DND) while handling active work, the
+   * backend keeps {@link state} unchanged and records the target here (PascalCase,
+   * e.g. "Break"), blocking new work until the active items finish or the agent
+   * forces/cancels. Null/undefined when no pause is pending.
+   */
+  pendingState?: string | null;
+  pendingReason?: string | null;
+  pendingSince?: string | null;
+  /** Count of conversations/calls the agent must finish before a pending pause applies. */
+  activeWorkCount?: number;
   teamId?: string | null;
   teamName?: string | null;
   userEmail?: string | null;
@@ -169,14 +181,47 @@ export function useUpdateAgentState() {
   const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { state: string }) =>
-      customFetch<void>({
+      customFetch<Agent>({
         url: '/api/v1/agents/me/state',
         method: 'PUT',
         data,
       }),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ['agent-me'] });
+      // W4 — a deferrable state requested while the agent has active work becomes a
+      // PENDING pause (state unchanged) rather than applying now; toast accordingly.
+      toast.success(
+        result?.pendingState ? t('toasts.agents.pausePending') : t('toasts.agents.stateUpdated'),
+      );
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+// W4 deferred pause — POST endpoints take NO body; `customFetch` omits the request
+// body when `data` is absent. Both invalidate ['agent-me'] so the status selector
+// reflects the cleared/applied pending pause.
+export function useCancelPendingPause() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
+  return useMutation({
+    mutationFn: () => customFetch<void>({ url: '/api/v1/agents/me/pause/cancel', method: 'POST' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agent-me'] });
-      toast.success(t('toasts.agents.stateUpdated'));
+      toast.success(t('toasts.agents.pauseCancelled'));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useForcePendingPause() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
+  return useMutation({
+    mutationFn: () => customFetch<void>({ url: '/api/v1/agents/me/pause/force', method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['agent-me'] });
+      toast.success(t('toasts.agents.pauseApplied'));
     },
     onError: (err: Error) => toast.error(err.message),
   });

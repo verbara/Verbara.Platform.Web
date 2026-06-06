@@ -140,7 +140,11 @@
     "training": "Training",
     "dnd": "DND",
     "acw": "ACW",
-    "offline": "Offline"
+    "offline": "Offline",
+    "pending_label": "{{state}} (pending)",
+    "finish_active_items": "Finish your {{count}} active item(s) to apply",
+    "apply_now": "Apply now",
+    "cancel_pending": "Cancel"
   },
   "tour": {
     "inbox": "Your Inbox",

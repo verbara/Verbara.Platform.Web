@@ -495,7 +495,10 @@
       "updated": "Agent updated",
       "deleted": "Agent deleted",
       "stateUpdated": "State updated",
-      "agentStateUpdated": "Agent state updated"
+      "agentStateUpdated": "Agent state updated",
+      "pauseCancelled": "Pause cancelled",
+      "pauseApplied": "Pause applied",
+      "pausePending": "Pause pending — finish your active work"
     }
   },
   "table": {

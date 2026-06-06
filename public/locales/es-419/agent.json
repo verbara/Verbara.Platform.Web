@@ -140,7 +140,11 @@
     "training": "Capacitación",
     "dnd": "No molestar",
     "acw": "Post-llamada",
-    "offline": "Desconectado"
+    "offline": "Desconectado",
+    "pending_label": "{{state}} (pendiente)",
+    "finish_active_items": "Termina tus {{count}} ítem(s) activo(s) para aplicar",
+    "apply_now": "Aplicar ahora",
+    "cancel_pending": "Cancelar"
   },
   "tour": {
     "inbox": "Tu bandeja de entrada",

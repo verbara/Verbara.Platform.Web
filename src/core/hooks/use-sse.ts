@@ -150,9 +150,16 @@ export function useSSE() {
       }
     });
 
+    // W4 — when the drain worker applies a deferred pause (active work finished), the server emits
+    // agent.state_changed for this agent. Refresh ['agent-me'] so the status selector flips from
+    // "Break (pending)" to the applied state without a manual reload. (The pending-SET transition is
+    // driven by the optimistic ['agent-me'] invalidation in the mutation hooks, not a push.)
     source.addEventListener('agent.state_changed', (e) => {
       try {
         const data = JSON.parse(e.data);
+        if (isForCurrentAgent(data.agentId ?? data.AgentId, currentAgentId())) {
+          queryClient.invalidateQueries({ queryKey: ['agent-me'] });
+        }
         handlers['agent.state_changed']?.forEach((h) => h(data));
       } catch {
         // ignore
