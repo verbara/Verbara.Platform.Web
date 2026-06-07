@@ -1952,7 +1952,12 @@
         "maxMonthlyMessages": "Max messages / month",
         "quotaAction": "Quota exceeded action",
         "conversationRetentionDays": "Conversation retention (days)",
-        "authEventRetentionDays": "Auth event retention (days)"
+        "authEventRetentionDays": "Auth event retention (days)",
+        "maxVoiceDefault": "Default voice capacity",
+        "maxChatDefault": "Default chat capacity",
+        "maxEmailDefault": "Default email capacity",
+        "maxSmsDefault": "Default SMS capacity",
+        "maxTotalDefault": "Default total capacity"
       },
       "placeholders": {
         "dialplanContextPrefix": "tenant-prefix (optional)",
@@ -1966,12 +1971,14 @@
       "errors": {
         "maxConcurrentChannelsRequired": "Must be 1 or greater",
         "maxActiveCampaignsRequired": "Must be 0 or greater",
-        "passwordMinLength": "Minimum length must be 8 or greater"
+        "passwordMinLength": "Minimum length must be 8 or greater",
+        "capacityBound": "Must be between 0 and 50"
       },
       "toasts": {
         "saved": "Tenant settings saved",
         "error": "Failed to save tenant settings"
-      }
+      },
+      "capacityDefaults": "Capacity defaults"
     },
     "list": {
       "title": "Tenants",
