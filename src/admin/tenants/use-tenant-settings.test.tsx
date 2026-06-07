@@ -7,10 +7,14 @@ import {
   useIpAllowlist,
   useAddIpAllowlistEntry,
   useRemoveIpAllowlistEntry,
+  useTenantSettings,
+  useUpdateTenantSettings,
   type IpAllowlistEntry,
+  type TenantSettingsDto,
 } from './use-tenant-settings';
 
 vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
@@ -70,6 +74,58 @@ describe('useAddIpAllowlistEntry', () => {
       result.current.mutate({ cidr: '10.0.0.0/8', description: 'x' });
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useTenantSettings', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should surface operational capacity defaults from the DTO', async () => {
+    const settings = {
+      tenantId: 't1',
+      operational: {
+        maxConcurrentChannels: 100,
+        maxActiveCampaigns: 10,
+        dialplanContextPrefix: null,
+        nodeAffinity: null,
+        allowedDialingModes: null,
+        outboundCallerId: null,
+        maxVoiceDefault: 1,
+        maxChatDefault: 3,
+        maxEmailDefault: 5,
+        maxSmsDefault: 3,
+        maxTotalDefault: 8,
+      },
+    } as TenantSettingsDto;
+    vi.mocked(client.customFetch).mockResolvedValue(settings);
+    const { result } = renderHook(() => useTenantSettings('t1'), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.operational.maxChatDefault).toBe(3);
+    expect(result.current.data?.operational.maxTotalDefault).toBe(8);
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/management/tenants/t1/settings',
+      method: 'GET',
+    });
+  });
+});
+
+describe('useUpdateTenantSettings', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should send operational capacity defaults in the PUT body', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue({});
+    const { result } = renderHook(() => useUpdateTenantSettings('t1'), { wrapper });
+    act(() => {
+      result.current.mutate({
+        operational: { maxChatDefault: 4, maxEmailDefault: 6, maxTotalDefault: 10 },
+      });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/management/tenants/t1/settings',
+      method: 'PUT',
+      data: { operational: { maxChatDefault: 4, maxEmailDefault: 6, maxTotalDefault: 10 } },
+    });
   });
 });
 
