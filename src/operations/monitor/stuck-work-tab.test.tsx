@@ -3,12 +3,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { StuckConversation } from '@/core/api/hooks/use-supervisor';
 
 const mutate = vi.fn();
+const retryMutate = vi.fn();
+const closeMutate = vi.fn();
 
 let stuckData: StuckConversation[] = [];
 
 vi.mock('@/core/api/hooks/use-supervisor', () => ({
   useStuckConversations: () => ({ data: stuckData }),
   useReassignConversation: () => ({ mutate, isPending: false }),
+  useRetryCallback: () => ({ mutate: retryMutate, isPending: false }),
+  useCloseDigitalConversation: () => ({ mutate: closeMutate, isPending: false }),
 }));
 
 vi.mock('@/core/api/hooks/use-queues', () => ({
@@ -37,10 +41,14 @@ vi.mock('react-i18next', () => ({
         'stuck_work.reassign': 'Reassign',
         'stuck_work.reassign_to_queue': 'Reassign to queue',
         'stuck_work.reassign_to_agent': 'Reassign to agent',
+        'stuck_work.retry_callback': 'Retry callback',
+        'stuck_work.close': 'Close',
       };
       if (key === 'stuck_work.owned_by_offline') return `Owned by ${String(opts?.name)} (offline)`;
       if (key === 'stuck_work.stuck_for') return `Stuck for ${String(opts?.duration)}`;
       if (key === 'stuck_work.attempts') return `${String(opts?.count)} re-queue attempt(s)`;
+      if (key === 'stuck_work.callback_failed')
+        return `Callback failed ${String(opts?.count)} time(s)`;
       return table[key] ?? (opts?.defaultValue as string) ?? key;
     },
   }),
@@ -65,6 +73,8 @@ function makeStuck(overrides: Partial<StuckConversation> = {}): StuckConversatio
 describe('StuckWorkTab', () => {
   beforeEach(() => {
     mutate.mockReset();
+    retryMutate.mockReset();
+    closeMutate.mockReset();
     stuckData = [];
   });
 
@@ -120,5 +130,48 @@ describe('StuckWorkTab', () => {
     fireEvent.click(screen.getByTestId('reassign-trigger-conv-1'));
     await screen.findByTestId('reassign-agent-a-1');
     expect(screen.queryByTestId('reassign-agent-a-off')).not.toBeInTheDocument();
+  });
+
+  it('StuckWorkTab_ShouldRenderVoiceActions_WhenVoiceChannel', () => {
+    stuckData = [
+      makeStuck({
+        conversationId: 'voice-1',
+        channel: 'Voice',
+        state: 'WrapUp',
+        escalated: true,
+        failoverAttempts: 3,
+      }),
+    ];
+    render(<StuckWorkTab />);
+    expect(screen.getByText(/Callback failed 3 time\(s\)/)).toBeInTheDocument();
+    expect(screen.getByTestId('retry-callback-voice-1')).toBeInTheDocument();
+    expect(screen.getByTestId('close-stuck-voice-1')).toBeInTheDocument();
+    // Voice rows must NOT offer the digital reassign menu.
+    expect(screen.queryByTestId('reassign-trigger-voice-1')).not.toBeInTheDocument();
+  });
+
+  it('StuckWorkTab_ShouldCallRetryCallback_WhenRetryClicked', () => {
+    stuckData = [
+      makeStuck({ conversationId: 'voice-1', channel: 'Voice', state: 'WrapUp', escalated: true }),
+    ];
+    render(<StuckWorkTab />);
+    fireEvent.click(screen.getByTestId('retry-callback-voice-1'));
+    expect(retryMutate).toHaveBeenCalledWith('voice-1');
+  });
+
+  it('StuckWorkTab_ShouldCallClose_WhenCloseClicked', () => {
+    stuckData = [
+      makeStuck({ conversationId: 'voice-1', channel: 'Voice', state: 'WrapUp', escalated: true }),
+    ];
+    render(<StuckWorkTab />);
+    fireEvent.click(screen.getByTestId('close-stuck-voice-1'));
+    expect(closeMutate).toHaveBeenCalledWith({ conversationId: 'voice-1' });
+  });
+
+  it('StuckWorkTab_ShouldStillRenderReassignMenu_WhenDigitalChannel', () => {
+    stuckData = [makeStuck({ conversationId: 'conv-1', channel: 'WhatsApp' })];
+    render(<StuckWorkTab />);
+    expect(screen.getByTestId('reassign-trigger-conv-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('retry-callback-conv-1')).not.toBeInTheDocument();
   });
 });

@@ -7,8 +7,10 @@ import {
   Send,
   MessagesSquare,
   Camera,
+  Phone,
   UserCog,
   AlertTriangle,
+  RotateCcw,
   type LucideIcon,
 } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
@@ -28,6 +30,8 @@ import { useAgents, type Agent } from '@/core/api/hooks/use-agents';
 import {
   useStuckConversations,
   useReassignConversation,
+  useRetryCallback,
+  useCloseDigitalConversation,
   type StuckConversation,
 } from '@/core/api/hooks/use-supervisor';
 import { conversationStateLabelKey } from './stuck-work-helpers';
@@ -40,6 +44,7 @@ const channelIcons: Record<string, LucideIcon> = {
   Messenger: MessagesSquare,
   Instagram: Camera,
   Telegram: Send,
+  Voice: Phone,
 };
 
 interface ReassignMenuProps {
@@ -97,6 +102,40 @@ function ReassignMenu({ conversationId }: ReassignMenuProps) {
   );
 }
 
+interface VoiceStuckActionsProps {
+  readonly conversationId: string;
+}
+
+function VoiceStuckActions({ conversationId }: VoiceStuckActionsProps) {
+  const { t } = useTranslation('operations');
+  const retry = useRetryCallback();
+  const close = useCloseDigitalConversation();
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <Button
+        variant="outline"
+        size="sm"
+        data-testid={`retry-callback-${conversationId}`}
+        disabled={retry.isPending}
+        onClick={() => retry.mutate(conversationId)}
+      >
+        <RotateCcw className="mr-1.5 h-4 w-4" />
+        {t('stuck_work.retry_callback')}
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        data-testid={`close-stuck-${conversationId}`}
+        disabled={close.isPending}
+        onClick={() => close.mutate({ conversationId })}
+      >
+        {t('stuck_work.close')}
+      </Button>
+    </div>
+  );
+}
+
 interface StuckRowProps {
   readonly conversation: StuckConversation;
 }
@@ -104,6 +143,7 @@ interface StuckRowProps {
 function StuckRow({ conversation }: StuckRowProps) {
   const { t } = useTranslation('operations');
   const { formatRelative } = useFormatDate();
+  const isVoice = conversation.channel === 'Voice';
   const Icon = channelIcons[conversation.channel] ?? Globe;
   const stateLabel = t(conversationStateLabelKey(conversation.state), {
     defaultValue: conversation.state,
@@ -136,12 +176,19 @@ function StuckRow({ conversation }: StuckRowProps) {
           {t('stuck_work.stuck_for', { duration: stuckFor })}
           {conversation.failoverAttempts > 0 && (
             <span className="ml-2">
-              · {t('stuck_work.attempts', { count: conversation.failoverAttempts })}
+              ·{' '}
+              {isVoice
+                ? t('stuck_work.callback_failed', { count: conversation.failoverAttempts })
+                : t('stuck_work.attempts', { count: conversation.failoverAttempts })}
             </span>
           )}
         </p>
       </div>
-      <ReassignMenu conversationId={conversation.conversationId} />
+      {isVoice ? (
+        <VoiceStuckActions conversationId={conversation.conversationId} />
+      ) : (
+        <ReassignMenu conversationId={conversation.conversationId} />
+      )}
     </div>
   );
 }

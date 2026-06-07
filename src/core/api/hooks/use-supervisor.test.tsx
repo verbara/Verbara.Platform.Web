@@ -10,6 +10,7 @@ import {
   useTakeoverConversation,
   useCloseDigitalConversation,
   useSendCoachingNote,
+  useRetryCallback,
 } from './use-supervisor';
 import type { ActiveSession, SupervisorConversation, SupervisorMessage } from './use-supervisor';
 import * as client from '@/core/api/client';
@@ -302,6 +303,40 @@ describe('useSendCoachingNote', () => {
     const { result } = renderHook(() => useSendCoachingNote(), { wrapper });
     act(() => {
       result.current.mutate({ conversationId: 'conv-1', text: 'Note' });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useRetryCallback', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should POST to the retry-callback endpoint and invalidate stuck work', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+    const spyWrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useRetryCallback(), { wrapper: spyWrapper });
+    act(() => {
+      result.current.mutate('voice-1');
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/supervisor/conversations/voice-1/retry-callback',
+      method: 'POST',
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['supervisor', 'stuck'] });
+  });
+
+  it('should handle error', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new Error('Retry failed'));
+    const { result } = renderHook(() => useRetryCallback(), { wrapper });
+    act(() => {
+      result.current.mutate('voice-1');
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
