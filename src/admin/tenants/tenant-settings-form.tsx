@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -84,6 +85,20 @@ function OperationalSection({ settings, update, t }: SectionProps) {
   const [outboundCallerId, setOutboundCallerId] = useState<string>(
     settings.operational.outboundCallerId ?? '',
   );
+  // W6 — tenant-default per-channel agent capacity. Voice is pinned to 1 (read-only).
+  // The async defaults are plain bounded numbers (0–50), always carrying the current default.
+  const [maxChatDefault, setMaxChatDefault] = useState<string>(
+    intDisplay(settings.operational.maxChatDefault),
+  );
+  const [maxEmailDefault, setMaxEmailDefault] = useState<string>(
+    intDisplay(settings.operational.maxEmailDefault),
+  );
+  const [maxSmsDefault, setMaxSmsDefault] = useState<string>(
+    intDisplay(settings.operational.maxSmsDefault),
+  );
+  const [maxTotalDefault, setMaxTotalDefault] = useState<string>(
+    intDisplay(settings.operational.maxTotalDefault),
+  );
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const maxChannelsA11y = useFieldA11y(
@@ -96,6 +111,73 @@ function OperationalSection({ settings, update, t }: SectionProps) {
     'ts-max-campaigns',
     { required: true },
   );
+  const maxChatA11y = useFieldA11y(
+    errors.maxChatDefault ? { message: errors.maxChatDefault } : undefined,
+    'ts-cap-chat',
+    { required: true },
+  );
+  const maxEmailA11y = useFieldA11y(
+    errors.maxEmailDefault ? { message: errors.maxEmailDefault } : undefined,
+    'ts-cap-email',
+    { required: true },
+  );
+  const maxSmsA11y = useFieldA11y(
+    errors.maxSmsDefault ? { message: errors.maxSmsDefault } : undefined,
+    'ts-cap-sms',
+    { required: true },
+  );
+  const maxTotalA11y = useFieldA11y(
+    errors.maxTotalDefault ? { message: errors.maxTotalDefault } : undefined,
+    'ts-cap-total',
+    { required: true },
+  );
+
+  // W6 — async capacity-default fields (Voice is rendered separately, pinned to 1).
+  const capacityDefaultFields = [
+    {
+      key: 'maxChatDefault',
+      id: 'ts-cap-chat',
+      label: t('tenants.settings.fields.maxChatDefault', 'Default chat capacity'),
+      value: maxChatDefault,
+      setValue: setMaxChatDefault,
+      a11y: maxChatA11y,
+    },
+    {
+      key: 'maxEmailDefault',
+      id: 'ts-cap-email',
+      label: t('tenants.settings.fields.maxEmailDefault', 'Default email capacity'),
+      value: maxEmailDefault,
+      setValue: setMaxEmailDefault,
+      a11y: maxEmailA11y,
+    },
+    {
+      key: 'maxSmsDefault',
+      id: 'ts-cap-sms',
+      label: t('tenants.settings.fields.maxSmsDefault', 'Default SMS capacity'),
+      value: maxSmsDefault,
+      setValue: setMaxSmsDefault,
+      a11y: maxSmsA11y,
+    },
+    {
+      key: 'maxTotalDefault',
+      id: 'ts-cap-total',
+      label: t('tenants.settings.fields.maxTotalDefault', 'Default total capacity'),
+      value: maxTotalDefault,
+      setValue: setMaxTotalDefault,
+      a11y: maxTotalA11y,
+    },
+  ] as const;
+
+  // Advisory (non-blocking): MaxTotal default below the Chat default means that
+  // channel can never reach its cap. Server allows it, so this NEVER blocks submit.
+  const totalDefaultNum = Number(maxTotalDefault);
+  const chatDefaultNum = Number(maxChatDefault);
+  const showMaxTotalWarning =
+    maxTotalDefault !== '' &&
+    maxChatDefault !== '' &&
+    Number.isFinite(totalDefaultNum) &&
+    Number.isFinite(chatDefaultNum) &&
+    totalDefaultNum < chatDefaultNum;
 
   function validate(): FieldErrors {
     const next: FieldErrors = {};
@@ -111,6 +193,16 @@ function OperationalSection({ settings, update, t }: SectionProps) {
         'Must be 0 or greater',
       );
     }
+    const capacityBound = (key: string, raw: string) => {
+      const n = Number(raw);
+      if (raw === '' || !Number.isFinite(n) || n < 0 || n > 50) {
+        next[key] = t('tenants.settings.errors.capacityBound', 'Must be between 0 and 50');
+      }
+    };
+    capacityBound('maxChatDefault', maxChatDefault);
+    capacityBound('maxEmailDefault', maxEmailDefault);
+    capacityBound('maxSmsDefault', maxSmsDefault);
+    capacityBound('maxTotalDefault', maxTotalDefault);
     return next;
   }
 
@@ -127,6 +219,12 @@ function OperationalSection({ settings, update, t }: SectionProps) {
         dialplanContextPrefix:
           dialplanContextPrefix.trim() === '' ? null : dialplanContextPrefix.trim(),
         outboundCallerId: outboundCallerId.trim() === '' ? null : outboundCallerId.trim(),
+        // W6 — Voice stays pinned to 1 (server-enforced); send the async defaults verbatim.
+        maxVoiceDefault: 1,
+        maxChatDefault: Number(maxChatDefault),
+        maxEmailDefault: Number(maxEmailDefault),
+        maxSmsDefault: Number(maxSmsDefault),
+        maxTotalDefault: Number(maxTotalDefault),
       },
     };
 
@@ -234,6 +332,67 @@ function OperationalSection({ settings, update, t }: SectionProps) {
             'Number shown on agent click-to-dial and external transfers. Falls back to the trunk default when empty.',
           )}
         </p>
+      </div>
+
+      {/* Capacity defaults (W6) — the per-channel baseline every agent inherits. */}
+      <div
+        data-testid="tenant-capacity-defaults-section"
+        className="space-y-3 rounded-lg border bg-muted/30 p-4"
+      >
+        <Label>{t('tenants.settings.capacityDefaults', 'Capacity defaults')}</Label>
+
+        {/* Voice — pinned to 1 (read-only) until simultaneous voice ships. */}
+        <div className="space-y-1.5">
+          <Label htmlFor="ts-cap-voice">
+            {t('tenants.settings.fields.maxVoiceDefault', 'Default voice capacity')}
+          </Label>
+          <Input
+            id="ts-cap-voice"
+            data-testid="field-maxVoiceDefault"
+            type="number"
+            value="1"
+            readOnly
+            disabled
+            title={t('agents.capacity.maxVoicePinnedHint')}
+          />
+          <p className="text-xs text-muted-foreground">{t('agents.capacity.maxVoicePinnedHint')}</p>
+        </div>
+
+        {capacityDefaultFields.map((cf) => (
+          <div key={cf.key} className="space-y-1.5">
+            <Label htmlFor={cf.id}>{cf.label}</Label>
+            <Input
+              id={cf.id}
+              type="number"
+              min={0}
+              max={50}
+              data-testid={`field-${cf.key}`}
+              value={cf.value}
+              onChange={(e) => cf.setValue(e.target.value)}
+              {...cf.a11y.inputProps}
+            />
+            {errors[cf.key] && (
+              <p
+                id={cf.a11y.errorId}
+                role="alert"
+                className="text-xs text-destructive"
+                data-testid={`field-error-${cf.key}`}
+              >
+                {errors[cf.key]}
+              </p>
+            )}
+          </div>
+        ))}
+
+        {showMaxTotalWarning && (
+          <p
+            data-testid="tenant-capacity-total-warning"
+            className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500"
+          >
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            {t('agents.capacity.maxTotalBelowCapWarning')}
+          </p>
+        )}
       </div>
 
       <div className="flex justify-end">

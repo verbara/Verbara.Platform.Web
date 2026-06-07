@@ -3,6 +3,35 @@ import { customFetch } from '@/core/api/client';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+/**
+ * W6 — resolved per-channel concurrency limits for an agent. Every field is
+ * always present (the server merges any per-agent override over the tenant
+ * defaults). `maxVoice` is always 1. Returned as `effectiveCapacity` by the
+ * admin agent endpoints.
+ */
+export interface ChannelCapacity {
+  maxVoice: number;
+  maxChat: number;
+  maxEmail: number;
+  maxSms: number;
+  maxTotal: number;
+}
+
+/**
+ * W6 — per-agent capacity override. Each field is tri-state: a number sets an
+ * explicit per-agent limit; `null` means "inherit this field from the tenant
+ * default". Sent on create/update as the `capacity` body field, and returned as
+ * `capacityOverride` (the whole object is `null` when the agent fully inherits).
+ * `maxVoice` must be `null` or `1`; the others accept `0`–`50`.
+ */
+export interface ChannelCapacityOverride {
+  maxVoice: number | null;
+  maxChat: number | null;
+  maxEmail: number | null;
+  maxSms: number | null;
+  maxTotal: number | null;
+}
+
 export interface Agent {
   /** Primary identifier returned by the backend. */
   agentId: string;
@@ -53,6 +82,18 @@ export interface Agent {
     maxSms: number;
     maxTotal: number;
   };
+  /**
+   * W6 — resolved capacity (override merged over tenant defaults) returned by
+   * the admin list/detail endpoints (`useAgents`/`useAgent`). Always present on
+   * those responses; absent on `GET /agents/me`.
+   */
+  effectiveCapacity?: ChannelCapacity;
+  /**
+   * W6 — the agent's own capacity override returned by the admin list/detail
+   * endpoints. `null` when the agent fully inherits the tenant defaults; each
+   * field is `null` to inherit just that channel. Absent on `GET /agents/me`.
+   */
+  capacityOverride?: ChannelCapacityOverride | null;
   createdAt: string;
 }
 
@@ -117,6 +158,8 @@ export type CreateAgentInput = {
   sipPassword?: string;
   autoAnswer?: boolean | null;
   queueMemberships?: QueueMembershipInput[];
+  /** W6 — optional per-agent capacity override at creation (omit to inherit tenant defaults). */
+  capacity?: ChannelCapacityOverride;
 };
 
 export function useCreateAgent() {
@@ -148,6 +191,8 @@ export function useUpdateAgent() {
       extension?: string;
       sipPassword?: string;
       autoAnswer?: boolean | null;
+      /** W6 — per-agent capacity override; included in the PUT body when provided. */
+      capacity?: ChannelCapacityOverride;
     }) =>
       customFetch<Agent>({
         url: `/api/v1/admin/agents/${id}`,

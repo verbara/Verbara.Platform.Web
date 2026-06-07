@@ -198,7 +198,21 @@
     "autoAnswerInherit": "Herdar padrão da fila",
     "autoAnswerOn": "Sempre",
     "autoAnswerOff": "Nunca",
-    "autoAnswerHint": "Aceitar chamadas recebidas automaticamente sem clicar em Atender."
+    "autoAnswerHint": "Aceitar chamadas recebidas automaticamente sem clicar em Atender.",
+    "capacity": {
+      "title": "Capacidade por canal",
+      "maxVoice": "Voz",
+      "maxChat": "Chat",
+      "maxEmail": "E-mail",
+      "maxSms": "SMS",
+      "maxTotal": "Total",
+      "inherited": "Herdado",
+      "overridden": "Personalizado",
+      "resetToInherited": "Redefinir para herdado",
+      "maxVoicePinnedHint": "A voz está limitada a 1 chamada por agente até que a voz simultânea seja lançada.",
+      "maxTotalBelowCapWarning": "O total máximo é inferior a um limite por canal; esse canal nunca atingirá seu limite.",
+      "voiceFixed": "1 (fixo)"
+    }
   },
   "teams": {
     "title": "Equipes",
@@ -1938,7 +1952,12 @@
         "maxMonthlyMessages": "Mensagens / mês",
         "quotaAction": "Ação ao exceder a quota",
         "conversationRetentionDays": "Retenção de conversas (dias)",
-        "authEventRetentionDays": "Retenção de eventos de autenticação (dias)"
+        "authEventRetentionDays": "Retenção de eventos de autenticação (dias)",
+        "maxVoiceDefault": "Capacidade de voz padrão",
+        "maxChatDefault": "Capacidade de chat padrão",
+        "maxEmailDefault": "Capacidade de e-mail padrão",
+        "maxSmsDefault": "Capacidade de SMS padrão",
+        "maxTotalDefault": "Capacidade total padrão"
       },
       "placeholders": {
         "dialplanContextPrefix": "prefixo-tenant (opcional)",
@@ -1952,12 +1971,14 @@
       "errors": {
         "maxConcurrentChannelsRequired": "Deve ser 1 ou maior",
         "maxActiveCampaignsRequired": "Deve ser 0 ou maior",
-        "passwordMinLength": "O tamanho mínimo deve ser 8 ou maior"
+        "passwordMinLength": "O tamanho mínimo deve ser 8 ou maior",
+        "capacityBound": "Deve estar entre 0 e 50"
       },
       "toasts": {
         "saved": "Configurações do tenant salvas",
         "error": "Falha ao salvar configurações do tenant"
-      }
+      },
+      "capacityDefaults": "Capacidade padrão"
     },
     "list": {
       "title": "Tenants",

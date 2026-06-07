@@ -9,6 +9,7 @@ import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/admin/shared/data-table';
 import { AgentForm } from './agent-form';
+import { toCapacityOverride } from './capacity-override';
 import { useAgents, useCreateAgent } from '@/core/api/hooks/use-agents';
 import type { Agent } from '@/core/api/hooks/use-agents';
 
@@ -33,13 +34,13 @@ export default function AgentsPage() {
     () => [
       columnHelper.accessor('displayName', {
         header: () => t('admin:agents.displayName'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('userId', {
         header: () => t('admin:agents.user'),
-        cell: (info) => <span className="font-mono text-xs text-muted-foreground">{info.getValue()}</span>,
+        cell: (info) => (
+          <span className="font-mono text-xs text-muted-foreground">{info.getValue()}</span>
+        ),
       }),
       columnHelper.accessor('extension', {
         header: () => t('admin:agents.extension', 'Extension'),
@@ -78,10 +79,7 @@ export default function AgentsPage() {
       </PageHeader>
 
       {isEmpty ? (
-        <EmptyState
-          icon={Headset}
-          message="No agents yet &mdash; Create your first agent"
-        />
+        <EmptyState icon={Headset} message="No agents yet &mdash; Create your first agent" />
       ) : (
         <DataTable
           data={agents}
@@ -97,7 +95,12 @@ export default function AgentsPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         mode="create"
-        onSubmit={(v) => createAgent.mutate(v)}
+        onSubmit={(v) => {
+          // W6 — fold the form capacity group into a full ChannelCapacityOverride
+          // (maxVoice null = server-pinned 1; all-null = inherit tenant defaults).
+          const { capacity, ...rest } = v;
+          createAgent.mutate({ ...rest, capacity: toCapacityOverride(capacity) });
+        }}
       />
     </div>
   );

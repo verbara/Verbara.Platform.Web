@@ -18,6 +18,12 @@ export interface OperationalSettings {
   allowedDialingModes: number[] | null;
   /** Tenant-level outbound caller ID for agent click-to-dial + external blind transfer (3B.2d). */
   outboundCallerId: string | null;
+  /** W6 — tenant-default per-channel agent capacity (the baseline each agent inherits). maxVoiceDefault is always 1. */
+  maxVoiceDefault: number;
+  maxChatDefault: number;
+  maxEmailDefault: number;
+  maxSmsDefault: number;
+  maxTotalDefault: number;
 }
 
 export interface AuthSettings {
@@ -82,6 +88,12 @@ export interface UpdateOperationalPayload {
   nodeAffinity?: string[] | null;
   allowedDialingModes?: number[] | null;
   outboundCallerId?: string | null;
+  /** W6 — update the tenant-default per-channel agent capacity. */
+  maxVoiceDefault?: number;
+  maxChatDefault?: number;
+  maxEmailDefault?: number;
+  maxSmsDefault?: number;
+  maxTotalDefault?: number;
 }
 
 export interface UpdateAuthPayload {

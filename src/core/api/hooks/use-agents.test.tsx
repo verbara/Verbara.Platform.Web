@@ -88,6 +88,37 @@ describe('useAgent', () => {
     });
   });
 
+  it('should surface effectiveCapacity and capacityOverride from the DTO', async () => {
+    const agentWithCapacity = {
+      ...sampleAgent,
+      effectiveCapacity: { maxVoice: 1, maxChat: 5, maxEmail: 5, maxSms: 3, maxTotal: 10 },
+      capacityOverride: {
+        maxVoice: null,
+        maxChat: 5,
+        maxEmail: null,
+        maxSms: null,
+        maxTotal: null,
+      },
+    };
+    vi.mocked(client.customFetch).mockResolvedValue(agentWithCapacity);
+    const { result } = renderHook(() => useAgent('agent-1'), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.effectiveCapacity).toEqual({
+      maxVoice: 1,
+      maxChat: 5,
+      maxEmail: 5,
+      maxSms: 3,
+      maxTotal: 10,
+    });
+    expect(result.current.data?.capacityOverride).toEqual({
+      maxVoice: null,
+      maxChat: 5,
+      maxEmail: null,
+      maxSms: null,
+      maxTotal: null,
+    });
+  });
+
   it('should not fetch when id is undefined', () => {
     const { result } = renderHook(() => useAgent(undefined), { wrapper });
     expect(result.current.isFetching).toBe(false);
@@ -142,6 +173,28 @@ describe('useCreateAgent', () => {
     });
   });
 
+  it('should send capacity override in the body when provided', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(sampleAgent);
+    const { result } = renderHook(() => useCreateAgent(), { wrapper });
+    act(() => {
+      result.current.mutate({
+        userId: 'user-1',
+        displayName: 'Agent One',
+        capacity: { maxVoice: 1, maxChat: 5, maxEmail: null, maxSms: null, maxTotal: null },
+      });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/agents',
+      method: 'POST',
+      data: {
+        userId: 'user-1',
+        displayName: 'Agent One',
+        capacity: { maxVoice: 1, maxChat: 5, maxEmail: null, maxSms: null, maxTotal: null },
+      },
+    });
+  });
+
   it('should handle error when mutation fails', async () => {
     vi.mocked(client.customFetch).mockRejectedValue(new Error('Conflict'));
     const { result } = renderHook(() => useCreateAgent(), { wrapper });
@@ -168,6 +221,23 @@ describe('useUpdateAgent', () => {
       url: '/api/v1/admin/agents/agent-1',
       method: 'PUT',
       data: { displayName: 'Updated Agent' },
+    });
+  });
+
+  it('should include capacity override in the PUT body when provided', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(sampleAgent);
+    const { result } = renderHook(() => useUpdateAgent(), { wrapper });
+    act(() => {
+      result.current.mutate({
+        id: 'agent-1',
+        capacity: { maxVoice: null, maxChat: 3, maxEmail: 10, maxSms: null, maxTotal: 12 },
+      });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/agents/agent-1',
+      method: 'PUT',
+      data: { capacity: { maxVoice: null, maxChat: 3, maxEmail: 10, maxSms: null, maxTotal: 12 } },
     });
   });
 

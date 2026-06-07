@@ -198,7 +198,21 @@
     "autoAnswerInherit": "Heredar valor de la cola",
     "autoAnswerOn": "Siempre",
     "autoAnswerOff": "Nunca",
-    "autoAnswerHint": "Aceptar llamadas entrantes automáticamente sin hacer clic en Atender."
+    "autoAnswerHint": "Aceptar llamadas entrantes automáticamente sin hacer clic en Atender.",
+    "capacity": {
+      "title": "Capacidad por canal",
+      "maxVoice": "Voz",
+      "maxChat": "Chat",
+      "maxEmail": "Correo",
+      "maxSms": "SMS",
+      "maxTotal": "Total",
+      "inherited": "Heredado",
+      "overridden": "Personalizado",
+      "resetToInherited": "Restablecer a heredado",
+      "maxVoicePinnedHint": "La voz está limitada a 1 llamada por agente hasta que se habilite la voz simultánea.",
+      "maxTotalBelowCapWarning": "El total máximo es inferior a un límite por canal; ese canal nunca alcanzará su tope.",
+      "voiceFixed": "1 (fijo)"
+    }
   },
   "teams": {
     "title": "Equipos",
@@ -1938,7 +1952,12 @@
         "maxMonthlyMessages": "Mensajes / mes",
         "quotaAction": "Acción al exceder cuota",
         "conversationRetentionDays": "Retención de conversaciones (días)",
-        "authEventRetentionDays": "Retención de eventos de autenticación (días)"
+        "authEventRetentionDays": "Retención de eventos de autenticación (días)",
+        "maxVoiceDefault": "Capacidad de voz predeterminada",
+        "maxChatDefault": "Capacidad de chat predeterminada",
+        "maxEmailDefault": "Capacidad de correo predeterminada",
+        "maxSmsDefault": "Capacidad de SMS predeterminada",
+        "maxTotalDefault": "Capacidad total predeterminada"
       },
       "placeholders": {
         "dialplanContextPrefix": "prefijo-tenant (opcional)",
@@ -1952,12 +1971,14 @@
       "errors": {
         "maxConcurrentChannelsRequired": "Debe ser 1 o mayor",
         "maxActiveCampaignsRequired": "Debe ser 0 o mayor",
-        "passwordMinLength": "La longitud mínima debe ser 8 o mayor"
+        "passwordMinLength": "La longitud mínima debe ser 8 o mayor",
+        "capacityBound": "Debe estar entre 0 y 50"
       },
       "toasts": {
         "saved": "Configuración del tenant guardada",
         "error": "No se pudo guardar la configuración del tenant"
-      }
+      },
+      "capacityDefaults": "Capacidad predeterminada"
     },
     "list": {
       "title": "Tenants",
