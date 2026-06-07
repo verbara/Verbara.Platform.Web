@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   MessageSquare,
@@ -108,6 +109,7 @@ interface VoiceStuckActionsProps {
 
 function VoiceStuckActions({ conversationId }: VoiceStuckActionsProps) {
   const { t } = useTranslation('operations');
+  const qc = useQueryClient();
   const retry = useRetryCallback();
   const close = useCloseDigitalConversation();
 
@@ -128,7 +130,14 @@ function VoiceStuckActions({ conversationId }: VoiceStuckActionsProps) {
         size="sm"
         data-testid={`close-stuck-${conversationId}`}
         disabled={close.isPending}
-        onClick={() => close.mutate({ conversationId })}
+        onClick={() =>
+          close.mutate(
+            { conversationId },
+            // The shared close hook invalidates ['supervisor','conversations']; also drop the
+            // stuck list so the closed voice row disappears immediately (not on the 15s poll).
+            { onSuccess: () => qc.invalidateQueries({ queryKey: ['supervisor', 'stuck'] }) },
+          )
+        }
       >
         {t('stuck_work.close')}
       </Button>

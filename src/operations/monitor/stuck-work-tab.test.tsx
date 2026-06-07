@@ -5,8 +5,13 @@ import type { StuckConversation } from '@/core/api/hooks/use-supervisor';
 const mutate = vi.fn();
 const retryMutate = vi.fn();
 const closeMutate = vi.fn();
+const invalidateQueries = vi.fn();
 
 let stuckData: StuckConversation[] = [];
+
+vi.mock('@tanstack/react-query', () => ({
+  useQueryClient: () => ({ invalidateQueries }),
+}));
 
 vi.mock('@/core/api/hooks/use-supervisor', () => ({
   useStuckConversations: () => ({ data: stuckData }),
@@ -165,7 +170,13 @@ describe('StuckWorkTab', () => {
     ];
     render(<StuckWorkTab />);
     fireEvent.click(screen.getByTestId('close-stuck-voice-1'));
-    expect(closeMutate).toHaveBeenCalledWith({ conversationId: 'voice-1' });
+    expect(closeMutate).toHaveBeenCalledWith(
+      { conversationId: 'voice-1' },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+    // The onSuccess drops the stuck list so the closed row vanishes immediately.
+    closeMutate.mock.calls[0][1].onSuccess();
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['supervisor', 'stuck'] });
   });
 
   it('StuckWorkTab_ShouldStillRenderReassignMenu_WhenDigitalChannel', () => {
