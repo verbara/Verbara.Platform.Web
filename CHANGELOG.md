@@ -13,6 +13,28 @@ _No unreleased changes._
 
 ---
 
+## [3.5.0-web] — 2026-06-07 — Session/Auth overhaul: presence, idle UX & work continuity (ADR-0009 W1–W6)
+
+The client half of the [ADR-0009](docs/decisions/0009-agent-presence-session-work-continuity.md) north-star, shipped as six sequenced tracks (W1–W6, 2026-06-05→06-07) over PRs #75–#80. Pairs with **Platform v2.9.0**. i18n parity EN-US/ES-419/PT-BR maintained throughout.
+
+### Added
+
+- **W3 — client liveness (`src/core/presence/*`).** Activity-independent heartbeat (~20s) to `POST /agents/me/heartbeat` + `pagehide` graceful-departure beacon.
+- **W5 — supervisor stuck-work view.** Tab listing orphaned digital work with manual reassign (queue/agent).
+- **W5b — voice caller-rescue in supervisor stuck-work.** Voice callback-stuck rows (Phone icon, "Callback failed N×") with Retry-callback + Close.
+- **W6 — agent channel-capacity UI.** Per-agent override form (MaxVoice pinned read-only to 1, async fields 0–50, inherited-default placeholders, reset-to-inherited, MaxTotal-below-cap advisory), effective-capacity detail card (inherited/overridden tags), and tenant default capacity in operational settings.
+
+### Changed
+
+- **W1+W2 — agent-aware idle timeout (`src/core/session/*`).** Activity-aware 30-min idle timeout + warning + proactive token refresh + cross-tab coordination (BroadcastChannel + Web Locks) + agent-aware safe Offline teardown. Closes the silent-logout / forced-logout UX.
+- **W4 — deferred-pause pending UX** + agent-status casing fix.
+
+### Dependencies
+
+- June hygiene batch (#81, consolidating Dependabot #64/#68/#69/#72): libphonenumber-js 1.13.4, lucide-react 1.17.0, @sentry/react 10.55.0, shadcn 4.10.0. `npm audit` 0 vulnerabilities.
+
+---
+
 ## [3.4.0-web] — 2026-06-01 — Telephony admin UX: trunk form, DID module, wizard, connectivity test
 
 Pairs with **Platform v2.8.0**. Makes SIP telephony configurable from the admin UI (previously curl-only).
