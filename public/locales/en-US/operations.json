@@ -70,6 +70,7 @@
     "states": {
       "active": "Active",
       "on_hold": "On hold",
+      "consulting": "Consulting",
       "queued": "Queued",
       "offered": "Offered",
       "wrap_up": "Wrap-up",

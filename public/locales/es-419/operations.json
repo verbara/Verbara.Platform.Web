@@ -70,6 +70,7 @@
     "states": {
       "active": "Activa",
       "on_hold": "En espera",
+      "consulting": "En consulta",
       "queued": "En cola",
       "offered": "Ofrecida",
       "wrap_up": "Cierre",
