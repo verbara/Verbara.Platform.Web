@@ -38,7 +38,7 @@ Adopt a layered, defense-in-depth target architecture for agent presence, sessio
 - **W2 — Idle UX:** an activity-aware idle manager where "activity" = real user input **OR** an active voice call **OR** an active conversation (background polling excluded); a 60 s warning alertdialog; proactive refresh while active; cross-tab coordination (BroadcastChannel). **Agent-aware safe teardown:** an idle logout of a routable agent first forces them non-routable (`PUT /agents/me/state → Offline`) to avoid the routing zombie; deliberate non-routable states (break/lunch/…) suppress the nag; non-agent roles get a plain timeout.
 - **W3 — Server-side liveness:** ✅ **DESIGNED + SHIPPED 2026-06-06** (see the W3 record below). The original framing here — _bridge the `PresenceTracker.AgentOffline` delta to routing_ — was corrected by deep analysis (the SignalR `PresenceTracker` is feature-gated, display-only, and lives in a separate process; see the W3 record). The shipped design is a transport-agnostic, Api-owned **heartbeat + TTL + leader-gated reaper** authority, accelerated by a graceful `pagehide` departure beacon and an admin force-offline endpoint. Spec: [`docs/specs/2026-06-06-w3-agent-liveness.md`](../specs/2026-06-06-w3-agent-liveness.md).
 - **W4 — Deferred ("pause-when-free") pause:** ✅ **DESIGNED + SHIPPED 2026-06-06** (see the W4 record below). The original framing here — _a watcher over `AgentCapacityChangedEvent` / `ConversationStateChangedEvent` / `CallEndedEvent` that applies when `GetCurrentLoadAsync` reaches 0_ — was refined by deep analysis: `AgentCapacityChangedEvent` is never published, the in-process bus is per-pod, and `GetCurrentLoadAsync` counts parked chats (which keep capacity reserved). The shipped design adds a `PendingState` to the agent, blocks new work immediately (digital eligibility exclusion + voice `QueuePause` via a new cross-pod event), and applies the real transition via a leader-gated **drain sweep** when _active_ work (`{Active,OnHold,Consulting,WrapUp}`, parked excluded) reaches 0 — with force-now / cancel and a per-tenant max-pending timeout that force-applies + alerts. Spec: [`docs/specs/2026-06-06-w4-deferred-pause.md`](../specs/2026-06-06-w4-deferred-pause.md).
-- **W5 — Work failover:** an `Active→Queued` auto-path when the owner goes offline/non-routable (digital), gated by an owner-absent timeout → re-queue/redistribute; voice caller-rescue on agent-leg drop instead of dropping the caller; supervisor bulk reassignment + a stuck-work view.
+- **W5 — Work failover:** ✅ **DESIGNED + SHIPPED (digital slice) 2026-06-06** (see the W5 record below). The original framing here — _an `Active→Queued` auto-path when the owner goes offline/non-routable, gated by an owner-absent timeout → re-queue/redistribute; voice caller-rescue on agent-leg drop; supervisor bulk reassignment + a stuck-work view_ — is delivered for **digital** (chat/WhatsApp/email): a leader-gated sweep auto-rescues in-flight digital work when the owner goes Offline past a per-tenant grace (cancel-on-return), re-queuing it to the **front** of its origin queue with an anti-loop attempt cap, plus a supervisor stuck-work view + manual reassign. **VOICE caller-rescue (W5b) is explicitly deferred to its own future track** — the agent-leg-death detection signal it needs does not exist (Asterisk-deep). Spec: [`docs/specs/2026-06-06-w5-work-failover.md`](../specs/2026-06-06-w5-work-failover.md).
 - **W6 — Capacity configurability:** an admin editor for `ChannelCapacity` on create/update agent, and enforcement of `MaxTotal`.
 
 ## Consequences
@@ -161,3 +161,63 @@ This ADR originally proposed a watcher over `AgentCapacityChangedEvent` / `Conve
 
 - **Platform (`w4-deferred-pause`):** `f0247cb` (A1: model + migration `030` + store threading + `StreamPendingPauseAgentsAsync`), `7332d8a` (A2 tenant timeout + A3 active-work query), `047a5b6` (A4: eligibility exclusion + `AgentPendingStateChangedEvent` + cross-pod registration + `RealtimeStateBridge` pause), `46feaea` (A5: endpoints + DTO), `48060a7` (A5 flicker fix), `a00f1b27` (A6: drain worker + leader gating + timeout force/alert). Gates: `dotnet build -warnaserror` 0 warnings; Queues 58, Storage.InMemory 152, Api.Tests 1235.
 - **Web (`w4-deferred-pause-web`):** `008c969` (Phase B: pending UX + casing fix + hooks + SSE invalidation + 3-locale i18n), `ab755af` (contextual toast "pause pending" vs "state updated"). Gates: `npm run build` clean, lint 0, i18n parity OK, vitest 1264.
+
+---
+
+## W5 — In-flight work failover (DIGITAL slice) (DESIGNED + SHIPPED 2026-06-06)
+
+**Status:** Designed, implemented and shipped (cross-repo) — **digital slice only**; **voice caller-rescue (W5b) explicitly deferred** to its own future track (see below). Spec: [`docs/specs/2026-06-06-w5-work-failover.md`](../specs/2026-06-06-w5-work-failover.md); plan: [`docs/plans/active/w5-work-failover.md`](../plans/active/w5-work-failover.md).
+
+### Problem (restated)
+
+When an agent goes **Offline with active digital work** — the routing zombie reaped by W3, an idle logout, an admin force-offline, or the W4 max-pending timeout — their chat/WhatsApp/email conversations are **orphaned**: `RealtimeStateBridge` only pauses Asterisk, and **nothing touches the conversations** — they stay `Active` with an offline owner, are never re-routed, and the customer is abandoned. This is exactly the "stuck work" that W4 force-applies and marks on timeout. W5 (digital) **auto-rescues** it: detect the offline owner, wait a grace window (cancel if the agent returns), and re-queue the conversation to the **front** of its origin queue so the distribution loop re-offers it to a live agent — plus a supervisor tool to **see** the stuck work and reassign it by hand. This closes the W4→W5 "stuck work gets rescued" dependency for digital channels.
+
+### Scope decision — digital + supervisor now, voice deferred
+
+Deep analysis confirmed the digital / voice / supervisor split is the right axis and that **voice rescue is a distinct track (W5b)**: its detection signal — knowing the _agent_ leg of a live call died (vs the customer hanging up) — does not exist today and is Asterisk-deep (PJSIP/ContactStatus + bridge-leg correlation). The digital slice, by contrast, reuses machinery that already exists (`TransferToQueueAsync` + `QueueDistributionWorker`); only detection + grace + priority + the sweep were missing. So **W5 = W5a (auto digital failover) + W5c (supervisor stuck-work view + reassign); W5b (voice caller-rescue) is deferred.**
+
+### The 4 confirmed decisions (user, after deep analysis)
+
+1. **Scope = W5a (auto digital failover) + W5c (supervisor stuck-work view + manual reassign).** Voice W5b deferred to its own track (the agent-leg-death detection signal does not exist).
+2. **Detection = leader-gated periodic sweep** — `WorkFailoverWorker` (resource `work-failover:sweep`, single-node `AlwaysLeader` stub), mirroring the W3 `AgentLivenessReaper` and W4 `PendingPauseDrainWorker`.
+3. **Grace + cancel-on-return.** Re-queue only after the owner has been Offline ≥ a per-tenant `WorkFailoverGraceSeconds` (default **30**; `0` disables). If the agent returns to routable before grace elapses, the work is **not** re-queued — a returned agent leaves the offline stream and its `OfflineSince` clears, so cancel-on-return is free.
+4. **Re-queue priority = jump to the FRONT** (`queue_priority = -1`) + **max 3 attempts then escalate** (mark `failoverStuck` + supervisor audit, never an infinite re-queue loop).
+
+### Decision — OfflineSince grace, front-priority re-queue, leader-gated sweep
+
+- **`Agent.OfflineSince` (`DateTimeOffset?`)** — set on entering Offline via the verified `ForceOffline()` / `TransitionTo()` chokepoint with `??=` (repeated beacons do **not** reset the clock), cleared on leaving Offline. This gives **cancel-on-return for free** (a returned agent has `OfflineSince = null` and drops out of `StreamOfflineAgentsAsync`). Migration `031`.
+- **`Conversation.QueuePriority` (`int`, default `0`)** — `ListQueuedAsync` / `ListByStateAsync` switch to `ORDER BY queue_priority ASC, created_at ASC` (`CreatedAt` is init-only and cannot be restamped). Failover sets `-1` → front; `QueueDistributionWorker` drains in that order → front-load with **no worker change**.
+- **`ConversationStateMachine.FailoverWorkStates` = {Active, OnHold, Consulting}** — the re-queue set (a live customer is connected). It **excludes WrapUp** (no live customer; the existing wrap-up timeout closes orphaned wrap-ups) plus parked and pre-accept. This is **distinct from W4's `ActiveWorkStates`**, which _includes_ WrapUp (W4 counts wrap-up as work that must drain before a pause applies; W5 must not re-queue a conversation with no customer to talk to).
+- **`IConversationSwitchboard.RequeueToFrontAsync`** — shares the core body with `TransferToQueueAsync`: releases the offline agent's reserved capacity, bridges `OnHold`/`Consulting` → `Active` → `Escalated` → `Queued`, and stamps `queue_priority = -1`.
+- **Detection feeds:** `IAgentStore.StreamOfflineAgentsAsync` + `IConversationStore.ListFailoverWorkByOwnerAsync` — the sweep starts from the (few) offline agents and walks their failover-work conversations, avoiding a global conversation scan.
+- **Origin queue via `Metadata["originQueueId"]`** — stamped at **offer** time (`QueueDistributionWorker`, when the owner is still the Queue). Failover re-queues to that queue; if it is missing (e.g. a takeover with no distribution) the worker **escalates only** rather than guessing a destination.
+
+### Worker loop (`WorkFailoverWorker.SweepOnceAsync`, leader-only, ~5 s)
+
+For each offline agent past grace → for each of its failover-work conversations: re-load + re-check (idempotent — owner still offline, still owns, still in `FailoverWorkStates`); read `Metadata["failoverAttempts"]`; if `attempts ≥ 3` **or** there is no `Metadata["originQueueId"]` → mark `failoverStuck` + audit `conversation.failover.escalated`; else **increment attempts (persist BEFORE the re-queue — anti-loop)** → `RequeueToFrontAsync` to the origin queue → audit `conversation.failover.requeued`. A returned agent never reaches this loop (cancel-on-return). `grace = 0` skips the tenant entirely.
+
+### Supervisor stuck-work view + reassign
+
+- `GET /api/v1/supervisor/conversations/stuck` — offline-owner × failover-work (reuses the existing offline-agents stream × `ListFailoverWorkByOwner` queries, no new cross-store JOIN).
+- `POST /api/v1/supervisor/conversations/{id}/reassign` (`{targetQueueId | targetAgentId}`, `SupervisorPlus`) — reassigns and **clears the failover markers** via `Conversation.RemoveMetadata`, so a reassigned-then-re-orphaned conversation gets fresh failover treatment.
+- **Web:** `useStuckConversations` / `useReassignConversation` hooks + a third **"Stuck Work"** tab in the operations monitor page.
+
+### O1 — bug fixed in passing
+
+`QueueDistributionWorker` re-saved its **stale `Queued` snapshot** after `OfferToAgentAsync` had already saved the `Offered` instance — in stores that return distinct instances (Postgres) this reverted `Offered → Queued`. Fixed by re-loading the offered instance and stamping `originQueueId` metadata **on it**.
+
+### Rejected alternatives (with rationale)
+
+- **Event-driven detection** — react to a compound condition over a per-pod in-process bus. Rejected: more wiring + idempotency surface than a single cluster-safe leader-gated sweep (same conclusion as W3/W4).
+- **A dedicated JOIN stuck-query** — a single cross-store query joining agents × conversations. Rejected: reused the existing offline-agents stream × `ListFailoverWorkByOwner` instead — simpler, no new cross-store coupling.
+
+### Deferred to future tracks (recorded, not built)
+
+- **VOICE caller-rescue (the whole W5b track)** — rescuing a live caller when the _agent_ leg of a call dies. Deferred because the **detection signal does not exist**: distinguishing an agent-leg death from a normal customer hang-up is Asterisk-deep (PJSIP registration / `ContactStatus` + bridge-leg correlation) and out of the digital machinery W5a reuses. It ships as its own spec → plan → implementation cycle.
+- **Per-tenant `MaxAttempts`** — a constant `3` for now (per-tenant configurability later).
+- **A `consulting`-and-beyond friendly-label completeness pass** for the stuck-work view (only the immediately needed `consulting` label was added).
+
+### Delivery
+
+- **Platform (`w5-work-failover`):** `ca9b0a9` (A1 `OfflineSince` + migration `031`) + `a7c3d9c` (A1 fix: InMemory presence stamp + clock); `332f45b` (A2 grace config + A3 `StreamOfflineAgentsAsync` + A4 `ListFailoverWorkByOwnerAsync`); `808f35e` (A5 `queue_priority` + `RequeueToFrontAsync`) + `43e4cc2` (A5 fix: `OnHold`/`Consulting` bridge); `9b89230` (A6 `WorkFailoverWorker`) + `b2afff7` (A6 fix: O1 offered-instance stamp + crash EventId); `909c0ac` (A7 supervisor stuck + reassign). Gates: `dotnet build -warnaserror` 0 warnings; Queues 65, Storage.InMemory 164, Switchboard 55, Api.Tests 1255.
+- **Web (`w5-work-failover-web`):** `bbbe352` (Phase B: stuck-work tab + `useStuckConversations`/`useReassignConversation` hooks + 3-locale i18n) + `8bfb086` (consulting state label). Gates: `npm run build` clean, lint 0, i18n parity OK, vitest 1272.
