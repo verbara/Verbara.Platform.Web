@@ -172,3 +172,54 @@ export function useSendCoachingNote() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+// ─── W5 Work Failover — Stuck Work ──────────────────────
+
+/**
+ * A conversation owned by an OFFLINE agent that is still in an active state.
+ * Some are auto-re-queued by the backend's failover sweep; the `escalated` ones
+ * gave up after `failoverAttempts` reached the max and need a manual reassign.
+ * `state` is the conversation state on the wire (PascalCase — normalize for display).
+ */
+export interface StuckConversation {
+  conversationId: string;
+  channel: string;
+  state: string;
+  ownerAgentId: string;
+  ownerAgentName: string;
+  ownerOfflineSince: string | null;
+  failoverAttempts: number;
+  escalated: boolean;
+}
+
+export function useStuckConversations() {
+  return useQuery({
+    queryKey: ['supervisor', 'stuck'],
+    queryFn: () =>
+      customFetch<StuckConversation[]>({
+        url: '/api/v1/supervisor/conversations/stuck',
+        method: 'GET',
+      }),
+    refetchInterval: 15_000,
+  });
+}
+
+export type ReassignTarget = { targetQueueId: string } | { targetAgentId: string };
+
+export function useReassignConversation() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('operations');
+  return useMutation({
+    mutationFn: ({ id, ...target }: { id: string } & ReassignTarget) =>
+      customFetch<void>({
+        url: `/api/v1/supervisor/conversations/${id}/reassign`,
+        method: 'POST',
+        data: target,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['supervisor', 'stuck'] });
+      toast.success(t('stuck_work.reassigned_toast'));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

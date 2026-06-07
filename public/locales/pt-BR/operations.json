@@ -55,6 +55,28 @@
     "close_dialog_title": "Fechar conversa",
     "close_dialog_desc": "Fechar esta conversa como supervisor?"
   },
+  "stuck_work": {
+    "title": "Trabalho travado",
+    "tab": "Trabalho travado",
+    "empty": "Nenhuma conversa travada",
+    "owned_by_offline": "Atribuída a {{name}} (offline)",
+    "stuck_for": "Travada há {{duration}}",
+    "escalated": "Escalado",
+    "attempts": "{{count}} tentativa(s) de reenfileiramento",
+    "reassign": "Reatribuir",
+    "reassign_to_queue": "Reatribuir para fila",
+    "reassign_to_agent": "Reatribuir para agente",
+    "reassigned_toast": "Conversa reatribuída",
+    "states": {
+      "active": "Ativa",
+      "on_hold": "Em espera",
+      "consulting": "Em consulta",
+      "queued": "Na fila",
+      "offered": "Oferecida",
+      "wrap_up": "Encerramento",
+      "waiting_for_customer": "Aguardando o cliente"
+    }
+  },
   "campaigns": {
     "title": "Monitor de campanhas",
     "remaining": "Restantes",
