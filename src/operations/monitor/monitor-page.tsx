@@ -6,12 +6,13 @@ import { useActiveSessions, useStartListening } from '@/core/api/hooks/use-super
 import { SessionCard } from './session-card';
 import { SessionDetail } from './session-detail';
 import { DigitalMonitorTab } from './digital-monitor-tab';
+import { StuckWorkTab } from './stuck-work-tab';
 
 const SESSION_CARD_HEIGHT_PX = 96;
 
 export default function MonitorPage() {
   const { t } = useTranslation('operations');
-  const [tab, setTab] = useState<'voice' | 'digital'>('voice');
+  const [tab, setTab] = useState<'voice' | 'digital' | 'stuck'>('voice');
   const { data: sessions = [] } = useActiveSessions();
   const startListening = useStartListening();
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
@@ -65,9 +66,21 @@ export default function MonitorPage() {
         >
           Digital
         </button>
+        <button
+          type="button"
+          onClick={() => setTab('stuck')}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            tab === 'stuck'
+              ? 'border-b-2 border-brand text-brand'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+          data-testid="monitor-tab-stuck"
+        >
+          {t('stuck_work.tab')}
+        </button>
       </div>
 
-      {tab === 'voice' ? (
+      {tab === 'voice' && (
         <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
           {/* Left panel — session list */}
           <div className="w-64 shrink-0" data-testid="monitor-sessions-list">
@@ -107,9 +120,11 @@ export default function MonitorPage() {
             )}
           </div>
         </div>
-      ) : (
-        <DigitalMonitorTab />
       )}
+
+      {tab === 'digital' && <DigitalMonitorTab />}
+
+      {tab === 'stuck' && <StuckWorkTab />}
     </div>
   );
 }

@@ -55,6 +55,27 @@
     "close_dialog_title": "Close Conversation",
     "close_dialog_desc": "Close this conversation as supervisor?"
   },
+  "stuck_work": {
+    "title": "Stuck Work",
+    "tab": "Stuck Work",
+    "empty": "No stuck conversations",
+    "owned_by_offline": "Owned by {{name}} (offline)",
+    "stuck_for": "Stuck for {{duration}}",
+    "escalated": "Escalated",
+    "attempts": "{{count}} re-queue attempt(s)",
+    "reassign": "Reassign",
+    "reassign_to_queue": "Reassign to queue",
+    "reassign_to_agent": "Reassign to agent",
+    "reassigned_toast": "Conversation reassigned",
+    "states": {
+      "active": "Active",
+      "on_hold": "On hold",
+      "queued": "Queued",
+      "offered": "Offered",
+      "wrap_up": "Wrap-up",
+      "waiting_for_customer": "Waiting for customer"
+    }
+  },
   "campaigns": {
     "title": "Campaign Monitor",
     "remaining": "Remaining",

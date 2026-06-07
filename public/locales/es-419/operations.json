@@ -55,6 +55,27 @@
     "close_dialog_title": "Cerrar conversación",
     "close_dialog_desc": "¿Cerrar esta conversación como supervisor?"
   },
+  "stuck_work": {
+    "title": "Trabajo atascado",
+    "tab": "Trabajo atascado",
+    "empty": "No hay conversaciones atascadas",
+    "owned_by_offline": "Asignada a {{name}} (desconectado)",
+    "stuck_for": "Atascada hace {{duration}}",
+    "escalated": "Escalado",
+    "attempts": "{{count}} intento(s) de reencolado",
+    "reassign": "Reasignar",
+    "reassign_to_queue": "Reasignar a cola",
+    "reassign_to_agent": "Reasignar a agente",
+    "reassigned_toast": "Conversación reasignada",
+    "states": {
+      "active": "Activa",
+      "on_hold": "En espera",
+      "queued": "En cola",
+      "offered": "Ofrecida",
+      "wrap_up": "Cierre",
+      "waiting_for_customer": "Esperando al cliente"
+    }
+  },
   "campaigns": {
     "title": "Monitor de campanas",
     "remaining": "Restantes",
