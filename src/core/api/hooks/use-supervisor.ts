@@ -223,3 +223,24 @@ export function useReassignConversation() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+/**
+ * W5b voice caller-rescue: re-arms the automatic rescue callback for a VOICE
+ * conversation whose callbacks exhausted the retry cap (escalated stuck row).
+ */
+export function useRetryCallback() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('operations');
+  return useMutation({
+    mutationFn: (id: string) =>
+      customFetch<void>({
+        url: `/api/v1/supervisor/conversations/${id}/retry-callback`,
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['supervisor', 'stuck'] });
+      toast.success(t('stuck_work.callback_retry_toast'));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

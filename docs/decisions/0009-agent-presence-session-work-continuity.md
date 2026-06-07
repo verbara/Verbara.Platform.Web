@@ -38,7 +38,7 @@ Adopt a layered, defense-in-depth target architecture for agent presence, sessio
 - **W2 — Idle UX:** an activity-aware idle manager where "activity" = real user input **OR** an active voice call **OR** an active conversation (background polling excluded); a 60 s warning alertdialog; proactive refresh while active; cross-tab coordination (BroadcastChannel). **Agent-aware safe teardown:** an idle logout of a routable agent first forces them non-routable (`PUT /agents/me/state → Offline`) to avoid the routing zombie; deliberate non-routable states (break/lunch/…) suppress the nag; non-agent roles get a plain timeout.
 - **W3 — Server-side liveness:** ✅ **DESIGNED + SHIPPED 2026-06-06** (see the W3 record below). The original framing here — _bridge the `PresenceTracker.AgentOffline` delta to routing_ — was corrected by deep analysis (the SignalR `PresenceTracker` is feature-gated, display-only, and lives in a separate process; see the W3 record). The shipped design is a transport-agnostic, Api-owned **heartbeat + TTL + leader-gated reaper** authority, accelerated by a graceful `pagehide` departure beacon and an admin force-offline endpoint. Spec: [`docs/specs/2026-06-06-w3-agent-liveness.md`](../specs/2026-06-06-w3-agent-liveness.md).
 - **W4 — Deferred ("pause-when-free") pause:** ✅ **DESIGNED + SHIPPED 2026-06-06** (see the W4 record below). The original framing here — _a watcher over `AgentCapacityChangedEvent` / `ConversationStateChangedEvent` / `CallEndedEvent` that applies when `GetCurrentLoadAsync` reaches 0_ — was refined by deep analysis: `AgentCapacityChangedEvent` is never published, the in-process bus is per-pod, and `GetCurrentLoadAsync` counts parked chats (which keep capacity reserved). The shipped design adds a `PendingState` to the agent, blocks new work immediately (digital eligibility exclusion + voice `QueuePause` via a new cross-pod event), and applies the real transition via a leader-gated **drain sweep** when _active_ work (`{Active,OnHold,Consulting,WrapUp}`, parked excluded) reaches 0 — with force-now / cancel and a per-tenant max-pending timeout that force-applies + alerts. Spec: [`docs/specs/2026-06-06-w4-deferred-pause.md`](../specs/2026-06-06-w4-deferred-pause.md).
-- **W5 — Work failover:** ✅ **DESIGNED + SHIPPED (digital slice) 2026-06-06** (see the W5 record below). The original framing here — _an `Active→Queued` auto-path when the owner goes offline/non-routable, gated by an owner-absent timeout → re-queue/redistribute; voice caller-rescue on agent-leg drop; supervisor bulk reassignment + a stuck-work view_ — is delivered for **digital** (chat/WhatsApp/email): a leader-gated sweep auto-rescues in-flight digital work when the owner goes Offline past a per-tenant grace (cancel-on-return), re-queuing it to the **front** of its origin queue with an anti-loop attempt cap, plus a supervisor stuck-work view + manual reassign. **VOICE caller-rescue (W5b) is explicitly deferred to its own future track** — the agent-leg-death detection signal it needs does not exist (Asterisk-deep). Spec: [`docs/specs/2026-06-06-w5-work-failover.md`](../specs/2026-06-06-w5-work-failover.md).
+- **W5 — Work failover:** ✅ **DESIGNED + SHIPPED (digital slice) 2026-06-06** (see the W5 record below). The original framing here — _an `Active→Queued` auto-path when the owner goes offline/non-routable, gated by an owner-absent timeout → re-queue/redistribute; voice caller-rescue on agent-leg drop; supervisor bulk reassignment + a stuck-work view_ — is delivered for **digital** (chat/WhatsApp/email): a leader-gated sweep auto-rescues in-flight digital work when the owner goes Offline past a per-tenant grace (cancel-on-return), re-queuing it to the **front** of its origin queue with an anti-loop attempt cap, plus a supervisor stuck-work view + manual reassign. **VOICE caller-rescue (W5b) is ✅ DESIGNED + SHIPPED 2026-06-06** as a priority-callback rescue (deep analysis overturned the "no detection signal" framing — see the W5b record below). Specs: [`docs/specs/2026-06-06-w5-work-failover.md`](../specs/2026-06-06-w5-work-failover.md) (digital) + [`docs/specs/2026-06-06-w5b-voice-callback-rescue.md`](../specs/2026-06-06-w5b-voice-callback-rescue.md) (voice).
 - **W6 — Capacity configurability:** an admin editor for `ChannelCapacity` on create/update agent, and enforcement of `MaxTotal`.
 
 ## Consequences
@@ -213,7 +213,7 @@ For each offline agent past grace → for each of its failover-work conversation
 
 ### Deferred to future tracks (recorded, not built)
 
-- **VOICE caller-rescue (the whole W5b track)** — rescuing a live caller when the _agent_ leg of a call dies. Deferred because the **detection signal does not exist**: distinguishing an agent-leg death from a normal customer hang-up is Asterisk-deep (PJSIP registration / `ContactStatus` + bridge-leg correlation) and out of the digital machinery W5a reuses. It ships as its own spec → plan → implementation cycle.
+- ~~**VOICE caller-rescue (the whole W5b track)**~~ — ✅ **NOW DESIGNED + SHIPPED 2026-06-06** (see the W5b record below). Deep analysis overturned the "detection signal does not exist" framing: the per-leg `HangupCause` already lives on the `CallSession` the voice bridge holds, and the W5 W3 liveness store corroborates it — so detection needed no new AMI plumbing. The harder truth it surfaced is that a dropped-caller cannot be kept on the line (the `app_queue` 2-party bridge tears both legs down — a reactive `Redirect` loses the race), so the rescue is a **priority callback** to the customer, not a live re-route. See [`docs/specs/2026-06-06-w5b-voice-callback-rescue.md`](../specs/2026-06-06-w5b-voice-callback-rescue.md).
 - **Per-tenant `MaxAttempts`** — a constant `3` for now (per-tenant configurability later).
 - **A `consulting`-and-beyond friendly-label completeness pass** for the stuck-work view (only the immediately needed `consulting` label was added).
 
@@ -221,3 +221,66 @@ For each offline agent past grace → for each of its failover-work conversation
 
 - **Platform (`w5-work-failover`):** `ca9b0a9` (A1 `OfflineSince` + migration `031`) + `a7c3d9c` (A1 fix: InMemory presence stamp + clock); `332f45b` (A2 grace config + A3 `StreamOfflineAgentsAsync` + A4 `ListFailoverWorkByOwnerAsync`); `808f35e` (A5 `queue_priority` + `RequeueToFrontAsync`) + `43e4cc2` (A5 fix: `OnHold`/`Consulting` bridge); `9b89230` (A6 `WorkFailoverWorker`) + `b2afff7` (A6 fix: O1 offered-instance stamp + crash EventId); `909c0ac` (A7 supervisor stuck + reassign). Gates: `dotnet build -warnaserror` 0 warnings; Queues 65, Storage.InMemory 164, Switchboard 55, Api.Tests 1255.
 - **Web (`w5-work-failover-web`):** `bbbe352` (Phase B: stuck-work tab + `useStuckConversations`/`useReassignConversation` hooks + 3-locale i18n) + `8bfb086` (consulting state label). Gates: `npm run build` clean, lint 0, i18n parity OK, vitest 1272.
+
+---
+
+## W5b — Voice caller-rescue (DESIGNED + SHIPPED 2026-06-06)
+
+**Status:** Designed, implemented and shipped (cross-repo). The voice slice W5 deferred. Spec: [`docs/specs/2026-06-06-w5b-voice-callback-rescue.md`](../specs/2026-06-06-w5b-voice-callback-rescue.md); plan: [`docs/plans/active/w5b-voice-callback-rescue.md`](../plans/active/w5b-voice-callback-rescue.md).
+
+### Why this shape (deep-analysis findings)
+
+The W5 framing said voice was blocked because "the agent-leg-death detection signal does not exist." Deep analysis overturned **both halves** of the naive picture:
+
+1. **Detection already exists, no new AMI plumbing.** The SDK's `CallSession` (which `VoiceConversationBridge.OnCallEndedAsync` already loads) carries **per-leg `HangupCause` + `LeftAt`** on each `SessionParticipant` (the session-level cause only keeps the last leg's, but the per-participant values survive). So "the agent leg ended with a non-`NormalClearing` cause, at/before the caller" is computable from data already in hand. The recent in-browser SIP.js softphone + the W3 liveness heartbeat add an independent corroborating signal (`IAgentLivenessStore.IsAliveAsync`). Subscribing to raw AMI `HangupEvent`/`ContactStatusEvent` (which `IAmiConnection.Subscribe` exposes but the Platform doesn't consume) is a **future accelerator**, not a dependency.
+2. **The caller cannot be kept on the line.** Voice is bridged by Asterisk's native `app_queue` (`Queue(${QUEUE_NAME})`). In a 2-party bridge, when the agent leg dies Asterisk tears the **caller** leg down too — a reactive AMI `Redirect` of the caller loses the race. Keeping the caller live would require a dialplan `Queue(…,c)` survival path (+ normal-vs-abnormal disambiguation, fragile timing) or, properly, re-architecting voice onto ARI/Stasis-managed mixing bridges (a multi-track north-star). **Both are out of scope.**
+
+So the rescue is a **priority callback**: accept the drop, then automatically call the customer back and route them to the **next live agent in their origin queue** — the most reliable recovery that fits the W1–W5 Platform+Web cadence and reuses ~70% of existing machinery (outbound `OriginateExecutorBase`, contact lookup, the W5 grace/anti-loop/origin-queue patterns).
+
+### Confirmed decisions (user, after deep analysis)
+
+1. **Semantics = priority callback** (not keep-on-line; not the ARI re-bridge re-architecture).
+2. **Detection = layered:** per-leg abnormal `HangupCause` (primary, conservative — favors false-negatives) **OR** owning agent confirmed not-alive (W3 liveness backstop), evaluated by a leader-gated sweep inside a per-tenant **grace window** (gives cancel-on-return / transient-blip suppression).
+3. **Front-of-queue + 3-attempt anti-loop** (escalate to the supervisor stuck-work view after 3), mirroring W5.
+4. **A NEW callback conversation** is originated (the original call already ended); the original WrapUp is resolved once the callback is enqueued.
+
+### Core design
+
+- **Detection / fact-stamping (`VoiceConversationBridge.OnCallEndedAsync`, A1):** on an **answered** call's hangup, stamp the conversation metadata `pendingCallbackEval`, `agentLegAbnormal` (from the pure `IsAbnormalAgentHangup(agentCause, agentLeftAt, callerLeftAt)` classifier — `NormalClearing`/null/caller-left-first ⇒ false), `callbackEvalSince` ("O"), `callbackNumber` (caller id → contact Voice address; suppressed when anonymous), `originQueueId` (resolved from `session.QueueName`). Left in `WrapUp`.
+- **Per-tenant config (A2):** `TenantAuthConfig.VoiceCallbackGraceSeconds` (default 25; `<=0` disables), migration `032`.
+- **Query (A3):** `IConversationStore.ListPendingCallbackEvalAsync` — cross-tenant WrapUp convs with `pendingCallbackEval="true"` (self-bounds as the worker clears the marker).
+- **Originator (`CallbackOriginator`, A4):** dials the customer directly (`PJSIP/{trunk}/{number}`) into the **existing `[stasis-queue]`** dialplan context (**no new context needed**), setting `QUEUE_NAME`, `TENANT_ID`, `VERBARA_OUTBOUND_ID`=the pre-created conv id (reuses the bridge's existing `OnCallStarted` linkage — zero new GetVars), and `QUEUE_PRIO`="10" (the Asterisk front-of-queue mechanism for voice; the platform `queue_priority` column orders only the **digital** distribution worker, so it's set `-1` for reporting parity only). Pre-creates the tracked rescue conversation (Voice/Queued, metadata `rescuedFrom` + `callbackAttempts` + `direction="callback-rescue"`) only after a successful Originate (no orphan).
+- **Bridge support (A5):** the callback (originated into `stasis-queue`) is classified `Inbound` by `SessionCorrelator.InferDirection` (context isn't an outbound pattern), so the existing Inbound-gated handlers process it; `LinkOutboundCallAsync` links the null-owner rescue conv (its agent screen-pop branch is correctly skipped), `OnCallQueued` no-ops on the already-linked conv (no duplicate), `OnCallConnected` activates it on answer preserving `rescuedFrom`/`callbackAttempts` (so a re-dropped callback chains the anti-loop counter). Verified by tests; no behavior change needed.
+- **Worker (`CallbackRescueWorker`, A6):** leader-gated (resource `callback-rescue:sweep`), ~5 s. Per pending conv: re-load + re-check (idempotent) → grace → worthiness (`agentLegAbnormal` OR `!IsAliveAsync`/agent Offline) → on not-worthy clear pending (cancel-on-return / false-positive suppression) → require number + origin queue → **increment `callbackAttempts` + save BEFORE originate** (crash-safe) → `OriginateCallbackAsync`; on success clear pending + set `callbackEnqueued` + resolve the original (WrapUp→Resolved, existing `ConversationStateChangedEvent`) + audit `conversation.callback.enqueued`; on failure leave pending for retry, escalating (`callbackStuck` + audit `conversation.callback.escalated`) at the 3-attempt cap. **Voice is cluster-only** (the whole voice/AMI stack registers solely inside the cluster-connection branch), so the worker + its lease live only on a clustered voice-AMI pod — no single-node `AlwaysLeader` stub (unlike the always-on digital W3/W4/W5 sweeps).
+- **Supervisor (A7):** `ListCallbackStuckAsync` surfaces voice `callbackStuck` (WrapUp) rows in the existing `GET /supervisor/conversations/stuck` (the `StuckConversationDto.Channel` field already distinguishes them); a voice-appropriate `POST /supervisor/conversations/{id}/retry-callback` re-arms the rescue (reassign is digital-only — a dead voice call can't be transferred). Web stuck-work tab renders voice rows (Phone icon, "Callback failed N×") with **Retry callback** + **Close** actions.
+
+### Worker loop — `CallbackRescueWorker.SweepOnceAsync` (leader-gated, ~5 s)
+
+```
+if (!_leader.IsLeader) return;
+foreach conv in ListPendingCallbackEvalAsync():           // cross-tenant WrapUp + pendingCallbackEval
+  grace = cache[tenant] ??= cfg.VoiceCallbackGraceSeconds ?? 25
+  reload+recheck (WrapUp, pending, !callbackStuck)         // idempotent
+  if grace<=0: clearPending; continue                      // tenant disabled
+  if malformed callbackEvalSince: clearPending; continue   // self-bound
+  if now-evalSince < grace: continue                       // grace + cancel-on-return window
+  if attempts>=3: markStuck + escalate("max_attempts") + clearPending; continue
+  worthy = agentLegAbnormal OR (owner agent !IsAlive OR Offline)
+  if !worthy: clearPending; continue                       // clean end + agent present → no callback
+  if number/originQueue missing: markStuck + escalate("no_number_or_queue") + clearPending; continue
+  attempts++ ; save                                        // BEFORE originate (ordering invariant)
+  ok = OriginateCallbackAsync(tenant, number, originQueue, rescuedFrom=conv.Id, attempts)
+  if ok: clearPending + callbackEnqueued ; resolve original (WrapUp→Resolved) ; audit enqueued
+  else:  if attempts>=3: markStuck + escalate("originate_failed") + clearPending  else audit failed (leave pending)
+```
+
+### Also recorded / deferred (W5b.x)
+
+- **Raw AMI `HangupEvent`/`ContactStatusEvent` subscription** — a faster, SIP-cause-granular detection accelerator (the SDK exposes `IAmiConnection.Subscribe`; the Platform doesn't consume it yet). Not needed for the MVP — the per-leg `CallSession` cause + liveness backstop suffice.
+- **Keep-the-caller-on-the-line** (dialplan `Queue(…,c)` survival) and the **ARI/Stasis mixing-bridge re-architecture** — the proper programmatic-call-control north-star; a multi-track effort, deferred.
+- **No dialplan change shipped:** the callback reuses the existing `[stasis-queue]` context. The K8s Helm ConfigMap is a load-test-only artifact (no production voice contexts); production K8s voice dialplan is a separate deployment concern, not in W5b's scope.
+
+### Delivery
+
+- **Platform (`w5b-voice-callback-rescue`):** `4a0010c` (A1 per-leg detection + call-end stamping) · `ddbeba7` (A2 grace + migration `032`, A3 `ListPendingCallbackEvalAsync`) · `867d89f` (A4 `CallbackOriginator`) · `3492054` (A5 bridge rescue-conv lifecycle tests) · `8bdc085` (A6 `CallbackRescueWorker`) + `495c2d7` (A6 review polish) · `88b7357` (A7 supervisor voice stuck + retry-callback). Gates: `dotnet build -warnaserror` 0 warnings; Api.Tests 1294, Storage.InMemory 174.
+- **Web (`w5b-voice-callback-rescue-web`):** `9926eae` (Phase B: voice stuck rows + `useRetryCallback` + Retry/Close actions + 3-locale i18n + tests). Gates: `npm run build` clean, lint 0, i18n parity OK, vitest 1278.
