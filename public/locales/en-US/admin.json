@@ -198,7 +198,21 @@
     "autoAnswerInherit": "Inherit queue default",
     "autoAnswerOn": "Always",
     "autoAnswerOff": "Never",
-    "autoAnswerHint": "Automatically accept incoming calls without clicking Answer."
+    "autoAnswerHint": "Automatically accept incoming calls without clicking Answer.",
+    "capacity": {
+      "title": "Channel capacity",
+      "maxVoice": "Voice",
+      "maxChat": "Chat",
+      "maxEmail": "Email",
+      "maxSms": "SMS",
+      "maxTotal": "Total",
+      "inherited": "Inherited",
+      "overridden": "Overridden",
+      "resetToInherited": "Reset to inherited",
+      "maxVoicePinnedHint": "Voice is limited to 1 call per agent until simultaneous voice ships.",
+      "maxTotalBelowCapWarning": "MaxTotal is below a per-channel cap; that channel can never reach its limit.",
+      "voiceFixed": "1 (fixed)"
+    }
   },
   "teams": {
     "title": "Teams",

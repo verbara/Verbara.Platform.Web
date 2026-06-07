@@ -14,6 +14,7 @@ import {
   Headset,
   ArrowRight,
   Phone,
+  Gauge,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
@@ -22,6 +23,7 @@ import { Separator } from '@/core/ui/separator';
 import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { AgentForm } from './agent-form';
+import { toCapacityOverride } from './capacity-override';
 import { useAgent, useUpdateAgent, useDeleteAgent } from '@/core/api/hooks/use-agents';
 import { useAgentSkills } from '@/core/api/hooks/use-skills';
 
@@ -52,6 +54,39 @@ function InfoRow({
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
         <div className="mt-0.5 text-sm">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function CapacityRow({
+  label,
+  value,
+  overridden,
+  fixed,
+  overriddenLabel,
+  inheritedLabel,
+}: Readonly<{
+  label: string;
+  value: number | string;
+  overridden: boolean;
+  fixed?: boolean;
+  overriddenLabel?: string;
+  inheritedLabel?: string;
+}>) {
+  return (
+    <div className="flex items-center justify-between rounded-md border px-3 py-2">
+      <div className="flex items-center gap-2">
+        <Gauge className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm tabular-nums">{value}</span>
+        {!fixed && (
+          <Badge variant={overridden ? 'default' : 'outline'}>
+            {overridden ? overriddenLabel : inheritedLabel}
+          </Badge>
+        )}
       </div>
     </div>
   );
@@ -160,6 +195,50 @@ export default function AgentDetailPage() {
           )}
         </InfoRow>
       </div>
+
+      {/* Channel capacity (W6) — effective per-channel limits with inherited/overridden tags. */}
+      {agent.effectiveCapacity && (
+        <div data-testid="agent-detail-capacity" className="rounded-lg border bg-card p-6">
+          <h3 className="font-heading text-lg font-semibold">{t('admin:agents.capacity.title')}</h3>
+          <Separator className="my-3" />
+          <div className="space-y-1">
+            <CapacityRow
+              label={t('admin:agents.capacity.maxVoice')}
+              value={t('admin:agents.capacity.voiceFixed')}
+              overridden={false}
+              fixed
+            />
+            <CapacityRow
+              label={t('admin:agents.capacity.maxChat')}
+              value={agent.effectiveCapacity.maxChat}
+              overridden={agent.capacityOverride?.maxChat != null}
+              overriddenLabel={t('admin:agents.capacity.overridden')}
+              inheritedLabel={t('admin:agents.capacity.inherited')}
+            />
+            <CapacityRow
+              label={t('admin:agents.capacity.maxEmail')}
+              value={agent.effectiveCapacity.maxEmail}
+              overridden={agent.capacityOverride?.maxEmail != null}
+              overriddenLabel={t('admin:agents.capacity.overridden')}
+              inheritedLabel={t('admin:agents.capacity.inherited')}
+            />
+            <CapacityRow
+              label={t('admin:agents.capacity.maxSms')}
+              value={agent.effectiveCapacity.maxSms}
+              overridden={agent.capacityOverride?.maxSms != null}
+              overriddenLabel={t('admin:agents.capacity.overridden')}
+              inheritedLabel={t('admin:agents.capacity.inherited')}
+            />
+            <CapacityRow
+              label={t('admin:agents.capacity.maxTotal')}
+              value={agent.effectiveCapacity.maxTotal}
+              overridden={agent.capacityOverride?.maxTotal != null}
+              overriddenLabel={t('admin:agents.capacity.overridden')}
+              inheritedLabel={t('admin:agents.capacity.inherited')}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Skills section */}
       <div className="rounded-lg border bg-card p-6">
@@ -284,14 +363,24 @@ export default function AgentDetailPage() {
           teamId: agent.teamId ?? '',
           skills: (agent.skills ?? []).map((name) => ({ name, proficiency: 5 })),
           extension: agent.extension ?? '',
+          // W6 — prefill the async override inputs from the agent's stored override.
+          // A null field (or a null override object) shows the inherited placeholder.
+          capacity: {
+            maxChat: agent.capacityOverride?.maxChat ?? null,
+            maxEmail: agent.capacityOverride?.maxEmail ?? null,
+            maxSms: agent.capacityOverride?.maxSms ?? null,
+            maxTotal: agent.capacityOverride?.maxTotal ?? null,
+          },
         }}
         onSubmit={(v) => {
           // sipPassword is write-only: a blank field means "keep the current
           // password" (the API never returns it), so omit it from the update.
-          const { sipPassword, ...rest } = v;
+          const { sipPassword, capacity, ...rest } = v;
           updateAgent.mutate({
             id: agent.id,
             ...rest,
+            // W6 — always send the full override (maxVoice null = server-pinned 1).
+            capacity: toCapacityOverride(capacity),
             ...(sipPassword ? { sipPassword } : {}),
           });
         }}

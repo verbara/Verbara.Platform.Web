@@ -6,6 +6,24 @@ vi.mock('@/core/api/hooks/use-users', () => ({
 }));
 vi.mock('@/core/api/hooks/use-agents', () => ({ useAgents: () => ({ data: [] }) }));
 vi.mock('@/core/api/hooks/use-teams', () => ({ useTeams: () => ({ data: [] }) }));
+// W6 — the capacity section reads tenant defaults (placeholder source) + the active
+// tenant id; stub both so the form renders without a QueryClient/auth provider.
+vi.mock('@/admin/tenants/use-tenant-settings', () => ({
+  useTenantSettings: () => ({
+    data: {
+      operational: {
+        maxVoiceDefault: 1,
+        maxChatDefault: 3,
+        maxEmailDefault: 5,
+        maxSmsDefault: 3,
+        maxTotalDefault: 6,
+      },
+    },
+  }),
+}));
+vi.mock('@/core/auth/auth-store', () => ({
+  useAuthStore: (selector: (s: { tenantId: string }) => unknown) => selector({ tenantId: 't1' }),
+}));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, defaultValue?: string) => defaultValue ?? key,

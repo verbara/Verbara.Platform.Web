@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, AlertTriangle, RotateCcw } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -21,11 +21,27 @@ import {
 import { useUsers } from '@/core/api/hooks/use-users';
 import { useAgents } from '@/core/api/hooks/use-agents';
 import { useTeams } from '@/core/api/hooks/use-teams';
+import { useTenantSettings } from '@/admin/tenants/use-tenant-settings';
+import { useAuthStore } from '@/core/auth/auth-store';
 import { generateSipPassword } from './sip-password';
 
 const skillSchema = z.object({
   name: z.string().min(1, 'admin:agents.validation.skillNameRequired'),
   proficiency: z.number().min(1).max(10),
+});
+
+// W6 — per-agent capacity override. Each async field is tri-state: a number sets
+// an explicit per-channel limit (0–50); `null` (empty input) inherits the tenant
+// default. MaxVoice is NOT a user field — it is pinned to 1 by the server until
+// simultaneous voice (W5b ARI mixing-bridge) ships, so it is rendered read-only
+// and always submitted as `null` (the server inherits the pinned 1).
+const capacityFieldSchema = z.number().int().min(0).max(50).nullable();
+
+const capacitySchema = z.object({
+  maxChat: capacityFieldSchema,
+  maxEmail: capacityFieldSchema,
+  maxSms: capacityFieldSchema,
+  maxTotal: capacityFieldSchema,
 });
 
 const agentSchema = z.object({
@@ -43,6 +59,9 @@ const agentSchema = z.object({
   // default, true/false = explicit. Stored as bool|null so it passes straight through to the
   // create/update payload (the parent forwards form values verbatim).
   autoAnswer: z.boolean().nullable().optional(),
+  // W6 — optional per-agent capacity override. Each async field nullable (= inherit
+  // the tenant default). MaxVoice is omitted here (server-pinned to 1).
+  capacity: capacitySchema.optional(),
 });
 
 export type AgentFormValues = z.infer<typeof agentSchema>;
@@ -55,6 +74,14 @@ interface AgentFormProps {
   onSubmit?: (values: AgentFormValues) => void;
 }
 
+// All-null override = fully inherit the tenant defaults (create-mode baseline).
+const EMPTY_CAPACITY: AgentFormValues['capacity'] = {
+  maxChat: null,
+  maxEmail: null,
+  maxSms: null,
+  maxTotal: null,
+};
+
 export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }: AgentFormProps) {
   const { t } = useTranslation(['admin']);
 
@@ -62,12 +89,18 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
   const { data: agents = [] } = useAgents();
   const { data: teams = [] } = useTeams();
 
+  // W6 — tenant defaults are the inherited-placeholder source for empty override fields.
+  const tenantId = useAuthStore((s) => s.tenantId);
+  const { data: tenantSettings } = useTenantSettings(tenantId ?? '');
+  const tenantDefaults = tenantSettings?.operational;
+
   const {
     register,
     handleSubmit,
     control,
     reset,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<AgentFormValues>({
     resolver: zodResolver(agentSchema),
@@ -79,6 +112,7 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
       extension: '',
       sipPassword: '',
       autoAnswer: null,
+      capacity: EMPTY_CAPACITY,
       ...defaultValues,
     },
   });
@@ -98,10 +132,15 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
         extension: '',
         sipPassword: '',
         autoAnswer: null,
+        capacity: EMPTY_CAPACITY,
         ...defaultValues,
       });
     }
   }, [open, defaultValues, reset]);
+
+  // W6 — live override values to drive inherited/overridden affordances + the
+  // MaxTotal-below-cap advisory warning.
+  const capacityValues = watch('capacity');
 
   const handleFormSubmit = handleSubmit((values) => {
     onSubmit?.(values);
@@ -118,6 +157,41 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
   }, [allUsers, assignedUserIds, defaultValues?.userId]);
 
   const title = mode === 'create' ? t('admin:agents.create') : t('admin:agents.edit');
+
+  // W6 — editable async capacity fields. `defaultKey` reads the inherited tenant
+  // default (placeholder source) when the override is empty/null.
+  const capacityFields = [
+    {
+      name: 'maxChat',
+      label: t('admin:agents.capacity.maxChat'),
+      defaultValue: tenantDefaults?.maxChatDefault,
+    },
+    {
+      name: 'maxEmail',
+      label: t('admin:agents.capacity.maxEmail'),
+      defaultValue: tenantDefaults?.maxEmailDefault,
+    },
+    {
+      name: 'maxSms',
+      label: t('admin:agents.capacity.maxSms'),
+      defaultValue: tenantDefaults?.maxSmsDefault,
+    },
+    {
+      name: 'maxTotal',
+      label: t('admin:agents.capacity.maxTotal'),
+      defaultValue: tenantDefaults?.maxTotalDefault,
+    },
+  ] as const;
+
+  // Advisory: warn when the effective MaxTotal sits below the effective Chat cap
+  // (an entered override falls back to the tenant default when empty). Server allows
+  // it, so this NEVER blocks submit.
+  const effectiveTotal = capacityValues?.maxTotal ?? tenantDefaults?.maxTotalDefault;
+  const effectiveChat = capacityValues?.maxChat ?? tenantDefaults?.maxChatDefault;
+  const showMaxTotalWarning =
+    typeof effectiveTotal === 'number' &&
+    typeof effectiveChat === 'number' &&
+    effectiveTotal < effectiveChat;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -328,6 +402,100 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
             ))}
             {fields.length === 0 && (
               <p className="text-xs text-muted-foreground">{t('admin:agents.noSkills')}</p>
+            )}
+          </div>
+
+          {/* Channel capacity (W6) — per-agent override of the tenant defaults. */}
+          <div
+            data-testid="agent-capacity-section"
+            className="space-y-3 rounded-lg border bg-muted/30 p-4"
+          >
+            <Label>{t('admin:agents.capacity.title')}</Label>
+
+            {/* Voice — pinned to 1 (read-only) until simultaneous voice ships. */}
+            <div className="space-y-1.5">
+              <Label htmlFor="agent-capacity-voice">{t('admin:agents.capacity.maxVoice')}</Label>
+              <Input
+                id="agent-capacity-voice"
+                data-testid="agent-capacity-voice"
+                type="number"
+                value="1"
+                readOnly
+                disabled
+                title={t('admin:agents.capacity.maxVoicePinnedHint')}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('admin:agents.capacity.maxVoicePinnedHint')}
+              </p>
+            </div>
+
+            {/* Async channels — number input yields number|null (empty = inherit). */}
+            {capacityFields.map((cf) => (
+              <Controller
+                key={cf.name}
+                name={`capacity.${cf.name}`}
+                control={control}
+                render={({ field }) => {
+                  const isOverridden = field.value !== null && field.value !== undefined;
+                  return (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor={`agent-capacity-${cf.name}`}>{cf.label}</Label>
+                        <span
+                          data-testid={`agent-capacity-${cf.name}-state`}
+                          className="text-xs text-muted-foreground"
+                        >
+                          {isOverridden
+                            ? t('admin:agents.capacity.overridden')
+                            : t('admin:agents.capacity.inherited')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id={`agent-capacity-${cf.name}`}
+                          data-testid={`agent-capacity-${cf.name}`}
+                          type="number"
+                          min={0}
+                          max={50}
+                          value={field.value ?? ''}
+                          placeholder={
+                            cf.defaultValue !== undefined ? String(cf.defaultValue) : undefined
+                          }
+                          onChange={(e) => {
+                            // Empty input (or an invalid/NaN intermediate state) = inherit.
+                            const n = e.target.valueAsNumber;
+                            field.onChange(Number.isNaN(n) ? null : n);
+                          }}
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          disabled={!isOverridden}
+                          title={t('admin:agents.capacity.resetToInherited')}
+                          aria-label={t('admin:agents.capacity.resetToInherited')}
+                          data-testid={`agent-capacity-${cf.name}-reset`}
+                          onClick={() => field.onChange(null)}
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }}
+              />
+            ))}
+
+            {showMaxTotalWarning && (
+              <p
+                data-testid="agent-capacity-total-warning"
+                className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500"
+              >
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {t('admin:agents.capacity.maxTotalBelowCapWarning')}
+              </p>
             )}
           </div>
 

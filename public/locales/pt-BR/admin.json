@@ -198,7 +198,21 @@
     "autoAnswerInherit": "Herdar padrão da fila",
     "autoAnswerOn": "Sempre",
     "autoAnswerOff": "Nunca",
-    "autoAnswerHint": "Aceitar chamadas recebidas automaticamente sem clicar em Atender."
+    "autoAnswerHint": "Aceitar chamadas recebidas automaticamente sem clicar em Atender.",
+    "capacity": {
+      "title": "Capacidade por canal",
+      "maxVoice": "Voz",
+      "maxChat": "Chat",
+      "maxEmail": "E-mail",
+      "maxSms": "SMS",
+      "maxTotal": "Total",
+      "inherited": "Herdado",
+      "overridden": "Personalizado",
+      "resetToInherited": "Redefinir para herdado",
+      "maxVoicePinnedHint": "A voz está limitada a 1 chamada por agente até que a voz simultânea seja lançada.",
+      "maxTotalBelowCapWarning": "O total máximo é inferior a um limite por canal; esse canal nunca atingirá seu limite.",
+      "voiceFixed": "1 (fixo)"
+    }
   },
   "teams": {
     "title": "Equipes",
