@@ -177,6 +177,82 @@ describe('DynamicTypificationForm', () => {
     expect(screen.getByTestId('typification-submit')).toBeEnabled();
   });
 
+  it('DynamicTypificationForm_ShouldSubmitFullPath_WhenSubtreeBinding', () => {
+    // Schema: root -> mid(subtreeRoot) -> { leafA, leafB }. The cascade UI is
+    // rooted at mid's children, but the submitted path must be root -> mid -> leaf.
+    setForm(
+      formResponse(
+        [
+          node({ nodeId: 'root', label: 'Root', code: 'ROOT', isLeaf: false, sortOrder: 0 }),
+          node({
+            nodeId: 'mid',
+            parentNodeId: 'root',
+            label: 'Mid',
+            code: 'MID',
+            isLeaf: false,
+            sortOrder: 0,
+          }),
+          node({
+            nodeId: 'leafA',
+            parentNodeId: 'mid',
+            label: 'Leaf A',
+            code: 'LEAF_A',
+            isLeaf: true,
+            sortOrder: 0,
+          }),
+          node({
+            nodeId: 'leafB',
+            parentNodeId: 'mid',
+            label: 'Leaf B',
+            code: 'LEAF_B',
+            isLeaf: true,
+            sortOrder: 1,
+          }),
+        ],
+        [],
+        'mid',
+      ),
+    );
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    // The first (only) cascade level lists mid's children directly.
+    fireEvent.change(screen.getByTestId('typification-node-0'), { target: { value: 'leafA' } });
+    expect(screen.getByTestId('typification-submit')).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId('typification-submit'));
+
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    const payload = mockMutate.mock.calls[0]?.[0] as { selectedNodePath: string[] };
+    expect(payload.selectedNodePath).toEqual(['root', 'mid', 'leafA']);
+  });
+
+  it('DynamicTypificationForm_ShouldSubmitDateAsUtcIso_WhenDateFieldFilled', () => {
+    setForm(
+      formResponse(
+        [node({ nodeId: 'sale', isLeaf: true, code: 'SALE', label: 'Sale' })],
+        [field({ fieldId: 'f1', key: 'callback_date', label: 'Callback', type: 'Date' })],
+      ),
+    );
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    fireEvent.change(screen.getByTestId('typification-node-0'), { target: { value: 'sale' } });
+
+    const localValue = '2026-06-08T14:30';
+    fireEvent.change(screen.getByTestId('typification-field-callback_date'), {
+      target: { value: localValue },
+    });
+
+    fireEvent.click(screen.getByTestId('typification-submit'));
+
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    const payload = mockMutate.mock.calls[0]?.[0] as { fieldValues: Record<string, string> };
+    const submitted = payload.fieldValues.callback_date;
+    expect(submitted).toBe(new Date(localValue).toISOString());
+    expect(submitted).toMatch(/\dT.*Z$/);
+  });
+
   it('DynamicTypificationForm_ShouldAdvanceCascade_WhenParentNodeSelected', () => {
     setForm(
       formResponse(

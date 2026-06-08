@@ -74,6 +74,34 @@ function evalCondition(
 }
 
 // ---------------------------------------------------------------------------
+// Subtree bindings: the cascade UI starts at the subtree root's CHILDREN (good
+// UX), but the server validator requires the submitted path to begin at a true
+// root. Walk parentNodeId from the subtree root up to the root and return the
+// inclusive ancestor chain in root→leaf order ([root, ..., subtreeRoot]), so it
+// can be prepended to the user-selected path. Guards against cycles and missing
+// parents.
+// ---------------------------------------------------------------------------
+
+function ancestorChainInclusive(
+  nodeById: Map<string, TypificationNode>,
+  subtreeRootNodeId: string,
+): string[] {
+  const chain: string[] = [];
+  const seen = new Set<string>();
+  let current: string | undefined = subtreeRootNodeId;
+
+  while (current != null && !seen.has(current)) {
+    seen.add(current);
+    const node = nodeById.get(current);
+    if (node == null) break;
+    chain.push(current);
+    current = node.parentNodeId ?? undefined;
+  }
+
+  return chain.reverse();
+}
+
+// ---------------------------------------------------------------------------
 // Field-level client validation (UX). Returns an error message key or null.
 // ---------------------------------------------------------------------------
 
@@ -171,14 +199,25 @@ export function DynamicTypificationForm({
     return result;
   }, [rootNodes, childrenByParent, selectedNodePath]);
 
+  // The full submit path: for subtree bindings the user-selected path starts at
+  // the subtree root's child, so prepend the inclusive ancestor chain (true root
+  // → subtreeRoot) to form a contiguous root→leaf chain the server accepts.
+  const subtreeRootNodeId = form?.subtreeRootNodeId;
+  const fullSelectedNodePath = useMemo(() => {
+    if (subtreeRootNodeId == null) return selectedNodePath;
+    return [...ancestorChainInclusive(nodeById, subtreeRootNodeId), ...selectedNodePath];
+  }, [subtreeRootNodeId, nodeById, selectedNodePath]);
+
+  // Condition evaluation must mirror the server: include the prepended ancestor
+  // node codes so NodeSelected conditions referencing them behave identically.
   const selectedNodeCodes = useMemo(() => {
     const codes = new Set<string>();
-    for (const id of selectedNodePath) {
+    for (const id of fullSelectedNodePath) {
       const node = nodeById.get(id);
       if (node) codes.add(node.code);
     }
     return codes;
-  }, [selectedNodePath, nodeById]);
+  }, [fullSelectedNodePath, nodeById]);
 
   const lastSelectedNodeId = selectedNodePath.at(-1);
   const lastSelectedNode =
@@ -187,20 +226,21 @@ export function DynamicTypificationForm({
       : undefined;
   const pathEndsAtLeaf = lastSelectedNode?.isLeaf === true;
 
-  // Active fields: attached to a node on the path (or unattached) AND passing
-  // their visibility condition.
+  // Active fields: attached to a node on the (full) path (or unattached) AND
+  // passing their visibility condition. Uses the full path so fields attached to
+  // a subtree-root ancestor still activate, mirroring the server.
   const activeFields = useMemo(() => {
     if (!schema) return [];
     return [...schema.fields]
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .filter((field) => {
         const attachOk =
-          field.attachToNodeId == null || selectedNodePath.includes(field.attachToNodeId);
+          field.attachToNodeId == null || fullSelectedNodePath.includes(field.attachToNodeId);
         if (!attachOk) return false;
         if (field.visibleWhen == null) return true;
         return evalCondition(field.visibleWhen, fieldValues, selectedNodeCodes);
       });
-  }, [schema, selectedNodePath, fieldValues, selectedNodeCodes]);
+  }, [schema, fullSelectedNodePath, fieldValues, selectedNodeCodes]);
 
   // Submit gate: must end at a leaf, all active required fields must be filled,
   // and no active field may have a client validation error.
@@ -227,11 +267,27 @@ export function DynamicTypificationForm({
 
   function handleSubmit() {
     if (!canSubmit) return;
+
+    // Date fields use <input type="datetime-local"> which yields a local,
+    // offset-less value (e.g. "2026-06-08T14:30"). Convert each non-empty Date
+    // field to a full UTC ISO-8601 instant so the server schedules at the right
+    // time. Non-Date fields and empty values are left untouched.
+    const dateFieldKeys = new Set(
+      (schema?.fields ?? []).filter((f) => f.type === 'Date').map((f) => f.key),
+    );
+    const submittedFieldValues: Record<string, string> = { ...fieldValues };
+    for (const key of dateFieldKeys) {
+      const raw = submittedFieldValues[key];
+      if (raw != null && raw !== '') {
+        submittedFieldValues[key] = new Date(raw).toISOString();
+      }
+    }
+
     typify.mutate(
       {
         conversationId,
-        selectedNodePath,
-        fieldValues,
+        selectedNodePath: fullSelectedNodePath,
+        fieldValues: submittedFieldValues,
         notes,
         aiAccepted: false,
       },
