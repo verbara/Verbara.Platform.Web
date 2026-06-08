@@ -13,6 +13,24 @@ _No unreleased changes._
 
 ---
 
+## [3.7.0-web] — 2026-06-08 — Typification shared taxonomy capture — P1
+
+Client half of Typification **P1** ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — the agent wrap-up is now **pre-selected + pre-filled** from what the IVR/bot/routing captured. Pairs with **Platform v2.11.0**. PR #92. i18n parity EN-US/ES-419/PT-BR maintained.
+
+### Added
+
+- **Wrap-up prefill hydration** (`<DynamicTypificationForm>`) — seeds the cascade from `prefilledNodePath` (exact inverse of the subtree ancestor-chain) and fields from `prefilledFieldValues`; one-shot per form, agent can override.
+- **`collect_reason`** flow designer node (palette + node with `collected`/`error` outputs + property panel: schema picker, subtree, prompts).
+- **Reason-hints admin** (`/admin/reason-hints`) — list + form (scope Did/Channel/Queue; Channel as an exact-enum dropdown; codes↔JSON reason-path UX) + hook + lazy route + sidebar, gated `system:typification:configure`.
+- **Field PrefillSource control** in the typification schema designer (metadata-key prefill).
+
+### Fixed
+
+- **Flow designer node-type casing** — the designer persisted PascalCase while the engine matches snake_case (no publish-time validation), so designer-built flows threw at runtime. Fixed with a pure bidirectional map in `flow-utils.ts` (wire/engine vocabulary = snake_case; PascalCase is a render-only detail).
+- **Branch edge conditions** — `onConnect`/`toDomain` ignored the source handle, so `collected`/`error` (and Condition's `true`/`false`) all serialized to `'default'` and were indistinguishable. The source-handle id is now persisted as the edge condition and restored on load.
+
+---
+
 ## [3.6.0-web] — 2026-06-07 — Typification (cascading + conditional disposition forms) — P0
 
 Client half of the **Typification** feature ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — replaces the flat single-select disposition wrap-up with cascading, conditional, schema-driven disposition forms. Pairs with **Platform v2.10.0** + **Pro v2.7.5-pro**. PR #82 (+ release prep). i18n parity EN-US/ES-419/PT-BR maintained.
