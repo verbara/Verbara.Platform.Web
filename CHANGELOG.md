@@ -13,6 +13,26 @@ _No unreleased changes._
 
 ---
 
+## [3.6.0-web] — 2026-06-07 — Typification (cascading + conditional disposition forms) — P0
+
+Client half of the **Typification** feature ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — replaces the flat single-select disposition wrap-up with cascading, conditional, schema-driven disposition forms. Pairs with **Platform v2.10.0** + **Pro v2.7.5-pro**. PR #82 (+ release prep). i18n parity EN-US/ES-419/PT-BR maintained.
+
+### Added
+
+- **`use-typification.ts`** — TanStack Query hooks + types for schemas, bindings, publish, and the runtime form/typify.
+- **`<DynamicTypificationForm>`** (agent wrap-up) — renders the resolved schema: level-by-level cascading node selectors (depth-aware, leaf-only submit) + conditional fields evaluated reactively (client mirror of the server `VisibleWhen`/active-field logic). Graceful no-schema fallback.
+- **Admin Typification designer** (`src/admin/typification/`) — schema list + structured designer (nodes / fields / conditions / leaf outcomes / bindings) with publish + server-validation error surfacing. New route + sidebar item behind `system:typification:configure`.
+
+### Changed
+
+- Date fields submit as UTC ISO-8601 (so dialer callbacks schedule at the correct instant); `customFetch` now surfaces server field-level errors (`errors[].message` / `error`), not just `detail`.
+
+### Removed
+
+- Flat-disposition surfaces (`use-dispositions`, the old `useWrapUp`) and their orphaned i18n keys. The Pro Dialer campaign `DispositionCode` admin (campaign detail) is unchanged — it feeds the dialer bridge.
+
+---
+
 ## [3.5.0-web] — 2026-06-07 — Session/Auth overhaul: presence, idle UX & work continuity (ADR-0009 W1–W6)
 
 The client half of the [ADR-0009](docs/decisions/0009-agent-presence-session-work-continuity.md) north-star, shipped as six sequenced tracks (W1–W6, 2026-06-05→06-07) over PRs #75–#80. Pairs with **Platform v2.9.0**. i18n parity EN-US/ES-419/PT-BR maintained throughout.
