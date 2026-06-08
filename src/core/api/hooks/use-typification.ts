@@ -26,6 +26,16 @@ export interface TypificationFieldOption {
   label: string;
 }
 
+/**
+ * Auto-fill source for a field (B1 flow-vars → metadata → field-prefill).
+ * P1 only emits `kind: 'Metadata'` (AiEntity / DataDip are future phases);
+ * `ref` is the conversation metadata key (e.g. "patientId").
+ */
+export interface TypificationFieldPrefillSource {
+  kind: 'Metadata' | 'AiEntity' | 'DataDip';
+  ref: string;
+}
+
 export type TypificationFieldType =
   | 'Text'
   | 'Textarea'
@@ -47,6 +57,7 @@ export interface TypificationField {
   validation?: TypificationFieldValidation;
   attachToNodeId?: string;
   visibleWhen?: TypificationCondition;
+  prefillSource?: TypificationFieldPrefillSource;
   sortOrder: number;
 }
 

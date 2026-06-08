@@ -3216,6 +3216,12 @@
       "value": "Valor",
       "valuePlaceholder": "Valor a comparar"
     },
+    "prefill": {
+      "enable": "Preencher com dados capturados",
+      "metadataKey": "Chave de metadados",
+      "metadataKeyPlaceholder": "ex. patientId",
+      "help": "Preenche este campo automaticamente com a chave de metadados da conversa capturada pelo fluxo (ex. a partir de variáveis do fluxo)."
+    },
     "publish": {
       "errorsTitle": "Não foi possível publicar",
       "errorsDescription": "O esquema \"{{name}}\" tem erros de validação que precisam ser corrigidos.",

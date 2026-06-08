@@ -3216,6 +3216,12 @@
       "value": "Value",
       "valuePlaceholder": "Value to compare"
     },
+    "prefill": {
+      "enable": "Pre-fill from captured data",
+      "metadataKey": "Metadata key",
+      "metadataKeyPlaceholder": "e.g. patientId",
+      "help": "Auto-fills this field from the conversation metadata key captured by the flow (e.g. from flow variables)."
+    },
     "publish": {
       "errorsTitle": "Could not publish",
       "errorsDescription": "Schema \"{{name}}\" has validation errors that must be fixed.",

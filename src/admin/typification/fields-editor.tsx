@@ -86,6 +86,7 @@ function FieldRow({ index, control, register, watch, errors, onRemove }: FieldRo
 
   const type = watch(`fields.${index}.type`);
   const visibleWhenEnabled = watch(`fields.${index}.visibleWhen.enabled`);
+  const prefillEnabled = watch(`fields.${index}.prefill.enabled`);
   const nodes = watch('nodes');
   const supportsOptions = type === 'Select' || type === 'MultiSelect';
   const fieldErrors = errors.fields?.[index];
@@ -391,6 +392,36 @@ function FieldRow({ index, control, register, watch, errors, onRemove }: FieldRo
                 />
               </div>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Prefill from captured data (metadata key) */}
+      <div className="space-y-2 rounded-md border border-dashed bg-background p-3">
+        <div className="flex items-center gap-2">
+          <Controller
+            control={control}
+            name={`fields.${index}.prefill.enabled`}
+            render={({ field: f }) => (
+              <Switch
+                checked={f.value}
+                onCheckedChange={f.onChange}
+                data-testid={`field-prefill-toggle-${index}`}
+              />
+            )}
+          />
+          <Label className="text-xs">{t('admin:typification.prefill.enable')}</Label>
+        </div>
+
+        {prefillEnabled && (
+          <div className="space-y-1" data-testid={`field-prefill-editor-${index}`}>
+            <Label className="text-xs">{t('admin:typification.prefill.metadataKey')}</Label>
+            <Input
+              placeholder={t('admin:typification.prefill.metadataKeyPlaceholder')}
+              data-testid={`field-prefill-ref-${index}`}
+              {...register(`fields.${index}.prefill.ref`)}
+            />
+            <p className="text-xs text-muted-foreground">{t('admin:typification.prefill.help')}</p>
           </div>
         )}
       </div>
