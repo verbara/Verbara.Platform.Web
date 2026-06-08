@@ -108,4 +108,67 @@ describe('ReasonHintForm fields', () => {
     const scopeRef = screen.getByTestId('reason-hint-form-scopeRef') as HTMLInputElement;
     expect(scopeRef.value).toBe('queue-support');
   });
+
+  it('ReasonHintForm_ShouldRenderChannelDropdown_WhenScopeIsChannel', async () => {
+    // Editing a Channel-scoped hint seeds scope=Channel, so scopeRef renders as
+    // the exact-enum Select trigger (a button), not a free-text input — guarding
+    // against typos that would silently never match channel.ToString().
+    const existing: ReasonHint = {
+      id: 'rh-ch',
+      scope: 'Channel',
+      scopeRef: 'WhatsApp',
+      reasonPath: '["SOPORTE"]',
+      priority: 0,
+      isActive: true,
+    };
+    render(<ReasonHintForm open mode="edit" reasonHint={existing} onOpenChange={() => {}} />);
+
+    await waitFor(() => {
+      const scopeRef = screen.getByTestId('reason-hint-form-scopeRef') as HTMLElement;
+      // base-ui Select trigger is a <button>; a text input would be <input>.
+      expect(scopeRef.tagName).toBe('BUTTON');
+      expect(scopeRef.dataset.slot).toBe('select-trigger');
+    });
+    // The free-text input must NOT be an <input> for Channel scope.
+    expect((screen.getByTestId('reason-hint-form-scopeRef') as HTMLElement).tagName).not.toBe(
+      'INPUT',
+    );
+  });
+
+  it('ReasonHintForm_ShouldKeepTextInput_WhenScopeIsDidOrQueue', async () => {
+    // Did scope (the default) keeps the E.164 free-text input.
+    const didHint: ReasonHint = {
+      id: 'rh-did',
+      scope: 'Did',
+      scopeRef: '+541143218765',
+      reasonPath: '["CITAS"]',
+      priority: 0,
+      isActive: true,
+    };
+    const { unmount } = render(
+      <ReasonHintForm open mode="edit" reasonHint={didHint} onOpenChange={() => {}} />,
+    );
+    await waitFor(() => {
+      const ref = screen.getByTestId('reason-hint-form-scopeRef') as HTMLInputElement;
+      expect(ref.tagName).toBe('INPUT');
+      expect(ref.value).toBe('+541143218765');
+    });
+    unmount();
+
+    // Queue scope keeps a free-text queue-id input too.
+    const queueHint: ReasonHint = {
+      id: 'rh-q',
+      scope: 'Queue',
+      scopeRef: 'queue-support',
+      reasonPath: '["VENTAS"]',
+      priority: 0,
+      isActive: true,
+    };
+    render(<ReasonHintForm open mode="edit" reasonHint={queueHint} onOpenChange={() => {}} />);
+    await waitFor(() => {
+      const ref = screen.getByTestId('reason-hint-form-scopeRef') as HTMLInputElement;
+      expect(ref.tagName).toBe('INPUT');
+      expect(ref.value).toBe('queue-support');
+    });
+  });
 });

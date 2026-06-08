@@ -130,6 +130,37 @@ function validateFieldValue(field: TypificationField, value: string): string | n
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Date prefill normalization. <input type="datetime-local"> only accepts a
+// local, offset-less "YYYY-MM-DDTHH:mm" — it renders EMPTY for a UTC ISO instant
+// (e.g. "2026-06-08T14:30:00Z" or with seconds/offset). The server may seed a
+// Date field with a full instant, so convert it to the input's local format on
+// hydration. A bare "YYYY-MM-DDTHH:mm" is already valid and passes through.
+// ---------------------------------------------------------------------------
+
+const DATE_TIME_PREFIX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+const ZONE_OR_SECONDS = /^(:\d{2}(\.\d+)?|Z|[+-]\d{2}:?\d{2})/;
+
+function isIsoInstant(value: string): boolean {
+  // An instant carries a zone designator (Z / ±hh:mm) or seconds beyond the bare
+  // "YYYY-MM-DDTHH:mm" the datetime-local control accepts. Require the date-time
+  // prefix AND at least one of those extra markers immediately after it.
+  if (!DATE_TIME_PREFIX.test(value)) return false;
+  return ZONE_OR_SECONDS.test(value.slice(16));
+}
+
+function toDateTimeLocal(value: string): string {
+  if (!isIsoInstant(value)) return value;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  // Format the LOCAL wall-clock time as "YYYY-MM-DDTHH:mm" for the input.
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  );
+}
+
 export function DynamicTypificationForm({
   conversationId,
   enabled = true,
@@ -225,9 +256,14 @@ export function DynamicTypificationForm({
     if (hydratedKey !== hydrationKey) {
       setHydratedKey(hydrationKey);
 
-      // --- Cascade preselect (inverse of fullSelectedNodePath) ---------------
       const prefilledPath = form.prefilledNodePath;
-      if (prefilledPath != null && prefilledPath.length > 0) {
+      const prefilledFieldValues = form.prefilledFieldValues;
+      const hasPathPrefill = prefilledPath != null && prefilledPath.length > 0;
+      const hasFieldPrefill =
+        prefilledFieldValues != null && Object.keys(prefilledFieldValues).length > 0;
+
+      // --- Cascade preselect (inverse of fullSelectedNodePath) ---------------
+      if (hasPathPrefill) {
         if (subtreeRootNodeId == null) {
           // No subtree binding: the full path IS the subtree-relative path.
           setSelectedNodePath(prefilledPath);
@@ -244,9 +280,28 @@ export function DynamicTypificationForm({
       }
 
       // --- Field prefill (keyed by field Key, raw strings as the form stores) -
-      const prefilledFieldValues = form.prefilledFieldValues;
-      if (prefilledFieldValues != null && Object.keys(prefilledFieldValues).length > 0) {
-        setFieldValues((prev) => ({ ...prefilledFieldValues, ...prev }));
+      // Date-typed fields may arrive as a UTC ISO instant; normalize them to the
+      // datetime-local format ("YYYY-MM-DDTHH:mm") or the <input> renders empty.
+      if (hasFieldPrefill) {
+        const dateFieldKeys = new Set(
+          schema.fields.filter((f) => f.type === 'Date').map((f) => f.key),
+        );
+        const normalized: Record<string, string> = {};
+        for (const [key, raw] of Object.entries(prefilledFieldValues)) {
+          normalized[key] = dateFieldKeys.has(key) ? toDateTimeLocal(raw) : raw;
+        }
+        setFieldValues((prev) => ({ ...normalized, ...prev }));
+      }
+
+      // --- Cross-conversation hardening (FIX 5) ------------------------------
+      // When the hydration key changes to a form with NO prefill, defensively
+      // clear any prior selection so a reused instance can't leak conversation-A
+      // state into conversation-B. Only fires on key change (not every render),
+      // so it never clobbers the current agent's in-progress edits.
+      if (!hasPathPrefill && !hasFieldPrefill) {
+        setSelectedNodePath([]);
+        setFieldValues({});
+        setNotes('');
       }
     }
   }

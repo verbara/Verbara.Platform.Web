@@ -460,6 +460,89 @@ describe('DynamicTypificationForm', () => {
     expect(payload.fieldValues.reason).toBe('cancellation');
   });
 
+  it('DynamicTypificationForm_ShouldRenderDatePrefill_WhenIsoInstantProvided', () => {
+    // The server seeds a Date field with a full UTC ISO instant; the
+    // <input type="datetime-local"> only accepts "YYYY-MM-DDTHH:mm", so the form
+    // must convert the instant to the local datetime-local format on hydration —
+    // otherwise the input renders empty and the prefill is lost.
+    const instant = '2026-06-08T14:30:00Z';
+    setForm(
+      formResponse(
+        [node({ nodeId: 'sale', isLeaf: true, code: 'SALE', label: 'Sale' })],
+        [field({ fieldId: 'f1', key: 'callback_date', label: 'Callback', type: 'Date' })],
+        { prefilledNodePath: ['sale'], prefilledFieldValues: { callback_date: instant } },
+      ),
+    );
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    const input = screen.getByTestId('typification-field-callback_date') as HTMLInputElement;
+    // Local wall-clock derived from the instant (TZ-agnostic assertion).
+    const d = new Date(instant);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const expected = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    expect(input.value).toBe(expected);
+    // It is NOT the raw instant (which the control would reject and render empty).
+    expect(input.value).not.toContain('Z');
+  });
+
+  it('DynamicTypificationForm_ShouldResetState_WhenHydrationKeyChangesWithoutPrefill', () => {
+    // Conversation A loads WITH prefill, then the same mounted instance is reused
+    // for conversation B which has NO prefill: prior selections must be cleared so
+    // A's state can't leak into B (defensive — the Sheet normally unmounts).
+    setForm(
+      formResponse(
+        [
+          node({ nodeId: 'root', label: 'Root', code: 'ROOT', isLeaf: false, sortOrder: 0 }),
+          node({
+            nodeId: 'child',
+            parentNodeId: 'root',
+            label: 'Child leaf',
+            code: 'CHILD',
+            isLeaf: true,
+            sortOrder: 0,
+          }),
+        ],
+        [field({ fieldId: 'f1', key: 'reason', label: 'Reason', type: 'Text' })],
+        { prefilledNodePath: ['root', 'child'], prefilledFieldValues: { reason: 'renewal' } },
+      ),
+    );
+
+    const { rerender } = render(<DynamicTypificationForm conversationId="conv-A" />);
+
+    // Conversation A hydrated.
+    expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('root');
+    expect((screen.getByTestId('typification-node-1') as HTMLSelectElement).value).toBe('child');
+    expect((screen.getByTestId('typification-field-reason') as HTMLInputElement).value).toBe(
+      'renewal',
+    );
+
+    // Switch to conversation B (new hydration key) with NO prefill.
+    setForm(
+      formResponse(
+        [
+          node({ nodeId: 'root', label: 'Root', code: 'ROOT', isLeaf: false, sortOrder: 0 }),
+          node({
+            nodeId: 'child',
+            parentNodeId: 'root',
+            label: 'Child leaf',
+            code: 'CHILD',
+            isLeaf: true,
+            sortOrder: 0,
+          }),
+        ],
+        [field({ fieldId: 'f1', key: 'reason', label: 'Reason', type: 'Text' })],
+      ),
+    );
+    rerender(<DynamicTypificationForm conversationId="conv-B" />);
+
+    // A's selection/field state must be cleared, not leaked into B.
+    expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('');
+    expect(screen.queryByTestId('typification-node-1')).toBeNull();
+    expect((screen.getByTestId('typification-field-reason') as HTMLInputElement).value).toBe('');
+    expect(screen.getByTestId('typification-submit')).toBeDisabled();
+  });
+
   it('DynamicTypificationForm_ShouldRenderEmpty_WhenNoPrefill', () => {
     // Regression: no prefill members -> the manual flow is unchanged (nothing
     // preselected, submit blocked until the agent picks a leaf).

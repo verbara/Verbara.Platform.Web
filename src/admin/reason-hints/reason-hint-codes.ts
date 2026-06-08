@@ -6,6 +6,28 @@
 export const REASON_HINT_SCOPES = ['Did', 'Channel', 'Queue'] as const;
 export type ReasonHintScope = (typeof REASON_HINT_SCOPES)[number];
 
+/**
+ * The EXACT C# `ChannelType` enum names the backend matches via `channel.ToString()`
+ * (case-sensitive) when resolving a `Channel`-scoped reason hint. Source of truth:
+ * Verbara.Platform/src/Verbara.Platform.Core/ChannelType.cs. Casing is load-bearing
+ * — "Sms" (not "SMS"), "WebChat" (not "Webchat"); a typo means the hint silently
+ * never fires, so the form must offer these verbatim rather than free text.
+ */
+export const REASON_HINT_CHANNELS = [
+  'Voice',
+  'WhatsApp',
+  'Sms',
+  'WebChat',
+  'Email',
+  'Messenger',
+  'Instagram',
+  'Telegram',
+  'Twitter',
+  'Video',
+  'Rcs',
+] as const;
+export type ReasonHintChannel = (typeof REASON_HINT_CHANNELS)[number];
+
 /** "CITAS, REPROG" → ["CITAS", "REPROG"] (trimmed, blanks dropped). */
 export function parseCodes(input: string): string[] {
   return input

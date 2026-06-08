@@ -60,7 +60,9 @@ export default function ReasonHintsPage() {
         header: () => t('admin:reasonHints.status'),
         cell: (info) => (
           <Badge variant={info.row.original.isActive ? 'default' : 'destructive'}>
-            {info.row.original.isActive ? 'active' : 'inactive'}
+            {info.row.original.isActive
+              ? t('admin:reasonHints.active')
+              : t('admin:reasonHints.inactive')}
           </Badge>
         ),
       }),

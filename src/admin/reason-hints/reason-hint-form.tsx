@@ -27,6 +27,7 @@ import {
 } from '@/core/api/hooks/use-reason-hints';
 import {
   REASON_HINT_SCOPES,
+  REASON_HINT_CHANNELS,
   type ReasonHintScope,
   parseCodes,
   codesToText,
@@ -105,10 +106,13 @@ export function ReasonHintForm({ open, onOpenChange, mode, reasonHint }: ReasonH
     }
   }, [open, reasonHint, reset]);
 
-  // The scopeRef label/help adapts to the chosen scope; the input itself stays a
-  // plain text field (P1 — no per-scope picker).
+  // The scopeRef label/help adapts to the chosen scope. For Channel scope the
+  // value must be one of the EXACT C# ChannelType enum names (the backend matches
+  // channel.ToString() case-sensitively), so it renders as an enum dropdown
+  // rather than free text; Did (E.164) and Queue (queue id) stay text inputs.
   const scopeRefLabel = t(`reasonHints.form.scopeRef_label_${scope.toLowerCase()}`);
   const scopeRefHint = t(`reasonHints.form.scopeRef_hint_${scope.toLowerCase()}`);
+  const isChannelScope = scope === 'Channel';
 
   const handleFormSubmit = handleSubmit((values) => {
     const reasonPath = JSON.stringify(parseCodes(values.reasonCodes));
@@ -181,18 +185,43 @@ export function ReasonHintForm({ open, onOpenChange, mode, reasonHint }: ReasonH
             <p className="text-xs text-muted-foreground">{t('reasonHints.form.scope_hint')}</p>
           </div>
 
-          {/* Scope reference (label/help adapts to scope) */}
+          {/* Scope reference (label/help adapts to scope; Channel = enum dropdown) */}
           <div className="space-y-1.5">
             <Label htmlFor="reason-hint-scopeRef" required>
               {scopeRefLabel}
             </Label>
-            <Input
-              id="reason-hint-scopeRef"
-              placeholder={scopeRefLabel}
-              data-testid="reason-hint-form-scopeRef"
-              {...scopeRefA11y.inputProps}
-              {...register('scopeRef')}
-            />
+            {isChannelScope ? (
+              <Controller
+                name="scopeRef"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value || undefined} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      id="reason-hint-scopeRef"
+                      className="w-full"
+                      data-testid="reason-hint-form-scopeRef"
+                    >
+                      <SelectValue placeholder={t('reasonHints.form.select_channel')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REASON_HINT_CHANNELS.map((channel) => (
+                        <SelectItem key={channel} value={channel}>
+                          {channel}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            ) : (
+              <Input
+                id="reason-hint-scopeRef"
+                placeholder={scopeRefLabel}
+                data-testid="reason-hint-form-scopeRef"
+                {...scopeRefA11y.inputProps}
+                {...register('scopeRef')}
+              />
+            )}
             <p className="text-xs text-muted-foreground">{scopeRefHint}</p>
             <FieldError
               id={scopeRefA11y.errorId}
