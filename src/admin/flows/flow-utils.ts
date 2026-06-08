@@ -88,6 +88,11 @@ export function toReactFlow(flow: FlowDefinition): { nodes: Node[]; edges: Edge[
       id: `${n.nodeId}-${e.targetNodeId}`,
       source: n.nodeId,
       target: e.targetNodeId,
+      // The non-default condition IS the source handle id (e.g. "collected"/
+      // "error" on collect_reason, "true"/"false" on condition), so restore the
+      // handle binding when reloading a flow — otherwise multi-output edges
+      // detach from their handle and the engine can't tell the branches apart.
+      sourceHandle: e.condition !== 'default' ? e.condition : undefined,
       label: e.condition !== 'default' ? e.condition : undefined,
     })),
   );
@@ -111,7 +116,11 @@ export function toDomain(nodes: Node[], edges: Edge[]): FlowNodeDto[] {
     edges: edges
       .filter((e) => e.source === n.id)
       .map((e) => ({
-        condition: (e.label as string) ?? 'default',
+        // The source handle id IS the branch condition (e.g. "collected"/
+        // "error", "true"/"false"). Prefer it so multi-output branches serialize
+        // distinctly; fall back to the label for edges authored before handles,
+        // then to "default" for single-output nodes (no handle → null).
+        condition: e.sourceHandle ?? (e.label as string | undefined) ?? 'default',
         targetNodeId: e.target,
       })),
   }));

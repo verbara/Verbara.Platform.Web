@@ -98,3 +98,106 @@ describe('flowUtils round-trip', () => {
     expect(domain[0]?.type).toBe('default');
   });
 });
+
+describe('flowUtils edge branch conditions', () => {
+  it('toDomain_ShouldDeriveConditionFromSourceHandle_WhenMultiOutputEdge', () => {
+    // A collect_reason "error" branch authored on the canvas keeps its handle id.
+    const rfNodes: Node[] = [
+      { id: 'cr', type: 'CollectReason', position: { x: 0, y: 0 }, data: {} },
+      { id: 'fail', type: 'End', position: { x: 0, y: 120 }, data: {} },
+    ];
+    const rfEdges: Edge[] = [
+      { id: 'cr-fail', source: 'cr', target: 'fail', sourceHandle: 'error' },
+    ];
+
+    const domain = toDomain(rfNodes, rfEdges);
+    const edge = domain.find((n) => n.nodeId === 'cr')?.edges[0];
+    expect(edge?.condition).toBe('error');
+    expect(edge?.targetNodeId).toBe('fail');
+  });
+
+  it('toDomain_ShouldDefaultCondition_WhenNoSourceHandle', () => {
+    // A single-output node has no handle id → sourceHandle null → 'default'.
+    const rfNodes: Node[] = [
+      { id: 'a', type: 'SendMessage', position: { x: 0, y: 0 }, data: {} },
+      { id: 'b', type: 'End', position: { x: 0, y: 120 }, data: {} },
+    ];
+    const rfEdges: Edge[] = [{ id: 'a-b', source: 'a', target: 'b' }];
+
+    const domain = toDomain(rfNodes, rfEdges);
+    expect(domain.find((n) => n.nodeId === 'a')?.edges[0]?.condition).toBe('default');
+  });
+
+  it('toReactFlow_ShouldRestoreSourceHandle_WhenConditionNotDefault', () => {
+    const flow: FlowDefinition = {
+      flowId: 'f',
+      name: 'n',
+      nodes: [
+        {
+          nodeId: 'cr',
+          type: 'collect_reason',
+          config: {},
+          edges: [{ condition: 'collected', targetNodeId: 'next' }],
+        },
+        { nodeId: 'next', type: 'end', config: {}, edges: [] },
+      ],
+    };
+
+    const { edges } = toReactFlow(flow);
+    const edge = edges.find((e) => e.source === 'cr');
+    expect(edge?.sourceHandle).toBe('collected');
+    expect(edge?.label).toBe('collected');
+  });
+
+  it('toReactFlow_ShouldNotSetSourceHandle_WhenConditionDefault', () => {
+    const flow: FlowDefinition = {
+      flowId: 'f',
+      name: 'n',
+      nodes: [
+        {
+          nodeId: 'a',
+          type: 'send_message',
+          config: {},
+          edges: [{ condition: 'default', targetNodeId: 'b' }],
+        },
+        { nodeId: 'b', type: 'end', config: {}, edges: [] },
+      ],
+    };
+
+    const { edges } = toReactFlow(flow);
+    const edge = edges.find((e) => e.source === 'a');
+    expect(edge?.sourceHandle).toBeUndefined();
+    expect(edge?.label).toBeUndefined();
+  });
+
+  it('flowUtils_ShouldRoundTripEdgeCondition_WhenMultiOutput', () => {
+    // condition node with true/false branches → React Flow → back to wire must
+    // preserve BOTH distinct conditions (the bug: both collapsed to 'default').
+    const flow: FlowDefinition = {
+      flowId: 'f',
+      name: 'n',
+      nodes: [
+        {
+          nodeId: 'cond',
+          type: 'condition',
+          config: {},
+          edges: [
+            { condition: 'true', targetNodeId: 'yes' },
+            { condition: 'false', targetNodeId: 'no' },
+          ],
+        },
+        { nodeId: 'yes', type: 'end', config: {}, edges: [] },
+        { nodeId: 'no', type: 'end', config: {}, edges: [] },
+      ],
+    };
+
+    const { nodes, edges } = toReactFlow(flow);
+    const domain = toDomain(nodes, edges);
+    const condEdges = domain.find((n) => n.nodeId === 'cond')?.edges ?? [];
+
+    expect(condEdges).toHaveLength(2);
+    const byTarget = Object.fromEntries(condEdges.map((e) => [e.targetNodeId, e.condition]));
+    expect(byTarget['yes']).toBe('true');
+    expect(byTarget['no']).toBe('false');
+  });
+});
