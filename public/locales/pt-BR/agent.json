@@ -47,8 +47,6 @@
   "wrap_up": {
     "title": "Pós-atendimento",
     "description": "Conclua o pós-atendimento desta conversa.",
-    "disposition": "Disposição",
-    "select_disposition": "Selecionar disposição...",
     "notes": "Notas",
     "notes_placeholder": "Adicionar notas de pós-atendimento...",
     "submit": "Concluir",
@@ -196,6 +194,19 @@
       "cancel": "Cancelar",
       "success": "Chamada transferida",
       "failed": "Não foi possível transferir a chamada"
+    }
+  },
+  "typification": {
+    "no_schema": "Nenhum esquema de tipificação está configurado para esta conversa. Adicione notas se necessário e feche.",
+    "outcome": "Resultado",
+    "refine": "Detalhe (nível {{level}})",
+    "select_outcome": "Selecionar resultado...",
+    "select_value": "Selecionar valor...",
+    "validation": {
+      "maxLength": "Excede o comprimento máximo permitido",
+      "pattern": "O formato não é válido",
+      "min": "O valor está abaixo do mínimo permitido",
+      "max": "O valor está acima do máximo permitido"
     }
   }
 }

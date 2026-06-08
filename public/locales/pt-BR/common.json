@@ -337,10 +337,6 @@
       "deliveryReEnqueued": "Entrega reenfileirada",
       "circuitBreakerReset": "Circuit breaker resetado"
     },
-    "dispositions": {
-      "created": "Disposição criada",
-      "deleted": "Disposição excluída"
-    },
     "auth": {
       "configUpdated": "Configuração de autenticação atualizada",
       "sessionRevoked": "Sessão revogada",
@@ -384,7 +380,6 @@
       "rejected": "Conversa rejeitada",
       "transferred": "Conversa transferida",
       "closed": "Conversa encerrada",
-      "wrapUpCompleted": "Wrap-up concluído",
       "onHold": "Conversa em espera",
       "resumed": "Conversa retomada",
       "created": "Conversa criada",

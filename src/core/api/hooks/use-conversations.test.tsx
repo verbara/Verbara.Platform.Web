@@ -10,7 +10,6 @@ import {
   useRejectConversation,
   useTransferConversation,
   useCloseConversation,
-  useWrapUp,
   useHoldConversation,
   useUnholdConversation,
   useCreateConversation,
@@ -302,35 +301,6 @@ describe('useCloseConversation', () => {
     const { result } = renderHook(() => useCloseConversation(), { wrapper });
     act(() => {
       result.current.mutate('conv-1');
-    });
-    await waitFor(() => expect(result.current.isError).toBe(true));
-  });
-});
-
-describe('useWrapUp', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should wrap up a conversation', async () => {
-    vi.mocked(client.customFetch).mockResolvedValue(undefined);
-    const { result } = renderHook(() => useWrapUp(), { wrapper });
-    act(() => {
-      result.current.mutate({ id: 'conv-1', dispositionId: 'disp-1', notes: 'Done' });
-    });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(client.customFetch).toHaveBeenCalledWith({
-      url: '/api/v1/conversations/conv-1/wrapup',
-      method: 'POST',
-      data: { dispositionId: 'disp-1', notes: 'Done' },
-    });
-  });
-
-  it('should handle error', async () => {
-    vi.mocked(client.customFetch).mockRejectedValue(new Error('Failed'));
-    const { result } = renderHook(() => useWrapUp(), { wrapper });
-    act(() => {
-      result.current.mutate({ id: 'conv-1' });
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
