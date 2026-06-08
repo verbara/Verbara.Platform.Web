@@ -28,6 +28,7 @@ import {
   Zap,
   FileSearch,
   ClipboardList,
+  ListTree,
   Calendar,
   Building2,
   Shield,
@@ -158,6 +159,13 @@ const groups: SidebarGroup[] = [
         to: '/admin/surveys',
         icon: ClipboardList,
         requiredPermission: 'system:integration:manage',
+      },
+      {
+        key: 'typification',
+        labelKey: 'admin:sidebar.typification',
+        to: '/admin/typification',
+        icon: ListTree,
+        requiredPermission: 'system:typification:configure',
       },
       {
         key: 'canned-responses',

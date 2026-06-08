@@ -63,7 +63,8 @@
     "retention": "Retención",
     "consent": "Consentimiento",
     "notifications": "Notificaciones",
-    "notificationRules": "Reglas"
+    "notificationRules": "Reglas",
+    "typification": "Tipificación"
   },
   "api-keys": {
     "title": "API Keys",
@@ -3040,6 +3041,167 @@
         "eventTypeRequired": "El tipo de evento es obligatorio.",
         "channelRequired": "Se requiere al menos un canal de notificación."
       }
+    }
+  },
+  "typification": {
+    "published": "Publicado",
+    "draft": "Borrador",
+    "categories": {
+      "Success": "Éxito",
+      "Failure": "Fallo",
+      "FollowUp": "Seguimiento",
+      "Retry": "Reintento",
+      "SystemResult": "Resultado del sistema"
+    },
+    "fieldTypes": {
+      "Text": "Texto",
+      "Textarea": "Área de texto",
+      "Number": "Número",
+      "Date": "Fecha",
+      "Boolean": "Booleano",
+      "Select": "Lista",
+      "MultiSelect": "Lista múltiple",
+      "Phone": "Teléfono",
+      "Lookup": "Búsqueda"
+    },
+    "list": {
+      "title": "Tipificación",
+      "create": "Nuevo esquema",
+      "name": "Nombre",
+      "version": "Versión",
+      "status": "Estado",
+      "nodes": "Nodos",
+      "empty": "Aún no hay esquemas de tipificación.",
+      "searchPlaceholder": "Buscar esquemas…",
+      "noResults": "No se encontraron esquemas.",
+      "entityType": "esquema",
+      "schemasTab": "Esquemas",
+      "bindingsTab": "Asignaciones"
+    },
+    "designer": {
+      "newTitle": "Nuevo esquema de tipificación",
+      "editTitle": "Editar esquema de tipificación",
+      "description": "Define los nodos del árbol, los campos y las condiciones del esquema.",
+      "back": "Volver",
+      "name": "Nombre",
+      "namePlaceholder": "Nombre del esquema",
+      "maxDepth": "Profundidad máxima",
+      "save": "Guardar",
+      "publish": "Publicar"
+    },
+    "nodes": {
+      "title": "Nodos",
+      "hint": "Cada nodo representa una opción del árbol. Usa el nodo padre para anidar.",
+      "add": "Agregar nodo",
+      "empty": "Aún no hay nodos.",
+      "nodeN": "Nodo {{n}}",
+      "label": "Etiqueta",
+      "labelPlaceholder": "Etiqueta visible",
+      "code": "Código",
+      "codePlaceholder": "codigo_nodo",
+      "parent": "Nodo padre",
+      "rootOption": "— Raíz —",
+      "sortOrder": "Orden",
+      "isLeaf": "Es hoja",
+      "isActive": "Activo",
+      "leafTitle": "Resultado de la hoja",
+      "category": "Categoría",
+      "triggerRetry": "Disparar reintento",
+      "triggerCallback": "Disparar rellamada",
+      "retryDelay": "Retraso de reintento (min)",
+      "dialerCode": "Código de marcador",
+      "dialerCodePlaceholder": "Código"
+    },
+    "fields": {
+      "title": "Campos",
+      "hint": "Campos adicionales capturados durante la tipificación.",
+      "add": "Agregar campo",
+      "empty": "Aún no hay campos.",
+      "fieldN": "Campo {{n}}",
+      "key": "Clave",
+      "keyPlaceholder": "clave_campo",
+      "label": "Etiqueta",
+      "labelPlaceholder": "Etiqueta visible",
+      "type": "Tipo",
+      "attachTo": "Asociar al nodo",
+      "attachNone": "— Ninguno —",
+      "required": "Obligatorio",
+      "options": "Opciones",
+      "addOption": "Agregar opción",
+      "noOptions": "Aún no hay opciones.",
+      "optionValue": "Valor",
+      "optionLabel": "Etiqueta",
+      "validation": "Validación",
+      "regex": "Expresión regular",
+      "regexPlaceholder": "p. ej. ^[0-9]+$",
+      "min": "Mínimo",
+      "max": "Máximo",
+      "maxLength": "Longitud máxima"
+    },
+    "conditions": {
+      "visibleWhen": "Visible cuando",
+      "refType": "Tipo de referencia",
+      "refTypes": {
+        "Field": "Campo",
+        "NodeSelected": "Nodo seleccionado"
+      },
+      "op": "Operador",
+      "ops": {
+        "Eq": "Igual a",
+        "Neq": "Distinto de",
+        "In": "En",
+        "Contains": "Contiene",
+        "Exists": "Existe",
+        "GreaterThan": "Mayor que",
+        "LessThan": "Menor que"
+      },
+      "ref": "Referencia",
+      "refPlaceholder": "clave del campo o código del nodo",
+      "value": "Valor",
+      "valuePlaceholder": "Valor a comparar"
+    },
+    "publish": {
+      "errorsTitle": "No se pudo publicar",
+      "errorsDescription": "El esquema \"{{name}}\" tiene errores de validación que deben corregirse.",
+      "close": "Cerrar"
+    },
+    "bindings": {
+      "create": "Nueva asignación",
+      "createTitle": "Nueva asignación",
+      "editTitle": "Editar asignación",
+      "description": "Define qué esquema aplica según el alcance.",
+      "empty": "Aún no hay asignaciones.",
+      "searchPlaceholder": "Buscar asignaciones…",
+      "noResults": "No se encontraron asignaciones.",
+      "entityType": "asignación",
+      "scope": "Alcance",
+      "scopes": {
+        "Tenant": "Tenant",
+        "Queue": "Cola",
+        "Campaign": "Campaña",
+        "Channel": "Canal",
+        "Direction": "Dirección"
+      },
+      "scopeRef": "Referencia del alcance",
+      "scopeRefPlaceholder": "ID del alcance",
+      "scopeRefTenant": "No aplica para el alcance Tenant",
+      "schema": "Esquema",
+      "schemaPlaceholder": "Selecciona un esquema",
+      "subtreeRoot": "Nodo raíz del subárbol",
+      "subtreeRootPlaceholder": "ID del nodo (opcional)",
+      "priority": "Prioridad",
+      "save": "Guardar",
+      "validation": {
+        "schemaRequired": "El esquema es obligatorio"
+      }
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio",
+      "maxDepthRange": "La profundidad debe estar entre 1 y 8",
+      "nodeLabelRequired": "La etiqueta es obligatoria",
+      "nodeCodeRequired": "El código es obligatorio",
+      "fieldKeyRequired": "La clave es obligatoria",
+      "fieldLabelRequired": "La etiqueta es obligatoria"
     }
   }
 }

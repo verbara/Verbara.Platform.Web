@@ -337,10 +337,6 @@
       "deliveryReEnqueued": "Entrega re-encolada",
       "circuitBreakerReset": "Circuit breaker restablecido"
     },
-    "dispositions": {
-      "created": "Disposición creada",
-      "deleted": "Disposición eliminada"
-    },
     "auth": {
       "configUpdated": "Configuración de autenticación actualizada",
       "sessionRevoked": "Sesión revocada",
@@ -384,7 +380,6 @@
       "rejected": "Conversación rechazada",
       "transferred": "Conversación transferida",
       "closed": "Conversación cerrada",
-      "wrapUpCompleted": "Wrap-up completado",
       "onHold": "Conversación en espera",
       "resumed": "Conversación reanudada",
       "created": "Conversación creada",
@@ -499,6 +494,17 @@
       "pauseCancelled": "Pausa cancelada",
       "pauseApplied": "Pausa aplicada",
       "pausePending": "Pausa pendiente — termina tu trabajo activo"
+    },
+    "typification": {
+      "schemaCreated": "Esquema de tipificación creado",
+      "schemaUpdated": "Esquema de tipificación actualizado",
+      "schemaDeleted": "Esquema de tipificación eliminado",
+      "schemaPublished": "Esquema de tipificación publicado",
+      "schemaPublishFailed": "No se pudo publicar el esquema",
+      "bindingCreated": "Asignación creada",
+      "bindingUpdated": "Asignación actualizada",
+      "bindingDeleted": "Asignación eliminada",
+      "typified": "Tipificación guardada"
     }
   },
   "table": {

@@ -237,34 +237,6 @@ export function useCloseConversation() {
   });
 }
 
-export function useWrapUp() {
-  const qc = useQueryClient();
-  const { t } = useTranslation('common');
-  return useMutation({
-    mutationFn: ({
-      id,
-      ...data
-    }: {
-      id: string;
-      dispositionId?: string;
-      campaignDispositionId?: number;
-      notes?: string;
-      callbackDate?: string;
-      callbackPhone?: string;
-    }) =>
-      customFetch<void>({
-        url: `/api/v1/conversations/${id}/wrapup`,
-        method: 'POST',
-        data,
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['conversations'] });
-      toast.success(t('toasts.conversations.wrapUpCompleted'));
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
-}
-
 export function useHoldConversation() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');

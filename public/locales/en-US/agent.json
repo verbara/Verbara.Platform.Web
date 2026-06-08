@@ -47,8 +47,6 @@
   "wrap_up": {
     "title": "Wrap-up",
     "description": "Complete the wrap-up for this conversation.",
-    "disposition": "Disposition",
-    "select_disposition": "Select disposition...",
     "notes": "Notes",
     "notes_placeholder": "Add wrap-up notes...",
     "submit": "Complete",
@@ -196,6 +194,19 @@
       "cancel": "Cancel",
       "success": "Call transferred",
       "failed": "Could not transfer the call"
+    }
+  },
+  "typification": {
+    "no_schema": "No typification schema is configured for this conversation. Add notes if needed and close.",
+    "outcome": "Outcome",
+    "refine": "Detail (level {{level}})",
+    "select_outcome": "Select outcome...",
+    "select_value": "Select value...",
+    "validation": {
+      "maxLength": "Exceeds the maximum allowed length",
+      "pattern": "The format is not valid",
+      "min": "The value is below the allowed minimum",
+      "max": "The value is above the allowed maximum"
     }
   }
 }

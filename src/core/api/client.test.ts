@@ -86,6 +86,18 @@ describe('customFetch', () => {
     await expect(customFetch({ url: '/api/v1/test', method: 'GET' })).rejects.toThrow('Not found');
   });
 
+  it('should surface field-level errors[].message on non-ok response', async () => {
+    server.use(
+      http.post('/api/v1/test', () =>
+        HttpResponse.json({ errors: [{ field: 'x', message: 'Required' }] }, { status: 400 }),
+      ),
+    );
+
+    await expect(customFetch({ url: '/api/v1/test', method: 'POST', data: {} })).rejects.toThrow(
+      'Required',
+    );
+  });
+
   it('should return undefined for 204 No Content', async () => {
     server.use(http.delete('/api/v1/test/1', () => new HttpResponse(null, { status: 204 })));
 

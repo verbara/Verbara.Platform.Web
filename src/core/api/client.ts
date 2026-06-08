@@ -181,8 +181,22 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: response.statusText }));
-    throw new Error(error.detail ?? `API error: ${response.status}`);
+    const body = await response.json().catch(() => null);
+    const msg =
+      body?.detail ??
+      body?.error ??
+      (Array.isArray(body?.errors)
+        ? body.errors
+            .map((e: unknown) =>
+              typeof e === 'object' && e !== null && 'message' in e
+                ? (e as { message?: unknown }).message
+                : e,
+            )
+            .filter(Boolean)
+            .join('; ') || undefined
+        : undefined) ??
+      `API error: ${response.status}`;
+    throw new Error(msg);
   }
 
   const data = (await response.json()) as T;

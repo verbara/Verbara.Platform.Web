@@ -27,10 +27,11 @@ import { useQueues } from '@/core/api/hooks/use-queues';
 // "Disposition codes" tabs and a timezone selector. Those fields were
 // submitted to /admin/queues but the backend silently dropped them — the
 // Queue aggregate has a `Hours` field but it isn't wired through the API,
-// dispositions are a tenant-wide concept (see /admin/dispositions), and
-// agent assignment happens via /admin/queue-members. Those tabs are gone
-// so the form reflects the actual contract. Re-adding them is future
-// feature work that must include backend persistence (tracked in roadmap).
+// outcome capture is now the schema-driven Typification feature (see
+// /admin/typification), and agent assignment happens via
+// /admin/queue-members. Those tabs are gone so the form reflects the actual
+// contract. Re-adding them is future feature work that must include backend
+// persistence (tracked in roadmap).
 
 const queueSchema = z.object({
   name: z.string().min(1, 'admin:queues.validation.nameRequired'),
