@@ -13,6 +13,7 @@
     "trunks": "Trunks",
     "routes": "Routes",
     "didRoutes": "DID / Inbound numbers",
+    "reasonHints": "Reason hints",
     "callerIdPools": "Caller ID Pools",
     "compliance": "Compliance",
     "dncLists": "DNC Lists",
@@ -911,6 +912,50 @@
       "didRequired": "The number is required",
       "didInvalid": "Enter a valid E.164 number (e.g. +541143218765)",
       "queueRequired": "Select a destination queue"
+    }
+  },
+  "reasonHints": {
+    "title": "Reason hints",
+    "description": "Implicit-capture rules: when work arrives through a scope (DID, channel, or queue), a reason path is pre-stamped without the agent picking it.",
+    "create": "Add hint",
+    "scope": "Scope",
+    "scopeRef": "Reference",
+    "reasonPath": "Reason path",
+    "priority": "Priority",
+    "status": "Status",
+    "entity_type": "reason hint",
+    "empty": "No reason hints yet — add your first capture rule",
+    "searchPlaceholder": "Search hints...",
+    "noResults": "No matching hints found.",
+    "scopeOption": {
+      "did": "DID",
+      "channel": "Channel",
+      "queue": "Queue"
+    },
+    "form": {
+      "create_title": "Add reason hint",
+      "edit_title": "Edit reason hint",
+      "create_description": "Define which reason path is auto-stamped based on the scope.",
+      "edit_description": "Update the scope, reason path, or status of this hint.",
+      "select_scope": "Select scope",
+      "scope_hint": "The work origin: by DID, by channel, or by queue.",
+      "scopeRef_label_did": "DID (E.164)",
+      "scopeRef_label_channel": "Channel",
+      "scopeRef_label_queue": "Queue ID",
+      "scopeRef_hint_did": "The inbound number in E.164 format (e.g. +541143218765).",
+      "scopeRef_hint_channel": "The channel type name (e.g. WhatsApp, WebChat, Voice, Sms, Email).",
+      "scopeRef_hint_queue": "The destination queue identifier.",
+      "reasonPath_placeholder": "CITAS, REPROG",
+      "reasonPath_hint": "Comma-separated taxonomy codes; stored as a hierarchical path.",
+      "priority_hint": "When several hints match, the highest priority wins. Defaults to 0.",
+      "active": "Active",
+      "submit_create": "Add hint",
+      "submit_edit": "Save changes"
+    },
+    "validation": {
+      "scopeRequired": "Select a scope",
+      "scopeRefRequired": "Reference is required",
+      "reasonPathRequired": "Enter at least one reason code"
     }
   },
   "routes": {

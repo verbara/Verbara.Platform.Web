@@ -234,6 +234,11 @@
       "updated": "DID actualizado",
       "deleted": "DID eliminado"
     },
+    "reasonHints": {
+      "created": "Pista creada",
+      "updated": "Pista actualizada",
+      "deleted": "Pista eliminada"
+    },
     "flows": {
       "created": "Flujo creado",
       "updated": "Flujo actualizado",

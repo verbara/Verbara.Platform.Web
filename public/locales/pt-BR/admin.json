@@ -13,6 +13,7 @@
     "trunks": "Ramais",
     "routes": "Rotas",
     "didRoutes": "DID / Números de entrada",
+    "reasonHints": "Dicas de motivo",
     "callerIdPools": "Grupos de Caller ID",
     "compliance": "Conformidade",
     "dncLists": "Listas DNC",
@@ -911,6 +912,50 @@
       "didRequired": "O número é obrigatório",
       "didInvalid": "Insira um número E.164 válido (ex. +541143218765)",
       "queueRequired": "Selecione uma fila de destino"
+    }
+  },
+  "reasonHints": {
+    "title": "Dicas de motivo",
+    "description": "Regras de captura implícita: quando o trabalho chega por um escopo (DID, canal ou fila), um caminho de motivo é pré-atribuído sem o agente escolher.",
+    "create": "Adicionar dica",
+    "scope": "Escopo",
+    "scopeRef": "Referência",
+    "reasonPath": "Caminho do motivo",
+    "priority": "Prioridade",
+    "status": "Status",
+    "entity_type": "dica de motivo",
+    "empty": "Ainda não há dicas de motivo — adicione sua primeira regra de captura",
+    "searchPlaceholder": "Buscar dicas...",
+    "noResults": "Nenhuma dica correspondente encontrada.",
+    "scopeOption": {
+      "did": "DID",
+      "channel": "Canal",
+      "queue": "Fila"
+    },
+    "form": {
+      "create_title": "Adicionar dica de motivo",
+      "edit_title": "Editar dica de motivo",
+      "create_description": "Defina qual caminho de motivo é atribuído automaticamente conforme o escopo.",
+      "edit_description": "Atualize o escopo, o caminho do motivo ou o status desta dica.",
+      "select_scope": "Selecionar escopo",
+      "scope_hint": "A origem do trabalho: por DID, por canal ou por fila.",
+      "scopeRef_label_did": "DID (E.164)",
+      "scopeRef_label_channel": "Canal",
+      "scopeRef_label_queue": "ID da fila",
+      "scopeRef_hint_did": "O número de entrada no formato E.164 (ex. +541143218765).",
+      "scopeRef_hint_channel": "O nome do tipo de canal (ex. WhatsApp, WebChat, Voice, Sms, Email).",
+      "scopeRef_hint_queue": "O identificador da fila de destino.",
+      "reasonPath_placeholder": "CITAS, REPROG",
+      "reasonPath_hint": "Códigos da taxonomia separados por vírgula; salvos como um caminho hierárquico.",
+      "priority_hint": "Quando várias dicas coincidem, a de maior prioridade vence. O padrão é 0.",
+      "active": "Ativo",
+      "submit_create": "Adicionar dica",
+      "submit_edit": "Salvar alterações"
+    },
+    "validation": {
+      "scopeRequired": "Selecione um escopo",
+      "scopeRefRequired": "A referência é obrigatória",
+      "reasonPathRequired": "Insira ao menos um código de motivo"
     }
   },
   "routes": {

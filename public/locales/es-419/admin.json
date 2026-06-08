@@ -13,6 +13,7 @@
     "trunks": "Troncales",
     "routes": "Rutas",
     "didRoutes": "DID / Números entrantes",
+    "reasonHints": "Pistas de motivo",
     "callerIdPools": "Grupos de Caller ID",
     "compliance": "Cumplimiento",
     "dncLists": "Listas DNC",
@@ -911,6 +912,50 @@
       "didRequired": "El número es obligatorio",
       "didInvalid": "Ingrese un número E.164 válido (ej. +541143218765)",
       "queueRequired": "Seleccione una cola destino"
+    }
+  },
+  "reasonHints": {
+    "title": "Pistas de motivo",
+    "description": "Reglas de captura implícita: cuando el trabajo entra por un alcance (DID, canal o cola), se pre-asigna una ruta de motivo sin que el agente la elija.",
+    "create": "Agregar pista",
+    "scope": "Alcance",
+    "scopeRef": "Referencia",
+    "reasonPath": "Ruta de motivo",
+    "priority": "Prioridad",
+    "status": "Estado",
+    "entity_type": "pista de motivo",
+    "empty": "Aún no hay pistas de motivo — agregue su primera regla de captura",
+    "searchPlaceholder": "Buscar pistas...",
+    "noResults": "No se encontraron pistas que coincidan.",
+    "scopeOption": {
+      "did": "DID",
+      "channel": "Canal",
+      "queue": "Cola"
+    },
+    "form": {
+      "create_title": "Agregar pista de motivo",
+      "edit_title": "Editar pista de motivo",
+      "create_description": "Defina qué ruta de motivo se asigna automáticamente según el alcance.",
+      "edit_description": "Actualice el alcance, la ruta de motivo o el estado de esta pista.",
+      "select_scope": "Seleccionar alcance",
+      "scope_hint": "El origen del trabajo: por DID, por canal o por cola.",
+      "scopeRef_label_did": "DID (E.164)",
+      "scopeRef_label_channel": "Canal",
+      "scopeRef_label_queue": "ID de cola",
+      "scopeRef_hint_did": "El número entrante en formato E.164 (ej. +541143218765).",
+      "scopeRef_hint_channel": "El nombre del tipo de canal (ej. WhatsApp, WebChat, Voice, Sms, Email).",
+      "scopeRef_hint_queue": "El identificador de la cola destino.",
+      "reasonPath_placeholder": "CITAS, REPROG",
+      "reasonPath_hint": "Códigos de la taxonomía separados por coma; se guardan como una ruta jerárquica.",
+      "priority_hint": "Cuando varias pistas coinciden, gana la de mayor prioridad. El valor por defecto es 0.",
+      "active": "Activo",
+      "submit_create": "Agregar pista",
+      "submit_edit": "Guardar cambios"
+    },
+    "validation": {
+      "scopeRequired": "Seleccione un alcance",
+      "scopeRefRequired": "La referencia es obligatoria",
+      "reasonPathRequired": "Ingrese al menos un código de motivo"
     }
   },
   "routes": {

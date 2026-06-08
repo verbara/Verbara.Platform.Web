@@ -46,6 +46,7 @@ const AgentAssistFeaturePage = lazy(() => import('@/admin/features/agent-assist-
 const SurveyListPage = lazy(() => import('@/admin/surveys/survey-list-page'));
 const TypificationListPage = lazy(() => import('@/admin/typification/typification-list-page'));
 const SchemaDesignerPage = lazy(() => import('@/admin/typification/schema-designer-page'));
+const ReasonHintsPage = lazy(() => import('@/admin/reason-hints/reason-hints-page'));
 const ReportsPage = lazy(() => import('@/admin/reports/reports-page'));
 const SetupPage = lazy(() => import('@/core/auth/setup-page'));
 const SetupWizard = lazy(() => import('@/admin/setup/setup-wizard'));
@@ -625,6 +626,16 @@ export const router = createBrowserRouter([
               <PermissionGuard requires="system:typification:configure" redirect>
                 <LazyLoad>
                   <SchemaDesignerPage />
+                </LazyLoad>
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: 'reason-hints',
+            element: (
+              <PermissionGuard requires="system:typification:configure" redirect>
+                <LazyLoad>
+                  <ReasonHintsPage />
                 </LazyLoad>
               </PermissionGuard>
             ),
