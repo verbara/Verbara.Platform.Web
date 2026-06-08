@@ -104,6 +104,13 @@ export interface PublishResult {
 export interface TypificationFormResponse {
   schema: TypificationSchema;
   subtreeRootNodeId?: string;
+  /**
+   * Server-provided FULL root→leaf node-id path to preselect the cascade
+   * (longest-valid-prefix; may be partial). Null when nothing is preselectable.
+   */
+  prefilledNodePath?: string[];
+  /** Server-provided field values keyed by field Key. Null when none. */
+  prefilledFieldValues?: Record<string, string>;
 }
 
 // ---------------------------------------------------------------------------

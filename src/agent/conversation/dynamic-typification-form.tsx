@@ -208,6 +208,49 @@ export function DynamicTypificationForm({
     return [...ancestorChainInclusive(nodeById, subtreeRootNodeId), ...selectedNodePath];
   }, [subtreeRootNodeId, nodeById, selectedNodePath]);
 
+  // One-shot hydration from the server-provided prefill (M3): when the form data
+  // first loads, seed the cascade selection + field values so the agent confirms
+  // / adjusts rather than re-classifying. This is derived initial state (NOT an
+  // external-system sync), so it uses React's sanctioned "adjust state during
+  // render when an input changes" pattern (https://react.dev/learn/you-might-not-need-an-effect)
+  // rather than an effect — keyed on the loaded form identity so it runs exactly
+  // once per loaded form and never clobbers subsequent agent edits. The server
+  // sends a FULL root→leaf prefilledNodePath while the UI tracks a subtree-
+  // RELATIVE selectedNodePath, so hydration strips the ancestor prefix up to and
+  // including subtreeRootNodeId — the exact inverse of fullSelectedNodePath
+  // (which prepends ancestorChainInclusive = [trueRoot, …, subtreeRoot]).
+  const [hydratedKey, setHydratedKey] = useState<string | null>(null);
+  if (form && schema) {
+    const hydrationKey = `${conversationId}:${schema.schemaId}:${schema.version}`;
+    if (hydratedKey !== hydrationKey) {
+      setHydratedKey(hydrationKey);
+
+      // --- Cascade preselect (inverse of fullSelectedNodePath) ---------------
+      const prefilledPath = form.prefilledNodePath;
+      if (prefilledPath != null && prefilledPath.length > 0) {
+        if (subtreeRootNodeId == null) {
+          // No subtree binding: the full path IS the subtree-relative path.
+          setSelectedNodePath(prefilledPath);
+        } else {
+          // Subtree binding: drop everything up to & including subtreeRootNodeId.
+          const rootIndex = prefilledPath.indexOf(subtreeRootNodeId);
+          if (rootIndex >= 0) {
+            setSelectedNodePath(prefilledPath.slice(rootIndex + 1));
+          }
+          // Defensive: if the server's full path doesn't actually contain the
+          // subtree root (shouldn't happen — server guarantees it), leave the
+          // cascade empty rather than seeding a broken subtree-relative path.
+        }
+      }
+
+      // --- Field prefill (keyed by field Key, raw strings as the form stores) -
+      const prefilledFieldValues = form.prefilledFieldValues;
+      if (prefilledFieldValues != null && Object.keys(prefilledFieldValues).length > 0) {
+        setFieldValues((prev) => ({ ...prefilledFieldValues, ...prev }));
+      }
+    }
+  }
+
   // Condition evaluation must mirror the server: include the prepended ancestor
   // node codes so NodeSelected conditions referencing them behave identically.
   const selectedNodeCodes = useMemo(() => {
