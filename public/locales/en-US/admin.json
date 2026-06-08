@@ -339,6 +339,7 @@
     "node_types": {
       "send_message": "Send Message",
       "collect_input": "Collect Input",
+      "collect_reason": "Capture Reason",
       "condition": "Condition",
       "set_variable": "Set Variable",
       "wait": "Wait",
@@ -365,7 +366,12 @@
       "categories": "Categories (comma-separated)",
       "output_variable": "Output Variable",
       "collect_input_variable": "Save to Variable",
-      "set_variable_name": "Variable"
+      "set_variable_name": "Variable",
+      "schema_id": "Typification Schema",
+      "schema_select_placeholder": "Select schema...",
+      "subtree_root_node_id": "Subtree Root Node (optional)",
+      "retry_prompt": "Retry Prompt (optional)",
+      "max_retries": "Max Retries"
     },
     "node_body": {
       "no_message": "No message",
@@ -384,7 +390,12 @@
       "query_label": "query:",
       "set_var_default": "var",
       "set_value_default": "\"\"",
-      "zero_seconds": "0s"
+      "zero_seconds": "0s",
+      "no_schema": "no schema",
+      "schema_label": "schema:",
+      "subtree_label": "subtree:",
+      "collected_label": "Collected",
+      "error_label": "Error"
     }
   },
   "campaigns": {

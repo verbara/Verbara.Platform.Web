@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Textarea } from '@/core/ui/textarea';
+import { useTypificationSchemas } from '@/core/api/hooks/use-typification';
 
 // ---------------------------------------------------------------------------
 // Property definitions per node type
@@ -15,7 +16,7 @@ interface PropertyField {
   key: string;
   /** i18n key under flows.fields.* */
   labelKey: string;
-  type: 'text' | 'textarea' | 'number' | 'queue-select';
+  type: 'text' | 'textarea' | 'number' | 'queue-select' | 'schema-select';
 }
 
 const nodeProperties: Record<string, PropertyField[]> = {
@@ -27,6 +28,13 @@ const nodeProperties: Record<string, PropertyField[]> = {
     // dedicated label key to avoid colliding with SetVariable's 'variable'
     // field which is conceptually a different action.
     { key: 'variable', labelKey: 'collect_input_variable', type: 'text' },
+  ],
+  CollectReason: [
+    { key: 'schema_id', labelKey: 'schema_id', type: 'schema-select' },
+    { key: 'subtree_root_node_id', labelKey: 'subtree_root_node_id', type: 'text' },
+    { key: 'prompt', labelKey: 'prompt', type: 'textarea' },
+    { key: 'retry_prompt', labelKey: 'retry_prompt', type: 'textarea' },
+    { key: 'max_retries', labelKey: 'max_retries', type: 'number' },
   ],
   Condition: [{ key: 'expression', labelKey: 'expression', type: 'text' }],
   Enqueue: [
@@ -64,6 +72,12 @@ export default function PropertyPanel({ node, onUpdate }: PropertyPanelProps) {
   const { t } = useTranslation('admin');
   const nodeType = node.type ?? '';
   const fields = nodeProperties[nodeType] ?? [];
+
+  // Schema list — populates the schema picker for nodes exposing a
+  // schema-select field (e.g. CollectReason). The query is shared/cached
+  // app-wide, so mounting it here is cheap even for node types that don't
+  // render the picker.
+  const { data: schemas } = useTypificationSchemas();
 
   // Build default values from the node's current data
   const defaults: Record<string, string> = {};
@@ -115,6 +129,19 @@ export default function PropertyPanel({ node, onUpdate }: PropertyPanelProps) {
                 <Textarea id={field.key} rows={3} className="text-xs" {...register(field.key)} />
               ) : field.type === 'number' ? (
                 <Input id={field.key} type="number" className="text-xs" {...register(field.key)} />
+              ) : field.type === 'schema-select' ? (
+                <select
+                  id={field.key}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  {...register(field.key)}
+                >
+                  <option value="">{t('flows.fields.schema_select_placeholder')}</option>
+                  {(schemas ?? []).map((schema) => (
+                    <option key={schema.schemaId} value={schema.schemaId}>
+                      {schema.name} (v{schema.version})
+                    </option>
+                  ))}
+                </select>
               ) : (
                 // text and queue-select both render as plain text input
                 <Input
