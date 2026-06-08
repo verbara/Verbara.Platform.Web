@@ -499,6 +499,17 @@
       "pauseCancelled": "Pause cancelled",
       "pauseApplied": "Pause applied",
       "pausePending": "Pause pending — finish your active work"
+    },
+    "typification": {
+      "schemaCreated": "Typification schema created",
+      "schemaUpdated": "Typification schema updated",
+      "schemaDeleted": "Typification schema deleted",
+      "schemaPublished": "Typification schema published",
+      "schemaPublishFailed": "Could not publish the schema",
+      "bindingCreated": "Binding created",
+      "bindingUpdated": "Binding updated",
+      "bindingDeleted": "Binding deleted",
+      "typified": "Typification saved"
     }
   },
   "table": {

@@ -63,7 +63,8 @@
     "retention": "Retention",
     "consent": "Consent",
     "notifications": "Notifications",
-    "notificationRules": "Rules"
+    "notificationRules": "Rules",
+    "typification": "Typification"
   },
   "api-keys": {
     "title": "API Keys",
@@ -3040,6 +3041,167 @@
         "eventTypeRequired": "Event type is required.",
         "channelRequired": "At least one notification channel is required."
       }
+    }
+  },
+  "typification": {
+    "published": "Published",
+    "draft": "Draft",
+    "categories": {
+      "Success": "Success",
+      "Failure": "Failure",
+      "FollowUp": "Follow-up",
+      "Retry": "Retry",
+      "SystemResult": "System result"
+    },
+    "fieldTypes": {
+      "Text": "Text",
+      "Textarea": "Text area",
+      "Number": "Number",
+      "Date": "Date",
+      "Boolean": "Boolean",
+      "Select": "Select",
+      "MultiSelect": "Multi-select",
+      "Phone": "Phone",
+      "Lookup": "Lookup"
+    },
+    "list": {
+      "title": "Typification",
+      "create": "New schema",
+      "name": "Name",
+      "version": "Version",
+      "status": "Status",
+      "nodes": "Nodes",
+      "empty": "No typification schemas yet.",
+      "searchPlaceholder": "Search schemas…",
+      "noResults": "No schemas found.",
+      "entityType": "schema",
+      "schemasTab": "Schemas",
+      "bindingsTab": "Bindings"
+    },
+    "designer": {
+      "newTitle": "New typification schema",
+      "editTitle": "Edit typification schema",
+      "description": "Define the tree nodes, fields and conditions of the schema.",
+      "back": "Back",
+      "name": "Name",
+      "namePlaceholder": "Schema name",
+      "maxDepth": "Max depth",
+      "save": "Save",
+      "publish": "Publish"
+    },
+    "nodes": {
+      "title": "Nodes",
+      "hint": "Each node is a tree option. Use the parent node to nest.",
+      "add": "Add node",
+      "empty": "No nodes yet.",
+      "nodeN": "Node {{n}}",
+      "label": "Label",
+      "labelPlaceholder": "Visible label",
+      "code": "Code",
+      "codePlaceholder": "node_code",
+      "parent": "Parent node",
+      "rootOption": "— Root —",
+      "sortOrder": "Order",
+      "isLeaf": "Is leaf",
+      "isActive": "Active",
+      "leafTitle": "Leaf outcome",
+      "category": "Category",
+      "triggerRetry": "Trigger retry",
+      "triggerCallback": "Trigger callback",
+      "retryDelay": "Retry delay (min)",
+      "dialerCode": "Dialer code",
+      "dialerCodePlaceholder": "Code"
+    },
+    "fields": {
+      "title": "Fields",
+      "hint": "Additional fields captured during typification.",
+      "add": "Add field",
+      "empty": "No fields yet.",
+      "fieldN": "Field {{n}}",
+      "key": "Key",
+      "keyPlaceholder": "field_key",
+      "label": "Label",
+      "labelPlaceholder": "Visible label",
+      "type": "Type",
+      "attachTo": "Attach to node",
+      "attachNone": "— None —",
+      "required": "Required",
+      "options": "Options",
+      "addOption": "Add option",
+      "noOptions": "No options yet.",
+      "optionValue": "Value",
+      "optionLabel": "Label",
+      "validation": "Validation",
+      "regex": "Regular expression",
+      "regexPlaceholder": "e.g. ^[0-9]+$",
+      "min": "Minimum",
+      "max": "Maximum",
+      "maxLength": "Max length"
+    },
+    "conditions": {
+      "visibleWhen": "Visible when",
+      "refType": "Reference type",
+      "refTypes": {
+        "Field": "Field",
+        "NodeSelected": "Node selected"
+      },
+      "op": "Operator",
+      "ops": {
+        "Eq": "Equals",
+        "Neq": "Not equals",
+        "In": "In",
+        "Contains": "Contains",
+        "Exists": "Exists",
+        "GreaterThan": "Greater than",
+        "LessThan": "Less than"
+      },
+      "ref": "Reference",
+      "refPlaceholder": "field key or node code",
+      "value": "Value",
+      "valuePlaceholder": "Value to compare"
+    },
+    "publish": {
+      "errorsTitle": "Could not publish",
+      "errorsDescription": "Schema \"{{name}}\" has validation errors that must be fixed.",
+      "close": "Close"
+    },
+    "bindings": {
+      "create": "New binding",
+      "createTitle": "New binding",
+      "editTitle": "Edit binding",
+      "description": "Define which schema applies based on scope.",
+      "empty": "No bindings yet.",
+      "searchPlaceholder": "Search bindings…",
+      "noResults": "No bindings found.",
+      "entityType": "binding",
+      "scope": "Scope",
+      "scopes": {
+        "Tenant": "Tenant",
+        "Queue": "Queue",
+        "Campaign": "Campaign",
+        "Channel": "Channel",
+        "Direction": "Direction"
+      },
+      "scopeRef": "Scope reference",
+      "scopeRefPlaceholder": "Scope ID",
+      "scopeRefTenant": "Not applicable for Tenant scope",
+      "schema": "Schema",
+      "schemaPlaceholder": "Select a schema",
+      "subtreeRoot": "Subtree root node",
+      "subtreeRootPlaceholder": "Node ID (optional)",
+      "priority": "Priority",
+      "save": "Save",
+      "validation": {
+        "schemaRequired": "Schema is required"
+      }
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "maxDepthRange": "Depth must be between 1 and 8",
+      "nodeLabelRequired": "Label is required",
+      "nodeCodeRequired": "Code is required",
+      "fieldKeyRequired": "Key is required",
+      "fieldLabelRequired": "Label is required"
     }
   }
 }

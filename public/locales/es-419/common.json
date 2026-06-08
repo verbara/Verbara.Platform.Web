@@ -499,6 +499,17 @@
       "pauseCancelled": "Pausa cancelada",
       "pauseApplied": "Pausa aplicada",
       "pausePending": "Pausa pendiente — termina tu trabajo activo"
+    },
+    "typification": {
+      "schemaCreated": "Esquema de tipificación creado",
+      "schemaUpdated": "Esquema de tipificación actualizado",
+      "schemaDeleted": "Esquema de tipificación eliminado",
+      "schemaPublished": "Esquema de tipificación publicado",
+      "schemaPublishFailed": "No se pudo publicar el esquema",
+      "bindingCreated": "Asignación creada",
+      "bindingUpdated": "Asignación actualizada",
+      "bindingDeleted": "Asignación eliminada",
+      "typified": "Tipificación guardada"
     }
   },
   "table": {
