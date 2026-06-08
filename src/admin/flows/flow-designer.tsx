@@ -63,16 +63,19 @@ export default function FlowDesigner() {
   }, [flow, setNodes, setEdges]);
 
   const onConnect: OnConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
+    // addEdge already preserves connection.sourceHandle (the branch condition for
+    // multi-output nodes); surface it as the edge label for immediate visual
+    // feedback so the agent can tell the "collected"/"error" branches apart.
+    (connection) =>
+      setEdges((eds) =>
+        addEdge({ ...connection, label: connection.sourceHandle ?? undefined }, eds),
+      ),
     [setEdges],
   );
 
-  const handleSelectionChange = useCallback(
-    ({ nodes: selected }: { nodes: Node[] }) => {
-      setSelectedNodeId(selected.length === 1 ? (selected[0]?.id ?? null) : null);
-    },
-    [],
-  );
+  const handleSelectionChange = useCallback(({ nodes: selected }: { nodes: Node[] }) => {
+    setSelectedNodeId(selected.length === 1 ? (selected[0]?.id ?? null) : null);
+  }, []);
 
   // -----------------------------------------------------------------------
   // Drag-and-drop from palette onto canvas
@@ -117,9 +120,7 @@ export default function FlowDesigner() {
 
   const handleNodeDataUpdate = useCallback(
     (nodeId: string, data: Record<string, unknown>) => {
-      setNodes((nds) =>
-        nds.map((n) => (n.id === nodeId ? { ...n, data } : n)),
-      );
+      setNodes((nds) => nds.map((n) => (n.id === nodeId ? { ...n, data } : n)));
     },
     [setNodes],
   );
@@ -169,35 +170,33 @@ export default function FlowDesigner() {
         isPublishing={publishFlow.isPending}
       />
       <div className="flex min-h-0 flex-1">
-      {/* Left — Node palette */}
-      <NodePalette />
+        {/* Left — Node palette */}
+        <NodePalette />
 
-      {/* Center — React Flow canvas */}
-      <div className="relative flex-1" ref={reactFlowWrapper}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onSelectionChange={handleSelectionChange}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-          snapToGrid
-          snapGrid={[16, 16]}
-          fitView
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-          <Controls />
-        </ReactFlow>
-      </div>
+        {/* Center — React Flow canvas */}
+        <div className="relative flex-1" ref={reactFlowWrapper}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onSelectionChange={handleSelectionChange}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            snapToGrid
+            snapGrid={[16, 16]}
+            fitView
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+            <Controls />
+          </ReactFlow>
+        </div>
 
-      {/* Right — Property panel */}
-      {selectedNode && (
-        <PropertyPanel node={selectedNode} onUpdate={handleNodeDataUpdate} />
-      )}
+        {/* Right — Property panel */}
+        {selectedNode && <PropertyPanel node={selectedNode} onUpdate={handleNodeDataUpdate} />}
       </div>
     </div>
   );

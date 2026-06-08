@@ -29,6 +29,7 @@ import {
   FileSearch,
   ClipboardList,
   ListTree,
+  Tags,
   Calendar,
   Building2,
   Shield,
@@ -165,6 +166,13 @@ const groups: SidebarGroup[] = [
         labelKey: 'admin:sidebar.typification',
         to: '/admin/typification',
         icon: ListTree,
+        requiredPermission: 'system:typification:configure',
+      },
+      {
+        key: 'reason-hints',
+        labelKey: 'admin:sidebar.reasonHints',
+        to: '/admin/reason-hints',
+        icon: Tags,
         requiredPermission: 'system:typification:configure',
       },
       {

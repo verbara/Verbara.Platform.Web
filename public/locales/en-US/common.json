@@ -234,6 +234,11 @@
       "updated": "DID updated",
       "deleted": "DID deleted"
     },
+    "reasonHints": {
+      "created": "Hint created",
+      "updated": "Hint updated",
+      "deleted": "Hint deleted"
+    },
     "flows": {
       "created": "Flow created",
       "updated": "Flow updated",

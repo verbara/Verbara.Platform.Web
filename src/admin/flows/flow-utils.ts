@@ -23,13 +23,59 @@ export interface FlowDefinition {
 }
 
 // ---------------------------------------------------------------------------
+// Node type vocabulary: React Flow render keys (PascalCase) ↔ engine/wire
+// node types (snake_case). The wire/engine vocabulary is snake_case (the
+// backend flow engine matches handlers by snake_case name); PascalCase exists
+// only so React Flow can resolve the right node component. This map is the
+// single source of truth bridging the two.
+// ---------------------------------------------------------------------------
+
+const NODE_TYPE_TO_WIRE: Record<string, string> = {
+  SendMessage: 'send_message',
+  CollectInput: 'collect_input',
+  Condition: 'condition',
+  SetVariable: 'set_variable',
+  Wait: 'wait',
+  End: 'end',
+  Enqueue: 'enqueue',
+  HttpRequest: 'http_request',
+  KnowledgeSearch: 'knowledge_search',
+  AiClassify: 'ai_classify',
+  AiGenerate: 'ai_generate',
+  CollectReason: 'collect_reason',
+};
+
+const WIRE_TO_NODE_TYPE: Record<string, string> = Object.fromEntries(
+  Object.entries(NODE_TYPE_TO_WIRE).map(([k, v]) => [v, k]),
+);
+
+export { NODE_TYPE_TO_WIRE, WIRE_TO_NODE_TYPE };
+
+/**
+ * Map a React Flow render key (PascalCase) to the engine/wire node type
+ * (snake_case). Falls back to the input unchanged for unknown/custom types so
+ * non-standard nodes never break round-tripping.
+ */
+export function toWireType(renderType: string): string {
+  return NODE_TYPE_TO_WIRE[renderType] ?? renderType;
+}
+
+/**
+ * Map an engine/wire node type (snake_case) to the React Flow render key
+ * (PascalCase). Falls back to the input unchanged for unknown/custom types.
+ */
+export function toRenderType(wireType: string): string {
+  return WIRE_TO_NODE_TYPE[wireType] ?? wireType;
+}
+
+// ---------------------------------------------------------------------------
 // Domain FlowDefinition → React Flow nodes/edges
 // ---------------------------------------------------------------------------
 
 export function toReactFlow(flow: FlowDefinition): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = flow.nodes.map((n, i) => ({
     id: n.nodeId,
-    type: n.type,
+    type: toRenderType(n.type),
     position:
       n.config['_x'] && n.config['_y']
         ? { x: parseFloat(n.config['_x']), y: parseFloat(n.config['_y']) }
@@ -42,6 +88,11 @@ export function toReactFlow(flow: FlowDefinition): { nodes: Node[]; edges: Edge[
       id: `${n.nodeId}-${e.targetNodeId}`,
       source: n.nodeId,
       target: e.targetNodeId,
+      // The non-default condition IS the source handle id (e.g. "collected"/
+      // "error" on collect_reason, "true"/"false" on condition), so restore the
+      // handle binding when reloading a flow — otherwise multi-output edges
+      // detach from their handle and the engine can't tell the branches apart.
+      sourceHandle: e.condition !== 'default' ? e.condition : undefined,
       label: e.condition !== 'default' ? e.condition : undefined,
     })),
   );
@@ -56,7 +107,7 @@ export function toReactFlow(flow: FlowDefinition): { nodes: Node[]; edges: Edge[
 export function toDomain(nodes: Node[], edges: Edge[]): FlowNodeDto[] {
   return nodes.map((n) => ({
     nodeId: n.id,
-    type: n.type ?? 'default',
+    type: toWireType(n.type ?? 'default'),
     config: {
       ...(n.data as Record<string, string>),
       _x: String(n.position.x),
@@ -65,7 +116,11 @@ export function toDomain(nodes: Node[], edges: Edge[]): FlowNodeDto[] {
     edges: edges
       .filter((e) => e.source === n.id)
       .map((e) => ({
-        condition: (e.label as string) ?? 'default',
+        // The source handle id IS the branch condition (e.g. "collected"/
+        // "error", "true"/"false"). Prefer it so multi-output branches serialize
+        // distinctly; fall back to the label for edges authored before handles,
+        // then to "default" for single-output nodes (no handle → null).
+        condition: e.sourceHandle ?? (e.label as string | undefined) ?? 'default',
         targetNodeId: e.target,
       })),
   }));

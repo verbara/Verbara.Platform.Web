@@ -234,6 +234,11 @@
       "updated": "DID atualizado",
       "deleted": "DID excluído"
     },
+    "reasonHints": {
+      "created": "Dica criada",
+      "updated": "Dica atualizada",
+      "deleted": "Dica excluída"
+    },
     "flows": {
       "created": "Fluxo criado",
       "updated": "Fluxo atualizado",

@@ -25,6 +25,7 @@ const groups: PaletteGroup[] = [
     items: [
       { type: 'SendMessage', labelKey: 'send_message', color: 'bg-blue-500' },
       { type: 'CollectInput', labelKey: 'collect_input', color: 'bg-green-500' },
+      { type: 'CollectReason', labelKey: 'collect_reason', color: 'bg-green-600' },
       { type: 'Condition', labelKey: 'condition', color: 'bg-amber-500' },
       { type: 'SetVariable', labelKey: 'set_variable', color: 'bg-slate-500' },
       { type: 'Wait', labelKey: 'wait', color: 'bg-slate-500' },
@@ -33,9 +34,7 @@ const groups: PaletteGroup[] = [
   },
   {
     titleKey: 'routing',
-    items: [
-      { type: 'Enqueue', labelKey: 'enqueue', color: 'bg-teal-500' },
-    ],
+    items: [{ type: 'Enqueue', labelKey: 'enqueue', color: 'bg-teal-500' }],
   },
   {
     titleKey: 'integration',

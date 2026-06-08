@@ -13,6 +13,7 @@
     "trunks": "Ramais",
     "routes": "Rotas",
     "didRoutes": "DID / Números de entrada",
+    "reasonHints": "Dicas de motivo",
     "callerIdPools": "Grupos de Caller ID",
     "compliance": "Conformidade",
     "dncLists": "Listas DNC",
@@ -339,6 +340,7 @@
     "node_types": {
       "send_message": "Enviar mensagem",
       "collect_input": "Coletar entrada",
+      "collect_reason": "Capturar motivo",
       "condition": "Condição",
       "set_variable": "Definir variável",
       "wait": "Aguardar",
@@ -365,7 +367,12 @@
       "categories": "Categorias (separadas por vírgula)",
       "output_variable": "Variável de saída",
       "collect_input_variable": "Salvar em variável",
-      "set_variable_name": "Variável"
+      "set_variable_name": "Variável",
+      "schema_id": "Esquema de tipificação",
+      "schema_select_placeholder": "Selecionar esquema...",
+      "subtree_root_node_id": "Nó raiz da subárvore (opcional)",
+      "retry_prompt": "Mensagem de nova tentativa (opcional)",
+      "max_retries": "Máximo de tentativas"
     },
     "node_body": {
       "no_message": "Sem mensagem",
@@ -384,7 +391,12 @@
       "query_label": "consulta:",
       "set_var_default": "var",
       "set_value_default": "\"\"",
-      "zero_seconds": "0s"
+      "zero_seconds": "0s",
+      "no_schema": "sem esquema",
+      "schema_label": "esquema:",
+      "subtree_label": "subárvore:",
+      "collected_label": "Capturado",
+      "error_label": "Erro"
     }
   },
   "campaigns": {
@@ -900,6 +912,53 @@
       "didRequired": "O número é obrigatório",
       "didInvalid": "Insira um número E.164 válido (ex. +541143218765)",
       "queueRequired": "Selecione uma fila de destino"
+    }
+  },
+  "reasonHints": {
+    "title": "Dicas de motivo",
+    "description": "Regras de captura implícita: quando o trabalho chega por um escopo (DID, canal ou fila), um caminho de motivo é pré-atribuído sem o agente escolher.",
+    "create": "Adicionar dica",
+    "scope": "Escopo",
+    "scopeRef": "Referência",
+    "reasonPath": "Caminho do motivo",
+    "priority": "Prioridade",
+    "status": "Status",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "entity_type": "dica de motivo",
+    "empty": "Ainda não há dicas de motivo — adicione sua primeira regra de captura",
+    "searchPlaceholder": "Buscar dicas...",
+    "noResults": "Nenhuma dica correspondente encontrada.",
+    "scopeOption": {
+      "did": "DID",
+      "channel": "Canal",
+      "queue": "Fila"
+    },
+    "form": {
+      "create_title": "Adicionar dica de motivo",
+      "edit_title": "Editar dica de motivo",
+      "create_description": "Defina qual caminho de motivo é atribuído automaticamente conforme o escopo.",
+      "edit_description": "Atualize o escopo, o caminho do motivo ou o status desta dica.",
+      "select_scope": "Selecionar escopo",
+      "select_channel": "Selecionar canal",
+      "scope_hint": "A origem do trabalho: por DID, por canal ou por fila.",
+      "scopeRef_label_did": "DID (E.164)",
+      "scopeRef_label_channel": "Canal",
+      "scopeRef_label_queue": "ID da fila",
+      "scopeRef_hint_did": "O número de entrada no formato E.164 (ex. +541143218765).",
+      "scopeRef_hint_channel": "O tipo de canal exato — escolha um para que a dica corresponda ao valor do mecanismo.",
+      "scopeRef_hint_queue": "O identificador da fila de destino.",
+      "reasonPath_placeholder": "CITAS, REPROG",
+      "reasonPath_hint": "Códigos da taxonomia separados por vírgula; salvos como um caminho hierárquico.",
+      "priority_hint": "Quando várias dicas coincidem, a de maior prioridade vence. O padrão é 0.",
+      "active": "Ativo",
+      "submit_create": "Adicionar dica",
+      "submit_edit": "Salvar alterações"
+    },
+    "validation": {
+      "scopeRequired": "Selecione um escopo",
+      "scopeRefRequired": "A referência é obrigatória",
+      "reasonPathRequired": "Insira ao menos um código de motivo"
     }
   },
   "routes": {
@@ -3159,6 +3218,12 @@
       "refPlaceholder": "chave do campo ou código do nó",
       "value": "Valor",
       "valuePlaceholder": "Valor a comparar"
+    },
+    "prefill": {
+      "enable": "Preencher com dados capturados",
+      "metadataKey": "Chave de metadados",
+      "metadataKeyPlaceholder": "ex. patientId",
+      "help": "Preenche este campo automaticamente com a chave de metadados da conversa capturada pelo fluxo (ex. a partir de variáveis do fluxo)."
     },
     "publish": {
       "errorsTitle": "Não foi possível publicar",

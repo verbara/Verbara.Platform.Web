@@ -47,6 +47,18 @@ export const conditionSchema = z.object({
 export type ConditionFormValue = z.infer<typeof conditionSchema>;
 
 // ---------------------------------------------------------------------------
+// Prefill source (auto-fill from captured data) — optional sub-form.
+// P1 fixes the kind to "Metadata"; `ref` is the conversation metadata key.
+// ---------------------------------------------------------------------------
+
+export const prefillSchema = z.object({
+  enabled: z.boolean(),
+  ref: z.string(),
+});
+
+export type PrefillFormValue = z.infer<typeof prefillSchema>;
+
+// ---------------------------------------------------------------------------
 // Node editor row.
 // ---------------------------------------------------------------------------
 
@@ -91,6 +103,7 @@ export const fieldSchema = z.object({
   maxLength: z.number().optional(),
   attachToNodeId: z.string(),
   visibleWhen: conditionSchema,
+  prefill: prefillSchema,
   sortOrder: z.number(),
 });
 

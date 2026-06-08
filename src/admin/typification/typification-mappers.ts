@@ -58,6 +58,10 @@ export function emptyField(sortOrder: number): FieldFormValue {
       op: 'Eq',
       value: '',
     },
+    prefill: {
+      enabled: false,
+      ref: '',
+    },
     sortOrder,
   };
 }
@@ -110,6 +114,12 @@ function fieldToForm(field: TypificationField): FieldFormValue {
       ref: vw?.ref ?? '',
       op: vw?.op ?? 'Eq',
       value: vw?.value ?? '',
+    },
+    prefill: {
+      // P1 surfaces only the Metadata kind; hydrate the control whenever a
+      // prefill source is present so existing config round-trips.
+      enabled: !!field.prefillSource,
+      ref: field.prefillSource?.ref ?? '',
     },
     sortOrder: field.sortOrder,
   };
@@ -194,6 +204,11 @@ function formToField(field: FieldFormValue, index: number): TypificationField {
       value: field.visibleWhen.value?.trim() ? field.visibleWhen.value.trim() : undefined,
     };
     dto.visibleWhen = condition;
+  }
+
+  if (field.prefill.enabled && field.prefill.ref.trim()) {
+    // P1: kind is fixed to "Metadata" (AiEntity / DataDip are future phases).
+    dto.prefillSource = { kind: 'Metadata', ref: field.prefill.ref.trim() };
   }
 
   return dto;
