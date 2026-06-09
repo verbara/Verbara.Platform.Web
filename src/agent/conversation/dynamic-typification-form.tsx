@@ -585,7 +585,9 @@ export function DynamicTypificationForm({
             <p className="text-xs text-muted-foreground" data-testid="typification-ai-sentiment">
               {t('typification.ai.sentiment', {
                 sentiment: t(`typification.ai.sentiments.${suggestionData.sentiment}`, {
-                  defaultValue: suggestionData.sentiment,
+                  // Humanize the raw wire token (snake_case → spaced) so an
+                  // unexpected value never surfaces a literal server token.
+                  defaultValue: suggestionData.sentiment.replace(/_/g, ' '),
                 }),
               })}
             </p>

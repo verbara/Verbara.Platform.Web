@@ -9,10 +9,29 @@ import type {
 
 // --- Mocks ----------------------------------------------------------------
 
+// Minimal sentiment dictionary so tests can assert the AI banner renders a
+// translated string (not the raw lowercase wire token). Mirrors the
+// `typification.ai.sentiments.*` keys in public/locales/*/agent.json.
+const SENTIMENT_LABELS: Record<string, string> = {
+  'typification.ai.sentiments.positive': 'Positive',
+  'typification.ai.sentiments.neutral': 'Neutral',
+  'typification.ai.sentiments.negative': 'Negative',
+  'typification.ai.sentiments.very_negative': 'Very negative',
+};
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) =>
-      opts && typeof opts === 'object' && !('defaultValue' in opts) ? key : (opts ?? key),
+    t: (key: string, opts?: Record<string, unknown>) => {
+      // Resolve known sentiment keys to their (test) translation; otherwise
+      // honor defaultValue as a string fallback.
+      if (key in SENTIMENT_LABELS) return SENTIMENT_LABELS[key];
+      if (opts && 'defaultValue' in opts) return opts.defaultValue;
+      // Interpolating keys return their values inlined so callers can assert.
+      if (opts && typeof opts === 'object') {
+        return Object.values(opts).reduce<string>((acc, value) => `${acc} ${String(value)}`, key);
+      }
+      return key;
+    },
     i18n: { changeLanguage: vi.fn() },
   }),
 }));
@@ -622,7 +641,7 @@ describe('DynamicTypificationForm', () => {
       suggestedNodePath: ['root', 'leafA'],
       suggestedFieldValues: { reason: 'renewal' },
       confidence: 0.92,
-      sentiment: 'Positive',
+      sentiment: 'positive',
     };
 
     render(<DynamicTypificationForm conversationId="conv-1" />);
@@ -632,11 +651,30 @@ describe('DynamicTypificationForm', () => {
     // Banner with path + confidence + sentiment is shown; cascade NOT auto-seeded.
     expect(screen.getByTestId('typification-ai-suggestion')).toBeInTheDocument();
     expect(screen.getByTestId('typification-ai-confidence')).toBeInTheDocument();
-    expect(screen.getByTestId('typification-ai-sentiment')).toBeInTheDocument();
+    // Sentiment renders the translated label, not the raw lowercase wire token.
+    expect(screen.getByTestId('typification-ai-sentiment').textContent).toContain('Positive');
+    expect(screen.getByTestId('typification-ai-sentiment').textContent).not.toContain('positive');
     expect(screen.getByTestId('typification-ai-path').textContent).toContain('Root');
     expect(screen.getByTestId('typification-ai-path').textContent).toContain('Leaf A');
     // AI must NOT auto-apply over the (empty) cascade — agent must click Accept.
     expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('');
+  });
+
+  it('DynamicTypificationForm_ShouldTranslateVeryNegativeSentiment_WhenSuggested', () => {
+    setForm(aiSchema());
+    suggestionState.data = {
+      suggestedNodePath: ['root', 'leafA'],
+      confidence: 0.55,
+      // The LLM classifier's most-severe label — lowercase snake_case wire token.
+      sentiment: 'very_negative',
+    };
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    const sentiment = screen.getByTestId('typification-ai-sentiment');
+    // Must render the translated label, NEVER the raw "very_negative" token.
+    expect(sentiment.textContent).toContain('Very negative');
+    expect(sentiment.textContent).not.toContain('very_negative');
   });
 
   it('DynamicTypificationForm_ShouldSeedCascadeOnAccept_WhenAiSuggestionAccepted', () => {
@@ -645,7 +683,7 @@ describe('DynamicTypificationForm', () => {
       suggestedNodePath: ['root', 'leafA'],
       suggestedFieldValues: { reason: 'renewal' },
       confidence: 0.92,
-      sentiment: 'Positive',
+      sentiment: 'positive',
     };
 
     render(<DynamicTypificationForm conversationId="conv-1" />);
@@ -681,7 +719,7 @@ describe('DynamicTypificationForm', () => {
       suggestedNodePath: ['root', 'leafA'],
       suggestedFieldValues: { reason: 'renewal' },
       confidence: 0.92,
-      sentiment: 'Positive',
+      sentiment: 'positive',
     };
 
     render(<DynamicTypificationForm conversationId="conv-1" />);

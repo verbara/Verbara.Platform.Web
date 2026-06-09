@@ -115,4 +115,34 @@ describe('SchemaDesigner AI config', () => {
     const threshold = screen.getByTestId('ai-config-threshold') as HTMLInputElement;
     expect(threshold.value).toBe('65');
   });
+
+  it('SchemaDesigner_ShouldDisplayActualMode_WhenEditingAutoApplySchema', async () => {
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [],
+      aiConfig: {
+        enabled: true,
+        // Out-of-band AutoApply config — the designer must DISPLAY it, not
+        // misleadingly show "SuggestOnly".
+        mode: 'AutoApplyAboveThreshold',
+        confidenceThreshold: 0.9,
+        sentimentGating: false,
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+    const mode = screen.getByTestId('ai-config-mode') as HTMLSelectElement;
+    // Still read-only in P2a, but reflects the persisted mode (not SuggestOnly).
+    expect(mode).toBeDisabled();
+    expect(mode.value).toBe('AutoApplyAboveThreshold');
+  });
 });

@@ -152,7 +152,11 @@ export interface TypificationSuggestionResponse {
   suggestedFieldValues?: Record<string, string>;
   /** Model confidence as a 0–1 fraction. */
   confidence?: number;
-  /** Detected sentiment label (e.g. "Positive" / "Neutral" / "Negative"). */
+  /**
+   * Detected sentiment label, emitted verbatim by the LLM classifier as a
+   * lowercase snake_case token: "positive" | "neutral" | "negative" |
+   * "very_negative". Passed through with no casing transform.
+   */
   sentiment?: string;
 }
 

@@ -3274,6 +3274,7 @@
       "enable": "Activar sugerencias de IA",
       "mode": "Modo",
       "modeHint": "En esta versión la IA solo sugiere; el agente siempre confirma. La auto-aplicación llegará en una fase futura.",
+      "modeHintAutoApply": "La auto-aplicación está configurada externamente y no es editable aquí. Guardar conserva este modo sin cambios.",
       "modes": {
         "SuggestOnly": "Solo sugerir",
         "AutoApplyAboveThreshold": "Auto-aplicar sobre el umbral"

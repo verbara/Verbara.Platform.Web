@@ -78,6 +78,10 @@ export default function SchemaDesignerPage() {
   const nameA11y = useFieldA11y(errors.name, 'schema-name', { required: true });
 
   const aiEnabled = watch('aiConfig.enabled');
+  // The mode is not editable in P2a, but we DISPLAY the actual persisted mode
+  // (round-tripped by schemaToForm) so editing an out-of-band AutoApply schema
+  // never misleadingly shows "SuggestOnly".
+  const aiMode = watch('aiConfig.mode');
 
   const addNode = useCallback(() => {
     appendNode(emptyNode(nodeFields.length));
@@ -225,21 +229,23 @@ export default function SchemaDesignerPage() {
 
           {aiEnabled && (
             <div className="space-y-3" data-testid="ai-config-editor">
-              {/* Mode — fixed to SuggestOnly in P2a (disabled select). */}
+              {/* Mode — read-only in P2a. Displays the ACTUAL persisted mode so
+                  an out-of-band AutoApply schema is shown correctly (editing it
+                  here preserves the mode via schemaToForm round-trip). */}
               <div className="space-y-1">
                 <Label className="text-xs">{t('admin:typification.ai.mode')}</Label>
                 <select
                   disabled
-                  value="SuggestOnly"
+                  value={aiMode}
                   data-testid="ai-config-mode"
                   className="h-9 w-full max-w-xs rounded-lg border border-input bg-muted px-2.5 text-sm text-muted-foreground"
                 >
-                  <option value="SuggestOnly">
-                    {t('admin:typification.ai.modes.SuggestOnly')}
-                  </option>
+                  <option value={aiMode}>{t(`admin:typification.ai.modes.${aiMode}`)}</option>
                 </select>
                 <p className="text-xs text-muted-foreground">
-                  {t('admin:typification.ai.modeHint')}
+                  {aiMode === 'AutoApplyAboveThreshold'
+                    ? t('admin:typification.ai.modeHintAutoApply')
+                    : t('admin:typification.ai.modeHint')}
                 </p>
               </div>
 

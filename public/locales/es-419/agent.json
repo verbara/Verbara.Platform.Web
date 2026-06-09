@@ -214,9 +214,10 @@
       "confidence": "Confianza {{percent}}%",
       "sentiment": "Sentimiento: {{sentiment}}",
       "sentiments": {
-        "Positive": "Positivo",
-        "Neutral": "Neutral",
-        "Negative": "Negativo"
+        "positive": "Positivo",
+        "neutral": "Neutral",
+        "negative": "Negativo",
+        "very_negative": "Muy negativo"
       },
       "accept": "Aceptar",
       "dismiss": "Descartar"

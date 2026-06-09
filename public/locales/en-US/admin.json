@@ -3274,6 +3274,7 @@
       "enable": "Enable AI suggestions",
       "mode": "Mode",
       "modeHint": "In this release AI only suggests; the agent always confirms. Auto-apply is coming in a future phase.",
+      "modeHintAutoApply": "Auto-apply is configured externally and is not editable here. Saving preserves this mode unchanged.",
       "modes": {
         "SuggestOnly": "Suggest only",
         "AutoApplyAboveThreshold": "Auto-apply above threshold"
