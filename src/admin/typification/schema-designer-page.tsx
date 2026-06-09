@@ -1,13 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Save, Send } from 'lucide-react';
+import { ArrowLeft, Save, Send, Sparkles } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
+import { Switch } from '@/core/ui/switch';
 import { FieldError } from '@/core/ui/field-error';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
@@ -75,6 +76,8 @@ export default function SchemaDesignerPage() {
   }, [isNew, schema, reset]);
 
   const nameA11y = useFieldA11y(errors.name, 'schema-name', { required: true });
+
+  const aiEnabled = watch('aiConfig.enabled');
 
   const addNode = useCallback(() => {
     appendNode(emptyNode(nodeFields.length));
@@ -195,6 +198,92 @@ export default function SchemaDesignerPage() {
             onAdd={addField}
             onRemove={removeField}
           />
+        </div>
+
+        {/* AI auto-disposition */}
+        <div className="space-y-3 rounded-lg border p-4" data-testid="ai-config-section">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <Label>{t('admin:typification.ai.title')}</Label>
+          </div>
+          <p className="text-xs text-muted-foreground">{t('admin:typification.ai.hint')}</p>
+
+          <div className="flex items-center gap-2">
+            <Controller
+              control={control}
+              name="aiConfig.enabled"
+              render={({ field: f }) => (
+                <Switch
+                  checked={f.value}
+                  onCheckedChange={f.onChange}
+                  data-testid="ai-config-enabled"
+                />
+              )}
+            />
+            <Label className="text-xs">{t('admin:typification.ai.enable')}</Label>
+          </div>
+
+          {aiEnabled && (
+            <div className="space-y-3" data-testid="ai-config-editor">
+              {/* Mode — fixed to SuggestOnly in P2a (disabled select). */}
+              <div className="space-y-1">
+                <Label className="text-xs">{t('admin:typification.ai.mode')}</Label>
+                <select
+                  disabled
+                  value="SuggestOnly"
+                  data-testid="ai-config-mode"
+                  className="h-9 w-full max-w-xs rounded-lg border border-input bg-muted px-2.5 text-sm text-muted-foreground"
+                >
+                  <option value="SuggestOnly">
+                    {t('admin:typification.ai.modes.SuggestOnly')}
+                  </option>
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:typification.ai.modeHint')}
+                </p>
+              </div>
+
+              {/* Confidence threshold (percent). */}
+              <div className="space-y-1">
+                <Label className="text-xs" htmlFor="ai-config-threshold">
+                  {t('admin:typification.ai.threshold')}
+                </Label>
+                <Input
+                  id="ai-config-threshold"
+                  type="number"
+                  min={0}
+                  max={100}
+                  className="w-32"
+                  data-testid="ai-config-threshold"
+                  {...register('aiConfig.confidenceThresholdPercent', { valueAsNumber: true })}
+                />
+                {errors.aiConfig?.confidenceThresholdPercent?.message && (
+                  <p className="text-xs text-destructive">
+                    {t(errors.aiConfig.confidenceThresholdPercent.message)}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:typification.ai.thresholdHint')}
+                </p>
+              </div>
+
+              {/* Sentiment gating. */}
+              <div className="flex items-center gap-2">
+                <Controller
+                  control={control}
+                  name="aiConfig.sentimentGating"
+                  render={({ field: f }) => (
+                    <Switch
+                      checked={f.value}
+                      onCheckedChange={f.onChange}
+                      data-testid="ai-config-sentiment-gating"
+                    />
+                  )}
+                />
+                <Label className="text-xs">{t('admin:typification.ai.sentimentGating')}</Label>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

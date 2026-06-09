@@ -207,6 +207,19 @@
       "pattern": "O formato não é válido",
       "min": "O valor está abaixo do mínimo permitido",
       "max": "O valor está acima do máximo permitido"
+    },
+    "ai": {
+      "analyzing": "IA analisando…",
+      "title": "Sugestão da IA",
+      "confidence": "Confiança {{percent}}%",
+      "sentiment": "Sentimento: {{sentiment}}",
+      "sentiments": {
+        "Positive": "Positivo",
+        "Neutral": "Neutro",
+        "Negative": "Negativo"
+      },
+      "accept": "Aceitar",
+      "dismiss": "Descartar"
     }
   }
 }

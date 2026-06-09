@@ -3267,6 +3267,23 @@
       "nodeCodeRequired": "Code is required",
       "fieldKeyRequired": "Key is required",
       "fieldLabelRequired": "Label is required"
+    },
+    "ai": {
+      "title": "AI auto-disposition",
+      "hint": "AI analyzes the transcript and suggests a disposition the agent can accept or dismiss.",
+      "enable": "Enable AI suggestions",
+      "mode": "Mode",
+      "modeHint": "In this release AI only suggests; the agent always confirms. Auto-apply is coming in a future phase.",
+      "modes": {
+        "SuggestOnly": "Suggest only",
+        "AutoApplyAboveThreshold": "Auto-apply above threshold"
+      },
+      "threshold": "Confidence threshold (%)",
+      "thresholdHint": "Minimum confidence required to surface a suggestion.",
+      "sentimentGating": "Gate by sentiment",
+      "validation": {
+        "thresholdRange": "Threshold must be between 0 and 100"
+      }
     }
   }
 }

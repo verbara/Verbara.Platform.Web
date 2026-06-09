@@ -71,6 +71,14 @@ export const DEFAULT_FORM_VALUES: TypificationSchemaFormValues = {
   maxDepth: 5,
   nodes: [],
   fields: [],
+  aiConfig: {
+    enabled: false,
+    // P2a only supports SuggestOnly; AutoApplyAboveThreshold is a future phase.
+    mode: 'SuggestOnly',
+    // Stored as a PERCENT in the form (0–100); mapped to a 0–1 fraction in the DTO.
+    confidenceThresholdPercent: 70,
+    sentimentGating: false,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -126,11 +134,21 @@ function fieldToForm(field: TypificationField): FieldFormValue {
 }
 
 export function schemaToForm(schema: TypificationSchema): TypificationSchemaFormValues {
+  const ai = schema.aiConfig;
   return {
     name: schema.name,
     maxDepth: schema.maxDepth,
     nodes: schema.nodes.map(nodeToForm),
     fields: schema.fields.map(fieldToForm),
+    aiConfig: {
+      enabled: ai?.enabled ?? false,
+      // P2a pins SuggestOnly; round-trip any persisted mode so an existing
+      // AutoApply config (set out-of-band) survives an edit-save unchanged.
+      mode: ai?.mode === 'AutoApplyAboveThreshold' ? 'AutoApplyAboveThreshold' : 'SuggestOnly',
+      // DTO carries a 0–1 fraction; the form edits a 0–100 percent.
+      confidenceThresholdPercent: ai ? Math.round(ai.confidenceThreshold * 100) : 70,
+      sentimentGating: ai?.sentimentGating ?? false,
+    },
   };
 }
 
@@ -215,10 +233,18 @@ function formToField(field: FieldFormValue, index: number): TypificationField {
 }
 
 export function formToInput(values: TypificationSchemaFormValues): CreateSchemaInput {
+  const ai = values.aiConfig;
   return {
     name: values.name.trim(),
     maxDepth: values.maxDepth,
-    nodes: values.nodes.map(formToNode),
-    fields: values.fields.map(formToField),
+    nodes: values.nodes.map((n, i) => formToNode(n, i)),
+    fields: values.fields.map((f, i) => formToField(f, i)),
+    aiConfig: {
+      enabled: ai.enabled,
+      mode: ai.mode,
+      // Form edits a 0–100 percent; the DTO carries a 0–1 fraction.
+      confidenceThreshold: ai.confidenceThresholdPercent / 100,
+      sentimentGating: ai.sentimentGating,
+    },
   };
 }

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { PaymentRequiredError } from '@/core/licensing';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -81,6 +82,20 @@ export interface TypificationNode {
   leaf?: LeafOutcome;
 }
 
+/**
+ * AI auto-disposition configuration carried on the schema admin DTO (P2a).
+ * `mode` is "SuggestOnly" in P2a; "AutoApplyAboveThreshold" is a future phase.
+ * `confidenceThreshold` is a 0–1 fraction.
+ */
+export type TypificationAiMode = 'SuggestOnly' | 'AutoApplyAboveThreshold';
+
+export interface TypificationAiConfig {
+  enabled: boolean;
+  mode: string;
+  confidenceThreshold: number;
+  sentimentGating: boolean;
+}
+
 export interface TypificationSchema {
   schemaId: string;
   name: string;
@@ -89,6 +104,7 @@ export interface TypificationSchema {
   maxDepth: number;
   nodes: TypificationNode[];
   fields: TypificationField[];
+  aiConfig?: TypificationAiConfig;
   createdAt: string;
   updatedAt?: string;
 }
@@ -124,6 +140,22 @@ export interface TypificationFormResponse {
   prefilledFieldValues?: Record<string, string>;
 }
 
+/**
+ * AI disposition suggestion (P2a). All members are null when there is no
+ * suggestion (AI disabled / no schema / no transcript / low-confidence /
+ * sentiment-gated) and on 402 (unlicensed tenant — see useTypificationSuggestion).
+ */
+export interface TypificationSuggestionResponse {
+  /** FULL root→leaf node-id path the AI suggests (same shape as prefilledNodePath). */
+  suggestedNodePath?: string[];
+  /** Suggested field values keyed by field Key. */
+  suggestedFieldValues?: Record<string, string>;
+  /** Model confidence as a 0–1 fraction. */
+  confidence?: number;
+  /** Detected sentiment label (e.g. "Positive" / "Neutral" / "Negative"). */
+  sentiment?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Request payloads
 // ---------------------------------------------------------------------------
@@ -133,6 +165,7 @@ export interface CreateSchemaInput {
   maxDepth: number;
   nodes: TypificationNode[];
   fields: TypificationField[];
+  aiConfig?: TypificationAiConfig;
 }
 
 export type UpdateSchemaInput = CreateSchemaInput;
@@ -152,6 +185,10 @@ export interface TypifyInput {
   fieldValues: Record<string, string>;
   notes?: string;
   aiAccepted?: boolean;
+  /** P2a: an AI suggestion was surfaced for this disposition (sets Source=AutoAi). */
+  aiSuggested?: boolean;
+  /** P2a: the suggestion's confidence (0–1) at the moment the agent acted on it. */
+  aiConfidence?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -338,6 +375,38 @@ export function useTypificationForm(conversationId: string, enabled = true) {
         method: 'GET',
       }),
     enabled: enabled && !!conversationId,
+  });
+}
+
+/**
+ * Fires the AI disposition-suggestion request for a conversation (P2a). It is a
+ * POST that triggers an LLM call, so it is modelled as a mutation the wrap-up
+ * form fires ONCE after the form loads (guarded by the form's hydration key).
+ *
+ * License gating: the endpoint requires AdvancedTypification + TypificationAi
+ * and returns 402 for unlicensed tenants. AI is a purely additive affordance —
+ * an unlicensed tenant simply has no AI banner — so a 402 resolves to an EMPTY
+ * suggestion (NO toast, NO upgrade modal). `suppressPaymentRequiredModal` keeps
+ * the global upgrade dialog from popping; the thrown PaymentRequiredError is
+ * caught here and mapped to `{}`. Any other error also resolves empty (silent)
+ * so a transient AI failure never blocks manual wrap-up.
+ */
+export function useTypificationSuggestion() {
+  return useMutation({
+    mutationFn: async (conversationId: string): Promise<TypificationSuggestionResponse> => {
+      try {
+        return await customFetch<TypificationSuggestionResponse>({
+          url: `/api/v1/conversations/${conversationId}/typification-suggestion`,
+          method: 'POST',
+          suppressPaymentRequiredModal: true,
+        });
+      } catch (err) {
+        // 402 (unlicensed) → no AI affordance, resolve empty silently.
+        if (err instanceof PaymentRequiredError) return {};
+        // Any other failure must not block manual wrap-up; degrade to no suggestion.
+        return {};
+      }
+    },
   });
 }
 

@@ -3267,6 +3267,23 @@
       "nodeCodeRequired": "El código es obligatorio",
       "fieldKeyRequired": "La clave es obligatoria",
       "fieldLabelRequired": "La etiqueta es obligatoria"
+    },
+    "ai": {
+      "title": "Auto-disposición con IA",
+      "hint": "La IA analiza la transcripción y sugiere una tipificación que el agente puede aceptar o descartar.",
+      "enable": "Activar sugerencias de IA",
+      "mode": "Modo",
+      "modeHint": "En esta versión la IA solo sugiere; el agente siempre confirma. La auto-aplicación llegará en una fase futura.",
+      "modes": {
+        "SuggestOnly": "Solo sugerir",
+        "AutoApplyAboveThreshold": "Auto-aplicar sobre el umbral"
+      },
+      "threshold": "Umbral de confianza (%)",
+      "thresholdHint": "Confianza mínima para mostrar una sugerencia.",
+      "sentimentGating": "Condicionar por sentimiento",
+      "validation": {
+        "thresholdRange": "El umbral debe estar entre 0 y 100"
+      }
     }
   }
 }

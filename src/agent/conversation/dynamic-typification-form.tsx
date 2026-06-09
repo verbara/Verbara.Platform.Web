@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Check, Loader2, Sparkles, X } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { Badge } from '@/core/ui/badge';
 import { Checkbox } from '@/core/ui/checkbox';
 import { PhoneInput } from '@/core/ui/phone-input';
 import { Textarea } from '@/core/ui/textarea';
@@ -13,6 +14,7 @@ import { useConversationStore } from '@/agent/stores/conversation-store';
 import {
   useTypificationForm,
   useTypify,
+  useTypificationSuggestion,
   type TypificationCondition,
   type TypificationField,
   type TypificationNode,
@@ -102,6 +104,28 @@ function ancestorChainInclusive(
 }
 
 // ---------------------------------------------------------------------------
+// Seed the subtree-RELATIVE cascade selection from a server FULL root→leaf path.
+// This is the exact inverse of `fullSelectedNodePath` (which prepends
+// ancestorChainInclusive = [trueRoot, …, subtreeRoot]): with no subtree binding
+// the full path IS the relative path; with a subtree binding we strip everything
+// up to & including subtreeRootNodeId. Returns null when the path can't be mapped
+// (empty, or the subtree root is absent from a subtree-bound full path) so the
+// caller can leave the cascade untouched rather than seed a broken selection.
+// Shared by the P1 prefill hydration AND the P2a AI-suggestion Accept action.
+// ---------------------------------------------------------------------------
+
+function relativeNodePathFromFull(
+  fullPath: string[] | undefined,
+  subtreeRootNodeId: string | undefined,
+): string[] | null {
+  if (fullPath == null || fullPath.length === 0) return null;
+  if (subtreeRootNodeId == null) return fullPath;
+  const rootIndex = fullPath.indexOf(subtreeRootNodeId);
+  if (rootIndex < 0) return null;
+  return fullPath.slice(rootIndex + 1);
+}
+
+// ---------------------------------------------------------------------------
 // Field-level client validation (UX). Returns an error message key or null.
 // ---------------------------------------------------------------------------
 
@@ -171,10 +195,21 @@ export function DynamicTypificationForm({
 
   const { data: form, isLoading, isError } = useTypificationForm(conversationId, enabled);
   const typify = useTypify();
+  const suggestion = useTypificationSuggestion();
+  const { mutate: requestSuggestion } = suggestion;
 
   const [selectedNodePath, setSelectedNodePath] = useState<string[]>([]);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState('');
+
+  // --- P2a AI suggestion state ---------------------------------------------
+  // `aiAccepted` flips true once the agent clicks Accept (it stays true even if
+  // they subsequently tweak the cascade — keeping it simple per spec). The
+  // confidence is remembered so the typify submit can echo it. `aiDismissed`
+  // hides the banner when the agent declines and prevents it re-appearing.
+  const [aiAccepted, setAiAccepted] = useState(false);
+  const [aiConfidence, setAiConfidence] = useState<number | undefined>(undefined);
+  const [aiDismissed, setAiDismissed] = useState(false);
 
   const schema = form?.schema;
 
@@ -256,6 +291,13 @@ export function DynamicTypificationForm({
     if (hydratedKey !== hydrationKey) {
       setHydratedKey(hydrationKey);
 
+      // Reset the P2a AI-suggestion overlay state alongside the P1 prefill: a
+      // reused instance must not carry conversation-A's accepted suggestion or
+      // dismissal into conversation-B.
+      setAiAccepted(false);
+      setAiConfidence(undefined);
+      setAiDismissed(false);
+
       const prefilledPath = form.prefilledNodePath;
       const prefilledFieldValues = form.prefilledFieldValues;
       const hasPathPrefill = prefilledPath != null && prefilledPath.length > 0;
@@ -264,18 +306,12 @@ export function DynamicTypificationForm({
 
       // --- Cascade preselect (inverse of fullSelectedNodePath) ---------------
       if (hasPathPrefill) {
-        if (subtreeRootNodeId == null) {
-          // No subtree binding: the full path IS the subtree-relative path.
-          setSelectedNodePath(prefilledPath);
-        } else {
-          // Subtree binding: drop everything up to & including subtreeRootNodeId.
-          const rootIndex = prefilledPath.indexOf(subtreeRootNodeId);
-          if (rootIndex >= 0) {
-            setSelectedNodePath(prefilledPath.slice(rootIndex + 1));
-          }
-          // Defensive: if the server's full path doesn't actually contain the
-          // subtree root (shouldn't happen — server guarantees it), leave the
-          // cascade empty rather than seeding a broken subtree-relative path.
+        // Defensive: relativeNodePathFromFull returns null if the server's full
+        // path doesn't contain the subtree root (shouldn't happen — server
+        // guarantees it); leave the cascade empty rather than seed a broken path.
+        const relative = relativeNodePathFromFull(prefilledPath, subtreeRootNodeId);
+        if (relative != null) {
+          setSelectedNodePath(relative);
         }
       }
 
@@ -304,6 +340,66 @@ export function DynamicTypificationForm({
         setNotes('');
       }
     }
+  }
+
+  // Fire the AI disposition suggestion ONCE per loaded form (P2a). Modelled as a
+  // mutation (it POSTs and triggers an LLM call) the form kicks off in an effect
+  // guarded by a one-shot key held in a ref — a ref (not state) so the guard
+  // never triggers a re-render/cascade, mirroring the intent of the hydration
+  // one-shot above. The hook swallows 402 (unlicensed → empty) and any other
+  // failure silently, so this never blocks manual wrap-up and never pops the
+  // global upgrade modal.
+  const suggestionFiredKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!form || !schema) return;
+    const fireKey = `${conversationId}:${schema.schemaId}:${schema.version}`;
+    if (suggestionFiredKeyRef.current === fireKey) return;
+    suggestionFiredKeyRef.current = fireKey;
+    requestSuggestion(conversationId);
+  }, [form, schema, conversationId, requestSuggestion]);
+
+  const suggestionData = suggestion.data;
+  const suggestedNodePath = suggestionData?.suggestedNodePath;
+  const hasSuggestion =
+    !aiDismissed &&
+    !aiAccepted &&
+    suggestedNodePath != null &&
+    suggestedNodePath.length > 0 &&
+    // The suggested path must be mappable into the cascade (subtree-aware) or it
+    // can't be applied — treat an unmappable suggestion as no suggestion.
+    relativeNodePathFromFull(suggestedNodePath, subtreeRootNodeId) != null;
+
+  // Human-readable labels for the suggested cascade path (resolve node ids).
+  const suggestedPathLabels = useMemo(() => {
+    if (suggestedNodePath == null) return [];
+    return suggestedNodePath.map((id) => nodeById.get(id)?.label ?? id);
+  }, [suggestedNodePath, nodeById]);
+
+  function handleAcceptSuggestion() {
+    if (suggestionData == null) return;
+    const relative = relativeNodePathFromFull(suggestionData.suggestedNodePath, subtreeRootNodeId);
+    if (relative != null) {
+      setSelectedNodePath(relative);
+    }
+    // Seed field values from the suggestion (Date fields normalized like prefill).
+    const suggestedFieldValues = suggestionData.suggestedFieldValues;
+    if (suggestedFieldValues != null && schema != null) {
+      const dateFieldKeys = new Set(
+        schema.fields.filter((f) => f.type === 'Date').map((f) => f.key),
+      );
+      const normalized: Record<string, string> = {};
+      for (const [key, raw] of Object.entries(suggestedFieldValues)) {
+        normalized[key] = dateFieldKeys.has(key) ? toDateTimeLocal(raw) : raw;
+      }
+      // Overwrite with the AI suggestion — the agent explicitly chose to accept.
+      setFieldValues((prev) => ({ ...prev, ...normalized }));
+    }
+    setAiAccepted(true);
+    setAiConfidence(suggestionData.confidence);
+  }
+
+  function handleDismissSuggestion() {
+    setAiDismissed(true);
   }
 
   // Condition evaluation must mirror the server: include the prepended ancestor
@@ -387,7 +483,13 @@ export function DynamicTypificationForm({
         selectedNodePath: fullSelectedNodePath,
         fieldValues: submittedFieldValues,
         notes,
-        aiAccepted: false,
+        // P2a AI flags: when the agent accepted an AI suggestion, mark the
+        // disposition as AI-sourced (Source=AutoAi server-side) and echo the
+        // confidence + acceptance. When no suggestion was accepted, send the
+        // explicit negative so the server records a manual disposition.
+        aiSuggested: aiAccepted,
+        aiConfidence: aiAccepted ? aiConfidence : undefined,
+        aiAccepted,
       },
       {
         onSuccess: () => {
@@ -446,6 +548,72 @@ export function DynamicTypificationForm({
       className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
       data-testid="typification-form"
     >
+      {/* AI analyzing indicator — unobtrusive, only while the suggestion is in
+          flight and nothing has been surfaced or dismissed yet. */}
+      {suggestion.isPending && !aiAccepted && !aiDismissed && (
+        <div
+          className="flex items-center gap-2 text-xs text-muted-foreground"
+          data-testid="typification-ai-analyzing"
+        >
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          {t('typification.ai.analyzing')}
+        </div>
+      )}
+
+      {/* AI suggestion banner — agent-triggered overlay. Accept seeds the
+          cascade + fields (reusing the prefill seeding); Dismiss hides it. */}
+      {hasSuggestion && (
+        <div
+          className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3"
+          data-testid="typification-ai-suggestion"
+        >
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">{t('typification.ai.title')}</span>
+            {suggestionData?.confidence != null && (
+              <Badge variant="secondary" data-testid="typification-ai-confidence">
+                {t('typification.ai.confidence', {
+                  percent: Math.round(suggestionData.confidence * 100),
+                })}
+              </Badge>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground" data-testid="typification-ai-path">
+            {suggestedPathLabels.join(' › ')}
+          </p>
+          {suggestionData?.sentiment != null && suggestionData.sentiment !== '' && (
+            <p className="text-xs text-muted-foreground" data-testid="typification-ai-sentiment">
+              {t('typification.ai.sentiment', {
+                sentiment: t(`typification.ai.sentiments.${suggestionData.sentiment}`, {
+                  defaultValue: suggestionData.sentiment,
+                }),
+              })}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleAcceptSuggestion}
+              data-testid="typification-ai-accept"
+            >
+              <Check className="mr-1 h-3.5 w-3.5" />
+              {t('typification.ai.accept')}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleDismissSuggestion}
+              data-testid="typification-ai-dismiss"
+            >
+              <X className="mr-1 h-3.5 w-3.5" />
+              {t('typification.ai.dismiss')}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Cascading node selectors (depth-aware) */}
       {levels.map((level, levelIndex) => (
         <div className="flex flex-col gap-1.5" key={`level-${levelIndex}`}>

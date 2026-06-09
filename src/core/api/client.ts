@@ -14,6 +14,13 @@ interface RequestConfig {
   params?: Record<string, string>;
   headers?: Record<string, string>;
   signal?: AbortSignal;
+  /**
+   * When `true`, a 402 Payment Required does NOT pop the global upgrade modal —
+   * it still throws {@link PaymentRequiredError} so the caller can handle it
+   * locally (e.g. license-gated affordances that should silently no-op for
+   * unlicensed tenants, like the optional typification AI suggestion).
+   */
+  suppressPaymentRequiredModal?: boolean;
 }
 
 class UnauthorizedError extends Error {
@@ -167,7 +174,11 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
   if (response.status === 402) {
     const body = await response.json().catch(() => null);
     if (isPaymentRequiredProblemDetails(body)) {
-      usePaymentRequiredStore.getState().show(body);
+      // The caller may opt out of the global upgrade modal (e.g. an optional
+      // license-gated affordance that should silently no-op when unlicensed).
+      if (!config.suppressPaymentRequiredModal) {
+        usePaymentRequiredStore.getState().show(body);
+      }
       throw new PaymentRequiredError(body);
     }
     // Defensive fallback — Platform should never return 402 without a
