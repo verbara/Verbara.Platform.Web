@@ -13,6 +13,17 @@ _No unreleased changes._
 
 ---
 
+## [3.8.0-web] — 2026-06-10 — Typification AI auto-disposition (P2a)
+
+Client half of Typification **P2a** ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — the agent wrap-up gains an AI suggestion overlay. Pairs with **Platform v2.12.0** + **Pro v2.8.0-pro**. PR #93. i18n parity EN-US/ES-419/PT-BR maintained.
+
+### Added
+
+- **Wrap-up AI suggestion** (`<DynamicTypificationForm>`): after the form loads, calls `POST /conversations/{id}/typification-suggestion` → "AI analizando…" spinner → a suggestion card (suggested cascade path + confidence badge + translated sentiment) with **Accept** (seeds the cascade, reusing the P1 prefill seeding, and submits `Source=AutoAi` provenance) / **Dismiss**. Additive and agent-triggered — never auto-applies; a 402 (unlicensed) silently hides the AI affordance (via a new `suppressPaymentRequiredModal` option on `customFetch`).
+- **`useTypificationSuggestion`** hook + **AiConfig** section in the schema designer (enable / confidence threshold / sentiment gating; mode shown read-only as `SuggestOnly` in P2a).
+
+---
+
 ## [3.7.0-web] — 2026-06-08 — Typification shared taxonomy capture — P1
 
 Client half of Typification **P1** ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — the agent wrap-up is now **pre-selected + pre-filled** from what the IVR/bot/routing captured. Pairs with **Platform v2.11.0**. PR #92. i18n parity EN-US/ES-419/PT-BR maintained.
