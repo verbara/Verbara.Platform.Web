@@ -4,20 +4,49 @@ import type {
   TypificationField,
   TypificationFormResponse,
   TypificationNode,
+  TypificationSuggestionResponse,
 } from '@/core/api/hooks/use-typification';
 
 // --- Mocks ----------------------------------------------------------------
 
+// Minimal sentiment dictionary so tests can assert the AI banner renders a
+// translated string (not the raw lowercase wire token). Mirrors the
+// `typification.ai.sentiments.*` keys in public/locales/*/agent.json.
+const SENTIMENT_LABELS: Record<string, string> = {
+  'typification.ai.sentiments.positive': 'Positive',
+  'typification.ai.sentiments.neutral': 'Neutral',
+  'typification.ai.sentiments.negative': 'Negative',
+  'typification.ai.sentiments.very_negative': 'Very negative',
+};
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) =>
-      opts && typeof opts === 'object' && !('defaultValue' in opts) ? key : (opts ?? key),
+    t: (key: string, opts?: Record<string, unknown>) => {
+      // Resolve known sentiment keys to their (test) translation; otherwise
+      // honor defaultValue as a string fallback.
+      if (key in SENTIMENT_LABELS) return SENTIMENT_LABELS[key];
+      if (opts && 'defaultValue' in opts) return opts.defaultValue;
+      // Interpolating keys return their values inlined so callers can assert.
+      if (opts && typeof opts === 'object') {
+        return Object.values(opts).reduce<string>((acc, value) => `${acc} ${String(value)}`, key);
+      }
+      return key;
+    },
     i18n: { changeLanguage: vi.fn() },
   }),
 }));
 
 const mockUseTypificationForm = vi.fn();
 const mockMutate = vi.fn();
+const mockSuggestionMutate = vi.fn();
+
+// Holder the suggestion-hook mock returns: tests set `.data` / `.isPending` to
+// simulate the AI suggestion mutation's result. `mutate` is a no-op spy (the
+// real LLM call is not exercised in jsdom).
+const suggestionState: {
+  data: TypificationSuggestionResponse | undefined;
+  isPending: boolean;
+} = { data: undefined, isPending: false };
 
 vi.mock('@/core/api/hooks/use-typification', async () => {
   const actual = await vi.importActual<typeof import('@/core/api/hooks/use-typification')>(
@@ -27,6 +56,11 @@ vi.mock('@/core/api/hooks/use-typification', async () => {
     ...actual,
     useTypificationForm: () => mockUseTypificationForm(),
     useTypify: () => ({ mutate: mockMutate, isPending: false }),
+    useTypificationSuggestion: () => ({
+      mutate: mockSuggestionMutate,
+      data: suggestionState.data,
+      isPending: suggestionState.isPending,
+    }),
   };
 });
 
@@ -101,6 +135,9 @@ function setForm(data: TypificationFormResponse) {
 beforeEach(() => {
   mockUseTypificationForm.mockReset();
   mockMutate.mockReset();
+  mockSuggestionMutate.mockReset();
+  suggestionState.data = undefined;
+  suggestionState.isPending = false;
 });
 
 afterEach(() => {
@@ -569,5 +606,168 @@ describe('DynamicTypificationForm', () => {
     expect(screen.queryByTestId('typification-node-1')).toBeNull();
     expect((screen.getByTestId('typification-field-reason') as HTMLInputElement).value).toBe('');
     expect(screen.getByTestId('typification-submit')).toBeDisabled();
+  });
+
+  // --- P2a: AI suggestion overlay -----------------------------------------
+
+  function aiSchema(): TypificationFormResponse {
+    return formResponse(
+      [
+        node({ nodeId: 'root', label: 'Root', code: 'ROOT', isLeaf: false, sortOrder: 0 }),
+        node({
+          nodeId: 'leafA',
+          parentNodeId: 'root',
+          label: 'Leaf A',
+          code: 'LEAF_A',
+          isLeaf: true,
+          sortOrder: 0,
+        }),
+        node({
+          nodeId: 'leafB',
+          parentNodeId: 'root',
+          label: 'Leaf B',
+          code: 'LEAF_B',
+          isLeaf: true,
+          sortOrder: 1,
+        }),
+      ],
+      [field({ fieldId: 'f1', key: 'reason', label: 'Reason', type: 'Text' })],
+    );
+  }
+
+  it('DynamicTypificationForm_ShouldShowAiSuggestion_WhenSuggestionReturned', () => {
+    setForm(aiSchema());
+    suggestionState.data = {
+      suggestedNodePath: ['root', 'leafA'],
+      suggestedFieldValues: { reason: 'renewal' },
+      confidence: 0.92,
+      sentiment: 'positive',
+    };
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    // The suggestion fires once after the form loads.
+    expect(mockSuggestionMutate).toHaveBeenCalledWith('conv-1');
+    // Banner with path + confidence + sentiment is shown; cascade NOT auto-seeded.
+    expect(screen.getByTestId('typification-ai-suggestion')).toBeInTheDocument();
+    expect(screen.getByTestId('typification-ai-confidence')).toBeInTheDocument();
+    // Sentiment renders the translated label, not the raw lowercase wire token.
+    expect(screen.getByTestId('typification-ai-sentiment').textContent).toContain('Positive');
+    expect(screen.getByTestId('typification-ai-sentiment').textContent).not.toContain('positive');
+    expect(screen.getByTestId('typification-ai-path').textContent).toContain('Root');
+    expect(screen.getByTestId('typification-ai-path').textContent).toContain('Leaf A');
+    // AI must NOT auto-apply over the (empty) cascade — agent must click Accept.
+    expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('');
+  });
+
+  it('DynamicTypificationForm_ShouldTranslateVeryNegativeSentiment_WhenSuggested', () => {
+    setForm(aiSchema());
+    suggestionState.data = {
+      suggestedNodePath: ['root', 'leafA'],
+      confidence: 0.55,
+      // The LLM classifier's most-severe label — lowercase snake_case wire token.
+      sentiment: 'very_negative',
+    };
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    const sentiment = screen.getByTestId('typification-ai-sentiment');
+    // Must render the translated label, NEVER the raw "very_negative" token.
+    expect(sentiment.textContent).toContain('Very negative');
+    expect(sentiment.textContent).not.toContain('very_negative');
+  });
+
+  it('DynamicTypificationForm_ShouldSeedCascadeOnAccept_WhenAiSuggestionAccepted', () => {
+    setForm(aiSchema());
+    suggestionState.data = {
+      suggestedNodePath: ['root', 'leafA'],
+      suggestedFieldValues: { reason: 'renewal' },
+      confidence: 0.92,
+      sentiment: 'positive',
+    };
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    fireEvent.click(screen.getByTestId('typification-ai-accept'));
+
+    // Cascade + field seeded from the suggestion; banner gone.
+    expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('root');
+    expect((screen.getByTestId('typification-node-1') as HTMLSelectElement).value).toBe('leafA');
+    expect((screen.getByTestId('typification-field-reason') as HTMLInputElement).value).toBe(
+      'renewal',
+    );
+    expect(screen.queryByTestId('typification-ai-suggestion')).toBeNull();
+    expect(screen.getByTestId('typification-submit')).toBeEnabled();
+  });
+
+  it('DynamicTypificationForm_ShouldHideAiAffordance_WhenNoSuggestion', () => {
+    setForm(aiSchema());
+    // 402 / empty suggestion → hook resolves to {} (no path).
+    suggestionState.data = {};
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    // No banner, no analyzing spinner (resolved), manual flow intact.
+    expect(screen.queryByTestId('typification-ai-suggestion')).toBeNull();
+    expect(screen.queryByTestId('typification-ai-analyzing')).toBeNull();
+    expect(screen.getByTestId('typification-node-0')).toBeInTheDocument();
+  });
+
+  it('DynamicTypificationForm_ShouldSendAutoAiFlags_WhenSubmittingAcceptedSuggestion', () => {
+    setForm(aiSchema());
+    suggestionState.data = {
+      suggestedNodePath: ['root', 'leafA'],
+      suggestedFieldValues: { reason: 'renewal' },
+      confidence: 0.92,
+      sentiment: 'positive',
+    };
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    fireEvent.click(screen.getByTestId('typification-ai-accept'));
+    fireEvent.click(screen.getByTestId('typification-submit'));
+
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    const payload = mockMutate.mock.calls[0]?.[0] as {
+      selectedNodePath: string[];
+      aiSuggested?: boolean;
+      aiConfidence?: number;
+      aiAccepted?: boolean;
+    };
+    expect(payload.selectedNodePath).toEqual(['root', 'leafA']);
+    expect(payload.aiSuggested).toBe(true);
+    expect(payload.aiAccepted).toBe(true);
+    expect(payload.aiConfidence).toBe(0.92);
+  });
+
+  it('DynamicTypificationForm_ShouldNotSendAiFlags_WhenSuggestionDismissed', () => {
+    setForm(aiSchema());
+    suggestionState.data = {
+      suggestedNodePath: ['root', 'leafA'],
+      confidence: 0.92,
+    };
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    // Dismiss the suggestion, then classify manually.
+    fireEvent.click(screen.getByTestId('typification-ai-dismiss'));
+    expect(screen.queryByTestId('typification-ai-suggestion')).toBeNull();
+
+    // Manual classification: pick root (reveals level 1), then leafB.
+    fireEvent.change(screen.getByTestId('typification-node-0'), { target: { value: 'root' } });
+    fireEvent.change(screen.getByTestId('typification-node-1'), { target: { value: 'leafB' } });
+    fireEvent.click(screen.getByTestId('typification-submit'));
+
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    const payload = mockMutate.mock.calls[0]?.[0] as {
+      selectedNodePath: string[];
+      aiSuggested?: boolean;
+      aiAccepted?: boolean;
+      aiConfidence?: number;
+    };
+    expect(payload.selectedNodePath).toEqual(['root', 'leafB']);
+    expect(payload.aiSuggested).toBe(false);
+    expect(payload.aiAccepted).toBe(false);
+    expect(payload.aiConfidence).toBeUndefined();
   });
 });

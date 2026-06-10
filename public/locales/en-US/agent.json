@@ -207,6 +207,20 @@
       "pattern": "The format is not valid",
       "min": "The value is below the allowed minimum",
       "max": "The value is above the allowed maximum"
+    },
+    "ai": {
+      "analyzing": "AI analyzing…",
+      "title": "AI suggestion",
+      "confidence": "Confidence {{percent}}%",
+      "sentiment": "Sentiment: {{sentiment}}",
+      "sentiments": {
+        "positive": "Positive",
+        "neutral": "Neutral",
+        "negative": "Negative",
+        "very_negative": "Very negative"
+      },
+      "accept": "Accept",
+      "dismiss": "Dismiss"
     }
   }
 }

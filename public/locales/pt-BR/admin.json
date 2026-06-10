@@ -3267,6 +3267,24 @@
       "nodeCodeRequired": "O código é obrigatório",
       "fieldKeyRequired": "A chave é obrigatória",
       "fieldLabelRequired": "O rótulo é obrigatório"
+    },
+    "ai": {
+      "title": "Auto-disposição com IA",
+      "hint": "A IA analisa a transcrição e sugere uma tipificação que o agente pode aceitar ou descartar.",
+      "enable": "Ativar sugestões da IA",
+      "mode": "Modo",
+      "modeHint": "Nesta versão a IA apenas sugere; o agente sempre confirma. A aplicação automática chegará em uma fase futura.",
+      "modeHintAutoApply": "A aplicação automática é configurada externamente e não é editável aqui. Salvar preserva este modo sem alterações.",
+      "modes": {
+        "SuggestOnly": "Apenas sugerir",
+        "AutoApplyAboveThreshold": "Aplicar automaticamente acima do limite"
+      },
+      "threshold": "Limite de confiança (%)",
+      "thresholdHint": "Confiança mínima para exibir uma sugestão.",
+      "sentimentGating": "Condicionar por sentimento",
+      "validation": {
+        "thresholdRange": "O limite deve estar entre 0 e 100"
+      }
     }
   }
 }

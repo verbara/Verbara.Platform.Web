@@ -32,6 +32,10 @@ export const CONDITION_OPS = [
 
 export const BINDING_SCOPES = ['Tenant', 'Queue', 'Campaign', 'Channel', 'Direction'] as const;
 
+// AI auto-disposition modes. P2a only exposes "SuggestOnly" as selectable;
+// "AutoApplyAboveThreshold" is reserved for a future phase.
+export const AI_MODES = ['SuggestOnly', 'AutoApplyAboveThreshold'] as const;
+
 // ---------------------------------------------------------------------------
 // Condition (visibleWhen) — optional sub-form.
 // ---------------------------------------------------------------------------
@@ -110,6 +114,24 @@ export const fieldSchema = z.object({
 export type FieldFormValue = z.infer<typeof fieldSchema>;
 
 // ---------------------------------------------------------------------------
+// AI auto-disposition config — optional sub-form on the schema.
+// `confidenceThreshold` is a 0–100 PERCENT in the form for UX; the mapper
+// converts it to the 0–1 fraction the DTO carries.
+// ---------------------------------------------------------------------------
+
+export const aiConfigSchema = z.object({
+  enabled: z.boolean(),
+  mode: z.enum(AI_MODES),
+  confidenceThresholdPercent: z
+    .number()
+    .min(0, 'admin:typification.ai.validation.thresholdRange')
+    .max(100, 'admin:typification.ai.validation.thresholdRange'),
+  sentimentGating: z.boolean(),
+});
+
+export type AiConfigFormValue = z.infer<typeof aiConfigSchema>;
+
+// ---------------------------------------------------------------------------
 // Top-level schema designer form.
 // ---------------------------------------------------------------------------
 
@@ -121,6 +143,7 @@ export const typificationSchemaForm = z.object({
     .max(8, 'admin:typification.validation.maxDepthRange'),
   nodes: z.array(nodeSchema),
   fields: z.array(fieldSchema),
+  aiConfig: aiConfigSchema,
 });
 
 export type TypificationSchemaFormValues = z.infer<typeof typificationSchemaForm>;
