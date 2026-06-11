@@ -126,11 +126,27 @@ jobs:
           KEY_FILE="$(mktemp -t cosign-key.XXXXXX)"
           trap 'shred -u "$KEY_FILE" 2>/dev/null || rm -f "$KEY_FILE"' EXIT
           printf '%s' "$COSIGN_PRIVATE_KEY" > "$KEY_FILE"
-          cosign sign \
-            --key "$KEY_FILE" \
-            --yes \
-            --tlog-upload=false \
-            "$IMAGE_REF"
+          # Retry to tolerate the ghcr push→HEAD manifest-propagation race: cosign
+          # signs by digest, and a just-pushed manifest can briefly 404 on the HEAD
+          # lookup before ghcr finishes propagating it. The `if` condition is exempt
+          # from `set -e`.
+          signed=false
+          for attempt in 1 2 3 4 5; do
+            if cosign sign \
+                 --key "$KEY_FILE" \
+                 --yes \
+                 --tlog-upload=false \
+                 "$IMAGE_REF"; then
+              signed=true
+              break
+            fi
+            echo "::warning::cosign sign attempt ${attempt} failed (likely ghcr manifest propagation); retrying in $((attempt * 5))s..."
+            sleep $((attempt * 5))
+          done
+          if [ "$signed" != "true" ]; then
+            echo "::error::cosign sign failed after 5 attempts for $IMAGE_REF"
+            exit 1
+          fi
 
       - name: Verify cosign signature against committed public key
         env:
