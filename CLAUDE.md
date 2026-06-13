@@ -1,31 +1,23 @@
 # CLAUDE.md
 
-> **Planning split (updated 2026-05-03):**
+> **Planning split:**
 >
-> - **Web-only tracks** (i18n, lint, UX, frontend features) live in this repo's `docs/plans/`. The v1.14.x Operational Foundation roadmap is the authoritative source for Web work.
-> - **Cross-cutting tracks** that span API + Web (e.g. auth-hotpath-hardening, R5.5 production validation) continue under `/media/Data/Source/Verbara/Verbara.Platform/docs/plans/`.
-> - The previous note (2026-04-19) directing all planning to Platform is superseded for Web-only work; the v1.13.x i18n closure already shipped Web-authored plans/specs/ADRs successfully.
+> - **Web-only tracks** (i18n, lint, UX, frontend features) live in this repo's `docs/plans/`.
+> - **Cross-cutting tracks** that span API + Web (e.g. auth-hotpath-hardening, production validation) are authored under `/media/Data/Source/Verbara/Verbara.Platform/docs/plans/`.
 
 ## Project Overview
 
 Verbara.Platform.Web — React 19 UI for the omnichannel contact center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**~375 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 67+ E2E specs · ~1366 Vitest · Version 3.8.0** (Niveles 1-7 CLOSED — ROADMAP COMPLETE 🎉). Latest tags: Web `v3.8.0-web` / Platform `v2.12.0` / Pro `v2.8.0-pro` (website digest live v2.12.0).
+**~375 TS/TSX files · 60+ pages · 56 API hooks · 41 UI components · 12 Zustand stores · 67+ E2E specs.**
 
-**Session/Auth Overhaul (ADR-0009 W1–W6 + W5b)** ✅ COMPLETE 2026-06-07 — agent presence, idle-timeout UX, server-side liveness / anti-zombie, deferred pause, digital work failover + voice caller-rescue, and channel-capacity configurability. Released in Web **v3.5.0** / Platform **v2.9.0**; the north-star is closed (W1+W2 · W3 · W4 · W5 · W5b · W6 all shipped). Per-W detail is now historical — see [ADR-0009](docs/decisions/0009-agent-presence-session-work-continuity.md) and the per-W specs under `docs/specs/2026-06-06-*` / `docs/specs/2026-06-07-w6-agent-capacity.md`. Web surfaces: `src/core/session/*` (idle-timeout, refresh) and `src/core/presence/*` (heartbeat, departure beacon).
+Feature-area source pointers (beyond the structure below): session/auth lives in `src/core/session/*` (idle-timeout, refresh) + `src/core/presence/*` (heartbeat, departure beacon) — see [ADR-0009](docs/decisions/0009-agent-presence-session-work-continuity.md); schema-driven typification (cascading / conditional / AI disposition) lives in `src/admin/typification/*` (schema designer), `src/agent/conversation/dynamic-typification-form.tsx` (`<DynamicTypificationForm>` in the wrap-up), and `src/core/api/hooks/use-typification.ts` — see ADR-0029.
 
-**Typification train (ADR-0029) — schema-driven cascading / conditional / AI disposition** (server module `Verbara.Platform.Typification`). The flagship recent Web work; "respuestas entrelazadas". Web surfaces: `src/admin/typification/*` (schema designer), `src/agent/conversation/dynamic-typification-form.tsx` (`<DynamicTypificationForm>` in the wrap-up), `src/core/api/hooks/use-typification.ts`.
+## State & references
 
-- **P0** ✅ 2026-06-07 (Web **v3.6.0-web**) — cascading + conditional schema-driven disposition forms; `<DynamicTypificationForm>` + admin designer.
-- **P1** ✅ 2026-06-08 (Web **v3.7.0-web**) — shared taxonomy capture: pre-selects the wrap-up cascade + pre-fills fields from the captured reason; `collect_reason` flow-designer node + reason-hints admin; fixed the flow-designer node-type casing + branch-edge-condition bugs in `flow-utils.ts`.
-- **P2a** ✅ 2026-06-10 (Web **v3.8.0-web**) — AI auto-disposition UX: the wrap-up shows an AI suggestion (spinner → suggested path + confidence badge + translated sentiment → Accept/Dismiss) via `useTypificationSuggestion`; AiConfig admin section in the schema designer. Backend = new `Verbara.Platform.Llm` (first real LLM integration) + gated `POST /conversations/{id}/typification-suggestion`.
-- **Next (designed, not started):** P2b (AutoApply + entity prefill + Pro voice enrichment) · P3 (data-dips) · P4 (analytics + drag-drop builder).
-
-Niveles 1-7 complete (tags `v1.14.5-web` through `v3.0.1-web`). **Track 7C-polish (`v3.0.1-web`)** cerró 12 gaps de auditoría post-ship del v3.0.0 (theming inyectado real, attachments propagation, offline queue drain, message cache localStorage para resume, sound toggle UI funcional, focus-on-open, conversation timeout 5min, favicon badge, reduced-motion en iframe, pre-chat a11y Track 5C parity, Sentry breadcrumbs, virtualización de message-list). **Bloqueados por backend** (tracked aparte): availability/office-hours endpoint, history endpoint, tenant config endpoint, `CreateSessionRequest` field acceptance.
-
-**Roadmap status: COMPLETE.** All 25 tracks across 7 niveles shipped. Production-readiness: 60/100 (pre-roadmap) → ~98/100 (post-roadmap). Future work tracked separately as enhancement requests (file uploads, voice/video, NPM package, external CDN, etc.).
-
-See [`docs/plans/completed/`](docs/plans/completed/) for delivery history; earlier milestones are in `git log`. Architectural decisions in [`docs/decisions/`](docs/decisions/).
+Current versions, release history, and milestone detail live in this repo's
+`CHANGELOG.md`, `docs/decisions/` (ADRs), and `docs/plans/completed/`.
+Cross-repo methodology and standards: the private `verbara-meta` repo.
 
 ## Documentation Layout (all git-tracked, private repo)
 
@@ -149,7 +141,7 @@ Feature-scoped stores: `draft-store`, `agent-ai-store`, `agent-alerts-store`, `n
 <Dialog.Trigger asChild><Button /></Dialog.Trigger>
 ```
 
-31 components in [src/core/ui/](src/core/ui/) (includes `Skeleton`, `PageSkeleton`, `LoadingOverlay` added in Track 5A). Styling: TailwindCSS v4 + `cva` + `tailwind-merge` + `clsx`. Per-area error boundaries on each layout shell ([ADR-0002](docs/decisions/0002-area-error-boundary-pattern.md)).
+31 components in [src/core/ui/](src/core/ui/) (includes `Skeleton`, `PageSkeleton`, `LoadingOverlay`). Styling: TailwindCSS v4 + `cva` + `tailwind-merge` + `clsx`. Per-area error boundaries on each layout shell ([ADR-0002](docs/decisions/0002-area-error-boundary-pattern.md)).
 
 ## Auth & RBAC
 
@@ -187,7 +179,7 @@ Multi-stage (`Dockerfile`): build with `node:22-alpine` (`npm ci` + `npm run bui
 
 ## Versioning
 
-[ADR-0005](docs/decisions/0005-versioning-track-end-tags.md): patches inside a track ship without git tags. Only the **last patch of a track** receives an annotated tag (`v<version>-web`) and a GitHub release whose notes summarize the whole track. The v1.13.x i18n closure (5 patches `1.13.33`..`1.13.37` → tag `v1.13.37-web`) is the canonical example.
+[ADR-0005](docs/decisions/0005-versioning-track-end-tags.md): patches inside a track ship without git tags. Only the **last patch of a track** receives an annotated tag (`v<version>-web`) and a GitHub release whose notes summarize the whole track.
 
 ## i18n parity (CI gate)
 
