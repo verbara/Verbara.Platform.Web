@@ -1,0 +1,41 @@
+name: CodeQL
+
+# Static security analysis (SAST) for the React/TypeScript frontend. Complements
+# the existing `npm audit` job in ci.yml (which only catches known-CVE deps) by
+# scanning the app's own JS/TS source. Free on this PUBLIC repo.
+#
+# JS/TS needs no build for extraction (build-mode: none is the CodeQL default for
+# this language), so there is no npm install / vite build step here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 0'
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (JS/TS)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4.36.0
+        with:
+          languages: javascript-typescript
+          queries: security-extended,security-and-quality
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v4.36.0
+        with:
+          category: '/language:javascript-typescript'
