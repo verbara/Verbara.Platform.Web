@@ -35,6 +35,7 @@ allure-results/
 coverage/
 
 # Claude Code
+CLAUDE.md
 .claude/
 .project-memory/
 
