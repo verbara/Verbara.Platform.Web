@@ -1,7 +1,7 @@
 name: CI
 
 # CI for Verbara Web (formerly Asterisk.Platform.Web).
-# Runs on every PR + push to main.
+# Runs on every PR + the merge queue (merge_group).
 #
 # Jobs (6 in parallel):
 #   - build     blocking - tsc -b && vite build
@@ -13,16 +13,21 @@ name: CI
 #
 # Branch protection on main requires: build, test, coverage, i18n, audit, lint
 
+# Triggers: pull_request validates each PR; merge_group runs the authoritative gate on
+# the tentative merge result before it lands (merge queue). The post-merge push:[main]
+# run was intentionally dropped — it re-tested the exact tree the PR/merge-queue already
+# validated (pure redundancy / double-run per PR). codeql.yml keeps push:[main] for the
+# security baseline on real main (the merge_group ref is not main).
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  merge_group:
 
-# Cancel in-progress runs on rapid pushes to the same branch.
+# Cancel superseded PR runs, but never cancel an in-flight merge-queue run — the
+# tentative merge must be fully validated before landing.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Default minimal permissions for all jobs.
 permissions:
