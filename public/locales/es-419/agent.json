@@ -220,7 +220,9 @@
         "very_negative": "Muy negativo"
       },
       "accept": "Aceptar",
-      "dismiss": "Descartar"
+      "dismiss": "Descartar",
+      "auto_applied": "IA aplicada automáticamente ({{percent}}%)",
+      "undo": "Deshacer"
     }
   }
 }

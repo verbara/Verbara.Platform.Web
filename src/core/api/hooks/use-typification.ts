@@ -158,6 +158,12 @@ export interface TypificationSuggestionResponse {
    * "very_negative". Passed through with no casing transform.
    */
   sentiment?: string;
+  /**
+   * Server-authoritative delivery band (P2b). 'None' = nothing surfaced;
+   * 'Suggest' = show the Accept banner (agent confirms); 'AutoFill' = the form
+   * may be pre-filled automatically. The client MUST NOT escalate the band.
+   */
+  band?: 'None' | 'Suggest' | 'AutoFill';
 }
 
 // ---------------------------------------------------------------------------

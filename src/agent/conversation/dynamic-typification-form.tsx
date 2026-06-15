@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Check, Loader2, Sparkles, X } from 'lucide-react';
+import { Check, Loader2, Sparkles, Undo2, X } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -185,6 +185,25 @@ function toDateTimeLocal(value: string): string {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Normalize suggested/prefilled field values: Date-typed keys may arrive as a
+// UTC ISO instant, so convert them to the datetime-local format the <input>
+// accepts. Shared by the AI Accept action and the C3 AutoFill path so both seed
+// fields identically.
+// ---------------------------------------------------------------------------
+
+function normalizeSuggestedFieldValues(
+  fields: TypificationField[],
+  suggestedFieldValues: Record<string, string>,
+): Record<string, string> {
+  const dateFieldKeys = new Set(fields.filter((f) => f.type === 'Date').map((f) => f.key));
+  const normalized: Record<string, string> = {};
+  for (const [key, raw] of Object.entries(suggestedFieldValues)) {
+    normalized[key] = dateFieldKeys.has(key) ? toDateTimeLocal(raw) : raw;
+  }
+  return normalized;
+}
+
 export function DynamicTypificationForm({
   conversationId,
   enabled = true,
@@ -210,6 +229,24 @@ export function DynamicTypificationForm({
   const [aiAccepted, setAiAccepted] = useState(false);
   const [aiConfidence, setAiConfidence] = useState<number | undefined>(undefined);
   const [aiDismissed, setAiDismissed] = useState(false);
+
+  // --- C3 / P2b server-banded AutoFill state -------------------------------
+  // When the server delivers a band of 'AutoFill' (and the form is untouched +
+  // the suggestion is mappable) the cascade/fields are pre-filled automatically.
+  // `autoApplied` drives the AutoFilled banner (mutually exclusive with the
+  // Suggest banner). `undoSnapshot` captures whatever was in the form BEFORE the
+  // auto-apply (empty, or a P1 prefill) so Undo can restore it. `formDirtyRef`
+  // tracks genuine agent edits (anti-clobber) and `autoApplyDecidedKeyRef` is the
+  // one-shot guard so the auto-apply decision runs exactly once per loaded form —
+  // both refs (not state) so they never trigger a re-render, mirroring the
+  // suggestionFiredKeyRef rationale.
+  const [autoApplied, setAutoApplied] = useState(false);
+  const [undoSnapshot, setUndoSnapshot] = useState<{
+    path: string[];
+    fields: Record<string, string>;
+  } | null>(null);
+  const formDirtyRef = useRef(false);
+  const autoApplyDecidedKeyRef = useRef<string | null>(null);
 
   const schema = form?.schema;
 
@@ -298,6 +335,13 @@ export function DynamicTypificationForm({
       setAiConfidence(undefined);
       setAiDismissed(false);
 
+      // Reset the C3 AutoFill overlay state too (the dirty-flag + one-shot-guard
+      // REFS are reset in the keyed effect below — refs must not be mutated during
+      // render): a reused instance must never leak conversation-A's auto-fill into
+      // conversation-B.
+      setAutoApplied(false);
+      setUndoSnapshot(null);
+
       const prefilledPath = form.prefilledNodePath;
       const prefilledFieldValues = form.prefilledFieldValues;
       const hasPathPrefill = prefilledPath != null && prefilledPath.length > 0;
@@ -342,6 +386,16 @@ export function DynamicTypificationForm({
     }
   }
 
+  // Reset the C3 anti-clobber REFS on each hydration-key change. Refs must NOT be
+  // mutated during render (react-hooks/refs), so this lives in an effect keyed on
+  // the committed hydratedKey. It is declared BEFORE the auto-apply effect so the
+  // reset runs first on a key change (effects fire in declaration order), giving
+  // the auto-apply decision a clean dirty-flag + one-shot guard for the new form.
+  useEffect(() => {
+    formDirtyRef.current = false;
+    autoApplyDecidedKeyRef.current = null;
+  }, [hydratedKey]);
+
   // Fire the AI disposition suggestion ONCE per loaded form (P2a). Modelled as a
   // mutation (it POSTs and triggers an LLM call) the form kicks off in an effect
   // guarded by a one-shot key held in a ref — a ref (not state) so the guard
@@ -360,9 +414,70 @@ export function DynamicTypificationForm({
 
   const suggestionData = suggestion.data;
   const suggestedNodePath = suggestionData?.suggestedNodePath;
+
+  // C3 / P2b auto-apply decision — runs ONCE per loaded form when the suggestion
+  // data arrives, guarded by a one-shot key ref so it can never re-clobber. We
+  // auto-fill ONLY when the server says band='AutoFill', the agent hasn't touched
+  // the form (anti-clobber), the suggested path is mappable into the cascade, and
+  // there is a non-empty path. Otherwise we leave the existing Accept/Dismiss
+  // banner path to handle it (degrade to Suggest UX). The band is treated as a
+  // hard ceiling — an undefined/None/Suggest band never auto-applies.
+  //
+  // `selectedNodePath`/`fieldValues` are in the deps so the snapshot reads fresh
+  // state, but the one-shot guard makes any extra re-runs no-ops (so an agent
+  // edit before the suggestion arrives can't re-trigger an auto-apply).
+  useEffect(() => {
+    if (!form || !schema || suggestionData == null) return;
+    const decideKey = `${conversationId}:${schema.schemaId}:${schema.version}`;
+    if (autoApplyDecidedKeyRef.current === decideKey) return;
+
+    const suggestedPath = suggestionData.suggestedNodePath;
+    const relative = relativeNodePathFromFull(suggestedPath, subtreeRootNodeId);
+    const mappable = relative != null;
+    const shouldAutoApply =
+      suggestionData.band === 'AutoFill' &&
+      !formDirtyRef.current &&
+      mappable &&
+      suggestedPath != null &&
+      suggestedPath.length > 0;
+
+    // Mark decided in BOTH branches so the effect never re-runs / re-clobbers.
+    autoApplyDecidedKeyRef.current = decideKey;
+    if (!shouldAutoApply) return;
+
+    // The autoApplyDecidedKeyRef one-shot guard means this fires at most once per
+    // loaded form, so these setStates cannot cascade (mirrors the conversation-
+    // panel wrap-up one-shot rationale).
+    /* eslint-disable react-hooks/set-state-in-effect */
+    // Snapshot the CURRENT state (empty, or a P1 prefill) so Undo restores it.
+    setUndoSnapshot({ path: selectedNodePath, fields: { ...fieldValues } });
+
+    // Apply the suggestion exactly as handleAcceptSuggestion does.
+    if (relative != null) setSelectedNodePath(relative);
+    if (suggestionData.suggestedFieldValues != null) {
+      const normalized = normalizeSuggestedFieldValues(
+        schema.fields,
+        suggestionData.suggestedFieldValues,
+      );
+      setFieldValues((prev) => ({ ...prev, ...normalized }));
+    }
+    setAutoApplied(true);
+    setAiConfidence(suggestionData.confidence);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [
+    form,
+    schema,
+    conversationId,
+    suggestionData,
+    subtreeRootNodeId,
+    selectedNodePath,
+    fieldValues,
+  ]);
+
   const hasSuggestion =
     !aiDismissed &&
     !aiAccepted &&
+    !autoApplied &&
     suggestedNodePath != null &&
     suggestedNodePath.length > 0 &&
     // The suggested path must be mappable into the cascade (subtree-aware) or it
@@ -384,13 +499,7 @@ export function DynamicTypificationForm({
     // Seed field values from the suggestion (Date fields normalized like prefill).
     const suggestedFieldValues = suggestionData.suggestedFieldValues;
     if (suggestedFieldValues != null && schema != null) {
-      const dateFieldKeys = new Set(
-        schema.fields.filter((f) => f.type === 'Date').map((f) => f.key),
-      );
-      const normalized: Record<string, string> = {};
-      for (const [key, raw] of Object.entries(suggestedFieldValues)) {
-        normalized[key] = dateFieldKeys.has(key) ? toDateTimeLocal(raw) : raw;
-      }
+      const normalized = normalizeSuggestedFieldValues(schema.fields, suggestedFieldValues);
       // Overwrite with the AI suggestion — the agent explicitly chose to accept.
       setFieldValues((prev) => ({ ...prev, ...normalized }));
     }
@@ -400,6 +509,20 @@ export function DynamicTypificationForm({
 
   function handleDismissSuggestion() {
     setAiDismissed(true);
+  }
+
+  // Undo a C3 AutoFill: restore the pre-fill snapshot (empty, or a P1 prefill).
+  // It is a revert, NOT an agent classification, so it must NOT set formDirtyRef
+  // and must NOT set aiDismissed — once autoApplied flips back to false and the
+  // (still-present, mappable) suggestion stands, the Accept/Dismiss banner
+  // reappears so the agent can re-Accept.
+  function handleUndoAutoFill() {
+    if (undoSnapshot != null) {
+      setSelectedNodePath(undoSnapshot.path);
+      setFieldValues(undoSnapshot.fields);
+    }
+    setAutoApplied(false);
+    setUndoSnapshot(null);
   }
 
   // Condition evaluation must mirror the server: include the prepended ancestor
@@ -447,6 +570,9 @@ export function DynamicTypificationForm({
   const canSubmit = pathEndsAtLeaf && !requiredMissing && !hasValidationError;
 
   function handleSelectNode(levelIndex: number, nodeId: string) {
+    // A genuine agent edit -> mark the form dirty so a later AutoFill suggestion
+    // can't clobber the agent's in-progress classification (anti-clobber).
+    formDirtyRef.current = true;
     setSelectedNodePath((prev) => {
       // Replace at this level and reset all deeper levels.
       const next = prev.slice(0, levelIndex);
@@ -456,6 +582,8 @@ export function DynamicTypificationForm({
   }
 
   function setFieldValue(key: string, value: string) {
+    // A genuine agent edit -> anti-clobber (see handleSelectNode).
+    formDirtyRef.current = true;
     setFieldValues((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -483,13 +611,15 @@ export function DynamicTypificationForm({
         selectedNodePath: fullSelectedNodePath,
         fieldValues: submittedFieldValues,
         notes,
-        // P2a AI flags: when the agent accepted an AI suggestion, mark the
-        // disposition as AI-sourced (Source=AutoAi server-side) and echo the
-        // confidence + acceptance. When no suggestion was accepted, send the
-        // explicit negative so the server records a manual disposition.
-        aiSuggested: aiAccepted,
-        aiConfidence: aiAccepted ? aiConfidence : undefined,
-        aiAccepted,
+        // P2a/C3 AI flags: when the agent accepted an AI suggestion OR an
+        // un-undone C3 AutoFill stands, mark the disposition as AI-sourced
+        // (Source=AutoAi server-side) and echo the confidence + acceptance. When
+        // neither holds, send the explicit negative so the server records a
+        // manual disposition. (The server is authoritative on provenance now and
+        // treats these as hints, but keep them honest.)
+        aiSuggested: aiAccepted || autoApplied,
+        aiConfidence: aiAccepted || autoApplied ? aiConfidence : undefined,
+        aiAccepted: aiAccepted || autoApplied,
       },
       {
         onSuccess: () => {
@@ -557,6 +687,42 @@ export function DynamicTypificationForm({
         >
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           {t('typification.ai.analyzing')}
+        </div>
+      )}
+
+      {/* C3 AutoFilled banner — the server delivered band='AutoFill' and the
+          form was pre-filled automatically. Mutually exclusive with the Suggest
+          banner (hasSuggestion requires !autoApplied). Undo reverts to the
+          pre-fill snapshot and brings the Suggest banner back. */}
+      {autoApplied && (
+        <div
+          className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3"
+          data-testid="typification-ai-autofilled"
+        >
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">
+            {t('typification.ai.auto_applied', {
+              percent: Math.round((aiConfidence ?? 0) * 100),
+            })}
+          </span>
+          {aiConfidence != null && (
+            <Badge variant="secondary" data-testid="typification-ai-confidence">
+              {t('typification.ai.confidence', {
+                percent: Math.round(aiConfidence * 100),
+              })}
+            </Badge>
+          )}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            onClick={handleUndoAutoFill}
+            data-testid="typification-ai-undo"
+          >
+            <Undo2 className="mr-1 h-3.5 w-3.5" />
+            {t('typification.ai.undo')}
+          </Button>
         </div>
       )}
 
