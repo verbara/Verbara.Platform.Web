@@ -450,7 +450,9 @@ export function DynamicTypificationForm({
     // panel wrap-up one-shot rationale).
     /* eslint-disable react-hooks/set-state-in-effect */
     // Snapshot the CURRENT state (empty, or a P1 prefill) so Undo restores it.
-    setUndoSnapshot({ path: selectedNodePath, fields: { ...fieldValues } });
+    // Copy BOTH the path array and the fields object so the snapshot can never
+    // alias a later-mutated array/object (latent aliasing footgun; behavior same).
+    setUndoSnapshot({ path: [...selectedNodePath], fields: { ...fieldValues } });
 
     // Apply the suggestion exactly as handleAcceptSuggestion does.
     if (relative != null) setSelectedNodePath(relative);

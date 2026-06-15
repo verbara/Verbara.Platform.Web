@@ -907,4 +907,96 @@ describe('DynamicTypificationForm', () => {
     expect(screen.queryByTestId('typification-ai-autofilled')).toBeNull();
     expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('');
   });
+
+  it('DynamicTypificationForm_ShouldRestorePrefill_WhenUndoAfterAutoFillOverPrefill', () => {
+    // I1 regression guard: the auto-apply snapshot must capture the COMMITTED P1
+    // prefill (cascade + fields), not empty. The form loads with a prefill at
+    // 'leafB' / reason='prefill-reason', then an AutoFill band suggestion lands
+    // pointing at 'leafA' / reason='ai-reason'. Undo must restore the prefill —
+    // NOT wipe to empty and NOT keep the AI values. If this restores empty, I1 is
+    // real and the snapshot is reading pre-hydration state.
+    setForm(
+      formResponse(
+        [
+          node({ nodeId: 'root', label: 'Root', code: 'ROOT', isLeaf: false, sortOrder: 0 }),
+          node({
+            nodeId: 'leafA',
+            parentNodeId: 'root',
+            label: 'Leaf A',
+            code: 'LEAF_A',
+            isLeaf: true,
+            sortOrder: 0,
+          }),
+          node({
+            nodeId: 'leafB',
+            parentNodeId: 'root',
+            label: 'Leaf B',
+            code: 'LEAF_B',
+            isLeaf: true,
+            sortOrder: 1,
+          }),
+        ],
+        [field({ fieldId: 'f1', key: 'reason', label: 'Reason', type: 'Text' })],
+        {
+          prefilledNodePath: ['root', 'leafB'],
+          prefilledFieldValues: { reason: 'prefill-reason' },
+        },
+      ),
+    );
+    suggestionState.data = {
+      suggestedNodePath: ['root', 'leafA'],
+      suggestedFieldValues: { reason: 'ai-reason' },
+      confidence: 0.91,
+      band: 'AutoFill',
+    };
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    // Auto-fill applied OVER the prefill: cascade + field now hold the AI values.
+    expect((screen.getByTestId('typification-node-1') as HTMLSelectElement).value).toBe('leafA');
+    expect((screen.getByTestId('typification-field-reason') as HTMLInputElement).value).toBe(
+      'ai-reason',
+    );
+    expect(screen.getByTestId('typification-ai-autofilled')).toBeInTheDocument();
+
+    // Undo must restore the PREFILL (leafB / 'prefill-reason'), not empty, not AI.
+    fireEvent.click(screen.getByTestId('typification-ai-undo'));
+
+    expect((screen.getByTestId('typification-node-1') as HTMLSelectElement).value).toBe('leafB');
+    expect((screen.getByTestId('typification-field-reason') as HTMLInputElement).value).toBe(
+      'prefill-reason',
+    );
+    expect(screen.queryByTestId('typification-ai-autofilled')).toBeNull();
+  });
+
+  it('DynamicTypificationForm_ShouldReAcceptAfterUndo_WhenAutoFilled', () => {
+    // After Undo on an auto-fill over an EMPTY form (no prefill), the snapshot is
+    // empty so the cascade clears and the Suggest banner reappears. The agent can
+    // then re-Accept and the cascade must be re-seeded from the same suggestion.
+    setForm(aiSchema());
+    suggestionState.data = {
+      suggestedNodePath: ['root', 'leafA'],
+      suggestedFieldValues: { reason: 'renewal' },
+      confidence: 0.92,
+      band: 'AutoFill',
+    };
+
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    // Sanity: auto-filled from the suggestion.
+    expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('root');
+    expect((screen.getByTestId('typification-node-1') as HTMLSelectElement).value).toBe('leafA');
+
+    // Undo -> empty snapshot restored, cascade cleared, Suggest banner back.
+    fireEvent.click(screen.getByTestId('typification-ai-undo'));
+    expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('');
+    expect(screen.queryByTestId('typification-ai-autofilled')).toBeNull();
+    expect(screen.getByTestId('typification-ai-suggestion')).toBeInTheDocument();
+
+    // Re-Accept -> cascade re-seeded from the suggestion, banner closes.
+    fireEvent.click(screen.getByTestId('typification-ai-accept'));
+    expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('root');
+    expect((screen.getByTestId('typification-node-1') as HTMLSelectElement).value).toBe('leafA');
+    expect(screen.queryByTestId('typification-ai-suggestion')).toBeNull();
+  });
 });
