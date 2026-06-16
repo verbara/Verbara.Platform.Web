@@ -18,8 +18,13 @@ import {
   useCreateTypificationSchema,
   useUpdateTypificationSchema,
   usePublishTypificationSchema,
+  useCalibrationStatus,
 } from '@/core/api/hooks/use-typification';
-import { typificationSchemaForm, type TypificationSchemaFormValues } from './typification-schema';
+import {
+  typificationSchemaForm,
+  AI_MODES,
+  type TypificationSchemaFormValues,
+} from './typification-schema';
 import {
   DEFAULT_FORM_VALUES,
   emptyNode,
@@ -38,6 +43,9 @@ export default function SchemaDesignerPage() {
 
   const isNew = !id || id === 'new';
   const { data: schema, isLoading } = useTypificationSchema(isNew ? undefined : id);
+  const { data: calibration } = useCalibrationStatus(isNew ? undefined : id);
+  const autoFillReady = calibration?.autoFillReady ?? false;
+  const autonomousReady = calibration?.autonomousReady ?? false;
 
   const createSchema = useCreateTypificationSchema();
   const updateSchema = useUpdateTypificationSchema();
@@ -78,9 +86,8 @@ export default function SchemaDesignerPage() {
   const nameA11y = useFieldA11y(errors.name, 'schema-name', { required: true });
 
   const aiEnabled = watch('aiConfig.enabled');
-  // The mode is not editable in P2a, but we DISPLAY the actual persisted mode
-  // (round-tripped by schemaToForm) so editing an out-of-band AutoApply schema
-  // never misleadingly shows "SuggestOnly".
+  // Currently-selected mode — used to keep a persisted AutoFill mode selectable
+  // even when calibration has not yet unlocked the AutoFill option.
   const aiMode = watch('aiConfig.mode');
 
   const addNode = useCallback(() => {
@@ -229,47 +236,110 @@ export default function SchemaDesignerPage() {
 
           {aiEnabled && (
             <div className="space-y-3" data-testid="ai-config-editor">
-              {/* Mode — read-only in P2a. Displays the ACTUAL persisted mode so
-                  an out-of-band AutoApply schema is shown correctly (editing it
-                  here preserves the mode via schemaToForm round-trip). */}
+              {/* Mode — editable in P2b. The AutoFill option is locked until the
+                  schema reaches the calibration bar, but a persisted AutoFill
+                  mode stays selectable so an already-promoted schema isn't
+                  silently demoted on edit. */}
               <div className="space-y-1">
-                <Label className="text-xs">{t('admin:typification.ai.mode')}</Label>
+                <Label className="text-xs" htmlFor="ai-config-mode">
+                  {t('admin:typification.ai.mode')}
+                </Label>
                 <select
-                  disabled
-                  value={aiMode}
+                  id="ai-config-mode"
                   data-testid="ai-config-mode"
-                  className="h-9 w-full max-w-xs rounded-lg border border-input bg-muted px-2.5 text-sm text-muted-foreground"
+                  className="h-9 w-full max-w-xs rounded-lg border border-input bg-background px-2.5 text-sm"
+                  {...register('aiConfig.mode')}
                 >
-                  <option value={aiMode}>{t(`admin:typification.ai.modes.${aiMode}`)}</option>
+                  {AI_MODES.map((m) => (
+                    <option
+                      key={m}
+                      value={m}
+                      disabled={m === 'AutoFill' && !autoFillReady && aiMode !== 'AutoFill'}
+                    >
+                      {t(`admin:typification.ai.modes.${m}`)}
+                    </option>
+                  ))}
                 </select>
                 <p className="text-xs text-muted-foreground">
-                  {aiMode === 'AutoApplyAboveThreshold'
-                    ? t('admin:typification.ai.modeHintAutoApply')
-                    : t('admin:typification.ai.modeHint')}
+                  {t('admin:typification.ai.modeHint')}
                 </p>
+                {!autoFillReady && aiMode !== 'AutoFill' && (
+                  <p
+                    className="text-xs text-muted-foreground"
+                    data-testid="ai-config-autofill-hint"
+                  >
+                    {t('admin:typification.ai.autoFillLockedHint')}
+                  </p>
+                )}
               </div>
 
-              {/* Confidence threshold (percent). */}
+              {/* Graduated confidence bands (percents). */}
               <div className="space-y-1">
-                <Label className="text-xs" htmlFor="ai-config-threshold">
-                  {t('admin:typification.ai.threshold')}
+                <Label className="text-xs" htmlFor="ai-config-suggest-threshold">
+                  {t('admin:typification.ai.suggestThreshold')}
                 </Label>
                 <Input
-                  id="ai-config-threshold"
+                  id="ai-config-suggest-threshold"
                   type="number"
                   min={0}
                   max={100}
                   className="w-32"
-                  data-testid="ai-config-threshold"
-                  {...register('aiConfig.confidenceThresholdPercent', { valueAsNumber: true })}
+                  data-testid="ai-config-suggest-threshold"
+                  {...register('aiConfig.suggestThresholdPercent', { valueAsNumber: true })}
                 />
-                {errors.aiConfig?.confidenceThresholdPercent?.message && (
+                {errors.aiConfig?.suggestThresholdPercent?.message && (
                   <p className="text-xs text-destructive">
-                    {t(errors.aiConfig.confidenceThresholdPercent.message)}
+                    {t(errors.aiConfig.suggestThresholdPercent.message)}
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  {t('admin:typification.ai.thresholdHint')}
+                  {t('admin:typification.ai.suggestThresholdHint')}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs" htmlFor="ai-config-autoapply-threshold">
+                  {t('admin:typification.ai.autoApplyThreshold')}
+                </Label>
+                <Input
+                  id="ai-config-autoapply-threshold"
+                  type="number"
+                  min={0}
+                  max={100}
+                  className="w-32"
+                  data-testid="ai-config-autoapply-threshold"
+                  {...register('aiConfig.autoApplyThresholdPercent', { valueAsNumber: true })}
+                />
+                {errors.aiConfig?.autoApplyThresholdPercent?.message && (
+                  <p className="text-xs text-destructive">
+                    {t(errors.aiConfig.autoApplyThresholdPercent.message)}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:typification.ai.autoApplyThresholdHint')}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs" htmlFor="ai-config-autonomous-threshold">
+                  {t('admin:typification.ai.autonomousThreshold')}
+                </Label>
+                <Input
+                  id="ai-config-autonomous-threshold"
+                  type="number"
+                  min={0}
+                  max={100}
+                  className="w-32"
+                  data-testid="ai-config-autonomous-threshold"
+                  {...register('aiConfig.autonomousThresholdPercent', { valueAsNumber: true })}
+                />
+                {errors.aiConfig?.autonomousThresholdPercent?.message && (
+                  <p className="text-xs text-destructive">
+                    {t(errors.aiConfig.autonomousThresholdPercent.message)}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:typification.ai.autonomousThresholdHint')}
                 </p>
               </div>
 
@@ -288,6 +358,48 @@ export default function SchemaDesignerPage() {
                 />
                 <Label className="text-xs">{t('admin:typification.ai.sentimentGating')}</Label>
               </div>
+            </div>
+          )}
+
+          {/* Calibration status panel — existing schemas only. */}
+          {!isNew && (
+            <div
+              className="space-y-2 rounded-md border bg-muted/40 p-3"
+              data-testid="ai-calibration-panel"
+            >
+              <Label className="text-xs font-medium">
+                {t('admin:typification.ai.calibration.title')}
+              </Label>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span>
+                  {t('admin:typification.ai.calibration.samples')}: {calibration?.samples ?? 0}
+                </span>
+                <span>
+                  {t('admin:typification.ai.calibration.accuracy')}:{' '}
+                  {Math.round((calibration?.accuracy ?? 0) * 100)}%
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant={autoFillReady ? 'default' : 'outline'}
+                  data-testid="ai-calibration-autofill-ready"
+                >
+                  {autoFillReady
+                    ? t('admin:typification.ai.calibration.autoFillReady')
+                    : t('admin:typification.ai.calibration.autoFillNotReady')}
+                </Badge>
+                <Badge
+                  variant={autonomousReady ? 'default' : 'outline'}
+                  data-testid="ai-calibration-autonomous-ready"
+                >
+                  {autonomousReady
+                    ? t('admin:typification.ai.calibration.autonomousReady')
+                    : t('admin:typification.ai.calibration.autonomousNotReady')}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('admin:typification.ai.calibration.hint')}
+              </p>
             </div>
           )}
         </div>

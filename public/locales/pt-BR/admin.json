@@ -3273,15 +3273,32 @@
       "hint": "A IA analisa a transcrição e sugere uma tipificação que o agente pode aceitar ou descartar.",
       "enable": "Ativar sugestões da IA",
       "mode": "Modo",
-      "modeHint": "Nesta versão a IA apenas sugere; o agente sempre confirma. A aplicação automática chegará em uma fase futura.",
-      "modeHintAutoApply": "A aplicação automática é configurada externamente e não é editável aqui. Salvar preserva este modo sem alterações.",
+      "modeHint": "Escolha como a IA participa: calibrar em silêncio, sugerir ao agente ou preencher o formulário automaticamente.",
       "modes": {
+        "Off": "Desligado",
+        "Shadow": "Sombra (silencioso)",
         "SuggestOnly": "Apenas sugerir",
-        "AutoApplyAboveThreshold": "Aplicar automaticamente acima do limite"
+        "AutoFill": "Preenchimento automático"
       },
-      "threshold": "Limite de confiança (%)",
-      "thresholdHint": "Confiança mínima para exibir uma sugestão.",
+      "suggestThreshold": "Limite de sugestão (%)",
+      "suggestThresholdHint": "Confiança mínima para exibir uma sugestão ao agente.",
+      "autoApplyThreshold": "Limite de preenchimento automático (%)",
+      "autoApplyThresholdHint": "Confiança mínima para preencher o formulário automaticamente.",
+      "autonomousThreshold": "Limite autônomo (%)",
+      "autonomousThresholdHint": "Confiança mínima para registrar uma tipificação sem um agente.",
+      "autoFillLockedHint": "O preenchimento automático é liberado quando este esquema atinge o limiar de calibração.",
       "sentimentGating": "Condicionar por sentimento",
+      "calibration": {
+        "title": "Status de calibração",
+        "samples": "Amostras",
+        "accuracy": "Precisão",
+        "autoFillReady": "Preenchimento automático pronto",
+        "autoFillNotReady": "Preenchimento automático não pronto",
+        "autonomousReady": "Autônomo pronto",
+        "autonomousNotReady": "Autônomo não pronto",
+        "hint": "O preenchimento automático é liberado quando o esquema acumula amostras precisas suficientes no modo Sombra.",
+        "newSchemaNote": "Salve e execute no modo Sombra para iniciar a calibração."
+      },
       "validation": {
         "thresholdRange": "O limite deve estar entre 0 e 100"
       }

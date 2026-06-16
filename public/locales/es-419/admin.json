@@ -3273,15 +3273,32 @@
       "hint": "La IA analiza la transcripción y sugiere una tipificación que el agente puede aceptar o descartar.",
       "enable": "Activar sugerencias de IA",
       "mode": "Modo",
-      "modeHint": "En esta versión la IA solo sugiere; el agente siempre confirma. La auto-aplicación llegará en una fase futura.",
-      "modeHintAutoApply": "La auto-aplicación está configurada externamente y no es editable aquí. Guardar conserva este modo sin cambios.",
+      "modeHint": "Elige cómo participa la IA: calibrar en silencio, sugerir al agente o auto-completar el formulario.",
       "modes": {
+        "Off": "Desactivado",
+        "Shadow": "Sombra (silencioso)",
         "SuggestOnly": "Solo sugerir",
-        "AutoApplyAboveThreshold": "Auto-aplicar sobre el umbral"
+        "AutoFill": "Auto-completar"
       },
-      "threshold": "Umbral de confianza (%)",
-      "thresholdHint": "Confianza mínima para mostrar una sugerencia.",
+      "suggestThreshold": "Umbral de sugerencia (%)",
+      "suggestThresholdHint": "Confianza mínima para mostrar una sugerencia al agente.",
+      "autoApplyThreshold": "Umbral de auto-completado (%)",
+      "autoApplyThresholdHint": "Confianza mínima para rellenar el formulario automáticamente.",
+      "autonomousThreshold": "Umbral autónomo (%)",
+      "autonomousThresholdHint": "Confianza mínima para registrar una tipificación sin un agente.",
+      "autoFillLockedHint": "El auto-completado se habilita cuando este esquema alcanza el umbral de calibración.",
       "sentimentGating": "Condicionar por sentimiento",
+      "calibration": {
+        "title": "Estado de calibración",
+        "samples": "Muestras",
+        "accuracy": "Precisión",
+        "autoFillReady": "Auto-completado listo",
+        "autoFillNotReady": "Auto-completado no listo",
+        "autonomousReady": "Autónomo listo",
+        "autonomousNotReady": "Autónomo no listo",
+        "hint": "El auto-completado se habilita cuando el esquema acumula suficientes muestras precisas en modo Sombra.",
+        "newSchemaNote": "Guarda y ejecuta en modo Sombra para iniciar la calibración."
+      },
       "validation": {
         "thresholdRange": "El umbral debe estar entre 0 y 100"
       }

@@ -32,9 +32,12 @@ export const CONDITION_OPS = [
 
 export const BINDING_SCOPES = ['Tenant', 'Queue', 'Campaign', 'Channel', 'Direction'] as const;
 
-// AI auto-disposition modes. P2a only exposes "SuggestOnly" as selectable;
-// "AutoApplyAboveThreshold" is reserved for a future phase.
-export const AI_MODES = ['SuggestOnly', 'AutoApplyAboveThreshold'] as const;
+// AI auto-disposition modes (P2b graduated bands).
+//   Off        — AI disabled for this schema's disposition flow.
+//   Shadow     — AI runs silently to accumulate calibration; nothing surfaced.
+//   SuggestOnly— the agent always confirms the suggestion.
+//   AutoFill   — the form auto-fills; gated behind the calibration bar.
+export const AI_MODES = ['Off', 'Shadow', 'SuggestOnly', 'AutoFill'] as const;
 
 // ---------------------------------------------------------------------------
 // Condition (visibleWhen) — optional sub-form.
@@ -114,15 +117,24 @@ export const fieldSchema = z.object({
 export type FieldFormValue = z.infer<typeof fieldSchema>;
 
 // ---------------------------------------------------------------------------
-// AI auto-disposition config — optional sub-form on the schema.
-// `confidenceThreshold` is a 0–100 PERCENT in the form for UX; the mapper
-// converts it to the 0–1 fraction the DTO carries.
+// AI auto-disposition config — optional sub-form on the schema (P2b bands).
+// The three thresholds are 0–100 PERCENTS in the form for UX; the mapper
+// converts each to the 0–1 fraction the DTO carries. The `autonomous` flag and
+// `dailyTokenBudget` are NOT edited here (Batch E concerns).
 // ---------------------------------------------------------------------------
 
 export const aiConfigSchema = z.object({
   enabled: z.boolean(),
   mode: z.enum(AI_MODES),
-  confidenceThresholdPercent: z
+  suggestThresholdPercent: z
+    .number()
+    .min(0, 'admin:typification.ai.validation.thresholdRange')
+    .max(100, 'admin:typification.ai.validation.thresholdRange'),
+  autoApplyThresholdPercent: z
+    .number()
+    .min(0, 'admin:typification.ai.validation.thresholdRange')
+    .max(100, 'admin:typification.ai.validation.thresholdRange'),
+  autonomousThresholdPercent: z
     .number()
     .min(0, 'admin:typification.ai.validation.thresholdRange')
     .max(100, 'admin:typification.ai.validation.thresholdRange'),

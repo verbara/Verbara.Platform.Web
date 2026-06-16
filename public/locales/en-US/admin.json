@@ -3273,15 +3273,32 @@
       "hint": "AI analyzes the transcript and suggests a disposition the agent can accept or dismiss.",
       "enable": "Enable AI suggestions",
       "mode": "Mode",
-      "modeHint": "In this release AI only suggests; the agent always confirms. Auto-apply is coming in a future phase.",
-      "modeHintAutoApply": "Auto-apply is configured externally and is not editable here. Saving preserves this mode unchanged.",
+      "modeHint": "Choose how AI participates: silently calibrate, suggest for the agent, or auto-fill the form.",
       "modes": {
+        "Off": "Off",
+        "Shadow": "Shadow (silent)",
         "SuggestOnly": "Suggest only",
-        "AutoApplyAboveThreshold": "Auto-apply above threshold"
+        "AutoFill": "Auto-fill"
       },
-      "threshold": "Confidence threshold (%)",
-      "thresholdHint": "Minimum confidence required to surface a suggestion.",
+      "suggestThreshold": "Suggest threshold (%)",
+      "suggestThresholdHint": "Minimum confidence required to surface a suggestion to the agent.",
+      "autoApplyThreshold": "Auto-fill threshold (%)",
+      "autoApplyThresholdHint": "Minimum confidence required to pre-fill the form automatically.",
+      "autonomousThreshold": "Autonomous threshold (%)",
+      "autonomousThresholdHint": "Minimum confidence required to commit a disposition without an agent.",
+      "autoFillLockedHint": "Auto-fill unlocks once this schema reaches the calibration bar.",
       "sentimentGating": "Gate by sentiment",
+      "calibration": {
+        "title": "Calibration status",
+        "samples": "Samples",
+        "accuracy": "Accuracy",
+        "autoFillReady": "Auto-fill ready",
+        "autoFillNotReady": "Auto-fill not ready",
+        "autonomousReady": "Autonomous ready",
+        "autonomousNotReady": "Autonomous not ready",
+        "hint": "Auto-fill unlocks once the schema accumulates enough accurate samples in Shadow mode.",
+        "newSchemaNote": "Save and run in Shadow to start calibration."
+      },
       "validation": {
         "thresholdRange": "Threshold must be between 0 and 100"
       }

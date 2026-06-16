@@ -10,6 +10,7 @@ import type {
   NodeFormValue,
   FieldFormValue,
 } from './typification-schema';
+import { AI_MODES } from './typification-schema';
 
 /** Sentinel select value for "no parent / root node" and "not attached". */
 export const NONE_VALUE = '__none__';
@@ -73,11 +74,14 @@ export const DEFAULT_FORM_VALUES: TypificationSchemaFormValues = {
   fields: [],
   aiConfig: {
     enabled: false,
-    // P2a only supports SuggestOnly; AutoApplyAboveThreshold is a future phase.
-    mode: 'SuggestOnly',
-    // Stored as a PERCENT in the form (0–100); mapped to a 0–1 fraction in the DTO.
-    confidenceThresholdPercent: 70,
-    sentimentGating: false,
+    // A new schema starts in Shadow — the safe band that accumulates calibration
+    // without surfacing anything, so enabling AI does something useful (not Off).
+    mode: 'Shadow',
+    // Stored as PERCENTS in the form (0–100); mapped to 0–1 fractions in the DTO.
+    suggestThresholdPercent: 60,
+    autoApplyThresholdPercent: 85,
+    autonomousThresholdPercent: 95,
+    sentimentGating: true,
   },
 };
 
@@ -133,6 +137,19 @@ function fieldToForm(field: TypificationField): FieldFormValue {
   };
 }
 
+/**
+ * Map a persisted AI mode tolerantly onto the P2b vocabulary. The 4 P2b modes
+ * pass through; the legacy P2a `AutoApplyAboveThreshold` maps to `AutoFill`;
+ * anything else (incl. absent) defaults to the safe `Shadow` band.
+ */
+function toAiMode(mode: string | undefined): (typeof AI_MODES)[number] {
+  if (mode === 'Off' || mode === 'Shadow' || mode === 'SuggestOnly' || mode === 'AutoFill') {
+    return mode;
+  }
+  if (mode === 'AutoApplyAboveThreshold') return 'AutoFill';
+  return 'Shadow';
+}
+
 export function schemaToForm(schema: TypificationSchema): TypificationSchemaFormValues {
   const ai = schema.aiConfig;
   return {
@@ -142,12 +159,12 @@ export function schemaToForm(schema: TypificationSchema): TypificationSchemaForm
     fields: schema.fields.map(fieldToForm),
     aiConfig: {
       enabled: ai?.enabled ?? false,
-      // P2a pins SuggestOnly; round-trip any persisted mode so an existing
-      // AutoApply config (set out-of-band) survives an edit-save unchanged.
-      mode: ai?.mode === 'AutoApplyAboveThreshold' ? 'AutoApplyAboveThreshold' : 'SuggestOnly',
-      // DTO carries a 0–1 fraction; the form edits a 0–100 percent.
-      confidenceThresholdPercent: ai ? Math.round(ai.confidenceThreshold * 100) : 70,
-      sentimentGating: ai?.sentimentGating ?? false,
+      mode: toAiMode(ai?.mode),
+      // DTO carries 0–1 fractions; the form edits 0–100 percents.
+      suggestThresholdPercent: ai ? Math.round(ai.suggestThreshold * 100) : 60,
+      autoApplyThresholdPercent: ai ? Math.round(ai.autoApplyThreshold * 100) : 85,
+      autonomousThresholdPercent: ai ? Math.round(ai.autonomousThreshold * 100) : 95,
+      sentimentGating: ai?.sentimentGating ?? true,
     },
   };
 }
@@ -242,8 +259,14 @@ export function formToInput(values: TypificationSchemaFormValues): CreateSchemaI
     aiConfig: {
       enabled: ai.enabled,
       mode: ai.mode,
-      // Form edits a 0–100 percent; the DTO carries a 0–1 fraction.
-      confidenceThreshold: ai.confidenceThresholdPercent / 100,
+      // Form edits 0–100 percents; the DTO carries 0–1 fractions.
+      suggestThreshold: ai.suggestThresholdPercent / 100,
+      autoApplyThreshold: ai.autoApplyThresholdPercent / 100,
+      autonomousThreshold: ai.autonomousThresholdPercent / 100,
+      // C4-web does NOT edit the autonomous-commit flag or the daily token
+      // budget — both arrive in Batch E. Always emit autonomous:false; omit
+      // dailyTokenBudget entirely (the API treats absent as null).
+      autonomous: false,
       sentimentGating: ai.sentimentGating,
     },
   };
