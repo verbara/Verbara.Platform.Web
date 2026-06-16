@@ -3258,6 +3258,17 @@
       "save": "Salvar",
       "validation": {
         "schemaRequired": "O esquema é obrigatório"
+      },
+      "aiOverride": {
+        "title": "Substituição de IA (por atribuição)",
+        "enable": "Substituir a configuração de IA para esta atribuição",
+        "hint": "Pilote o AutoFill nesta única atribuição sem alterar o padrão do esquema. A configuração efetiva usa esta substituição quando ativa; caso contrário, herda a do esquema.",
+        "mode": "Modo",
+        "suggestThreshold": "Limite de sugestão (%)",
+        "autoApplyThreshold": "Limite de autopreenchimento (%)",
+        "autonomousThreshold": "Limite autônomo (%)",
+        "sentimentGating": "Condicionar por sentimento",
+        "inheritNote": "A lista de PII permitida e o mapa de entidades desta substituição são herdados do esquema. Edite-os no designer de esquemas."
       }
     },
     "validation": {

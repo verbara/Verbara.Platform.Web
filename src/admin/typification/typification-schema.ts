@@ -206,6 +206,13 @@ export const bindingSchemaForm = z.object({
   schemaId: z.string().min(1, 'admin:typification.bindings.validation.schemaRequired'),
   subtreeRootNodeId: z.string().optional(),
   priority: z.number(),
+  // Per-binding AI config override (E1). `aiOverrideEnabled` is the toggle that
+  // decides whether `aiConfigOverride` is emitted on save. The full `aiConfigSchema`
+  // is reused so the override round-trips EVERY AiConfig field (incl. the carried
+  // piiAllowStore/entityFieldMap), even though the sheet only renders the pilot
+  // lever (enabled/mode/3 percents/sentiment).
+  aiOverrideEnabled: z.boolean(),
+  aiOverride: aiConfigSchema,
 });
 
 export type BindingFormValues = z.infer<typeof bindingSchemaForm>;

@@ -140,6 +140,16 @@ export interface SchemaBinding {
   schemaId: string;
   subtreeRootNodeId?: string;
   priority: number;
+  /**
+   * Per-binding AI config override (E1). When present, it FULLY replaces the
+   * bound schema's `aiConfig` for this binding only (effective = override ??
+   * schema.aiConfig) — letting an admin pilot AutoFill on a single binding
+   * without touching the schema default. The sheet edits the pilot lever
+   * (enabled/mode/3 thresholds/sentiment); `piiAllowStore` + `entityFieldMap`
+   * are carried from the schema's config (seeded on enable, round-tripped on
+   * edit) and only editable in the schema designer.
+   */
+  aiConfigOverride?: TypificationAiConfig;
 }
 
 export interface PublishError {
@@ -210,6 +220,8 @@ export interface CreateBindingInput {
   schemaId: string;
   subtreeRootNodeId?: string;
   priority: number;
+  /** Per-binding AI config override (E1); undefined ⇒ inherit the schema's aiConfig. */
+  aiConfigOverride?: TypificationAiConfig;
 }
 
 export type UpdateBindingInput = CreateBindingInput;

@@ -3258,6 +3258,17 @@
       "save": "Save",
       "validation": {
         "schemaRequired": "Schema is required"
+      },
+      "aiOverride": {
+        "title": "AI override (per binding)",
+        "enable": "Override AI config for this binding",
+        "hint": "Pilot AutoFill on this single binding without changing the schema default. The effective config uses this override when active; otherwise it inherits the schema's.",
+        "mode": "Mode",
+        "suggestThreshold": "Suggest threshold (%)",
+        "autoApplyThreshold": "Auto-fill threshold (%)",
+        "autonomousThreshold": "Autonomous threshold (%)",
+        "sentimentGating": "Gate by sentiment",
+        "inheritNote": "This override's PII allow-list and entity map are inherited from the schema. Edit them in the schema designer."
       }
     },
     "validation": {
