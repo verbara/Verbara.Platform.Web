@@ -3301,6 +3301,26 @@
       },
       "validation": {
         "thresholdRange": "Threshold must be between 0 and 100"
+      },
+      "entityMap": {
+        "title": "Entity-to-field map",
+        "hint": "Bind AI-detected entity names to schema fields for extraction and prefill.",
+        "entity": "AI entity name",
+        "field": "Schema field",
+        "add": "Add mapping",
+        "remove": "Remove mapping",
+        "fieldPlaceholder": "Select a field…"
+      },
+      "pii": {
+        "title": "Allow sensitive data (PII) storage",
+        "hint": "Select the PII types the AI may store unmasked for this schema.",
+        "maskedNote": "Unchecked types are masked in AI-extracted values.",
+        "types": {
+          "Card": "Card",
+          "NationalId": "National ID",
+          "Phone": "Phone",
+          "Email": "Email"
+        }
       }
     }
   }

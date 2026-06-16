@@ -39,6 +39,10 @@ export const BINDING_SCOPES = ['Tenant', 'Queue', 'Campaign', 'Channel', 'Direct
 //   AutoFill   — the form auto-fills; gated behind the calibration bar.
 export const AI_MODES = ['Off', 'Shadow', 'SuggestOnly', 'AutoFill'] as const;
 
+// PiiType names the tenant may allow the AI to store UNMASKED (P2b D4).
+// Default empty = mask all; mirrors the Platform `PiiType` vocabulary.
+export const PII_TYPES = ['Card', 'NationalId', 'Phone', 'Email'] as const;
+
 // ---------------------------------------------------------------------------
 // Condition (visibleWhen) — optional sub-form.
 // ---------------------------------------------------------------------------
@@ -145,6 +149,12 @@ export const aiConfigSchema = z.object({
   autonomous: z.boolean(),
   dailyTokenBudget: z.number().nullable(),
   sentimentGating: z.boolean(),
+  // Entity-field map — edited as an array of rows in the form; mapped to/from a
+  // Record<string,string> in the mapper. Each row binds an AI entity name to a
+  // schema field Key (drives D2 entity extraction/prefill).
+  entityFieldMap: z.array(z.object({ entity: z.string(), fieldKey: z.string() })),
+  // PII allow-list — the PiiType names the tenant lets the AI store unmasked.
+  piiAllowStore: z.array(z.enum(PII_TYPES)),
 });
 
 export type AiConfigFormValue = z.infer<typeof aiConfigSchema>;

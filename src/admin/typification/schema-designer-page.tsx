@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Save, Send, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Save, Send, Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
 import { Switch } from '@/core/ui/switch';
+import { Checkbox } from '@/core/ui/checkbox';
 import { FieldError } from '@/core/ui/field-error';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
@@ -23,6 +24,7 @@ import {
 import {
   typificationSchemaForm,
   AI_MODES,
+  PII_TYPES,
   type TypificationSchemaFormValues,
 } from './typification-schema';
 import {
@@ -35,6 +37,18 @@ import {
 import { NodesEditor } from './nodes-editor';
 import { FieldsEditor } from './fields-editor';
 import { PublishErrorsDialog } from './publish-errors-dialog';
+
+/** Add/remove a PiiType from the allow-list array (no duplicates). */
+function togglePii(
+  current: (typeof PII_TYPES)[number][],
+  type: (typeof PII_TYPES)[number],
+  isChecked: boolean,
+): (typeof PII_TYPES)[number][] {
+  if (isChecked) {
+    return current.includes(type) ? current : [...current, type];
+  }
+  return current.filter((v) => v !== type);
+}
 
 export default function SchemaDesignerPage() {
   const { id } = useParams<{ id: string }>();
@@ -77,6 +91,12 @@ export default function SchemaDesignerPage() {
     remove: removeField,
   } = useFieldArray({ control, name: 'fields' });
 
+  const {
+    fields: entityMapFields,
+    append: appendEntityMap,
+    remove: removeEntityMap,
+  } = useFieldArray({ control, name: 'aiConfig.entityFieldMap' });
+
   useEffect(() => {
     if (!isNew && schema) {
       reset(schemaToForm(schema));
@@ -89,6 +109,8 @@ export default function SchemaDesignerPage() {
   // Currently-selected mode — used to keep a persisted AutoFill mode selectable
   // even when calibration has not yet unlocked the AutoFill option.
   const aiMode = watch('aiConfig.mode');
+  // Field rows feed the entity-map dropdown options (bind entities to field Keys).
+  const watchedFields = watch('fields');
 
   const addNode = useCallback(() => {
     appendNode(emptyNode(nodeFields.length));
@@ -367,6 +389,105 @@ export default function SchemaDesignerPage() {
                   )}
                 />
                 <Label className="text-xs">{t('admin:typification.ai.sentimentGating')}</Label>
+              </div>
+
+              {/* Entity-field map — bind AI-extracted entity names to schema fields. */}
+              <div
+                className="space-y-2 rounded-md border border-dashed bg-background p-3"
+                data-testid="ai-entity-map-editor"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-xs">{t('admin:typification.ai.entityMap.title')}</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {t('admin:typification.ai.entityMap.hint')}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => appendEntityMap({ entity: '', fieldKey: '' })}
+                    data-testid="ai-entity-map-add"
+                  >
+                    <Plus className="mr-1 h-3 w-3" />
+                    {t('admin:typification.ai.entityMap.add')}
+                  </Button>
+                </div>
+                {entityMapFields.map((row, i) => (
+                  <div key={row.id} className="flex items-center gap-2">
+                    <Input
+                      className="flex-1"
+                      placeholder={t('admin:typification.ai.entityMap.entity')}
+                      data-testid={`ai-entity-map-entity-${i}`}
+                      {...register(`aiConfig.entityFieldMap.${i}.entity`)}
+                    />
+                    <select
+                      className="h-9 flex-1 rounded-lg border border-input bg-background px-2.5 text-sm"
+                      data-testid={`ai-entity-map-field-${i}`}
+                      {...register(`aiConfig.entityFieldMap.${i}.fieldKey`)}
+                    >
+                      <option value="">
+                        {t('admin:typification.ai.entityMap.fieldPlaceholder')}
+                      </option>
+                      {(watchedFields ?? [])
+                        .filter((fld) => fld.key.trim() !== '')
+                        .map((fld) => (
+                          <option key={fld.fieldId} value={fld.key}>
+                            {fld.label || fld.key}
+                          </option>
+                        ))}
+                    </select>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      onClick={() => removeEntityMap(i)}
+                      data-testid={`ai-entity-map-remove-${i}`}
+                      aria-label={t('admin:typification.ai.entityMap.remove')}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              {/* PII allow-list — PiiTypes the AI may store unmasked. */}
+              <div
+                className="space-y-2 rounded-md border border-dashed bg-background p-3"
+                data-testid="ai-pii-allowlist"
+              >
+                <Label className="text-xs">{t('admin:typification.ai.pii.title')}</Label>
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:typification.ai.pii.hint')}
+                </p>
+                <Controller
+                  control={control}
+                  name="aiConfig.piiAllowStore"
+                  render={({ field: f }) => (
+                    <div className="flex flex-col gap-1.5">
+                      {PII_TYPES.map((type) => (
+                        <div className="flex items-center gap-2" key={type}>
+                          <Checkbox
+                            id={`ai-pii-allow-${type}`}
+                            data-testid={`ai-pii-allow-${type}`}
+                            checked={f.value.includes(type)}
+                            onCheckedChange={(isChecked) =>
+                              f.onChange(togglePii(f.value, type, isChecked))
+                            }
+                          />
+                          <Label htmlFor={`ai-pii-allow-${type}`} className="text-xs font-normal">
+                            {t(`admin:typification.ai.pii.types.${type}`)}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('admin:typification.ai.pii.maskedNote')}
+                </p>
               </div>
             </div>
           )}

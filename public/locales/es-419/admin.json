@@ -3301,6 +3301,26 @@
       },
       "validation": {
         "thresholdRange": "El umbral debe estar entre 0 y 100"
+      },
+      "entityMap": {
+        "title": "Mapa de entidades a campos",
+        "hint": "Vincula los nombres de entidad detectados por la IA con los campos del esquema para la extracción y el prellenado.",
+        "entity": "Nombre de entidad de IA",
+        "field": "Campo del esquema",
+        "add": "Agregar asignación",
+        "remove": "Quitar asignación",
+        "fieldPlaceholder": "Selecciona un campo…"
+      },
+      "pii": {
+        "title": "Permitir almacenamiento de datos sensibles (PII)",
+        "hint": "Selecciona los tipos de PII que la IA puede almacenar sin enmascarar para este esquema.",
+        "maskedNote": "Los tipos no marcados se enmascaran en los valores extraídos por la IA.",
+        "types": {
+          "Card": "Tarjeta",
+          "NationalId": "Documento de identidad",
+          "Phone": "Teléfono",
+          "Email": "Correo electrónico"
+        }
       }
     }
   }

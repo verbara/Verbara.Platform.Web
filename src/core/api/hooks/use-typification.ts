@@ -102,6 +102,10 @@ export interface TypificationAiConfig {
   autonomous: boolean;
   sentimentGating: boolean;
   dailyTokenBudget?: number | null;
+  /** AI-entity-name → schema field Key (drives entity extraction/prefill). */
+  entityFieldMap?: Record<string, string>;
+  /** PiiType names the tenant allows the AI to store unmasked (default empty = mask all). */
+  piiAllowStore?: string[];
 }
 
 /**

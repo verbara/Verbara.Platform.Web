@@ -54,6 +54,8 @@ interface SubmittedAiConfig {
   sentimentGating: boolean;
   dailyTokenBudget?: number | null;
   confidenceThreshold?: number;
+  entityFieldMap: Record<string, string>;
+  piiAllowStore: string[];
 }
 
 describe('SchemaDesigner AI config', () => {
@@ -338,5 +340,158 @@ describe('SchemaDesigner AI config', () => {
 
     await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
     expect(screen.queryByTestId('ai-calibration-new-note')).not.toBeInTheDocument();
+  });
+
+  // -------------------------------------------------------------------------
+  // P2b D4 — entity-field-map + PII allow-list editor.
+  // -------------------------------------------------------------------------
+
+  it('SchemaDesigner_ShouldAlwaysEmitPiiAllowStore_EvenWhenEmpty', async () => {
+    render(<SchemaDesignerPage />);
+    fireEvent.change(screen.getByTestId('schema-name'), { target: { value: 'Intake' } });
+    fireEvent.click(screen.getByTestId('ai-config-enabled'));
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    // Submit WITHOUT touching the PII allow-list.
+    fireEvent.submit(screen.getByTestId('designer-save-btn').closest('form')!);
+
+    await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
+    const [payload] = createMutate.mock.calls[0] as [{ aiConfig: SubmittedAiConfig }];
+    // HARD REQUIREMENT: piiAllowStore is ALWAYS present (an empty array, not undefined).
+    expect(payload.aiConfig.piiAllowStore).toEqual([]);
+    expect(payload.aiConfig).toHaveProperty('piiAllowStore');
+    expect(payload.aiConfig.entityFieldMap).toEqual({});
+  });
+
+  it('SchemaDesigner_ShouldEmitEntityFieldMap_WhenRowsAdded', async () => {
+    // Hydrate an editing schema with a field so the dropdown has an option.
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [
+        {
+          fieldId: 'f1',
+          key: 'customer_email',
+          label: 'Customer email',
+          type: 'Text',
+          required: false,
+          sortOrder: 0,
+        },
+      ],
+      aiConfig: {
+        enabled: true,
+        mode: 'SuggestOnly',
+        suggestThreshold: 0.6,
+        autoApplyThreshold: 0.85,
+        autonomousThreshold: 0.95,
+        autonomous: false,
+        sentimentGating: true,
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    // Add an entity-map row, type entity "email", pick the field Key.
+    fireEvent.click(screen.getByTestId('ai-entity-map-add'));
+    await waitFor(() => expect(screen.getByTestId('ai-entity-map-entity-0')).toBeInTheDocument());
+    fireEvent.change(screen.getByTestId('ai-entity-map-entity-0'), {
+      target: { value: 'email' },
+    });
+    fireEvent.change(screen.getByTestId('ai-entity-map-field-0'), {
+      target: { value: 'customer_email' },
+    });
+
+    fireEvent.submit(screen.getByTestId('designer-save-btn').closest('form')!);
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    const [payload] = updateMutate.mock.calls[0] as [{ aiConfig: SubmittedAiConfig }];
+    expect(payload.aiConfig.entityFieldMap).toEqual({ email: 'customer_email' });
+  });
+
+  it('SchemaDesigner_ShouldEmitPiiAllowStore_WhenTypeChecked', async () => {
+    render(<SchemaDesignerPage />);
+    fireEvent.change(screen.getByTestId('schema-name'), { target: { value: 'Intake' } });
+    fireEvent.click(screen.getByTestId('ai-config-enabled'));
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    // Check the Email PII box.
+    fireEvent.click(screen.getByTestId('ai-pii-allow-Email'));
+
+    fireEvent.submit(screen.getByTestId('designer-save-btn').closest('form')!);
+
+    await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
+    const [payload] = createMutate.mock.calls[0] as [{ aiConfig: SubmittedAiConfig }];
+    expect(payload.aiConfig.piiAllowStore).toContain('Email');
+  });
+
+  it('SchemaDesigner_ShouldHydrateEntityMapAndPii_WhenEditingSchema', async () => {
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [
+        {
+          fieldId: 'f1',
+          key: 'customer_email',
+          label: 'Customer email',
+          type: 'Text',
+          required: false,
+          sortOrder: 0,
+        },
+      ],
+      aiConfig: {
+        enabled: true,
+        mode: 'SuggestOnly',
+        suggestThreshold: 0.6,
+        autoApplyThreshold: 0.85,
+        autonomousThreshold: 0.95,
+        autonomous: false,
+        sentimentGating: true,
+        entityFieldMap: { email: 'customer_email' },
+        piiAllowStore: ['Phone'],
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    // The entity row renders with entity "email" + the field selected.
+    const entity = screen.getByTestId('ai-entity-map-entity-0') as HTMLInputElement;
+    expect(entity.value).toBe('email');
+    const field = screen.getByTestId('ai-entity-map-field-0') as HTMLSelectElement;
+    expect(field.value).toBe('customer_email');
+
+    // The Phone PII box is checked; Email is not.
+    expect(screen.getByTestId('ai-pii-allow-Phone')).toHaveAttribute('data-checked');
+    expect(screen.getByTestId('ai-pii-allow-Email')).not.toHaveAttribute('data-checked');
+  });
+
+  it('SchemaDesigner_ShouldDropBlankEntityRows_WhenSubmitting', async () => {
+    render(<SchemaDesignerPage />);
+    fireEvent.change(screen.getByTestId('schema-name'), { target: { value: 'Intake' } });
+    fireEvent.click(screen.getByTestId('ai-config-enabled'));
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    // Add a row but leave the entity name blank.
+    fireEvent.click(screen.getByTestId('ai-entity-map-add'));
+    await waitFor(() => expect(screen.getByTestId('ai-entity-map-entity-0')).toBeInTheDocument());
+
+    fireEvent.submit(screen.getByTestId('designer-save-btn').closest('form')!);
+
+    await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
+    const [payload] = createMutate.mock.calls[0] as [{ aiConfig: SubmittedAiConfig }];
+    expect(payload.aiConfig.entityFieldMap).toEqual({});
   });
 });

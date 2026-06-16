@@ -10,7 +10,7 @@ import type {
   NodeFormValue,
   FieldFormValue,
 } from './typification-schema';
-import { AI_MODES } from './typification-schema';
+import { AI_MODES, PII_TYPES } from './typification-schema';
 
 /** Sentinel select value for "no parent / root node" and "not attached". */
 export const NONE_VALUE = '__none__';
@@ -85,6 +85,9 @@ export const DEFAULT_FORM_VALUES: TypificationSchemaFormValues = {
     autonomous: false,
     dailyTokenBudget: null,
     sentimentGating: true,
+    // No entity mappings and an empty PII allow-list (mask all) for a new schema.
+    entityFieldMap: [],
+    piiAllowStore: [],
   },
 };
 
@@ -171,6 +174,15 @@ export function schemaToForm(schema: TypificationSchema): TypificationSchemaForm
       autonomous: ai?.autonomous ?? false,
       dailyTokenBudget: ai?.dailyTokenBudget ?? null,
       sentimentGating: ai?.sentimentGating ?? true,
+      // Record<string,string> → array of rows for the form's useFieldArray.
+      entityFieldMap: Object.entries(ai?.entityFieldMap ?? {}).map(([entity, fieldKey]) => ({
+        entity,
+        fieldKey,
+      })),
+      // Defensively drop unknown server values so the zod enum holds.
+      piiAllowStore: (ai?.piiAllowStore ?? []).filter((t): t is (typeof PII_TYPES)[number] =>
+        (PII_TYPES as readonly string[]).includes(t),
+      ),
     },
   };
 }
@@ -276,6 +288,16 @@ export function formToInput(values: TypificationSchemaFormValues): CreateSchemaI
       autonomous: ai.autonomous,
       dailyTokenBudget: ai.dailyTokenBudget,
       sentimentGating: ai.sentimentGating,
+      // ALWAYS emit both. The editor owns the entity-map + PII policy; the server
+      // treats an omitted `piiAllowStore` as "reset to DenyAll", so we must send
+      // it even when empty (closes a known D4-api omission window). Drop blank
+      // entity-map rows and trim the entity name.
+      entityFieldMap: Object.fromEntries(
+        ai.entityFieldMap
+          .filter((r) => r.entity.trim() !== '' && r.fieldKey !== '')
+          .map((r) => [r.entity.trim(), r.fieldKey]),
+      ),
+      piiAllowStore: ai.piiAllowStore,
     },
   };
 }
