@@ -494,4 +494,204 @@ describe('SchemaDesigner AI config', () => {
     const [payload] = createMutate.mock.calls[0] as [{ aiConfig: SubmittedAiConfig }];
     expect(payload.aiConfig.entityFieldMap).toEqual({});
   });
+
+  // -------------------------------------------------------------------------
+  // P2b D4-web review fixes — dangling field keys + duplicate entity names.
+  // -------------------------------------------------------------------------
+
+  it('SchemaDesigner_ShouldDropDanglingFieldKey_WhenReferencedFieldMissing', async () => {
+    // Hydrate a schema whose entityFieldMap points at a field key that no longer
+    // exists among the schema's fields. The dangling row must be dropped on save.
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [
+        {
+          fieldId: 'f1',
+          key: 'customer_email',
+          label: 'Customer email',
+          type: 'Text',
+          required: false,
+          sortOrder: 0,
+        },
+      ],
+      aiConfig: {
+        enabled: true,
+        mode: 'SuggestOnly',
+        suggestThreshold: 0.6,
+        autoApplyThreshold: 0.85,
+        autonomousThreshold: 0.95,
+        autonomous: false,
+        sentimentGating: true,
+        // 'gone_field' is NOT in `fields` → the mapping is dangling.
+        entityFieldMap: { email: 'gone_field' },
+        piiAllowStore: [],
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    fireEvent.submit(screen.getByTestId('designer-save-btn').closest('form')!);
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    const [payload] = updateMutate.mock.calls[0] as [{ aiConfig: SubmittedAiConfig }];
+    // The dangling row was dropped: neither the entity nor the stale key survive.
+    expect(payload.aiConfig.entityFieldMap).not.toHaveProperty('email');
+    expect(Object.values(payload.aiConfig.entityFieldMap)).not.toContain('gone_field');
+    expect(payload.aiConfig.entityFieldMap).toEqual({});
+  });
+
+  it('SchemaDesigner_ShouldRejectDuplicateEntityNames_WhenTwoRowsShareEntity', async () => {
+    // Hydrate with a field so both rows can point at a valid key.
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [
+        {
+          fieldId: 'f1',
+          key: 'customer_email',
+          label: 'Customer email',
+          type: 'Text',
+          required: false,
+          sortOrder: 0,
+        },
+      ],
+      aiConfig: {
+        enabled: true,
+        mode: 'SuggestOnly',
+        suggestThreshold: 0.6,
+        autoApplyThreshold: 0.85,
+        autonomousThreshold: 0.95,
+        autonomous: false,
+        sentimentGating: true,
+        entityFieldMap: {},
+        piiAllowStore: [],
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    // Add two rows, both entity "email", each pointing at the valid field.
+    fireEvent.click(screen.getByTestId('ai-entity-map-add'));
+    fireEvent.click(screen.getByTestId('ai-entity-map-add'));
+    await waitFor(() => expect(screen.getByTestId('ai-entity-map-entity-1')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByTestId('ai-entity-map-entity-0'), { target: { value: 'email' } });
+    fireEvent.change(screen.getByTestId('ai-entity-map-field-0'), {
+      target: { value: 'customer_email' },
+    });
+    fireEvent.change(screen.getByTestId('ai-entity-map-entity-1'), { target: { value: 'email' } });
+    fireEvent.change(screen.getByTestId('ai-entity-map-field-1'), {
+      target: { value: 'customer_email' },
+    });
+
+    fireEvent.submit(screen.getByTestId('designer-save-btn').closest('form')!);
+
+    // Validation blocks the submit: the mutation is never called …
+    await waitFor(() => expect(screen.getByTestId('ai-entity-map-error')).toBeInTheDocument());
+    expect(updateMutate).not.toHaveBeenCalled();
+  });
+
+  it('SchemaDesigner_ShouldRemovePiiType_WhenUnchecked', async () => {
+    // Hydrate with Phone allowed, then uncheck it → it must drop from the payload.
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [],
+      aiConfig: {
+        enabled: true,
+        mode: 'SuggestOnly',
+        suggestThreshold: 0.6,
+        autoApplyThreshold: 0.85,
+        autonomousThreshold: 0.95,
+        autonomous: false,
+        sentimentGating: true,
+        entityFieldMap: {},
+        piiAllowStore: ['Phone'],
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    // Phone is hydrated checked; uncheck it (exercises togglePii's remove branch).
+    await waitFor(() =>
+      expect(screen.getByTestId('ai-pii-allow-Phone')).toHaveAttribute('data-checked'),
+    );
+    fireEvent.click(screen.getByTestId('ai-pii-allow-Phone'));
+
+    fireEvent.submit(screen.getByTestId('designer-save-btn').closest('form')!);
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    const [payload] = updateMutate.mock.calls[0] as [{ aiConfig: SubmittedAiConfig }];
+    expect(payload.aiConfig.piiAllowStore).not.toContain('Phone');
+    expect(payload.aiConfig.piiAllowStore).toEqual([]);
+  });
+
+  it('SchemaDesigner_ShouldConstrainFieldSelectToSchemaFields', async () => {
+    // A schema with exactly one field → the entity-map field <select> options are
+    // exactly [placeholder, that one field key].
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [
+        {
+          fieldId: 'f1',
+          key: 'customer_email',
+          label: 'Customer email',
+          type: 'Text',
+          required: false,
+          sortOrder: 0,
+        },
+      ],
+      aiConfig: {
+        enabled: true,
+        mode: 'SuggestOnly',
+        suggestThreshold: 0.6,
+        autoApplyThreshold: 0.85,
+        autonomousThreshold: 0.95,
+        autonomous: false,
+        sentimentGating: true,
+        entityFieldMap: {},
+        piiAllowStore: [],
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('ai-entity-map-add'));
+    await waitFor(() => expect(screen.getByTestId('ai-entity-map-field-0')).toBeInTheDocument());
+
+    const select = screen.getByTestId('ai-entity-map-field-0') as HTMLSelectElement;
+    const values = Array.from(select.options).map((o) => o.value);
+    // Placeholder ('') + the single schema field key — nothing else.
+    expect(values).toEqual(['', 'customer_email']);
+  });
 });

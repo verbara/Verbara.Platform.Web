@@ -111,6 +111,14 @@ export default function SchemaDesignerPage() {
   const aiMode = watch('aiConfig.mode');
   // Field rows feed the entity-map dropdown options (bind entities to field Keys).
   const watchedFields = watch('fields');
+  // The duplicate-entity refine attaches its message to the offending row's
+  // `entity` path; surface the first one for the whole entity-map editor.
+  const entityMapErrors = errors.aiConfig?.entityFieldMap;
+  const entityMapError =
+    entityMapErrors?.root?.message ??
+    (Array.isArray(entityMapErrors)
+      ? entityMapErrors.find((row) => row?.entity?.message)?.entity?.message
+      : undefined);
 
   const addNode = useCallback(() => {
     appendNode(emptyNode(nodeFields.length));
@@ -451,6 +459,14 @@ export default function SchemaDesignerPage() {
                     </Button>
                   </div>
                 ))}
+                {/* Field-array-level validation: the duplicate-entity refine
+                    attaches to the offending row's `entity` path. Surface the
+                    first such message once for the whole editor. */}
+                {entityMapError && (
+                  <p className="text-xs text-destructive" data-testid="ai-entity-map-error">
+                    {t(entityMapError)}
+                  </p>
+                )}
               </div>
 
               {/* PII allow-list — PiiTypes the AI may store unmasked. */}

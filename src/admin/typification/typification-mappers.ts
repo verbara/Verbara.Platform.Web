@@ -269,6 +269,11 @@ function formToField(field: FieldFormValue, index: number): TypificationField {
 
 export function formToInput(values: TypificationSchemaFormValues): CreateSchemaInput {
   const ai = values.aiConfig;
+  // The set of field Keys that actually exist on THIS schema right now (covers
+  // in-session renames/deletes as well as hydrated mappings that point at a
+  // field that no longer exists). Entity-map rows referencing a key outside this
+  // set are dropped so a dangling fieldKey can never re-bind to a ghost field.
+  const validFieldKeys = new Set(values.fields.map((f) => f.key));
   return {
     name: values.name.trim(),
     maxDepth: values.maxDepth,
@@ -294,7 +299,9 @@ export function formToInput(values: TypificationSchemaFormValues): CreateSchemaI
       // entity-map rows and trim the entity name.
       entityFieldMap: Object.fromEntries(
         ai.entityFieldMap
-          .filter((r) => r.entity.trim() !== '' && r.fieldKey !== '')
+          .filter(
+            (r) => r.entity.trim() !== '' && r.fieldKey !== '' && validFieldKeys.has(r.fieldKey),
+          )
           .map((r) => [r.entity.trim(), r.fieldKey]),
       ),
       piiAllowStore: ai.piiAllowStore,

@@ -3309,7 +3309,10 @@
         "field": "Schema field",
         "add": "Add mapping",
         "remove": "Remove mapping",
-        "fieldPlaceholder": "Select a field…"
+        "fieldPlaceholder": "Select a field…",
+        "validation": {
+          "duplicateEntity": "This entity already has a mapping. Each entity name must be unique."
+        }
       },
       "pii": {
         "title": "Allow sensitive data (PII) storage",

@@ -3309,7 +3309,10 @@
         "field": "Campo del esquema",
         "add": "Agregar asignación",
         "remove": "Quitar asignación",
-        "fieldPlaceholder": "Selecciona un campo…"
+        "fieldPlaceholder": "Selecciona un campo…",
+        "validation": {
+          "duplicateEntity": "Ya existe una asignación para esta entidad. Cada nombre de entidad debe ser único."
+        }
       },
       "pii": {
         "title": "Permitir almacenamiento de datos sensibles (PII)",

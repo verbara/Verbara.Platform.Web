@@ -151,8 +151,28 @@ export const aiConfigSchema = z.object({
   sentimentGating: z.boolean(),
   // Entity-field map — edited as an array of rows in the form; mapped to/from a
   // Record<string,string> in the mapper. Each row binds an AI entity name to a
-  // schema field Key (drives D2 entity extraction/prefill).
-  entityFieldMap: z.array(z.object({ entity: z.string(), fieldKey: z.string() })),
+  // schema field Key (drives D2 entity extraction/prefill). Duplicate (trimmed,
+  // non-blank) entity names are rejected: the mapper collapses them via
+  // Object.fromEntries (last-wins) silently, so flag them to the user on the
+  // offending row's `entity` path instead of dropping config without feedback.
+  entityFieldMap: z
+    .array(z.object({ entity: z.string(), fieldKey: z.string() }))
+    .superRefine((rows, ctx) => {
+      const seen = new Map<string, number>();
+      rows.forEach((row, index) => {
+        const entity = row.entity.trim();
+        if (entity === '') return;
+        if (seen.has(entity)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'admin:typification.ai.entityMap.validation.duplicateEntity',
+            path: [index, 'entity'],
+          });
+        } else {
+          seen.set(entity, index);
+        }
+      });
+    }),
   // PII allow-list — the PiiType names the tenant lets the AI store unmasked.
   piiAllowStore: z.array(z.enum(PII_TYPES)),
 });

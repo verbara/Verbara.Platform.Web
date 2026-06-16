@@ -3309,7 +3309,10 @@
         "field": "Campo do esquema",
         "add": "Adicionar mapeamento",
         "remove": "Remover mapeamento",
-        "fieldPlaceholder": "Selecione um campo…"
+        "fieldPlaceholder": "Selecione um campo…",
+        "validation": {
+          "duplicateEntity": "Esta entidade já possui um mapeamento. Cada nome de entidade deve ser único."
+        }
       },
       "pii": {
         "title": "Permitir armazenamento de dados sensíveis (PII)",
