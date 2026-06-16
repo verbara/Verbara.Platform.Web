@@ -81,6 +81,9 @@ export const DEFAULT_FORM_VALUES: TypificationSchemaFormValues = {
     suggestThresholdPercent: 60,
     autoApplyThresholdPercent: 85,
     autonomousThresholdPercent: 95,
+    // Passthrough defaults for a brand-new schema (no editor yet — Batch E).
+    autonomous: false,
+    dailyTokenBudget: null,
     sentimentGating: true,
   },
 };
@@ -164,6 +167,9 @@ export function schemaToForm(schema: TypificationSchema): TypificationSchemaForm
       suggestThresholdPercent: ai ? Math.round(ai.suggestThreshold * 100) : 60,
       autoApplyThresholdPercent: ai ? Math.round(ai.autoApplyThreshold * 100) : 85,
       autonomousThresholdPercent: ai ? Math.round(ai.autonomousThreshold * 100) : 95,
+      // Round-trip passthroughs (no editor yet — Batch E).
+      autonomous: ai?.autonomous ?? false,
+      dailyTokenBudget: ai?.dailyTokenBudget ?? null,
       sentimentGating: ai?.sentimentGating ?? true,
     },
   };
@@ -263,10 +269,12 @@ export function formToInput(values: TypificationSchemaFormValues): CreateSchemaI
       suggestThreshold: ai.suggestThresholdPercent / 100,
       autoApplyThreshold: ai.autoApplyThresholdPercent / 100,
       autonomousThreshold: ai.autonomousThresholdPercent / 100,
-      // C4-web does NOT edit the autonomous-commit flag or the daily token
-      // budget — both arrive in Batch E. Always emit autonomous:false; omit
-      // dailyTokenBudget entirely (the API treats absent as null).
-      autonomous: false,
+      // The autonomous-commit flag and daily token budget have no editor yet
+      // (Batch E). The schema PUT is a FULL REPLACE, so emit the values exactly
+      // as loaded to preserve whatever was persisted (never clobber). Send null
+      // (not undefined) when absent so the typed CreateSchemaInput.aiConfig holds.
+      autonomous: ai.autonomous,
+      dailyTokenBudget: ai.dailyTokenBudget,
       sentimentGating: ai.sentimentGating,
     },
   };

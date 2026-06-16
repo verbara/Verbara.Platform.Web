@@ -52,6 +52,7 @@ interface SubmittedAiConfig {
   autonomousThreshold: number;
   autonomous: boolean;
   sentimentGating: boolean;
+  dailyTokenBudget?: number | null;
   confidenceThreshold?: number;
 }
 
@@ -243,6 +244,47 @@ describe('SchemaDesigner AI config', () => {
     expect(autoFill.disabled).toBe(false);
   });
 
+  it('SchemaDesigner_ShouldPreserveAutonomousAndBudget_WhenEditingAndSaving', async () => {
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [],
+      aiConfig: {
+        enabled: true,
+        mode: 'SuggestOnly',
+        suggestThreshold: 0.6,
+        autoApplyThreshold: 0.85,
+        autonomousThreshold: 0.95,
+        // Server-persisted, security-sensitive values with NO editing UI yet
+        // (Batch E). A designer save must round-trip them untouched.
+        autonomous: true,
+        dailyTokenBudget: 50000,
+        sentimentGating: true,
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+
+    // Wait for the form to hydrate from the loaded schema.
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+
+    // Make an unrelated edit (rename) to prove a normal save still preserves them.
+    fireEvent.change(screen.getByTestId('schema-name'), { target: { value: 'Intake Renamed' } });
+    fireEvent.submit(screen.getByTestId('designer-save-btn').closest('form')!);
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    const [payload] = updateMutate.mock.calls[0] as [{ aiConfig: SubmittedAiConfig }];
+    // The server-persisted autonomous flag + token budget survive the save.
+    expect(payload.aiConfig.autonomous).toBe(true);
+    expect(payload.aiConfig.dailyTokenBudget).toBe(50000);
+  });
+
   it('SchemaDesigner_ShouldEmitDisabledAiConfig_WhenLeftOff', async () => {
     render(<SchemaDesignerPage />);
     fireEvent.change(screen.getByTestId('schema-name'), { target: { value: 'Intake' } });
@@ -254,5 +296,47 @@ describe('SchemaDesigner AI config', () => {
     expect(payload.aiConfig.enabled).toBe(false);
     expect(payload.aiConfig.mode).toBe('Shadow');
     expect(payload.aiConfig.autonomous).toBe(false);
+  });
+
+  it('SchemaDesigner_ShouldShowNewSchemaCalibrationNote_WhenNewWithAiEnabled', async () => {
+    render(<SchemaDesignerPage />);
+    fireEvent.change(screen.getByTestId('schema-name'), { target: { value: 'Intake' } });
+
+    // Hidden until AI is enabled.
+    expect(screen.queryByTestId('ai-calibration-new-note')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('ai-config-enabled'));
+
+    const note = await screen.findByTestId('ai-calibration-new-note');
+    expect(note).toHaveTextContent('admin:typification.ai.calibration.newSchemaNote');
+    // The calibration status panel itself is for existing schemas only.
+    expect(screen.queryByTestId('ai-calibration-panel')).not.toBeInTheDocument();
+  });
+
+  it('SchemaDesigner_ShouldNotShowNewSchemaCalibrationNote_WhenEditingExistingSchema', async () => {
+    routeState.id = 'schema-1';
+    schemaState.data = {
+      schemaId: 'schema-1',
+      name: 'Intake',
+      version: 1,
+      isPublished: false,
+      maxDepth: 5,
+      nodes: [],
+      fields: [],
+      aiConfig: {
+        enabled: true,
+        mode: 'SuggestOnly',
+        suggestThreshold: 0.6,
+        autoApplyThreshold: 0.85,
+        autonomousThreshold: 0.95,
+        autonomous: false,
+        sentimentGating: true,
+      },
+      createdAt: '2026-06-08T00:00:00Z',
+    };
+
+    render(<SchemaDesignerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('ai-config-editor')).toBeInTheDocument());
+    expect(screen.queryByTestId('ai-calibration-new-note')).not.toBeInTheDocument();
   });
 });

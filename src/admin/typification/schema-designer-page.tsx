@@ -271,6 +271,16 @@ export default function SchemaDesignerPage() {
                     {t('admin:typification.ai.autoFillLockedHint')}
                   </p>
                 )}
+                {/* New schemas have no calibration panel (it's existing-only),
+                    so surface the "save & run in Shadow to start" guidance here. */}
+                {isNew && (
+                  <p
+                    className="text-xs text-muted-foreground"
+                    data-testid="ai-calibration-new-note"
+                  >
+                    {t('admin:typification.ai.calibration.newSchemaNote')}
+                  </p>
+                )}
               </div>
 
               {/* Graduated confidence bands (percents). */}

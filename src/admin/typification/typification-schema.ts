@@ -120,7 +120,9 @@ export type FieldFormValue = z.infer<typeof fieldSchema>;
 // AI auto-disposition config — optional sub-form on the schema (P2b bands).
 // The three thresholds are 0–100 PERCENTS in the form for UX; the mapper
 // converts each to the 0–1 fraction the DTO carries. The `autonomous` flag and
-// `dailyTokenBudget` are NOT edited here (Batch E concerns).
+// `dailyTokenBudget` are NOT edited here (Batch E concerns) — they exist purely
+// to round-trip the server-persisted values so a designer save (a FULL REPLACE
+// on the API) never silently clobbers them.
 // ---------------------------------------------------------------------------
 
 export const aiConfigSchema = z.object({
@@ -138,6 +140,10 @@ export const aiConfigSchema = z.object({
     .number()
     .min(0, 'admin:typification.ai.validation.thresholdRange')
     .max(100, 'admin:typification.ai.validation.thresholdRange'),
+  // Passthrough fields — no input control. They round-trip the server's value so
+  // a save preserves whatever was persisted until Batch E adds editors for them.
+  autonomous: z.boolean(),
+  dailyTokenBudget: z.number().nullable(),
   sentimentGating: z.boolean(),
 });
 
