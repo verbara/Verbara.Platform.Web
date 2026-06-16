@@ -3263,6 +3263,8 @@
         "title": "Substituição de IA (por atribuição)",
         "enable": "Substituir a configuração de IA para esta atribuição",
         "hint": "Pilote o AutoFill nesta única atribuição sem alterar o padrão do esquema. A configuração efetiva usa esta substituição quando ativa; caso contrário, herda a do esquema.",
+        "selectSchemaFirst": "Selecione primeiro um esquema para inicializar a substituição com a sua configuração de IA.",
+        "modeOffHint": "Para desativar a IA apenas nesta atribuição, defina o Modo como Off.",
         "mode": "Modo",
         "suggestThreshold": "Limite de sugestão (%)",
         "autoApplyThreshold": "Limite de autopreenchimento (%)",

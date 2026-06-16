@@ -50,7 +50,7 @@ const SCHEMAS: TypificationSchema[] = [
     nodes: [],
     fields: [],
     aiConfig: {
-      enabled: true,
+      enabled: false,
       mode: 'Shadow',
       suggestThreshold: 0.7,
       autoApplyThreshold: 0.85,
@@ -165,5 +165,75 @@ describe('BindingFormSheet AI override', () => {
       ) as HTMLInputElement;
       expect(suggest.value).toBe('70');
     });
+
+    // The carried (non-rendered) PII allow-list + entity map MUST originate from
+    // the selected schema's config, not from the blank default (mask-all). Submit
+    // and assert the emitted override carries them verbatim.
+    fireEvent.submit(screen.getByTestId('binding-submit').closest('form')!);
+
+    await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
+    const [payload] = createMutate.mock.calls[0] as [SubmittedBinding];
+    expect(payload.aiConfigOverride).toBeDefined();
+    expect(payload.aiConfigOverride!.piiAllowStore).toContain('Email');
+    expect(payload.aiConfigOverride!.entityFieldMap.email).toBe('customer_email');
+  });
+
+  it('BindingSheet_ShouldEmitEnabledTrue_WhenOverrideOn', async () => {
+    renderSheet();
+    await selectSchema();
+
+    // Enable the override (the single section toggle) and pick a behavior mode.
+    fireEvent.click(screen.getByTestId('binding-ai-override-toggle'));
+    await waitFor(() => expect(screen.getByTestId('binding-ai-override')).toBeInTheDocument());
+    fireEvent.change(screen.getByTestId('binding-ai-override-mode'), {
+      target: { value: 'SuggestOnly' },
+    });
+
+    fireEvent.submit(screen.getByTestId('binding-submit').closest('form')!);
+
+    await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
+    const [payload] = createMutate.mock.calls[0] as [SubmittedBinding];
+    // The collapse guarantee: whenever an override is emitted, enabled is true.
+    // No UI path can emit enabled:false while overriding (the footgun is closed).
+    expect(payload.aiConfigOverride).toBeDefined();
+    expect(payload.aiConfigOverride!.enabled).toBe(true);
+  });
+
+  it('BindingSheet_ShouldExpressDisableViaModeOff_WhenOverrideOnModeOff', async () => {
+    renderSheet();
+    await selectSchema();
+
+    // The documented "turn AI off for just this binding" path is Mode = Off, NOT
+    // an enabled:false override (which the server would treat as silently disabling
+    // AI on a schema that had it on).
+    fireEvent.click(screen.getByTestId('binding-ai-override-toggle'));
+    await waitFor(() => expect(screen.getByTestId('binding-ai-override')).toBeInTheDocument());
+    fireEvent.change(screen.getByTestId('binding-ai-override-mode'), {
+      target: { value: 'Off' },
+    });
+
+    fireEvent.submit(screen.getByTestId('binding-submit').closest('form')!);
+
+    await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
+    const [payload] = createMutate.mock.calls[0] as [SubmittedBinding];
+    expect(payload.aiConfigOverride).toBeDefined();
+    expect(payload.aiConfigOverride!.mode).toBe('Off');
+    expect(payload.aiConfigOverride!.enabled).toBe(true);
+  });
+
+  it('BindingSheet_ShouldDisableOverrideToggle_WhenNoSchemaSelected', async () => {
+    renderSheet();
+
+    // Create form, no schema chosen yet → the override toggle is disabled so the
+    // seed-on-enable always has a schema source. (base-ui Switch renders a span
+    // with aria-disabled / data-disabled rather than the native disabled attr.)
+    const toggle = screen.getByTestId('binding-ai-override-toggle');
+    expect(toggle).toHaveAttribute('aria-disabled', 'true');
+
+    // Pick a schema → the toggle becomes enabled.
+    await selectSchema();
+    await waitFor(() =>
+      expect(screen.getByTestId('binding-ai-override-toggle')).not.toHaveAttribute('data-disabled'),
+    );
   });
 });

@@ -94,6 +94,10 @@ export function BindingFormSheet({ open, onOpenChange, binding, schemas }: Bindi
   const scope = watch('scope');
   const isTenantScope = scope === 'Tenant';
   const aiOverrideEnabled = watch('aiOverrideEnabled');
+  // The override seeds its carried PII/entity-map from the SELECTED schema on
+  // enable, so gate the toggle until a schema is picked (else it would seed from
+  // undefined → empty mask-all and never re-seed).
+  const schemaSelected = !!watch('schemaId');
 
   /**
    * Seed-on-enable: when the admin turns the override ON and there is no existing
@@ -122,7 +126,15 @@ export function BindingFormSheet({ open, onOpenChange, binding, schemas }: Bindi
       // fractions, ALWAYS-emit entityFieldMap [Record] + piiAllowStore [array],
       // autonomous/dailyTokenBudget carried) via the shared helper so it matches
       // the schema designer exactly. When OFF, send undefined ⇒ inherit schema.
-      aiConfigOverride: values.aiOverrideEnabled ? aiConfigFormToDto(values.aiOverride) : undefined,
+      //
+      // The override is a SINGLE on/off control: when the section is ON we FORCE
+      // `enabled: true` so no path ever emits an override with `enabled:false`
+      // (which the server — a whole-object replace — would read as silently
+      // disabling AI on a schema that had it on). "AI off for just this binding"
+      // is expressed via Mode = Off, not via the enabled flag.
+      aiConfigOverride: values.aiOverrideEnabled
+        ? { ...aiConfigFormToDto(values.aiOverride), enabled: true }
+        : undefined,
     };
     if (isEdit && binding) {
       updateBinding.mutate(
@@ -249,6 +261,7 @@ export function BindingFormSheet({ open, onOpenChange, binding, schemas }: Bindi
                   <Switch
                     checked={f.value}
                     onCheckedChange={handleOverrideToggle}
+                    disabled={!schemaSelected}
                     data-testid="binding-ai-override-toggle"
                   />
                 )}
@@ -257,26 +270,17 @@ export function BindingFormSheet({ open, onOpenChange, binding, schemas }: Bindi
                 {t('admin:typification.bindings.aiOverride.enable')}
               </Label>
             </div>
+            {!schemaSelected && (
+              <p
+                className="text-xs text-muted-foreground"
+                data-testid="binding-ai-override-select-schema"
+              >
+                {t('admin:typification.bindings.aiOverride.selectSchemaFirst')}
+              </p>
+            )}
 
             {aiOverrideEnabled && (
               <div className="space-y-3" data-testid="binding-ai-override">
-                {/* Override enabled flag (distinct from the toggle that decides
-                    whether to send an override at all). */}
-                <div className="flex items-center gap-2">
-                  <Controller
-                    control={control}
-                    name="aiOverride.enabled"
-                    render={({ field: f }) => (
-                      <Switch
-                        checked={f.value}
-                        onCheckedChange={f.onChange}
-                        data-testid="binding-ai-override-enabled"
-                      />
-                    )}
-                  />
-                  <Label className="text-xs">{t('admin:typification.ai.enable')}</Label>
-                </div>
-
                 <div className="space-y-1">
                   <Label className="text-xs" htmlFor="binding-ai-override-mode">
                     {t('admin:typification.bindings.aiOverride.mode')}
@@ -293,6 +297,11 @@ export function BindingFormSheet({ open, onOpenChange, binding, schemas }: Bindi
                       </option>
                     ))}
                   </select>
+                  {/* The override is always active when the section is ON; "AI off
+                      for just this binding" is expressed via Mode = Off. */}
+                  <p className="text-xs text-muted-foreground">
+                    {t('admin:typification.bindings.aiOverride.modeOffHint')}
+                  </p>
                 </div>
 
                 <div className="space-y-1">

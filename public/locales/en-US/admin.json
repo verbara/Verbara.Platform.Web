@@ -3263,6 +3263,8 @@
         "title": "AI override (per binding)",
         "enable": "Override AI config for this binding",
         "hint": "Pilot AutoFill on this single binding without changing the schema default. The effective config uses this override when active; otherwise it inherits the schema's.",
+        "selectSchemaFirst": "Select a schema first to seed the override from its AI config.",
+        "modeOffHint": "To turn AI off for just this binding, set Mode to Off.",
         "mode": "Mode",
         "suggestThreshold": "Suggest threshold (%)",
         "autoApplyThreshold": "Auto-fill threshold (%)",

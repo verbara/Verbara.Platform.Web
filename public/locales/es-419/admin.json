@@ -3263,6 +3263,8 @@
         "title": "Anulación de IA (por asignación)",
         "enable": "Anular la configuración de IA para esta asignación",
         "hint": "Pilota AutoFill en esta sola asignación sin cambiar el valor por defecto del esquema. La configuración efectiva usa esta anulación cuando está activa; de lo contrario hereda la del esquema.",
+        "selectSchemaFirst": "Selecciona primero un esquema para inicializar la anulación con su configuración de IA.",
+        "modeOffHint": "Para desactivar la IA solo en esta asignación, establece el Modo en Off.",
         "mode": "Modo",
         "suggestThreshold": "Umbral de sugerencia (%)",
         "autoApplyThreshold": "Umbral de autocompletado (%)",
