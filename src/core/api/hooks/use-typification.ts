@@ -83,17 +83,41 @@ export interface TypificationNode {
 }
 
 /**
- * AI auto-disposition configuration carried on the schema admin DTO (P2a).
- * `mode` is "SuggestOnly" in P2a; "AutoApplyAboveThreshold" is a future phase.
- * `confidenceThreshold` is a 0–1 fraction.
+ * AI auto-disposition configuration carried on the schema admin DTO (P2b).
+ * `mode` is one of {@link TypificationAiMode}. The three thresholds are graduated
+ * confidence bands (each a 0–1 fraction): below `suggestThreshold` nothing is
+ * surfaced; at/above `suggestThreshold` the agent sees a suggestion; at/above
+ * `autoApplyThreshold` the form may auto-fill (gated by calibration); at/above
+ * `autonomousThreshold` the disposition may commit without an agent (Batch E).
+ * `autonomous` is the autonomous-commit flag; `dailyTokenBudget` caps spend.
  */
-export type TypificationAiMode = 'SuggestOnly' | 'AutoApplyAboveThreshold';
+export type TypificationAiMode = 'Off' | 'Shadow' | 'SuggestOnly' | 'AutoFill';
 
 export interface TypificationAiConfig {
   enabled: boolean;
-  mode: string;
-  confidenceThreshold: number;
+  mode: string; // one of TypificationAiMode; string for tolerance
+  suggestThreshold: number; // 0–1
+  autoApplyThreshold: number; // 0–1
+  autonomousThreshold: number; // 0–1
+  autonomous: boolean;
   sentimentGating: boolean;
+  dailyTokenBudget?: number | null;
+  /** AI-entity-name → schema field Key (drives entity extraction/prefill). */
+  entityFieldMap?: Record<string, string>;
+  /** PiiType names the tenant allows the AI to store unmasked (default empty = mask all). */
+  piiAllowStore?: string[];
+}
+
+/**
+ * Calibration status for a schema (C4-api). Drives the AutoFill mode gate and
+ * the designer's status panel. Returns all-zero / not-ready for an uncalibrated
+ * schema; gated by `typification:ai:configure`.
+ */
+export interface TypificationCalibrationStatus {
+  samples: number;
+  accuracy: number; // 0–1 fraction
+  autoFillReady: boolean;
+  autonomousReady: boolean;
 }
 
 export interface TypificationSchema {
@@ -116,6 +140,16 @@ export interface SchemaBinding {
   schemaId: string;
   subtreeRootNodeId?: string;
   priority: number;
+  /**
+   * Per-binding AI config override (E1). When present, it FULLY replaces the
+   * bound schema's `aiConfig` for this binding only (effective = override ??
+   * schema.aiConfig) — letting an admin pilot AutoFill on a single binding
+   * without touching the schema default. The sheet edits the pilot lever
+   * (enabled/mode/3 thresholds/sentiment); `piiAllowStore` + `entityFieldMap`
+   * are carried from the schema's config (seeded on enable, round-tripped on
+   * edit) and only editable in the schema designer.
+   */
+  aiConfigOverride?: TypificationAiConfig;
 }
 
 export interface PublishError {
@@ -158,6 +192,12 @@ export interface TypificationSuggestionResponse {
    * "very_negative". Passed through with no casing transform.
    */
   sentiment?: string;
+  /**
+   * Server-authoritative delivery band (P2b). 'None' = nothing surfaced;
+   * 'Suggest' = show the Accept banner (agent confirms); 'AutoFill' = the form
+   * may be pre-filled automatically. The client MUST NOT escalate the band.
+   */
+  band?: 'None' | 'Suggest' | 'AutoFill';
 }
 
 // ---------------------------------------------------------------------------
@@ -180,6 +220,8 @@ export interface CreateBindingInput {
   schemaId: string;
   subtreeRootNodeId?: string;
   priority: number;
+  /** Per-binding AI config override (E1); undefined ⇒ inherit the schema's aiConfig. */
+  aiConfigOverride?: TypificationAiConfig;
 }
 
 export type UpdateBindingInput = CreateBindingInput;
@@ -219,6 +261,18 @@ export function useTypificationSchema(id: string | undefined) {
         method: 'GET',
       }),
     enabled: !!id,
+  });
+}
+
+export function useCalibrationStatus(schemaId: string | undefined) {
+  return useQuery({
+    queryKey: ['typification', 'calibration', schemaId],
+    queryFn: () =>
+      customFetch<TypificationCalibrationStatus>({
+        url: `/api/v1/admin/typification/schemas/${schemaId}/calibration-status`,
+        method: 'GET',
+      }),
+    enabled: !!schemaId,
   });
 }
 

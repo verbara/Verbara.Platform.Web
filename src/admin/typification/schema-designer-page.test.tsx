@@ -7,6 +7,9 @@ const publishMutate = vi.fn();
 
 vi.mock('@/core/api/hooks/use-typification', () => ({
   useTypificationSchema: () => ({ data: undefined, isLoading: false }),
+  useCalibrationStatus: () => ({
+    data: { samples: 0, accuracy: 0, autoFillReady: false, autonomousReady: false },
+  }),
   useCreateTypificationSchema: () => ({ mutate: createMutate, isPending: false }),
   useUpdateTypificationSchema: () => ({ mutate: updateMutate, isPending: false }),
   usePublishTypificationSchema: () => ({

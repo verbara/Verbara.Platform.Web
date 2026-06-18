@@ -3258,6 +3258,19 @@
       "save": "Salvar",
       "validation": {
         "schemaRequired": "O esquema é obrigatório"
+      },
+      "aiOverride": {
+        "title": "Substituição de IA (por atribuição)",
+        "enable": "Substituir a configuração de IA para esta atribuição",
+        "hint": "Pilote o AutoFill nesta única atribuição sem alterar o padrão do esquema. A configuração efetiva usa esta substituição quando ativa; caso contrário, herda a do esquema.",
+        "selectSchemaFirst": "Selecione primeiro um esquema para inicializar a substituição com a sua configuração de IA.",
+        "modeOffHint": "Para desativar a IA apenas nesta atribuição, defina o Modo como Off.",
+        "mode": "Modo",
+        "suggestThreshold": "Limite de sugestão (%)",
+        "autoApplyThreshold": "Limite de autopreenchimento (%)",
+        "autonomousThreshold": "Limite autônomo (%)",
+        "sentimentGating": "Condicionar por sentimento",
+        "inheritNote": "A lista de PII permitida e o mapa de entidades desta substituição são herdados do esquema. Edite-os no designer de esquemas."
       }
     },
     "validation": {
@@ -3273,17 +3286,57 @@
       "hint": "A IA analisa a transcrição e sugere uma tipificação que o agente pode aceitar ou descartar.",
       "enable": "Ativar sugestões da IA",
       "mode": "Modo",
-      "modeHint": "Nesta versão a IA apenas sugere; o agente sempre confirma. A aplicação automática chegará em uma fase futura.",
-      "modeHintAutoApply": "A aplicação automática é configurada externamente e não é editável aqui. Salvar preserva este modo sem alterações.",
+      "modeHint": "Escolha como a IA participa: calibrar em silêncio, sugerir ao agente ou preencher o formulário automaticamente.",
       "modes": {
+        "Off": "Desligado",
+        "Shadow": "Sombra (silencioso)",
         "SuggestOnly": "Apenas sugerir",
-        "AutoApplyAboveThreshold": "Aplicar automaticamente acima do limite"
+        "AutoFill": "Preenchimento automático"
       },
-      "threshold": "Limite de confiança (%)",
-      "thresholdHint": "Confiança mínima para exibir uma sugestão.",
+      "suggestThreshold": "Limite de sugestão (%)",
+      "suggestThresholdHint": "Confiança mínima para exibir uma sugestão ao agente.",
+      "autoApplyThreshold": "Limite de preenchimento automático (%)",
+      "autoApplyThresholdHint": "Confiança mínima para preencher o formulário automaticamente.",
+      "autonomousThreshold": "Limite autônomo (%)",
+      "autonomousThresholdHint": "Confiança mínima para registrar uma tipificação sem um agente.",
+      "autoFillLockedHint": "O preenchimento automático é liberado quando este esquema atinge o limiar de calibração.",
       "sentimentGating": "Condicionar por sentimento",
+      "calibration": {
+        "title": "Status de calibração",
+        "samples": "Amostras",
+        "accuracy": "Precisão",
+        "autoFillReady": "Preenchimento automático pronto",
+        "autoFillNotReady": "Preenchimento automático não pronto",
+        "autonomousReady": "Autônomo pronto",
+        "autonomousNotReady": "Autônomo não pronto",
+        "hint": "O preenchimento automático é liberado quando o esquema acumula amostras precisas suficientes no modo Sombra.",
+        "newSchemaNote": "Salve e execute no modo Sombra para iniciar a calibração."
+      },
       "validation": {
         "thresholdRange": "O limite deve estar entre 0 e 100"
+      },
+      "entityMap": {
+        "title": "Mapa de entidades para campos",
+        "hint": "Vincule os nomes de entidade detectados pela IA aos campos do esquema para extração e preenchimento.",
+        "entity": "Nome da entidade da IA",
+        "field": "Campo do esquema",
+        "add": "Adicionar mapeamento",
+        "remove": "Remover mapeamento",
+        "fieldPlaceholder": "Selecione um campo…",
+        "validation": {
+          "duplicateEntity": "Esta entidade já possui um mapeamento. Cada nome de entidade deve ser único."
+        }
+      },
+      "pii": {
+        "title": "Permitir armazenamento de dados sensíveis (PII)",
+        "hint": "Selecione os tipos de PII que a IA pode armazenar sem mascaramento para este esquema.",
+        "maskedNote": "Tipos não marcados são mascarados nos valores extraídos pela IA.",
+        "types": {
+          "Card": "Cartão",
+          "NationalId": "Documento de identidade",
+          "Phone": "Telefone",
+          "Email": "E-mail"
+        }
       }
     }
   }

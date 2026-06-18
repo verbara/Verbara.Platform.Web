@@ -3,13 +3,16 @@ import type {
   TypificationNode,
   TypificationField,
   TypificationCondition,
+  TypificationAiConfig,
   CreateSchemaInput,
 } from '@/core/api/hooks/use-typification';
 import type {
   TypificationSchemaFormValues,
   NodeFormValue,
   FieldFormValue,
+  AiConfigFormValue,
 } from './typification-schema';
+import { AI_MODES, PII_TYPES } from './typification-schema';
 
 /** Sentinel select value for "no parent / root node" and "not attached". */
 export const NONE_VALUE = '__none__';
@@ -66,19 +69,38 @@ export function emptyField(sortOrder: number): FieldFormValue {
   };
 }
 
+/**
+ * A sensible default AiConfig form value. Shared by the schema designer
+ * (`DEFAULT_FORM_VALUES.aiConfig`) and the binding sheet's per-binding override
+ * default so both start from the same safe baseline (Shadow / 60-85-95 / mask-all)
+ * and never drift.
+ */
+export function defaultAiConfigForm(): AiConfigFormValue {
+  return {
+    enabled: false,
+    // A new schema starts in Shadow — the safe band that accumulates calibration
+    // without surfacing anything, so enabling AI does something useful (not Off).
+    mode: 'Shadow',
+    // Stored as PERCENTS in the form (0–100); mapped to 0–1 fractions in the DTO.
+    suggestThresholdPercent: 60,
+    autoApplyThresholdPercent: 85,
+    autonomousThresholdPercent: 95,
+    // Passthrough defaults for a brand-new schema (no editor yet — Batch E).
+    autonomous: false,
+    dailyTokenBudget: null,
+    sentimentGating: true,
+    // No entity mappings and an empty PII allow-list (mask all) for a new schema.
+    entityFieldMap: [],
+    piiAllowStore: [],
+  };
+}
+
 export const DEFAULT_FORM_VALUES: TypificationSchemaFormValues = {
   name: '',
   maxDepth: 5,
   nodes: [],
   fields: [],
-  aiConfig: {
-    enabled: false,
-    // P2a only supports SuggestOnly; AutoApplyAboveThreshold is a future phase.
-    mode: 'SuggestOnly',
-    // Stored as a PERCENT in the form (0–100); mapped to a 0–1 fraction in the DTO.
-    confidenceThresholdPercent: 70,
-    sentimentGating: false,
-  },
+  aiConfig: defaultAiConfigForm(),
 };
 
 // ---------------------------------------------------------------------------
@@ -133,22 +155,56 @@ function fieldToForm(field: TypificationField): FieldFormValue {
   };
 }
 
+/**
+ * Map a persisted AI mode tolerantly onto the P2b vocabulary. The 4 P2b modes
+ * pass through; the legacy P2a `AutoApplyAboveThreshold` maps to `AutoFill`;
+ * anything else (incl. absent) defaults to the safe `Shadow` band.
+ */
+function toAiMode(mode: string | undefined): (typeof AI_MODES)[number] {
+  if (mode === 'Off' || mode === 'Shadow' || mode === 'SuggestOnly' || mode === 'AutoFill') {
+    return mode;
+  }
+  if (mode === 'AutoApplyAboveThreshold') return 'AutoFill';
+  return 'Shadow';
+}
+
+/**
+ * Map a persisted AiConfig DTO (0–1 fractions, Record entityFieldMap) onto the
+ * form shape (0–100 percents, array entityFieldMap). Shared by the schema
+ * designer's `schemaToForm` AND the binding sheet's `mapToForm` override
+ * hydration so both apply the identical conversions. `undefined` ⇒ defaults.
+ */
+export function aiConfigToForm(ai: TypificationAiConfig | undefined): AiConfigFormValue {
+  return {
+    enabled: ai?.enabled ?? false,
+    mode: toAiMode(ai?.mode),
+    // DTO carries 0–1 fractions; the form edits 0–100 percents.
+    suggestThresholdPercent: ai ? Math.round(ai.suggestThreshold * 100) : 60,
+    autoApplyThresholdPercent: ai ? Math.round(ai.autoApplyThreshold * 100) : 85,
+    autonomousThresholdPercent: ai ? Math.round(ai.autonomousThreshold * 100) : 95,
+    // Round-trip passthroughs (no editor yet — Batch E).
+    autonomous: ai?.autonomous ?? false,
+    dailyTokenBudget: ai?.dailyTokenBudget ?? null,
+    sentimentGating: ai?.sentimentGating ?? true,
+    // Record<string,string> → array of rows for the form's useFieldArray.
+    entityFieldMap: Object.entries(ai?.entityFieldMap ?? {}).map(([entity, fieldKey]) => ({
+      entity,
+      fieldKey,
+    })),
+    // Defensively drop unknown server values so the zod enum holds.
+    piiAllowStore: (ai?.piiAllowStore ?? []).filter((t): t is (typeof PII_TYPES)[number] =>
+      (PII_TYPES as readonly string[]).includes(t),
+    ),
+  };
+}
+
 export function schemaToForm(schema: TypificationSchema): TypificationSchemaFormValues {
-  const ai = schema.aiConfig;
   return {
     name: schema.name,
     maxDepth: schema.maxDepth,
     nodes: schema.nodes.map(nodeToForm),
     fields: schema.fields.map(fieldToForm),
-    aiConfig: {
-      enabled: ai?.enabled ?? false,
-      // P2a pins SuggestOnly; round-trip any persisted mode so an existing
-      // AutoApply config (set out-of-band) survives an edit-save unchanged.
-      mode: ai?.mode === 'AutoApplyAboveThreshold' ? 'AutoApplyAboveThreshold' : 'SuggestOnly',
-      // DTO carries a 0–1 fraction; the form edits a 0–100 percent.
-      confidenceThresholdPercent: ai ? Math.round(ai.confidenceThreshold * 100) : 70,
-      sentimentGating: ai?.sentimentGating ?? false,
-    },
+    aiConfig: aiConfigToForm(schema.aiConfig),
   };
 }
 
@@ -232,19 +288,64 @@ function formToField(field: FieldFormValue, index: number): TypificationField {
   return dto;
 }
 
+/**
+ * Convert an AiConfig form value to its wire DTO. Shared by the schema
+ * designer's `formToInput` AND the binding sheet's per-binding override build so
+ * the identical percent→fraction + rows→Record + always-emit-piiAllowStore
+ * conversion lives in ONE place (no drift).
+ *
+ * `validFieldKeys` (schema designer only) restricts entity-map rows to keys that
+ * still exist on the schema, so a dangling fieldKey can never re-bind to a ghost
+ * field. Omit it (binding override) to keep all non-blank rows — the override's
+ * entity-map is carried verbatim from the schema's config and is not edited here.
+ */
+export function aiConfigFormToDto(
+  ai: AiConfigFormValue,
+  validFieldKeys?: ReadonlySet<string>,
+): TypificationAiConfig {
+  return {
+    enabled: ai.enabled,
+    mode: ai.mode,
+    // Form edits 0–100 percents; the DTO carries 0–1 fractions.
+    suggestThreshold: ai.suggestThresholdPercent / 100,
+    autoApplyThreshold: ai.autoApplyThresholdPercent / 100,
+    autonomousThreshold: ai.autonomousThresholdPercent / 100,
+    // The autonomous-commit flag and daily token budget have no editor yet
+    // (Batch E). The schema PUT is a FULL REPLACE, so emit the values exactly
+    // as loaded to preserve whatever was persisted (never clobber). Send null
+    // (not undefined) when absent so the typed CreateSchemaInput.aiConfig holds.
+    autonomous: ai.autonomous,
+    dailyTokenBudget: ai.dailyTokenBudget,
+    sentimentGating: ai.sentimentGating,
+    // ALWAYS emit both. The editor owns the entity-map + PII policy; the server
+    // treats an omitted `piiAllowStore` as "reset to DenyAll", so we must send
+    // it even when empty (closes a known D4-api omission window). Drop blank
+    // entity-map rows and trim the entity name.
+    entityFieldMap: Object.fromEntries(
+      ai.entityFieldMap
+        .filter(
+          (r) =>
+            r.entity.trim() !== '' &&
+            r.fieldKey !== '' &&
+            (validFieldKeys === undefined || validFieldKeys.has(r.fieldKey)),
+        )
+        .map((r) => [r.entity.trim(), r.fieldKey]),
+    ),
+    piiAllowStore: ai.piiAllowStore,
+  };
+}
+
 export function formToInput(values: TypificationSchemaFormValues): CreateSchemaInput {
-  const ai = values.aiConfig;
+  // The set of field Keys that actually exist on THIS schema right now (covers
+  // in-session renames/deletes as well as hydrated mappings that point at a
+  // field that no longer exists). Entity-map rows referencing a key outside this
+  // set are dropped so a dangling fieldKey can never re-bind to a ghost field.
+  const validFieldKeys = new Set(values.fields.map((f) => f.key));
   return {
     name: values.name.trim(),
     maxDepth: values.maxDepth,
     nodes: values.nodes.map((n, i) => formToNode(n, i)),
     fields: values.fields.map((f, i) => formToField(f, i)),
-    aiConfig: {
-      enabled: ai.enabled,
-      mode: ai.mode,
-      // Form edits a 0–100 percent; the DTO carries a 0–1 fraction.
-      confidenceThreshold: ai.confidenceThresholdPercent / 100,
-      sentimentGating: ai.sentimentGating,
-    },
+    aiConfig: aiConfigFormToDto(values.aiConfig, validFieldKeys),
   };
 }

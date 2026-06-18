@@ -32,9 +32,16 @@ export const CONDITION_OPS = [
 
 export const BINDING_SCOPES = ['Tenant', 'Queue', 'Campaign', 'Channel', 'Direction'] as const;
 
-// AI auto-disposition modes. P2a only exposes "SuggestOnly" as selectable;
-// "AutoApplyAboveThreshold" is reserved for a future phase.
-export const AI_MODES = ['SuggestOnly', 'AutoApplyAboveThreshold'] as const;
+// AI auto-disposition modes (P2b graduated bands).
+//   Off        — AI disabled for this schema's disposition flow.
+//   Shadow     — AI runs silently to accumulate calibration; nothing surfaced.
+//   SuggestOnly— the agent always confirms the suggestion.
+//   AutoFill   — the form auto-fills; gated behind the calibration bar.
+export const AI_MODES = ['Off', 'Shadow', 'SuggestOnly', 'AutoFill'] as const;
+
+// PiiType names the tenant may allow the AI to store UNMASKED (P2b D4).
+// Default empty = mask all; mirrors the Platform `PiiType` vocabulary.
+export const PII_TYPES = ['Card', 'NationalId', 'Phone', 'Email'] as const;
 
 // ---------------------------------------------------------------------------
 // Condition (visibleWhen) — optional sub-form.
@@ -114,19 +121,60 @@ export const fieldSchema = z.object({
 export type FieldFormValue = z.infer<typeof fieldSchema>;
 
 // ---------------------------------------------------------------------------
-// AI auto-disposition config — optional sub-form on the schema.
-// `confidenceThreshold` is a 0–100 PERCENT in the form for UX; the mapper
-// converts it to the 0–1 fraction the DTO carries.
+// AI auto-disposition config — optional sub-form on the schema (P2b bands).
+// The three thresholds are 0–100 PERCENTS in the form for UX; the mapper
+// converts each to the 0–1 fraction the DTO carries. The `autonomous` flag and
+// `dailyTokenBudget` are NOT edited here (Batch E concerns) — they exist purely
+// to round-trip the server-persisted values so a designer save (a FULL REPLACE
+// on the API) never silently clobbers them.
 // ---------------------------------------------------------------------------
 
 export const aiConfigSchema = z.object({
   enabled: z.boolean(),
   mode: z.enum(AI_MODES),
-  confidenceThresholdPercent: z
+  suggestThresholdPercent: z
     .number()
     .min(0, 'admin:typification.ai.validation.thresholdRange')
     .max(100, 'admin:typification.ai.validation.thresholdRange'),
+  autoApplyThresholdPercent: z
+    .number()
+    .min(0, 'admin:typification.ai.validation.thresholdRange')
+    .max(100, 'admin:typification.ai.validation.thresholdRange'),
+  autonomousThresholdPercent: z
+    .number()
+    .min(0, 'admin:typification.ai.validation.thresholdRange')
+    .max(100, 'admin:typification.ai.validation.thresholdRange'),
+  // Passthrough fields — no input control. They round-trip the server's value so
+  // a save preserves whatever was persisted until Batch E adds editors for them.
+  autonomous: z.boolean(),
+  dailyTokenBudget: z.number().nullable(),
   sentimentGating: z.boolean(),
+  // Entity-field map — edited as an array of rows in the form; mapped to/from a
+  // Record<string,string> in the mapper. Each row binds an AI entity name to a
+  // schema field Key (drives D2 entity extraction/prefill). Duplicate (trimmed,
+  // non-blank) entity names are rejected: the mapper collapses them via
+  // Object.fromEntries (last-wins) silently, so flag them to the user on the
+  // offending row's `entity` path instead of dropping config without feedback.
+  entityFieldMap: z
+    .array(z.object({ entity: z.string(), fieldKey: z.string() }))
+    .superRefine((rows, ctx) => {
+      const seen = new Map<string, number>();
+      rows.forEach((row, index) => {
+        const entity = row.entity.trim();
+        if (entity === '') return;
+        if (seen.has(entity)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'admin:typification.ai.entityMap.validation.duplicateEntity',
+            path: [index, 'entity'],
+          });
+        } else {
+          seen.set(entity, index);
+        }
+      });
+    }),
+  // PII allow-list — the PiiType names the tenant lets the AI store unmasked.
+  piiAllowStore: z.array(z.enum(PII_TYPES)),
 });
 
 export type AiConfigFormValue = z.infer<typeof aiConfigSchema>;
@@ -158,6 +206,13 @@ export const bindingSchemaForm = z.object({
   schemaId: z.string().min(1, 'admin:typification.bindings.validation.schemaRequired'),
   subtreeRootNodeId: z.string().optional(),
   priority: z.number(),
+  // Per-binding AI config override (E1). `aiOverrideEnabled` is the toggle that
+  // decides whether `aiConfigOverride` is emitted on save. The full `aiConfigSchema`
+  // is reused so the override round-trips EVERY AiConfig field (incl. the carried
+  // piiAllowStore/entityFieldMap), even though the sheet only renders the pilot
+  // lever (enabled/mode/3 percents/sentiment).
+  aiOverrideEnabled: z.boolean(),
+  aiOverride: aiConfigSchema,
 });
 
 export type BindingFormValues = z.infer<typeof bindingSchemaForm>;
