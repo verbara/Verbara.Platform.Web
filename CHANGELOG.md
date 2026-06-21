@@ -13,6 +13,31 @@ _No unreleased changes._
 
 ---
 
+## [3.9.0-web] — 2026-06-21 — Typification AI AutoFill (safe) + entity prefill (P2b)
+
+Client half of Typification **P2b** ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — human-in-the-loop AI **AutoFill** of the agent wrap-up form, gated by measured calibration. Pairs with **Platform v2.13.0** + **Pro v2.8.0-pro**. PRs #112 (frontend) + #113 (npm audit fix). i18n parity EN-US/ES-419/PT-BR maintained.
+
+### Added
+
+- **Calibration-gated AI mode selector + bands + status panel** (`src/admin/typification/*`) — admin sets the AutoFill band (Off / Shadow / SuggestOnly / AutoFill); the selector is gated by the server's calibration status, with a muted note when AI is enabled on a brand-new schema (the calibration panel is existing-schema only).
+- **Anti-clobber AutoFill UX** in the agent wrap-up (`<DynamicTypificationForm>`) — when the band is `AutoFill`, the form prefills with an **Undo** affordance + a confidence badge; Undo restores any prior P1 prefill (the snapshot path is copied so it can never alias a later-mutated array).
+- **Entity-field-map + PII allow-list editor** in the schema designer — configure entity extraction → field bindings under an explicit PII allow-list.
+
+### Fixed
+
+- **Cross-conversation AI-suggestion leak** — the wrap-up reused a single `<DynamicTypificationForm>` instance across conversation switches, so a band=`AutoFill` suggestion from conversation A could auto-fill (and tag AI-accepted) conversation B's freshly-loaded form. The form is now keyed `key={conversationId}` so it remounts per conversation (fresh suggestion mutation + clean state) while preserving in-progress state on reopen; internal cross-conversation scrubbing kept as defense-in-depth.
+- **Autonomous + token-budget config wiped on designer save** — the schema PUT is a full replace and the designer hard-coded `autonomous:false` / omitted `dailyTokenBudget`, so any save (even a rename) silently reset a persisted `autonomous:true` and wiped a configured `dailyTokenBudget`. Both fields now round-trip (passthrough in `aiConfigSchema` + the schema mappers).
+
+### Security
+
+- **npm audit fix** (#113) — patched the 4 transitive advisories (2 HIGH) the CI `audit` gate flagged on every PR and on `main`: `ws` GHSA-96hv-2xvq-fx4p (HIGH, via `@microsoft/signalr`) 7.5.10→7.5.11, `hono` GHSA-wwfh-h76j-fc44 (HIGH, via shadcn→MCP SDK) 4.12.23→4.12.26, `js-yaml` GHSA-h67p-54hq-rp68 (moderate) 4.1.1→4.2.0, plus `@babel`.
+
+### Changed
+
+- Dependency maintenance — ~26 Dependabot bumps since `v3.8.0-web` (dompurify, wavesurfer.js, lucide-react, shadcn, react-hook-form, undici, the tailwind / eslint / vite / playwright toolchain groups, `github/codeql-action`, etc.). Build + lint + i18n parity + 1396 unit tests green.
+
+---
+
 ## [3.8.0-web] — 2026-06-10 — Typification AI auto-disposition (P2a)
 
 Client half of Typification **P2a** ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — the agent wrap-up gains an AI suggestion overlay. Pairs with **Platform v2.12.0** + **Pro v2.8.0-pro**. PR #93. i18n parity EN-US/ES-419/PT-BR maintained.
