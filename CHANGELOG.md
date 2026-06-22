@@ -13,6 +13,16 @@ _No unreleased changes._
 
 ---
 
+## [3.10.0-web] — 2026-06-21 — Typification P2c.1 (per-tenant BYO LLM config UI)
+
+Client half of Typification **P2c.1** ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — an admin page to configure a per-tenant **BYO** LLM provider. Pairs with **Platform v2.14.0**. PR #117. i18n parity EN-US / ES-419 / PT-BR maintained.
+
+### Added
+
+- **Per-tenant LLM provider config** (`/admin/typification/llm`) — provider-type selector (OpenAI-compatible / Azure OpenAI / Anthropic) with **conditional fields by type**, a **write-only masked API key** (shown as `••••last4`, only sent when changed), an `enabled` toggle, and a **"Test connection"** probe. "No provider configured" is surfaced as a **valid manual mode** (AI stays strictly opt-in). Gated on `typification:ai:configure`. New `use-typification-llm` hooks (`['typification','llm']`).
+
+---
+
 ## [3.9.0-web] — 2026-06-21 — Typification AI AutoFill (safe) + entity prefill (P2b)
 
 Client half of Typification **P2b** ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — human-in-the-loop AI **AutoFill** of the agent wrap-up form, gated by measured calibration. Pairs with **Platform v2.13.0** + **Pro v2.8.0-pro**. PRs #112 (frontend) + #113 (npm audit fix). i18n parity EN-US/ES-419/PT-BR maintained.

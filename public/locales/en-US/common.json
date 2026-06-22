@@ -509,7 +509,11 @@
       "bindingCreated": "Binding created",
       "bindingUpdated": "Binding updated",
       "bindingDeleted": "Binding deleted",
-      "typified": "Typification saved"
+      "typified": "Typification saved",
+      "llmConfigSaved": "AI configuration saved",
+      "llmConfigDeleted": "AI provider deleted",
+      "llmTestPassed": "Connection succeeded",
+      "llmTestFailed": "Connection failed"
     }
   },
   "table": {
