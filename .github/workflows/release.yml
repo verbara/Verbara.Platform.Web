@@ -108,12 +108,14 @@ jobs:
           # branded experience baked in.
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3
+        uses: sigstore/cosign-installer@v4.1.2
         with:
-          # Pin v2.5.2 (matches the API workflow). cosign v3.x changed the
-          # detached-signature distribution model and breaks the installer
-          # action's bootstrap. See API release.yml for the full rationale.
-          cosign-release: 'v2.5.2'
+          # Pin v3.0.6 — matches the API workflow and maintainer-side cosign on
+          # local builds. Web and the API share a cosign keypair, so the signer
+          # and any verifier MUST run the same major: the 2026-05-23 v2.4.2
+          # anomaly traced (in part) to a v2.5.2 ↔ v3.0.6 verify incompat — see
+          # ADR-0024 §Process Hardening. Keep cosign aligned cross-context at v3.0.6.
+          cosign-release: 'v3.0.6'
 
       - name: Sign final image with cosign
         env:
