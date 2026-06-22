@@ -52,9 +52,11 @@ describe('llm-provider-fields helpers', () => {
     expect(llmProviderFields.AzureOpenAi.every((f) => f.required)).toBe(true);
   });
 
-  it('llmProviderFields_ShouldHaveOptionalVersion_ForAnthropic', () => {
-    expect(llmProviderFields.Anthropic.map((f) => f.key)).toEqual(['anthropicVersion']);
-    expect(llmProviderFields.Anthropic[0].required).toBe(false);
+  it('llmProviderFields_ShouldHaveOptionalBaseUrlAndVersion_ForAnthropic', () => {
+    // Anthropic exposes an optional Base URL (round-trips via LlmProviderSettings)
+    // plus an optional pinned API version — neither is required.
+    expect(llmProviderFields.Anthropic.map((f) => f.key)).toEqual(['baseUrl', 'anthropicVersion']);
+    expect(llmProviderFields.Anthropic.every((f) => f.required === false)).toBe(true);
   });
 
   it('buildSchema_ShouldRejectBlankModel_WhenModelEmpty', () => {
@@ -133,5 +135,57 @@ describe('LlmConfigForm masked key + conditional fields', () => {
   it('LlmConfigForm_ShouldRenderManualModeNote_Always', () => {
     render(<LlmConfigForm config={null} />);
     expect(screen.getByTestId('llm-manual-mode-note')).toBeInTheDocument();
+  });
+
+  /** Drive the provider <Select> to the named provider via its option role.
+   *  base-ui's Select commits the value on the pointer sequence, so a bare
+   *  `click` is not enough — emit pointerDown/Up + click on the option. */
+  async function switchProvider(name: string) {
+    fireEvent.click(screen.getByTestId('llm-providerType'));
+    const option = await screen.findByRole('option', { name });
+    fireEvent.pointerDown(option);
+    fireEvent.pointerUp(option);
+    fireEvent.click(option);
+  }
+
+  it('LlmConfigForm_ShouldRequireAzureFields_WhenSwitchedToAzureInForm', async () => {
+    // Regression: the Zod schema must re-derive on an in-form provider switch.
+    // Mount as OpenAI (valid baseUrl) then switch to Azure — the now-required
+    // Azure deployment / api-version fields must BLOCK submit until filled.
+    render(<LlmConfigForm config={configuredOpenAi} />);
+
+    await switchProvider('admin:typification.llm.providers.AzureOpenAi');
+
+    // Azure conditional fields appear; deployment / api-version start empty.
+    await waitFor(() => expect(document.getElementById('llm-azureDeployment')).toBeInTheDocument());
+    fireEvent.change(document.getElementById('llm-baseUrl')!, {
+      target: { value: 'https://x.openai.azure.com' },
+    });
+
+    // Submit with the required Azure fields blank → blocked (no mutation).
+    fireEvent.submit(screen.getByTestId('llm-config-form'));
+    await waitFor(() =>
+      expect(document.getElementById('llm-azureDeployment')).toHaveAttribute(
+        'aria-invalid',
+        'true',
+      ),
+    );
+    expect(upsertMutate).not.toHaveBeenCalled();
+
+    // Fill the required Azure fields → submit now goes through.
+    fireEvent.change(document.getElementById('llm-azureDeployment')!, {
+      target: { value: 'gpt4o' },
+    });
+    fireEvent.change(document.getElementById('llm-azureApiVersion')!, {
+      target: { value: '2024-08-01' },
+    });
+    fireEvent.submit(screen.getByTestId('llm-config-form'));
+    await waitFor(() => expect(upsertMutate).toHaveBeenCalled());
+    const payload = upsertMutate.mock.calls[0][0] as {
+      providerType: string;
+      settings: Record<string, string>;
+    };
+    expect(payload.providerType).toBe('AzureOpenAi');
+    expect(payload.settings.azureDeployment).toBe('gpt4o');
   });
 });

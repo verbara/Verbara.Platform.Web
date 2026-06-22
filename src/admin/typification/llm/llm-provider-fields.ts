@@ -40,6 +40,7 @@ export const llmProviderFields: Record<LlmProviderType, FieldDef[]> = {
     },
   ],
   Anthropic: [
+    { key: 'baseUrl', labelKey: 'admin:typification.llm.fields.baseUrl', required: false },
     {
       key: 'anthropicVersion',
       labelKey: 'admin:typification.llm.fields.anthropicVersion',

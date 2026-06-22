@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   useForm,
@@ -71,22 +71,30 @@ export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
   // fields. Seed from the stored config or default to OpenAI-compatible.
   const initialProvider: LlmProviderType = config?.providerType ?? 'OpenAiCompatible';
 
+  // The resolver is captured once at the `useForm` call, so the schema must be
+  // re-derived reactively from the live provider type (mirrors
+  // `channel-config-form.tsx`). Driving it off a piece of React state — synced
+  // on provider change — makes the conditional required fields (Azure
+  // deployment/api-version, …) re-validate after an in-form provider switch
+  // instead of being frozen to the mount-time provider.
+  const [providerType, setProviderType] = useState<LlmProviderType>(initialProvider);
+  const schema = useMemo(() => buildSchema(providerType), [providerType]);
+
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    resetField,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm({
-    // The schema shape depends on the provider type, so cast the resolver to a
-    // permissive Resolver — `providerType` re-derives the schema below.
-    resolver: zodResolver(buildSchema(initialProvider)) as unknown as Resolver<
-      Record<string, unknown>
-    >,
+    // The schema shape depends on the provider type; cast the reactive resolver
+    // to a permissive Resolver — `providerType` state re-derives it above.
+    resolver: zodResolver(schema) as unknown as Resolver<Record<string, unknown>>,
     defaultValues: hydrateDefaults(config, initialProvider),
   });
 
-  const providerType = useWatch({ control, name: 'providerType' }) as LlmProviderType;
   const enabled = useWatch({ control, name: 'enabled' }) as boolean;
   const fields = useMemo(() => llmProviderFields[providerType] ?? [], [providerType]);
 
@@ -115,6 +123,9 @@ export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
     if (!next) return;
     const nextProvider = next as LlmProviderType;
     setValue('providerType', nextProvider);
+    // Re-derive the schema so the new provider's conditional required fields
+    // (e.g. Azure deployment / api-version) are actually validated on submit.
+    setProviderType(nextProvider);
     // Clear settings that don't belong to the new provider so stale values from
     // the previous type aren't submitted.
     const keep = new Set(llmProviderFields[nextProvider].map((f) => f.key));
@@ -123,6 +134,9 @@ export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
         if (!keep.has(field.key)) setValue(field.key, '');
       }
     }
+    // Re-validate so stale errors from the previous provider's fields clear and
+    // the new provider's now-required fields surface their errors.
+    void trigger();
   };
 
   const handleFormSubmit = handleSubmit((values) => {
@@ -136,7 +150,13 @@ export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
       settings: buildSettings(v),
       enabled: v.enabled as boolean,
     };
-    upsert.mutate(payload);
+    upsert.mutate(payload, {
+      // After a successful save the masked "✓ Configured ••••last4" badge (fed
+      // by the refetched config) is the single source of truth — clear the
+      // write-only apiKey input so no plaintext key lingers and an immediate
+      // re-save preserves the just-stored key (empty submit = preserve).
+      onSuccess: () => resetField('apiKey'),
+    });
   });
 
   // The test probe uses the live draft. A typed key probes the draft key;
