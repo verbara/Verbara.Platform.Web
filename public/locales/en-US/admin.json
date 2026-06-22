@@ -65,7 +65,8 @@
     "consent": "Consent",
     "notifications": "Notifications",
     "notificationRules": "Rules",
-    "typification": "Typification"
+    "typification": "Typification",
+    "llmConfig": "AI provider"
   },
   "api-keys": {
     "title": "API Keys",
@@ -3337,6 +3338,49 @@
           "Phone": "Phone",
           "Email": "Email"
         }
+      }
+    },
+    "llm": {
+      "title": "AI provider (LLM)",
+      "description": "Configure the bring-your-own (BYO) language-model provider used by AI typification for this tenant.",
+      "entityType": "LLM configuration",
+      "save": "Save",
+      "delete": "Delete provider",
+      "statusEnabled": "Enabled",
+      "statusDisabled": "Disabled",
+      "manualModeNote": "AI is optional. With no provider configured, typification runs in manual mode with deterministic automation (cascading forms): a valid, supported mode — not an error.",
+      "providers": {
+        "OpenAiCompatible": "OpenAI-compatible",
+        "AzureOpenAi": "Azure OpenAI",
+        "Anthropic": "Anthropic"
+      },
+      "fields": {
+        "providerType": "Provider type",
+        "providerTypePlaceholder": "Select a provider",
+        "model": "Model",
+        "modelPlaceholder": "e.g. gpt-4o-mini",
+        "baseUrl": "Base URL",
+        "azureDeployment": "Azure deployment name",
+        "azureApiVersion": "Azure API version",
+        "anthropicVersion": "Anthropic API version",
+        "apiKey": "API key",
+        "apiKeyHint": "Leave blank to keep the stored key. Type a value only to set or rotate it.",
+        "apiKeyConfigured": "Configured ••••{{last4}}",
+        "apiKeyNotConfigured": "Not configured",
+        "enabled": "Enable this provider",
+        "enabledHint": "When disabled, AI typification does not call the provider."
+      },
+      "test": {
+        "button": "Test connection",
+        "reachable": "Reachable",
+        "authOk": "Authentication OK",
+        "modelOk": "Model available",
+        "latency": "Latency: {{ms}} ms",
+        "requestFailed": "Could not run the connection test."
+      },
+      "validation": {
+        "fieldRequired": "This field is required",
+        "modelRequired": "Model is required"
       }
     }
   }

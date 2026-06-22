@@ -509,7 +509,11 @@
       "bindingCreated": "Asignación creada",
       "bindingUpdated": "Asignación actualizada",
       "bindingDeleted": "Asignación eliminada",
-      "typified": "Tipificación guardada"
+      "typified": "Tipificación guardada",
+      "llmConfigSaved": "Configuración de IA guardada",
+      "llmConfigDeleted": "Proveedor de IA eliminado",
+      "llmTestPassed": "Conexión exitosa",
+      "llmTestFailed": "Falló la conexión"
     }
   },
   "table": {

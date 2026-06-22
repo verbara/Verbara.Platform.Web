@@ -29,6 +29,7 @@ import {
   FileSearch,
   ClipboardList,
   ListTree,
+  BrainCircuit,
   Tags,
   Calendar,
   Building2,
@@ -167,6 +168,13 @@ const groups: SidebarGroup[] = [
         to: '/admin/typification',
         icon: ListTree,
         requiredPermission: 'system:typification:configure',
+      },
+      {
+        key: 'llm-config',
+        labelKey: 'admin:sidebar.llmConfig',
+        to: '/admin/typification/llm',
+        icon: BrainCircuit,
+        requiredPermission: 'typification:ai:configure',
       },
       {
         key: 'reason-hints',

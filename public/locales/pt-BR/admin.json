@@ -65,7 +65,8 @@
     "consent": "Consentimento",
     "notifications": "Notificações",
     "notificationRules": "Regras",
-    "typification": "Tipificação"
+    "typification": "Tipificação",
+    "llmConfig": "Provedor de IA"
   },
   "api-keys": {
     "title": "API Keys",
@@ -3337,6 +3338,49 @@
           "Phone": "Telefone",
           "Email": "E-mail"
         }
+      }
+    },
+    "llm": {
+      "title": "Provedor de IA (LLM)",
+      "description": "Configure o provedor de modelo de linguagem próprio (BYO) usado pela tipificação com IA para este tenant.",
+      "entityType": "configuração de LLM",
+      "save": "Salvar",
+      "delete": "Excluir provedor",
+      "statusEnabled": "Ativo",
+      "statusDisabled": "Inativo",
+      "manualModeNote": "A IA é opcional. Sem provedor configurado, a tipificação funciona no modo manual com automação determinística (formulários em cascata): um modo válido e suportado — não um erro.",
+      "providers": {
+        "OpenAiCompatible": "OpenAI-compatible",
+        "AzureOpenAi": "Azure OpenAI",
+        "Anthropic": "Anthropic"
+      },
+      "fields": {
+        "providerType": "Tipo de provedor",
+        "providerTypePlaceholder": "Selecione um provedor",
+        "model": "Modelo",
+        "modelPlaceholder": "ex.: gpt-4o-mini",
+        "baseUrl": "URL base",
+        "azureDeployment": "Nome do deployment do Azure",
+        "azureApiVersion": "Versão da API do Azure",
+        "anthropicVersion": "Versão da API da Anthropic",
+        "apiKey": "Chave de API",
+        "apiKeyHint": "Deixe em branco para manter a chave salva. Digite um valor apenas para defini-la ou rotacioná-la.",
+        "apiKeyConfigured": "Configurada ••••{{last4}}",
+        "apiKeyNotConfigured": "Não configurada",
+        "enabled": "Habilitar este provedor",
+        "enabledHint": "Quando desabilitado, a tipificação com IA não chama o provedor."
+      },
+      "test": {
+        "button": "Testar conexão",
+        "reachable": "Acessível",
+        "authOk": "Autenticação OK",
+        "modelOk": "Modelo disponível",
+        "latency": "Latência: {{ms}} ms",
+        "requestFailed": "Não foi possível executar o teste de conexão."
+      },
+      "validation": {
+        "fieldRequired": "Este campo é obrigatório",
+        "modelRequired": "O modelo é obrigatório"
       }
     }
   }
