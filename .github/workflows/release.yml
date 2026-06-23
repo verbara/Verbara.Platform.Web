@@ -91,6 +91,10 @@ jobs:
 
       - name: Build and push image (multi-arch + :latest alias)
         id: build
+        # The linux/arm64 layer builds under QEMU emulation on the amd64 runner,
+        # which has hung indefinitely (~1h stuck buildx) on past releases. Fail fast
+        # so the run is cancellable + auto-rerunnable instead of stalling the release.
+        timeout-minutes: 25
         uses: docker/build-push-action@v7
         with:
           context: .
