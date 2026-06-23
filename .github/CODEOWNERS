@@ -1,0 +1,12 @@
+# CODEOWNERS — review routing for Verbara.Platform.Web (React 19 frontend)
+# One owner today (solo dev). As the team grows, add reviewers per area
+# below; GitHub auto-requests the matching owner on each PR.
+
+# Default owner for everything
+*                  @Harol-Reina
+
+# Release-sensitive surfaces (CI/signing, deps, i18n parity, specs)
+/.github/          @Harol-Reina
+/package.json      @Harol-Reina
+/CHANGELOG.md      @Harol-Reina
+/openspec/         @Harol-Reina
