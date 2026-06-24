@@ -230,6 +230,26 @@ describe('LlmConfigForm masked key + conditional fields', () => {
     expect(toggle).toHaveAttribute('data-disabled');
   });
 
+  it('LlmConfigForm_ShouldAllowSwitchBackToByo_WhenManagedButEntitlementLost', () => {
+    // Downgrade trap: stored aiSource=PlatformManaged but the plan later lost the
+    // entitlement (platformLlmAvailable=false). The toggle must stay ENABLED so
+    // the tenant can switch back to BYO — only ENABLING managed is gated.
+    const managedNoEntitlement: TenantLlmConfig = {
+      ...configuredOpenAi,
+      aiSource: 'PlatformManaged',
+      platformLlmAvailable: false,
+    };
+    render(<LlmConfigForm config={managedNoEntitlement} platformLlmAvailable={false} />);
+    const toggle = screen.getByTestId('llm-aiSource');
+    expect(toggle).not.toHaveAttribute('aria-disabled', 'true');
+    // Starts in managed view (readout shown, BYO fields hidden).
+    expect(screen.getByTestId('llm-ai-credits-readout')).toBeInTheDocument();
+    expect(document.getElementById('llm-model')).not.toBeInTheDocument();
+    // Switch back to BYO → BYO fields reappear.
+    fireEvent.click(toggle);
+    expect(document.getElementById('llm-model')).toBeInTheDocument();
+  });
+
   it('LlmConfigForm_ShouldSendAiSource_WhenSubmitted', async () => {
     render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
     fireEvent.submit(screen.getByTestId('llm-config-form'));

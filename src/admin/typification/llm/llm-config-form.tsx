@@ -236,7 +236,12 @@ export function LlmConfigForm({ config, platformLlmAvailable }: Readonly<LlmConf
         <Switch
           id="llm-aiSource"
           checked={isManaged}
-          disabled={!platformLlmAvailable}
+          // Block ENABLING platform-managed without entitlement, but never block
+          // DISABLING it: a tenant that opted in and later lost the PlanFeature
+          // (platformLlmAvailable=false while aiSource=PlatformManaged) must still
+          // be able to switch back to BYO — otherwise the BYO fields stay hidden
+          // behind a disabled toggle and the config is un-editable.
+          disabled={!platformLlmAvailable && !isManaged}
           onCheckedChange={(checked) => setAiSource(checked ? 'PlatformManaged' : 'Byo')}
           data-testid="llm-aiSource"
         />
