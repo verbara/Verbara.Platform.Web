@@ -6,9 +6,11 @@ import {
   useUpsertTenantLlmConfig,
   useDeleteTenantLlmConfig,
   useTestLlmConnection,
+  useAiCredits,
   isLlmConfigEmpty,
   type TenantLlmConfig,
   type LlmConfigEmpty,
+  type AiCreditsResponse,
 } from './use-typification-llm';
 import * as client from '@/core/api/client';
 
@@ -41,6 +43,17 @@ const maskedConfig: TenantLlmConfig = {
   keySet: true,
   keyLast4: 'cdef',
   updatedAt: '2026-06-21T00:00:00Z',
+  aiSource: 'Byo',
+  platformLlmAvailable: true,
+};
+
+const mockCredits: AiCreditsResponse = {
+  allowanceCredits: 5000,
+  consumedCredits: 1200,
+  remainingCredits: 3800,
+  usagePercent: 24,
+  periodEnd: '2026-07-01T00:00:00Z',
+  actionOnExhaustion: 'Block',
 };
 
 describe('isLlmConfigEmpty', () => {
@@ -89,13 +102,34 @@ describe('useUpsertTenantLlmConfig', () => {
       apiKey: 'sk-secret-abcdef',
       settings: { baseUrl: 'https://api.openai.com/v1' },
       enabled: true,
+      aiSource: 'Byo',
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(client.customFetch).toHaveBeenCalledWith({
       url: '/api/v1/admin/ai/llm-config',
       method: 'PUT',
-      data: expect.objectContaining({ apiKey: 'sk-secret-abcdef', model: 'gpt-4o-mini' }),
+      data: expect.objectContaining({
+        apiKey: 'sk-secret-abcdef',
+        model: 'gpt-4o-mini',
+        aiSource: 'Byo',
+      }),
     });
+  });
+
+  it('useUpsertTenantLlmConfig_ShouldForwardAiSource_WhenPlatformManagedSelected', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(maskedConfig);
+    const { result } = renderHook(() => useUpsertTenantLlmConfig(), { wrapper });
+    result.current.mutate({
+      providerType: 'OpenAiCompatible',
+      model: 'gpt-4o-mini',
+      apiKey: null,
+      settings: null,
+      enabled: true,
+      aiSource: 'PlatformManaged',
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const call = vi.mocked(client.customFetch).mock.calls[0]?.[0];
+    expect((call?.data as { aiSource: string }).aiSource).toBe('PlatformManaged');
   });
 
   it('useUpsertTenantLlmConfig_ShouldSendNullKey_WhenPreservingStoredKey', async () => {
@@ -107,10 +141,11 @@ describe('useUpsertTenantLlmConfig', () => {
       apiKey: null,
       settings: { baseUrl: 'https://api.openai.com/v1' },
       enabled: true,
+      aiSource: 'Byo',
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    const call = vi.mocked(client.customFetch).mock.calls[0][0];
-    expect((call.data as { apiKey: string | null }).apiKey).toBeNull();
+    const call = vi.mocked(client.customFetch).mock.calls[0]?.[0];
+    expect((call?.data as { apiKey: string | null }).apiKey).toBeNull();
   });
 });
 
@@ -126,6 +161,21 @@ describe('useDeleteTenantLlmConfig', () => {
       url: '/api/v1/admin/ai/llm-config',
       method: 'DELETE',
     });
+  });
+});
+
+describe('useAiCredits', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('useAiCredits_ShouldFetchFromCreditsUrl_WhenCalled', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(mockCredits);
+    const { result } = renderHook(() => useAiCredits(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/ai/credits',
+      method: 'GET',
+    });
+    expect(result.current.data).toEqual(mockCredits);
   });
 });
 

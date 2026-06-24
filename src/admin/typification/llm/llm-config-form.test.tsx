@@ -11,6 +11,19 @@ vi.mock('@/core/api/hooks/use-typification-llm', async (importOriginal) => {
     ...actual,
     useUpsertTenantLlmConfig: () => ({ mutate: upsertMutate, isPending: false }),
     useTestLlmConnection: () => ({ mutate: vi.fn(), isPending: false }),
+    // The credits readout renders inside the form when AI source is managed.
+    // Stub it with a stable, fully-populated allowance so the readout paints.
+    useAiCredits: () => ({
+      data: {
+        allowanceCredits: 1000,
+        consumedCredits: 250,
+        remainingCredits: 750,
+        usagePercent: 25,
+        periodEnd: '2026-07-01T00:00:00Z',
+        actionOnExhaustion: 'Block',
+      },
+      isPending: false,
+    }),
   };
 });
 
@@ -79,7 +92,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('LlmConfigForm_ShouldShowConfiguredBadgeAndMaskPlaceholder_WhenKeySet', () => {
-    render(<LlmConfigForm config={configuredOpenAi} />);
+    render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
     // Badge surfaces the last4; the input never echoes the key.
     expect(screen.getByTestId('llm-apiKey-badge').textContent).toContain('cdef');
     const apiKey = document.getElementById('llm-apiKey') as HTMLInputElement;
@@ -90,7 +103,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
   });
 
   it('LlmConfigForm_ShouldRenderBaseUrlOnly_WhenOpenAiCompatible', () => {
-    render(<LlmConfigForm config={configuredOpenAi} />);
+    render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
     expect(document.getElementById('llm-baseUrl')).toBeInTheDocument();
     expect(document.getElementById('llm-azureDeployment')).not.toBeInTheDocument();
     expect(document.getElementById('llm-anthropicVersion')).not.toBeInTheDocument();
@@ -106,7 +119,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
         azureApiVersion: '2024-08-01',
       },
     };
-    render(<LlmConfigForm config={azure} />);
+    render(<LlmConfigForm config={azure} platformLlmAvailable={true} />);
     expect(document.getElementById('llm-baseUrl')).toBeInTheDocument();
     expect(document.getElementById('llm-azureDeployment')).toBeInTheDocument();
     expect(document.getElementById('llm-azureApiVersion')).toBeInTheDocument();
@@ -114,7 +127,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
 
   it('LlmConfigForm_ShouldSendNullApiKey_WhenFieldLeftBlank', async () => {
     // The key is configured; leaving the field blank must PRESERVE it (send null).
-    render(<LlmConfigForm config={configuredOpenAi} />);
+    render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
     fireEvent.submit(screen.getByTestId('llm-config-form'));
     await waitFor(() => expect(upsertMutate).toHaveBeenCalled());
     const payload = upsertMutate.mock.calls[0][0] as { apiKey: string | null };
@@ -122,7 +135,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
   });
 
   it('LlmConfigForm_ShouldSendTypedApiKey_WhenFieldFilled', async () => {
-    render(<LlmConfigForm config={configuredOpenAi} />);
+    render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
     fireEvent.change(document.getElementById('llm-apiKey')!, {
       target: { value: 'sk-new-rotated-key' },
     });
@@ -133,7 +146,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
   });
 
   it('LlmConfigForm_ShouldRenderManualModeNote_Always', () => {
-    render(<LlmConfigForm config={null} />);
+    render(<LlmConfigForm config={null} platformLlmAvailable={true} />);
     expect(screen.getByTestId('llm-manual-mode-note')).toBeInTheDocument();
   });
 
@@ -152,7 +165,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
     // Regression: the Zod schema must re-derive on an in-form provider switch.
     // Mount as OpenAI (valid baseUrl) then switch to Azure — the now-required
     // Azure deployment / api-version fields must BLOCK submit until filled.
-    render(<LlmConfigForm config={configuredOpenAi} />);
+    render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
 
     await switchProvider('admin:typification.llm.providers.AzureOpenAi');
 
@@ -187,5 +200,61 @@ describe('LlmConfigForm masked key + conditional fields', () => {
     };
     expect(payload.providerType).toBe('AzureOpenAi');
     expect(payload.settings.azureDeployment).toBe('gpt4o');
+  });
+
+  it('LlmConfigForm_ShouldHideByoFields_WhenManagedSelected', () => {
+    render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
+    // BYO fields are present in the default (Byo) mode.
+    expect(document.getElementById('llm-baseUrl')).toBeInTheDocument();
+    expect(document.getElementById('llm-model')).toBeInTheDocument();
+    expect(document.getElementById('llm-apiKey')).toBeInTheDocument();
+
+    // Toggle the Switch to PlatformManaged.
+    fireEvent.click(screen.getByTestId('llm-aiSource'));
+
+    // The BYO provider/model/key/test sections are gone; the readout shows.
+    expect(document.getElementById('llm-providerType')).not.toBeInTheDocument();
+    expect(document.getElementById('llm-baseUrl')).not.toBeInTheDocument();
+    expect(document.getElementById('llm-model')).not.toBeInTheDocument();
+    expect(document.getElementById('llm-apiKey')).not.toBeInTheDocument();
+    expect(screen.getByTestId('llm-ai-credits-readout')).toBeInTheDocument();
+  });
+
+  it('LlmConfigForm_ShouldDisableManagedToggle_WhenNotAvailable', () => {
+    render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={false} />);
+    // base-ui's Switch renders a role="switch" span (not a native <button>), so
+    // disablement surfaces via aria-disabled / data-disabled, not the DOM
+    // `disabled` attribute that `toBeDisabled()` checks.
+    const toggle = screen.getByTestId('llm-aiSource');
+    expect(toggle).toHaveAttribute('aria-disabled', 'true');
+    expect(toggle).toHaveAttribute('data-disabled');
+  });
+
+  it('LlmConfigForm_ShouldAllowSwitchBackToByo_WhenManagedButEntitlementLost', () => {
+    // Downgrade trap: stored aiSource=PlatformManaged but the plan later lost the
+    // entitlement (platformLlmAvailable=false). The toggle must stay ENABLED so
+    // the tenant can switch back to BYO — only ENABLING managed is gated.
+    const managedNoEntitlement: TenantLlmConfig = {
+      ...configuredOpenAi,
+      aiSource: 'PlatformManaged',
+      platformLlmAvailable: false,
+    };
+    render(<LlmConfigForm config={managedNoEntitlement} platformLlmAvailable={false} />);
+    const toggle = screen.getByTestId('llm-aiSource');
+    expect(toggle).not.toHaveAttribute('aria-disabled', 'true');
+    // Starts in managed view (readout shown, BYO fields hidden).
+    expect(screen.getByTestId('llm-ai-credits-readout')).toBeInTheDocument();
+    expect(document.getElementById('llm-model')).not.toBeInTheDocument();
+    // Switch back to BYO → BYO fields reappear.
+    fireEvent.click(toggle);
+    expect(document.getElementById('llm-model')).toBeInTheDocument();
+  });
+
+  it('LlmConfigForm_ShouldSendAiSource_WhenSubmitted', async () => {
+    render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
+    fireEvent.submit(screen.getByTestId('llm-config-form'));
+    await waitFor(() => expect(upsertMutate).toHaveBeenCalled());
+    const payload = upsertMutate.mock.calls[0][0] as { aiSource: string };
+    expect(payload.aiSource).toBe('Byo');
   });
 });

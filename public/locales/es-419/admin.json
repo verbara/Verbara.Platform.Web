@@ -3381,7 +3381,23 @@
       "validation": {
         "fieldRequired": "Este campo es obligatorio",
         "modelRequired": "El modelo es obligatorio"
+      },
+      "aiSource": {
+        "label": "Usar IA administrada por Verbara",
+        "byo": "Usar tu propio proveedor",
+        "managed": "Administrada por Verbara",
+        "managedNote": "Verbara proporciona el modelo de lenguaje. No necesitas configurar una clave ni un proveedor; el uso se descuenta de tu asignación de créditos incluida.",
+        "unavailableHint": "La IA administrada por Verbara no está disponible en tu plan actual."
       }
+    },
+    "aiCredits": {
+      "title": "Uso de créditos",
+      "allowance": "Asignación",
+      "consumed": "Consumidos",
+      "remaining": "Restantes",
+      "unlimited": "Ilimitado",
+      "usage": "Uso",
+      "periodEnd": "El período termina el {{date}}"
     }
   }
 }
