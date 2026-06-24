@@ -13,6 +13,18 @@ _No unreleased changes._
 
 ---
 
+## [3.11.0-web] — 2026-06-24 — Typification P2c.2 (platform-managed AI / AI Credits)
+
+The UI for **P2c.2** (pairs with **Platform v2.15.0**): a tenant can switch its Typification AI provider between **BYO** and **Verbara-managed** (metered in AI Credits), gated by the `PlatformLlm` plan entitlement.
+
+### Added
+
+- **"Use Verbara-managed AI (credits)" toggle** on the LLM-config admin page — when on, the BYO provider/key/test fields are hidden and a **credit-usage readout** (allowance / consumed / remaining / usage %) is shown. Disabled (with an upgrade hint) when the tenant's plan lacks the entitlement — but never blocks switching **back** to BYO if entitlement was lost.
+- `useAiCredits()` hook (`GET /admin/ai/credits`); `aiSource` + `platformLlmAvailable` on the LLM-config types.
+- i18n for the new strings in **EN-US / ES-419 / PT-BR**.
+
+---
+
 ## [3.10.0-web] — 2026-06-21 — Typification P2c.1 (per-tenant BYO LLM config UI)
 
 Client half of Typification **P2c.1** ([ADR-0029](https://github.com/verbara/verbara-platform/blob/main/docs/decisions/0029-typification-cascading-conditional-ai-module.md)) — an admin page to configure a per-tenant **BYO** LLM provider. Pairs with **Platform v2.14.0**. PR #117. i18n parity EN-US / ES-419 / PT-BR maintained.
