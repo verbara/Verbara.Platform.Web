@@ -130,8 +130,15 @@ jobs:
           set -euo pipefail
           umask 077
           KEY_FILE="$(mktemp -t cosign-key.XXXXXX)"
-          trap 'shred -u "$KEY_FILE" 2>/dev/null || rm -f "$KEY_FILE"' EXIT
+          SIGNING_CONFIG="$(mktemp -t signing-config.XXXXXX).json"
+          trap 'shred -u "$KEY_FILE" "$SIGNING_CONFIG" 2>/dev/null || rm -f "$KEY_FILE" "$SIGNING_CONFIG"' EXIT
           printf '%s' "$COSIGN_PRIVATE_KEY" > "$KEY_FILE"
+          # cosign v3.x removed the `--tlog-upload=false` flag (it errors when a
+          # signing-config is in play). To skip Rekor (Verbara's posture) we pass an
+          # explicit signing-config whose rekorTlogUrls array is stripped via jq —
+          # mirrors the Platform release.yml cosign-v3 migration (ADR-0024).
+          curl -fsSL https://raw.githubusercontent.com/sigstore/root-signing/refs/heads/main/targets/signing_config.v0.2.json \
+            | jq 'del(.rekorTlogUrls)' > "$SIGNING_CONFIG"
           # Retry to tolerate the ghcr push→HEAD manifest-propagation race: cosign
           # signs by digest, and a just-pushed manifest can briefly 404 on the HEAD
           # lookup before ghcr finishes propagating it. The `if` condition is exempt
@@ -141,7 +148,7 @@ jobs:
             if cosign sign \
                  --key "$KEY_FILE" \
                  --yes \
-                 --tlog-upload=false \
+                 --signing-config "$SIGNING_CONFIG" \
                  "$IMAGE_REF"; then
               signed=true
               break
