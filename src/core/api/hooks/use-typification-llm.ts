@@ -9,6 +9,9 @@ import { toast } from 'sonner';
 // wire; the API key is NEVER returned — only `keySet` + `keyLast4`).
 // ---------------------------------------------------------------------------
 
+/** Wire values match the C# `AiSource` enum. */
+export type AiSource = 'Byo' | 'PlatformManaged';
+
 /** Wire values are PascalCase strings (match the C# `ProviderType` enum). */
 export type LlmProviderType = 'OpenAiCompatible' | 'AzureOpenAi' | 'Anthropic';
 
@@ -31,6 +34,8 @@ export interface TenantLlmConfig {
   keySet: boolean;
   keyLast4: string | null;
   updatedAt: string;
+  aiSource: AiSource;
+  platformLlmAvailable: boolean;
 }
 
 /**
@@ -38,9 +43,12 @@ export interface TenantLlmConfig {
  * deterministic typification (manual + cascading-form automation) with no LLM.
  * The GET endpoint returns this discriminated shape (`configured: false`)
  * instead of the masked config when nothing is stored.
+ * `platformLlmAvailable` is included even in this empty shape so the UI can
+ * offer the PlatformManaged option without a separate request.
  */
 export interface LlmConfigEmpty {
   configured: false;
+  platformLlmAvailable: boolean;
 }
 
 export type TenantLlmConfigResult = TenantLlmConfig | LlmConfigEmpty;
@@ -65,6 +73,17 @@ export interface UpsertLlmConfigInput {
   apiKey: string | null;
   settings: LlmProviderSettings | null;
   enabled: boolean;
+  aiSource: AiSource;
+}
+
+/** GET `/admin/ai/credits` response — platform-managed LLM usage summary. */
+export interface AiCreditsResponse {
+  allowanceCredits: number | null;
+  consumedCredits: number;
+  remainingCredits: number | null;
+  usagePercent: number;
+  periodEnd: string;
+  actionOnExhaustion: string;
 }
 
 /**
@@ -154,5 +173,22 @@ export function useTestLlmConnection() {
         method: 'POST',
         data: draft,
       }),
+  });
+}
+
+/**
+ * GET `/admin/ai/credits`. Platform-managed LLM usage summary for the current
+ * tenant: allowance, consumed, remaining, period end, and exhaustion action.
+ * Refreshes every 60 s (staleTime) — fine-grained enough for the settings UI.
+ */
+export function useAiCredits() {
+  return useQuery({
+    queryKey: ['typification', 'ai-credits'] as const,
+    queryFn: () =>
+      customFetch<AiCreditsResponse>({
+        url: '/api/v1/admin/ai/credits',
+        method: 'GET',
+      }),
+    staleTime: 60 * 1000,
   });
 }
