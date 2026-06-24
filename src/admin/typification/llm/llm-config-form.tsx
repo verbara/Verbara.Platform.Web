@@ -19,6 +19,7 @@ import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { useUpsertTenantLlmConfig } from '@/core/api/hooks/use-typification-llm';
 import type {
+  AiSource,
   LlmProviderType,
   TenantLlmConfig,
   UpsertLlmConfigInput,
@@ -26,6 +27,7 @@ import type {
   TestLlmConnectionInput,
 } from '@/core/api/hooks/use-typification-llm';
 import { LlmTestButton } from './llm-test-button';
+import { AiCreditsReadout } from './ai-credits-readout';
 import {
   LLM_PROVIDERS,
   llmProviderFields,
@@ -36,6 +38,9 @@ import {
 interface LlmConfigFormProps {
   /** The currently-stored masked config, or `null` when none is configured. */
   config: TenantLlmConfig | null;
+  /** Whether the Verbara-managed (PlatformManaged) LLM is offered for this
+   *  tenant's plan. When false the managed toggle is disabled. */
+  platformLlmAvailable: boolean;
 }
 
 interface SettingFieldProps {
@@ -63,9 +68,16 @@ function SettingField({ fieldKey, label, required, error, register }: Readonly<S
   );
 }
 
-export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
+export function LlmConfigForm({ config, platformLlmAvailable }: Readonly<LlmConfigFormProps>) {
   const { t } = useTranslation(['admin']);
   const upsert = useUpsertTenantLlmConfig();
+
+  // AI source toggle: Byo (bring-your-own provider) ↔ PlatformManaged (Verbara
+  // hosts the LLM). Seed from the stored config; default to Byo. When managed,
+  // the BYO provider/model/key sections are hidden and the BYO schema is
+  // bypassed so its required fields can't block a managed submit.
+  const [aiSource, setAiSource] = useState<AiSource>(config?.aiSource ?? 'Byo');
+  const isManaged = aiSource === 'PlatformManaged';
 
   // The selected provider type drives both the schema and the conditional
   // fields. Seed from the stored config or default to OpenAI-compatible.
@@ -90,8 +102,12 @@ export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
     formState: { errors, isSubmitting },
   } = useForm({
     // The schema shape depends on the provider type; cast the reactive resolver
-    // to a permissive Resolver — `providerType` state re-derives it above.
-    resolver: zodResolver(schema) as unknown as Resolver<Record<string, unknown>>,
+    // to a permissive Resolver — `providerType` state re-derives it above. In
+    // PlatformManaged mode the BYO schema is BYPASSED (resolver omitted) so its
+    // required model/baseUrl fields don't block a managed submit.
+    resolver: isManaged
+      ? undefined
+      : (zodResolver(schema) as unknown as Resolver<Record<string, unknown>>),
     defaultValues: hydrateDefaults(config, initialProvider),
   });
 
@@ -142,14 +158,27 @@ export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
   const handleFormSubmit = handleSubmit((values) => {
     const v = values as Record<string, unknown>;
     const apiKey = (v.apiKey as string) ?? '';
-    const payload: UpsertLlmConfigInput = {
-      providerType: v.providerType as LlmProviderType,
-      model: (v.model as string).trim(),
-      // Only send a non-empty key — empty PRESERVES the stored key server-side.
-      apiKey: apiKey.length > 0 ? apiKey : null,
-      settings: buildSettings(v),
-      enabled: v.enabled as boolean,
-    };
+    // In managed mode the BYO model/baseUrl/key are irrelevant — preserve the
+    // stored model (or default) and never rotate the key. In BYO mode the live
+    // draft values drive the payload as before.
+    const payload: UpsertLlmConfigInput = isManaged
+      ? {
+          providerType: config?.providerType ?? (v.providerType as LlmProviderType),
+          model: config?.model ?? (v.model as string).trim(),
+          apiKey: null,
+          settings: config?.settings ?? null,
+          enabled: v.enabled as boolean,
+          aiSource,
+        }
+      : {
+          providerType: v.providerType as LlmProviderType,
+          model: (v.model as string).trim(),
+          // Only send a non-empty key — empty PRESERVES the stored key server-side.
+          apiKey: apiKey.length > 0 ? apiKey : null,
+          settings: buildSettings(v),
+          enabled: v.enabled as boolean,
+          aiSource,
+        };
     upsert.mutate(payload, {
       // After a successful save the masked "✓ Configured ••••last4" badge (fed
       // by the refetched config) is the single source of truth — clear the
@@ -187,90 +216,136 @@ export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
         </p>
       </div>
 
-      {/* Provider type */}
-      <div className="space-y-1.5">
-        <Label required>{t('admin:typification.llm.fields.providerType')}</Label>
-        <Controller
-          name="providerType"
-          control={control}
-          render={({ field }) => (
-            <Select
-              value={(field.value as string) || undefined}
-              onValueChange={handleProviderChange}
-            >
-              <SelectTrigger className="w-full" data-testid="llm-providerType">
-                <SelectValue
-                  placeholder={t('admin:typification.llm.fields.providerTypePlaceholder')}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {LLM_PROVIDERS.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {t(`admin:typification.llm.providers.${p}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
-      </div>
-
-      {/* Model (always required) */}
-      <div className="space-y-1.5">
-        <Label htmlFor="llm-model" required>
-          {t('admin:typification.llm.fields.model')}
-        </Label>
-        <Input
-          id="llm-model"
-          type="text"
-          placeholder={t('admin:typification.llm.fields.modelPlaceholder')}
-          {...modelA11y.inputProps}
-          {...register('model')}
-        />
-        <FieldError
-          id={modelA11y.errorId}
-          message={
-            (errors.model as RHFFieldError | undefined)?.message
-              ? t(String((errors.model as RHFFieldError).message))
-              : undefined
-          }
-        />
-      </div>
-
-      {/* Conditional provider-settings fields */}
-      {fields.map((field) => (
-        <SettingField
-          key={field.key}
-          fieldKey={field.key}
-          label={t(field.labelKey)}
-          required={field.required}
-          error={errors[field.key] as RHFFieldError | undefined}
-          register={register(field.key)}
-        />
-      ))}
-
-      {/* API key (write-only, masked) */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="llm-apiKey">{t('admin:typification.llm.fields.apiKey')}</Label>
-          <span className="text-xs text-muted-foreground" data-testid="llm-apiKey-badge">
-            {keySet
-              ? `✓ ${t('admin:typification.llm.fields.apiKeyConfigured', { last4: keyLast4 ?? '' })}`
-              : t('admin:typification.llm.fields.apiKeyNotConfigured')}
-          </span>
+      {/* AI source: Byo ↔ PlatformManaged (Verbara-hosted). Disabled when the
+          tenant's plan doesn't offer the managed LLM. */}
+      <div className="flex items-center justify-between rounded-md border p-3">
+        <div>
+          <Label htmlFor="llm-aiSource" className="font-normal">
+            {t('admin:typification.llm.aiSource.label')}
+          </Label>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {platformLlmAvailable
+              ? t(
+                  isManaged
+                    ? 'admin:typification.llm.aiSource.managed'
+                    : 'admin:typification.llm.aiSource.byo',
+                )
+              : t('admin:typification.llm.aiSource.unavailableHint')}
+          </p>
         </div>
-        <Input
-          id="llm-apiKey"
-          type="password"
-          autoComplete="new-password"
-          placeholder={keySet ? '••••••••' : ''}
-          {...apiKeyA11y.inputProps}
-          {...register('apiKey')}
+        <Switch
+          id="llm-aiSource"
+          checked={isManaged}
+          disabled={!platformLlmAvailable}
+          onCheckedChange={(checked) => setAiSource(checked ? 'PlatformManaged' : 'Byo')}
+          data-testid="llm-aiSource"
         />
-        <p className="text-xs text-muted-foreground">
-          {t('admin:typification.llm.fields.apiKeyHint')}
-        </p>
       </div>
+
+      {isManaged ? (
+        <div className="space-y-4">
+          <div
+            className="flex items-start gap-3 rounded-md border bg-muted/40 p-4"
+            data-testid="llm-managed-note"
+          >
+            <Info className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              {t('admin:typification.llm.aiSource.managedNote')}
+            </p>
+          </div>
+          <AiCreditsReadout />
+        </div>
+      ) : (
+        <>
+          {/* Provider type */}
+          <div className="space-y-1.5">
+            <Label required>{t('admin:typification.llm.fields.providerType')}</Label>
+            <Controller
+              name="providerType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={(field.value as string) || undefined}
+                  onValueChange={handleProviderChange}
+                >
+                  <SelectTrigger className="w-full" data-testid="llm-providerType">
+                    <SelectValue
+                      placeholder={t('admin:typification.llm.fields.providerTypePlaceholder')}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LLM_PROVIDERS.map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {t(`admin:typification.llm.providers.${p}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          {/* Model (always required) */}
+          <div className="space-y-1.5">
+            <Label htmlFor="llm-model" required>
+              {t('admin:typification.llm.fields.model')}
+            </Label>
+            <Input
+              id="llm-model"
+              type="text"
+              placeholder={t('admin:typification.llm.fields.modelPlaceholder')}
+              {...modelA11y.inputProps}
+              {...register('model')}
+            />
+            <FieldError
+              id={modelA11y.errorId}
+              message={
+                (errors.model as RHFFieldError | undefined)?.message
+                  ? t(String((errors.model as RHFFieldError).message))
+                  : undefined
+              }
+            />
+          </div>
+
+          {/* Conditional provider-settings fields */}
+          {fields.map((field) => (
+            <SettingField
+              key={field.key}
+              fieldKey={field.key}
+              label={t(field.labelKey)}
+              required={field.required}
+              error={errors[field.key] as RHFFieldError | undefined}
+              register={register(field.key)}
+            />
+          ))}
+
+          {/* API key (write-only, masked) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="llm-apiKey">{t('admin:typification.llm.fields.apiKey')}</Label>
+              <span className="text-xs text-muted-foreground" data-testid="llm-apiKey-badge">
+                {keySet
+                  ? `✓ ${t('admin:typification.llm.fields.apiKeyConfigured', { last4: keyLast4 ?? '' })}`
+                  : t('admin:typification.llm.fields.apiKeyNotConfigured')}
+              </span>
+            </div>
+            <Input
+              id="llm-apiKey"
+              type="password"
+              autoComplete="new-password"
+              placeholder={keySet ? '••••••••' : ''}
+              {...apiKeyA11y.inputProps}
+              {...register('apiKey')}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('admin:typification.llm.fields.apiKeyHint')}
+            </p>
+          </div>
+
+          {/* Test connection */}
+          <LlmTestButton getDraft={getTestDraft} />
+        </>
+      )}
 
       {/* Enabled */}
       <div className="flex items-center justify-between rounded-md border p-3">
@@ -289,9 +364,6 @@ export function LlmConfigForm({ config }: Readonly<LlmConfigFormProps>) {
           data-testid="llm-enabled"
         />
       </div>
-
-      {/* Test connection */}
-      <LlmTestButton getDraft={getTestDraft} />
 
       <div className="flex justify-end">
         <Button
