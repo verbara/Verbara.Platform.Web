@@ -3397,7 +3397,14 @@
       "remaining": "Remaining",
       "unlimited": "Unlimited",
       "usage": "Usage",
-      "periodEnd": "Period ends {{date}}"
+      "periodEnd": "Period ends {{date}}",
+      "actionOnExhaustion": {
+        "label": "On exhaustion",
+        "warn": "Warn",
+        "softBlock": "Soft block",
+        "hardBlock": "Hard block"
+      },
+      "nearExhaustion": "You've used {{percent}}% of your credit allowance."
     }
   }
 }
