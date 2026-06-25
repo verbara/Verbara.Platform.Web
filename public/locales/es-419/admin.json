@@ -3397,7 +3397,14 @@
       "remaining": "Restantes",
       "unlimited": "Ilimitado",
       "usage": "Uso",
-      "periodEnd": "El período termina el {{date}}"
+      "periodEnd": "El período termina el {{date}}",
+      "actionOnExhaustion": {
+        "label": "Al agotarse",
+        "warn": "Aviso",
+        "softBlock": "Bloqueo parcial",
+        "hardBlock": "Bloqueo total"
+      },
+      "nearExhaustion": "Has usado el {{percent}} % de tu asignación de créditos."
     }
   }
 }
