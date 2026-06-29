@@ -70,7 +70,7 @@
     "react-hook-form": "^7.80.0",
     "react-i18next": "^17.0.8",
     "react-is": "^19.2.7",
-    "react-router-dom": "^7.17.0",
+    "react-router-dom": "^7.18.0",
     "react-to-print": "^3.3.0",
     "recharts": "^3.8.1",
     "shadcn": "^4.11.0",
