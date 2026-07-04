@@ -13,8 +13,10 @@ context: |
   - `npm run build` runs type-check + bundle and must pass clean.
 
   Note: Platform + Platform.Web share an authoritative workstream — plans/specs/ADRs touching the API OR the
-  frontend are authored under the Verbara.Platform repo's docs/ tree. This repo's docs/ is secondary.
-  Cross-repo standards live in the private verbara-meta repo as ADRs.
+  frontend are authored under the Verbara.Platform repo's docs/ tree, AND (hub rule, verbara-meta/ADR-0005)
+  OpenSpec changes + living specs describing Web behavior are hosted in Verbara.Platform/openspec/ (see
+  openspec/specs/README.md here for the pointer list; e.g. ai-credits-readout). This repo's openspec exists
+  for genuinely frontend-independent changes. Cross-repo standards live in the private verbara-meta repo as ADRs.
 
 rules:
   proposal:
