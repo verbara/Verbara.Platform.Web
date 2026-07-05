@@ -34,4 +34,5 @@ rules:
   tasks:
     - 'Verification tasks MUST include `npm run build` (type-check + bundle), `npx vitest run`, and i18n parity green.'
     - 'For user-facing flows, include `npx playwright test` coverage using data-* selectors.'
+    - 'E2E/Playwright tasks MUST follow the anti-flake fences: no waitForTimeout/wall-clock waits, assert via expect(...) polling or waitForResponse, and respect the suite posture (workers:1, retries:1, data-testid selectors). AI-generated specs are held to the same rule.'
     - 'Use Subagent-Driven Development with FCM batching: Phase A foundation (batch) -> Phase B critical components (focused) -> Phase C integration (batch).'
