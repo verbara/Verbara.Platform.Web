@@ -3,8 +3,8 @@
 **Version:** 2.1.0 (cierre del Nivel 5 junto con Track 5D)
 **Status:** Draft (pending user review)
 **Created:** 2026-05-08
-**Predecessor:** [Track 5C-a11y](2026-05-08-track-5c-a11y.md) (closed)
-**Roadmap entry:** [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](../plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md) §Nivel 5 → Track 5C — a11y deep + print/export. The a11y portion shipped in `v2.0.4-web`; this track ships the print/export portion separately.
+**Predecessor:** [Track 5C-a11y](../plans/completed/2026-05-08-track-5c-a11y.md) (closed)
+**Roadmap entry:** [`docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](../plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md) §Nivel 5 → Track 5C — a11y deep + print/export. The a11y portion shipped in `v2.0.4-web`; this track ships the print/export portion separately.
 
 ## Problem
 

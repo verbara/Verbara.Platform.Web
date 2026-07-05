@@ -48,13 +48,13 @@ Adopt a layered, defense-in-depth target architecture for agent presence, sessio
 - W3–W6 were recorded here so no architectural intent was lost; each shipped as its own spec → plan → implementation cycle. W4's max-pending timeout depends on W5's re-queue. **All six tracks (W1–W6, plus the voice slice W5b) are now DESIGNED + SHIPPED — the north-star is complete (last track W6 shipped 2026-06-07).**
 - A regression test asserting the `Set-Cookie` Path == `/api/v1/auth` closes the gap that let this bug ship (header-injected cookie tests bypassed browser path-matching).
 
-The W1+W2 implementation plan lives at `docs/plans/active/2026-06-04-session-auth-idle-w1-w2.md`; the technical design at `docs/specs/2026-06-04-session-auth-idle-w1-w2-design.md`.
+The W1+W2 implementation plan lives at `docs/plans/completed/2026-06-04-session-auth-idle-w1-w2.md`; the technical design at `docs/specs/2026-06-04-session-auth-idle-w1-w2-design.md`.
 
 ---
 
 ## W3 — Server-side agent liveness / anti-zombie (DESIGNED + SHIPPED 2026-06-06)
 
-**Status:** Designed, implemented and shipped (cross-repo). Spec: [`docs/specs/2026-06-06-w3-agent-liveness.md`](../specs/2026-06-06-w3-agent-liveness.md); plan: [`docs/plans/active/w3-agent-liveness.md`](../plans/active/w3-agent-liveness.md).
+**Status:** Designed, implemented and shipped (cross-repo). Spec: [`docs/specs/2026-06-06-w3-agent-liveness.md`](../specs/2026-06-06-w3-agent-liveness.md); plan: [`docs/plans/completed/w3-agent-liveness.md`](../plans/completed/w3-agent-liveness.md).
 
 ### Problem (restated)
 
@@ -110,7 +110,7 @@ The `cluster_distributed_lock` schema-migration gate was broadened from `cluster
 
 ## W4 — Deferred pause / "pause-when-free" (DESIGNED + SHIPPED 2026-06-06)
 
-**Status:** Designed, implemented and shipped (cross-repo). Spec: [`docs/specs/2026-06-06-w4-deferred-pause.md`](../specs/2026-06-06-w4-deferred-pause.md); plan: [`docs/plans/active/w4-deferred-pause.md`](../plans/active/w4-deferred-pause.md).
+**Status:** Designed, implemented and shipped (cross-repo). Spec: [`docs/specs/2026-06-06-w4-deferred-pause.md`](../specs/2026-06-06-w4-deferred-pause.md); plan: [`docs/plans/completed/w4-deferred-pause.md`](../plans/completed/w4-deferred-pause.md).
 
 ### Problem (restated)
 
@@ -166,7 +166,7 @@ This ADR originally proposed a watcher over `AgentCapacityChangedEvent` / `Conve
 
 ## W5 — In-flight work failover (DIGITAL slice) (DESIGNED + SHIPPED 2026-06-06)
 
-**Status:** Designed, implemented and shipped (cross-repo) — **digital slice only**; **voice caller-rescue (W5b) explicitly deferred** to its own future track (see below). Spec: [`docs/specs/2026-06-06-w5-work-failover.md`](../specs/2026-06-06-w5-work-failover.md); plan: [`docs/plans/active/w5-work-failover.md`](../plans/active/w5-work-failover.md).
+**Status:** Designed, implemented and shipped (cross-repo) — **digital slice only**; **voice caller-rescue (W5b) explicitly deferred** to its own future track (see below). Spec: [`docs/specs/2026-06-06-w5-work-failover.md`](../specs/2026-06-06-w5-work-failover.md); plan: [`docs/plans/completed/w5-work-failover.md`](../plans/completed/w5-work-failover.md).
 
 ### Problem (restated)
 
@@ -226,7 +226,7 @@ For each offline agent past grace → for each of its failover-work conversation
 
 ## W5b — Voice caller-rescue (DESIGNED + SHIPPED 2026-06-06)
 
-**Status:** Designed, implemented and shipped (cross-repo). The voice slice W5 deferred. Spec: [`docs/specs/2026-06-06-w5b-voice-callback-rescue.md`](../specs/2026-06-06-w5b-voice-callback-rescue.md); plan: [`docs/plans/active/w5b-voice-callback-rescue.md`](../plans/active/w5b-voice-callback-rescue.md).
+**Status:** Designed, implemented and shipped (cross-repo). The voice slice W5 deferred. Spec: [`docs/specs/2026-06-06-w5b-voice-callback-rescue.md`](../specs/2026-06-06-w5b-voice-callback-rescue.md); plan: [`docs/plans/completed/w5b-voice-callback-rescue.md`](../plans/completed/w5b-voice-callback-rescue.md).
 
 ### Why this shape (deep-analysis findings)
 
@@ -289,7 +289,7 @@ foreach conv in ListPendingCallbackEvalAsync():           // cross-tenant WrapUp
 
 ## W6 — Capacity configurability (DESIGNED + SHIPPED 2026-06-07)
 
-**Status:** Designed, implemented and shipped (cross-repo). The **last** track of the ADR-0009 north-star — with W6 in, **W1–W6 are all shipped and the north-star is complete.** Spec: [`docs/specs/2026-06-07-w6-agent-capacity.md`](../specs/2026-06-07-w6-agent-capacity.md); plan: [`docs/plans/active/2026-06-07-w6-agent-capacity.md`](../plans/active/2026-06-07-w6-agent-capacity.md).
+**Status:** Designed, implemented and shipped (cross-repo). The **last** track of the ADR-0009 north-star — with W6 in, **W1–W6 are all shipped and the north-star is complete.** Spec: [`docs/specs/2026-06-07-w6-agent-capacity.md`](../specs/2026-06-07-w6-agent-capacity.md); plan: [`docs/plans/completed/2026-06-07-w6-agent-capacity.md`](../plans/completed/2026-06-07-w6-agent-capacity.md).
 
 ### Problem (restated)
 

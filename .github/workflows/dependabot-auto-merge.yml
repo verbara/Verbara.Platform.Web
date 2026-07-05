@@ -5,7 +5,8 @@ name: Dependabot auto-merge
 # - Major updates are filtered upstream by .github/dependabot.yml — they don't
 #   reach this workflow.
 # - Auto-merge only completes when all required status checks (build, test,
-#   i18n, audit) pass. Branch protection on `main` enforces that gate.
+#   coverage, i18n, audit, lint, openspec) pass. Branch protection on `main`
+#   enforces that gate.
 # - main runs a merge queue (merge_group), so the queue ruleset — not this
 #   workflow — picks the merge strategy. Requires the AUTOMERGE_PAT secret.
 

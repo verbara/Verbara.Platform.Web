@@ -121,14 +121,20 @@ These are mechanical sed-style edits + a single commit in the Platform repo. The
 
 ## 4. Acceptance criteria
 
-- [ ] `release.yml` builds multi-arch (linux/amd64 + linux/arm64) for the next tag push.
-- [ ] `release.yml` pushes both `:v*-web` and `:latest` tag references.
-- [ ] cosign signature applies to the digest, verifiable for both architecture-specific image manifests via tag.
-- [ ] v3.1.4-web (or whatever next tag the maintainer chooses) shipped via the new workflow.
-- [ ] `docker buildx imagetools inspect ghcr.io/verbara/platform/web:v3.1.4-web` returns a manifest list with `linux/amd64` AND `linux/arm64` entries.
-- [ ] `docker pull --platform linux/arm64 ghcr.io/verbara/platform/web:v3.1.4-web` succeeds anonymously on an ARM host (or via qemu emulation on amd64).
-- [ ] README has the verify + pull snippet referencing `https://verbara.io/keys/cosign.pub`.
-- [ ] Sibling Platform-repo PR opened (linking back to this plan) bumping all v3.0.3-web / v3.1.2-web references to v3.1.4-web.
+- [x] `release.yml` builds multi-arch (linux/amd64 + linux/arm64) for the next tag push.
+- [x] `release.yml` pushes both `:v*-web` and `:latest` tag references.
+- [x] cosign signature applies to the digest, verifiable for both architecture-specific image manifests via tag.
+- [x] v3.1.4-web (or whatever next tag the maintainer chooses) shipped via the new workflow.
+- [x] `docker buildx imagetools inspect ghcr.io/verbara/platform/web:v3.1.4-web` returns a manifest list with `linux/amd64` AND `linux/arm64` entries.
+- [x] `docker pull --platform linux/arm64 ghcr.io/verbara/platform/web:v3.1.4-web` succeeds anonymously on an ARM host (or via qemu emulation on amd64).
+- [x] README has the verify + pull snippet referencing `https://verbara.io/keys/cosign.pub`.
+- [x] Sibling Platform-repo PR opened (linking back to this plan) bumping all v3.0.3-web / v3.1.2-web references to v3.1.4-web.
+
+**Closure note:** all D1–D5 verified live as of this writing — `release.yml` builds/pushes the multi-arch
+manifest (`linux/amd64` + `linux/arm64`) with a signed `:latest` alias; `docker buildx imagetools inspect
+ghcr.io/verbara/platform/web:v3.11.0-web` confirms both platform entries; README carries the verify+pull
+snippet against `https://verbara.io/keys/cosign.pub`; `Verbara.Platform/docker/docker-compose.reference-smb.yml`
+now defaults to a current tag (well past v3.1.4-web). Moved `active/` → `completed/`.
 
 ## 5. Risks
 

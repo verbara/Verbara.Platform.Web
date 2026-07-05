@@ -5,7 +5,7 @@ name: CI
 #
 # Jobs (7 in parallel):
 #   - build     blocking - tsc -b && vite build
-#   - test      blocking - vitest run (205 specs)
+#   - test      blocking - vitest run (1431 tests / 180 files)
 #   - coverage  blocking - vitest run --coverage (Track 2A ratchet floor)
 #   - i18n      blocking - locale parity check (ADR-0001)
 #   - audit     blocking - npm audit --audit-level=high
@@ -87,7 +87,7 @@ jobs:
     name: coverage
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Track 2A: enforces a ratchet floor (currently 12% lines, lifted
+    # Track 2A: enforces a ratchet floor (currently 29% lines, lifted
     # progressively in Track 2C and beyond). Threshold lives in
     # vitest.config.ts; see docs/research/2026-05-03-coverage-baseline.md.
     steps:

@@ -3,7 +3,7 @@
 **Date:** 2026-06-06
 **Status:** Shipped (digital slice; voice caller-rescue W5b deferred)
 **ADR:** [0009 — Agent Presence, Session & Work-Continuity](../decisions/0009-agent-presence-session-work-continuity.md) (W5 section)
-**Plan:** [`docs/plans/active/w5-work-failover.md`](../plans/active/w5-work-failover.md)
+**Plan:** [`docs/plans/completed/w5-work-failover.md`](../plans/completed/w5-work-failover.md)
 **Repos:** `Verbara.Platform` (`OfflineSince` grace + `queue_priority` + `RequeueToFrontAsync` + `WorkFailoverWorker` + supervisor endpoints) + `Verbara.Platform.Web` (stuck-work tab + hooks)
 
 ## Goal

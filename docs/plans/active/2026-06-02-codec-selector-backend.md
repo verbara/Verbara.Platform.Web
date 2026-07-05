@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
-> **Repo for ALL tasks below:** `/media/Data/Source/Verbara/Verbara.Platform` (NOT the Web repo). This is the backend half of the cross-cutting codec-selector track; the frontend half is in `2026-06-02-codec-selector-frontend.md`.
+> **Repo for ALL tasks below:** `Verbara.Platform` (NOT the Web repo). This is the backend half of the cross-cutting codec-selector track; the frontend half is in `2026-06-02-codec-selector-frontend.md`.
 
 **Goal:** Add a server-driven codec catalog endpoint (`GET /api/v1/admin/voice/codecs`) that reports the codecs Asterisk actually has loaded, plus save-time validation that rejects bogus codec tokens on trunk and endpoint-profile writes.
 

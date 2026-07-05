@@ -71,6 +71,10 @@ The progressive lift schedule:
 
 70% lines is the v1.20.x target, not the v1.15.0 target.
 
+> **Current state:** this document is the Track 2A point-in-time snapshot (2026-05-03). The
+> ratchet floor has since moved with later tracks; as of this writing `vitest.config.ts` enforces
+> **29% lines** (see the `coverage.thresholds` block), not the 12% floor set here.
+
 ## Highest-value gaps to attack first (Track 2C input)
 
 Ordered by `(LOC × business criticality) ÷ current coverage`:

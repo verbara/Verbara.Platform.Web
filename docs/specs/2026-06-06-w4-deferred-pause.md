@@ -3,7 +3,7 @@
 **Date:** 2026-06-06
 **Status:** Shipped
 **ADR:** [0009 — Agent Presence, Session & Work-Continuity](../decisions/0009-agent-presence-session-work-continuity.md) (W4 section)
-**Plan:** [`docs/plans/active/w4-deferred-pause.md`](../plans/active/w4-deferred-pause.md)
+**Plan:** [`docs/plans/completed/w4-deferred-pause.md`](../plans/completed/w4-deferred-pause.md)
 **Repos:** `Verbara.Platform` (PendingState model + endpoints + drain worker + eligibility/voice block) + `Verbara.Platform.Web` (pending UX + hooks)
 
 ## Goal

@@ -88,7 +88,7 @@ Configured at [`.github/dependabot.yml`](../../.github/dependabot.yml). Strategy
 
 **Rationale for ignoring majors:**
 
-Major version bumps in this stack frequently introduce breaking changes (e.g., Vite 7 → 8 changed the dev-server SSL behavior; ESLint 8 → 9 required flat-config migration; React Router 6 → 7 changed routing primitives). Dependabot opening 30+ major-bump PRs would dilute signal and require manual review on each. Track 3C ([roadmap](../plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md)) is the dedicated track for coordinated major upgrades — when CI exists (Track 1C) and coverage tracking exists (Track 2A), majors can be evaluated systematically.
+Major version bumps in this stack frequently introduce breaking changes (e.g., Vite 7 → 8 changed the dev-server SSL behavior; ESLint 8 → 9 required flat-config migration; React Router 6 → 7 changed routing primitives). Dependabot opening 30+ major-bump PRs would dilute signal and require manual review on each. Track 3C ([roadmap](../plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md)) is the dedicated track for coordinated major upgrades — when CI exists (Track 1C) and coverage tracking exists (Track 2A), majors can be evaluated systematically.
 
 ---
 

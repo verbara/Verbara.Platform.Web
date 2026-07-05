@@ -166,7 +166,7 @@ Adding `@sentry/react` with `browserTracingIntegration` increased the main bundl
 | `index-*.js` raw  | 486.59 kB | 818.06 kB | **+331 kB** |
 | `index-*.js` gzip | 143.93 kB | 250.71 kB | **+107 kB** |
 
-This is acceptable for Track 1E (Sentry is a critical operational dependency). Bundle optimization is the responsibility of [Track 2B (Performance budget + bundle consolidation)](../plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md), where `manualChunks` will isolate Sentry into a vendor chunk that can be cached aggressively.
+This is acceptable for Track 1E (Sentry is a critical operational dependency). Bundle optimization is the responsibility of [Track 2B (Performance budget + bundle consolidation)](../plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md), where `manualChunks` will isolate Sentry into a vendor chunk that can be cached aggressively.
 
 ### PII filtering — implementation specifics
 
