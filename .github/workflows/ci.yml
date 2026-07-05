@@ -3,13 +3,14 @@ name: CI
 # CI for Verbara Web (formerly Asterisk.Platform.Web).
 # Runs on every PR + the merge queue (merge_group).
 #
-# Jobs (6 in parallel):
+# Jobs (7 in parallel):
 #   - build     blocking - tsc -b && vite build
 #   - test      blocking - vitest run (205 specs)
 #   - coverage  blocking - vitest run --coverage (Track 2A ratchet floor)
 #   - i18n      blocking - locale parity check (ADR-0001)
 #   - audit     blocking - npm audit --audit-level=high
 #   - lint      blocking - eslint (0 errors enforced since Track 3A)
+#   - openspec  report-only (not yet in branch protection) - openspec validate --all --strict
 #
 # Branch protection on main requires: build, test, coverage, i18n, audit, lint
 
@@ -170,3 +171,17 @@ jobs:
 
       - name: ESLint
         run: npx eslint .
+
+  # OpenSpec docs gate (2026-07-04 ecosystem audit): the living specs + changes are
+  # agent-edited markdown with a strict parser — validate them like code. Pinned CLI
+  # version (upgrade deliberately). Runs on PR + merge_group like every other gate.
+  openspec:
+    name: openspec
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Validate specs and changes (strict)
+        run: npx -y @fission-ai/openspec@1.4.1 validate --all --strict --no-interactive
