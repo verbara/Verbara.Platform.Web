@@ -3,7 +3,7 @@
 **Date:** 2026-06-04
 **Status:** Approved (implementation in progress)
 **ADR:** [0009 — Agent Presence, Session & Work-Continuity](../decisions/0009-agent-presence-session-work-continuity.md)
-**Plan:** [`docs/plans/active/2026-06-04-session-auth-idle-w1-w2.md`](../plans/active/2026-06-04-session-auth-idle-w1-w2.md)
+**Plan:** [`docs/plans/completed/2026-06-04-session-auth-idle-w1-w2.md`](../plans/completed/2026-06-04-session-auth-idle-w1-w2.md)
 **Repos:** `Verbara.Platform` (W1 backend) + `Verbara.Platform.Web` (W1 client + W2)
 
 ## Goal

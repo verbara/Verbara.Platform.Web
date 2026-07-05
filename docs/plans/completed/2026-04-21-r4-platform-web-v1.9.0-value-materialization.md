@@ -262,7 +262,7 @@ npm run dev                      # local Web server
 
 ## Referencias
 
-- **Track A execution order:** [`../../../Asterisk.Sdk.Pro/docs/plans/active/2026-04-20-track-a-execution-order.md`](../../../../Asterisk.Sdk.Pro/docs/plans/active/2026-04-20-track-a-execution-order.md)
+- **Track A execution order:** [`../../../../Verbara.Sdk.Pro/docs/plans/completed/2026-04-20-track-a-execution-order.md`](../../../../Verbara.Sdk.Pro/docs/plans/completed/2026-04-20-track-a-execution-order.md)
 - **v1.9.0 Platform release:** https://github.com/Harol-Reina/Asterisk.Platform/releases/tag/v1.9.0
 - **v1.9.1 Platform release:** https://github.com/Harol-Reina/Asterisk.Platform/releases/tag/v1.9.1
 - **T27 bridges source (Pro):** `Asterisk.Sdk.Pro/src/Asterisk.Sdk.Pro.Push.SignalR/Bridges/`
@@ -388,7 +388,7 @@ npm run dev                      # local Web server
 
 ## 2026-04-22 — Absorbed into R5 Production Readiness Release Train
 
-R4 pending scope is absorbed into the broader cross-repo release train R5. See authoritative spec in Platform repo: [`docs/plans/active/2026-04-22-r5-production-readiness-release-train.md`](../../../../../Asterisk.Platform/docs/plans/active/2026-04-22-r5-production-readiness-release-train.md).
+R4 pending scope is absorbed into the broader cross-repo release train R5. See authoritative spec in Platform repo: [`docs/plans/completed/2026-04-22-r5-production-readiness-release-train.md`](../../../../Verbara.Platform/docs/plans/completed/2026-04-22-r5-production-readiness-release-train.md).
 
 Mapping of pending R4 items to R5:
 

@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-05-03
 - **Deciders:** Platform.Web maintainer
-- **Related:** [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](../plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md), ADR-0004
+- **Related:** [`docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](../plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md), ADR-0004
 
 ## Context
 
@@ -42,6 +42,7 @@ Customer-facing features (IP Allowlist UI, SAML SSO, WebChat widget) are deferre
 ## Consequences
 
 **Positive:**
+
 - Every PR after `v1.14.2` is gated by CI: tests, lint, audit, i18n parity. Quality regressions caught before merge.
 - Production errors become visible from `v1.14.4`. Operators stop being blind.
 - New contributors can onboard from the README without oral context transfer.
@@ -49,11 +50,13 @@ Customer-facing features (IP Allowlist UI, SAML SSO, WebChat widget) are deferre
 - SOC 2 / GDPR auditor questions ("how do you track production errors?") have actual answers.
 
 **Negative:**
+
 - Customer-visible delay: IP Allowlist UI (the most-requested feature with backend ready) waits ~2-3 months. Sales/customer-success will push back.
 - Internal motivation challenge: the team ships nothing user-visible for two minor versions. Hard to celebrate in standups.
 - Operational tracks risk being seen as "yak shaving" by stakeholders without engineering visibility.
 
 **Trade-off:**
+
 - We are explicitly choosing **engineering hygiene > feature velocity** for the next quarter. Reversible if a critical customer commitment forces interleaving (e.g. a contract that requires IP Allowlist UI by Q3). The plan should be reviewed at each major milestone.
 
 ## Alternatives considered

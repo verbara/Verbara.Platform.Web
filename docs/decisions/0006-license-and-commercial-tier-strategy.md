@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-05-03
 - **Deciders:** Verbara maintainer (Harol A. Reina H.)
-- **Related:** ADR-0003 (Operational Foundation priority), Track 1A in [v1.14.x roadmap](../plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md), planning doc [`~/.claude/plans/resolvamos-qu-license-para-kind-trinket.md`](../../../../home/orion75/.claude/plans/resolvamos-qu-license-para-kind-trinket.md)
+- **Related:** ADR-0003 (Operational Foundation priority), Track 1A in [v1.14.x roadmap](../plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md), planning doc `resolvamos-qu-license-para-kind-trinket.md` (local Claude Code plan notes, not part of this repo)
 
 ## Context
 
@@ -11,12 +11,12 @@ Track 1A (v1.14.0) requires shipping a `LICENSE` file for `Asterisk.Platform.Web
 
 The decision is bounded by these realities of the broader ecosystem:
 
-| Repo | Existing license | Nature |
-|---|---|---|
-| `Asterisk.Sdk` | MIT | Open-source telephony primitives; community attractor |
-| `Asterisk.Sdk.Pro` | Commercial proprietary, ECDSA-gated | Enterprise overlays; the value engine |
-| `Asterisk.Platform` | None (README says "Open-core") | Full-featured commercial backend; runtime-requires Pro via `LicenseGateMiddleware` |
-| `Asterisk.Platform.Web` | None | UI for the Platform; no Pro code embedded |
+| Repo                    | Existing license                    | Nature                                                                             |
+| ----------------------- | ----------------------------------- | ---------------------------------------------------------------------------------- |
+| `Asterisk.Sdk`          | MIT                                 | Open-source telephony primitives; community attractor                              |
+| `Asterisk.Sdk.Pro`      | Commercial proprietary, ECDSA-gated | Enterprise overlays; the value engine                                              |
+| `Asterisk.Platform`     | None (README says "Open-core")      | Full-featured commercial backend; runtime-requires Pro via `LicenseGateMiddleware` |
+| `Asterisk.Platform.Web` | None                                | UI for the Platform; no Pro code embedded                                          |
 
 A deep multi-pass analysis evaluated 35+ license options against three criteria: (1) coherence with the Sdk/Pro ecosystem, (2) friction to enterprise evaluation, and (3) actual revenue protection vs theoretical.
 
@@ -37,7 +37,7 @@ The decision must also include a commercial tier structure, because the license 
 The product family is rebranded to **Verbara** (verbara.io). Triggers for the rebrand:
 
 1. **Trademark conflict.** "Asterisk" is a registered trademark of Sangoma Technologies / Digium (acquired Digium in 2018). FreePBX had to rename in v2.0 for the same reason. Continuing to use "Asterisk" in product names exposes the project to cease-and-desist and forced rename post-launch.
-2. **Brand independence.** "Verbara" is from Latin *verbum* ("word") + suffix *-ara*. Strong communication semantic, Spanish/Portuguese-friendly (matches LATAM market focus), and defensible legally as an invented word.
+2. **Brand independence.** "Verbara" is from Latin _verbum_ ("word") + suffix _-ara_. Strong communication semantic, Spanish/Portuguese-friendly (matches LATAM market focus), and defensible legally as an invented word.
 3. **Domain availability.** `verbara.io`, `verbara.dev`, `verbara.app` available; `.com` parked at squatter (acquirable later).
 4. **Verification.** GitHub username `verbara` available; no major brand conflict in CCaaS or telecom space; USPTO basic search clean.
 
@@ -45,12 +45,12 @@ Effective immediately: all new branding, public materials, and licenses use **Ve
 
 ### License (per repo)
 
-| Repo (current name) | Future name | License | Notes |
-|---|---|---|---|
-| `Asterisk.Sdk` | `verbara-sdk` | **MIT** (no change) | Already published |
-| `Asterisk.Sdk.Pro` | `verbara-sdk-pro` | **Commercial proprietary** (no change) | Already published, ECDSA license keys enforce |
-| `Asterisk.Platform` | `verbara-platform` | **Apache License 2.0** | NEW — supersedes ambiguous "open-core" mention in README |
-| `Asterisk.Platform.Web` (this repo) | `verbara-web` | **Apache License 2.0** | NEW — `package.json` license field set to `"Apache-2.0"`; LICENSE/NOTICE/CONTRIBUTING shipped |
+| Repo (current name)                 | Future name        | License                                | Notes                                                                                         |
+| ----------------------------------- | ------------------ | -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `Asterisk.Sdk`                      | `verbara-sdk`      | **MIT** (no change)                    | Already published                                                                             |
+| `Asterisk.Sdk.Pro`                  | `verbara-sdk-pro`  | **Commercial proprietary** (no change) | Already published, ECDSA license keys enforce                                                 |
+| `Asterisk.Platform`                 | `verbara-platform` | **Apache License 2.0**                 | NEW — supersedes ambiguous "open-core" mention in README                                      |
+| `Asterisk.Platform.Web` (this repo) | `verbara-web`      | **Apache License 2.0**                 | NEW — `package.json` license field set to `"Apache-2.0"`; LICENSE/NOTICE/CONTRIBUTING shipped |
 
 Copyright line: `Copyright 2026-present Harol A. Reina H. and Verbara Contributors` for all new license files. Year format `YYYY-present` per industry convention for living repositories.
 
@@ -65,30 +65,31 @@ CLA (Contributor License Agreement) is **not required at day 1** for either Apac
   - `licensing@verbara.io` — commercial license inquiries, partnerships
   - `hello@verbara.io` — general contact
 - **GitHub organization:** `github.com/verbara` (under personal account until LLC formed)
-- **Brand:** `Verbara`. Tagline: *"Open-core honest contact-center platform — auditable engine, commercial overlays."*
+- **Brand:** `Verbara`. Tagline: _"Open-core honest contact-center platform — auditable engine, commercial overlays."_
 
 ### Commercial tier structure
 
 Five-tier monetization, designed to match the price-point bands of Genesys and Five9 in CCaaS:
 
-| Tier | Price | Includes | Target customer | Margin |
-|---|---|---|---|---|
-| **1. Community** | $0 | Self-host Platform + Web (Apache); no Pro key → no multi-tenant, no analytics, no cluster | Devs, hobbyists, startups (1-3 agents), evaluators | — (funnel) |
-| **2. Pro Self-Host** | $5k–50k/year per cluster | Pro license key (ECDSA), all Pro features, email/forum support | PYMES, regulated industries (banks, hospitals, govt) needing data sovereignty | ~95% |
-| **3. SaaS Business** | $99/agent/month | Tier 2 + hosted infra, business-hours support, 99.5% SLA, basic SAML | Mid-market (50-500 agents), BPOs, e-commerce | 60-80% |
-| **4. SaaS Enterprise** | $249/agent/month | Tier 3 + 24/7 support, 99.9% SLA, dedicated CSM, SAML+IP allowlist, compliance reports (SOC2/HIPAA/PCI), custom SLA | Fortune 500, banks, telcos, critical operations | ~60% |
-| **5. White-label / Embedded** | $5k–50k/year setup + 10–30% rev share | Tier 4 + branding removal, custom theming, reseller agreement, tier-2 partner support | VARs, system integrators, regional telcos | ~90% |
+| Tier                          | Price                                 | Includes                                                                                                            | Target customer                                                               | Margin     |
+| ----------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------- |
+| **1. Community**              | $0                                    | Self-host Platform + Web (Apache); no Pro key → no multi-tenant, no analytics, no cluster                           | Devs, hobbyists, startups (1-3 agents), evaluators                            | — (funnel) |
+| **2. Pro Self-Host**          | $5k–50k/year per cluster              | Pro license key (ECDSA), all Pro features, email/forum support                                                      | PYMES, regulated industries (banks, hospitals, govt) needing data sovereignty | ~95%       |
+| **3. SaaS Business**          | $99/agent/month                       | Tier 2 + hosted infra, business-hours support, 99.5% SLA, basic SAML                                                | Mid-market (50-500 agents), BPOs, e-commerce                                  | 60-80%     |
+| **4. SaaS Enterprise**        | $249/agent/month                      | Tier 3 + 24/7 support, 99.9% SLA, dedicated CSM, SAML+IP allowlist, compliance reports (SOC2/HIPAA/PCI), custom SLA | Fortune 500, banks, telcos, critical operations                               | ~60%       |
+| **5. White-label / Embedded** | $5k–50k/year setup + 10–30% rev share | Tier 4 + branding removal, custom theming, reseller agreement, tier-2 partner support                               | VARs, system integrators, regional telcos                                     | ~90%       |
 
 Add-ons (orthogonal to tiers): Professional Services ($250/hr), Training ($1500/course), Certifications ($500-2000), Custom Integrations (project-priced).
 
 Pricing rationale (pegged to market, May 2026):
+
 - Tier 3 ($99) is **17% below Five9 Core** ($119) and **14% below Genesys CX 2** ($115) — clear "easy switch" angle.
 - Tier 4 ($249) is **near parity with Genesys CX 4** ($240) and **9% above Five9 Ultimate** ($229) — premium justified by differentiator (open-source backend + commercial overlays).
 - Tier 2 (Self-Host) covers PYMES and compliance-bound buyers that no major CCaaS competitor serves well.
 
 ### Differentiator narrative
 
-> *"Asterisk Open-Core: 100% open-source platform (Apache) + commercial enterprise engine (Pro). Self-host free or hosted from $99/agent. Pay only for the engine, never for the UI or the backend base."*
+> _"Asterisk Open-Core: 100% open-source platform (Apache) + commercial enterprise engine (Pro). Self-host free or hosted from $99/agent. Pay only for the engine, never for the UI or the backend base."_
 
 Distinguishes from Twilio (closed, per-minute), Genesys/Five9/NICE (closed, per-seat with no source visibility), and Vicidial/Erxes (AGPL but infrautilized in enterprise due to OSS friction).
 
@@ -99,6 +100,7 @@ If post-launch a major cloud provider strip-mines the Platform as managed servic
 ## Consequences
 
 **Positive:**
+
 - Maximizes evaluator-to-Pro-customer conversion funnel (~2× vs BSL based on legal-review-friction analysis).
 - Zero legal infrastructure overhead at day 1 — no CLA infrastructure, no "Additional Use Grant" wording, no Change Date strategy. Estimated 6-8 weeks of engineering time recovered.
 - Apache 2.0 is OSI-approved, recognized by every enterprise compliance team, badge displays cleanly on GitHub. Removes a soft barrier to first-touch evaluation.
@@ -107,11 +109,13 @@ If post-launch a major cloud provider strip-mines the Platform as managed servic
 - Reversible at-the-top: if revenue grows and competitive pressure justifies, can move to AGPL or BSL via triple-licensing model — at which point the company has revenue, brand, and customer relationships to defend the change.
 
 **Negative:**
+
 - Forfeits the (theoretical) "first BSL CCaaS" marketing angle. Analysis concluded the angle is not material for actual buyers, who evaluate by features/price/SLA/AI/compliance, not by license model.
 - Apache 2.0 in theory allows a well-funded competitor to fork the Platform + Web and reverse-engineer Pro to offer a competing managed service. In practice this requires 12-18 months of engineering, brand-building, and certification work — comparable barriers to any other CCaaS startup. The Pro ECDSA gate remains as the binary-level moat.
 - No source-level non-compete protection. Mitigation: Pro license key enforcement at runtime, plus the option to dual-license later if conditions warrant.
 
 **Trade-off:**
+
 - Trades theoretical legal protection (BSL non-compete) for measurable adoption velocity (Apache zero-friction). Given pre-revenue stage and single-founder constraints, this favors revenue acceleration over defense of an asset that does not yet generate revenue. Acceptable.
 
 ## Alternatives considered

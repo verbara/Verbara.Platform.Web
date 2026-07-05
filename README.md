@@ -3,11 +3,11 @@
 > Frontend for the **Verbara** open-core contact-center platform.
 > Repository rebranded to **Verbara** ([ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)).
 >
-> **Visibility status (2026-05-08):** This repository is currently **private**. The Apache 2.0 license has been chosen (see [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)) with a planned transition to public when all triggers in [ADR-0007](docs/decisions/0007-visibility-decision-3-private-now-public-on-trigger.md) are met. Tier 0 (Community) self-host and the Tier 0.5 Developer self-issue portal become available at that time.
+> **Visibility status:** This repository is **public**. The Apache 2.0 license has been chosen (see [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)); all triggers in [ADR-0007](docs/decisions/0007-visibility-decision-3-private-now-public-on-trigger.md) were met and the repo transitioned to public. Tier 0 (Community) self-host and the Tier 0.5 Developer self-issue portal are available.
 
 React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
-**Version:** 3.1.3 — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
+**Version:** 3.11.0-web — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
 
 ## Install (Docker image)
 
@@ -29,7 +29,7 @@ docker run -d --name verbara-web -p 8080:80 \
 ### Reproducible install (pinned `vX.Y.Z-web` — recommended for production)
 
 ```bash
-TAG=v3.1.3-web   # ← bump per release; see https://github.com/verbara/Verbara.Platform.Web/releases
+TAG=v3.11.0-web   # ← bump per release; see https://github.com/verbara/Verbara.Platform.Web/releases
 
 cosign verify --key https://verbara.io/keys/cosign.pub --insecure-ignore-tlog \
   ghcr.io/verbara/platform/web:$TAG
@@ -46,7 +46,7 @@ For the full SMB on-premise deployment context (Asterisk + Postgres + Redis + Re
 | Library                   | Version                                       |
 | ------------------------- | --------------------------------------------- |
 | React                     | 19.2.x                                        |
-| TypeScript                | 5.9.x (strict mode)                           |
+| TypeScript                | 6.0.x (strict mode)                           |
 | Vite                      | 8.0.x                                         |
 | TailwindCSS               | 4.2.x (`@tailwindcss/vite`)                   |
 | shadcn/ui                 | 4.1.x — uses **`@base-ui/react`** (NOT Radix) |
@@ -134,7 +134,7 @@ All documentation lives under `docs/`, git-tracked:
 | [`docs/plans/archived/`](docs/plans/archived/)   | Skeletons / superseded / abandoned plans         | Append-only                   |
 | [`docs/research/`](docs/research/)               | Exploratory findings, market analysis, discovery | Freeform                      |
 
-Roadmap: [`docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/active/2026-05-03-v1.14.x-operational-foundation-roadmap.md) — 7 niveles · 24 tracks · ~3 months calendar para llegar a `v1.21.0`.
+Roadmap: [`docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md) — 7 niveles · 24 tracks · ~3 months calendar para llegar a `v1.21.0`.
 
 ## Conventions
 

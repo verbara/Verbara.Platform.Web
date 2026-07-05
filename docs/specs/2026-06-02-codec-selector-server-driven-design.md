@@ -1,7 +1,7 @@
 # Server-Driven Codec Selector for SIP Trunks & Endpoint Profiles
 
 **Version:** 3.2.0 (proposed)
-**Status:** Draft (pending user review)
+**Status:** Shipped
 **Created:** 2026-06-02
 **Type:** Cross-cutting track (Web + `Verbara.Platform` API + AMI)
 **Surfaces touched (Web):** [trunk-wizard.tsx](../../src/admin/trunks/trunk-wizard.tsx) · [trunk-form.tsx](../../src/admin/trunks/trunk-form.tsx) · [profile-form.tsx](../../src/admin/realtime/profile-form.tsx)

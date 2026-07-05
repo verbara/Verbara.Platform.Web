@@ -3,24 +3,24 @@
 **Date:** 2026-06-06
 **Status:** Shipped
 **ADR:** [0009 — Agent Presence, Session & Work-Continuity](../decisions/0009-agent-presence-session-work-continuity.md) (W3 section)
-**Plan:** [`docs/plans/active/w3-agent-liveness.md`](../plans/active/w3-agent-liveness.md)
+**Plan:** [`docs/plans/completed/w3-agent-liveness.md`](../plans/completed/w3-agent-liveness.md)
 **Repos:** `Verbara.Platform` (backend authority + endpoints + reaper) + `Verbara.Platform.Web` (heartbeat + departure beacon)
 
 ## Goal
 
-Give the server a reliable liveness signal for agents so that an ungraceful disconnect (power/internet loss, crash, a tab killed without a clean unload) pulls the agent out of routing (Offline) and stops the ACD offering **new** work to a dead session — the *routing zombie*. Rescuing **in-flight** work is out of scope (that is W5).
+Give the server a reliable liveness signal for agents so that an ungraceful disconnect (power/internet loss, crash, a tab killed without a clean unload) pulls the agent out of routing (Offline) and stops the ACD offering **new** work to a dead session — the _routing zombie_. Rescuing **in-flight** work is out of scope (that is W5).
 
 ## Problem (today → target)
 
 **Today (broken):** the ACD trusts the persisted `agent.State ∈ {Available,Busy}` with **no** liveness check. On an ungraceful disconnect nothing reverts the routing state — the agent stays routable and work is offered to a session nobody is watching. SignalR `OnDisconnectedAsync` only updates a separate presence-**display** tracker; an SSE drop only logs; the Asterisk `qualify`/ContactStatus path is built but unwired; there is no heartbeat/TTL sweep.
 
-**Target:** the client emits a steady, activity-independent heartbeat; the Api records it as a Redis presence key with a per-tenant TTL; a leader-gated background reaper reconciles *"Postgres says routable AND Redis says dead"* into Offline through the existing `AgentStateChangedEvent → RealtimeStateBridge → Asterisk QueuePause` chain. A `pagehide` departure beacon makes a clean tab-close instant; an admin endpoint lets a supervisor evict a stuck/zombie agent on demand.
+**Target:** the client emits a steady, activity-independent heartbeat; the Api records it as a Redis presence key with a per-tenant TTL; a leader-gated background reaper reconciles _"Postgres says routable AND Redis says dead"_ into Offline through the existing `AgentStateChangedEvent → RealtimeStateBridge → Asterisk QueuePause` chain. A `pagehide` departure beacon makes a clean tab-close instant; an admin endpoint lets a supervisor evict a stuck/zombie agent on demand.
 
 ## Transport-topology analysis (why this shape)
 
 The original ADR-0009 framing proposed bridging the SignalR `PresenceTracker.AgentOffline` delta into routing. Code-level analysis showed that framing is unsound for the production topology:
 
-- **Split processes (ADR-0022 Phase A):** SSE lives in **Platform.Api** (the universal channel, always open). SignalR + `PresenceTracker` live in **Platform.Realtime** — a *separate process* — behind the `realtimePushSignalR` feature flag.
+- **Split processes (ADR-0022 Phase A):** SSE lives in **Platform.Api** (the universal channel, always open). SignalR + `PresenceTracker` live in **Platform.Realtime** — a _separate process_ — behind the `realtimePushSignalR` feature flag.
 - The SignalR delta therefore (a) only covers agents on SignalR, (b) crosses a process boundary, and (c) couples **display** presence (deliberately separate from routing) to routing.
 - SSE has **no per-agent connection registry**, and `RequestAborted` is unreliable on abrupt death: the TCP socket can hang, and behind nginx (no `proxy_buffering off`, keep-alive upstream) the upstream socket can stay open after the browser is gone.
 
@@ -34,7 +34,7 @@ Conclusion: routing-liveness must be **owned by Platform.Api** (where routing li
 - **Presence key (Redis):** `presence:agent:{tenant}:{agentId}` with `TTL = AgentLivenessTimeoutSeconds`. The value is a small diagnostic JSON `{ nodeId, touchedAt }` (its own `[JsonSerializable]` source-gen context for AOT). **Presence = existence of the key**; the reaper uses an exact `KeyExists` check (no scan → prefix-agnostic).
 - **Reaper:** `AgentLivenessReaper : BackgroundService`, leader-gated on resource `agent-liveness:sweep`, modeled on `ImpersonationSessionTimeoutService` (public `SweepOnceAsync`, `PeriodicTimer` at ~15 s, OCE-shutdown swallow, fatal rethrow, `[LoggerMessage]` source-gen logs). Each sweep, if leader: cache per-tenant TTL once, then `await foreach` over `IAgentStore.StreamRoutableAgentsAsync(ct)` (cross-tenant, unpaged, `WHERE state IN (Available, Busy)`). For each agent: skip if `ttl <= 0`; skip if `IsAliveAsync` (key present); otherwise **re-load (`GetByIdAsync`) and re-check `IsRoutable`** before acting, then `ForceOffline()` → `SaveAsync` → publish `AgentStateChangedEvent("Offline")` → audit `agent.liveness.force_offline` (`severity:"warning"`, `actorType:"system"`).
 
-**Reconciliation rule:** *Postgres says routable ({Available,Busy}) AND Redis says dead (key missing)*. Postgres is the truth of *who should be routable*; Redis is the *proof of life*.
+**Reconciliation rule:** _Postgres says routable ({Available,Busy}) AND Redis says dead (key missing)_. Postgres is the truth of _who should be routable_; Redis is the _proof of life_.
 
 ### Pillar 2 — Accelerator: graceful departure beacon
 
@@ -59,7 +59,7 @@ Conclusion: routing-liveness must be **owned by Platform.Api** (where routing li
 ## Key invariants
 
 - **Decoupling invariant (the heart of the design):** client heartbeat interval (**20 s, fixed client-side**) ≪ server TTL (**60 s, per-tenant**) with a **≥2× margin** → 1–2 dropped beats do not false-reap. A genuinely dead agent is reaped within roughly `TTL + sweepInterval` (≈ 60–75 s); a clean tab-close is instant via the beacon.
-- **Activity-independent heartbeat:** an agent idling between calls is alive and must stay routable. The heartbeat is deliberately separate from — and never reuses — the W2 idle-timeout activity tracking. (W2 protects the *human session*; W3 protects *routing liveness*. Different lifetimes, different signals.)
+- **Activity-independent heartbeat:** an agent idling between calls is alive and must stay routable. The heartbeat is deliberately separate from — and never reuses — the W2 idle-timeout activity tracking. (W2 protects the _human session_; W3 protects _routing liveness_. Different lifetimes, different signals.)
 - **Reaper idempotency / safety:** re-load + re-check `IsRoutable` immediately before `ForceOffline` (anti-stale, safe to run twice); the Offline event is published only on a real `routable → Offline` transition; only the **leader** pod sweeps.
 - **`pagehide` vs `visibilitychange`:** only `pagehide` (terminal page lifecycle) signals departure; `visibilitychange:hidden` (tab switch / background) does not.
 
