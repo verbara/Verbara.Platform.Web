@@ -9,7 +9,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Added
+
+- **AI credit exhaustion action + near-exhaustion warning** (#136) — the AI credits readout now surfaces the server-reported `actionOnExhaustion` policy (`Warn` / `SoftBlock` / `HardBlock`) as a badge, plus a near-exhaustion warning band shown once usage reaches 80% (hidden for unlimited plans). i18n parity maintained across EN-US / ES-419 / PT-BR.
 
 ---
 

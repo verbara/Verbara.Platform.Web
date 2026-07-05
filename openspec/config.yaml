@@ -18,10 +18,13 @@ context: |
   openspec/specs/README.md here for the pointer list; e.g. ai-credits-readout). This repo's openspec exists
   for genuinely frontend-independent changes. Cross-repo standards live in the private verbara-meta repo as ADRs.
 
+  openspec/ is the planning home since 2026-06; docs/plans/ holds ExitPlanMode-style plans only, so a quiet
+  docs/plans/ tree is expected here, not drift.
+
 rules:
   proposal:
     - 'Set a `tier` in frontmatter: GRANDE (cross-repo, >3 days, or a product decision), MEDIANO (one repo, 1-3 days), or PEQUEÑO (bug fix, <1 day). PEQUEÑO may keep the proposal light.'
-    - 'Add product-ownership frontmatter: owner, approver, stakeholder, decision_ref (repo-qualified ADR that motivates or records this change, e.g. Platform/ADR-0032 — Platform hosts Web-affecting ADRs under its docs/decisions/). With a single developer, owner = approver.'
+    - "Add product-ownership frontmatter: owner, approver, stakeholder, decision_ref (repo-qualified ADR that motivates or records this change, e.g. Platform/ADR-0032 — Platform hosts Web-affecting ADRs under its docs/decisions/). With a single developer, owner = approver. This repo-qualification rule is not just for `decision_ref`: it governs ANY cross-repo ADR citation in ANY doc (operator decision 2026-07-05, verbara-meta/ADR-0011, three-way collision) — a bare 'ADR-NNNN' refers only to THIS repo's docs/decisions/, so citing another repo's ADR MUST be repo-qualified (e.g. 'Pro/ADR-0011', 'verbara-meta/ADR-0006')."
     - 'State the problem (what pain, for whom) for GRANDE and MEDIANO tiers.'
     - "Public-repo content rule (verbara-meta/ADR-0005, applies to ALL artifacts of a change): never include secrets/keys/tokens, customer or personal data, absolute machine paths, partner-specific commercial terms, or reproductions of private-repo content — reference private repos only as opaque names (e.g. verbara-meta/ADR-NNNN, Pro/ADR-NNNN); when in doubt the artifact goes in the private repo's docs and the public change carries the opaque reference."
   specs:
