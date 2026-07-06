@@ -9,9 +9,20 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+---
+
+## [3.12.0-web] - 2026-07-05
+
+Star item: **AI credit exhaustion action + near-exhaustion warning** (#136).
+
 ### Added
 
 - **AI credit exhaustion action + near-exhaustion warning** (#136) — the AI credits readout now surfaces the server-reported `actionOnExhaustion` policy (`Warn` / `SoftBlock` / `HardBlock`) as a badge, plus a near-exhaustion warning band shown once usage reaches 80% (hidden for unlimited plans). i18n parity maintained across EN-US / ES-419 / PT-BR.
+
+### Changed
+
+- Dependency maintenance — Dependabot bumps since `v3.11.0-web`: `@sentry/react`, `libphonenumber-js`, `react-router-dom`, `@base-ui/react`, `react-hook-form`, `@types/node`, `lucide-react`, `prettier`, the TanStack group, the eslint-toolchain group, and `actions/checkout` (#118–#137).
+- Docs/CI housekeeping (#138–#144) — adopted the `decision_ref` + H2 architectural-risk OpenSpec rules, documented the Web/Platform OpenSpec hub split and the E2E/Playwright anti-flake rule, added an OpenSpec-validate CI job (made required), and fixed docs-drift audit findings (stale version/links/claims, changelog, misfiled plan).
 
 ---
 
