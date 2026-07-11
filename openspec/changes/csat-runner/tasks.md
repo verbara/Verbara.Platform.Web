@@ -14,7 +14,7 @@
 
 ## 3. Phase C — Integration & verification (batch)
 
-- [ ] 3.1 Add a contract/unit test asserting the serialized capture body keys equal the golden fixture keys (verbatim-fixture-citation guard)
-- [ ] 3.2 `npx vitest run` — unit tests green
-- [ ] 3.3 `npx playwright test` — E2E for the rating-panel submit flow using `data-*`/`data-testid` selectors, `waitForResponse` on the capture POST (no `waitForTimeout`/wall-clock waits; workers:1, retries:1)
-- [ ] 3.4 `npm run build` (type-check + bundle) clean and i18n parity green
+- [x] 3.1 Add a contract/unit test asserting the serialized capture body keys equal the golden fixture keys (verbatim-fixture-citation guard) — `src/webchat/embed/transport/csat-api.test.ts` reads the sibling golden fixture and asserts the serialized POST body has exactly those 9 keys
+- [x] 3.2 `npx vitest run` — unit tests green (182 files / 1442 tests, incl. 3.1 contract test + `csat-panel.test.tsx`)
+- [x] 3.3 `npx playwright test` — E2E for the rating-panel submit flow using `data-*`/`data-testid` selectors, `waitForResponse` on the capture POST (no `waitForTimeout`/wall-clock waits; workers:1, retries:1). Spec at `tests/e2e/tests/webchat/csat-panel.spec.ts`. NOTE: could not execute against the sandbox's default server (stale nginx static mirror returns 500 for the embed entry; no backend on :5000). The spec's mechanism was PROVEN green by building the embed (`npm run build:webchat-embed`) and serving it on a throwaway port — 1 passed. Runs in the opt-in CI Playwright job against a provisioned stack.
+- [x] 3.4 `npm run build` (type-check + bundle) clean and i18n parity green (`✓ built`; i18n parity OK across 3 locales × 6 namespaces)
