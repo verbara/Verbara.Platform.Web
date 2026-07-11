@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
-import { Plus, ClipboardList, Trash2 } from 'lucide-react';
+import { Plus, ClipboardList, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Switch } from '@/core/ui/switch';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { PageHeader } from '@/admin/shared/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
@@ -12,6 +13,7 @@ import { DataTable } from '@/admin/shared/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { SurveyForm } from './survey-form';
+import { CsatTemplateTab } from './csat-template-tab';
 import {
   useSurveys,
   useToggleSurveyActive,
@@ -128,7 +130,26 @@ export default function SurveyListPage() {
         </Button>
       </PageHeader>
 
-      {content}
+      <Tabs defaultValue="all" data-testid="surveys-tabs">
+        <TabsList>
+          <TabsTrigger value="all" data-testid="surveys-tab-all">
+            <ClipboardList className="h-4 w-4" />
+            {t('admin:surveys.title')}
+          </TabsTrigger>
+          <TabsTrigger value="csat" data-testid="surveys-tab-csat">
+            <Star className="h-4 w-4" />
+            {t('admin:surveys.csat.tab')}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="pt-4">
+          {content}
+        </TabsContent>
+
+        <TabsContent value="csat" className="pt-4">
+          <CsatTemplateTab />
+        </TabsContent>
+      </Tabs>
 
       <SurveyForm open={createOpen} onOpenChange={setCreateOpen} mode="create" />
 

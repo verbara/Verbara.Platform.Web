@@ -7,10 +7,10 @@
 
 ## 2. Phase B — Critical components (focused)
 
-- [ ] 2.1 Build the webchat embed rating panel: 1–5 star control via `@base-ui/react` `render` prop (never `asChild`), optional comment, dismissible; wire `data-*` selectors
-- [ ] 2.2 Source `responseToken` / `surveyId` / `questionId` / `channel` / `queueName` / `conversationId` from the embed session context; panel owns only `rating`, `comment`, `capturedAt`
-- [ ] 2.3 Build the supervisor CSAT KPI card (Operations dashboard) with empty/placeholder state when no responses; `@base-ui/react` + `data-*`, locale-formatted numbers
-- [ ] 2.4 Extend `src/admin/surveys/survey-list-page.tsx` to surface the CSAT template tab (rating question + 1–5 scale)
+- [x] 2.1 Build the webchat embed rating panel: 1–5 star control via `@base-ui/react` `render` prop (never `asChild`), optional comment, dismissible; wire `data-*` selectors
+- [x] 2.2 Source `responseToken` / `surveyId` / `questionId` / `channel` / `queueName` / `conversationId` from the embed session context; panel owns only `rating`, `comment`, `capturedAt`
+- [x] 2.3 Build the supervisor CSAT KPI card (Operations dashboard) with empty/placeholder state when no responses; `@base-ui/react` + `data-*`, locale-formatted numbers
+- [x] 2.4 Extend `src/admin/surveys/survey-list-page.tsx` to surface the CSAT template tab (rating question + 1–5 scale)
 
 ## 3. Phase C — Integration & verification (batch)
 

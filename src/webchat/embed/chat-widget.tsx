@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PreChatForm } from './pre-chat-form';
 import { Composer } from './composer';
+import { CsatPanel } from './csat-panel';
 import { MessageList } from './message-list';
 import { StatusBanner, type Status } from './status-banner';
 import { createSession, fetchHistory, type ChatMessage } from './transport/session-api';
@@ -12,6 +13,22 @@ import { loadCachedMessages, saveCachedMessages } from './message-cache';
 import { playNotificationSound, loadSoundPreference, setSoundEnabled } from './notifications';
 import { breadcrumb } from './sentry-breadcrumbs';
 
+/**
+ * Server-issued CSAT survey context threaded through the embed session config.
+ * These six fields are minted host-side (the `responseToken` is an opaque,
+ * signed capture token) and passed opaquely to the rating panel — the panel
+ * itself owns only `rating`, `comment`, and `capturedAt` (csat-runner 2.2).
+ * When absent the panel is not offered.
+ */
+export interface CsatEmbedContext {
+  responseToken: string;
+  surveyId: string;
+  questionId: string;
+  channel: string;
+  queueName: string;
+  conversationId: string;
+}
+
 export interface InitConfigPayload {
   tenantId: string;
   apiBase?: string;
@@ -20,6 +37,8 @@ export interface InitConfigPayload {
   pageContext: { url: string; title: string; referrer: string };
   greeting?: string;
   theme?: { primaryColor?: string; fontFamily?: string };
+  /** Optional CSAT survey context (server-issued); enables the rating panel. */
+  csat?: CsatEmbedContext;
 }
 
 interface Props {
@@ -45,6 +64,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [wsClient, setWsClient] = useState<WsClient | null>(null);
   const [soundOn, setSoundOn] = useState(() => loadSoundPreference());
+  const [csatDismissed, setCsatDismissed] = useState(false);
   const apiBase = config.apiBase ?? '/api/v1';
 
   const TIMEOUT_MS = 5 * 60 * 1000;
@@ -227,7 +247,17 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
       </header>
       <StatusBanner status={status} />
       <MessageList messages={messages} />
-      <Composer disabled={status === 'offline'} onSend={handleSend} shouldFocus />
+      {config.csat && !csatDismissed ? (
+        <div className="border-t">
+          <CsatPanel
+            context={config.csat}
+            apiBase={apiBase}
+            onDismiss={() => setCsatDismissed(true)}
+          />
+        </div>
+      ) : (
+        <Composer disabled={status === 'offline'} onSend={handleSend} shouldFocus />
+      )}
     </div>
   );
 }
