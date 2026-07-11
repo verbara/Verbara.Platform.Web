@@ -1416,6 +1416,15 @@
     "validation": {
       "questionTextRequired": "Texto da pergunta é obrigatório",
       "nameRequired": "Nome é obrigatório"
+    },
+    "csat": {
+      "tab": "CSAT",
+      "tabDescription": "Modelo de satisfação do cliente usado pelo painel de avaliação do webchat.",
+      "ratingQuestion": "Pergunta de avaliação",
+      "ratingQuestionText": "Como você avaliaria sua experiência?",
+      "scaleLabel": "Escala",
+      "scaleValue": "1–5 estrelas",
+      "readOnlyNote": "Visualização somente leitura do modelo CSAT que impulsiona a captura."
     }
   },
   "cluster-nodes": {

@@ -52,5 +52,17 @@
   },
   "branding": {
     "poweredBy": "Powered by Verbara"
+  },
+  "csat": {
+    "title": "¿Cómo estuvo tu experiencia?",
+    "subtitle": "Califica tu conversación para ayudarnos a mejorar.",
+    "ratingLabel": "Tu calificación",
+    "starAriaLabel": "{{count}} de 5 estrellas",
+    "commentLabel": "Cuéntanos más (opcional)",
+    "commentPlaceholder": "¿Qué salió bien o qué podríamos mejorar?",
+    "submit": "Enviar calificación",
+    "dismiss": "Ahora no",
+    "thankYou": "¡Gracias por tus comentarios!",
+    "error": "No se pudo enviar tu calificación. Por favor intenta de nuevo."
   }
 }
