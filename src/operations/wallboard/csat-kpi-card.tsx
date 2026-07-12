@@ -56,7 +56,9 @@ export function CsatKpiCard({ queueId }: CsatKpiCardProps) {
     );
   }
 
-  const hasResponses = !!data && data.responseCount > 0 && data.avgScore !== null;
+  // Platform returns `averageRating: 0` (not null) when there are no responses,
+  // so emptiness is derived from the count — never from a "zero" score.
+  const hasResponses = !!data && data.totalResponses > 0;
 
   return (
     <CsatCardShell data-testid="csat-kpi-card">
@@ -73,7 +75,7 @@ export function CsatKpiCard({ queueId }: CsatKpiCardProps) {
               className="text-2xl font-bold text-slate-900 dark:text-white"
               data-testid="csat-kpi-score"
             >
-              {formatNumber(data.avgScore as number)}
+              {formatNumber(data.averageRating)}
             </p>
           ) : (
             <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="csat-kpi-empty">
@@ -85,7 +87,7 @@ export function CsatKpiCard({ queueId }: CsatKpiCardProps) {
 
       {hasResponses && (
         <p className="mt-3 text-xs text-slate-400" data-testid="csat-kpi-responses">
-          {t('csat.responses')}: {formatNumber(data.responseCount)}
+          {t('csat.responses')}: {formatNumber(data.totalResponses)}
         </p>
       )}
     </CsatCardShell>

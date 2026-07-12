@@ -11,6 +11,52 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [3.13.1-web] - 2026-07-12
+
+Star item: **fix the supervisor CSAT KPI card's analytics contract** (csat-runner follow-up).
+
+### Fixed
+
+- **Supervisor CSAT KPI card read the wrong analytics fields** — `CsatQueueSummary`
+  (consumer of `GET /api/v1/analytics/csat/queues/{queueId}`) declared
+  `queueId` / `avgScore` / `responseCount`, none of which the Platform
+  `CsatResponseDto` actually returns. The card deserialized `undefined` for both
+  the score and the count and silently fell through to its empty state even when
+  responses existed. The interface now mirrors the server DTO camelCased over the
+  wire (`queueName` / `channel` / `totalResponses` / `averageRating` /
+  `rangeStart` / `rangeEnd`).
+- **Empty-state gate keyed off a never-null score** — Platform returns
+  `averageRating: 0` (not `null`) for a period with zero responses, so the old
+  `avgScore !== null` check never triggered the placeholder. Emptiness is now
+  derived from `totalResponses === 0`, so an empty queue shows the placeholder
+  instead of a misleading "0".
+
+### Tested
+
+- Added `csat-kpi-card.test.tsx` locking the analytics contract: score +
+  response count render on real data, and the empty state shows when
+  `totalResponses` is 0 despite `averageRating` being `0`.
+
+---
+
+## [3.13.0-web] - 2026-07-11
+
+Star item: **CSAT UI — csat-runner consumer** (Platform/ADR-0020; coordinated CSAT
+train with Pro `2.9.0-pro` + Platform `2.18.0`).
+
+### Added
+
+- **Webchat embed rating panel** — posts to `POST /api/v1/csat/responses/webchat`
+  (all 9 wire fields verbatim) from the embed transport, independent of the
+  auth-gated app shell.
+- **Supervisor CSAT KPI card** — aggregated per-queue CSAT score + response count
+  on the Operations wallboard, reading `GET /api/v1/analytics/csat/queues/{id}`.
+- **Admin CSAT template tab** — per-tenant CSAT template management surface.
+- i18n keys added across EN-US / ES-419 / PT-BR (3-locale parity gate); contract
+  test + vitest units + Playwright E2E for the rating panel.
+
+---
+
 ## [3.12.0-web] - 2026-07-05
 
 Star item: **AI credit exhaustion action + near-exhaustion warning** (#136).
