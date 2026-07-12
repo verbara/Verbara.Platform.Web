@@ -26,11 +26,15 @@ Phase 4 flagged as deferred-but-tracked, per the closing-routine follow-up-harve
    precedent this capability itself set.
 3. **Coercion helper shape**: a shared helper to normalize the generated schema's
    `number | string` unions (AOT numeric wire encoding) to `number` at the hook boundary,
-   replacing each hook's ad-hoc `select`/`as number` cast. Candidate location:
+   replacing each hook's ad-hoc `select` coercion. Candidate location:
    `src/core/api/` alongside `client.ts`. Needs at least 2-3 concrete migrated call sites
    (this change plus the next module) before generalizing the shape, to avoid guessing at
-   an abstraction from a single data point (`CsatResponseDto` + `ai-credits-readout.tsx`'s
-   existing precedent).
+   an abstraction from a single data point — today only `CsatResponseDto` is a genuine
+   instance. (Correction, retro run 4 2026-07-12: `ai-credits-readout.tsx`'s `as number`
+   casts were previously cited here as the same pattern — they are NOT; that hook's
+   `AiCreditsResponse` is a hand-written `number | null` interface and the casts work
+   around a TS nullable-narrowing gap, a different root cause. Do not model the helper
+   on them.)
 
 ## Non-Goals (this change)
 
