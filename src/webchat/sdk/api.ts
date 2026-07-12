@@ -8,6 +8,22 @@ import {
   resetVisitor,
 } from './visitor-storage';
 
+/**
+ * Server-issued CSAT survey context. When the host supplies this (the
+ * `responseToken` is an opaque, signed capture token minted server-side), the
+ * embed offers the post-conversation rating panel (csat-runner 2.2). The panel
+ * echoes these six fields verbatim and adds only `rating` / `comment` /
+ * `capturedAt`.
+ */
+export interface CsatConfig {
+  responseToken: string;
+  surveyId: string;
+  questionId: string;
+  channel: string;
+  queueName: string;
+  conversationId: string;
+}
+
 export interface InitConfig {
   tenantId: string;
   apiBase?: string;
@@ -16,6 +32,8 @@ export interface InitConfig {
   position?: 'bottom-right' | 'bottom-left';
   greeting?: string;
   visitor?: { name?: string; email?: string };
+  /** Optional server-issued CSAT survey context; enables the rating panel. */
+  csat?: CsatConfig;
 }
 
 type EventName = 'open' | 'close' | 'unread' | 'message-sent' | 'message-received' | 'ready';
@@ -86,6 +104,7 @@ export function createWebChatApi(): WebChatApi {
           title: document.title,
           referrer: document.referrer,
         },
+        ...(state.config!.csat ? { csat: state.config!.csat } : {}),
       });
       // Flush queued outbound messages
       while (state.outboundQueue.length > 0) {

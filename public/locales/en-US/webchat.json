@@ -52,5 +52,17 @@
   },
   "branding": {
     "poweredBy": "Powered by Verbara"
+  },
+  "csat": {
+    "title": "How was your experience?",
+    "subtitle": "Rate your conversation to help us improve.",
+    "ratingLabel": "Your rating",
+    "starAriaLabel": "{{count}} of 5 stars",
+    "commentLabel": "Tell us more (optional)",
+    "commentPlaceholder": "What went well, or what could we improve?",
+    "submit": "Submit rating",
+    "dismiss": "Not now",
+    "thankYou": "Thanks for your feedback!",
+    "error": "Couldn't submit your rating. Please try again."
   }
 }

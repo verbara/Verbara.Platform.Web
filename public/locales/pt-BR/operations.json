@@ -95,5 +95,14 @@
     "active": "Ativas",
     "paused": "Pausadas",
     "all": "Todas"
+  },
+  "csat": {
+    "title": "Satisfação do cliente (CSAT)",
+    "score": "Pontuação CSAT",
+    "responses": "Respostas",
+    "response_count": "{{count}} resposta",
+    "response_count_plural": "{{count}} respostas",
+    "period": "Período selecionado",
+    "empty": "Ainda não há respostas CSAT neste período."
   }
 }

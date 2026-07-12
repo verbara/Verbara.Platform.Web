@@ -95,5 +95,14 @@
     "active": "Active",
     "paused": "Paused",
     "all": "All"
+  },
+  "csat": {
+    "title": "Customer Satisfaction (CSAT)",
+    "score": "CSAT Score",
+    "responses": "Responses",
+    "response_count": "{{count}} response",
+    "response_count_plural": "{{count}} responses",
+    "period": "Selected period",
+    "empty": "No CSAT responses yet for this period."
   }
 }

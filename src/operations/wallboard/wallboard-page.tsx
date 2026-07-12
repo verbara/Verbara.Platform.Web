@@ -4,6 +4,7 @@ import { useQueueMetricsStore } from '@/operations/stores/queue-metrics-store';
 import { useQueueMetrics } from '@/core/api/hooks/use-queue-metrics';
 import { useAllLiveStates } from '@/core/api/hooks/use-analytics';
 import { GlobalKpis } from '@/operations/wallboard/global-kpis';
+import { CsatKpiCard } from '@/operations/wallboard/csat-kpi-card';
 import { QueueCard } from '@/operations/wallboard/queue-card';
 import { KioskWrapper } from '@/operations/wallboard/kiosk-wrapper';
 import { MetricsAvailabilityBanner } from '@/core/ui/metrics-availability-banner';
@@ -41,6 +42,7 @@ export default function WallboardPage() {
     <div className="space-y-6" data-testid="wallboard-page">
       <MetricsAvailabilityBanner isAvailable={isMetricsAvailable} />
       <GlobalKpis totalActive={totalActive} totalAgents={totalAgents} globalSla={globalSla} />
+      <CsatKpiCard queueId={sortedQueues[0]?.queueId} />
       <div
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
         data-testid="wallboard-queue-cards"

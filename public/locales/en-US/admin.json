@@ -1416,6 +1416,15 @@
     "validation": {
       "questionTextRequired": "Question text is required",
       "nameRequired": "Name is required"
+    },
+    "csat": {
+      "tab": "CSAT",
+      "tabDescription": "Customer satisfaction template used by the webchat rating panel.",
+      "ratingQuestion": "Rating question",
+      "ratingQuestionText": "How would you rate your experience?",
+      "scaleLabel": "Scale",
+      "scaleValue": "1–5 stars",
+      "readOnlyNote": "Read-only view of the CSAT template driving capture."
     }
   },
   "cluster-nodes": {

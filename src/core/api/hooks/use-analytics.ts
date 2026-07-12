@@ -16,8 +16,14 @@ export interface DashboardKpis {
   slaPercent: number;
   abandonRatePercent: number;
 }
-export interface TrendPoint { label: string; value: number; }
-export interface ChannelDistribution { channel: string; count: number; }
+export interface TrendPoint {
+  label: string;
+  value: number;
+}
+export interface ChannelDistribution {
+  channel: string;
+  count: number;
+}
 
 // CDR
 export interface CdrRow {
@@ -61,8 +67,18 @@ export interface CdrDetail {
   recordingStreamUrl?: string;
   hasTranscript: boolean;
 }
-export interface CdrTimelineEvent { event: string; timestamp: string; detail?: string; }
-export interface CdrQaSummary { reason?: string; outcome?: string; narrative?: string; qaScore?: number; sentimentLabel?: string; }
+export interface CdrTimelineEvent {
+  event: string;
+  timestamp: string;
+  detail?: string;
+}
+export interface CdrQaSummary {
+  reason?: string;
+  outcome?: string;
+  narrative?: string;
+  qaScore?: number;
+  sentimentLabel?: string;
+}
 
 // QA
 export interface QaRow {
@@ -100,10 +116,29 @@ export interface QaDetail {
   silenceCount?: number;
   interruptionCount?: number;
 }
-export interface QaCriterion { category: string; score: number; weight: number; passed: boolean; feedback?: string; }
-export interface ComplianceViolationInfo { ruleName: string; severity: string; description: string; evidence?: string; }
-export interface TopicInfo { name: string; confidence: number; }
-export interface TurnSentimentInfo { turnIndex: number; speaker: string; score: number; label: string; }
+export interface QaCriterion {
+  category: string;
+  score: number;
+  weight: number;
+  passed: boolean;
+  feedback?: string;
+}
+export interface ComplianceViolationInfo {
+  ruleName: string;
+  severity: string;
+  description: string;
+  evidence?: string;
+}
+export interface TopicInfo {
+  name: string;
+  confidence: number;
+}
+export interface TurnSentimentInfo {
+  turnIndex: number;
+  speaker: string;
+  score: number;
+  label: string;
+}
 
 // Transcript
 export interface TranscriptSegment {
@@ -128,20 +163,35 @@ export interface IntervalData {
   slaMetCount: number;
 }
 
-interface PagedResult<T> { items: T[]; totalCount: number; page: number; pageSize: number; hasNextPage: boolean; }
+interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  hasNextPage: boolean;
+}
 
 // Filters
-export interface CdrFilters { queue?: string; agent?: string; channel?: string; }
-export interface QaFilters { minScore?: number; queue?: string; agent?: string; }
+export interface CdrFilters {
+  queue?: string;
+  agent?: string;
+  channel?: string;
+}
+export interface QaFilters {
+  minScore?: number;
+  queue?: string;
+  agent?: string;
+}
 
 export function useDashboard(from?: string, to?: string, queue?: string) {
   return useQuery({
     queryKey: ['analytics-dashboard', from, to, queue],
-    queryFn: () => customFetch<DashboardData>({
-      url: '/api/v1/analytics/dashboard',
-      method: 'GET',
-      params: { ...(from && { from }), ...(to && { to }), ...(queue && { queue }) },
-    }),
+    queryFn: () =>
+      customFetch<DashboardData>({
+        url: '/api/v1/analytics/dashboard',
+        method: 'GET',
+        params: { ...(from && { from }), ...(to && { to }), ...(queue && { queue }) },
+      }),
     refetchInterval: 60000,
   });
 }
@@ -149,24 +199,28 @@ export function useDashboard(from?: string, to?: string, queue?: string) {
 export function useCdrList(from?: string, to?: string, filters?: CdrFilters, page = 1) {
   return useQuery({
     queryKey: ['analytics-cdr', from, to, filters, page],
-    queryFn: () => customFetch<PagedResult<CdrRow>>({
-      url: '/api/v1/analytics/cdr',
-      method: 'GET',
-      params: {
-        ...(from && { from }), ...(to && { to }),
-        ...(filters?.queue && { queue: filters.queue }),
-        ...(filters?.agent && { agent: filters.agent }),
-        ...(filters?.channel && { channel: filters.channel }),
-        page: String(page), pageSize: '50',
-      },
-    }),
+    queryFn: () =>
+      customFetch<PagedResult<CdrRow>>({
+        url: '/api/v1/analytics/cdr',
+        method: 'GET',
+        params: {
+          ...(from && { from }),
+          ...(to && { to }),
+          ...(filters?.queue && { queue: filters.queue }),
+          ...(filters?.agent && { agent: filters.agent }),
+          ...(filters?.channel && { channel: filters.channel }),
+          page: String(page),
+          pageSize: '50',
+        },
+      }),
   });
 }
 
 export function useCdrDetail(sessionId: string) {
   return useQuery({
     queryKey: ['analytics-cdr-detail', sessionId],
-    queryFn: () => customFetch<CdrDetail>({ url: `/api/v1/analytics/cdr/${sessionId}`, method: 'GET' }),
+    queryFn: () =>
+      customFetch<CdrDetail>({ url: `/api/v1/analytics/cdr/${sessionId}`, method: 'GET' }),
     enabled: !!sessionId,
   });
 }
@@ -174,22 +228,26 @@ export function useCdrDetail(sessionId: string) {
 export function useQaList(from?: string, to?: string, filters?: QaFilters, page = 1) {
   return useQuery({
     queryKey: ['analytics-qa', from, to, filters, page],
-    queryFn: () => customFetch<PagedResult<QaRow>>({
-      url: '/api/v1/analytics/qa',
-      method: 'GET',
-      params: {
-        ...(from && { from }), ...(to && { to }),
-        ...(filters?.minScore != null && { minScore: String(filters.minScore) }),
-        page: String(page), pageSize: '50',
-      },
-    }),
+    queryFn: () =>
+      customFetch<PagedResult<QaRow>>({
+        url: '/api/v1/analytics/qa',
+        method: 'GET',
+        params: {
+          ...(from && { from }),
+          ...(to && { to }),
+          ...(filters?.minScore != null && { minScore: String(filters.minScore) }),
+          page: String(page),
+          pageSize: '50',
+        },
+      }),
   });
 }
 
 export function useQaDetail(sessionId: string) {
   return useQuery({
     queryKey: ['analytics-qa-detail', sessionId],
-    queryFn: () => customFetch<QaDetail>({ url: `/api/v1/analytics/qa/${sessionId}`, method: 'GET' }),
+    queryFn: () =>
+      customFetch<QaDetail>({ url: `/api/v1/analytics/qa/${sessionId}`, method: 'GET' }),
     enabled: !!sessionId,
   });
 }
@@ -197,7 +255,11 @@ export function useQaDetail(sessionId: string) {
 export function useTranscript(sessionId: string, enabled: boolean) {
   return useQuery({
     queryKey: ['analytics-transcript', sessionId],
-    queryFn: () => customFetch<TranscriptSegment[]>({ url: `/api/v1/analytics/cdr/${sessionId}/transcript`, method: 'GET' }),
+    queryFn: () =>
+      customFetch<TranscriptSegment[]>({
+        url: `/api/v1/analytics/cdr/${sessionId}/transcript`,
+        method: 'GET',
+      }),
     enabled: !!sessionId && enabled,
   });
 }
@@ -205,11 +267,12 @@ export function useTranscript(sessionId: string, enabled: boolean) {
 export function useIntervals(from?: string, to?: string, queue?: string) {
   return useQuery({
     queryKey: ['analytics-intervals', from, to, queue],
-    queryFn: () => customFetch<IntervalData[]>({
-      url: '/api/v1/analytics/intervals',
-      method: 'GET',
-      params: { ...(from && { from }), ...(to && { to }), ...(queue && { queue }) },
-    }),
+    queryFn: () =>
+      customFetch<IntervalData[]>({
+        url: '/api/v1/analytics/intervals',
+        method: 'GET',
+        params: { ...(from && { from }), ...(to && { to }), ...(queue && { queue }) },
+      }),
   });
 }
 
@@ -235,7 +298,11 @@ export function useAllLiveStates() {
 export function useLiveState(queueName: string) {
   return useQuery({
     queryKey: ['analytics', 'live', queueName],
-    queryFn: () => customFetch<LiveState>({ url: `/api/v1/analytics/live/${encodeURIComponent(queueName)}`, method: 'GET' }),
+    queryFn: () =>
+      customFetch<LiveState>({
+        url: `/api/v1/analytics/live/${encodeURIComponent(queueName)}`,
+        method: 'GET',
+      }),
     enabled: !!queueName,
     refetchInterval: 15_000,
   });
@@ -258,7 +325,11 @@ export function useCurrentInterval(queueName?: string) {
   const params = queueName ? `?queueName=${encodeURIComponent(queueName)}` : '?queueName=default';
   return useQuery({
     queryKey: ['analytics', 'current-interval', queueName],
-    queryFn: () => customFetch<CurrentInterval>({ url: `/api/v1/analytics/current-interval${params}`, method: 'GET' }),
+    queryFn: () =>
+      customFetch<CurrentInterval>({
+        url: `/api/v1/analytics/current-interval${params}`,
+        method: 'GET',
+      }),
     refetchInterval: 30_000,
   });
 }
@@ -282,7 +353,11 @@ export function useAgentIntervals(filters: { from: string; to: string; agentId?:
   if (filters.agentId) params.set('agentId', filters.agentId);
   return useQuery({
     queryKey: ['analytics', 'agent-intervals', filters],
-    queryFn: () => customFetch<AgentInterval[]>({ url: `/api/v1/analytics/intervals/agents?${params}`, method: 'GET' }),
+    queryFn: () =>
+      customFetch<AgentInterval[]>({
+        url: `/api/v1/analytics/intervals/agents?${params}`,
+        method: 'GET',
+      }),
   });
 }
 
@@ -426,5 +501,31 @@ export function useBotAnalytics(from?: string, to?: string) {
           ...(to && { to }),
         },
       }),
+  });
+}
+
+// ─── CSAT (csat-runner) ────────────────────────────────
+/**
+ * Aggregated CSAT results for a single queue over the selected period, as
+ * exposed by the Platform read endpoint `GET /api/v1/analytics/csat/queues/{queueId}`
+ * (host contract: `Verbara.Platform/openspec/changes/csat-runner`). `avgScore`
+ * is nullable so a period with zero responses is distinguishable from a
+ * genuine zero score — the KPI card degrades to its empty state on `null`.
+ */
+export interface CsatQueueSummary {
+  queueId: string;
+  avgScore: number | null;
+  responseCount: number;
+}
+
+export function useCsatQueueAnalytics(queueId: string | undefined) {
+  return useQuery({
+    queryKey: ['analytics', 'csat', 'queue', queueId],
+    queryFn: () =>
+      customFetch<CsatQueueSummary>({
+        url: `/api/v1/analytics/csat/queues/${queueId}`,
+        method: 'GET',
+      }),
+    enabled: !!queueId,
   });
 }
