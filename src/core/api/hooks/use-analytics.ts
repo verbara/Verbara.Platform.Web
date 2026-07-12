@@ -508,14 +508,20 @@ export function useBotAnalytics(from?: string, to?: string) {
 /**
  * Aggregated CSAT results for a single queue over the selected period, as
  * exposed by the Platform read endpoint `GET /api/v1/analytics/csat/queues/{queueId}`
- * (host contract: `Verbara.Platform/openspec/changes/csat-runner`). `avgScore`
- * is nullable so a period with zero responses is distinguishable from a
- * genuine zero score — the KPI card degrades to its empty state on `null`.
+ * (host contract: `Verbara.Platform` `CsatResponseDto`). Field names mirror the
+ * server DTO camelCased over the wire — do NOT rename without changing the
+ * consumer, or deserialization silently yields `undefined`.
+ *
+ * `averageRating` is `0` (NOT null) for a period with zero responses, so
+ * emptiness is derived from `totalResponses === 0`, never from the score.
  */
 export interface CsatQueueSummary {
-  queueId: string;
-  avgScore: number | null;
-  responseCount: number;
+  queueName: string;
+  channel: string;
+  totalResponses: number;
+  averageRating: number;
+  rangeStart: string;
+  rangeEnd: string;
 }
 
 export function useCsatQueueAnalytics(queueId: string | undefined) {
