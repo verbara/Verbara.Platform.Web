@@ -26,7 +26,7 @@ interfaces for those shapes MUST be removed once migrated.
 #### Scenario: Generated file matches the golden envelope shape
 
 - **GIVEN** the OpenAPI document envelope matches the golden fixture
-  `Verbara.Platform/openspec/changes/openapi-typed-client/fixtures/openapi-document.v1.sample.json`
+  `Verbara.Platform/openspec/changes/archive/2026-07-12-openapi-typed-client/fixtures/openapi-document.v1.sample.json`
   — a document with top-level `openapi`, `info`, `paths`, and `components.schemas` keys
 - **WHEN** `npm run generate:api-types` runs against that document
 - **THEN** the generated declaration file exposes a type for the
@@ -47,7 +47,7 @@ interfaces for those shapes MUST be removed once migrated.
 generated type for the `CsatResponseDto` schema instead of the hand-written
 `CsatQueueSummary` interface it replaces. The generated type's fields MUST match the
 golden wire fixture verbatim — the same fixture cited by the csat-runner train's Web
-child: `Verbara.Platform/openspec/changes/openapi-typed-client/fixtures/openapi-document.v1.sample.json`,
+child: `Verbara.Platform/openspec/changes/archive/2026-07-12-openapi-typed-client/fixtures/openapi-document.v1.sample.json`,
 schema name `CsatResponseDto`, with these 6 fields exactly:
 
 - `queueName`
