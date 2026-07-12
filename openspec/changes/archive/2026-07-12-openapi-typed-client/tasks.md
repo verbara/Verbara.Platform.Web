@@ -57,16 +57,25 @@
 
 ## 4. Follow-up (tracked, not blocking this child)
 
+> Carried forward at archive time (2026-07-12) into
+> `openspec/changes/openapi-typed-client-phase2/` — see that change's `proposal.md` /
+> `design.md` for the tracked, actionable form of each item below. Left unchecked here
+> deliberately: this archived change does not itself resolve them.
+
 - [ ] 4.1 Record the codegen delivery mechanism (committed file vs CI fetch) as a
       durable decision in `Verbara.Platform/docs/decisions/` if a later phase revisits it
       (per the shared-workstream rule — this child's design.md documents the initial
       decision but does not itself author a Platform-repo ADR)
+      — tracked as `openapi-typed-client-phase2` design.md open question 1.
 - [ ] 4.2 Plan the next migration phase (remaining 61 hook files) grouped by module
       (Admin, Agent, Analytics, Operations) once the Platform host CI artifact
       (buildOrder 1) is live and a real generated document can replace the
       fixture-derived interim file from 1.3
+      — tracked as `openapi-typed-client-phase2` design.md open question 2.
 - [ ] 4.3 Consider whether `totalResponses`/`averageRating`'s generated `number | string`
       union (Native AOT number handling) should get a repo-wide coercion convention
       (e.g. a shared helper) once more numeric AOT-typed fields migrate in later phases,
       rather than each hook re-deriving its own `select` normalization
       (`ai-credits-readout.tsx` already has a similar `as number` cast precedent).
+      — tracked as `openapi-typed-client-phase2` design.md open question 3 / spec.md's new
+      "Numeric AOT wire unions" requirement.
