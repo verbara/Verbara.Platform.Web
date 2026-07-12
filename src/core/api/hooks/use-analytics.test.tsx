@@ -27,6 +27,7 @@ import {
   useSentimentTrends,
   useComplianceSummary,
   useBotAnalytics,
+  useCsatQueueAnalytics,
 } from './use-analytics';
 
 beforeEach(() => {
@@ -517,6 +518,84 @@ describe('useBotAnalytics', () => {
     vi.mocked(client.customFetch).mockRejectedValue(new Error('Server error'));
 
     const { result } = renderHook(() => useBotAnalytics(), { wrapper });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useCsatQueueAnalytics', () => {
+  // Verbatim-fixture-citation guard (openapi-typed-client): the resolved type
+  // must expose exactly these 6 fields — matching the golden fixture's
+  // `CsatResponseDto` schema field-for-field, no extra or renamed keys. Mirrors
+  // the csat-runner precedent's contract test (the exact drift PR#159 shipped).
+  const FIXTURE_FIELDS = [
+    'queueName',
+    'channel',
+    'totalResponses',
+    'averageRating',
+    'rangeStart',
+    'rangeEnd',
+  ] as const;
+
+  it('should fetch csat queue analytics with exactly the fixture fields', async () => {
+    const mockData = {
+      queueName: 'support',
+      channel: 'webchat',
+      totalResponses: 8,
+      averageRating: 4.5,
+      rangeStart: '2026-07-01T00:00:00Z',
+      rangeEnd: '2026-07-12T00:00:00Z',
+    };
+    vi.mocked(client.customFetch).mockResolvedValue(mockData);
+
+    const { result } = renderHook(() => useCsatQueueAnalytics('queue-001'), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/analytics/csat/queues/queue-001',
+      method: 'GET',
+    });
+
+    const data = result.current.data;
+    expect(data).toBeDefined();
+    expect(Object.keys(data ?? {}).sort()).toEqual([...FIXTURE_FIELDS].sort());
+    expect(data).toEqual(mockData);
+  });
+
+  it('should coerce numeric-or-string wire fields to number', async () => {
+    // Native AOT number handling: the generated type allows `totalResponses` /
+    // `averageRating` to arrive as `number | string`. The hook must normalize
+    // both to `number` so existing consumers (e.g. CsatKpiCard) can keep doing
+    // plain numeric comparisons/formatting.
+    vi.mocked(client.customFetch).mockResolvedValue({
+      queueName: 'support',
+      channel: 'webchat',
+      totalResponses: '8',
+      averageRating: '4.5',
+      rangeStart: '2026-07-01T00:00:00Z',
+      rangeEnd: '2026-07-12T00:00:00Z',
+    });
+
+    const { result } = renderHook(() => useCsatQueueAnalytics('queue-001'), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.totalResponses).toBe(8);
+    expect(result.current.data?.averageRating).toBe(4.5);
+    expect(typeof result.current.data?.totalResponses).toBe('number');
+    expect(typeof result.current.data?.averageRating).toBe('number');
+  });
+
+  it('should not fetch when queueId is undefined', () => {
+    const { result } = renderHook(() => useCsatQueueAnalytics(undefined), { wrapper });
+
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(client.customFetch).not.toHaveBeenCalled();
+  });
+
+  it('should handle error', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new Error('Server error'));
+
+    const { result } = renderHook(() => useCsatQueueAnalytics('queue-001'), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });

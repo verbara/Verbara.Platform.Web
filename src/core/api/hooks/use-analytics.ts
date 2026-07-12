@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 
 // Dashboard
 export interface DashboardData {
@@ -506,32 +507,52 @@ export function useBotAnalytics(from?: string, to?: string) {
 
 // ─── CSAT (csat-runner) ────────────────────────────────
 /**
- * Aggregated CSAT results for a single queue over the selected period, as
- * exposed by the Platform read endpoint `GET /api/v1/analytics/csat/queues/{queueId}`
- * (host contract: `Verbara.Platform` `CsatResponseDto`). Field names mirror the
- * server DTO camelCased over the wire — do NOT rename without changing the
- * consumer, or deserialization silently yields `undefined`.
+ * Generated wire type for the Platform read endpoint
+ * `GET /api/v1/analytics/csat/queues/{queueId}` — sourced from
+ * `src/core/api/generated/openapi.d.ts` (`components['schemas']['CsatResponseDto']`),
+ * not hand-declared (openapi-typed-client). Field names mirror the server DTO
+ * camelCased over the wire — do NOT rename without changing the consumer, or
+ * deserialization silently yields `undefined`.
+ *
+ * Native AOT number handling means `totalResponses` / `averageRating` are
+ * generated as `number | string` (the document's `["integer","string"]` /
+ * `["number","string"]` union types). The JSON wire payload always sends a
+ * numeric JSON value for these fields; the `string` arm exists only to cover
+ * the schema's declared pattern, not an observed runtime shape.
+ */
+export type CsatResponseDto = components['schemas']['CsatResponseDto'];
+
+/**
+ * Consumer-facing CSAT summary: `CsatResponseDto` with `totalResponses` /
+ * `averageRating` normalized to `number` (see {@link CsatResponseDto}'s doc
+ * comment on the generated union). Kept as the hook's resolved type so
+ * existing consumers (e.g. `CsatKpiCard`) keep doing plain numeric
+ * comparisons/formatting without re-deriving the coercion at every call site.
  *
  * `averageRating` is `0` (NOT null) for a period with zero responses, so
  * emptiness is derived from `totalResponses === 0`, never from the score.
  */
-export interface CsatQueueSummary {
-  queueName: string;
-  channel: string;
+export interface CsatQueueSummary extends Omit<
+  CsatResponseDto,
+  'totalResponses' | 'averageRating'
+> {
   totalResponses: number;
   averageRating: number;
-  rangeStart: string;
-  rangeEnd: string;
 }
 
 export function useCsatQueueAnalytics(queueId: string | undefined) {
   return useQuery({
     queryKey: ['analytics', 'csat', 'queue', queueId],
     queryFn: () =>
-      customFetch<CsatQueueSummary>({
+      customFetch<CsatResponseDto>({
         url: `/api/v1/analytics/csat/queues/${queueId}`,
         method: 'GET',
       }),
+    select: (data): CsatQueueSummary => ({
+      ...data,
+      totalResponses: Number(data.totalResponses),
+      averageRating: Number(data.averageRating),
+    }),
     enabled: !!queueId,
   });
 }
