@@ -9,6 +9,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Generated Platform API types (`openapi-typed-client`, Platform/ADR-0035).**
+  `openapi-typescript` codegen (`npm run generate:api-types`) produces the committed
+  `src/core/api/generated/openapi.d.ts` (324 paths, 182 schemas) from Platform's CI-exported
+  OpenAPI document (`openapi-document-<sha>` artifact). First migrated slice: the CSAT analytics
+  hook (`use-analytics.ts`) — its response types now come from the generated file instead of
+  hand-written interfaces, eliminating at the source the drift class that caused v3.13.1-web
+  (AOT numeric `number | string` unions normalized once at the hook boundary via `select`).
+  Realtime SignalR payloads (`src/core/realtime/`) stay hand-written — out of scope per
+  ADR-0020's deferred typed-hub follow-up (owner: Pro).
+
 ---
 
 ## [3.13.1-web] - 2026-07-12
