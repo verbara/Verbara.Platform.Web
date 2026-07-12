@@ -3,8 +3,11 @@
  *
  * Produced by `npm run generate:api-types` (openapi-typescript) from
  * Platform's exported OpenAPI document. Regenerate after any Platform API
- * change; see openspec/changes/openapi-typed-client/ for the mechanism and
- * design.md for the committed-file-not-CI-fetch decision.
+ * change; see openspec/changes/archive/2026-07-12-openapi-typed-client/ for the
+ * mechanism and design.md for the committed-file-not-CI-fetch decision. Living
+ * spec: openspec/specs/openapi-generated-types/spec.md. Next-phase follow-up
+ * (remaining hook migration, numeric-coercion helper):
+ * openspec/changes/openapi-typed-client-phase2/.
  */
 export interface paths {
   '/api/v{version}/auth/login': {
