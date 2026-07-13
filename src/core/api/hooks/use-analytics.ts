@@ -556,3 +556,86 @@ export function useCsatQueueAnalytics(queueId: string | undefined) {
     enabled: !!queueId,
   });
 }
+
+// ─── CSAT scope-wide aggregate (csat-completion) ───────
+/**
+ * Wire type for the NEW scope-wide aggregate CSAT read
+ * `GET /api/v1/analytics/csat` (csat-completion, Platform/ADR-0020 — the
+ * aggregate-across-queues option the product owner chose 2026-07-13). The
+ * envelope carries the tenant/scope roll-up (`totalResponses`, `averageRating`,
+ * `rangeStart`, `rangeEnd`); each `queues[]` row reuses the per-queue
+ * projection {@link CsatResponseDto} verbatim (`queueName`, `channel`,
+ * `totalResponses`, `averageRating`, `rangeStart`, `rangeEnd`; `channel` is
+ * `all` when unfiltered). Field names are cited VERBATIM from the frozen golden
+ * fixture `Verbara.Platform/openspec/changes/csat-completion/fixtures/csat-aggregate-analytics.v1.json`
+ * (verbatim-fixture-citation rule).
+ *
+ * INTERIM TYPING (API-first): Platform ships `GET /api/v1/analytics/csat` in
+ * this same cross-repo train, so `openapi.d.ts` does NOT yet carry its schema.
+ * Per `openapi-typed-client-phase2`'s interim-fixture posture ("the generated
+ * file remains authoritative only for the schemas it actually covers"), this
+ * shape is hand-declared here, typed 1:1 to the fixture, and MUST be replaced
+ * with the generated `components['schemas']['CsatAggregateAnalyticsDto']` (or
+ * whatever name Platform emits) once the endpoint is in the served contract and
+ * `npm run generate:api-types` is re-run. Like {@link CsatResponseDto}, the
+ * numeric fields are the AOT-safe `number | string` union (the JSON wire always
+ * sends a numeric value; the `string` arm covers the declared schema pattern).
+ */
+export interface CsatAggregateAnalyticsDto {
+  totalResponses: number | string;
+  averageRating: number | string;
+  rangeStart: string;
+  rangeEnd: string;
+  queues: CsatResponseDto[];
+}
+
+/**
+ * Consumer-facing scope-wide CSAT summary: {@link CsatAggregateAnalyticsDto}
+ * with `totalResponses` / `averageRating` (envelope AND each `queues[]` row)
+ * normalized to `number` so consumers (`CsatKpiCard`) do plain numeric
+ * formatting. As with {@link CsatQueueSummary}, `averageRating` is `0` (NOT
+ * null) for a period with zero responses, so emptiness is derived from
+ * `totalResponses === 0`, never from the score.
+ */
+export interface CsatAggregateSummary extends Omit<
+  CsatAggregateAnalyticsDto,
+  'totalResponses' | 'averageRating' | 'queues'
+> {
+  totalResponses: number;
+  averageRating: number;
+  queues: CsatQueueSummary[];
+}
+
+/**
+ * Scope-wide aggregate CSAT KPI read for the supervisor wallboard
+ * (csat-completion). Mirrors {@link useCsatQueueAnalytics} (see
+ * `use-analytics.ts:508-558`): a `useQuery` fetching the aggregate DTO with a
+ * `select` that normalizes the AOT-safe `number | string` union fields to
+ * `number` on the envelope and on every `queues[]` row.
+ *
+ * This hook is the **second concrete call site** of the `number | string`
+ * AOT-union normalization pattern that `openapi-typed-client-phase2` tracks as
+ * an open design question (whether to introduce a shared coercion helper once
+ * 2-3 sites exist). It adds the data point but does NOT itself introduce the
+ * helper — that decision stays with phase2.
+ */
+export function useCsatAggregateAnalytics() {
+  return useQuery({
+    queryKey: ['analytics', 'csat', 'aggregate'],
+    queryFn: () =>
+      customFetch<CsatAggregateAnalyticsDto>({
+        url: '/api/v1/analytics/csat',
+        method: 'GET',
+      }),
+    select: (data): CsatAggregateSummary => ({
+      ...data,
+      totalResponses: Number(data.totalResponses),
+      averageRating: Number(data.averageRating),
+      queues: data.queues.map((q) => ({
+        ...q,
+        totalResponses: Number(q.totalResponses),
+        averageRating: Number(q.averageRating),
+      })),
+    }),
+  });
+}

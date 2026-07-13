@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { SmilePlus } from 'lucide-react';
-import { useCsatQueueAnalytics } from '@/core/api/hooks/use-analytics';
+import { useCsatAggregateAnalytics } from '@/core/api/hooks/use-analytics';
 import { useFormatNumber } from '@/core/i18n/use-format';
 import { Skeleton } from '@/core/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -29,24 +29,25 @@ function CsatCardShell({ className, render, ...props }: useRender.ComponentProps
   });
 }
 
-export interface CsatKpiCardProps {
-  /** Queue the supervisor CSAT score is scoped to. */
-  readonly queueId: string | undefined;
-}
-
 /**
- * Supervisor CSAT KPI card for the Operations wallboard (csat-runner 2.3).
+ * Supervisor CSAT KPI card for the Operations wallboard (csat-completion).
  *
- * Reads `GET /api/v1/analytics/csat/queues/{queueId}` and renders the
- * aggregated CSAT score plus the response count for the selected period. Shows
- * an empty/placeholder state (rather than a misleading zero) when there are no
- * responses yet. All copy resolves through the `operations.csat.*` i18n keys
+ * Reads the scope-wide aggregate `GET /api/v1/analytics/csat` (NOT a single
+ * queue) and renders the envelope roll-up: `averageRating` as the score and
+ * `totalResponses` as the count for the `rangeStart`–`rangeEnd` window,
+ * aggregated across all queues in the supervisor's scope (fulfilling the
+ * `csat-operator-views` living-spec promise). Shows an empty/placeholder state
+ * (rather than a misleading zero) when there are no responses yet — emptiness
+ * is derived from `totalResponses === 0`, never from a zero `averageRating`.
+ * The card takes no props (the scope is server-computed); the `OnCsatResponseRecorded`
+ * SignalR push invalidates this query so the score refreshes without waiting
+ * for the poll. All copy resolves through the `operations.csat.*` i18n keys
  * (3-locale parity gate); numeric values are locale-formatted via `Intl`.
  */
-export function CsatKpiCard({ queueId }: CsatKpiCardProps) {
+export function CsatKpiCard() {
   const { t } = useTranslation('operations');
   const { formatNumber } = useFormatNumber();
-  const { data, isLoading } = useCsatQueueAnalytics(queueId);
+  const { data, isLoading } = useCsatAggregateAnalytics();
 
   if (isLoading) {
     return (
@@ -69,6 +70,9 @@ export function CsatKpiCard({ queueId }: CsatKpiCardProps) {
         <div className="min-w-0">
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             {t('csat.title')}
+          </p>
+          <p className="text-xs text-slate-400 dark:text-slate-500" data-testid="csat-kpi-scope">
+            {t('csat.scope')}
           </p>
           {hasResponses ? (
             <p
