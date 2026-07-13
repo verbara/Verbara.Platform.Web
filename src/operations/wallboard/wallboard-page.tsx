@@ -42,7 +42,7 @@ export default function WallboardPage() {
     <div className="space-y-6" data-testid="wallboard-page">
       <MetricsAvailabilityBanner isAvailable={isMetricsAvailable} />
       <GlobalKpis totalActive={totalActive} totalAgents={totalAgents} globalSla={globalSla} />
-      <CsatKpiCard queueId={sortedQueues[0]?.queueId} />
+      <CsatKpiCard />
       <div
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
         data-testid="wallboard-queue-cards"

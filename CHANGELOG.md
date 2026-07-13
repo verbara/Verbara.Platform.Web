@@ -11,6 +11,23 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Scope-wide CSAT KPI card + realtime refresh (`csat-completion`, Platform/ADR-0020)** — the
+  supervisor wallboard CSAT card now reads the NEW scope-wide aggregate endpoint
+  `GET /api/v1/analytics/csat` (envelope roll-up: `totalResponses` / `averageRating` /
+  `rangeStart` / `rangeEnd`, with `queues[]` rows) instead of the first sorted queue's per-queue
+  read — fulfilling the `csat-operator-views` promise ("the queues in the supervisor's scope") and
+  resolving ADR-0020's wallboard-card scope question in favor of aggregation. New
+  `useCsatAggregateAnalytics` hook in `use-analytics.ts` (keyed `['analytics','csat','aggregate']`)
+  mirrors `useCsatQueueAnalytics`' `number | string` AOT-union `select` normalization — the second
+  concrete call site of the pattern `openapi-typed-client-phase2` tracks (interim wire type declared
+  1:1 to the golden fixture until Platform ships the endpoint and `openapi.d.ts` is regenerated,
+  API-first). Realtime: the typed `OnCsatResponseRecorded` SignalR push (payload `tenantId`,
+  `responseId`, `surveyId`, `conversationId`, `channel`, `queueName`, `rating`, `comment` nullable,
+  `capturedAt`) now invalidates the aggregate query so the score refreshes on push, not only on the
+  poll — pure enrichment (poll stays authoritative if realtime is down); a `null` `comment` (voice
+  DTMF) does not suppress the refresh. `CsatKpiCard` drops its `queueId` prop; new `csat.scope` i18n
+  key added across EN-US / ES-419 / PT-BR. The shared TanStack `queryClient` singleton moved to
+  `src/core/api/query-client.ts` so the realtime hub can invalidate it from outside React.
 - **Generated Platform API types (`openapi-typed-client`, Platform/ADR-0035)** (#161).
   `openapi-typescript` codegen (`npm run generate:api-types`) produces the committed
   `src/core/api/generated/openapi.d.ts` (324 paths, 182 schemas) from Platform's CI-exported

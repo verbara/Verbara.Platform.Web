@@ -103,6 +103,7 @@
     "response_count": "{{count}} respuesta",
     "response_count_plural": "{{count}} respuestas",
     "period": "Período seleccionado",
+    "scope": "Todas las colas de tu ámbito",
     "empty": "Aún no hay respuestas CSAT en este período."
   }
 }
