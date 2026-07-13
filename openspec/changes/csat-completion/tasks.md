@@ -1,0 +1,19 @@
+## 1. Phase A — Foundation (batch)
+
+- [ ] 1.1 Regenerate `src/core/api/generated/openapi.d.ts` once Platform ships `GET /api/v1/analytics/csat`; confirm the aggregate envelope schema exposes `totalResponses`, `averageRating`, `rangeStart`, `rangeEnd`, and `queues[]` rows (`queueName`, `channel`, `totalResponses`, `averageRating`, `rangeStart`, `rangeEnd`) — cite `fixtures/csat-aggregate-analytics.v1.json` verbatim. Until the generated type exists, follow the interim-fixture posture from `openapi-typed-client-phase2`.
+- [ ] 1.2 Add `useCsatAggregateAnalytics()` in `src/core/api/hooks/use-analytics.ts` against `GET /api/v1/analytics/csat`, keyed `['analytics','csat','aggregate', …]`, with a `select` that normalizes the `number | string` AOT-union fields (`totalResponses`, `averageRating`, and the same on each `queues[]` row) to `number` — mirror `useCsatQueueAnalytics` (`use-analytics.ts:508-558`). Type against the generated schema (no hand-declared type). Note in a doc-comment that this is the second concrete call site of the pattern tracked by `openapi-typed-client-phase2`.
+- [ ] 1.3 Add the `operations.csat.*` i18n keys needed for scope-wide wording (drop any single-queue implication) across EN-US / ES-419 / PT-BR; keep the CI parity gate green.
+
+## 2. Phase B — Critical components (focused)
+
+- [ ] 2.1 Migrate `src/operations/wallboard/csat-kpi-card.tsx` to read `useCsatAggregateAnalytics()`: render the envelope `averageRating` as the score and `totalResponses` as the count over `rangeStart`–`rangeEnd`; keep emptiness derived from `totalResponses === 0` (never a zero `averageRating`); drop the `queueId` prop from `CsatKpiCardProps`. Keep `@base-ui/react` `useRender`/`render` prop (never `asChild`), the existing `data-*`/`data-testid` selectors, and locale-formatted numbers via `useFormatNumber`.
+- [ ] 2.2 Remove the `queueId={sortedQueues[0]?.queueId}` prop from `<CsatKpiCard />` at `src/operations/wallboard/wallboard-page.tsx:45` (the card is now scope-wide, not first-queue).
+- [ ] 2.3 Register the typed `OnCsatResponseRecorded` handler in `src/core/realtime/platform-hub.ts` (`registerHandlers`, mirroring the `OnSupervisionStarted`/`OnWhisperReceived` `conn.on(...)` idiom) with a local `CsatResponseRecordedPayload` interface typed 1:1 to the fixture (`tenantId`, `responseId`, `surveyId`, `conversationId`, `channel`, `queueName`, `rating`, `comment` nullable, `capturedAt`); on receipt, invalidate the `['analytics','csat','aggregate']` query so the card refreshes without waiting for the poll. A `null` `comment` MUST NOT suppress the refresh. Keep the handler pure enrichment (poll stays authoritative if realtime is down).
+
+## 3. Phase C — Integration & verification (batch)
+
+- [ ] 3.1 Add a contract/unit test asserting the consumed aggregate keys equal `fixtures/csat-aggregate-analytics.v1.json` (envelope + `queues[]` rows) and the push-payload keys equal `fixtures/csat-response-recorded-payload.v1.json` (verbatim-fixture-citation guard) — read the sibling golden fixtures and assert exact key sets.
+- [ ] 3.2 Add a unit test for `useCsatAggregateAnalytics` `select` normalization (`number | string` → `number`) and a test for the `platform-hub` `OnCsatResponseRecorded` handler invalidating the aggregate query key (incl. the `null` `comment` case).
+- [ ] 3.3 `npx vitest run` — unit tests green (incl. 3.1 contract test + `csat-kpi-card` aggregate test).
+- [ ] 3.4 `npx playwright test` — E2E for the wallboard CSAT card showing the scope-wide aggregate and refreshing on an `OnCsatResponseRecorded` push, using `data-testid` selectors; anti-flake fences (no `waitForTimeout`/wall-clock waits, assert via `expect(...)` polling or `waitForResponse` on the aggregate GET; workers:1, retries:1).
+- [ ] 3.5 `npm run build` (type-check + bundle) clean and i18n parity green across EN-US / ES-419 / PT-BR.
