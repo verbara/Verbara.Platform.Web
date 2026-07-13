@@ -11,7 +11,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Generated Platform API types (`openapi-typed-client`, Platform/ADR-0035).**
+- **Generated Platform API types (`openapi-typed-client`, Platform/ADR-0035)** (#161).
   `openapi-typescript` codegen (`npm run generate:api-types`) produces the committed
   `src/core/api/generated/openapi.d.ts` (324 paths, 182 schemas) from Platform's CI-exported
   OpenAPI document (`openapi-document-<sha>` artifact). First migrated slice: the CSAT analytics
