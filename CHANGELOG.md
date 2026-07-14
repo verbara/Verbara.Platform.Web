@@ -9,6 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.14.0-web] - 2026-07-14
+
 ### Added
 
 - **Scope-wide CSAT KPI card + realtime refresh (`csat-completion`, Platform/ADR-0020)** — the
