@@ -49,7 +49,8 @@ The Platform gate is **LIVE**: Platform/ADR-0035 (Accepted 2026-07-12) + Platfor
 - **No new dependency, no new CI job**: the existing blocking `build` job gates the generated types
   for free.
 - **No runtime behavior change**: swap-the-T is compile-time-only.
-- **Depends on**: nothing pending — the Platform document is already committed as `openapi.d.ts`.
+- **GATE (held, 2026-07-16)**: implementation is HELD as backlog pending the cross-repo thread to have Platform emit named response DTOs in its OpenAPI document — the `openapi-typed-client-admin` archive (2026-07-16) found only 6 of 44 hooks migratable because of response-schema scarcity, and this module would hit the same bound. (Cross-repo change id / ADR recorded when that thread opens.)
+- **Depends on**: the Platform document is committed as `openapi.d.ts`, but the migratable surface is capped by the response-schema scarcity above — see GATE.
 - **Not in scope**: the Admin/Agent/Operations modules (sibling children);
   `src/core/realtime/platform-hub.ts` (SignalR — out of scope); implementing the shared coercion
   helper (the Admin child gathers sites; helper deferred to ≥3 genuine sites).
