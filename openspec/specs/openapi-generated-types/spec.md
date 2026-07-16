@@ -9,7 +9,9 @@ is caught at compile time (`tsc -b`) instead of silently at runtime — the fail
 that caused the csat-runner incident (v3.13.1-web). Migration is phased: this capability
 currently covers codegen tooling + the CSAT analytics slice
 (`useCsatQueueAnalytics`/`CsatResponseDto`); the remaining ~271 hand-written hook
-declarations migrate in later phases tracked by `openapi-typed-client-phase2`. The realtime
+declarations migrate in four per-module child changes — `openapi-typed-client-admin`,
+`-agent`, `-analytics`, `-operations` (planning resolved by the archived
+`openapi-typed-client-phase2`). The realtime
 SignalR boundary (`src/core/realtime/platform-hub.ts`) is explicitly out of scope — no REST
 paths, not representable in an OpenAPI document (ADR-0020's deferred follow-up, owner: Pro).
 
@@ -21,7 +23,15 @@ The repo SHALL generate TypeScript types from the OpenAPI document published by 
 Platform Api host via `openapi-typescript`, and SHALL commit the generated output as a
 single declaration file refreshed by an npm script — not fetched at CI build time. The
 generated types are the single source of truth for any wire shape they cover; hand-written
-interfaces for those shapes MUST be removed once migrated.
+interfaces for those shapes MUST be removed once migrated. The capability's migration is
+phased: Phase 1 (archived, `openapi-typed-client`) covers tooling + the CSAT analytics
+slice. Remaining hand-written hook declarations (61 files, ~271 declarations across Admin,
+Agent, Analytics, and Operations) SHOULD migrate in subsequent phases; Platform's real
+OpenAPI document is now LIVE as a CI artifact (Platform/ADR-0035 + the `ci.yml` "Export
+OpenAPI document (CI-runtime capture)" step) and the committed `openapi.d.ts` is already
+generated from it (324 paths, 182 schemas), so those phases are unblocked. Those subsequent
+phases are the four per-module child changes `openapi-typed-client-admin`, `-agent`,
+`-analytics`, and `-operations` (per this change's superseding resolution).
 
 #### Scenario: Generated file matches the golden envelope shape
 
@@ -40,6 +50,15 @@ interfaces for those shapes MUST be removed once migrated.
   (e.g. a field renamed upstream)
 - **THEN** `tsc -b` (the existing blocking `build` CI job) fails, surfacing the drift at
   compile time instead of at runtime
+
+#### Scenario: Unmigrated hooks remain hand-written until their own phase lands
+
+- **GIVEN** a hook outside the CSAT slice still declares its own hand-written
+  request/response interface
+- **WHEN** the repo is at any commit between Phase 1's archive and a later migration phase
+  for that hook
+- **THEN** the hand-written interface is expected and not itself a defect — only the CSAT
+  slice's `CsatQueueSummary` was required to be removed by Phase 1
 
 ### Requirement: CSAT analytics hook consumes the generated CsatResponseDto type
 
@@ -92,3 +111,28 @@ capability consumes.
   generated types
 - **THEN** `platform-hub.ts`'s interfaces are not modified, removed, or replaced — that
   boundary is ADR-0020's deferred follow-up (owner: Pro), explicitly out of scope
+
+### Requirement: Numeric AOT wire unions get a tracked normalization decision before proliferating
+
+Fields whose generated type is a `number | string` union (Platform's AOT-safe numeric wire
+encoding) MUST NOT each grow an independent, ad-hoc normalization at every new call site
+once a second and third migrated hook hits the same pattern. The repo SHALL track the
+decision of whether to introduce a shared coercion helper (vs. continuing per-hook
+`select`/cast normalization) as an open design question until at least 3 concrete migrated
+call sites exist to generalize from. **The tally already stands at 2 genuine sites**, both in
+`use-analytics.ts`: `CsatResponseDto` (phase-1) and `CsatAggregateAnalyticsDto` (archived
+`2026-07-14-csat-completion`); the `openapi-typed-client-admin` child gathers further sites, and
+one more genuine site trips the ≥3 threshold. `ai-credits-readout.tsx`'s `as number` casts
+(a hand-written `number | null` nullable-narrowing gap) do NOT count as such a site.
+
+#### Scenario: A second migrated hook hits the same union pattern
+
+- **GIVEN** `useCsatQueueAnalytics` already normalizes `totalResponses`/`averageRating` via
+  a per-hook `select`
+- **WHEN** a subsequent migration phase migrates another hook whose generated type also
+  exposes a `number | string` union field
+- **THEN** the design decision recorded in the archived
+  `openapi-typed-client-phase2/design.md` (open question 3, resolved: defer the shared helper
+  until ≥3 genuine sites; the `openapi-typed-client-admin` child gathers the sites) is revisited
+  with the new data point before a third ad-hoc normalization is added, rather than silently
+  repeating the pattern indefinitely

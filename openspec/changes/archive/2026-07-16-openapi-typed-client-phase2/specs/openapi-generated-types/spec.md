@@ -9,10 +9,12 @@ generated types are the single source of truth for any wire shape they cover; ha
 interfaces for those shapes MUST be removed once migrated. The capability's migration is
 phased: Phase 1 (archived, `openapi-typed-client`) covers tooling + the CSAT analytics
 slice. Remaining hand-written hook declarations (61 files, ~271 declarations across Admin,
-Agent, Analytics, and Operations) SHOULD migrate in subsequent phases once Platform's real
-OpenAPI document is live as a CI artifact (buildOrder 1, Platform/ADR-0035); until then the
-fixture-derived interim generated file remains authoritative only for the schemas it
-actually covers.
+Agent, Analytics, and Operations) SHOULD migrate in subsequent phases; Platform's real
+OpenAPI document is now LIVE as a CI artifact (Platform/ADR-0035 + the `ci.yml` "Export
+OpenAPI document (CI-runtime capture)" step) and the committed `openapi.d.ts` is already
+generated from it (324 paths, 182 schemas), so those phases are unblocked. Those subsequent
+phases are the four per-module child changes `openapi-typed-client-admin`, `-agent`,
+`-analytics`, and `-operations` (per this change's superseding resolution).
 
 #### Scenario: Generated file matches the golden envelope shape
 
