@@ -6,12 +6,21 @@ Generates and maintains TypeScript types from Platform's published OpenAPI docum
 (`openapi-typescript`, committed `src/core/api/generated/openapi.d.ts`), so wire-shape
 drift between this repo's hand-written consumer interfaces and the real Platform contract
 is caught at compile time (`tsc -b`) instead of silently at runtime — the failure class
-that caused the csat-runner incident (v3.13.1-web). Migration is phased: this capability
-currently covers codegen tooling + the CSAT analytics slice
-(`useCsatQueueAnalytics`/`CsatResponseDto`); the remaining ~271 hand-written hook
-declarations migrate in four per-module child changes — `openapi-typed-client-admin`,
-`-agent`, `-analytics`, `-operations` (planning resolved by the archived
-`openapi-typed-client-phase2`). The realtime
+that caused the csat-runner incident (v3.13.1-web). Migration is phased and adopted
+**only where the generated document actually carries a matching named schema**: this
+capability covers the codegen tooling + the CSAT analytics slice
+(`useCsatQueueAnalytics`/`CsatResponseDto`) + the Admin module's genuine structural
+matches (`openapi-typed-client-admin`, archived 2026-07-16 — 6 of 44 Admin hook files
+migrated). The migratable surface is bounded by an **upstream response-schema scarcity**:
+Platform's captured OpenAPI document emits request bodies (`*Request`) and nested
+value-object `*Dto`s but almost no top-level response DTOs, so most consumer response
+interfaces have no generated schema to swap onto, and most request schemas diverge
+(optional→required-nullable, `number`→the AOT `number | string` union, literal unions
+widened to `string`) — a swap there would break the hook's public type, which the
+structural-match discipline forbids. Hooks with no clean match stay hand-written, by
+design, until that upstream bound moves. The remaining Agent/Analytics/Operations module
+children are HELD as backlog pending a cross-repo thread that has Platform emit named
+response DTOs in its OpenAPI document (see those children's proposals). The realtime
 SignalR boundary (`src/core/realtime/platform-hub.ts`) is explicitly out of scope — no REST
 paths, not representable in an OpenAPI document (ADR-0020's deferred follow-up, owner: Pro).
 
@@ -23,15 +32,22 @@ The repo SHALL generate TypeScript types from the OpenAPI document published by 
 Platform Api host via `openapi-typescript`, and SHALL commit the generated output as a
 single declaration file refreshed by an npm script — not fetched at CI build time. The
 generated types are the single source of truth for any wire shape they cover; hand-written
-interfaces for those shapes MUST be removed once migrated. The capability's migration is
-phased: Phase 1 (archived, `openapi-typed-client`) covers tooling + the CSAT analytics
-slice. Remaining hand-written hook declarations (61 files, ~271 declarations across Admin,
-Agent, Analytics, and Operations) SHOULD migrate in subsequent phases; Platform's real
-OpenAPI document is now LIVE as a CI artifact (Platform/ADR-0035 + the `ci.yml` "Export
-OpenAPI document (CI-runtime capture)" step) and the committed `openapi.d.ts` is already
-generated from it (324 paths, 182 schemas), so those phases are unblocked. Those subsequent
-phases are the four per-module child changes `openapi-typed-client-admin`, `-agent`,
-`-analytics`, and `-operations` (per this change's superseding resolution).
+interfaces for those shapes MUST be removed once migrated **and only where the document
+carries a matching named schema** — a hook whose response shape has no generated schema, or
+whose generated request schema diverges (optional→required-nullable, `number`→the AOT
+`number | string` union, literal unions widened to `string`), stays hand-written by design,
+not as a defect. The capability's migration is phased: Phase 1 (archived,
+`openapi-typed-client`) covers tooling + the CSAT analytics slice; the Admin phase
+(`openapi-typed-client-admin`, archived 2026-07-16) migrated **6 of its 44 hook files** —
+the genuine clean matches — and left the other 38 hand-written because Platform's document
+emits almost no top-level response DTOs (the upstream response-schema scarcity described in
+the Purpose). Platform's real OpenAPI document is LIVE as a CI artifact (Platform/ADR-0035 +
+the `ci.yml` "Export OpenAPI document (CI-runtime capture)" step) and the committed
+`openapi.d.ts` is generated from it (324 paths, 182 schemas); the tooling is unblocked, but
+the _migratable surface_ is capped by that scarcity. The remaining per-module children
+`openapi-typed-client-agent`, `-analytics`, and `-operations` are HELD as backlog pending a
+cross-repo thread to have Platform emit named response DTOs — until then their migratable
+surface would be as thin as Admin's.
 
 #### Scenario: Generated file matches the golden envelope shape
 
@@ -119,10 +135,12 @@ encoding) MUST NOT each grow an independent, ad-hoc normalization at every new c
 once a second and third migrated hook hits the same pattern. The repo SHALL track the
 decision of whether to introduce a shared coercion helper (vs. continuing per-hook
 `select`/cast normalization) as an open design question until at least 3 concrete migrated
-call sites exist to generalize from. **The tally already stands at 2 genuine sites**, both in
+call sites exist to generalize from. **The tally stands at 2 genuine active sites**, both in
 `use-analytics.ts`: `CsatResponseDto` (phase-1) and `CsatAggregateAnalyticsDto` (archived
-`2026-07-14-csat-completion`); the `openapi-typed-client-admin` child gathers further sites, and
-one more genuine site trips the ≥3 threshold. `ai-credits-readout.tsx`'s `as number` casts
+`2026-07-14-csat-completion`). The `openapi-typed-client-admin` child (archived 2026-07-16)
+adopted no numeric-bearing generated schema, so it added **0 new active sites** — the ≥3
+threshold is not yet reached; its `tasks.md` logs the latent candidates that would flip active
+if a future phase adopted their schema. `ai-credits-readout.tsx`'s `as number` casts
 (a hand-written `number | null` nullable-narrowing gap) do NOT count as such a site.
 
 #### Scenario: A second migrated hook hits the same union pattern
@@ -136,3 +154,60 @@ one more genuine site trips the ≥3 threshold. `ai-credits-readout.tsx`'s `as n
   until ≥3 genuine sites; the `openapi-typed-client-admin` child gathers the sites) is revisited
   with the new data point before a third ad-hoc normalization is added, rather than silently
   repeating the pattern indefinitely
+
+### Requirement: Admin module hooks adopt generated types where a genuine match exists
+
+Across the 44 Admin-module hook files under `src/core/api/hooks/`, each hook SHALL adopt the
+generated type from `src/core/api/generated/openapi.d.ts` (behind `client.ts`'s existing
+generic `<T>`, swap-the-T) **only where the generated document carries a matching named
+schema that is an exact structural match or a non-breaking superset** of the hand-written
+interface. A hook whose response shape has no generated schema, or whose generated request
+schema diverges (optional→required-nullable, `number`→the AOT `number | string` union,
+literal unions widened to `string`), SHALL stay hand-written — a forced swap there would
+break the hook's public type, which the structural-match discipline forbids. Where a shape
+IS adopted, its hand-written interface MUST be removed and every usage (component props,
+tests) updated to the generated type. Where a field's generated type is a `number | string`
+AOT-wire-union, the migrated hook MAY keep a thin per-hook coercion (as the CSAT slice does)
+until the shared-helper decision is revisited at ≥3 genuine sites.
+
+The shipped outcome of `openapi-typed-client-admin` (archived 2026-07-16) is **6 genuine
+migrations across the 44 files** — `ScheduleDay`, `ChangePasswordRequest`, `SystemSettings`,
+`UpdateLicenseRequest`, `TypificationFieldOption`, `CreateWebhookSubscriptionRequest` — with
+the other 38 files kept hand-written (per-file rationale in the archived change's `tasks.md`).
+This is the current upstream bound, not an incomplete migration: Platform's captured OpenAPI
+document emits almost no top-level response DTOs, so most Admin response interfaces have no
+schema to swap onto. Lifting this bound is the subject of the held cross-repo response-schema
+thread; the Agent/Analytics/Operations children remain HELD against it.
+
+#### Scenario: An Admin hook with a clean generated match drops its hand-written interface
+
+- **GIVEN** an Admin-module hook whose hand-written interface has an exact structural match
+  (or non-breaking superset) in the generated document (e.g. `SystemSettings` →
+  `components['schemas']['SystemSettingsRequest']`)
+- **WHEN** the migration adopts that generated type via `customFetch<T>`
+- **THEN** the hand-written interface is removed, every usage imports the generated type, and
+  `tsc -b` (the existing blocking `build` CI job) passes — surfacing any drift between the hook's
+  usage and the real Platform contract at compile time
+
+#### Scenario: An Admin hook with no clean match stays hand-written by design
+
+- **GIVEN** an Admin-module hook whose response shape has no generated schema, or whose
+  generated request schema diverges from the hand-written interface (e.g. `use-queues.ts`'s
+  `Queue`, which has no generated response schema)
+- **WHEN** the migration evaluates that hook
+- **THEN** the hand-written interface is retained and annotated in the archived change's
+  `tasks.md` — this is the documented upstream bound (response-schema scarcity), not a defect
+  or an unfinished task
+
+#### Scenario: Numeric AOT wire-union sites are tallied, not silently re-normalized
+
+- **GIVEN** an Admin hook whose _adopted_ generated type exposes a genuine `number | string`
+  AOT-wire-union field a consumer must read as `number`
+- **WHEN** the migration adopts that hook's generated type
+- **THEN** the site is recorded in the coercion-site tally, and the shared-coercion-helper
+  decision (phase2 open question 3) is revisited only once ≥3 genuine sites exist — a per-hook
+  `select`/cast coercion is used in the interim, and `ai-credits-readout.tsx`'s `as number` casts
+  (a hand-written `number | null` nullable-narrowing gap) are NOT counted as such a site. The
+  Admin phase adopted no numeric-bearing schema, so the active tally stays at 2, with latent
+  candidates logged in the archived change's `tasks.md` for hooks that would flip active if
+  their schema were ever adopted
