@@ -6,8 +6,9 @@
  * change; see openspec/changes/archive/2026-07-12-openapi-typed-client/ for the
  * mechanism and design.md for the committed-file-not-CI-fetch decision. Living
  * spec: openspec/specs/openapi-generated-types/spec.md. Next-phase follow-up
- * (remaining hook migration, numeric-coercion helper):
- * openspec/changes/openapi-typed-client-phase2/.
+ * (remaining hook migration, numeric-coercion helper): the four per-module
+ * child changes openapi-typed-client-{admin,agent,analytics,operations}
+ * (planning resolved by the archived openapi-typed-client-phase2).
  */
 export interface paths {
   '/api/v{version}/auth/login': {

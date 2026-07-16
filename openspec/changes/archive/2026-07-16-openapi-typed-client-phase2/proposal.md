@@ -16,9 +16,10 @@ explicitly out of scope for that child but must not be lost now that it's archiv
 1. Record the codegen delivery mechanism (committed file vs CI-time fetch) as a durable ADR
    in `Verbara.Platform/docs/decisions/` if a later phase revisits the decision.
 2. Plan the next migration phase — the remaining 61 hand-written hook files (~271
-   declarations) across Admin, Agent, Analytics, and Operations modules — once the Platform
-   host CI artifact (buildOrder 1) is live and a real generated document can replace the
-   fixture-derived interim `openapi.d.ts` from Phase A.
+   declarations) across Admin, Agent, Analytics, and Operations modules. (The Platform host CI
+   artifact this once waited on is now LIVE — Platform/ADR-0035 + the `ci.yml` export step —
+   and the committed `openapi.d.ts` is already generated from the real captured document, so
+   this phase is unblocked.)
 3. Decide whether the generated schema's `number | string` union for AOT-typed numeric
    fields (seen on `CsatResponseDto.totalResponses` / `.averageRating`) should get a
    repo-wide coercion convention (a shared helper), instead of each migrated hook
@@ -49,9 +50,15 @@ follow-up-harvest rule) instead of surviving only as prose in an archived change
 
 - **No runtime/build impact** — this is a planning-only change; Phase A codegen tooling and
   the CSAT slice migration already shipped and are unaffected.
-- **Depends on**: Platform publishing the OpenAPI document as a consumable CI artifact
-  (buildOrder 1, host child, Platform/ADR-0035) before the remaining-61-files phase can use
-  a real (non-fixture-derived) generated document.
+- **Platform gate is LIVE (resolved 2026-07-16)**: Platform's OpenAPI export is shipped, not
+  pending. Platform/ADR-0035 ("OpenAPI CI-export contract", Accepted 2026-07-12) records the
+  contract, and Platform `ci.yml` has the "Export OpenAPI document (CI-runtime capture)" step
+  that boots the Api host, captures `/openapi/v1.json`, and verifies it against the fixture via
+  `scripts/verify-openapi-fixture.py`. The committed `src/core/api/generated/openapi.d.ts` was
+  already regenerated from the real captured document (324 paths, 182 schemas — phase-1 task
+  1.3), a strict superset of the fixture envelope. The remaining-hook-migration phase is
+  therefore UNBLOCKED — the earlier "depends on Platform publishing the document" framing was
+  stale.
 - **Not in scope**: implementing the migration of any additional hook file, or implementing
-  the coercion helper — both are scoped here, executed in a later change once this
-  proposal's open questions are resolved.
+  the coercion helper — both are scoped here, then handed to the four per-module child changes
+  this planning change spawns (see tasks.md 1.4).
