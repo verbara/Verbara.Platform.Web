@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -32,12 +33,16 @@ export interface CampaignDetail extends CampaignSummary {
   createdAt: string;
 }
 
-export interface ScheduleDay {
-  day: string;
-  enabled: boolean;
-  start: string;
-  end: string;
-}
+/**
+ * A single day's outbound-calling window within a campaign schedule. Sourced
+ * from the generated `components['schemas']['ScheduleDayDto']`
+ * (`src/core/api/generated/openapi.d.ts`, openapi-typed-client-admin), not
+ * hand-declared — it is a verbatim structural match for the former hand-written
+ * interface (`day`, `enabled`, `start`, `end`), so `tsc -b` now catches any
+ * upstream drift. Re-exported under the original `ScheduleDay` name so existing
+ * structural consumers keep working unchanged.
+ */
+export type ScheduleDay = components['schemas']['ScheduleDayDto'];
 
 export interface ContactList {
   id: number;
@@ -125,7 +130,10 @@ export function useActiveCampaignMetrics() {
   return useQuery({
     queryKey: ['active-campaign-metrics'],
     queryFn: () =>
-      customFetch<CampaignMetrics[]>({ url: '/api/v1/operations/campaigns/metrics', method: 'GET' }),
+      customFetch<CampaignMetrics[]>({
+        url: '/api/v1/operations/campaigns/metrics',
+        method: 'GET',
+      }),
   });
 }
 
@@ -374,7 +382,9 @@ export function useCallbacks(campaignId: number) {
   return useQuery({
     queryKey: ['callbacks', campaignId],
     queryFn: () =>
-      customFetch<Array<{ campaignId: number; contactId: number; scheduledAt: string; agentId?: string }>>({
+      customFetch<
+        Array<{ campaignId: number; contactId: number; scheduledAt: string; agentId?: string }>
+      >({
         url: `/api/v1/admin/campaigns/${campaignId}/callbacks`,
         method: 'GET',
       }),
@@ -386,8 +396,18 @@ export function useCreateCallback() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({ campaignId, contactId, phone, agentId, scheduledAt }: {
-      campaignId: number; contactId: number; phone: string; agentId?: string; scheduledAt: string;
+    mutationFn: ({
+      campaignId,
+      contactId,
+      phone,
+      agentId,
+      scheduledAt,
+    }: {
+      campaignId: number;
+      contactId: number;
+      phone: string;
+      agentId?: string;
+      scheduledAt: string;
     }) =>
       customFetch<void>({
         url: `/api/v1/admin/campaigns/${campaignId}/callbacks`,

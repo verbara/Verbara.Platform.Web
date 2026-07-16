@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -17,11 +18,19 @@ export interface WebhookSubscription {
   updatedAt: string;
 }
 
-export interface CreateWebhookSubscriptionRequest {
-  name: string;
-  endpointUrl: string;
-  eventTypes: string[];
-}
+/**
+ * Body for `POST /api/v1/webhooks/subscriptions`. Sourced from the generated
+ * `components['schemas']['CreateWebhookSubscriptionRequest']`
+ * (`src/core/api/generated/openapi.d.ts`, openapi-typed-client-admin), not
+ * hand-declared — it is a verbatim structural match for the former hand-written
+ * interface (`name`, `endpointUrl`, `eventTypes`, all required), so `tsc -b` now
+ * catches any upstream drift. Re-exported under the same name so callers are
+ * unchanged. (The sibling `UpdateWebhookSubscriptionRequest` stays hand-written:
+ * its generated counterpart turns every optional field into required-nullable
+ * `null | T` — a breaking tightening — see tasks.md.)
+ */
+export type CreateWebhookSubscriptionRequest =
+  components['schemas']['CreateWebhookSubscriptionRequest'];
 
 export interface UpdateWebhookSubscriptionRequest {
   name?: string;

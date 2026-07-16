@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -30,11 +31,16 @@ export interface LicenseInfo {
   blocked: boolean;
 }
 
-export interface SystemSettings {
-  platformName: string;
-  defaultTimezone: string;
-  defaultLanguage: string;
-}
+/**
+ * Platform-wide system settings (GET response + PUT body). Sourced from the
+ * generated `components['schemas']['SystemSettingsRequest']`
+ * (`src/core/api/generated/openapi.d.ts`, openapi-typed-client-admin), not
+ * hand-declared — it is a verbatim structural match for the former hand-written
+ * interface (`platformName`, `defaultTimezone`, `defaultLanguage`, all required
+ * `string`), so `tsc -b` now catches any upstream drift. Re-exported under the
+ * original `SystemSettings` name so existing structural consumers keep working.
+ */
+export type SystemSettings = components['schemas']['SystemSettingsRequest'];
 
 export function useSystemInfo() {
   return useQuery({
@@ -87,9 +93,15 @@ export function useUpdateSystemSettings() {
   });
 }
 
-export interface UpdateLicenseRequest {
-  licenseKey: string;
-}
+/**
+ * Body for `PUT /api/v1/management/system/license`. Sourced from the generated
+ * `components['schemas']['UpdateLicenseRequest']`
+ * (`src/core/api/generated/openapi.d.ts`, openapi-typed-client-admin), not
+ * hand-declared — it is a verbatim structural match for the former hand-written
+ * interface (`licenseKey: string`), so `tsc -b` now catches any upstream drift.
+ * Re-exported under the same `UpdateLicenseRequest` name so callers are unchanged.
+ */
+export type UpdateLicenseRequest = components['schemas']['UpdateLicenseRequest'];
 
 export interface UpdateLicenseResponse {
   message: string;
