@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -59,8 +60,7 @@ interface PagedResult<T> {
 export function useAuthConfig() {
   return useQuery({
     queryKey: ['auth-config'],
-    queryFn: () =>
-      customFetch<AuthConfig>({ url: '/api/v1/admin/auth/config', method: 'GET' }),
+    queryFn: () => customFetch<AuthConfig>({ url: '/api/v1/admin/auth/config', method: 'GET' }),
   });
 }
 
@@ -197,10 +197,17 @@ export function useDisableMfa() {
   });
 }
 
-export interface ChangePasswordRequest {
-  oldPassword: string;
-  newPassword: string;
-}
+/**
+ * Body for `POST /api/v1/auth/change-password`. Sourced from the generated
+ * `components['schemas']['ChangePasswordRequest']`
+ * (`src/core/api/generated/openapi.d.ts`, openapi-typed-client-admin), not
+ * hand-declared. The generated schema is a non-breaking superset of the former
+ * hand-written interface: the two required fields (`oldPassword`, `newPassword`)
+ * are unchanged and it adds an optional `mfaCode?: string | null`, so existing
+ * callers that send only the two fields keep compiling. `tsc -b` now catches any
+ * upstream drift of this contract.
+ */
+export type ChangePasswordRequest = components['schemas']['ChangePasswordRequest'];
 
 export function useChangePassword() {
   const { t } = useTranslation('common');

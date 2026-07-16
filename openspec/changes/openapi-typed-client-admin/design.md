@@ -48,6 +48,36 @@ are NOT an instance of this pattern — its `AiCreditsResponse` is a hand-writte
 interface and the casts work around a TS nullable-narrowing gap, a different root cause. Do not
 count it toward the ≥3 threshold and do not model the helper on it.
 
+### Q3 tally — running record (appended per batch)
+
+**Active sites: 2** (both `use-analytics.ts`, unchanged by batch 1):
+
+1. `CsatResponseDto.totalResponses` / `.averageRating` (phase-1).
+2. `CsatAggregateAnalyticsDto` envelope + each `queues[]` row (`2026-07-14-csat-completion`).
+
+**Batch 1 (Admin files 1.1–1.22, 2026-07-16) — 0 new active sites.** A site becomes _active_
+only when the generated `number | string` type is actually **adopted** by a hook (so a consumer
+must normalize). Batch 1 adopted only `ScheduleDayDto` and `ChangePasswordRequest` — neither has
+a numeric field. The AOT `number | string` unions appear only in generated schemas batch 1
+**encountered but deliberately did NOT adopt** (kept hand-written, because the union is itself the
+divergence that blocks a clean swap). These are recorded as **latent candidates** — they flip
+active only if a later batch swaps their hook onto the generated type:
+
+- `use-agents.ts` → `ChannelCapacityOverrideDto.{maxVoice,maxChat,maxEmail,maxSms,maxTotal}`
+  (`null | number | string`; read via the `capacityOverride` response field).
+- `use-billing.ts` → `RateEntryDto.{unitPrice,includedQuantity}`,
+  `RateTierDto.{fromQuantity,toQuantity,unitPrice}` (`number | string`; read inside `RateCard.rates`).
+- `use-endpoint-profiles.ts` → `Create/UpdateEndpointProfileRequest.{maxContacts,qualifyFrequency}`
+  (`null | number | string`; request-body/writer-side — not a read-normalization site).
+
+Batch 1 also surfaces the **structural reality driving all of the above**: the committed
+`openapi.d.ts` exposes request-body schemas (134 `*Request`/`*Body`) and nested value-object
+`*Dto`s (32), but almost no top-level **response** DTOs. Most Admin hooks consume response shapes
+with no generated counterpart, so the swap-the-T mechanism is only cleanly applicable where a
+nested `*Dto` is an exact structural match (`ScheduleDayDto`) or a request body is a non-breaking
+superset (`ChangePasswordRequest`). This is a candidate follow-up for the Platform host: emit
+response DTOs as named `components/schemas` so the consumer side has response types to migrate onto.
+
 ## Non-Goals
 
 - Migrating any Agent / Analytics / Operations hook (sibling children own those).
