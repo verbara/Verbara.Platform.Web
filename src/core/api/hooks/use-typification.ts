@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { PaymentRequiredError } from '@/core/licensing';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -22,10 +23,19 @@ export interface TypificationFieldValidation {
   maxLength?: number;
 }
 
-export interface TypificationFieldOption {
-  value: string;
-  label: string;
-}
+/**
+ * A single selectable option for a `Select`/`MultiSelect` field. Sourced from
+ * the generated `components['schemas']['FieldOptionDto']`
+ * (`src/core/api/generated/openapi.d.ts`, openapi-typed-client-admin), not
+ * hand-declared — it is a verbatim structural match for the former hand-written
+ * interface (`value`, `label`, both required `string`), so `tsc -b` now catches
+ * any upstream drift. Re-exported under the original `TypificationFieldOption`
+ * name so existing structural consumers keep working unchanged. (Only the
+ * nested value-object matched cleanly; the enclosing `TypificationField`/
+ * `TypificationNode` DTOs widen their literal unions to `string` and turn their
+ * optional members required-nullable, so those stay hand-written — see tasks.md.)
+ */
+export type TypificationFieldOption = components['schemas']['FieldOptionDto'];
 
 /**
  * Auto-fill source for a field (B1 flow-vars → metadata → field-prefill).

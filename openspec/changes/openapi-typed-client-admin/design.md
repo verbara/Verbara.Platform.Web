@@ -50,7 +50,8 @@ count it toward the ≥3 threshold and do not model the helper on it.
 
 ### Q3 tally — running record (appended per batch)
 
-**Active sites: 2** (both `use-analytics.ts`, unchanged by batch 1):
+**Active sites: 2** (both `use-analytics.ts`, unchanged by batches 1 and 2 — this Admin child is
+now complete and added none; see "Final tally" at the end of this section):
 
 1. `CsatResponseDto.totalResponses` / `.averageRating` (phase-1).
 2. `CsatAggregateAnalyticsDto` envelope + each `queues[]` row (`2026-07-14-csat-completion`).
@@ -77,6 +78,36 @@ with no generated counterpart, so the swap-the-T mechanism is only cleanly appli
 nested `*Dto` is an exact structural match (`ScheduleDayDto`) or a request body is a non-breaking
 superset (`ChangePasswordRequest`). This is a candidate follow-up for the Platform host: emit
 response DTOs as named `components/schemas` so the consumer side has response types to migrate onto.
+
+**Batch 2 (Admin files 1.23–1.44, 2026-07-16) — 0 new active sites.** Batch 2 adopted 4 more
+shapes, all **numeric-free** (only `string`/`string[]` fields), so none introduces a consumer
+read-normalization site:
+
+- `use-system.ts` → `SystemSettings` = `SystemSettingsRequest` (exact 3-`string` match; GET
+  response + PUT body) and `UpdateLicenseRequest` = generated `UpdateLicenseRequest` (exact
+  `{ licenseKey: string }`).
+- `use-typification.ts` → `TypificationFieldOption` = `FieldOptionDto` (exact `{ value; label }`).
+- `use-webhooks.ts` → `CreateWebhookSubscriptionRequest` = generated same-named schema (exact
+  `{ name; endpointUrl; eventTypes }`).
+
+All the `number | string` AOT unions batch 2 met are again **latent** — they live in generated
+schemas the hooks kept hand-written because that union is the divergence blocking a clean swap. The
+full latent list is in `tasks.md` (task 2.1 batch-2 record); the heaviest cluster is
+`use-typification.ts`'s `*Dto` set (`FieldValidationDto`, `AiConfigDto`, the two `sortOrder`s,
+`TypifyRequest.aiConfidence`) plus the tenant/trunk/route/skill/queue-member/reason-hint/partner
+request bodies. Because these are unadopted (and mostly writer-side), the active tally is unchanged.
+
+### Final tally (both batches complete)
+
+**Active Q3 sites: 2** (both `use-analytics.ts`, Analytics module — untouched by this Admin child).
+Across **44 Admin files / 199 hand-written declarations**, **6 shapes migrated** onto generated
+types (2 in batch 1: `ScheduleDayDto`, `ChangePasswordRequest`; 4 in batch 2 above), **38 files
+kept hand-written** and annotated per-file. Every migrated shape is numeric-free, so this child
+adds **0 active Q3 sites** — the shared coercion helper stays **deferred at 2 active sites**
+(< the ≥3 threshold). The many latent `number | string` sites recorded across both batches would
+flip active only once/if their hooks migrate; the batch-1 finding stands: the ≥3 threshold is
+gated behind the Platform host emitting named response schemas (or a future batch accepting a
+coercion layer at the divergent request bodies), not on more Admin work.
 
 ## Non-Goals
 

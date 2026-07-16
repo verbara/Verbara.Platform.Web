@@ -99,28 +99,133 @@ total).
       (optional→required AND `number | null` → `null | number | string`).
 - [x] 1.22 `use-holiday-calendars.ts` (2) — **kept hand-written.** `HolidayCalendarSummary`/`Holiday`
       (responses) have no generated schema; mutations use `Partial<Omit<…>>` inline.
-- [ ] 1.23 `use-impersonation.ts` (1)
-- [ ] 1.24 `use-knowledge.ts` (2)
-- [ ] 1.25 `use-mfa-users.ts` (4)
-- [ ] 1.26 `use-notification-rules.ts` (13)
-- [ ] 1.27 `use-onboarding.ts` (2)
-- [ ] 1.28 `use-partner.ts` (10)
-- [ ] 1.29 `use-queue-members.ts` (1)
-- [ ] 1.30 `use-queues.ts` (2)
-- [ ] 1.31 `use-rbac.ts` (5)
-- [ ] 1.32 `use-reason-hints.ts` (3)
-- [ ] 1.33 `use-reports.ts` (4)
-- [ ] 1.34 `use-routes.ts` (1)
-- [ ] 1.35 `use-skills.ts` (2)
-- [ ] 1.36 `use-system.ts` (7)
-- [ ] 1.37 `use-teams.ts` (2)
-- [ ] 1.38 `use-tenants.ts` (7)
-- [ ] 1.39 `use-trunks.ts` (3)
-- [ ] 1.40 `use-typification-llm.ts` (10)
-- [ ] 1.41 `use-typification.ts` (22)
-- [ ] 1.42 `use-users.ts` (2)
-- [ ] 1.43 `use-voice-codecs.ts` (1)
-- [ ] 1.44 `use-webhooks.ts` (7)
+
+  > **BATCH 2 (files 1.23–1.44) — reality note (2026-07-16).** Same structural reality as batch 1
+  > (see the note above 1.1): the committed `openapi.d.ts` is overwhelmingly request bodies + nested
+  > value-object `*Dto`s, with almost no top-level response DTOs. Batch 2 migrates **only the genuine
+  > clean matches** (exact structural match or non-breaking superset) and leaves the rest hand-written,
+  > each annotated. **4 migrations across the 22 files** (`SystemSettings`, `UpdateLicenseRequest`,
+  > `TypificationFieldOption`, `CreateWebhookSubscriptionRequest`) — all dead-simple exact matches with
+  > no numeric fields. No `openapi.d.ts` hand-editing; no invented schema paths.
+
+- [x] 1.23 `use-impersonation.ts` (1) — **kept hand-written.** `ImpersonateResponse` (response) has no
+      generated schema; the only same-named generated schema is `ImpersonateRequest` (the request
+      body: `targetTenantId`, `readOnly`, `reason?`) — an entirely different shape (no `accessToken`/
+      `expiresAt`/`targetTenantName`), and it isn't used as a named type here (the mutation inlines
+      the body). No response counterpart.
+- [x] 1.24 `use-knowledge.ts` (2) — **kept hand-written.** `Article`/`ArticleSearchResult` (responses)
+      have no generated schema; write inputs use `Omit<Article,…>` inline. `Create/UpdateArticleRequest`
+      would be breaking anyway (field-name mismatch `isPublished`≠`published`; `tags?` → required
+      `string[]` / optional-nullable).
+- [x] 1.25 `use-mfa-users.ts` (4) — **kept hand-written.** `MfaUserStatus` (literal union),
+      `MfaUserSummary` (response), local `PagedResult<T>` (generic), `MfaUserListFilter` (client-side
+      query-param filter) — none has a generated schema.
+- [x] 1.26 `use-notification-rules.ts` (13) — **kept hand-written.** The generated document has NO
+      notification-rule schema at all (`NotificationRule`, `Rule*`, `DryRunResult`,
+      `NotificationEventType` absent). All 13 decls (3 literal unions, `RuleTriggerConfig`/
+      `RuleCondition`/`RuleAction`/`RuleSchedule`/`RuleThrottling`, `NotificationRule`, `DryRunResult`,
+      `RuleFiringEntry`, `NotificationEventType`, generic `PagedResult<T>`) have no counterpart.
+- [x] 1.27 `use-onboarding.ts` (2) — **kept hand-written.** `ChecklistItem`/`OnboardingStatus`
+      (responses) have no generated schema. `ApplyTemplateRequest` (`{ template: string }`) exists and
+      matches the apply-template body, but the hook inlines `data: { template }` — there is no
+      hand-written interface for that body to migrate.
+- [x] 1.28 `use-partner.ts` (10) — **kept hand-written.** Six response DTOs (`PartnerCustomer`,
+      `PartnerRevenueSnapshot`, `PartnerGenerateInvoiceResponse`, `PartnerRevenueSummary`,
+      `PartnerRevenueDetail`, `StatusUpdateResponse`) have no generated schema. `CreatePartnerCustomerInput`
+      vs `CreatePartnerCustomerRequest` diverges (`plan?`/`template?` optional → optional-nullable
+      `null | string`); `UpdatePartnerCustomerInput` vs `UpdatePartnerCustomerRequest` diverges
+      (`maxConcurrentChannels`/`maxActiveCampaigns` → `null | number | string` AOT union — latent Q3);
+      `SuspendCustomerInput` vs `SuspendCustomerRequest` mismatches (hand-written carries the route
+      `id`, hook sends an empty body); `TenantSettings` is an index-signature bag (no schema).
+- [x] 1.29 `use-queue-members.ts` (1) — **kept hand-written.** `QueueMember` (response) has no
+      generated schema (no `displayName`/`source`/`isPaused` on any request body); the write bodies
+      (`AddQueueMemberRequest`, `AddMemberBody`, `UpdateMemberBody`, `PauseMemberBody`,
+      `QueueMembershipRequest`) are all inlined in the hooks with no hand-written interface and their
+      `penalty` is `null | number | string` (latent Q3, writer-side).
+- [x] 1.30 `use-queues.ts` (2) — **kept hand-written.** `Queue` (response) has no generated schema
+      (`Create/UpdateQueueRequest` lack `id`/`createdAt`, make everything optional-nullable, and
+      `maxWaiting` → `null | number | string`); `PagedResult<T>` is a local generic. Mutations use
+      `Partial<Omit<Queue,…>>` inline. (Latent Q3: `QueueOverflowRuleDto`, `SlaPolicyTargetDto`,
+      `WrapUpConfigDto`, `CreateQueueRequest.maxWaiting` — none adopted.)
+- [x] 1.31 `use-rbac.ts` (5) — **kept hand-written.** `Permission`, `PermissionCategory`, `TenantRole`,
+      `RoleTemplate`, `UserRoleAssignment` (all responses) have no generated schema; the create/update
+      role bodies (`Create/UpdateTenantRoleRequest`, `ReplaceUserRolesRequest`, `ApplyTemplateRequest`)
+      are unrelated shapes not used as named types here.
+- [x] 1.32 `use-reason-hints.ts` (3) — **kept hand-written.** `ReasonHint` (response) has no generated
+      schema (carries `id`, no request body does). `CreateReasonHintFields` name-aligns with
+      `CreateReasonHintRequest` but `priority: number` → `priority: number | string` (AOT union — a
+      breaking widening; latent Q3). `UpdateReasonHintFields = Partial<…>` vs `UpdateReasonHintRequest`
+      diverges (optional → required-nullable `null | …`, + same `priority` union).
+- [x] 1.33 `use-reports.ts` (4) — **kept hand-written.** `ScheduledReport`/`ReportExecution`
+      (responses) have no generated schema; `ReportType`/`ReportFormat` literal unions widen to
+      `string` in `CreateScheduledReportRequest` (breaking), which also adds `reportType`/`effectiveType`
+      and drops `id`/`createdAt`.
+- [x] 1.34 `use-routes.ts` (1) — **kept hand-written.** `OutboundRouteSummary` (response) has no
+      generated schema; `CreateOutboundRouteRequest` diverges hard (all int fields → AOT unions
+      `trunkId`/`priority`/`overflowTrunkId` = `number | string`; adds `campaignId`; drops `id`) —
+      latent Q3.
+- [x] 1.35 `use-skills.ts` (2) — **kept hand-written.** `Skill` name-aligns with `CreateSkillRequest`
+      but `category`/`description` go required `string` → required-nullable `null | string` (breaking);
+      `AgentSkillAssignment` has no matching schema (`AssignSkillRequest` lacks `agentId` and widens
+      `proficiency: number` → `null | number | string` — latent Q3, writer-side).
+- [x] 1.36 `use-system.ts` (7) — **MIGRATED (2 of 7).** `SystemSettings` → generated
+      `components['schemas']['SystemSettingsRequest']` (exact 3-field `string` match: `platformName`/
+      `defaultTimezone`/`defaultLanguage`, all required; serves as both the GET response type and the
+      PUT body). `UpdateLicenseRequest` → generated `components['schemas']['UpdateLicenseRequest']`
+      (exact `{ licenseKey: string }` match; the hand-written name collides with the generated schema
+      name, so the swap keeps the name). Kept hand-written: `SystemInfo`, `LicenseInfo`,
+      `UpdateLicenseResponse`, `SetupResponse` (responses, no schema) and `SetupInput` (vs `SetupRequest`
+      the optional fields become required-nullable — breaking).
+- [x] 1.37 `use-teams.ts` (2) — **kept hand-written.** `Team` (response) has no generated schema
+      (`memberCount`/`createdAt` on no request body); `PagedResult<T>` is a local generic. The
+      create/update mutations use inline object literals, not named interfaces.
+- [x] 1.38 `use-tenants.ts` (7) — **kept hand-written.** `TenantStatus`/`TenantType` (literal unions),
+      `Tenant`/`TenantStats`/`StatusUpdateResponse` (responses) have no generated schema.
+      `CreateTenantInput` vs `CreateMgmtTenantRequest` and `UpdateTenantInput` vs `UpdateMgmtTenantRequest`
+      both diverge (`maxConcurrentChannels`/`maxActiveCampaigns` → `null | number | string` AOT union + optional-nullable widening) — latent Q3.
+- [x] 1.39 `use-trunks.ts` (3) — **kept hand-written.** `TrunkSummary` (response, `id: number`) has no
+      generated schema; `TrunkWriteFields` (`Partial<Omit<TrunkSummary,'id'>> & {authPassword?}`) vs
+      `Create/UpdateTrunkRequest` diverges (`maxChannels: number` → `number | string`; carrier fields
+      optional → required-nullable) — latent Q3; `TrunkConnectivityResult` (response, `authMode` literal
+      union) has no counterpart.
+- [x] 1.40 `use-typification-llm.ts` (10) — **kept hand-written.** `AiSource` is structurally identical
+      to the generated `AiSource` enum but is a local `type` alias (not a DTO swap target, and used
+      inside other kept types). `LlmProviderType` maps to generated `ProviderType` (name mismatch, out
+      of swap scope). `LlmProviderSettings` vs `ProviderSettings` diverges (every field gains `| null`);
+      `TestLlmConnectionInput` vs `TestLlmConnectionRequest` diverges (every optional → required-nullable
+      `null | T`); `UpsertLlmConfigInput` vs `UpsertLlmConfigRequest` diverges (`aiSource` required →
+      optional; nested `settings` widens). `TenantLlmConfig`, `LlmConfigEmpty`, `TenantLlmConfigResult`,
+      `AiCreditsResponse`, `TestLlmConnectionResult` (responses/unions) have no schema.
+- [x] 1.41 `use-typification.ts` (22) — **MIGRATED (1 of 22): `TypificationFieldOption`** → generated
+      `components['schemas']['FieldOptionDto']` (exact match: `{ value: string; label: string }`,
+      unused outside this file). Everything else kept hand-written: the enclosing `*Dto`s all widen
+      their literal unions to `string` and turn optional members required-nullable —
+      `TypificationCondition`/`ConditionExprDto` (`refType`/`op` → `string`, `value` required-nullable),
+      `TypificationFieldValidation`/`FieldValidationDto` (`min`/`max`/`maxLength` → `null | number | string`),
+      `TypificationFieldPrefillSource`/`PrefillSourceDto` (`kind` → `string`),
+      `TypificationField`/`TypificationFieldDto`, `LeafOutcome`/`LeafOutcomeDto`,
+      `TypificationNode`/`TypificationNodeDto` (`sortOrder` → `number | string`),
+      `TypificationAiConfig`/`AiConfigDto` (thresholds → `number | string`); the request inputs
+      (`Create/UpdateSchemaInput` vs `Create/UpdateSchemaRequest`, `Create/UpdateBindingInput` vs
+      `Create/UpdateBindingRequest`, `TypifyInput` vs `TypifyRequest`) inherit those divergences plus
+      `maxDepth`/`priority`/`aiConfidence` numeric unions; the pure response DTOs
+      (`TypificationSchema`, `SchemaBinding`, `PublishError`, `PublishResult`,
+      `TypificationFormResponse`, `TypificationSuggestionResponse`, `TypificationCalibrationStatus`) and
+      the standalone literal-union aliases (`TypificationFieldType`, `TypificationAiMode`) have no
+      schema. Heaviest concentration of latent Q3 sites (see Phase B).
+- [x] 1.42 `use-users.ts` (2) — **kept hand-written.** `User` (response) has no generated schema
+      (`Create/UpdateUserRequest` are request bodies with `role` as a `UserRole` enum ref + different
+      shape); `PagedResult<T>` is a local generic. The create/update mutations use inline object
+      literals, not named interfaces.
+- [x] 1.43 `use-voice-codecs.ts` (1) — **kept hand-written.** `VoiceCodecsResponse` (response,
+      `source: 'asterisk' | 'fallback'` literal union + `codecs: string[]`) has no generated schema.
+- [x] 1.44 `use-webhooks.ts` (7) — **MIGRATED (1 of 7): `CreateWebhookSubscriptionRequest`** → generated
+      `components['schemas']['CreateWebhookSubscriptionRequest']` (exact match:
+      `{ name; endpointUrl; eventTypes }`, all required; the hand-written name collides with the
+      generated schema name, so the swap keeps the name). Kept hand-written: `WebhookSubscription`,
+      `WebhookEventType`, `WebhookDelivery`, `CircuitBreakerStatus` (responses, no schema),
+      `PagedResult<T>` (generic), and `UpdateWebhookSubscriptionRequest` (its generated counterpart turns
+      every optional field into required-nullable `null | T` — breaking).
 
 ## 2. Phase B — Q3 numeric-coercion site gathering (this child's extra obligation)
 
@@ -160,6 +265,34 @@ total).
       gathering; the ≥3 decision stays open until then. The latent sites above are the strongest
       candidates to flip active if/when their hooks are swapped.
 
+      **BATCH 2 finding (files 1.23–1.44, 2026-07-16): 0 NEW *ACTIVE* Q3 sites; tally stays at 2.**
+      The 4 shapes batch 2 adopted (`SystemSettings`/`SystemSettingsRequest`, `UpdateLicenseRequest`,
+      `TypificationFieldOption`/`FieldOptionDto`, `CreateWebhookSubscriptionRequest`) are **all
+      numeric-free** — every field is `string` or `string[]` — so no consumer read-normalization site
+      was introduced. The AOT `number | string` unions again appear only in generated schemas batch 2
+      **encountered but did NOT adopt** (kept hand-written precisely because the union is the divergence
+      that blocks a clean swap). Additional latent/candidate sites logged this batch (would flip active
+      only if a future batch swaps that hook onto the generated type):
+        - `use-partner.ts` — `UpdatePartnerCustomerRequest.{maxConcurrentChannels,maxActiveCampaigns}`
+          (`null | number | string`; request-body/writer-side).
+        - `use-queue-members.ts` — `AddQueueMemberRequest`/`AddMemberBody`/`UpdateMemberBody`/
+          `QueueMembershipRequest`.`penalty` (`null | number | string`; writer-side).
+        - `use-queues.ts` — `CreateQueueRequest.maxWaiting`, `QueueOverflowRuleDto.overflowAfterSeconds`,
+          `WrapUpConfigDto.defaultWrapUpSeconds`, `SlaPolicyTargetDto.*` (`number | string`; unadopted).
+        - `use-reason-hints.ts` — `Create/UpdateReasonHintRequest.priority` (`number | string`; writer-side).
+        - `use-routes.ts` — `Create/UpdateOutboundRouteRequest.{trunkId,priority,overflowTrunkId,campaignId}`
+          (`number | string` / `null | number | string`; writer-side).
+        - `use-skills.ts` — `AssignSkillRequest.proficiency` (`null | number | string`; writer-side).
+        - `use-tenants.ts` — `Create/UpdateMgmtTenantRequest.{maxConcurrentChannels,maxActiveCampaigns}`
+          (`null | number | string`; writer-side).
+        - `use-trunks.ts` — `Create/UpdateTrunkRequest.maxChannels` (`number | string`; writer-side).
+        - `use-typification.ts` — `FieldValidationDto.{min,max,maxLength}`, `TypificationFieldDto.sortOrder`,
+          `TypificationNodeDto.sortOrder`, `LeafOutcomeDto.retryDelayMinutes`,
+          `AiConfigDto.{suggestThreshold,autoApplyThreshold,autonomousThreshold,dailyTokenBudget}`,
+          `CreateSchemaRequest.maxDepth`, `Create/UpdateBindingRequest.priority`, `TypifyRequest.aiConfidence`
+          (`number | string` / `null | number | string`; the heaviest cluster — all unadopted).
+      None adopted, so per the design's definition the active tally is **unchanged at 2**.
+
 ## 3. Phase C — Validation (batch)
 
 > Phase C is a **batch-wide gate**; it runs at the end of EACH batch. The checks below are
@@ -168,16 +301,28 @@ total).
 - [x] 3.1 `npm run build` — type-check + bundle clean (`tsc -b` is the drift-catching CI gate).
       **Batch 1: `tsc -b && vite build` exit 0** (the two pre-existing `@microsoft/signalr`
       `INVALID_ANNOTATION` third-party warnings only, non-blocking — same as csat-completion 3.5).
+      **Batch 2 (FULL set): `tsc -b` exit 0, `npm run build` exit 0** (same two signalr third-party
+      warnings only — non-blocking, unchanged).
 - [x] 3.2 `npx vitest run` — unit tests green. **Batch 1: 185 files / 1456 tests pass, 0 failures.**
+      **Batch 2 (FULL set): 185 files / 1456 tests pass, 0 failures.**
 - [x] 3.3 `npx eslint .` — clean (no new errors; i18n:check remains green). **Batch 1: the two
       migrated files (`use-campaigns.ts`, `use-auth-admin.ts`) lint clean; no i18n-affecting change.**
+      **Batch 2: `npx eslint .` exit 0. The 3 changed hook files (`use-system.ts`, `use-typification.ts`,
+      `use-webhooks.ts`) lint clean; the 8 repo-wide warnings are pre-existing React-Compiler /
+      TanStack-Virtual advisories in unrelated files, none in a migrated file. No i18n-affecting change.**
 - [x] 3.4 Confirm no hand-written interface remains for any migrated Admin shape
       (`grep` each removed interface name returns only the generated re-export/alias). **Batch 1:
       `ScheduleDay` and `ChangePasswordRequest` are now `export type … = components['schemas'][…]`
       aliases (the only two shapes with a clean generated match); all other batch-1 shapes are
       intentionally still hand-written — see the per-file notes in Phase A for why (no generated
-      response schema / divergent request schema).**
+      response schema / divergent request schema).** **Batch 2: `SystemSettings`,
+      `UpdateLicenseRequest`, `TypificationFieldOption`, `CreateWebhookSubscriptionRequest` are now
+      `export type … = components['schemas'][…]` aliases (the only four shapes with a clean generated
+      match across files 1.23–1.44); external type consumers (`use-system.test.tsx` imports
+      `SystemSettings`) keep compiling via the re-export. All other batch-2 shapes are intentionally
+      still hand-written — see the per-file Phase A notes.**
 - [x] 3.5 No `npx playwright test` task required unless a migration alters a user-facing flow —
       swap-the-T is compile-time-only; existing E2E coverage exercises unchanged runtime behavior.
       **Batch 1: both swaps are pure compile-time type aliases (structural match / superset), no
-      runtime or user-facing change; no E2E needed.**
+      runtime or user-facing change; no E2E needed.** **Batch 2: all four swaps are pure compile-time
+      type aliases (exact structural matches), no runtime or user-facing change; no E2E needed.**
