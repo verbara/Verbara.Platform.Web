@@ -1,32 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-export interface User {
-  id: string;
-  email: string;
-  displayName: string;
-  role: string;
-  status: string;
-  createdAt: string;
+/** Server response is the named `UserDto` schema (openapi-response-adoption, Platform/ADR-0035).
+ *  mfaEnabled/lastLoginAt/authProvider are optional client-display fields the DTO does not (yet)
+ *  emit; retained as an extension so the admin user-detail UI keeps compiling until they surface. */
+export type User = components['schemas']['UserDto'] & {
   mfaEnabled?: boolean;
   lastLoginAt?: string;
   authProvider?: string;
-}
-
-interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-}
+};
 
 export function useUsers() {
   return useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const result = await customFetch<PagedResult<User>>({
+      const result = await customFetch<components['schemas']['PagedResultOfUserDto']>({
         url: '/api/v1/admin/users',
         method: 'GET',
         params: { page: '1', pageSize: '100' },

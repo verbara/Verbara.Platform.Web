@@ -5,13 +5,13 @@ admin-remainder named response schemas) before any hook migration. This is the s
 hangs on — do it first and commit the refreshed file so every later `tsc -b` runs against the real
 response schemas.
 
-- [ ] 1.1 Run `scripts/generate-api-types.mjs` (`npm run generate:api-types`) against the Platform
+- [x] 1.1 Run `scripts/generate-api-types.mjs` (`npm run generate:api-types`) against the Platform
       `openapi-response-schemas` document; commit the refreshed `src/core/api/generated/openapi.d.ts`.
-- [ ] 1.2 Confirm the admin-remainder response schemas are present in the regenerated file (spot-check
+- [x] 1.2 Confirm the admin-remainder response schemas are present in the regenerated file (spot-check
       the core set — `UserDto`, `QueueDto`, `TeamDto`, `AdminAgentResponseDto`, and the
       `PagedResultOf*` wrappers — against `response-schema-manifest.v1.json`'s `admin-remainder`
       group; the manifest is authoritative for the full set).
-- [ ] 1.3 `tsc -b` green with the regenerated file and no hook changes yet (baseline).
+- [x] 1.3 `tsc -b` green with the regenerated file and no hook changes yet (baseline).
 
 ## 2. Phase B (critical, focused per file) — Migrate admin-remainder hooks (swap-the-T)
 
@@ -26,7 +26,7 @@ Migrate in batches, one file per task, `tsc -b` green after each. Representative
 full per-file assignment is resolved from the Admin child's per-file annotations at implementation
 time; the manifest is the source of truth for each schema's name + fields):
 
-- [ ] 2.1 `use-users.ts` → `UserDto` / `PagedResultOfUserDto`.
+- [x] 2.1 `use-users.ts` → `UserDto` / `PagedResultOfUserDto`.
 - [ ] 2.2 `use-queues.ts` → `QueueDto` / `PagedResultOfQueueDto`.
 - [ ] 2.3 `use-teams.ts` → `TeamDto` / `PagedResultOfTeamDto`.
 - [ ] 2.4 `use-agents.ts` → `AdminAgentResponseDto` / `PagedResultOfAdminAgentResponseDto`.
