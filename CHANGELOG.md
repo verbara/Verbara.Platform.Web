@@ -22,7 +22,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   intersections; `EntityId` (`unknown`) and AOT `number | string` wire-unions are normalized at the
   hook/render boundary. Compile-time only — no user-facing behavior change (1456 unit tests green).
   The three HELD trilogy children (`openapi-typed-client-agent`/`-analytics`/`-operations`) un-gate
-  on this thread but run as their own backlog items.
+  on this thread but run as their own backlog items. (#183)
+- **Admin-module hooks migrated to generated OpenAPI request/value types (`openapi-typed-client-admin`, Platform/ADR-0035).** Migrates the Admin-module API hooks onto `src/core/api/generated/openapi.d.ts` via swap-the-T. Honest outcome: of 44 Admin files / 199 hand-written declarations reviewed, **6 were genuine non-breaking migrations** and 38 were audited and kept hand-written (annotated) — the generated document is overwhelmingly request-body schemas (134 `*Request`/`*Body`) plus a few nested `*Dto` value objects, with almost no top-level response DTOs. Compile-time only. (#181)
 
 ## [3.14.0-web] - 2026-07-14
 
