@@ -274,11 +274,14 @@ function MembershipEditor({ membership, onUpdate, onRemove }: MembershipEditorPr
   const [channels, setChannels] = useState<string[]>(
     membership.allowedChannels ? [...membership.allowedChannels] : [],
   );
-  const [penalty, setPenalty] = useState<number>(membership.penalty);
+  // `AgentQueueMembershipDto.penalty` is the AOT-wire `number | string` union;
+  // coerce at this numeric boundary (the wire always sends a numeric JSON value).
+  const initialPenalty = Number(membership.penalty);
+  const [penalty, setPenalty] = useState<number>(initialPenalty);
 
   const initialKey = channelsKey(membership.allowedChannels);
   const currentKey = allAllowed ? 'all' : channelsKey(channels);
-  const dirty = initialKey !== currentKey || penalty !== membership.penalty;
+  const dirty = initialKey !== currentKey || penalty !== initialPenalty;
 
   const effectiveChannels = allAllowed ? null : channels;
   const voiceSynced = includesVoice(effectiveChannels);

@@ -37,6 +37,8 @@ const mockSubscription: WebhookSubscription = {
   isActive: true,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
+  circuitFailures: 0,
+  circuitProbeAttempts: 0,
 };
 
 const mockEventType: WebhookEventType = {
@@ -382,10 +384,12 @@ describe('useCircuitStatus', () => {
 
   it('should fetch circuit breaker status', async () => {
     const mockStatus = {
-      state: 'Closed' as const,
-      failureCount: 0,
-      lastFailureAt: null,
-      nextRetryAt: null,
+      subscriptionId: 'ws1',
+      status: 'Closed',
+      failures: 0,
+      openedAt: null,
+      nextProbeAt: null,
+      probeAttempts: 0,
     };
     vi.mocked(client.customFetch).mockResolvedValue(mockStatus);
     const { result } = renderHook(() => useCircuitStatus('ws1'), { wrapper });

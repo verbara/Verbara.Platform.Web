@@ -6,17 +6,13 @@ import { toast } from 'sonner';
 
 // --- Types ---
 
-export interface WebhookSubscription {
-  subscriptionId: string;
-  tenantId: string;
-  name: string;
-  endpointUrl: string;
-  secret: string;
-  eventTypes: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+/** Server response is the named `WebhookSubscription` schema (openapi-response-adoption,
+ *  Platform/ADR-0035). The generated DTO is a superset of the former hand-written interface —
+ *  it additionally carries the flattened circuit-breaker snapshot (`circuitStatus`,
+ *  `circuitFailures`, `circuitOpenedAt`, `circuitNextProbeAt`, `circuitProbeAttempts`) — so the
+ *  alias is a pure widening; no consumer reads a field the DTO lacks. Re-exported under the same
+ *  name so callers are unchanged. */
+export type WebhookSubscription = components['schemas']['WebhookSubscription'];
 
 /**
  * Body for `POST /api/v1/webhooks/subscriptions`. Sourced from the generated
@@ -244,12 +240,18 @@ export function useRetryDeadLetter() {
 
 // --- Circuit Breaker ---
 
-export interface CircuitBreakerStatus {
-  state: 'Closed' | 'Open' | 'HalfOpen';
-  failureCount: number;
-  lastFailureAt: string | null;
-  nextRetryAt: string | null;
-}
+/**
+ * Server response is the named `CircuitStatusResponse` schema (openapi-response-adoption,
+ * Platform/ADR-0035) — the emitted shape of `GET /webhooks/subscriptions/{id}/circuit-status`.
+ * The former hand-written `CircuitBreakerStatus` used pre-contract field names
+ * (`state`/`failureCount`/`lastFailureAt`/`nextRetryAt`) that never matched the wire; the DTO
+ * carries the same information as `status`/`failures`/`openedAt`/`nextProbeAt` (+`subscriptionId`,
+ * `probeAttempts`). Re-exported under the same name so the identifier is unchanged; the single
+ * consumer (`webhook-detail-sheet.tsx`) was updated to the generated field names. `failures` /
+ * `probeAttempts` are the AOT-safe `number | string` wire union — coerce with `Number(...)` at the
+ * numeric read site (the JSON payload always sends a numeric value).
+ */
+export type CircuitBreakerStatus = components['schemas']['CircuitStatusResponse'];
 
 export function useCircuitStatus(subscriptionId: string | undefined) {
   return useQuery({

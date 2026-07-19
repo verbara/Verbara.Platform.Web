@@ -9,6 +9,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Admin-remainder API hooks bind to Platform's named response schemas (`openapi-response-adoption`,
+  Platform/ADR-0035).** Regenerates `src/core/api/generated/openapi.d.ts` from the Platform
+  `openapi-response-schemas` document (183 → 391 named schemas) and migrates the admin-remainder
+  hooks — `use-users`, `use-queues`, `use-teams`, `use-agents` (+ `use-agent-memberships`),
+  `use-api-keys`, `use-tenants`, `use-system`, `use-billing`, `use-partner`, `use-webhooks`,
+  `use-impersonation`, `use-typification-llm` — from hand-written response interfaces to the
+  generated `components['schemas'][...]` types via swap-the-T, so contract drift against Platform is
+  now caught at `tsc -b`. Client-only display fields the DTOs don't emit are preserved via
+  intersections; `EntityId` (`unknown`) and AOT `number | string` wire-unions are normalized at the
+  hook/render boundary. Compile-time only — no user-facing behavior change (1456 unit tests green).
+  The three HELD trilogy children (`openapi-typed-client-agent`/`-analytics`/`-operations`) un-gate
+  on this thread but run as their own backlog items.
+
 ## [3.14.0-web] - 2026-07-14
 
 ### Added

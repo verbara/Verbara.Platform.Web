@@ -25,7 +25,11 @@ interface WebhookDetailSheetProps {
 
 const DELIVERY_PAGE_SIZE = 10;
 
-export function WebhookDetailSheet({ subscription, open, onOpenChange }: Readonly<WebhookDetailSheetProps>) {
+export function WebhookDetailSheet({
+  subscription,
+  open,
+  onOpenChange,
+}: Readonly<WebhookDetailSheetProps>) {
   const { t } = useTranslation(['admin']);
   const [page, setPage] = useState(1);
   const [selectedDelivery, setSelectedDelivery] = useState<WebhookDelivery | null>(null);
@@ -99,9 +103,7 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Readonl
             {t('admin:webhooks.detail.details', 'Details')}
           </h3>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-            <dt className="text-muted-foreground">
-              {t('admin:webhooks.detail.name', 'Name')}
-            </dt>
+            <dt className="text-muted-foreground">{t('admin:webhooks.detail.name', 'Name')}</dt>
             <dd className="font-medium">{subscription.name}</dd>
 
             <dt className="text-muted-foreground">
@@ -109,34 +111,28 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Readonl
             </dt>
             <dd className="break-all font-mono text-xs">{subscription.endpointUrl}</dd>
 
-            <dt className="text-muted-foreground">
-              {t('admin:webhooks.detail.secret', 'Secret')}
-            </dt>
-            <dd className="font-mono text-xs text-muted-foreground">
-              {'*'.repeat(32)}
-            </dd>
+            <dt className="text-muted-foreground">{t('admin:webhooks.detail.secret', 'Secret')}</dt>
+            <dd className="font-mono text-xs text-muted-foreground">{'*'.repeat(32)}</dd>
 
             <dt className="text-muted-foreground">
               {t('admin:webhooks.detail.eventTypes', 'Event Types')}
             </dt>
             <dd className="flex flex-wrap gap-1">
               {subscription.eventTypes.map((et) => (
-                <Badge key={et} variant="secondary">{et}</Badge>
+                <Badge key={et} variant="secondary">
+                  {et}
+                </Badge>
               ))}
             </dd>
 
-            <dt className="text-muted-foreground">
-              {t('admin:webhooks.detail.status', 'Status')}
-            </dt>
+            <dt className="text-muted-foreground">{t('admin:webhooks.detail.status', 'Status')}</dt>
             <dd>
               {subscription.isActive ? (
                 <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                   {t('admin:webhooks.status.active', 'Active')}
                 </Badge>
               ) : (
-                <Badge variant="secondary">
-                  {t('admin:webhooks.status.inactive', 'Inactive')}
-                </Badge>
+                <Badge variant="secondary">{t('admin:webhooks.status.inactive', 'Inactive')}</Badge>
               )}
             </dd>
 
@@ -147,9 +143,9 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Readonl
                 </dt>
                 <dd className="flex items-center gap-2">
                   <span data-testid="webhook-circuit-status">
-                    <StatusBadge variant="webhook-circuit" status={circuit.state} />
+                    <StatusBadge variant="webhook-circuit" status={circuit.status} />
                   </span>
-                  {circuit.state === 'Open' && (
+                  {circuit.status === 'Open' && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -160,10 +156,10 @@ export function WebhookDetailSheet({ subscription, open, onOpenChange }: Readonl
                       {t('admin:webhooks.detail.resetCircuit', 'Reset Circuit')}
                     </Button>
                   )}
-                  {circuit.failureCount > 0 && (
+                  {Number(circuit.failures) > 0 && (
                     <span className="text-xs text-muted-foreground">
                       {t('admin:webhooks.detail.failureCount', '{{count}} failures', {
-                        count: circuit.failureCount,
+                        count: Number(circuit.failures),
                       })}
                     </span>
                   )}

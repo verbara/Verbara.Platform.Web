@@ -1,32 +1,32 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-export interface Team {
-  id: string;
-  name: string;
+/** Server response is the named `TeamDto` schema (openapi-response-adoption, Platform/ADR-0035).
+ *  `memberCount` is generated as the AOT-safe `number | string` wire union; consumers
+ *  (`teams-page.tsx`) compare it numerically (`=== 0`, `!== 1`), so it is coerced to `number`
+ *  at the fetch boundary below and narrowed to `number` here. */
+export type Team = Omit<components['schemas']['TeamDto'], 'memberCount'> & {
   memberCount: number;
-  createdAt: string;
-}
+};
 
-interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
+/** Boundary coercion for the AOT `number | string` union on `memberCount` (see {@link Team}). */
+function normalizeTeam(dto: components['schemas']['TeamDto']): Team {
+  return { ...dto, memberCount: Number(dto.memberCount) };
 }
 
 export function useTeams() {
   return useQuery({
     queryKey: ['teams'],
     queryFn: async () => {
-      const result = await customFetch<PagedResult<Team>>({
+      const result = await customFetch<components['schemas']['PagedResultOfTeamDto']>({
         url: '/api/v1/admin/teams',
         method: 'GET',
         params: { page: '1', pageSize: '100' },
       });
-      return result.items;
+      return result.items.map(normalizeTeam);
     },
   });
 }
@@ -35,7 +35,11 @@ export function useTeam(id: string | undefined) {
   return useQuery({
     queryKey: ['teams', id],
     queryFn: () =>
-      customFetch<Team>({ url: `/api/v1/admin/teams/${id}`, method: 'GET' }),
+      customFetch<components['schemas']['TeamDto']>({
+        url: `/api/v1/admin/teams/${id}`,
+        method: 'GET',
+      }),
+    select: normalizeTeam,
     enabled: !!id,
   });
 }
@@ -45,7 +49,11 @@ export function useCreateTeam() {
   const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (data: { name: string }) =>
-      customFetch<Team>({ url: '/api/v1/admin/teams', method: 'POST', data }),
+      customFetch<components['schemas']['TeamDto']>({
+        url: '/api/v1/admin/teams',
+        method: 'POST',
+        data,
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams'] });
       toast.success(t('toasts.teams.created'));
@@ -59,7 +67,7 @@ export function useUpdateTeam() {
   const { t } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...data }: { id: string; name: string }) =>
-      customFetch<Team>({
+      customFetch<components['schemas']['TeamDto']>({
         url: `/api/v1/admin/teams/${id}`,
         method: 'PUT',
         data,

@@ -6,9 +6,8 @@
  * change; see openspec/changes/archive/2026-07-12-openapi-typed-client/ for the
  * mechanism and design.md for the committed-file-not-CI-fetch decision. Living
  * spec: openspec/specs/openapi-generated-types/spec.md. Next-phase follow-up
- * (remaining hook migration, numeric-coercion helper): the four per-module
- * child changes openapi-typed-client-{admin,agent,analytics,operations}
- * (planning resolved by the archived openapi-typed-client-phase2).
+ * (remaining hook migration, numeric-coercion helper):
+ * openspec/changes/openapi-typed-client-phase2/.
  */
 export interface paths {
   '/api/v{version}/auth/login': {
@@ -986,7 +985,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfConversation'];
+          };
         };
       };
     };
@@ -1042,6 +1043,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['Conversation'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -1080,7 +1090,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['Message'][];
+          };
         };
       };
     };
@@ -1105,7 +1117,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['Message'];
+          };
         };
       };
     };
@@ -1140,7 +1154,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OwnershipResult'];
+          };
         };
       };
     };
@@ -1175,7 +1191,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OwnershipResult'];
+          };
         };
       };
     };
@@ -1214,7 +1232,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OwnershipResult'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -1249,6 +1278,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['Conversation'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -1279,6 +1317,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TypificationFormResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -1323,6 +1370,24 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['TypificationSubmission'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TypifyErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -1355,6 +1420,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TypificationSuggestionResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -1393,7 +1467,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OwnershipResult'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -1428,7 +1513,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OwnershipResult'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -1464,6 +1560,24 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TypificationCorrectionResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -1506,6 +1620,24 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['VoiceTransferResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['VoiceTransferResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -1543,7 +1675,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['VoiceDialResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['VoiceDialResponse'];
+          };
         };
       };
     };
@@ -1571,6 +1714,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['AgentMeResponseDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -1612,6 +1764,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['AgentMeResponseDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -1646,6 +1807,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['AgentMeResponseDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -1676,6 +1846,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['AgentMeResponseDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -1780,7 +1959,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfUserDto'];
+          };
         };
       };
     };
@@ -1836,6 +2017,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['UserDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -1857,6 +2047,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['UserDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -1914,7 +2113,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfQueueDto'];
+          };
         };
       };
     };
@@ -1970,6 +2171,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['QueueDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -1991,6 +2201,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['QueueDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -2121,7 +2340,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfAdminAgentResponseDto'];
+          };
         };
       };
     };
@@ -2177,6 +2398,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['AdminAgentResponseDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -2198,6 +2428,24 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['AdminAgentResponseDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': string;
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -2251,6 +2499,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['AgentQueueMembershipDto'][];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -2329,7 +2586,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfTeamDto'];
+          };
         };
       };
     };
@@ -2385,6 +2644,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['TeamDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -2406,6 +2674,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TeamDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -2459,6 +2736,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['QueueMemberDto'][];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -2551,6 +2837,24 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['QueueMemberDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': string;
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -2587,6 +2891,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['PauseResultDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -2620,6 +2933,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PauseResultDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -2860,7 +3182,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TenantChannelConfig'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': string;
+          };
         };
       };
     };
@@ -2896,7 +3229,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ChannelTestResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': string;
+          };
         };
       };
     };
@@ -2929,6 +3273,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['Contact'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -2950,6 +3303,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['Contact'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -3009,7 +3371,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfConversation'];
+          };
         };
       };
     };
@@ -3046,7 +3410,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfContact'];
+          };
         };
       };
     };
@@ -3205,7 +3571,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CannedResponseDto'][];
+          };
         };
       };
     };
@@ -3242,7 +3610,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MgmtTenantDto'][];
+          };
         };
       };
     };
@@ -3298,6 +3668,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['MgmtTenantDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -3319,6 +3698,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MgmtTenantDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -3377,6 +3765,24 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['StatusUpdateResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -3412,6 +3818,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['StatusUpdateResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -3443,7 +3858,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SystemInfoDto'];
+          };
         };
       };
     };
@@ -3476,7 +3893,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['LicenseInfoDto'];
+          };
         };
       };
     };
@@ -3498,7 +3917,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
         };
       };
     };
@@ -3530,7 +3951,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['LicenseStatusSnapshot'];
+          };
         };
       };
     };
@@ -3563,7 +3986,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SystemSettingsDto'];
+          };
         };
       };
     };
@@ -3585,7 +4010,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SystemSettingsDto'];
+          };
         };
       };
     };
@@ -3617,7 +4044,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MgmtClusterStatusDto'];
+          };
         };
       };
     };
@@ -3703,6 +4132,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MgmtClusterNodeDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -3809,7 +4247,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['StatusUpdateResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -3843,7 +4292,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['StatusUpdateResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -3907,7 +4367,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MgmtApiKeyDto'][];
+          };
         };
       };
     };
@@ -3962,6 +4424,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CreateMgmtApiKeyResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -4031,7 +4502,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['AgentAssistFeatureDto'];
+          };
         };
       };
     };
@@ -4053,7 +4526,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['AgentAssistFeatureDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails'];
+          };
         };
       };
     };
@@ -4156,7 +4640,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfCampaignSummaryDto'];
+          };
         };
       };
     };
@@ -4212,6 +4698,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['CampaignDetailDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -4233,6 +4728,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CampaignDetailDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -4429,7 +4933,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ContactListDto'][];
+          };
         };
       };
     };
@@ -4530,7 +5036,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ImportResultDto'];
+          };
         };
       };
     };
@@ -4602,7 +5110,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DispositionCodeDto'][];
+          };
         };
       };
     };
@@ -4666,6 +5176,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['DispositionCodeDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -4720,7 +5239,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CallbackDto'][];
+          };
         };
       };
     };
@@ -4778,6 +5299,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['CampaignMetricsDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -4811,7 +5341,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CampaignMetricsDto'][];
+          };
         };
       };
     };
@@ -4883,7 +5415,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DncListDto'][];
+          };
         };
       };
     };
@@ -4939,6 +5473,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['DncListDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -4960,6 +5503,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncListDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5019,7 +5571,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DncEntryDto'][];
+          };
         };
       };
     };
@@ -5115,7 +5669,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DncImportResultDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': string;
+          };
         };
       };
     };
@@ -5149,7 +5714,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DncCheckResultDto'];
+          };
         };
       };
     };
@@ -5182,7 +5749,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CallerIdPoolDto'][];
+          };
         };
       };
     };
@@ -5238,6 +5807,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['CallerIdPoolDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -5259,6 +5837,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CallerIdPoolDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5315,7 +5902,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CallerIdEntryDto'][];
+          };
         };
       };
     };
@@ -5407,7 +5996,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['HolidayCalendarDto'][];
+          };
         };
       };
     };
@@ -5463,6 +6054,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['HolidayCalendarDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -5484,6 +6084,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['HolidayCalendarDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5540,7 +6149,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['HolidayDto'][];
+          };
         };
       };
     };
@@ -5920,7 +6531,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['VoiceCodecsResponse'];
+          };
         };
       };
     };
@@ -5953,7 +6566,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DidRouteDto'][];
+          };
         };
       };
     };
@@ -6007,7 +6622,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DidRouteDto'][];
+          };
         };
       };
     };
@@ -6039,6 +6656,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DidRouteDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -6077,6 +6703,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['DidRouteDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -6098,6 +6733,31 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DidRouteDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Conflict */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -6152,7 +6812,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OutboundRouteDto'][];
+          };
         };
       };
     };
@@ -6208,6 +6870,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['OutboundRouteDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -6229,6 +6900,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['OutboundRouteDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -6322,6 +7002,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['RecordingMetadataDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -6394,7 +7083,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DashboardDto'];
+          };
         };
       };
     };
@@ -6435,7 +7126,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedDataResponseOfCdrRowDto'];
+          };
         };
       };
     };
@@ -6467,6 +7160,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CdrDetailDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -6509,7 +7211,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedDataResponseOfQaRowDto'];
+          };
         };
       };
     };
@@ -6541,6 +7245,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['QaDetailDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -6581,7 +7294,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['AgentIntervalDto'][];
+          };
         };
       };
     };
@@ -6618,7 +7333,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['IntervalDto'][];
+          };
         };
       };
     };
@@ -6691,7 +7408,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TopicTrendsResponse'];
+          };
         };
       };
     };
@@ -6729,7 +7448,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SentimentTrendsResponse'];
+          };
         };
       };
     };
@@ -6767,7 +7488,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ComplianceSummaryResponse'];
+          };
         };
       };
     };
@@ -6800,7 +7523,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['LiveStateDto'][];
+          };
         };
       };
     };
@@ -6832,6 +7557,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['LiveStateDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -6870,6 +7604,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['CurrentIntervalDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -6903,7 +7646,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['QueueMetricsDto'][];
+          };
         };
       };
     };
@@ -6936,7 +7681,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['BotDto'][];
+          };
         };
       };
     };
@@ -6992,6 +7739,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['BotDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -7013,6 +7769,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['BotDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -7070,7 +7835,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ArticleDto'][];
+          };
         };
       };
     };
@@ -7128,6 +7895,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ArticleDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -7220,6 +7996,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['AgentAssistSessionDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -7255,7 +8040,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SuggestionLogRowDto'][];
+          };
         };
       };
     };
@@ -7290,7 +8077,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ComplianceAlertRowDto'][];
+          };
         };
       };
     };
@@ -7323,7 +8112,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['AgentAssistConfigSnapshot'];
+          };
         };
       };
     };
@@ -7345,7 +8136,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['AgentAssistConfigSnapshot'];
+          };
         };
       };
     };
@@ -7377,7 +8170,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['KeywordRuleDto'][];
+          };
         };
       };
     };
@@ -7399,7 +8194,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['KeywordRuleDto'][];
+          };
         };
       };
     };
@@ -7431,7 +8228,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ComplianceRuleDto'][];
+          };
         };
       };
     };
@@ -7453,7 +8252,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ComplianceRuleDto'][];
+          };
         };
       };
     };
@@ -7485,7 +8286,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ActiveSessionDto'][];
+          };
         };
       };
     };
@@ -7565,6 +8368,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['ListenEntry'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -7603,7 +8415,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfConversation'];
+          };
         };
       };
     };
@@ -7641,7 +8455,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['Message'][];
+          };
         };
       };
     };
@@ -7678,7 +8494,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OwnershipResult'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -7717,7 +8544,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
         };
       };
     };
@@ -7756,7 +8585,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -7787,7 +8627,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['StuckConversationDto'][];
+          };
         };
       };
     };
@@ -7894,7 +8736,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SkillDto'][];
+          };
         };
       };
     };
@@ -7955,7 +8799,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SkillDto'];
+          };
         };
       };
     };
@@ -8010,7 +8856,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['AgentSkillDto'][];
+          };
         };
       };
     };
@@ -8045,7 +8893,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['AgentSkillDto'][];
+          };
         };
       };
     };
@@ -8229,7 +9079,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfAuditEventDto'];
+          };
         };
       };
     };
@@ -8303,7 +9155,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SurveyDto'][];
+          };
         };
       };
     };
@@ -8359,6 +9213,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['SurveyDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -8380,6 +9243,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SurveyDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -8446,6 +9318,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['SurveyDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -8475,7 +9356,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SurveyScoreSummary'];
+          };
         };
       };
     };
@@ -8523,6 +9406,52 @@ export interface paths {
     trace?: never;
   };
   '/api/v{version}/csat/responses/webchat': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CsatResponseRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CsatResponseDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/csat/responses/voice': {
     parameters: {
       query?: never;
       header?: never;
@@ -8688,6 +9617,51 @@ export interface paths {
           };
           content: {
             'application/json': components['schemas']['CsatResponseDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/analytics/csat': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          range?: string;
+          channel?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CsatAggregateDto'];
           };
         };
         /** @description Bad Request */
@@ -8921,7 +9895,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TypificationSchemaDto'][];
+          };
         };
       };
     };
@@ -8977,6 +9953,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['TypificationSchemaDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -8998,6 +9983,24 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TypificationSchemaDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PublishResultDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -9056,6 +10059,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['PublishResultDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -9089,7 +10101,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CalibrationStatusDto'];
+          };
         };
       };
     };
@@ -9122,7 +10136,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SchemaBindingDto'][];
+          };
         };
       };
     };
@@ -9178,6 +10194,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['SchemaBindingDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -9199,6 +10224,24 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SchemaBindingDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PublishResultDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -9303,7 +10346,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TenantLlmConfigResponse'];
+          };
         };
       };
     };
@@ -9325,7 +10370,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TenantLlmConfigResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -9380,7 +10436,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TestLlmConnectionResponse'];
+          };
         };
       };
     };
@@ -9411,7 +10469,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['AiCreditsResponse'];
+          };
         };
       };
     };
@@ -9450,7 +10510,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CreditBalanceResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -9487,7 +10558,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CreditBalanceResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -9524,7 +10606,27 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CreditBalanceResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -9555,7 +10657,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CreditBalanceResponse'];
+          };
         };
       };
     };
@@ -9591,7 +10695,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfCreditLedgerEntryDto'];
+          };
         };
       };
     };
@@ -9624,7 +10730,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['SourceRemainingResponse'];
+          };
         };
       };
     };
@@ -9660,7 +10768,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PartnerAttributionResponse'];
+          };
         };
       };
     };
@@ -9693,7 +10803,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ReasonHintDto'][];
+          };
         };
       };
     };
@@ -9749,6 +10861,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['ReasonHintDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -9770,6 +10891,24 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ReasonHintDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -9824,7 +10963,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ScheduledReportDto'][];
+          };
         };
       };
     };
@@ -9877,6 +11018,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ScheduledReportDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -10065,6 +11215,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['EndpointProfileDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -10131,7 +11290,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['EndpointProfileDto'][];
+          };
         };
       };
     };
@@ -10184,6 +11345,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['EndpointProfileDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -10262,7 +11432,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TenantAuthConfigResponse'];
+          };
         };
       };
     };
@@ -10284,7 +11456,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TenantAuthConfigResponse'];
+          };
         };
       };
     };
@@ -10323,7 +11497,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfAuthEvent'];
+          };
         };
       };
     };
@@ -10358,7 +11534,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ActiveSession'][];
+          };
         };
       };
     };
@@ -10431,7 +11609,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['RevokedSessionsResponse'];
+          };
         };
       };
     };
@@ -10837,7 +12017,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
         };
       };
     };
@@ -10868,7 +12050,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PermissionDefinition'][];
+          };
         };
       };
     };
@@ -10901,7 +12085,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PermissionGroupDto'][];
+          };
         };
       };
     };
@@ -10934,7 +12120,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['RoleTemplate'][];
+          };
         };
       };
     };
@@ -10966,6 +12154,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['RoleTemplate'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -11002,7 +12199,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['TenantRole'][];
+          };
         };
       };
     };
@@ -11058,6 +12257,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['TenantRole'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -11079,6 +12287,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TenantRole'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -11174,7 +12391,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['UserRoleAssignment'][];
+          };
         };
       };
     };
@@ -11198,7 +12417,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['UserRoleAssignment'][];
+          };
         };
       };
     };
@@ -11288,7 +12509,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['UserPermissionsDto'];
+          };
         };
       };
     };
@@ -11323,7 +12546,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['RateCardDto'][];
+          };
         };
       };
     };
@@ -11388,6 +12613,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['RateCardDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -11445,7 +12679,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['InvoiceDto'][];
+          };
         };
       };
     };
@@ -11521,6 +12757,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['InvoiceDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -11557,6 +12802,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['StatusUpdateResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -11597,6 +12851,24 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -11627,6 +12899,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DunningRecordDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -11667,6 +12948,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['DunningRecordDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -11699,6 +12989,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DunningRecordDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -11738,7 +13037,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['UsageSummaryDto'][];
+          };
         };
       };
     };
@@ -11779,7 +13080,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['UsageRecordDto'][];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -11814,7 +13126,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['QuotaStatusDto'];
+          };
         };
       };
     };
@@ -11838,7 +13152,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['QuotaDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -11876,7 +13201,27 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ImpersonateResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -11928,7 +13273,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfImpersonationSessionDto'];
+          };
         };
       };
     };
@@ -12006,7 +13353,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfImpersonationSessionDto'];
+          };
         };
       };
     };
@@ -12039,7 +13388,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['WebhookSubscription'][];
+          };
         };
       };
     };
@@ -12095,6 +13446,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['WebhookSubscription'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -12116,6 +13476,24 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['WebhookSubscription'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorDetailResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -12174,6 +13552,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -12207,6 +13594,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PagedResultOfWebhookDelivery'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -12247,6 +13643,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['WebhookSubscription'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -12282,6 +13687,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -12312,6 +13726,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CircuitStatusResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -12352,7 +13775,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfWebhookDelivery'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -12386,6 +13820,24 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -12498,7 +13950,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PurgeResult'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -12535,7 +13998,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PurgeResult'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -12568,7 +14042,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['UserPurgePreview'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -12640,7 +14125,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['RetentionPolicyDto'];
+          };
         };
       };
     };
@@ -12664,7 +14151,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['RetentionPolicyDto'];
+          };
         };
       };
     };
@@ -12693,6 +14182,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TenantSettingsDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -12749,6 +14247,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TenantSettingsDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -12810,7 +14317,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['IpAllowlistListResponse'];
+          };
         };
       };
     };
@@ -12905,7 +14414,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PartnerCustomerDto'][];
+          };
         };
       };
     };
@@ -12961,6 +14472,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['PartnerCustomerDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -12982,6 +14502,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PartnerCustomerDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -13025,6 +14554,24 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['StatusUpdateResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['HttpValidationProblemDetails'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -13060,6 +14607,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['StatusUpdateResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -13090,6 +14646,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TenantSettingsDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -13149,7 +14714,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['RateCardDto'][];
+          };
         };
       };
     };
@@ -13210,6 +14777,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['RateCardDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -13263,6 +14839,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['InvoiceDto'][];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -13339,6 +14924,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['UsageSummaryDto'][];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -13375,7 +14969,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PartnerRevenueSummaryDto'];
+          };
         };
       };
     };
@@ -13411,7 +15007,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PartnerRevenueDetailDto'][];
+          };
         };
       };
     };
@@ -13441,6 +15039,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TenantSettingsDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -13572,7 +15179,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['NotificationDto'][];
+          };
         };
       };
     };
@@ -13605,7 +15214,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['UnreadCountDto'];
+          };
         };
       };
     };
@@ -13637,6 +15248,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['NotificationDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -13741,7 +15361,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OnboardingStatusDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -13780,7 +15411,36 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -13813,7 +15473,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -13845,7 +15516,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -13883,7 +15565,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CreateSessionResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -13922,7 +15615,27 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['MessageResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -13953,7 +15666,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CannedResponseDto'][];
+          };
         };
       };
     };
@@ -14014,6 +15729,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['CannedResponseDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -14070,7 +15794,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PagedResultOfCase'];
+          };
         };
       };
     };
@@ -14126,6 +15852,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['Case'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -14147,6 +15882,24 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['Case'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -14187,7 +15940,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['Case'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -14276,6 +16040,28 @@ export interface components {
     ActivateSurveyRequest: {
       isActive: boolean;
     };
+    ActiveSession: {
+      sessionId: string;
+      userId: string;
+      userEmail: string;
+      userDisplayName: string;
+      ipAddress: null | string;
+      userAgent: null | string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      expiresAt: string;
+      /** Format: date-time */
+      lastActivity: string;
+    };
+    ActiveSessionDto: {
+      sessionId: string;
+      agentId: null | string;
+      queueName: null | string;
+      callerIdNum: null | string;
+      /** Format: date-time */
+      connectedAt: null | string;
+    };
     AddCallerIdEntryRequest: {
       phoneNumber: string;
       areaCode: null | string;
@@ -14309,6 +16095,40 @@ export interface components {
       /** Format: int32 */
       penalty?: null | number | string;
     };
+    /**
+     * @description W6-A6 — the admin agent representation returned by GET /admin/agents/{id} and
+     *     /admin/agents (paged). Mirrors the fields the React admin UI consumed from the raw
+     *     Agent entity, ADDING the raw per-agent ChannelCapacityOverrideDto? AdminAgentResponseDto.CapacityOverride
+     *     (null when fully inherited, so the UI can render "inherited" vs "overridden") plus the
+     *     resolved ChannelCapacity AdminAgentResponseDto.EffectiveCapacity (tenant default merged with the override,
+     *     MaxVoice pinned). The plaintext SIP password is deliberately NOT carried (admin
+     *     surfaces must never echo the secret — see AgentMeSipExposureTests).
+     *     The Agent entity's OfflineSince, CreatedBy, and UpdatedBy are intentionally
+     *     NOT projected (no admin-UI consumer today — add them here if a future supervisor surface needs them).
+     */
+    AdminAgentResponseDto: {
+      agentId: string;
+      tenantId: string;
+      userId: string;
+      displayName: string;
+      state: components['schemas']['AgentState'];
+      pendingState: null | components['schemas']['AgentState'];
+      pendingReason: null | string;
+      /** Format: date-time */
+      pendingSince: null | string;
+      hasPendingPause: boolean;
+      teamId: null | string;
+      skills: string[];
+      extension: null | string;
+      autoAnswer: null | boolean;
+      canAcceptWork: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: null | string;
+      capacityOverride: null | components['schemas']['ChannelCapacityOverrideDto'];
+      effectiveCapacity: components['schemas']['ChannelCapacity'];
+    };
     AgentAssistConfigSnapshot: {
       /** Format: int32 */
       audioSocketPort: number | string;
@@ -14331,10 +16151,112 @@ export interface components {
       apiKey: null | string;
       endpoint: null | string;
     };
+    AgentAssistFeatureDto: {
+      enabled: boolean;
+      provider: null | string;
+      credentialsConfigured: boolean;
+      apiKeyMasked: null | string;
+      endpointMasked: null | string;
+      /** Format: date-time */
+      updatedAt: null | string;
+      updatedBy: null | string;
+    };
     AgentAssistFeatureUpdateRequest: {
       enabled: boolean;
       provider: null | string;
       credentials: null | components['schemas']['AgentAssistCredentialsDto'];
+    };
+    AgentAssistSessionDto: {
+      sessionId: string;
+      tenantId: string;
+      queueName: null | string;
+      agentId: null | string;
+      /** Format: date-time */
+      startedAt: string;
+      /** Format: date-time */
+      endedAt: null | string;
+      /** Format: int32 */
+      suggestionCount: number | string;
+      /** Format: int32 */
+      complianceAlerts: number | string;
+      /** Format: float */
+      finalSentiment: null | number | string;
+    };
+    AgentIntervalDto: {
+      agentId: string;
+      /** Format: date-time */
+      intervalStart: string;
+      /** Format: int32 */
+      intervalSeconds: number | string;
+      /** Format: int32 */
+      callsHandled: number | string;
+      /** Format: double */
+      ahtMs: number | string;
+      /** Format: double */
+      occupancyPercent: number | string;
+      /** Format: int32 */
+      rnaCount: number | string;
+      /** Format: int32 */
+      transfers: number | string;
+      /** Format: int64 */
+      totalPauseMs: number | string;
+      /** Format: int64 */
+      loginDurationMs: number | string;
+    };
+    /**
+     * @description Response payload for `GET /agents/me`. Mirrors the serialized shape of
+     *     Agent (kept stable for the Web client) and — unlike the entity,
+     *     whose `SipPassword` is `[JsonIgnore]`d — deliberately surfaces the
+     *     caller's own string? AgentMeResponseDto.Extension + string? AgentMeResponseDto.SipPassword so the
+     *     in-browser SIP.js softphone can REGISTER (Phase 3A). This is the SINGLE
+     *     place the plaintext SIP secret crosses an HTTP boundary, and only ever for
+     *     the authenticated agent's own record (the endpoint resolves the agent from
+     *     the caller's user id — JWT `sub` / API-key `user_id`).
+     */
+    AgentMeResponseDto: {
+      agentId: string;
+      tenantId: string;
+      userId: string;
+      displayName: string;
+      state: components['schemas']['AgentState'];
+      capacity: components['schemas']['ChannelCapacity'];
+      teamId: null | string;
+      skills: string[];
+      extension: null | string;
+      sipPassword: null | string;
+      autoAnswer: null | boolean;
+      canAcceptWork: boolean;
+      pendingState: null | components['schemas']['AgentState'];
+      pendingReason: null | string;
+      /** Format: date-time */
+      pendingSince: null | string;
+      /** Format: int32 */
+      activeWorkCount: number | string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: null | string;
+    };
+    /**
+     * @description ADR-0026 Phase A.6 — agent-centric membership projection used by the
+     *     `/admin/agents/{agentId}/queues` editor. Joins queue_memberships
+     *     with queues so the React UI renders queue names + channel multi-selects
+     *     without an N+1 fetch loop.
+     */
+    AgentQueueMembershipDto: {
+      queueId: string;
+      queueName: string;
+      /** Format: int32 */
+      penalty: number | string;
+      isExcluded: boolean;
+      allowedChannels: null | string[];
+      source: string;
+    };
+    AgentSkillDto: {
+      agentId: string;
+      skillName: string;
+      /** Format: int32 */
+      proficiency: number | string;
     };
     /** @enum {unknown} */
     AgentState: 'Offline' | 'Available' | 'Busy' | 'Break' | 'Lunch' | 'Training' | 'ACW' | 'DND';
@@ -14357,11 +16279,43 @@ export interface components {
       piiAllowStore?: null | string[];
     };
     /**
+     * @description C2 (P2c.2) — tenant AI credit usage readout. Credits are derived by aggregation (Σtokens ÷
+     *     `PlatformLlmOptions.CreditTokenRatio`); the operator key/model are NEVER exposed here.
+     */
+    AiCreditsResponse: {
+      /**
+       * Format: int64
+       * @description Monthly AI Credit allowance, or `null` for unlimited / pay-as-you-go.
+       */
+      allowanceCredits: null | number | string;
+      /**
+       * Format: int64
+       * @description Credits consumed in the current calendar month (floor of tokens ÷ ratio).
+       */
+      consumedCredits: number | string;
+      /**
+       * Format: int64
+       * @description Allowance minus consumed (floored at 0), or `null` when unlimited.
+       */
+      remainingCredits: null | number | string;
+      /**
+       * Format: double
+       * @description Consumed ÷ allowance × 100, or 0 when the allowance is unlimited / zero.
+       */
+      usagePercent: number | string;
+      /**
+       * Format: date-time
+       * @description Exclusive end of the current usage period (first instant of next month, UTC).
+       */
+      periodEnd: string;
+      /** @description The tenant's `QuotaAction` name (Warn / SoftBlock / HardBlock). */
+      actionOnExhaustion: string;
+    };
+    /**
      * @description Ownership discriminator for a tenant's Typification LLM provider — distinct
      *     from ProviderType (the provider *family*). `Byo` uses the
      *     tenant's own encrypted key; `PlatformManaged` uses Verbara's operator
      *     key (host-bound `PlatformLlmOptions`), metered + billed in AI Credits.
-     * @default Byo
      * @enum {unknown}
      */
     AiSource: 'Byo' | 'PlatformManaged';
@@ -14371,19 +16325,349 @@ export interface components {
     ApplyTemplateRequest: {
       template: string;
     };
+    ArticleDto: {
+      id: string;
+      title: string;
+      content: string;
+      tags: string[];
+      published: boolean;
+      language: null | string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
     AssignSkillRequest: {
       skillName: string;
       /** Format: int32 */
       proficiency: null | number | string;
+    };
+    /**
+     * @description Wire shape returned by the R5.2 PB.1 audit log viewer endpoints. Mirrors
+     *     AuditEntry with snake-case JSON
+     *     nullable-everywhere so the React DataTable can render rows directly.
+     */
+    AuditEventDto: {
+      entryId: string;
+      tenantId: string;
+      action: string;
+      category: string;
+      severity: string;
+      actorId: string;
+      actorType: string;
+      targetId?: null | string;
+      targetType?: null | string;
+      correlationId?: null | string;
+      impersonatorId?: null | string;
+      /** Format: date-time */
+      occurredAt: string;
+      /**
+       * @description Status surface — currently mirrors string AuditEventDto.Severity until
+       *         the entry model gains a dedicated outcome field. The Web table uses it as
+       *         a separate column to leave room for the future split.
+       */
+      status: string;
+      /**
+       * @description Before snapshot for mutation events. `null` when not a mutation
+       *         or when the storage layer doesn't persist before/after (legacy Postgres rows).
+       */
+      before?: unknown;
+      after?: unknown;
+      metadata?: null | {
+        [key: string]: string;
+      };
+    };
+    AuthEvent: {
+      eventId: string;
+      tenantId: string;
+      userId?: null | string;
+      eventType: string;
+      ipAddress?: null | string;
+      userAgent?: null | string;
+      details?: null | components['schemas']['JsonDocument'];
+      /** Format: date-time */
+      createdAt: string;
+    };
+    AuthSettingsDto: {
+      mfaPolicy: string;
+      mfaRequiredRoles: string[];
+      /** Format: int32 */
+      passwordMinLength: number | string;
+      passwordRequireUppercase: boolean;
+      passwordRequireNumber: boolean;
+      passwordRequireSpecial: boolean;
+      /** Format: int32 */
+      lockoutThreshold: number | string;
+      /** Format: int32 */
+      lockoutDurationMinutes: number | string;
+      /** Format: int32 */
+      sessionIdleTimeoutMinutes: number | string;
+      /** Format: int32 */
+      sessionAbsoluteTimeoutHours: number | string;
+      oidcEnabled: boolean;
+      oidcAuthority: null | string;
+      oidcClientId: null | string;
+      oidcAutoCreateUsers: boolean;
+      oidcDefaultRole: string;
+      /** Format: int32 */
+      impersonationMaxConcurrentSessions: number | string;
+      /** Format: int32 */
+      impersonationAutoTimeoutMinutes: number | string;
+      ipAllowlistEnabled: boolean;
+    };
+    BotDto: {
+      id: string;
+      name: string;
+      defaultFlowId: null | string;
+      fallbackQueueId: null | string;
+      /** Format: double */
+      confidenceThreshold: number | string;
+      /** Format: int32 */
+      maxTurns: number | string;
+      isActive: boolean;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    BrandingSettingsDto: {
+      displayName: null | string;
+      logoUrl: null | string;
+      faviconUrl: null | string;
+      primaryColor: null | string;
+      secondaryColor: null | string;
+      accentColor: null | string;
+      locale: null | string;
+      timezone: null | string;
+      subdomain: null | string;
+      supportEmail: null | string;
+      supportUrl: null | string;
+      emailFromName: null | string;
+      emailFromAddress: null | string;
+    };
+    CalibrationStatusDto: {
+      /** Format: int32 */
+      samples: number | string;
+      /** Format: double */
+      accuracy: number | string;
+      autoFillReady: boolean;
+      autonomousReady: boolean;
+    };
+    CallbackDto: {
+      /** Format: int64 */
+      campaignId: number | string;
+      /** Format: int64 */
+      contactId: number | string;
+      /** Format: date-time */
+      scheduledAt: string;
+      agentId: null | string;
+    };
+    CallerIdEntryDto: {
+      /** Format: int64 */
+      id: number | string;
+      phoneNumber: string;
+      areaCode: null | string;
+      isActive: boolean;
+    };
+    CallerIdPoolDto: {
+      /** Format: int64 */
+      id: number | string;
+      name: string;
+    };
+    CampaignDetailDto: {
+      /** Format: int64 */
+      id: number | string;
+      name: string;
+      description: null | string;
+      status: string;
+      mode: string;
+      queueName: string;
+      teamName: null | string;
+      /** Format: int32 */
+      maxConcurrentCalls: number | string;
+      /** Format: double */
+      powerRatio: null | number | string;
+      /** Format: double */
+      targetAbandonRate: null | number | string;
+      timezone: string;
+      campaignStart: null | string;
+      campaignEnd: null | string;
+      schedule: components['schemas']['ScheduleDayDto'][];
+      holidays: string[];
+      dncEnabled: boolean;
+      /** Format: int32 */
+      maxAttemptsPerContact: number | string;
+      /** Format: int32 */
+      retryIntervalMinutes: number | string;
+      /** Format: int32 */
+      timeBetweenAttemptsMinutes: number | string;
+      complianceNotes: null | string;
+      /** Format: int32 */
+      totalContacts: number | string;
+      /** Format: int32 */
+      contactsDialed: number | string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    CampaignMetricsDto: {
+      /** Format: int64 */
+      campaignId: number | string;
+      campaignName: string;
+      status: string;
+      /** Format: int32 */
+      contactsDialed: number | string;
+      /** Format: int32 */
+      contactsRemaining: number | string;
+      /** Format: double */
+      connectRate: number | string;
+      /** Format: double */
+      abandonRate: number | string;
+      /** Format: int32 */
+      activeCalls: number | string;
+      /** Format: double */
+      pacingRate: number | string;
+    };
+    CampaignSummaryDto: {
+      /** Format: int64 */
+      id: number | string;
+      name: string;
+      status: string;
+      queueName: string;
+      mode: string;
+      /** Format: int32 */
+      totalContacts: number | string;
+      /** Format: int32 */
+      contactsDialed: number | string;
+    };
+    CannedResponseDto: {
+      responseId: string;
+      shortcut: string;
+      title: string;
+      body: string;
+      category: null | string;
+      tags: string[];
+      createdBy: string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    Case: {
+      caseId: components['schemas']['EntityId'];
+      tenantId: components['schemas']['TenantId'];
+      caseNumber: string;
+      subject: string;
+      priority: components['schemas']['CasePriority'];
+      status: components['schemas']['CaseStatus'];
+      contactId: components['schemas']['EntityId'];
+      assignedAgentId?: null | components['schemas']['EntityId'];
+      slaPolicyId?: null | components['schemas']['EntityId'];
+      conversationIds?: null | unknown[];
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt?: null | string;
+      createdBy?: null | string;
+      updatedBy?: null | string;
+    };
+    /** @enum {unknown} */
+    CasePriority: 'Low' | 'Normal' | 'High' | 'Urgent';
+    /** @enum {unknown} */
+    CaseStatus: 'Open' | 'Pending' | 'Resolved' | 'Closed';
+    CdrDetailDto: {
+      cdr: components['schemas']['CdrRowDto'];
+      timeline: components['schemas']['CdrTimelineEventDto'][];
+      qaSummary: null | components['schemas']['CdrQaSummaryDto'];
+      calledNumber: null | string;
+      linkedSessionId: null | string;
+      /** Format: int16 */
+      transferCount: number | string;
+      recordingName: null | string;
+      recordingStreamUrl: null | string;
+      hasTranscript: boolean;
+    };
+    CdrQaSummaryDto: {
+      reason: null | string;
+      outcome: null | string;
+      narrative: null | string;
+      /** Format: double */
+      qaScore: null | number | string;
+      sentimentLabel: null | string;
+    };
+    CdrRowDto: {
+      sessionId: string;
+      /** Format: date-time */
+      startTime: string;
+      /** Format: date-time */
+      answerTime: null | string;
+      /** Format: date-time */
+      endTime: string;
+      contact: null | string;
+      channel: string;
+      queueName: null | string;
+      agentName: null | string;
+      /** Format: int64 */
+      durationMs: number | string;
+      /** Format: int64 */
+      talkTimeMs: null | number | string;
+      /** Format: int64 */
+      waitTimeMs: null | number | string;
+      disposition: string;
+      slaMet: boolean;
+      hasQaScore: boolean;
+      /** Format: double */
+      qaScore: null | number | string;
+      sentimentLabel: null | string;
+      hasRecording: boolean;
+      transferredTo: null | string;
+      /** Format: int16 */
+      transferType: null | number | string;
+      /** Format: int16 */
+      hangupSource: null | number | string;
+      /** Format: int64 */
+      wrapUpDurationMs: null | number | string;
+      /** Format: int16 */
+      holdCount: number | string;
+      /** Format: int64 */
+      ringDurationMs: null | number | string;
+      campaignName: null | string;
+      dispositionName: null | string;
+      metadata: null | {
+        [key: string]: string;
+      };
+    };
+    CdrTimelineEventDto: {
+      event: string;
+      /** Format: date-time */
+      timestamp: string;
+      detail: null | string;
     };
     ChangePasswordRequest: {
       oldPassword: string;
       newPassword: string;
       mfaCode?: null | string;
     };
+    ChannelAddress: {
+      channel: components['schemas']['ChannelType'];
+      address: string;
+    };
     ChannelAddressDto: {
       channel: components['schemas']['ChannelType'];
       address: string;
+    };
+    ChannelCapacity: {
+      /** Format: int32 */
+      maxVoice?: number | string;
+      /** Format: int32 */
+      maxChat?: number | string;
+      /** Format: int32 */
+      maxEmail?: number | string;
+      /** Format: int32 */
+      maxSms?: number | string;
+      /**
+       * Format: int32
+       * @description W6 — the cap on the SUM of concurrently handled async channels (chat-pool +
+       *     email + sms). Enforced SEPARATELY (not via int ChannelCapacity.GetMax(ChannelType channel), which is a
+       *     strictly per-channel limit); the capacity service tallies async load across
+       *     channels and rejects work that would push the combined count past this cap.
+       */
+      maxTotal?: number | string;
     };
     /**
      * @description W6-A6 — wire shape for the per-agent ChannelCapacityOverride. Each null field
@@ -14403,6 +16687,15 @@ export interface components {
       /** Format: int32 */
       maxTotal: null | number | string;
     };
+    ChannelDistributionDto: {
+      channel: string;
+      /** Format: int32 */
+      count: number | string;
+    };
+    ChannelTestResponse: {
+      success: boolean;
+      message: string;
+    };
     /** @enum {unknown} */
     ChannelType:
       | 'Voice'
@@ -14415,14 +16708,46 @@ export interface components {
       | 'Telegram'
       | 'Twitter'
       | 'Video'
-      | 'Rcs'
-      | null;
+      | 'Rcs';
+    ChecklistItemDto: {
+      key: string;
+      label: string;
+      completed: boolean;
+    };
+    /**
+     * @default Closed
+     * @enum {unknown}
+     */
+    CircuitStatus: 'Closed' | 'Open' | 'HalfOpen';
+    CircuitStatusResponse: {
+      subscriptionId: string;
+      status: string;
+      /** Format: int32 */
+      failures: number | string;
+      /** Format: date-time */
+      openedAt: null | string;
+      /** Format: date-time */
+      nextProbeAt: null | string;
+      /** Format: int32 */
+      probeAttempts: number | string;
+    };
     CloneTenantRoleRequest: {
       name: string;
       description?: null | string;
     };
     CoachingNoteRequest: {
       text: string;
+    };
+    ComplianceAlertRowDto: {
+      /** Format: int64 */
+      id: number | string;
+      sessionId: string;
+      tenantId: string;
+      /** Format: date-time */
+      occurredAt: string;
+      ruleId: string;
+      phrase: null | string;
+      severity: string;
     };
     ComplianceRuleDto: {
       ruleId: string;
@@ -14431,11 +16756,76 @@ export interface components {
       action: string;
       description: null | string;
     };
+    ComplianceRuleSummaryDto: {
+      ruleId: string;
+      ruleName: string;
+      severity: string;
+      /** Format: int32 */
+      occurrences: number | string;
+      /** Format: int32 */
+      sessionsAffected: number | string;
+      /** Format: date-time */
+      firstSeen: string;
+      /** Format: date-time */
+      lastSeen: string;
+    };
+    ComplianceSeverityBreakdownDto: {
+      /** Format: int32 */
+      info: number | string;
+      /** Format: int32 */
+      warning: number | string;
+      /** Format: int32 */
+      critical: number | string;
+    };
+    ComplianceSummaryResponse: {
+      rules: components['schemas']['ComplianceRuleSummaryDto'][];
+      /** Format: int32 */
+      totalViolations: number | string;
+      /** Format: int32 */
+      totalSessionsWithViolations: number | string;
+      severityBreakdown: components['schemas']['ComplianceSeverityBreakdownDto'];
+      /** Format: date-time */
+      from: string;
+      /** Format: date-time */
+      to: string;
+    };
+    ComplianceViolationDto: {
+      ruleName: string;
+      severity: string;
+      description: string;
+      evidence: null | string;
+    };
     ConditionExprDto: {
       refType: string;
       ref: string;
       op: string;
       value: null | string;
+    };
+    Contact: {
+      contactId: components['schemas']['EntityId'];
+      tenantId: components['schemas']['TenantId'];
+      firstName?: null | string;
+      lastName?: null | string;
+      company?: null | string;
+      segment?: null | string;
+      preferredChannel?: null | components['schemas']['ChannelType'];
+      preferredLanguage?: null | string;
+      timezone?: null | string;
+      doNotContact?: boolean;
+      addresses?: null | components['schemas']['ChannelAddress'][];
+      customFields?: null | {
+        [key: string]: string;
+      };
+      channelConsent?: null | {
+        [key: string]: boolean;
+      };
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt?: null | string;
+      createdBy?: null | string;
+      updatedBy?: null | string;
+      fullName?: null | string;
     };
     ContactImportRowDto: {
       firstName: string;
@@ -14446,6 +16836,64 @@ export interface components {
         [key: string]: string;
       };
     };
+    ContactListDto: {
+      /** Format: int64 */
+      id: number | string;
+      name: string;
+      /** Format: int32 */
+      totalContacts: number | string;
+      /** Format: int32 */
+      pendingContacts: number | string;
+      /** Format: int32 */
+      completedContacts: number | string;
+      sourceFileName: null | string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    Conversation: {
+      conversationId: components['schemas']['EntityId'];
+      tenantId: components['schemas']['TenantId'];
+      contactId: components['schemas']['EntityId'];
+      channel: components['schemas']['ChannelType'];
+      owner?: null | components['schemas']['ConversationOwner'];
+      state: components['schemas']['ConversationState'];
+      caseId?: null | components['schemas']['EntityId'];
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      closedAt?: null | string;
+      /** Format: date-time */
+      updatedAt?: null | string;
+      createdBy?: null | string;
+      updatedBy?: null | string;
+      /**
+       * @description For voice conversations: the Asterisk call-global `LinkedId` (shared by every
+       *     channel of one physical call). Acts as the per-call idempotency correlation key
+       *     (unique per tenant via a partial index, migration 027) so the leader-emit voice
+       *     bridge never creates a duplicate Conversation across a leadership failover.
+       *     `null` for every non-voice conversation. Settable (not init-only) because an
+       *     OUTBOUND voice Conversation (3B.2d) is pre-created by the dial service BEFORE the live call
+       *     exists, then the bridge stamps the real LinkedId on `CallConnected` (inbound sets it at
+       *     creation). The stores persist it on UPDATE, so a later stamp is durable.
+       */
+      voiceLinkedId?: null | string;
+      /**
+       * Format: int32
+       * @description W5 — queue ordering priority; lower sorts earlier. 0 = normal FIFO (by CreatedAt);
+       *     failover re-queue sets -1 to jump to the front.
+       */
+      queuePriority?: number | string;
+      metadata?: null | {
+        [key: string]: string;
+      };
+      sessions?: null | components['schemas']['IConversationSession'][];
+    };
+    ConversationOwner: {
+      kind: components['schemas']['ConversationOwnerKind'];
+      ownerId?: unknown;
+    };
+    /** @enum {unknown} */
+    ConversationOwnerKind: 'System' | 'Bot' | 'Agent' | 'Queue';
     /** @enum {unknown} */
     ConversationState:
       | 'Queued'
@@ -14461,8 +16909,15 @@ export interface components {
       | 'Closed'
       | 'Abandoned'
       | 'Merged'
-      | 'Spam'
-      | null;
+      | 'Spam';
+    /**
+     * @description Append-only correction state of a TypificationSubmission (ADR-0034 Decision 5).
+     *     An autonomously stamped disposition stays immutable; a supervisor correction creates a NEW
+     *     corrective submission that references the original — the original is then marked
+     *     CorrectionState.Corrected. The conversation is NOT transitioned back to WrapUp.
+     * @enum {unknown}
+     */
+    CorrectionState: 'None' | 'Corrected';
     CreateAgentRequest: {
       userId: string;
       displayName: string;
@@ -14613,6 +17068,13 @@ export interface components {
       /** Format: int32 */
       expiresInDays?: null | number | string;
     };
+    CreateMgmtApiKeyResponse: {
+      keyId: string;
+      name: string;
+      apiKey: string;
+      /** Format: date-time */
+      expiresAt: null | string;
+    };
     CreateMgmtTenantRequest: {
       tenantId: string;
       name: string;
@@ -14722,6 +17184,10 @@ export interface components {
     CreateSessionRequest: {
       tenantId: string;
     };
+    CreateSessionResponse: {
+      sessionId: string;
+      wsUrl: string;
+    };
     CreateSkillRequest: {
       name: string;
       category: null | string;
@@ -14768,6 +17234,73 @@ export interface components {
       name: string;
       endpointUrl: string;
       eventTypes: string[];
+    };
+    /** @description c1 — the tenant's current O(1) AI-credit balance projection. */
+    CreditBalanceResponse: {
+      /**
+       * Format: double
+       * @description Current credit balance (never negative).
+       */
+      balance: number | string;
+    };
+    /**
+     * @description c1 — a single AI-credit ledger entry projected for the tenant read API. The domain
+     *     CreditLedgerEntry is never serialized directly; enums are surfaced as their names.
+     */
+    CreditLedgerEntryDto: {
+      /** @description Ledger entry id (EntityId hex). */
+      entryId: string;
+      /** @description `Grant` or `Debit`. */
+      entryType: string;
+      /** @description Economic source (`Subscription`, `TopUp`, `Promo`, `Partner`, `PostPaid`). */
+      source: string;
+      /**
+       * Format: double
+       * @description Signed credit amount (positive for grants, negative for debits).
+       */
+      amount: number | string;
+      /** @description Top-up idempotency key, if any. */
+      externalRef: null | string;
+      /**
+       * Format: date-time
+       * @description When this (grant) lot expires, if any.
+       */
+      expiresAt: null | string;
+      /**
+       * Format: date-time
+       * @description When the entry was appended (UTC).
+       */
+      createdAt: string;
+    };
+    /**
+     * @description Scope-wide CSAT roll-up returned by `GET /api/v1/analytics/csat` (csat-completion,
+     *     Platform/ADR-0020). The envelope carries the tenant/scope totals; each IReadOnlyList&lt;CsatResponseDto&gt; CsatAggregateDto.Queues row
+     *     reuses the existing CsatResponseDto projection verbatim (one row per queue), frozen by
+     *     `fixtures/csat-aggregate-analytics.v1.json` (verbatim-fixture-citation rule).
+     */
+    CsatAggregateDto: {
+      /**
+       * Format: int32
+       * @description Sum of CSAT responses across every queue in the scope/range.
+       */
+      totalResponses: number | string;
+      /**
+       * Format: double
+       * @description Response-weighted mean rating (1..5) across the scope; 0 when none.
+       */
+      averageRating: number | string;
+      /**
+       * Format: date-time
+       * @description Inclusive start of the captured-at range.
+       */
+      rangeStart: string;
+      /**
+       * Format: date-time
+       * @description Inclusive end of the captured-at range.
+       */
+      rangeEnd: string;
+      /** @description One CsatResponseDto row per queue contributing to the totals. */
+      queues: components['schemas']['CsatResponseDto'][];
     };
     /**
      * @description Per-queue CSAT analytics summary returned by
@@ -14857,6 +17390,146 @@ export interface components {
       /** @description The prompt body — the email message, SMS text, or voice TTS prompt. */
       body: string;
     };
+    CurrentIntervalDto: {
+      /** Format: date-time */
+      intervalStart: string;
+      /** Format: date-time */
+      intervalEnd: string;
+      /** Format: int32 */
+      callsOffered: number | string;
+      /** Format: int32 */
+      callsAnswered: number | string;
+      /** Format: int32 */
+      callsAbandoned: number | string;
+      /** Format: double */
+      ahtMs: number | string;
+      /** Format: double */
+      asaMs: number | string;
+      /** Format: double */
+      slaPercent: number | string;
+      /** Format: double */
+      abandonRatePercent: number | string;
+    };
+    DashboardDto: {
+      kpis: components['schemas']['DashboardKpisDto'];
+      previousPeriodKpis: null | components['schemas']['DashboardKpisDto'];
+      volumeTrend: components['schemas']['TrendPointDto'][];
+      slaTrend: components['schemas']['TrendPointDto'][];
+      channelDistribution: components['schemas']['ChannelDistributionDto'][];
+    };
+    DashboardKpisDto: {
+      /** Format: int32 */
+      conversationsHandled: number | string;
+      /** Format: double */
+      avgWaitMs: number | string;
+      /** Format: double */
+      avgHandleTimeMs: number | string;
+      /** Format: double */
+      slaPercent: number | string;
+      /** Format: double */
+      abandonRatePercent: number | string;
+    };
+    DidRouteDto: {
+      id: string;
+      did: string;
+      queueId: string;
+      isActive: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: null | string;
+    };
+    DispositionCodeDto: {
+      /** Format: int64 */
+      id: number | string;
+      code: string;
+      label: string;
+      category: string;
+      isSuccess: boolean;
+      triggerRetry: boolean;
+      /** Format: int32 */
+      retryDelayMinutes: null | number | string;
+      triggerCallback: boolean;
+      isActive: boolean;
+      /** Format: int32 */
+      sortOrder: number | string;
+    };
+    DncCheckResultDto: {
+      exists: boolean;
+    };
+    DncEntryDto: {
+      /** Format: int64 */
+      id: number | string;
+      phoneNumber: string;
+      reason: null | string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      expiresAt: null | string;
+    };
+    DncImportResultDto: {
+      /** Format: int32 */
+      imported: number | string;
+      /** Format: int32 */
+      skipped: number | string;
+    };
+    DncListDto: {
+      /** Format: int64 */
+      id: number | string;
+      name: string;
+      scope: string;
+      /** Format: int32 */
+      entryCount: number | string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    DunningRecordDto: {
+      dunningId: string;
+      tenantId: string;
+      invoiceId: string;
+      currentStage: string;
+      /** Format: date-time */
+      startedAt: string;
+      /** Format: date-time */
+      escalatedAt: null | string;
+      /** Format: date-time */
+      resolvedAt: null | string;
+      isPaused: boolean;
+      isActive: boolean;
+    };
+    DunningStatusDto: {
+      invoiceId: string;
+      currentStage: string;
+      /** Format: date-time */
+      startedAt: string;
+      /** Format: date-time */
+      escalatedAt: null | string;
+      isPaused: boolean;
+    };
+    EndpointProfileDto: {
+      /** Format: int64 */
+      id: number | string;
+      name: string;
+      type: string;
+      isDefault: boolean;
+      transport: string;
+      codecs: string;
+      webrtc: boolean;
+      /** Format: int32 */
+      maxContacts: number | string;
+      directMedia: boolean;
+      context: string;
+      /** Format: int32 */
+      qualifyFrequency: number | string;
+    };
+    EntityId: unknown;
+    ErrorDetailResponse: {
+      error: string;
+      details: string[];
+    };
+    ErrorResponse: {
+      error: string;
+    };
     FieldOptionDto: {
       value: string;
       label: string;
@@ -14912,6 +17585,30 @@ export interface components {
       /** Format: date-time */
       periodEnd: string;
     };
+    HolidayCalendarDto: {
+      /** Format: int64 */
+      id: number | string;
+      name: string;
+    };
+    HolidayDto: {
+      /** Format: int64 */
+      id: number | string;
+      date: string;
+      name: string;
+      allowedStart: null | string;
+      allowedEnd: null | string;
+    };
+    HttpValidationProblemDetails: {
+      type?: null | string;
+      title?: null | string;
+      /** Format: int32 */
+      status?: null | number | string;
+      detail?: null | string;
+      instance?: null | string;
+      errors?: {
+        [key: string]: string[];
+      };
+    };
     /**
      * @description Audit-log entry payload posted from Verbara.Platform.Realtime to
      *     `POST /api/v1/internal/hub-audit` on Verbara.Platform.Api when a
@@ -14937,15 +17634,137 @@ export interface components {
        */
       at: string;
     };
+    IConversationSession: {
+      sessionId?: components['schemas']['EntityId'];
+      channel?: components['schemas']['ChannelType'];
+      state?: components['schemas']['SessionState'];
+      /** Format: date-time */
+      startedAt?: string;
+      /** Format: date-time */
+      endedAt?: null | string;
+    };
     ImpersonateRequest: {
       targetTenantId: string;
       /** @default false */
       readOnly: boolean;
       reason?: null | string;
     };
+    ImpersonateResponse: {
+      accessToken: string;
+      /** Format: date-time */
+      expiresAt: string;
+      targetTenantId: string;
+      targetTenantName: string;
+      readOnly: boolean;
+      sessionId: string;
+    };
+    /** @description Wire shape for the active + history list endpoints. */
+    ImpersonationSessionDto: {
+      id: string;
+      actorUserId: string;
+      actorTenantId: string;
+      targetUserId: null | string;
+      targetTenantId: string;
+      reason: null | string;
+      readOnly: boolean;
+      /** Format: date-time */
+      startedAt: string;
+      /** Format: date-time */
+      endedAt: null | string;
+      status: string;
+      closeReason: null | string;
+      /** Format: int32 */
+      timeRemainingSeconds: null | number | string;
+      /** Format: date-time */
+      expiresAt: null | string;
+    };
     ImportContactsRequest: {
       contacts: components['schemas']['ContactImportRowDto'][];
     };
+    ImportResultDto: {
+      /** Format: int32 */
+      imported: number | string;
+      /** Format: int32 */
+      skipped: number | string;
+      /** Format: int32 */
+      duplicates: number | string;
+    };
+    IntervalDto: {
+      queueName: string;
+      /** Format: date-time */
+      intervalStart: string;
+      /** Format: int32 */
+      intervalSeconds: number | string;
+      /** Format: int32 */
+      callsOffered: number | string;
+      /** Format: int32 */
+      callsAnswered: number | string;
+      /** Format: int32 */
+      callsAbandoned: number | string;
+      /** Format: double */
+      slaPercent: number | string;
+      /** Format: double */
+      asaMs: number | string;
+      /** Format: double */
+      ahtMs: number | string;
+      /** Format: double */
+      abandonRatePercent: number | string;
+      /** Format: int32 */
+      slaMetCount: number | string;
+    };
+    InvoiceDto: {
+      invoiceId: string;
+      tenantId: string;
+      /** Format: date-time */
+      periodStart: string;
+      /** Format: date-time */
+      periodEnd: string;
+      currency: string;
+      lineItems: components['schemas']['InvoiceLineItemDto'][];
+      /** Format: double */
+      subtotal: number | string;
+      /** Format: double */
+      tax: number | string;
+      /** Format: double */
+      total: number | string;
+      status: string;
+      /** Format: date-time */
+      generatedAt: string;
+      /** Format: date-time */
+      issuedAt: null | string;
+      /** Format: date-time */
+      paidAt: null | string;
+      paymentStatus: string;
+      /** Format: date-time */
+      dueDate: null | string;
+    };
+    InvoiceLineItemDto: {
+      usageType: string;
+      description: string;
+      /** Format: double */
+      quantity: number | string;
+      /** Format: double */
+      unitPrice: number | string;
+      /** Format: double */
+      amount: number | string;
+      /** Format: double */
+      includedQuantity: number | string;
+      /** Format: double */
+      overageQuantity: number | string;
+    };
+    IpAllowlistEntryDto: {
+      /** Format: uuid */
+      id: string;
+      cidr: string;
+      description: null | string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    IpAllowlistListResponse: {
+      enabled: boolean;
+      entries: components['schemas']['IpAllowlistEntryDto'][];
+    };
+    JsonDocument: unknown;
     KeywordRuleDto: {
       ruleId: string;
       keyword: string;
@@ -14961,8 +17780,80 @@ export interface components {
       dialerCode: null | string;
       isActive: boolean;
     };
+    LicenseInfoDto: {
+      isValid: boolean;
+      licenseId: null | string;
+      licensee: null | string;
+      status: string;
+      /** Format: date-time */
+      expiresAt: null | string;
+      licensedFeatures: string[];
+      /** Format: int32 */
+      maxNodes: number | string;
+      /** Format: date-time */
+      lastValidatedAt: string;
+      inGrace: boolean;
+      gracePeriodRemaining: null | string;
+      blocked: boolean;
+    };
+    LicenseStatusSnapshot: {
+      isLoaded?: boolean;
+      isValid?: boolean;
+      tier?: components['schemas']['LicenseTier'];
+      /** Format: date-time */
+      expiresAt?: null | string;
+      /** Format: int32 */
+      maxAgents?: null | number | string;
+      /** Format: int32 */
+      maxNodes?: null | number | string;
+      /** Format: int32 */
+      authorizedDigestsCount?: number | string;
+      lastValidationResult?: components['schemas']['LicenseValidationResult'];
+      /** Format: date-time */
+      lastValidationAt?: null | string;
+      revalidationInterval?: null | string;
+      licensee?: null | string;
+    };
+    /** @enum {unknown} */
+    LicenseTier:
+      | 'None'
+      | 'Developer'
+      | 'SelfHostStartup'
+      | 'SelfHostBusiness'
+      | 'SaaSBusiness'
+      | 'SaaSEnterprise'
+      | 'WhiteLabel';
+    /** @enum {unknown} */
+    LicenseValidationResult:
+      | 'Valid'
+      | 'Invalid'
+      | 'Expired'
+      | 'GracePeriod'
+      | 'MissingFeature'
+      | 'UnauthorizedImage';
+    ListenEntry: {
+      supervisorId: string;
+      sessionId: string;
+      /** Format: date-time */
+      startedAt: string;
+    };
     ListenRequest: {
       supervisorId: string;
+    };
+    LiveStateDto: {
+      queueName: string;
+      /** Format: int32 */
+      callsWaiting: number | string;
+      /** Format: int64 */
+      longestWaitMs: number | string;
+      /** Format: int32 */
+      agentsAvailable: number | string;
+      /** Format: int32 */
+      agentsOnCall: number | string;
+      /** Format: int32 */
+      agentsPaused: number | string;
+      /** Format: int32 */
+      agentsInWrapUp: number | string;
     };
     LoginRequest: {
       tenantId: null | string;
@@ -14978,6 +17869,104 @@ export interface components {
       plan?: null | components['schemas']['TenantPlan'];
       addOns?: null | components['schemas']['PlanFeature'][];
       branding?: null | components['schemas']['UpdateManagementBrandingSettingsDto'];
+    };
+    Message: {
+      messageId: components['schemas']['EntityId'];
+      conversationId: components['schemas']['EntityId'];
+      tenantId: components['schemas']['TenantId'];
+      direction: components['schemas']['MessageDirection'];
+      channel: components['schemas']['ChannelType'];
+      senderId?: null | string;
+      content: components['schemas']['MessageEnvelope'];
+      deliveryStatus: components['schemas']['MessageDeliveryStatus'];
+      externalMessageId?: null | string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deliveredAt?: null | string;
+      /** Format: date-time */
+      readAt?: null | string;
+      /** Format: date-time */
+      updatedAt?: null | string;
+      createdBy?: null | string;
+      updatedBy?: null | string;
+    };
+    MessageBlock:
+      | components['schemas']['MessageBlockTextBlock']
+      | components['schemas']['MessageBlockImageBlock']
+      | components['schemas']['MessageBlockAudioBlock']
+      | components['schemas']['MessageBlockVideoBlock']
+      | components['schemas']['MessageBlockFileBlock']
+      | components['schemas']['MessageBlockLocationBlock']
+      | components['schemas']['MessageBlockInteractiveBlock'];
+    MessageBlockAudioBlock: {
+      /** @enum {string} */
+      $type?: 'audio';
+      url: string;
+      duration: null | string;
+      mimeType: null | string;
+      type?: components['schemas']['MessageBlockType'];
+    };
+    MessageBlockFileBlock: {
+      /** @enum {string} */
+      $type?: 'file';
+      url: string;
+      fileName: string;
+      mimeType: null | string;
+      /** Format: int64 */
+      sizeBytes: null | number | string;
+      type?: components['schemas']['MessageBlockType'];
+    };
+    MessageBlockImageBlock: {
+      /** @enum {string} */
+      $type?: 'image';
+      url: string;
+      caption: null | string;
+      mimeType: null | string;
+      type?: components['schemas']['MessageBlockType'];
+    };
+    MessageBlockInteractiveBlock: {
+      /** @enum {string} */
+      $type?: 'interactive';
+      body: string;
+      replies: components['schemas']['QuickReply'][];
+      type?: components['schemas']['MessageBlockType'];
+    };
+    MessageBlockLocationBlock: {
+      /** @enum {string} */
+      $type?: 'location';
+      /** Format: double */
+      latitude: number | string;
+      /** Format: double */
+      longitude: number | string;
+      name: null | string;
+      type?: components['schemas']['MessageBlockType'];
+    };
+    MessageBlockTextBlock: {
+      /** @enum {string} */
+      $type?: 'text';
+      text: string;
+      type?: components['schemas']['MessageBlockType'];
+    };
+    /** @enum {unknown} */
+    MessageBlockType: 'Text' | 'Image' | 'Audio' | 'Video' | 'File' | 'Location' | 'Interactive';
+    MessageBlockVideoBlock: {
+      /** @enum {string} */
+      $type?: 'video';
+      url: string;
+      caption: null | string;
+      mimeType: null | string;
+      type?: components['schemas']['MessageBlockType'];
+    };
+    /** @enum {unknown} */
+    MessageDeliveryStatus: 'Pending' | 'Sent' | 'Delivered' | 'Failed' | 'Read';
+    /** @enum {unknown} */
+    MessageDirection: 'Inbound' | 'Outbound' | 'System';
+    MessageEnvelope: {
+      blocks: components['schemas']['MessageBlock'][];
+    };
+    MessageResponse: {
+      message: string;
     };
     MfaConfirmRequest: {
       code: string;
@@ -14997,9 +17986,368 @@ export interface components {
       code: null | string;
       recoveryCode: null | string;
     };
+    MgmtApiKeyDto: {
+      keyId: string;
+      name: string;
+      isRevoked: boolean;
+      /** Format: date-time */
+      expiresAt: null | string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      lastUsedAt: null | string;
+    };
+    MgmtClusterNodeDto: {
+      nodeId: string;
+      state: string;
+      /** Format: double */
+      weight: number | string;
+      /** Format: int32 */
+      priorityTier: number | string;
+      /** Format: int32 */
+      maxCapacity: number | string;
+      asteriskVersion: null | string;
+      startupTime: null | string;
+    };
+    MgmtClusterStatusDto: {
+      instanceId: string;
+      nodes: components['schemas']['MgmtClusterNodeDto'][];
+      /** Format: int32 */
+      totalChannels: number | string;
+      /** Format: int32 */
+      totalAgents: number | string;
+      activeDrains: components['schemas']['MgmtDrainStatusDto'][];
+      instances: components['schemas']['MgmtInstanceDto'][];
+    };
     MgmtDrainNodeRequest: {
       /** Format: int32 */
       gracePeriodSeconds: null | number | string;
+    };
+    MgmtDrainStatusDto: {
+      nodeId: string;
+      state: string;
+      /** Format: date-time */
+      startedAt: string;
+      /** Format: date-time */
+      deadline: string;
+      /** Format: int32 */
+      initialCallCount: number | string;
+      /** Format: int32 */
+      remainingCallCount: number | string;
+      /** Format: int32 */
+      naturallyCompleted: number | string;
+      /** Format: int32 */
+      forceDisconnected: number | string;
+      estimatedTimeToZero: null | string;
+    };
+    MgmtInstanceDto: {
+      instanceId: string;
+      /** Format: date-time */
+      lastSeen: string;
+      ownedNodeIds: string[];
+      /** Format: int32 */
+      totalChannels: number | string;
+      /** Format: int32 */
+      totalAgents: number | string;
+    };
+    MgmtTenantDto: {
+      tenantId: string;
+      name: string;
+      status: string;
+      type: string;
+      parentTenantId: null | string;
+      /** Format: int32 */
+      maxConcurrentChannels: number | string;
+      /** Format: int32 */
+      maxActiveCampaigns: number | string;
+      metadata: null | {
+        [key: string]: string;
+      };
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    NotificationDto: {
+      notificationId: string;
+      type: string;
+      category: string;
+      severity: string;
+      title: string;
+      body: string;
+      actionUrl: null | string;
+      isRead: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      readAt: null | string;
+    };
+    OnboardingStatusDto: {
+      wizardCompleted: boolean;
+      templateApplied: null | string;
+      checklist: components['schemas']['ChecklistItemDto'][];
+      checklistDismissed: boolean;
+    };
+    OperationalSettingsDto: {
+      /** Format: int32 */
+      maxConcurrentChannels: number | string;
+      /** Format: int32 */
+      maxActiveCampaigns: number | string;
+      dialplanContextPrefix: null | string;
+      nodeAffinity: null | string[];
+      allowedDialingModes: null | (number | string)[];
+      outboundCallerId: null | string;
+      /** Format: int32 */
+      maxVoiceDefault: number | string;
+      /** Format: int32 */
+      maxChatDefault: number | string;
+      /** Format: int32 */
+      maxEmailDefault: number | string;
+      /** Format: int32 */
+      maxSmsDefault: number | string;
+      /** Format: int32 */
+      maxTotalDefault: number | string;
+    };
+    OutboundRouteDto: {
+      /** Format: int64 */
+      id: number | string;
+      /** Format: int64 */
+      campaignId: null | number | string;
+      pattern: string;
+      patternType: string;
+      /** Format: int64 */
+      trunkId: number | string;
+      /** Format: int64 */
+      overflowTrunkId: null | number | string;
+      dialPrefix: null | string;
+      /** Format: int32 */
+      priority: number | string;
+    };
+    OwnershipResult: {
+      success: boolean;
+      newOwner: null | components['schemas']['ConversationOwner'];
+      newState: components['schemas']['ConversationState'];
+      failureReason: null | string;
+    };
+    PagedDataResponseOfCdrRowDto: {
+      data: components['schemas']['CdrRowDto'][];
+      hasMore: boolean;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+    };
+    PagedDataResponseOfQaRowDto: {
+      data: components['schemas']['QaRowDto'][];
+      hasMore: boolean;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+    };
+    PagedResultOfAdminAgentResponseDto: {
+      items: components['schemas']['AdminAgentResponseDto'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfAuditEventDto: {
+      items: components['schemas']['AuditEventDto'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfAuthEvent: {
+      items: components['schemas']['AuthEvent'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfCampaignSummaryDto: {
+      items: components['schemas']['CampaignSummaryDto'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfCase: {
+      items: components['schemas']['Case'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfContact: {
+      items: components['schemas']['Contact'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfConversation: {
+      items: components['schemas']['Conversation'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfCreditLedgerEntryDto: {
+      items: components['schemas']['CreditLedgerEntryDto'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfImpersonationSessionDto: {
+      items: components['schemas']['ImpersonationSessionDto'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfQueueDto: {
+      items: components['schemas']['QueueDto'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfTeamDto: {
+      items: components['schemas']['TeamDto'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfUserDto: {
+      items: components['schemas']['UserDto'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfWebhookDelivery: {
+      items: components['schemas']['WebhookDelivery'][];
+      /** Format: int32 */
+      totalCount: number | string;
+      /** Format: int32 */
+      page: number | string;
+      /** Format: int32 */
+      pageSize: number | string;
+      /** Format: int32 */
+      totalPages?: number | string;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    /**
+     * @description c2 — one partner-attribution line: the partner-funded AI-credit consumption attributable to a single Customer
+     *     child for the window, derived on read from the ledger (no invoice, no materialized table).
+     */
+    PartnerAttributionLineDto: {
+      /** @description The Customer child tenant id. */
+      customerTenantId: string;
+      /**
+       * Format: double
+       * @description Σ `|Partner-source debits|` for this customer in the window.
+       */
+      credits: number | string;
+    };
+    /**
+     * @description c2 — derive-on-read partner attribution for the caller's Partner tenant over a window: the total partner-funded
+     *     consumption plus the per-Customer breakdown. Computed from ICreditLedgerStore + the existing
+     *     single-hop tenant hierarchy — no invoice and no materialized aggregation table (ADR-0033 (c2) addendum).
+     */
+    PartnerAttributionResponse: {
+      /**
+       * Format: double
+       * @description Σ of the per-customer decimal PartnerAttributionLineDto.Credits.
+       */
+      total: number | string;
+      /** @description One line per direct Customer child with attributable partner-funded consumption. */
+      customers: components['schemas']['PartnerAttributionLineDto'][];
+    };
+    PartnerCustomerDto: {
+      tenantId: string;
+      name: string;
+      status: string;
+      plan: string;
+      /** Format: date-time */
+      createdAt: string;
     };
     /**
      * @description c2 (credit-ledger-lots) — operator partner-allocation grant body. Mints a CreditSource.Partner
@@ -15017,8 +18365,54 @@ export interface components {
       /** @description Caller-supplied idempotency key; a repeat is a no-op. */
       idempotencyKey: string;
     };
+    PartnerRevenueDetailDto: {
+      revenueId: string;
+      customerTenantId: string;
+      invoiceId: string;
+      /** Format: double */
+      grossAmount: number | string;
+      /** Format: double */
+      platformCost: number | string;
+      /** Format: double */
+      partnerMargin: number | string;
+      /** Format: date-time */
+      periodStart: string;
+      /** Format: date-time */
+      periodEnd: string;
+    };
+    PartnerRevenueSummaryDto: {
+      /** Format: double */
+      totalGross: number | string;
+      /** Format: double */
+      totalPlatformCost: number | string;
+      /** Format: double */
+      totalMargin: number | string;
+      /** Format: int32 */
+      customerCount: number | string;
+      /** Format: int32 */
+      invoiceCount: number | string;
+    };
     PauseMemberBody: {
       reason: null | string;
+    };
+    PauseResultDto: {
+      queueId: string;
+      agentId: string;
+      isPaused: boolean;
+      reason: null | string;
+      realtimeSynced: boolean;
+    };
+    PermissionDefinition: {
+      permissionId: string;
+      category: string;
+      resource: string;
+      action: string;
+      description: string;
+      implies: string[];
+    };
+    PermissionGroupDto: {
+      category: string;
+      permissions: components['schemas']['PermissionDefinition'][];
     };
     /** @enum {unknown} */
     PlanFeature:
@@ -15087,6 +18481,126 @@ export interface components {
      * @enum {unknown}
      */
     ProviderType: 'OpenAiCompatible' | 'AzureOpenAi' | 'Anthropic';
+    PublishErrorDto: {
+      field: string;
+      message: string;
+    };
+    PublishResultDto: {
+      ok: boolean;
+      errors: components['schemas']['PublishErrorDto'][];
+    };
+    /** @description Result of a GDPR purge operation. EntitiesDeleted maps entity type to count. */
+    PurgeResult: {
+      purgeId: string;
+      entitiesDeleted: {
+        [key: string]: number | string;
+      };
+      /** Format: date-time */
+      purgedAt: string;
+    };
+    QaCriterionDto: {
+      category: string;
+      /** Format: double */
+      score: number | string;
+      /** Format: double */
+      weight: number | string;
+      passed: boolean;
+      feedback: null | string;
+    };
+    QaDetailDto: {
+      sessionId: string;
+      /** Format: date-time */
+      analyzedAt: string;
+      agentName: null | string;
+      queueName: null | string;
+      reason: null | string;
+      outcome: null | string;
+      narrative: null | string;
+      actionItems: string[];
+      /** Format: double */
+      qaScore: number | string;
+      /** Format: double */
+      maxPossibleScore: number | string;
+      criteria: components['schemas']['QaCriterionDto'][];
+      violations: components['schemas']['ComplianceViolationDto'][];
+      sentimentLabel: null | string;
+      sentimentTrend: null | string;
+      /** Format: float */
+      sentimentScore: null | number | string;
+      primaryTopic: null | string;
+      allTopics: components['schemas']['TopicDto'][];
+      sentimentTimeline: components['schemas']['TurnSentimentDto'][];
+      /** Format: double */
+      agentTalkRatio: null | number | string;
+      /** Format: int32 */
+      silenceCount: null | number | string;
+      /** Format: int32 */
+      interruptionCount: null | number | string;
+    };
+    QaRowDto: {
+      sessionId: string;
+      /** Format: date-time */
+      analyzedAt: string;
+      agentName: null | string;
+      queueName: null | string;
+      /** Format: double */
+      qaScore: number | string;
+      summaryNarrative: null | string;
+      hasComplianceViolations: boolean;
+      /** Format: int32 */
+      violationCount: number | string;
+      sentimentLabel: null | string;
+      topics: string[];
+    };
+    QueueDto: {
+      id: string;
+      name: string;
+      isActive: boolean;
+      /** Format: int32 */
+      maxWaiting: null | number | string;
+      slaTargets: null | components['schemas']['SlaPolicyTarget'];
+      overflowRule: null | components['schemas']['QueueOverflowRule'];
+      wrapUp: components['schemas']['WrapUpConfig'];
+      requiredSkills: string[];
+      autoAnswerDefault: boolean;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    /** @description Projected queue-member row exposed by QueueMembersEndpoints. */
+    QueueMemberDto: {
+      /** @description Queue identifier. */
+      queueId: string;
+      /** @description Agent identifier. */
+      agentId: string;
+      /** @description Agent display name projected for the UI. */
+      displayName: string;
+      /**
+       * Format: int32
+       * @description Queue penalty (0-10); higher = lower priority.
+       */
+      penalty: number | string;
+      /** @description True when the agent is excluded from this queue. */
+      isExcluded: boolean;
+      /**
+       * @description Per-queue pause state for the UI badge. BEST-EFFORT: maintained by an in-process
+       *     QueueMemberPauseTracker, not persisted to the queue_memberships table.
+       *     Authoritative pause state lives in Asterisk Realtime's `queue_members.paused` column.
+       *     Multi-instance deploys may see stale values on replicas that didn't originate the
+       *     pause. Scheduled for promotion to Postgres/Redis in R2 / R5.2.
+       */
+      isPaused: boolean;
+      /** @description Optional reason string associated with an active pause. */
+      pauseReason: null | string;
+      /** @description Membership source — `Manual` or `Skill`. */
+      source: string;
+      /**
+       * @description ADR-0026 Phase A.6 channel-aware membership. `null` means the agent
+       *     is a member for all channels the queue accepts (pre-v2.6.0 implicit
+       *     behavior). A populated list restricts membership to the listed channels
+       *     only and gates Asterisk sync (voice in list ⇒ sync; voice out ⇒ no sync).
+       */
+      allowedChannels?: null | string[];
+    };
     /**
      * @description ADR-0026: channel-aware queue membership specification at agent creation.
      *     AllowedChannels=null means the agent is a member for all channels the
@@ -15101,10 +18615,78 @@ export interface components {
       /** Format: int32 */
       penalty?: null | number | string;
     };
+    QueueMetricsDto: {
+      queueId: string;
+      queueName: string;
+      /** Format: int32 */
+      waiting: null | number | string;
+      /** Format: double */
+      avgWaitSeconds: null | number | string;
+      /** Format: double */
+      slaPercent: number | string;
+      /** Format: int32 */
+      agentsAvailable: number | string;
+      /** Format: int32 */
+      agentsBusy: number | string;
+      /** Format: int32 */
+      agentsAway: number | string;
+    };
+    QueueOverflowRule: {
+      overflowQueueId: components['schemas']['EntityId'];
+      /** Format: int32 */
+      overflowAfterSeconds: number | string;
+    };
     QueueOverflowRuleDto: {
       overflowQueueId: string;
       /** Format: int32 */
       overflowAfterSeconds: number | string;
+    };
+    QuickReply: {
+      id: string;
+      title: string;
+    };
+    QuotaDto: {
+      /** Format: int32 */
+      maxConcurrentChannels: number | string;
+      /** Format: int32 */
+      maxActiveCampaigns: number | string;
+      /** Format: int64 */
+      maxMonthlyVoiceMinutes: null | number | string;
+      /** Format: int64 */
+      maxMonthlyMessages: null | number | string;
+      /** Format: int64 */
+      maxStorageBytes: null | number | string;
+      /** Format: int32 */
+      maxActiveAgents: null | number | string;
+      quotaAction: string;
+    };
+    QuotaSettingsDto: {
+      /** Format: int64 */
+      maxMonthlyVoiceMinutes: null | number | string;
+      /** Format: int64 */
+      maxMonthlyMessages: null | number | string;
+      /** Format: int64 */
+      maxStorageBytes: null | number | string;
+      /** Format: int32 */
+      maxActiveAgents: null | number | string;
+      quotaAction: string;
+    };
+    QuotaStatusDto: {
+      tenantId: string;
+      quota: null | components['schemas']['QuotaDto'];
+      currentUsage: components['schemas']['UsageSummaryDto'][];
+    };
+    RateCardDto: {
+      rateCardId: string;
+      tenantId: string;
+      name: string;
+      currency: string;
+      /** Format: date-time */
+      effectiveFrom: string;
+      /** Format: date-time */
+      effectiveTo: null | string;
+      isDefault: boolean;
+      rates: components['schemas']['RateEntryDto'][];
     };
     RateEntryDto: {
       usageType: string;
@@ -15115,7 +18697,7 @@ export interface components {
       tiers: null | components['schemas']['RateTierDto'][];
     };
     /** @enum {unknown} */
-    RateLimitTier: 'Unlimited' | 'Free' | 'Standard' | 'Professional' | 'Enterprise' | null;
+    RateLimitTier: 'Unlimited' | 'Free' | 'Standard' | 'Professional' | 'Enterprise';
     RateTierDto: {
       /** Format: double */
       fromQuantity: number | string;
@@ -15124,9 +18706,24 @@ export interface components {
       /** Format: double */
       unitPrice: number | string;
     };
+    ReasonHintDto: {
+      id: string;
+      scope: string;
+      scopeRef: string;
+      reasonPath: string;
+      /** Format: int32 */
+      priority: number | string;
+      isActive: boolean;
+    };
     ReassignConversationRequest: {
       targetQueueId: null | string;
       targetAgentId: null | string;
+    };
+    RecordingMetadataDto: {
+      sessionId: string;
+      recordingName: string;
+      hasRecording: boolean;
+      streamUrl: string;
     };
     RegenerateRecoveryCodesRequest: {
       password: string;
@@ -15151,8 +18748,42 @@ export interface components {
        */
       dryRun?: null | boolean;
     };
+    RetentionPolicyDto: {
+      tenantId: string;
+      /** Format: int32 */
+      conversationRetentionDays: null | number | string;
+      /** Format: int32 */
+      authEventRetentionDays: null | number | string;
+      /** Format: int32 */
+      auditRetentionDays: null | number | string;
+      /** Format: int32 */
+      usageRecordRetentionDays: null | number | string;
+    };
+    RetentionSettingsDto: {
+      /** Format: int32 */
+      conversationRetentionDays: null | number | string;
+      /** Format: int32 */
+      authEventRetentionDays: null | number | string;
+      /** Format: int32 */
+      auditRetentionDays: null | number | string;
+      /** Format: int32 */
+      usageRecordRetentionDays: null | number | string;
+    };
+    RevokedSessionsResponse: {
+      /** Format: int32 */
+      revokedCount: number | string;
+    };
     RevokeImpersonationSessionRequest: {
       reason?: null | string;
+    };
+    RoleTemplate: {
+      templateId: string;
+      name: string;
+      description: string;
+      isSystem: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      permissions?: null | string[];
     };
     ScheduleDayDto: {
       day: string;
@@ -15160,9 +18791,62 @@ export interface components {
       start: string;
       end: string;
     };
+    ScheduledReportDto: {
+      id: string;
+      name: string;
+      type: string;
+      schedule: string;
+      filters: null | string;
+      recipients: null | string;
+      format: string;
+      isActive: boolean;
+      createdBy: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      /** Format: date-time */
+      lastRunAt: null | string;
+      /** Format: date-time */
+      nextRunAt: null | string;
+    };
+    SchemaBindingDto: {
+      bindingId: string;
+      scope: string;
+      scopeRef: null | string;
+      schemaId: string;
+      subtreeRootNodeId: null | string;
+      /** Format: int32 */
+      priority: number | string;
+      aiConfigOverride?: null | components['schemas']['AiConfigDto'];
+    };
     SendMessageRequest: {
       text: string;
     };
+    SentimentTrendPointDto: {
+      /** Format: date-time */
+      bucketStart: string;
+      /** Format: double */
+      avgSentimentScore: null | number | string;
+      /** Format: int32 */
+      positiveCount: number | string;
+      /** Format: int32 */
+      neutralCount: number | string;
+      /** Format: int32 */
+      negativeCount: number | string;
+      /** Format: int32 */
+      totalCount: number | string;
+    };
+    SentimentTrendsResponse: {
+      points: components['schemas']['SentimentTrendPointDto'][];
+      bucket: string;
+      /** Format: date-time */
+      from: string;
+      /** Format: date-time */
+      to: string;
+    };
+    /** @enum {unknown} */
+    SessionState: 'Active' | 'Ended';
     SetupRequest: {
       email: string;
       password: string;
@@ -15174,6 +18858,19 @@ export interface components {
       customerAdminPassword: string;
       customerAdminDisplayName: null | string;
     };
+    SkillDto: {
+      name: string;
+      category: null | string;
+      description: null | string;
+    };
+    SlaPolicyTarget: {
+      /** Format: int32 */
+      answerWithinSeconds?: null | number | string;
+      /** Format: int32 */
+      firstResponseWithinSeconds?: null | number | string;
+      /** Format: int32 */
+      resolutionWithinSeconds?: null | number | string;
+    };
     SlaPolicyTargetDto: {
       /** Format: int32 */
       answerWithinSeconds?: null | number | string;
@@ -15182,8 +18879,67 @@ export interface components {
       /** Format: int32 */
       resolutionWithinSeconds?: null | number | string;
     };
+    /**
+     * @description c2 — open (drawable) remaining credit for one CreditSource, surfaced as the enum name. The Σ of
+     *     Remaining over a SourceRemainingResponse reconciles to the tenant's balance.
+     */
+    SourceRemainingDto: {
+      /** @description Economic source name (`Subscription`, `TopUp`, `Promo`, `Partner`). */
+      source: string;
+      /**
+       * Format: double
+       * @description Open, non-expired remaining credit for this source.
+       */
+      remaining: number | string;
+    };
+    /** @description c2 — the per-source open-remaining breakdown for the resolved tenant (Σ == balance). */
+    SourceRemainingResponse: {
+      /** @description One line per source with open remaining; sources with zero open remaining are omitted. */
+      sources: components['schemas']['SourceRemainingDto'][];
+    };
+    StatusUpdateResponse: {
+      id: string;
+      status: string;
+    };
+    StuckConversationDto: {
+      conversationId: string;
+      channel: string;
+      state: string;
+      ownerAgentId: string;
+      ownerAgentName: string;
+      /** Format: date-time */
+      ownerOfflineSince: null | string;
+      /** Format: int32 */
+      failoverAttempts: number | string;
+      escalated: boolean;
+    };
+    /**
+     * @description How a TypificationSubmission was produced.
+     * @enum {unknown}
+     */
+    SubmissionSource: 'Manual' | 'AutoAi' | 'Rule';
+    SuggestionLogRowDto: {
+      /** Format: int64 */
+      id: number | string;
+      sessionId: string;
+      tenantId: string;
+      /** Format: date-time */
+      emittedAt: string;
+      priority: string;
+      source: string;
+      triggerPhrase: null | string;
+      suggestionText: string;
+      whispered: boolean;
+    };
     SupervisorCloseRequest: {
       reason: null | string;
+    };
+    SurveyDto: {
+      id: string;
+      name: string;
+      type: string;
+      questions: components['schemas']['SurveyQuestionDto'][];
+      isActive: boolean;
     };
     SurveyQuestionDto: {
       text: string;
@@ -15195,6 +18951,21 @@ export interface components {
      * @enum {unknown}
      */
     SurveyQuestionType: 'Scale' | 'FreeText' | 'Choice';
+    /** @description Aggregated score metrics for a survey. */
+    SurveyScoreSummary: {
+      /** Format: int32 */
+      totalResponses: number | string;
+      /** Format: double */
+      averageScore: number | string;
+      /** Format: int32 */
+      promoters: null | number | string;
+      /** Format: int32 */
+      passives: null | number | string;
+      /** Format: int32 */
+      detractors: null | number | string;
+      /** Format: double */
+      npsScore: null | number | string;
+    };
     /**
      * @description Survey classification — determines scoring logic.
      * @enum {unknown}
@@ -15203,13 +18974,139 @@ export interface components {
     SuspendCustomerRequest: {
       reason: string;
     };
+    SystemInfoDto: {
+      version: string;
+      hostTenantId: null | string;
+      platformName: null | string;
+      features: {
+        [key: string]: boolean;
+      };
+    };
+    SystemSettingsDto: {
+      platformName: string;
+      defaultTimezone: string;
+      defaultLanguage: string;
+    };
     SystemSettingsRequest: {
       platformName: string;
       defaultTimezone: string;
       defaultLanguage: string;
     };
+    TeamDto: {
+      id: string;
+      name: string;
+      /** Format: int32 */
+      memberCount: number | string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    /**
+     * @description HTTP-surface projection of TenantAuthConfig that is safe to
+     *     emit to any caller satisfying `AdminOnly`. Closes
+     *     `PREPUB-2026-05-09-ADMIN-001`: the OIDC client secret is NEVER
+     *     returned in HTTP responses.
+     */
+    TenantAuthConfigResponse: {
+      tenantId: string;
+      mfaPolicy: string;
+      mfaRequiredRoles: string[];
+      /** Format: int32 */
+      passwordMinLength: number | string;
+      passwordRequireUppercase: boolean;
+      passwordRequireNumber: boolean;
+      passwordRequireSpecial: boolean;
+      /** Format: int32 */
+      lockoutThreshold: number | string;
+      /** Format: int32 */
+      lockoutDurationMinutes: number | string;
+      /** Format: int32 */
+      sessionIdleTimeoutMinutes: number | string;
+      /** Format: int32 */
+      sessionAbsoluteTimeoutHours: number | string;
+      oidcEnabled: boolean;
+      oidcAuthority: null | string;
+      oidcClientId: null | string;
+      oidcClientSecretSet: boolean;
+      oidcClientSecretFingerprint: null | string;
+      oidcAutoCreateUsers: boolean;
+      oidcDefaultRole: string;
+      /** Format: int32 */
+      impersonationMaxConcurrentSessions: number | string;
+      /** Format: int32 */
+      impersonationAutoTimeoutMinutes: number | string;
+      ipAllowlistEnabled: boolean;
+      /** Format: date-time */
+      updatedAt: null | string;
+    };
+    TenantChannelConfig: {
+      tenantId: components['schemas']['TenantId'];
+      channel: components['schemas']['ChannelType'];
+      credentials: {
+        [key: string]: string;
+      };
+      isActive?: boolean;
+    };
+    TenantId: unknown;
+    /**
+     * @description HTTP-safe projection of a tenant's TenantLlmConfig (P2c.1). The decrypted API key
+     *     is NEVER returned: it is masked to bool TenantLlmConfigResponse.KeySet (is a key configured?) +
+     *     string? TenantLlmConfigResponse.KeyLast4 (a non-secret display hint), mirroring the
+     *     `TenantAuthConfigResponse` reveal-once/fingerprint idiom.
+     */
+    TenantLlmConfigResponse: {
+      /** @description The provider family discriminator (`OpenAiCompatible` / `AzureOpenAi` / `Anthropic`). */
+      providerType: components['schemas']['ProviderType'];
+      /** @description The configured model identifier. */
+      model: string;
+      /** @description Type-specific (non-secret) provider settings. */
+      settings: components['schemas']['ProviderSettings'];
+      /** @description Whether AI is enabled for this tenant. */
+      enabled: boolean;
+      /** @description BYO (tenant key) vs platform-managed (Verbara operator key, metered in AI Credits). */
+      aiSource: components['schemas']['AiSource'];
+      /** @description Whether the tenant's plan entitles it to the platform-managed LLM (`PlanFeature.PlatformLlm`). */
+      platformLlmAvailable: boolean;
+      /** @description Whether an API key is currently stored (the key value is never returned). */
+      keySet: boolean;
+      /** @description Last 4 chars of the stored key (non-secret display hint), or `null`. */
+      keyLast4: null | string;
+      /**
+       * Format: date-time
+       * @description UTC timestamp of the most recent upsert.
+       */
+      updatedAt: string;
+    };
     /** @enum {unknown} */
     TenantPlan: 'Starter' | 'Pro' | 'Enterprise' | null;
+    TenantRole: {
+      roleId: string;
+      tenantId: components['schemas']['TenantId'];
+      name: string;
+      description?: null | string;
+      sourceTemplateId?: null | string;
+      isDefault?: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt?: null | string;
+      permissions?: null | string[];
+    };
+    TenantSettingsDto: {
+      tenantId: string;
+      name: string;
+      type: string;
+      status: string;
+      operational: components['schemas']['OperationalSettingsDto'];
+      auth: components['schemas']['AuthSettingsDto'];
+      quotas: components['schemas']['QuotaSettingsDto'];
+      retention: components['schemas']['RetentionSettingsDto'];
+      rateLimitTier: components['schemas']['RateLimitTier'];
+      plan: string;
+      enabledFeatures: string[];
+      addOns: string[];
+      dunning: null | components['schemas']['DunningStatusDto'];
+      branding: null | components['schemas']['BrandingSettingsDto'];
+    };
     /**
      * @default Customer
      * @enum {unknown}
@@ -15232,6 +19129,43 @@ export interface components {
       settings: null | components['schemas']['ProviderSettings'];
     };
     /**
+     * @description "Test connection" result (P2c.1). A reachable provider that accepted the credentials and
+     *     returned a completion for the configured model is fully green (bool TestLlmConnectionResponse.Reachable +
+     *     bool TestLlmConnectionResponse.AuthOk + bool TestLlmConnectionResponse.ModelOk all `true`).
+     */
+    TestLlmConnectionResponse: {
+      /** @description The endpoint was reachable (the HTTP request completed without a transport failure). */
+      reachable: boolean;
+      /** @description The credentials were accepted (no 401/403). */
+      authOk: boolean;
+      /** @description The model produced a completion (the request succeeded end-to-end). */
+      modelOk: boolean;
+      /**
+       * Format: int64
+       * @description Round-trip latency of the probe in milliseconds.
+       */
+      latencyMs: number | string;
+      /** @description A short, secret-free error summary when the probe failed; `null` on success. */
+      error: null | string;
+    };
+    TopicDto: {
+      name: string;
+      /** Format: float */
+      confidence: number | string;
+    };
+    TopicTrendDto: {
+      topic: string;
+      /** Format: int32 */
+      occurrences: number | string;
+      /** Format: double */
+      avgConfidence: number | string;
+    };
+    TopicTrendsResponse: {
+      trends: components['schemas']['TopicTrendDto'][];
+      /** Format: int32 */
+      totalAnalyzed: number | string;
+    };
+    /**
      * @description c1 — operator top-up request body. Mints a fungible CreditSource.TopUp grant for
      *     TenantId of Amount credits, idempotent on
      *     IdempotencyKey (→ the ledger entry's `external_ref`).
@@ -15251,6 +19185,26 @@ export interface components {
       targetQueueId: null | string;
       targetAgentId: null | string;
     };
+    TrendPointDto: {
+      label: string;
+      /** Format: double */
+      value: number | string;
+    };
+    TurnSentimentDto: {
+      /** Format: int32 */
+      turnIndex: number | string;
+      speaker: string;
+      /** Format: float */
+      score: number | string;
+      label: string;
+    };
+    /**
+     * @description Server-authoritative delivery band for an AI typification suggestion (C1, P2b).
+     *     The client MUST NOT escalate the band — the server decides.
+     * @default None
+     * @enum {unknown}
+     */
+    TypificationBand: 'None' | 'Suggest' | 'AutoFill';
     /**
      * @description Request body for POST /conversations/{id}/typification-correction: the supervisor's corrected
      *     root→leaf node-id path. The last element is the corrected leaf. The correcting user id is taken
@@ -15258,6 +19212,19 @@ export interface components {
      */
     TypificationCorrectionRequest: {
       correctedNodePath: string[];
+    };
+    /**
+     * @description 200 payload for a successful correction: echoes the persisted (separate, append-only) correction
+     *     record and whether the human path merely CONFIRMED the AI path (`original == corrected`).
+     */
+    TypificationCorrectionResponse: {
+      conversationId: string;
+      correctedNodePath: string[];
+      correctedLeafNodeId: string;
+      correctedByUserId: string;
+      /** Format: date-time */
+      correctedAt: string;
+      confirmed: boolean;
     };
     TypificationFieldDto: {
       fieldId: string;
@@ -15273,6 +19240,22 @@ export interface components {
       /** Format: int32 */
       sortOrder: number | string;
     };
+    /**
+     * @description The resolved typification form for a conversation: the cascading schema, the
+     *     optional sub-tree root, and the wrap-up PREFILL (C9) — a preselected reason node
+     *     path (root→leaf node-id strings) and prefilled field values (keyed by field Key)
+     *     derived from the conversation's captured context so the agent confirms instead of
+     *     re-classifying. Both prefill members are `null` (not empty) when
+     *     nothing is preselectable, so the client cleanly distinguishes "no prefill".
+     */
+    TypificationFormResponse: {
+      schema: components['schemas']['TypificationSchemaDto'];
+      subtreeRootNodeId: null | string;
+      prefilledNodePath?: null | string[];
+      prefilledFieldValues?: null | {
+        [key: string]: string;
+      };
+    };
     TypificationNodeDto: {
       nodeId: string;
       parentNodeId: null | string;
@@ -15283,6 +19266,100 @@ export interface components {
       isLeaf: boolean;
       channelApplicability: null | string[];
       leaf: null | components['schemas']['LeafOutcomeDto'];
+    };
+    TypificationSchemaDto: {
+      schemaId: string;
+      name: string;
+      /** Format: int32 */
+      version: number | string;
+      isPublished: boolean;
+      /** Format: int32 */
+      maxDepth: number | string;
+      nodes: components['schemas']['TypificationNodeDto'][];
+      fields: components['schemas']['TypificationFieldDto'][];
+      aiConfig: components['schemas']['AiConfigDto'];
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: null | string;
+    };
+    /**
+     * @description A completed typification for a conversation (replaces the disposition part of
+     *     the old WrapUpRecord). Field values are typed-validated server-side.
+     */
+    TypificationSubmission: {
+      tenantId: components['schemas']['TenantId'];
+      conversationId: components['schemas']['EntityId'];
+      agentId: components['schemas']['EntityId'];
+      schemaId: components['schemas']['EntityId'];
+      /** Format: int32 */
+      schemaVersion?: number | string;
+      /** @description root..leaf. */
+      selectedNodePath: unknown[];
+      leafNodeId: components['schemas']['EntityId'];
+      /** @description key → value (typed-validated server-side). */
+      fieldValues: {
+        [key: string]: string;
+      };
+      notes?: null | string;
+      aiSuggested?: boolean;
+      /** Format: double */
+      aiConfidence?: null | number | string;
+      /** @description Did the agent keep the AI suggestion? */
+      aiAccepted?: null | boolean;
+      source?: components['schemas']['SubmissionSource'];
+      suggestedLeafNodeId?: null | components['schemas']['EntityId'];
+      /**
+       * @description Full node path (root→leaf) the AI suggested (null when no suggestion exists).
+       *     Captured for correction-signal analysis (B3).
+       */
+      suggestedNodePath?: null | string[];
+      duration?: string;
+      /** Format: date-time */
+      completedAt?: string;
+      /**
+       * @description Identifier of the AI actor that autonomously stamped this disposition (e.g.
+       *     `verbara:ai:autonomous-worker`), set only when SubmissionSource TypificationSubmission.Source is
+       *     SubmissionSource.AutoAi on the abandoned-wrap-up close path. Null otherwise.
+       */
+      autonomousActorId?: null | string;
+      /**
+       * @description Append-only correction state. An autonomously stamped submission is immutable; a supervisor
+       *     correction creates a new corrective submission and marks the original CorrectionState.Corrected.
+       */
+      correctionState?: components['schemas']['CorrectionState'];
+      /**
+       * Format: date-time
+       * @description UTC timestamp at which this submission was corrected (null while uncorrected).
+       */
+      correctedAt?: null | string;
+    };
+    /**
+     * @description D1 — AI auto-disposition suggestion (P2a/C1). The suggested root→leaf node-id path,
+     *     optional captured field values, the model's confidence, a free-form sentiment hint,
+     *     and the server-authoritative delivery TypificationBand. All members are
+     *     `null` / TypificationBand.None (the all-null payload)
+     *     when there is no suggestion — no bound schema, AI disabled, the classifier degraded,
+     *     the confidence fell below the schema threshold, or a sentiment-gated Success outcome
+     *     was suppressed.
+     */
+    TypificationSuggestionResponse: {
+      suggestedNodePath: null | string[];
+      suggestedFieldValues: null | {
+        [key: string]: string;
+      };
+      /** Format: double */
+      confidence: null | number | string;
+      sentiment: null | string;
+      band?: components['schemas']['TypificationBand'];
+    };
+    /** @description 400 payload when a runtime typify submission fails server validation. */
+    TypifyErrorResponse: {
+      errors: components['schemas']['TypifyFieldError'][];
+    };
+    TypifyFieldError: {
+      field: string;
+      message: string;
     };
     /**
      * @description Runtime typification submission: the selected root→leaf node path, the captured
@@ -15302,6 +19379,10 @@ export interface components {
       aiSuggested?: null | boolean;
       /** Format: double */
       aiConfidence?: null | number | string;
+    };
+    UnreadCountDto: {
+      /** Format: int32 */
+      count: number | string;
     };
     UpdateAgentRequest: {
       displayName: null | string;
@@ -15808,25 +19889,157 @@ export interface components {
       category: null | string;
       description: null | string;
     };
+    UsageRecordDto: {
+      recordId: string;
+      usageType: string;
+      /** Format: double */
+      quantity: number | string;
+      unit: string;
+      channel: null | string;
+      referenceId: null | string;
+      /** Format: date-time */
+      recordedAt: string;
+    };
+    UsageSummaryDto: {
+      usageType: string;
+      /** Format: double */
+      totalQuantity: number | string;
+      /** Format: int32 */
+      recordCount: number | string;
+      /** Format: date-time */
+      periodStart: string;
+      /** Format: date-time */
+      periodEnd: string;
+      /** Format: date-time */
+      lastUpdatedAt: string;
+    };
+    UserDto: {
+      id: string;
+      email: string;
+      displayName: string;
+      role: string;
+      status: string;
+      /** Format: date-time */
+      createdAt: string;
+    };
+    UserPermissionsDto: {
+      userId: string;
+      permissions: string[];
+    };
+    /** @description Preview of entities that would be affected by a user purge operation. */
+    UserPurgePreview: {
+      userId: string;
+      tenantId: string;
+      /** Format: int32 */
+      authEventCount: number | string;
+      /** Format: int32 */
+      auditTrailCount: number | string;
+      /** Format: date-time */
+      previewedAt: string;
+    };
     /** @enum {unknown} */
     UserRole: 'Agent' | 'Supervisor' | 'Admin' | 'Api';
+    UserRoleAssignment: {
+      tenantId: components['schemas']['TenantId'];
+      userId: components['schemas']['EntityId'];
+      roleId: string;
+      /** Format: date-time */
+      assignedAt: string;
+      assignedBy?: null | string;
+    };
     /** @enum {unknown} */
     UserStatus: 'Active' | 'Suspended' | 'Deactivated' | null;
+    /**
+     * @description Codec catalog returned by `GET /api/v1/admin/voice/codecs`.
+     *     Source is `"asterisk"` when the list came from a live `core show codecs`
+     *     query, or `"fallback"` when Asterisk could not be reached (static catalog).
+     */
+    VoiceCodecsResponse: {
+      source: string;
+      codecs: string[];
+    };
     /** @description Click-to-dial request (3B.2d): dial `ToNumber`, or resolve the number from `ContactId`. */
     VoiceDialRequest: {
       toNumber: null | string;
       contactId: null | string;
+    };
+    /** @description `CorrelationId` is the tracked outbound Conversation id on success; `Error` a stable code otherwise. */
+    VoiceDialResponse: {
+      accepted: boolean;
+      correlationId: null | string;
+      error: null | string;
     };
     /** @description Blind-transfer request: `Kind` = "queue"|"agent", `Target` = the queue/agent id. */
     VoiceTransferRequest: {
       kind: string;
       target: string;
     };
+    /** @description `Error` is a stable machine code (e.g. "channel-unknown", "not-owner") on failure. */
+    VoiceTransferResponse: {
+      accepted: boolean;
+      error: null | string;
+    };
     WebChatMessageRequest: {
       text: string;
     };
+    WebhookDelivery: {
+      deliveryId: string;
+      tenantId: string;
+      subscriptionId: string;
+      eventType: string;
+      payload: string;
+      status: components['schemas']['WebhookDeliveryStatus'];
+      /** Format: int32 */
+      attempts: number | string;
+      /** Format: int32 */
+      maxAttempts: number | string;
+      /** Format: date-time */
+      nextRetryAt: null | string;
+      /** Format: int32 */
+      lastResponseCode: null | number | string;
+      lastError: null | string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deliveredAt: null | string;
+    };
+    /** @enum {unknown} */
+    WebhookDeliveryStatus: 'Pending' | 'Delivered' | 'Failed' | 'DeadLetter';
+    WebhookSubscription: {
+      subscriptionId: string;
+      tenantId: string;
+      name: string;
+      endpointUrl: string;
+      secret: string;
+      eventTypes: string[];
+      isActive: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      circuitStatus?: components['schemas']['CircuitStatus'];
+      /**
+       * Format: int32
+       * @default 0
+       */
+      circuitFailures: number | string;
+      /** Format: date-time */
+      circuitOpenedAt?: null | string;
+      /** Format: date-time */
+      circuitNextProbeAt?: null | string;
+      /**
+       * Format: int32
+       * @default 0
+       */
+      circuitProbeAttempts: number | string;
+    };
     WhisperRequest: {
       text: string;
+    };
+    WrapUpConfig: {
+      /** Format: int32 */
+      defaultWrapUpSeconds?: number | string;
+      forceWrapUp?: boolean;
     };
     WrapUpConfigDto: {
       /**

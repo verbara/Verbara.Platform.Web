@@ -1,32 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 
 /**
  * ADR-0026 Phase A.6 — agent-centric queue membership projection.
  *
- * Mirrors `AgentQueueMembershipDto` from `AdminEndpoints.cs`. Used by
- * `/admin/agents/{agentId}/queues` to render the membership editor without
- * an N+1 fetch loop across every queue.
+ * Server response is the named `AgentQueueMembershipDto` schema
+ * (openapi-response-adoption, Platform/ADR-0035), returned by
+ * `/admin/agents/{agentId}/queue-memberships` to render the membership editor
+ * without an N+1 fetch loop across every queue.
+ *
+ * Note the generated shape widens `source` to `string` (was the client-only
+ * `'Manual' | 'Skill'`) and types `penalty` as the AOT-wire `number | string`
+ * union; the sole numeric consumer (`agent-queues.tsx`) coerces at its `useState`
+ * boundary.
  */
-export interface AgentQueueMembership {
-  queueId: string;
-  queueName: string;
-  penalty: number;
-  isExcluded: boolean;
-  /**
-   * `null` = member for all channels the queue accepts (pre-v2.6.0 implicit
-   * behavior). A populated list restricts membership to the listed channels
-   * only and gates Asterisk sync (voice in list ⇒ sync; voice out ⇒ no sync).
-   */
-  allowedChannels?: string[] | null;
-  source: 'Manual' | 'Skill';
-}
+export type AgentQueueMembership = components['schemas']['AgentQueueMembershipDto'];
 
 export function useAgentMemberships(agentId: string | undefined) {
   return useQuery({
     queryKey: ['agent-memberships', agentId],
     queryFn: () =>
-      customFetch<AgentQueueMembership[]>({
+      customFetch<components['schemas']['AgentQueueMembershipDto'][]>({
         url: `/api/v1/admin/agents/${agentId}/queue-memberships`,
         method: 'GET',
       }),

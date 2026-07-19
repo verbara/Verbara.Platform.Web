@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -16,27 +17,27 @@ export type AiSource = 'Byo' | 'PlatformManaged';
 export type LlmProviderType = 'OpenAiCompatible' | 'AzureOpenAi' | 'Anthropic';
 
 /** Provider-specific connection settings; which members are used depends on
- *  the selected `providerType`. All optional on the wire. */
+ *  the selected `providerType`. All optional on the wire. Members are
+ *  `string | null` to stay structurally compatible with the generated
+ *  `ProviderSettings` schema now reached via {@link TenantLlmConfig}.settings
+ *  (openapi-response-adoption, Platform/ADR-0035) — the AOT contract emits each
+ *  as `null | string`. */
 export interface LlmProviderSettings {
-  baseUrl?: string;
-  azureDeployment?: string;
-  azureApiVersion?: string;
-  anthropicVersion?: string;
+  baseUrl?: string | null;
+  azureDeployment?: string | null;
+  azureApiVersion?: string | null;
+  anthropicVersion?: string | null;
 }
 
 /** Masked GET/PUT response — the key is never echoed back; only `keySet`
- *  (whether a key is stored) + `keyLast4` (last 4 chars, or null). */
-export interface TenantLlmConfig {
-  providerType: LlmProviderType;
-  model: string;
-  settings: LlmProviderSettings;
-  enabled: boolean;
-  keySet: boolean;
-  keyLast4: string | null;
-  updatedAt: string;
-  aiSource: AiSource;
-  platformLlmAvailable: boolean;
-}
+ *  (whether a key is stored) + `keyLast4` (last 4 chars, or null).
+ *  Server response is the named `TenantLlmConfigResponse` schema
+ *  (openapi-response-adoption, Platform/ADR-0035). The generated DTO carries the
+ *  same nine fields; its `providerType` / `settings` / `aiSource` resolve to the
+ *  generated `ProviderType` / `ProviderSettings` / `AiSource` schemas, which are
+ *  structurally identical to the local {@link LlmProviderType} / {@link
+ *  LlmProviderSettings} / {@link AiSource} aliases those consumers still read. */
+export type TenantLlmConfig = components['schemas']['TenantLlmConfigResponse'];
 
 /**
  * The "no provider configured" state. A VALID, non-error mode — the tenant runs
@@ -97,13 +98,21 @@ export interface TestLlmConnectionInput {
   settings?: LlmProviderSettings | null;
 }
 
-export interface TestLlmConnectionResult {
-  reachable: boolean;
-  authOk: boolean;
-  modelOk: boolean;
+/**
+ * Server response is the named `TestLlmConnectionResponse` schema
+ * (openapi-response-adoption, Platform/ADR-0035). Native AOT emits `latencyMs`
+ * as the `number | string` wire union (the document's `["integer","string"]`);
+ * the JSON payload always sends a numeric value, so this consumer-facing type
+ * narrows it back to `number` (see the boundary coercion in
+ * {@link useTestLlmConnection}) — the `LlmTestButton` interpolates/compares it
+ * as a plain number.
+ */
+export type TestLlmConnectionResult = Omit<
+  components['schemas']['TestLlmConnectionResponse'],
+  'latencyMs'
+> & {
   latencyMs: number;
-  error: string | null;
-}
+};
 
 const LLM_CONFIG_KEY = ['typification', 'llm'] as const;
 
@@ -167,12 +176,17 @@ export function useDeleteTenantLlmConfig() {
  */
 export function useTestLlmConnection() {
   return useMutation({
-    mutationFn: (draft: TestLlmConnectionInput = {}) =>
-      customFetch<TestLlmConnectionResult>({
+    mutationFn: async (draft: TestLlmConnectionInput = {}): Promise<TestLlmConnectionResult> => {
+      const res = await customFetch<components['schemas']['TestLlmConnectionResponse']>({
         url: '/api/v1/admin/ai/llm-config/test',
         method: 'POST',
         data: draft,
-      }),
+      });
+      // Boundary coercion: `latencyMs` is the AOT-safe `number | string` wire
+      // union; the payload always sends a numeric value. Normalize to `number`
+      // so consumers (`LlmTestButton`) keep plain numeric handling.
+      return { ...res, latencyMs: Number(res.latencyMs) };
+    },
   });
 }
 

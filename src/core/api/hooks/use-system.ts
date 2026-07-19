@@ -4,43 +4,31 @@ import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-export interface SystemInfo {
-  version: string;
-  hostTenantId: string | null;
-  platformName: string | null;
-  features: Record<string, boolean>;
-}
-
-export interface LicenseInfo {
-  isValid: boolean;
-  licenseId: string | null;
-  licensee: string | null;
-  status: string;
-  expiresAt: string | null;
-  licensedFeatures: string[];
-  maxNodes: number;
-  lastValidatedAt: string;
-  // R5.2 PC.4 / triage limitation #11 — backend grace-period state surface.
-  // `gracePeriodRemaining` is the System.Text.Json default TimeSpan format
-  // — "d.hh:mm:ss" (e.g. "5.00:00:00" for 5 days) — when InGrace; null
-  // otherwise. `inGrace` and `blocked` are mutually exclusive booleans
-  // driven by `LicenseValidationResult` server-side. `parseGraceDuration`
-  // in @/admin/license/license-page is the canonical parser.
-  inGrace: boolean;
-  gracePeriodRemaining: string | null;
-  blocked: boolean;
-}
+/** Server response is the named `SystemInfoDto` schema (openapi-response-adoption, Platform/ADR-0035). */
+export type SystemInfo = components['schemas']['SystemInfoDto'];
 
 /**
- * Platform-wide system settings (GET response + PUT body). Sourced from the
- * generated `components['schemas']['SystemSettingsRequest']`
- * (`src/core/api/generated/openapi.d.ts`, openapi-typed-client-admin), not
- * hand-declared — it is a verbatim structural match for the former hand-written
- * interface (`platformName`, `defaultTimezone`, `defaultLanguage`, all required
- * `string`), so `tsc -b` now catches any upstream drift. Re-exported under the
- * original `SystemSettings` name so existing structural consumers keep working.
+ * Server response is the named `LicenseInfoDto` schema (openapi-response-adoption, Platform/ADR-0035).
+ *
+ * R5.2 PC.4 / triage limitation #11 — backend grace-period state surface.
+ * `gracePeriodRemaining` is the System.Text.Json default TimeSpan format
+ * — "d.hh:mm:ss" (e.g. "5.00:00:00" for 5 days) — when InGrace; null
+ * otherwise. `inGrace` and `blocked` are mutually exclusive booleans
+ * driven by `LicenseValidationResult` server-side. `parseGraceDuration`
+ * in @/admin/license/license-page is the canonical parser. `maxNodes` is
+ * emitted as the AOT wire `number | string` union; every consumer renders it
+ * directly (JSX / `ReactNode`-typed `StatCard.value`), so no coercion needed.
  */
-export type SystemSettings = components['schemas']['SystemSettingsRequest'];
+export type LicenseInfo = components['schemas']['LicenseInfoDto'];
+
+/**
+ * Platform-wide system settings — GET response is the named `SystemSettingsDto`
+ * schema (openapi-response-adoption, Platform/ADR-0035). It is a verbatim
+ * structural match for `SystemSettingsRequest` (the PUT body), so `tsc -b`
+ * catches any upstream drift. Re-exported under the original `SystemSettings`
+ * name so existing structural consumers keep working.
+ */
+export type SystemSettings = components['schemas']['SystemSettingsDto'];
 
 export function useSystemInfo() {
   return useQuery({

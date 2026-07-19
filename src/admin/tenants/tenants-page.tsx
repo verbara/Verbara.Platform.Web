@@ -235,8 +235,10 @@ export default function TenantsPage() {
                   setEditForm({
                     name: t.name,
                     status: t.status,
-                    maxConcurrentChannels: t.maxConcurrentChannels,
-                    maxActiveCampaigns: t.maxActiveCampaigns,
+                    // MgmtTenantDto emits these as the AOT-safe `number | string` wire union;
+                    // editForm keeps them numeric (number inputs), so coerce at the boundary.
+                    maxConcurrentChannels: Number(t.maxConcurrentChannels),
+                    maxActiveCampaigns: Number(t.maxActiveCampaigns),
                   });
                 }}
               >

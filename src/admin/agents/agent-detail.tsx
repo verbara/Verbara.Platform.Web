@@ -39,6 +39,15 @@ const stateBadgeVariant: Record<string, 'default' | 'secondary' | 'outline' | 'd
   offline: 'outline',
 };
 
+/**
+ * Coerce a capacity-override field from the generated `ChannelCapacityOverrideDto`
+ * (AOT-wire `number | string | null`) to the numeric `number | null` the agent
+ * form expects. `null`/`undefined` stay `null` (inherit the tenant default).
+ */
+function overrideField(value: number | string | null | undefined): number | null {
+  return value == null ? null : Number(value);
+}
+
 function InfoRow({
   icon: Icon,
   label,
@@ -210,28 +219,28 @@ export default function AgentDetailPage() {
             />
             <CapacityRow
               label={t('admin:agents.capacity.maxChat')}
-              value={agent.effectiveCapacity.maxChat}
+              value={agent.effectiveCapacity.maxChat ?? 0}
               overridden={agent.capacityOverride?.maxChat != null}
               overriddenLabel={t('admin:agents.capacity.overridden')}
               inheritedLabel={t('admin:agents.capacity.inherited')}
             />
             <CapacityRow
               label={t('admin:agents.capacity.maxEmail')}
-              value={agent.effectiveCapacity.maxEmail}
+              value={agent.effectiveCapacity.maxEmail ?? 0}
               overridden={agent.capacityOverride?.maxEmail != null}
               overriddenLabel={t('admin:agents.capacity.overridden')}
               inheritedLabel={t('admin:agents.capacity.inherited')}
             />
             <CapacityRow
               label={t('admin:agents.capacity.maxSms')}
-              value={agent.effectiveCapacity.maxSms}
+              value={agent.effectiveCapacity.maxSms ?? 0}
               overridden={agent.capacityOverride?.maxSms != null}
               overriddenLabel={t('admin:agents.capacity.overridden')}
               inheritedLabel={t('admin:agents.capacity.inherited')}
             />
             <CapacityRow
               label={t('admin:agents.capacity.maxTotal')}
-              value={agent.effectiveCapacity.maxTotal}
+              value={agent.effectiveCapacity.maxTotal ?? 0}
               overridden={agent.capacityOverride?.maxTotal != null}
               overriddenLabel={t('admin:agents.capacity.overridden')}
               inheritedLabel={t('admin:agents.capacity.inherited')}
@@ -365,11 +374,13 @@ export default function AgentDetailPage() {
           extension: agent.extension ?? '',
           // W6 — prefill the async override inputs from the agent's stored override.
           // A null field (or a null override object) shows the inherited placeholder.
+          // The generated `capacityOverride` fields are the AOT-wire `number | string`
+          // union; coerce each non-null value to the numeric form the form expects.
           capacity: {
-            maxChat: agent.capacityOverride?.maxChat ?? null,
-            maxEmail: agent.capacityOverride?.maxEmail ?? null,
-            maxSms: agent.capacityOverride?.maxSms ?? null,
-            maxTotal: agent.capacityOverride?.maxTotal ?? null,
+            maxChat: overrideField(agent.capacityOverride?.maxChat),
+            maxEmail: overrideField(agent.capacityOverride?.maxEmail),
+            maxSms: overrideField(agent.capacityOverride?.maxSms),
+            maxTotal: overrideField(agent.capacityOverride?.maxTotal),
           },
         }}
         onSubmit={(v) => {

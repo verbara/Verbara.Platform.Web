@@ -1,18 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { RateCard, CreateRateCardInput, Invoice, UsageSummary } from './use-billing';
 
 // --- Types ---
 
-export interface PartnerCustomer {
-  tenantId: string;
-  name: string;
-  status: string;
-  plan: string;
-  createdAt: string;
-}
+/** Server response is the named `PartnerCustomerDto` schema (openapi-response-adoption,
+ *  Platform/ADR-0035). Exact field-for-field match — direct alias, no extensions. */
+export type PartnerCustomer = components['schemas']['PartnerCustomerDto'];
 
 export interface CreatePartnerCustomerInput {
   tenantId: string;
@@ -38,7 +35,19 @@ export interface PartnerGenerateInvoiceResponse {
   revenue: PartnerRevenueSnapshot;
 }
 
-export interface PartnerRevenueSummary {
+/**
+ * Server response is the named `PartnerRevenueSummaryDto` schema
+ * (openapi-response-adoption, Platform/ADR-0035). Native AOT emits every numeric
+ * field as the `number | string` wire union (the document's `["number","string"]` /
+ * `["integer","string"]` types); the JSON payload always sends a numeric value.
+ * Consumers (`revenue-page.tsx`) do plain arithmetic/`formatCurrency` on these, so
+ * the exported consumer type keeps them as `number` and `usePartnerRevenueSummary`
+ * normalizes the union at the fetch boundary via `select` (mirrors
+ * `use-analytics.ts` `CsatQueueSummary`). */
+export interface PartnerRevenueSummary extends Omit<
+  components['schemas']['PartnerRevenueSummaryDto'],
+  'totalGross' | 'totalPlatformCost' | 'totalMargin' | 'customerCount' | 'invoiceCount'
+> {
   totalGross: number;
   totalPlatformCost: number;
   totalMargin: number;
@@ -46,15 +55,20 @@ export interface PartnerRevenueSummary {
   invoiceCount: number;
 }
 
-export interface PartnerRevenueDetail {
-  revenueId: string;
-  customerTenantId: string;
-  invoiceId: string;
+/**
+ * Server response is the named `PartnerRevenueDetailDto` schema
+ * (openapi-response-adoption, Platform/ADR-0035). As with {@link PartnerRevenueSummary},
+ * the AOT `number | string` union amount fields are normalized to `number` at the
+ * fetch boundary (`usePartnerRevenueDetails`'s `select`) so `revenue-page.tsx` keeps
+ * doing arithmetic (`grossAmount > 0`, `partnerMargin / grossAmount`, `+=`) and
+ * `formatCurrency` on them. */
+export interface PartnerRevenueDetail extends Omit<
+  components['schemas']['PartnerRevenueDetailDto'],
+  'grossAmount' | 'platformCost' | 'partnerMargin'
+> {
   grossAmount: number;
   platformCost: number;
   partnerMargin: number;
-  periodStart: string;
-  periodEnd: string;
 }
 
 export interface TenantSettings {
@@ -344,11 +358,19 @@ export function usePartnerRevenueSummary(from?: string, until?: string) {
   return useQuery({
     queryKey: ['partner-revenue-summary', from, until],
     queryFn: () =>
-      customFetch<PartnerRevenueSummary>({
+      customFetch<components['schemas']['PartnerRevenueSummaryDto']>({
         url: '/api/v1/partner/revenue/',
         method: 'GET',
         params,
       }),
+    // Boundary coercion: normalize the AOT `number | string` wire union to `number`.
+    select: (d): PartnerRevenueSummary => ({
+      totalGross: Number(d.totalGross),
+      totalPlatformCost: Number(d.totalPlatformCost),
+      totalMargin: Number(d.totalMargin),
+      customerCount: Number(d.customerCount),
+      invoiceCount: Number(d.invoiceCount),
+    }),
   });
 }
 
@@ -359,11 +381,19 @@ export function usePartnerRevenueDetails(from?: string, until?: string) {
   return useQuery({
     queryKey: ['partner-revenue-details', from, until],
     queryFn: () =>
-      customFetch<PartnerRevenueDetail[]>({
+      customFetch<components['schemas']['PartnerRevenueDetailDto'][]>({
         url: '/api/v1/partner/revenue/details',
         method: 'GET',
         params,
       }),
+    // Boundary coercion: normalize each row's AOT `number | string` amount union to `number`.
+    select: (rows): PartnerRevenueDetail[] =>
+      rows.map((r) => ({
+        ...r,
+        grossAmount: Number(r.grossAmount),
+        platformCost: Number(r.platformCost),
+        partnerMargin: Number(r.partnerMargin),
+      })),
   });
 }
 

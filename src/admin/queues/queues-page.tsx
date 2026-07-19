@@ -53,7 +53,8 @@ export default function QueuesPage() {
           const rule = info.row.original.overflowRule;
           if (!rule) return <span className="text-muted-foreground">&mdash;</span>;
           const target = queues.find((q) => q.id === rule.overflowQueueId);
-          return target?.name ?? rule.overflowQueueId;
+          // `overflowQueueId` is the generated `EntityId` (`unknown`); coerce for the cell's ReactNode.
+          return target?.name ?? String(rule.overflowQueueId);
         },
       }),
     ],

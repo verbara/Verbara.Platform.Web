@@ -10,15 +10,27 @@ vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
 // (`AgentState` enum names: Available, Busy, DND, …) so the suite guards the
 // actual contract — these pass WITH the .toLowerCase() normalization and would
 // FAIL without it (a literal `has("Busy")` against the lowercase set is false).
-function makeAgent(state: string): Agent {
+function makeAgent(state: Agent['state']): Agent {
   return {
     agentId: 'a1',
     id: 'a1',
+    tenantId: 't1',
     userId: 'u1',
     displayName: 'Agent One',
     state,
+    pendingState: null,
+    pendingReason: null,
+    pendingSince: null,
+    hasPendingPause: false,
+    teamId: null,
     skills: [],
+    extension: null,
+    autoAnswer: null,
+    canAcceptWork: true,
     createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: null,
+    capacityOverride: null,
+    effectiveCapacity: { maxVoice: 1, maxChat: 5, maxEmail: 5, maxSms: 5, maxTotal: 10 },
   };
 }
 

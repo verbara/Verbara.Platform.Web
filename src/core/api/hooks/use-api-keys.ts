@@ -16,25 +16,19 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-// Matches backend DTO `MgmtApiKeyDto` (Id field = `KeyId`). Shape is flat —
-// platform-scope Management keys have no variable scope surface so we don't
-// ship a scope array on the list DTO.
+// Server response is the named `MgmtApiKeyDto` schema (openapi-response-adoption,
+// Platform/ADR-0035). Shape is flat — platform-scope Management keys have no
+// variable scope surface so there's no scope array on the list DTO.
 //
 // `lastUsedAt` was added by R5.2 PC.5 / B.12: the auth middleware stamps the
 // column whenever a key authenticates successfully (debounced ≤ 1 write/min/
 // key). `null` means the key has never been used since the column was added,
 // or the row pre-dates migration 020.
-export interface ManagementApiKey {
-  readonly keyId: string;
-  readonly name: string;
-  readonly isRevoked: boolean;
-  readonly expiresAt: string | null;
-  readonly createdAt: string;
-  readonly lastUsedAt: string | null;
-}
+export type ManagementApiKey = components['schemas']['MgmtApiKeyDto'];
 
 export interface CreateApiKeyRequest {
   readonly name: string;
@@ -43,13 +37,9 @@ export interface CreateApiKeyRequest {
 }
 
 // `apiKey` is the plaintext key (prefix `mgmt_`). Returned ONLY on
-// create/rotate — never on list.
-export interface CreateApiKeyResponse {
-  readonly keyId: string;
-  readonly name: string;
-  readonly apiKey: string;
-  readonly expiresAt: string | null;
-}
+// create/rotate — never on list. Named `CreateMgmtApiKeyResponse` schema
+// (openapi-response-adoption, Platform/ADR-0035).
+export type CreateApiKeyResponse = components['schemas']['CreateMgmtApiKeyResponse'];
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
