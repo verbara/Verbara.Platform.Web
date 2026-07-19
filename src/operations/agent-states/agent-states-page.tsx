@@ -29,7 +29,11 @@ function toAgentState(a: Agent): AgentState {
     agentId: a.id,
     name: a.displayName,
     team: a.teamName ?? '',
-    state: (a.state as AgentPresence) ?? 'offline',
+    // `Agent.state` is now the generated `AgentState` enum (PascalCase) after the
+    // openapi-response adoption; the presence view-model uses a distinct lowercase
+    // `AgentPresence` union, so bridge through `unknown` (the runtime value is
+    // normalized downstream by the presence store).
+    state: (a.state as unknown as AgentPresence) ?? 'offline',
     stateChangedAt: a.createdAt,
     conversationCount: 0,
   };

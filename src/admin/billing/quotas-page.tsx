@@ -198,14 +198,14 @@ export default function QuotasPage() {
               )}
             </p>
             <p className="text-amber-800 dark:text-amber-200">
-              {t('billing.quotas.dunning.days', { count: dunning.daysOverdue })}
-              {dunning.overdueAmount > 0 && (
+              {t('billing.quotas.dunning.days', { count: dunning.daysOverdue ?? 0 })}
+              {(dunning.overdueAmount ?? 0) > 0 && (
                 <>
                   {' '}
                   &mdash;{' '}
                   {t('billing.quotas.dunning.amount', {
                     // DunningStatus has no currency field — default to USD
-                    amount: formatCurrency(dunning.overdueAmount, 'USD'),
+                    amount: formatCurrency(dunning.overdueAmount ?? 0, 'USD'),
                   })}
                 </>
               )}

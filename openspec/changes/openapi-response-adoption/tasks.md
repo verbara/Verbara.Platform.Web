@@ -27,25 +27,25 @@ full per-file assignment is resolved from the Admin child's per-file annotations
 time; the manifest is the source of truth for each schema's name + fields):
 
 - [x] 2.1 `use-users.ts` → `UserDto` / `PagedResultOfUserDto`.
-- [ ] 2.2 `use-queues.ts` → `QueueDto` / `PagedResultOfQueueDto`.
-- [ ] 2.3 `use-teams.ts` → `TeamDto` / `PagedResultOfTeamDto`.
-- [ ] 2.4 `use-agents.ts` → `AdminAgentResponseDto` / `PagedResultOfAdminAgentResponseDto`.
-- [ ] 2.5 RBAC hooks → `RoleTemplate`, `TenantRole`, `PermissionGroupDto`, `PermissionDefinition`,
+- [x] 2.2 `use-queues.ts` → `QueueDto` / `PagedResultOfQueueDto`.
+- [x] 2.3 `use-teams.ts` → `TeamDto` / `PagedResultOfTeamDto`.
+- [x] 2.4 `use-agents.ts` → `AdminAgentResponseDto` / `PagedResultOfAdminAgentResponseDto`.
+- [x] 2.5 RBAC hooks → `RoleTemplate`, `TenantRole`, `PermissionGroupDto`, `PermissionDefinition`,
       `UserPermissionsDto`, `UserRoleAssignment` (per manifest).
-- [ ] 2.6 Management/tenant hooks → `MgmtTenantDto`, `TenantSettingsDto`, `SystemSettingsDto`,
+- [x] 2.6 Management/tenant hooks → `MgmtTenantDto`, `TenantSettingsDto`, `SystemSettingsDto`,
       `SystemInfoDto`, `QuotaDto` / `QuotaStatusDto`, `RetentionPolicyDto` (per manifest).
-- [ ] 2.7 Billing/partner hooks → `InvoiceDto`, `RateCardDto`, `UsageRecordDto` / `UsageSummaryDto`,
+- [x] 2.7 Billing/partner hooks → `InvoiceDto`, `RateCardDto`, `UsageRecordDto` / `UsageSummaryDto`,
       `DunningRecordDto`, `PartnerCustomerDto`, `PartnerRevenueDetailDto` / `PartnerRevenueSummaryDto`
       (per manifest).
-- [ ] 2.8 Webhook / cluster / license / session hooks → `WebhookSubscription`, `CircuitStatusResponse`,
+- [x] 2.8 Webhook / cluster / license / session hooks → `WebhookSubscription`, `CircuitStatusResponse`,
       `MgmtClusterStatusDto` / `MgmtClusterNodeDto`, `LicenseInfoDto` / `LicenseStatusSnapshot`,
       `ActiveSession`, `MgmtApiKeyDto` / `CreateMgmtApiKeyResponse` (per manifest).
-- [ ] 2.9 Remaining admin-remainder hooks per the Admin child's per-file list — one file per commit,
+- [x] 2.9 Remaining admin-remainder hooks per the Admin child's per-file list — one file per commit,
       each binding to its manifest schema, `tsc -b` green after each.
 
 ## 3. Phase B-out — Q3 coercion-site gathering (flip latents, report to shared tally)
 
-- [ ] 3.1 As each admin-remainder hook adopts its now-named response type, record any field whose
+- [x] 3.1 As each admin-remainder hook adopts its now-named response type, record any field whose
       generated type is a genuine `number | string` AOT-wire-union a consumer must normalize to
       `number`. Many such unions were logged as **latent** in the Admin child precisely because those
       hooks stayed hand-written — adopting the response type here can flip them **active**. Append
@@ -55,11 +55,11 @@ time; the manifest is the source of truth for each schema's name + fields):
 
 ## 4. Phase C (integration, batch) — Validation
 
-- [ ] 4.1 `npm run build` — type-check + bundle clean (`tsc -b` is the drift-catching CI gate).
-- [ ] 4.2 `npx vitest run` — unit tests green.
-- [ ] 4.3 `npx eslint .` — clean (no new errors); i18n parity (EN-US / ES-419 / PT-BR) remains green.
-- [ ] 4.4 Confirm no hand-written response interface remains for any migrated admin-remainder shape,
+- [x] 4.1 `npm run build` — type-check + bundle clean (`tsc -b` is the drift-catching CI gate).
+- [x] 4.2 `npx vitest run` — unit tests green.
+- [x] 4.3 `npx eslint .` — clean (no new errors); i18n parity (EN-US / ES-419 / PT-BR) remains green.
+- [x] 4.4 Confirm no hand-written response interface remains for any migrated admin-remainder shape,
       and every migrated hook binds to its manifest-named `components['schemas']['<SchemaName>']`.
-- [ ] 4.5 No `npx playwright test` task required unless a migration alters a user-facing flow —
+- [x] 4.5 No `npx playwright test` task required unless a migration alters a user-facing flow —
       swap-the-T is compile-time-only; if a data-\* selector'd flow changes, add coverage per the
       anti-flake fences (no wall-clock waits; workers:1, retries:1; data-testid selectors).

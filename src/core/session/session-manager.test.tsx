@@ -25,15 +25,27 @@ const WARNING_AT = warningAtMs(IDLE_MINUTES);
 // (`AgentState` enum names: Busy, DND, …) so the suite guards the actual
 // contract — suppression/teardown only behave correctly because the production
 // code normalizes the state to lowercase before comparing.
-function makeAgent(state: string): Agent {
+function makeAgent(state: Agent['state']): Agent {
   return {
     agentId: 'a1',
     id: 'a1',
+    tenantId: 't1',
     userId: 'u1',
     displayName: 'Agent One',
     state,
+    pendingState: null,
+    pendingReason: null,
+    pendingSince: null,
+    hasPendingPause: false,
+    teamId: null,
     skills: [],
+    extension: null,
+    autoAnswer: null,
+    canAcceptWork: true,
     createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: null,
+    capacityOverride: null,
+    effectiveCapacity: { maxVoice: 1, maxChat: 5, maxEmail: 5, maxSms: 5, maxTotal: 10 },
   };
 }
 

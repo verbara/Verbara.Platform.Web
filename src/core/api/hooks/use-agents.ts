@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -7,7 +8,13 @@ import { toast } from 'sonner';
  * W6 — resolved per-channel concurrency limits for an agent. Every field is
  * always present (the server merges any per-agent override over the tenant
  * defaults). `maxVoice` is always 1. Returned as `effectiveCapacity` by the
- * admin agent endpoints.
+ * admin agent endpoints and as `capacity` by `GET /agents/me`.
+ *
+ * Hand-written (NOT the generated `ChannelCapacity`): kept numeric because the
+ * softphone (`use-softphone.ts`) does `maxVoice <= 0`, which the generated
+ * `number | string` AOT-wire union would reject. The `/agents/me` `capacity`
+ * shape it types is in the `agent` schema group, out of this admin-remainder
+ * migration's scope.
  */
 export interface ChannelCapacity {
   maxVoice: number;
@@ -23,6 +30,12 @@ export interface ChannelCapacity {
  * default". Sent on create/update as the `capacity` body field, and returned as
  * `capacityOverride` (the whole object is `null` when the agent fully inherits).
  * `maxVoice` must be `null` or `1`; the others accept `0`–`50`.
+ *
+ * Hand-written (NOT the generated `ChannelCapacityOverrideDto`): it is a REQUEST
+ * body shape (the `capacity` field on create/update) and stays numeric so the
+ * form builder (`capacity-override.ts` → `number | null`) and the numeric write
+ * sites in `agent-detail.tsx` keep compiling; the generated DTO's `number |
+ * string` union would break both.
  */
 export interface ChannelCapacityOverride {
   maxVoice: number | null;
@@ -32,91 +45,66 @@ export interface ChannelCapacityOverride {
   maxTotal: number | null;
 }
 
-export interface Agent {
-  /** Primary identifier returned by the backend. */
-  agentId: string;
+/**
+ * Server response is the named `AdminAgentResponseDto` schema
+ * (openapi-response-adoption, Platform/ADR-0035) as returned by the admin
+ * list/detail endpoints (`useAgents`/`useAgent`).
+ *
+ * The intersection carries fields the generated DTO does not project:
+ *  - `id` — client-synthesized alias of `agentId` (see `hydrate`) so existing
+ *    callers (`agent.id`) keep working.
+ *  - `teamName` / `userEmail` — display fields the admin UI reads that the DTO
+ *    does not (yet) emit.
+ *  - `sipPassword` / `activeWorkCount` / `capacity` — populated ONLY by
+ *    `GET /agents/me` (`AgentMeResponseDto`, the `agent` schema group — out of
+ *    this admin-remainder migration's scope). This hook's `useAgentMe` shares
+ *    the `Agent` type, so those fields are retained here (hand-typed, numeric
+ *    where consumers need numbers) rather than pulled from the generated
+ *    `AgentMeResponseDto`. `sipPassword` never appears on admin responses.
+ */
+export type Agent = components['schemas']['AdminAgentResponseDto'] & {
   /**
-   * Alias of {@link agentId} synthesized in `useAgents`/`useAgent` so existing
+   * Alias of `agentId` synthesized in `useAgents`/`useAgent` so existing
    * callers (`agent.id`) keep working during the DTO alignment.
    */
   id: string;
-  userId: string;
-  /** Owning tenant id — needed to build the softphone SIP identity. */
-  tenantId?: string;
-  displayName: string;
-  state: string;
-  skills: string[];
-  extension?: string | null;
+  teamName?: string | null;
+  userEmail?: string | null;
   /**
    * The agent's own plaintext SIP password — populated ONLY by `GET /agents/me`
    * (self-scoped) so the in-browser softphone can REGISTER. The admin list/detail
-   * endpoints (`useAgents`/`useAgent`) never return it; it stays in the TanStack
-   * `['agent-me']` cache in memory and is never persisted to storage.
+   * endpoints never return it; it stays in the TanStack `['agent-me']` cache in
+   * memory and is never persisted to storage.
    */
   sipPassword?: string | null;
-  /**
-   * Per-agent auto-answer override (3B.2b). Tri-state: `null`/`undefined` = inherit the call's queue
-   * default; `true`/`false` = explicit override. The softphone reads this from `GET /agents/me` and
-   * combines it with the screen-pop's queue default to decide whether to auto-accept an inbound call.
-   */
-  autoAnswer?: boolean | null;
-  /**
-   * W4 deferred pause — populated by `GET /agents/me`. When the agent requests a
-   * deferrable aux state (Break/Lunch/Training/DND) while handling active work, the
-   * backend keeps {@link state} unchanged and records the target here (PascalCase,
-   * e.g. "Break"), blocking new work until the active items finish or the agent
-   * forces/cancels. Null/undefined when no pause is pending.
-   */
-  pendingState?: string | null;
-  pendingReason?: string | null;
-  pendingSince?: string | null;
-  /** Count of conversations/calls the agent must finish before a pending pause applies. */
+  /** Count of conversations/calls the agent must finish before a pending pause applies (`GET /agents/me`). */
   activeWorkCount?: number;
-  teamId?: string | null;
-  teamName?: string | null;
-  userEmail?: string | null;
-  capacity?: {
-    maxVoice: number;
-    maxChat: number;
-    maxEmail: number;
-    maxSms: number;
-    maxTotal: number;
-  };
   /**
-   * W6 — resolved capacity (override merged over tenant defaults) returned by
-   * the admin list/detail endpoints (`useAgents`/`useAgent`). Always present on
-   * those responses; absent on `GET /agents/me`.
+   * W6 — resolved capacity returned by `GET /agents/me` as `capacity` (the admin
+   * responses expose it as `effectiveCapacity` instead). Absent on admin list/detail.
    */
-  effectiveCapacity?: ChannelCapacity;
-  /**
-   * W6 — the agent's own capacity override returned by the admin list/detail
-   * endpoints. `null` when the agent fully inherits the tenant defaults; each
-   * field is `null` to inherit just that channel. Absent on `GET /agents/me`.
-   */
-  capacityOverride?: ChannelCapacityOverride | null;
-  createdAt: string;
-}
+  capacity?: ChannelCapacity;
+};
 
-function hydrate(a: Agent): Agent {
+/**
+ * Synthesize the client-only `id` alias and default `skills` on an admin agent
+ * response (`AdminAgentResponseDto`), returning the enriched `Agent`.
+ */
+function hydrate(a: components['schemas']['AdminAgentResponseDto']): Agent {
   return { ...a, id: a.agentId, skills: a.skills ?? [] };
-}
-
-interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
 }
 
 export function useAgents() {
   return useQuery({
     queryKey: ['agents'],
     queryFn: async () => {
-      const result = await customFetch<PagedResult<Agent>>({
-        url: '/api/v1/admin/agents',
-        method: 'GET',
-        params: { page: '1', pageSize: '100' },
-      });
+      const result = await customFetch<components['schemas']['PagedResultOfAdminAgentResponseDto']>(
+        {
+          url: '/api/v1/admin/agents',
+          method: 'GET',
+          params: { page: '1', pageSize: '100' },
+        },
+      );
       return result.items.map(hydrate);
     },
   });
@@ -126,7 +114,10 @@ export function useAgent(id: string | undefined) {
   return useQuery({
     queryKey: ['agents', id],
     queryFn: async () => {
-      const agent = await customFetch<Agent>({ url: `/api/v1/admin/agents/${id}`, method: 'GET' });
+      const agent = await customFetch<components['schemas']['AdminAgentResponseDto']>({
+        url: `/api/v1/admin/agents/${id}`,
+        method: 'GET',
+      });
       return hydrate(agent);
     },
     enabled: !!id,

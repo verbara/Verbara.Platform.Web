@@ -151,7 +151,9 @@ export default function QueueDetailPage() {
     answerWithinSeconds: queue.slaTargets?.answerWithinSeconds?.toString() ?? '',
     firstResponseWithinSeconds: queue.slaTargets?.firstResponseWithinSeconds?.toString() ?? '',
     resolutionWithinSeconds: queue.slaTargets?.resolutionWithinSeconds?.toString() ?? '',
-    overflowQueueId: queue.overflowRule?.overflowQueueId ?? '',
+    // `overflowQueueId` is the generated `EntityId` (typed `unknown` in the OpenAPI document);
+    // coerce to the plain string the form field expects (openapi-response-adoption boundary).
+    overflowQueueId: String(queue.overflowRule?.overflowQueueId ?? ''),
     overflowAfterSeconds: queue.overflowRule?.overflowAfterSeconds?.toString() ?? '',
     requiredSkills: queue.requiredSkills.map((s) => ({ name: s })),
     defaultWrapUpSeconds: (queue.wrapUp?.defaultWrapUpSeconds ?? 30).toString(),
@@ -161,7 +163,8 @@ export default function QueueDetailPage() {
 
   const overflowTarget = queue.overflowRule
     ? (allQueues.find((q) => q.id === queue.overflowRule!.overflowQueueId)?.name ??
-      queue.overflowRule.overflowQueueId)
+      // `overflowQueueId` is the generated `EntityId` (`unknown`); coerce for the JSX child.
+      String(queue.overflowRule.overflowQueueId))
     : null;
 
   return (

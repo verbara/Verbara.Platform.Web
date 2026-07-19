@@ -26,11 +26,7 @@ interface TransferDialogProps {
   conversationId: string;
 }
 
-export function TransferDialog({
-  open,
-  onOpenChange,
-  conversationId,
-}: TransferDialogProps) {
+export function TransferDialog({ open, onOpenChange, conversationId }: TransferDialogProps) {
   const { t } = useTranslation('agent');
   const removeConversation = useConversationStore((s) => s.removeConversation);
 
@@ -50,9 +46,7 @@ export function TransferDialog({
           .filter((q) => q.name.toLowerCase().includes(search.toLowerCase()))
           .map((q) => ({ id: q.id, name: q.name }))
       : agents
-          .filter((a) =>
-            a.displayName.toLowerCase().includes(search.toLowerCase()),
-          )
+          .filter((a) => a.displayName.toLowerCase().includes(search.toLowerCase()))
           .map((a) => ({ id: a.id, name: a.displayName, state: a.state }));
 
   function handleSubmit() {
@@ -136,7 +130,10 @@ export function TransferDialog({
             )}
             {items.map((item) => {
               const isAgent = 'state' in item;
-              const isBusy = isAgent && item.state === 'busy';
+              // `Agent.state` is now the generated `AgentState` enum after the
+              // openapi-response adoption; widen to string for this comparison to
+              // preserve the prior `state: string` matching behavior verbatim.
+              const isBusy = isAgent && (item.state as string) === 'busy';
               return (
                 <button
                   key={item.id}
@@ -153,9 +150,7 @@ export function TransferDialog({
                   {isAgent && (
                     <span
                       className={`text-[10px] font-medium ${
-                        item.state === 'available'
-                          ? 'text-green-600'
-                          : 'text-amber-500'
+                        item.state === 'available' ? 'text-green-600' : 'text-amber-500'
                       }`}
                     >
                       {String(item.state)}
@@ -185,9 +180,7 @@ export function TransferDialog({
                 {warm ? t('transfer.warm') : t('transfer.cold')}
               </span>
               <span className="text-xs text-slate-400">
-                {warm
-                  ? t('transfer.warm_description')
-                  : t('transfer.cold_description')}
+                {warm ? t('transfer.warm_description') : t('transfer.cold_description')}
               </span>
             </div>
             <Switch checked={warm} onCheckedChange={setWarm} />

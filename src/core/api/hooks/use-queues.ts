@@ -1,50 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-// NOTE: `timezone`, `schedule`, `dispositionCodes`, and `agentIds` were previously
-// declared here and submitted by the queue form, but the backend never persisted
-// them — Queue aggregate only has Hours (not wired through the API), and
-// dispositions/agent membership live in separate endpoints. Fields removed to
-// make the client honestly reflect the server contract. See feat(queues):
-// QueueDto + clean form commit.
-export interface Queue {
-  id: string;
-  name: string;
-  isActive: boolean;
-  maxWaiting?: number;
-  slaTargets?: {
-    answerWithinSeconds?: number;
-    firstResponseWithinSeconds?: number;
-    resolutionWithinSeconds?: number;
-  };
-  overflowRule?: {
-    overflowQueueId: string;
-    overflowAfterSeconds: number;
-  };
-  wrapUp?: {
-    defaultWrapUpSeconds: number;
-    forceWrapUp: boolean;
-  };
-  requiredSkills: string[];
-  /** Per-queue auto-answer default (3B.2b) — agents whose own override is unset inherit this. */
-  autoAnswerDefault?: boolean;
-  createdAt: string;
-}
-
-interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-}
+/** Server response is the named `QueueDto` schema (openapi-response-adoption, Platform/ADR-0035).
+ *  Maps 1:1 to the hand-written interface (no client-only extension fields). The generated
+ *  numeric/nested fields carry AOT `number | string` wire-unions and `EntityId` (typed `unknown`
+ *  in the document); consumers that need a plain `string`/`number` coerce at the boundary. */
+export type Queue = components['schemas']['QueueDto'];
 
 export function useQueues() {
   return useQuery({
     queryKey: ['queues'],
     queryFn: async () => {
-      const result = await customFetch<PagedResult<Queue>>({
+      const result = await customFetch<components['schemas']['PagedResultOfQueueDto']>({
         url: '/api/v1/admin/queues',
         method: 'GET',
         params: { page: '1', pageSize: '100' },
