@@ -4,7 +4,7 @@ import { Trash2 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import {
   useTenantLlmConfig,

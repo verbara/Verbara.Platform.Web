@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
-import { useAgentAiStore, sessionHasData } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, sessionHasData } from '@/core/stores/agent-ai-store';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { ContactInfo } from './contact-info';
 import { ConversationHistory } from './conversation-history';

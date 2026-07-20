@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { UserCheck, X, MessageCircle, Send } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Textarea } from '@/core/ui/textarea';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import {
   useSupervisorMessages,
   useTakeoverConversation,

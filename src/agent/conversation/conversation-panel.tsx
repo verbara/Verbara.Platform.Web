@@ -19,7 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 import {

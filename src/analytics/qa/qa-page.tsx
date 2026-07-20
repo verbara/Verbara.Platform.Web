@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { type ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/core/ui/badge';
-import { DataTable } from '@/admin/shared/data-table';
+import { DataTable } from '@/core/ui/data-table';
 import { ScoreInline } from './score-gauge';
 import { QaDetailDrawer } from './qa-detail-drawer';
 import { useQaList, type QaRow } from '@/core/api/hooks/use-analytics';

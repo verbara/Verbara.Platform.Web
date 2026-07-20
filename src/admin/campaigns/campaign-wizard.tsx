@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ArrowRight, Save, Rocket } from 'lucide-react';
 import { Button } from '@/core/ui/button';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import {
   useCreateCampaign,
   useStartCampaign,

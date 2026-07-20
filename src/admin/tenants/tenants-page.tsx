@@ -22,11 +22,11 @@ import {
   SheetDescription,
   SheetFooter,
 } from '@/core/ui/sheet';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
-import { DataTable } from '@/admin/shared/data-table';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { DataTable } from '@/core/ui/data-table';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';

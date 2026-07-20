@@ -34,9 +34,9 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/core/ui/dialog';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
-import { DataTable } from '@/admin/shared/data-table';
+import { DataTable } from '@/core/ui/data-table';
 import { useFormatDate } from '@/core/i18n/use-format';
 import {
   useActiveImpersonationSessions,

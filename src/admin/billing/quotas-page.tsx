@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Link } from 'react-router';
 import { Pencil, ShieldAlert, ShieldCheck, ShieldX, TriangleAlert } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';

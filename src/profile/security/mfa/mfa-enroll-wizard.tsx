@@ -9,7 +9,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Checkbox } from '@/core/ui/checkbox';
 import { CopyButton } from '@/core/ui/copy-button';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import {
   useMfaEnrollInit,
   useMfaEnrollVerify,

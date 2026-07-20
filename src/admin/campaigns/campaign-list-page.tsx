@@ -6,9 +6,9 @@ import { Plus, Megaphone, Play, Pause, Square } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
-import { DataTable } from '@/admin/shared/data-table';
+import { DataTable } from '@/core/ui/data-table';
 import {
   useCampaigns,
   useStartCampaign,

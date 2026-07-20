@@ -30,8 +30,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/core/ui/dropdown-menu';
-import { PageHeader } from '@/admin/shared/page-header';
-import { DataTable } from '@/admin/shared/data-table';
+import { PageHeader } from '@/core/ui/page-header';
+import { DataTable } from '@/core/ui/data-table';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useAuditEvents, type AuditEventDto, type AuditEventsFilter } from './use-audit-events';

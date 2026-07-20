@@ -26,7 +26,7 @@ import { Separator } from '@/core/ui/separator';
 import { StatCard } from '@/core/ui/stat-card';
 import { StatusBadge } from '@/core/ui/status-badge';
 import { CopyButton } from '@/core/ui/copy-button';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { useSystemLicense, useUpdateLicense } from '@/core/api/hooks/use-system';
 

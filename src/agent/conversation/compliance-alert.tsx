@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { TriangleAlert, ShieldAlert, Info } from 'lucide-react';
-import { useAgentAiStore, EMPTY_SESSION } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION } from '@/core/stores/agent-ai-store';
 import { Button } from '@/core/ui/button';
 
 const SEVERITY_ICON = {

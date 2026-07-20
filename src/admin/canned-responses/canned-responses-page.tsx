@@ -9,9 +9,9 @@ import { Label } from '@/core/ui/label';
 import { Textarea } from '@/core/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/core/ui/sheet';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
-import { DataTable } from '@/admin/shared/data-table';
+import { DataTable } from '@/core/ui/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import {

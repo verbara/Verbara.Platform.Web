@@ -5,7 +5,7 @@ import { LogOut, Monitor } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import {
   useUserSessions,
   useRevokeUserSession,

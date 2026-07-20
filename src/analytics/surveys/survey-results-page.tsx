@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { type ColumnDef } from '@tanstack/react-table';
 import { ChevronDown, ChevronRight, ClipboardList } from 'lucide-react';
 import { Badge } from '@/core/ui/badge';
-import { DataTable } from '@/admin/shared/data-table';
+import { DataTable } from '@/core/ui/data-table';
 import {
   Select,
   SelectContent,

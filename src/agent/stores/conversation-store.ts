@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { onSseEvent } from '@/core/hooks/use-sse';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
-import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore } from '@/core/stores/agent-ai-store';
 
 export interface Conversation {
   id: string;

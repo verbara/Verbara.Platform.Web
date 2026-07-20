@@ -4,7 +4,7 @@ import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { ArrowLeft, Pause, Play, Pencil, FileText } from 'lucide-react';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';

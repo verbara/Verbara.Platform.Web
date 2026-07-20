@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { VirtualList } from '@/core/ui/virtual-list';
 import { useActiveSessions, useStartListening } from '@/core/api/hooks/use-supervisor';
 import { SessionCard } from './session-card';

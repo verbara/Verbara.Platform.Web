@@ -5,7 +5,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { ArrowLeft, ArrowRight, Check, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { useUiStore } from '@/core/stores/ui-store';
 import { customFetch } from '@/core/api/client';
 import { useCompleteOnboarding } from '@/core/api/hooks/use-onboarding';

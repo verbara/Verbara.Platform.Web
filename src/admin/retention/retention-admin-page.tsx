@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useFormatDate } from '@/core/i18n/use-format';
 import {

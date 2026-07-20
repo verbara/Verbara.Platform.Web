@@ -1,7 +1,7 @@
 import { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play, Download, ChevronLeft, ChevronRight } from 'lucide-react';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { useCdrList } from '@/core/api/hooks/use-analytics';

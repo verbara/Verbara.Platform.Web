@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useAgentIntervals } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { useFormatDate } from '@/core/i18n/use-format';
 
 function IntervalTable({ intervals }: { readonly intervals: ReturnType<typeof useAgentIntervals>['data'] & object[] }) {

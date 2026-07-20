@@ -18,8 +18,8 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/admin/shared/page-header';
-import { DataTable } from '@/admin/shared/data-table';
+import { PageHeader } from '@/core/ui/page-header';
+import { DataTable } from '@/core/ui/data-table';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { StatusBadge } from '@/core/ui/status-badge';
