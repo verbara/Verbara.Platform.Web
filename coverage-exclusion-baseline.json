@@ -1,0 +1,8 @@
+{
+  "_comment": "Denominator guard for coverage-gate-v2 (verbara-meta/ADR-0013, clause: close the shared blind spot), Web variant. Net-new-only ratchet, mirroring Sdk/ADR-0004's sync-fence-baseline.json: counts vitest v8 '/* c8 ignore */' markers across the source glob (dist + node_modules excluded). Net-new occurrences FAIL the build; lower 'count' by hand only when you delete an exclusion. Stops the 'shrink the denominator to dodge both coverage gates' laundering vector. Checked by scripts/check-exclusion-baseline.py (byte-identical to the .NET repos; the 'marker' key retargets it to the c8 form). NOTE: the script uses Python stdlib glob.glob, which does NOT expand '{ts,tsx,js,jsx}' braces; 'src/**/*.[tj]s*' is the stdlib-compatible equivalent that matches ts/tsx/js/jsx (204 .ts + 455 .tsx today, and any future .js/.jsx). Baseline as of 2026-07-20: 0 markers over 659 production source files.",
+  "source_glob": "src/**/*.[tj]s*",
+  "exclude_globs": ["**/dist/**", "**/node_modules/**"],
+  "min_scanned_files": 527,
+  "marker": "c8\\s+ignore",
+  "count": 0
+}
