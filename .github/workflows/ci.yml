@@ -55,6 +55,14 @@ jobs:
       - name: Build (typecheck + production build)
         run: npm run build
 
+      # Bundle size budget (verbara-meta/ADR-0012 Ola 2 gate #10): fail if the
+      # brotli'd app JS grows past .size-limit.json's ceiling (frozen 2026-07-20 at
+      # 1.45 MB, ~9% over the then-current 1.33 MB). Catches an accidental heavy
+      # dependency at PR time; the ceiling ratchets down as the bundle is trimmed,
+      # and raising it is a visible, reviewed decision. Reuses the dist just built.
+      - name: Bundle size budget (size-limit)
+        run: npm run size
+
       - name: Upload dist artifact
         uses: actions/upload-artifact@v7
         with:
