@@ -9,6 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.15.0-web] - 2026-07-20
+
 ### Changed
 
 - **Admin-remainder API hooks bind to Platform's named response schemas (`openapi-response-adoption`,
