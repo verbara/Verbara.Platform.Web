@@ -14,8 +14,8 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
-import { PageHeader } from '@/admin/shared/page-header';
-import { DataTable } from '@/admin/shared/data-table';
+import { PageHeader } from '@/core/ui/page-header';
+import { DataTable } from '@/core/ui/data-table';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Button } from '@/core/ui/button';

@@ -12,7 +12,7 @@ import { Switch } from '@/core/ui/switch';
 import { Checkbox } from '@/core/ui/checkbox';
 import { FieldError } from '@/core/ui/field-error';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import {
   useTypificationSchema,

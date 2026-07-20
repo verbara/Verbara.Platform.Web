@@ -9,7 +9,7 @@ import {
   useCampaignMetricsStore,
   type CampaignStatus,
 } from '@/operations/stores/campaign-metrics-store';
-import { useAgentAiStore } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore } from '@/core/stores/agent-ai-store';
 import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
 type SseEventHandler = (data: unknown) => void;

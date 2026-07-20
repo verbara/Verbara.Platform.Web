@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Server, Shield, Cpu, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/core/ui/badge';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { useSystemInfo, useSystemLicense } from '@/core/api/hooks/use-system';
 import { useClusterStatus } from '@/core/api/hooks/use-cluster';

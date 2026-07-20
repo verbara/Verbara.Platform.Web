@@ -21,7 +21,7 @@ import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Separator } from '@/core/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { QueueForm } from './queue-form';
 import { useQueue, useQueues, useDeleteQueue, useUpdateQueue } from '@/core/api/hooks/use-queues';
 import { useAgents } from '@/core/api/hooks/use-agents';

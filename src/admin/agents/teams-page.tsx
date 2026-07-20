@@ -19,10 +19,10 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/core/ui/dialog';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
-import { DataTable } from '@/admin/shared/data-table';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { DataTable } from '@/core/ui/data-table';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { useTeams, useCreateTeam, useUpdateTeam, useDeleteTeam } from '@/core/api/hooks/use-teams';
 import type { Team } from '@/core/api/hooks/use-teams';
 

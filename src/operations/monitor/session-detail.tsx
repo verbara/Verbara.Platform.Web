@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Send, Headphones, Eye, Square } from 'lucide-react';
-import { useAgentAiStore, flattenAiSessions } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, flattenAiSessions } from '@/core/stores/agent-ai-store';
 import { Button } from '@/core/ui/button';
 import { useSupervisorActions } from '@/core/realtime';
 

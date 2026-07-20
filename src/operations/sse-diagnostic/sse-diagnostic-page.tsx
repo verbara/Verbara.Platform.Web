@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { create } from 'zustand';
 import { Activity, Trash2, Wifi, WifiOff } from 'lucide-react';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { onSseEvent } from '@/core/hooks/use-sse';

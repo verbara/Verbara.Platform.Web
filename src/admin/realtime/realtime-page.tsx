@@ -4,11 +4,11 @@ import { Plus, Radio, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
-import { DataTable } from '@/admin/shared/data-table';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { DataTable } from '@/core/ui/data-table';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { ProfileForm } from './profile-form';
 import {
   useEndpointProfiles,

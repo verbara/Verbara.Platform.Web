@@ -9,7 +9,7 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { FieldError } from '@/core/ui/field-error';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import {
   useIpAllowlist,
   useAddIpAllowlistEntry,

@@ -5,7 +5,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { DncImportWizard } from './dnc-import-wizard';
 import {

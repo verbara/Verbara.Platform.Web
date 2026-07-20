@@ -20,7 +20,7 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Separator } from '@/core/ui/separator';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { AgentForm } from './agent-form';
 import { toCapacityOverride } from './capacity-override';

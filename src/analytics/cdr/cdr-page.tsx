@@ -24,7 +24,7 @@ import {
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { ExportButton } from '@/analytics/shared/export-button';
-import { ContactSearchPanel } from '@/admin/shared/contact-search-panel';
+import { ContactSearchPanel } from '@/core/ui/contact-search-panel';
 import { CdrDetailDrawer } from './cdr-detail-drawer';
 import { useCdrList, type CdrRow as ApiCdrRow } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Clock } from 'lucide-react';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';

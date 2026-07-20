@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Ellipsis, UserX, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
-import { PageHeader } from '@/admin/shared/page-header';
-import { DataTable } from '@/admin/shared/data-table';
+import { PageHeader } from '@/core/ui/page-header';
+import { DataTable } from '@/core/ui/data-table';
 import { Button } from '@/core/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {

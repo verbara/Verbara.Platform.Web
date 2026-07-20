@@ -13,7 +13,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
 }));
 
-vi.mock('@/admin/shared/page-header', () => ({
+vi.mock('@/core/ui/page-header', () => ({
   PageHeader: ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div>
       <h1>{title}</h1>
@@ -22,7 +22,7 @@ vi.mock('@/admin/shared/page-header', () => ({
   ),
 }));
 
-vi.mock('@/admin/shared/data-table', () => ({
+vi.mock('@/core/ui/data-table', () => ({
   DataTable: () => <div data-testid="data-table">table</div>,
 }));
 

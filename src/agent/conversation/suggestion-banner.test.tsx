@@ -9,7 +9,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 import { SuggestionBanner } from './suggestion-banner';
-import { useAgentAiStore, AgentSuggestion } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, AgentSuggestion } from '@/core/stores/agent-ai-store';
 
 const makeSuggestion = (overrides: Partial<AgentSuggestion> = {}): AgentSuggestion => ({
   id: 'sug-1',

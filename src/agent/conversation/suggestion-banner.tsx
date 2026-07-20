@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { useAgentAiStore, EMPTY_SESSION } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION } from '@/core/stores/agent-ai-store';
 
 const PRIORITY_STYLES: Record<string, string> = {
   Informational: 'border-blue-400 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-500',

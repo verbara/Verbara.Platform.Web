@@ -1,4 +1,4 @@
-import { useAgentAiStore, EMPTY_SESSION } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION } from '@/core/stores/agent-ai-store';
 
 function getSentimentDot(score: number): string {
   if (score > 0.3) return 'bg-green-500';

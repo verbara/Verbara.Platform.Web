@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Search, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Badge } from '@/core/ui/badge';

@@ -7,9 +7,9 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
-import { DataTable } from '@/admin/shared/data-table';
+import { DataTable } from '@/core/ui/data-table';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import {

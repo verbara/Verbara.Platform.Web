@@ -1,6 +1,6 @@
 import { Construction } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 
 export interface PlaceholderPageProps {
   /** Localised page title shown in the header. */

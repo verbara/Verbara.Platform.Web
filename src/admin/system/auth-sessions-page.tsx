@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LogOut } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
-import { ConfirmDialog } from '@/admin/shared/confirm-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { useActiveSessions, useForceLogout } from '@/core/api/hooks/use-auth-admin';
 import { useFormatDate } from '@/core/i18n/use-format';
 

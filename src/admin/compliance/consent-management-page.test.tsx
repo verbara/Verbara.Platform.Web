@@ -11,7 +11,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
 }));
 
-vi.mock('@/admin/shared/page-header', () => ({
+vi.mock('@/core/ui/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => <h1 data-testid="page-header">{title}</h1>,
 }));
 

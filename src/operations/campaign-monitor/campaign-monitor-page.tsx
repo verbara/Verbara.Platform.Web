@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
 import { useCampaignMetricsStore, type CampaignStatus } from '@/operations/stores/campaign-metrics-store';
 import {

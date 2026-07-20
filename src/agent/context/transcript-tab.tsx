@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAgentAiStore, EMPTY_SESSION } from '@/agent/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION } from '@/core/stores/agent-ai-store';
 
 export function TranscriptTab({ conversationId }: { conversationId: string | null }) {
   const { t, i18n } = useTranslation('agent');

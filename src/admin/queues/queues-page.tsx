@@ -5,9 +5,9 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { Plus, ListOrdered } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
-import { DataTable } from '@/admin/shared/data-table';
+import { DataTable } from '@/core/ui/data-table';
 import { QueueForm } from './queue-form';
 import { useQueues, useCreateQueue, type Queue } from '@/core/api/hooks/use-queues';
 

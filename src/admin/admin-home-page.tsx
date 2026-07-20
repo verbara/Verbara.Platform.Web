@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Building2 } from 'lucide-react';
-import { PageHeader } from '@/admin/shared/page-header';
+import { PageHeader } from '@/core/ui/page-header';
 import { SetupBanner } from '@/admin/setup/setup-banner';
 
 export default function AdminHomePage() {
