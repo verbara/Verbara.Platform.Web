@@ -246,6 +246,13 @@ jobs:
       - name: ESLint
         run: npx eslint .
 
+      # Generated-types adoption ratchet (verbara-meta/ADR-0012 Ola 2 gate #5): fail
+      # if a NEW API hook hand-maintains DTOs instead of importing the generated
+      # OpenAPI types. Baseline = the 45 not-yet-migrated hooks (frozen 2026-07-20),
+      # which only shrinks. Pure Node, no deps.
+      - name: Generated-types adoption ratchet
+        run: npm run lint:generated-types
+
   # OpenSpec docs gate (2026-07-04 ecosystem audit): the living specs + changes are
   # agent-edited markdown with a strict parser — validate them like code. Pinned CLI
   # version (upgrade deliberately). Runs on PR + merge_group like every other gate.
