@@ -15,115 +15,145 @@ updates:
   # ─────────────────────────────────────────────────────────────────────
   # npm dependencies (root package.json)
   # ─────────────────────────────────────────────────────────────────────
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "America/Mexico_City"
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'America/Mexico_City'
     open-pull-requests-limit: 10
     labels:
-      - "dependencies"
-      - "npm"
+      - 'dependencies'
+      - 'npm'
     commit-message:
-      prefix: "chore(deps)"
-      prefix-development: "chore(deps-dev)"
-      include: "scope"
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: 'scope'
+    # Wait after a release before opening a version-update PR, so freshly
+    # published (potentially compromised) packages settle first. Does NOT
+    # delay security updates — those still open as soon as an alert lands
+    # (Sdk/ADR-0039). Longer cooldown for higher-risk semver tiers.
+    cooldown:
+      default-days: 5
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
     # Group related dependencies into a single PR to reduce noise.
     groups:
       react-ecosystem:
         patterns:
-          - "react"
-          - "react-dom"
-          - "react-router*"
-          - "@types/react*"
+          - 'react'
+          - 'react-dom'
+          - 'react-router*'
+          - '@types/react*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       tanstack:
         patterns:
-          - "@tanstack/*"
+          - '@tanstack/*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       vite-toolchain:
         patterns:
-          - "vite"
-          - "@vitejs/*"
-          - "vitest"
-          - "@vitest/*"
+          - 'vite'
+          - '@vitejs/*'
+          - 'vitest'
+          - '@vitest/*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       eslint-toolchain:
         patterns:
-          - "eslint"
-          - "eslint-*"
-          - "@typescript-eslint/*"
-          - "typescript-eslint"
+          - 'eslint'
+          - 'eslint-*'
+          - '@typescript-eslint/*'
+          - 'typescript-eslint'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       i18n:
         patterns:
-          - "i18next"
-          - "i18next-*"
-          - "react-i18next"
+          - 'i18next'
+          - 'i18next-*'
+          - 'react-i18next'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       base-ui-radix:
         patterns:
-          - "@base-ui/react"
-          - "@radix-ui/*"
+          - '@base-ui/react'
+          - '@radix-ui/*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       tailwind:
         patterns:
-          - "tailwindcss"
-          - "@tailwindcss/*"
-          - "tailwind-*"
+          - 'tailwindcss'
+          - '@tailwindcss/*'
+          - 'tailwind-*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       forms:
         patterns:
-          - "react-hook-form"
-          - "@hookform/*"
-          - "zod"
+          - 'react-hook-form'
+          - '@hookform/*'
+          - 'zod'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       playwright:
         patterns:
-          - "@playwright/*"
-          - "playwright"
+          - '@playwright/*'
+          - 'playwright'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
+      # Collapse all CVE-driven security updates into a single PR. Groups
+      # default to version-updates only, so this needs an explicit applies-to
+      # (Sdk/ADR-0039). Not delayed by the cooldown above — security alerts
+      # open as soon as they land.
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - '*'
     # Major version bumps are handled manually in Track 3C (npm-deps-majors).
     # Dependabot ignores them here to avoid PR noise.
     ignore:
-      - dependency-name: "*"
+      - dependency-name: '*'
         update-types:
-          - "version-update:semver-major"
+          - 'version-update:semver-major'
 
   # ─────────────────────────────────────────────────────────────────────
   # GitHub Actions
   # ─────────────────────────────────────────────────────────────────────
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "America/Mexico_City"
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'America/Mexico_City'
     open-pull-requests-limit: 5
     labels:
-      - "dependencies"
-      - "github-actions"
+      - 'dependencies'
+      - 'github-actions'
     commit-message:
-      prefix: "chore(ci)"
-      include: "scope"
+      prefix: 'chore(ci)'
+      include: 'scope'
+    # Settle-before-PR window for action bumps (Sdk/ADR-0039).
+    cooldown:
+      default-days: 7
+    groups:
+      # Group github-actions bumps into a single PR — minor + patch only, so a
+      # major action bump stays an individual review event (Sdk/ADR-0039 D2,
+      # per GitHub's "optimizing PR creation for version updates" guidance).
+      github-actions:
+        update-types:
+          - 'minor'
+          - 'patch'
+        patterns:
+          - '*'
