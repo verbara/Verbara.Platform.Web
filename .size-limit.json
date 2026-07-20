@@ -1,0 +1,7 @@
+[
+  {
+    "name": "App JS — all chunks (brotli)",
+    "path": "dist/assets/*.js",
+    "limit": "1.45 MB"
+  }
+]
