@@ -1,0 +1,8 @@
+{
+  "_comment": "Coverage-gate-v2 floor (verbara-meta/ADR-0013), Web variant. Manual ratchet, no CI write-back (ADR-0003/ADR-0038 D2). Read from vitest v8 coverage-summary.json by scripts/check-coverage-floor.py (json path) and scripts/check-patch-coverage.py (lcov.info). Two-sided band on line: fail if measured < line OR measured > line + slack (stale floor -> raise 'line' to floor(measured) in the same PR). 'branch' and 'lines_valid_min' are hard lower bounds; 'patch' is the diff-coverage floor. The redundant vitest.config.ts thresholds (lines 29 / functions 31 / branches 16 / statements 27) STAY as a fast-fail liveness backstop. Values honest as of the 2026-07-20 baseline run: line 40.39%, branch 30.32%, lines.total 12847.",
+  "line": 38,
+  "slack": 3,
+  "branch": 28,
+  "lines_valid_min": 12204,
+  "patch": 85
+}
