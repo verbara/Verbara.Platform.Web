@@ -1,0 +1,91 @@
+# gates.yaml — ADR-0014 §2 Gate Contract manifest for Verbara.Platform.Web.
+# One entry per language-agnostic gate class (G1-G8). Cross-checkable by /xr:doctor.
+#   status: present | partial | na
+#   impl:          (present/partial) the CONCRETE CI job / script / guard that instantiates it
+#   justification: (na) why the class genuinely does not apply to this repo's stack + chain role
+repo: Verbara.Platform.Web
+role: decoupled
+visibility: public
+charter: docs/specs/architecture.md
+decision_ref: verbara-meta/ADR-0014
+gates:
+  - id: G1
+    class: build-strictness
+    status: present
+    impl: >-
+      .github/workflows/ci.yml `build` job runs `npm run build` (tsc -b && vite build) and `test`
+      job runs `vitest run`; both blocking + required on main. TS strict via tsconfig.app.json.
+
+  - id: G2
+    class: warnings-as-errors+banned-deps
+    status: present
+    impl: >-
+      .github/workflows/ci.yml `lint` job runs `npx eslint .` (blocking, 0 errors — JS has no
+      compiler TWAE, so ESLint is the analog). eslint.config.js sets jsx-a11y recommended +
+      no-unused-vars at error, and max-lines:1250. Radix ban is by convention (@base-ui `render`,
+      not `asChild`), reinforced by Dependabot grouping @radix-ui/* with @base-ui/react.
+
+  - id: G3
+    class: coverage
+    status: present
+    impl: >-
+      .github/workflows/ci.yml `coverage` job runs the ADR-0013 triplet over the vitest v8 report:
+      scripts/check-patch-coverage.py (patch >= coverage-floor.json.patch, needs fetch-depth:0),
+      scripts/check-coverage-floor.py (two-sided band + branch + lines_valid_min),
+      scripts/check-exclusion-baseline.py (net-new c8-ignore denominator guard). Guards
+      self-tested by the `coverage-scripts` job (scripts/tests/). vitest.config.ts thresholds
+      (29/31/16/27) remain as a fast-fail liveness backstop.
+
+  - id: G4
+    class: architecture-layering
+    status: present
+    impl: >-
+      eslint.config.js `domainIsolation` block — no-restricted-imports forbids cross-imports
+      among src/{admin,agent,analytics,operations} (ADR-0012 Ola 2 gate #4). Enforced by the
+      blocking `lint` job.
+
+  - id: G5
+    class: content-invariants
+    status: present
+    impl: >-
+      i18n parity — .github/workflows/ci.yml `i18n` job runs scripts/i18n-parity-check.mjs
+      (EN-US/ES-419/PT-BR key parity across common/admin/agent/analytics/operations/webchat
+      namespaces, ADR-0001). Generated-types adoption — `lint` job runs
+      scripts/check-generated-types-adoption.mjs (ADR-0012 gate #5): a new API hook may not
+      hand-maintain a DTO the generated OpenAPI types already define; baseline in
+      generated-types-adoption-baseline.json only shrinks.
+
+  - id: G6
+    class: budgets
+    status: present
+    impl: >-
+      .github/workflows/ci.yml `build` job runs `npm run size` (size-limit) — brotli'd app JS
+      (dist/assets/*.js) must stay <= 1.45 MB per .size-limit.json (ADR-0012 gate #10; ceiling
+      ratchets down). LOC budget covered under G2 (max-lines:1250). Lighthouse perf budgets in
+      .github/workflows/lighthouse.yml (.lighthouserc.json) as a complementary non-required check.
+
+  - id: G7
+    class: publish-reality
+    status: partial
+    impl: >-
+      .github/workflows/release.yml (on `v*` tag) builds the multi-arch (amd64+arm64) nginx Docker
+      image, pushes to ghcr.io, cosign-signs by manifest digest and verifies against the committed
+      .github/cosign.pub. PARTIAL vs ADR-0014's G7: the class expects a PR-TIME publish probe
+      (Platform's `aot-probe`); Web validates its ship-shape invariant only at RELEASE time. Correct
+      for a static asset bundle — there is no per-arch AOT publish to prove green at PR — but an
+      image-build regression surfaces at release, not on the PR. No AOT/IL split and no
+      authorized-digests binding apply: Web ships no Pro IP, so a signed image is the full posture.
+
+  - id: G8
+    class: supply-chain
+    status: present
+    impl: >-
+      .github/workflows/ci.yml `audit` job runs `npm audit --audit-level=high` (blocking, HIGH or
+      CRITICAL fails). .github/dependabot.yml drives grouped weekly npm + github-actions updates
+      with a settle-before-PR cooldown (security updates exempt); auto-merge for patch+minor via
+      .github/workflows/dependabot-auto-merge.yml. CodeQL SAST (security-extended +
+      security-and-quality) in .github/workflows/codeql.yml scans the app's own JS/TS source.
+
+# Non-gate-class required check (not one of G1-G8, recorded for completeness):
+#   openspec — .github/workflows/ci.yml `openspec` job: `openspec validate --all --strict`
+#   validates agent-edited spec/change markdown; required on main.
