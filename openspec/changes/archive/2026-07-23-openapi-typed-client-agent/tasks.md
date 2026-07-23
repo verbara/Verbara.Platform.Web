@@ -43,7 +43,7 @@ total).
       the PROFILE-scoped schema, NOT the legacy `/auth`-path `RegenerateRecoveryCodesRequest`). KEPT:
       `RecoveryCodesPayload` (POST 200 is `content?: never`).
 - [x] 1.8 `use-user-sessions.ts` (1) — **0 migrated.** `UserSessionDto`: `GET /profile/security/
-    sessions` is `content?: never`; the nearby `ActiveSession`/`ActiveSessionDto` are unrelated
+  sessions` is `content?: never`; the nearby `ActiveSession`/`ActiveSessionDto` are unrelated
       shapes lacking `device`/`location`/`isCurrentSession`.
 
 ## 2. Phase B — Coercion sites (report to the Admin child's tally)
