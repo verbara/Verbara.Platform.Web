@@ -93,4 +93,20 @@ describe('useQueueMetrics', () => {
       method: 'GET',
     });
   });
+
+  it('CoercesNullWaitingFields_ToNull_When_ProviderUnavailable', async () => {
+    // waiting/avgWaitSeconds arrive null when the Pro.Analytics.Live provider is
+    // unavailable; toQueueMetrics must preserve null (not coerce to Number(null)=0).
+    const headers = new Headers();
+    const nullRow = { ...sample, waiting: null, avgWaitSeconds: null };
+    mockFetch.mockResolvedValueOnce({ data: [nullRow], headers });
+    const { Wrapper } = createWrapper();
+
+    const { result } = renderHook(() => useQueueMetrics(), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.metrics[0]?.waiting).toBeNull();
+    expect(result.current.data?.metrics[0]?.avgWaitSeconds).toBeNull();
+    expect(result.current.data?.metrics[0]?.slaPercent).toBe(sample.slaPercent);
+  });
 });
