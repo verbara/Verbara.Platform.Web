@@ -12,6 +12,11 @@ import { customFetch } from '@/core/api/client';
  * this surface is dedicated to the standalone wizard route.
  */
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): `GET /profile/security/sessions` declares a
+ * `content?: never` 200 response (no schema); the nearby `ActiveSession`/`ActiveSessionDto` are
+ * unrelated shapes lacking `device`/`location`/`isCurrentSession`, so there is nothing to swap onto.
+ */
 export interface UserSessionDto {
   sessionId: string;
   device: string;

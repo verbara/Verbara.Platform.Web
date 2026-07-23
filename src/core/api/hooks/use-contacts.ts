@@ -3,6 +3,12 @@ import { customFetch } from '@/core/api/client';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): the document's `Contact` is a raw entity of a
+ * different shape — no `id` (only `contactId`), `addresses` optional+nullable, `preferredChannel`
+ * as the `ChannelType` enum. Consumers read `contact.id`, index `addresses` without a null-guard,
+ * and bind `preferredChannel` to a plain-string form field, so a swap would not typecheck.
+ */
 export interface Contact {
   id: string;
   firstName?: string;
@@ -38,6 +44,11 @@ export function useContact(id: string | undefined) {
   });
 }
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): `GET /contacts/{id}/conversations` returns
+ * `PagedResultOfConversation` over the raw `Conversation` entity, which lacks this view-model's
+ * `id`/`queueName`/`disposition`/`durationSeconds` (all read by conversation-history.tsx).
+ */
 export interface ContactConversation {
   id: string;
   channel: string;

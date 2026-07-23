@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 
 /**
  * Hooks for the profile-scoped MFA enrollment wizard at
@@ -15,17 +16,28 @@ import { customFetch } from '@/core/api/client';
  * codes-display step on remount/refresh without losing the enrollment.
  */
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): POST `/profile/security/mfa/enroll/init` declares
+ * a `content?: never` 200 response in the document (no response schema), and no generated schema
+ * models this `{ secret, qrUri, manualCode }` shape — nothing to swap onto.
+ */
 export interface MfaEnrollInitResponse {
   secret: string;
   qrUri: string;
   manualCode: string;
 }
 
-export interface MfaEnrollVerifyRequest {
-  secret: string;
-  totpCode: string;
-}
+/**
+ * Migrated to the generated request schema (openapi-typed-client-agent, Platform/ADR-0035):
+ * `MfaEnrollVerifyRequest` (same name) is an exact structural match `{ secret, totpCode }`.
+ */
+export type MfaEnrollVerifyRequest = components['schemas']['MfaEnrollVerifyRequest'];
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): POST `/profile/security/mfa/enroll/verify` declares
+ * a `content?: never` 200 response (no response schema); no generated schema models
+ * `{ recoveryCodes }`, which the wizard reads.
+ */
 export interface MfaEnrollVerifyResponse {
   recoveryCodes: string[];
 }

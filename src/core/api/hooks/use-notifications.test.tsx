@@ -58,10 +58,9 @@ describe('useNotifications', () => {
   it('should_PassUnreadOnlyParam_WhenRequested', async () => {
     mockFetch.mockResolvedValueOnce([]);
 
-    const { result } = renderHook(
-      () => useNotifications({ unreadOnly: true, limit: 20 }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useNotifications({ unreadOnly: true, limit: 20 }), {
+      wrapper,
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockFetch).toHaveBeenCalledWith({
@@ -87,6 +86,18 @@ describe('useUnreadCount', () => {
       method: 'GET',
     });
   });
+
+  it('should_CoerceStringCount_ToNumber_WhenWireSendsAotUnion', async () => {
+    // UnreadCountDto.count is the AOT `number | string` wire union; normalizeUnreadCount
+    // must narrow it to a real number so the badge arithmetic/compare stays valid.
+    mockFetch.mockResolvedValueOnce({ count: '5' });
+
+    const { result } = renderHook(() => useUnreadCount(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual({ count: 5 });
+    expect(typeof result.current.data?.count).toBe('number');
+  });
 });
 
 describe('useMarkNotificationRead', () => {
@@ -104,6 +115,26 @@ describe('useMarkNotificationRead', () => {
       method: 'PUT',
     });
   });
+
+  it('should_OptimisticallyMarkReadAndDecrementCount_WhenCacheSeeded', async () => {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    qc.setQueryData(
+      ['notifications', 'list', {}],
+      [{ ...sample, notificationId: 'n-1', isRead: false }],
+    );
+    qc.setQueryData(['notifications', 'unread-count'], { count: 3 });
+    mockFetch.mockResolvedValueOnce(undefined);
+    const seededWrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+
+    const { result } = renderHook(() => useMarkNotificationRead(), { wrapper: seededWrapper });
+    result.current.mutate('n-1');
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(qc.getQueryData<Notification[]>(['notifications', 'list', {}])?.[0]?.isRead).toBe(true);
+    expect(qc.getQueryData(['notifications', 'unread-count'])).toEqual({ count: 2 });
+  });
 });
 
 describe('useMarkAllNotificationsRead', () => {
@@ -120,5 +151,24 @@ describe('useMarkAllNotificationsRead', () => {
       url: '/api/v1/notifications/read-all',
       method: 'PUT',
     });
+  });
+
+  it('should_OptimisticallyMarkAllReadAndZeroCount_WhenCacheSeeded', async () => {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    qc.setQueryData(['notifications', 'list', {}], [{ ...sample, isRead: false }]);
+    qc.setQueryData(['notifications', 'unread-count'], { count: 5 });
+    mockFetch.mockResolvedValueOnce(undefined);
+    const seededWrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+
+    const { result } = renderHook(() => useMarkAllNotificationsRead(), { wrapper: seededWrapper });
+    result.current.mutate();
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(
+      qc.getQueryData<Notification[]>(['notifications', 'list', {}])?.every((n) => n.isRead),
+    ).toBe(true);
+    expect(qc.getQueryData(['notifications', 'unread-count'])).toEqual({ count: 0 });
   });
 });
