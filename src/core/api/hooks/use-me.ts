@@ -15,6 +15,11 @@ export interface MfaPolicy {
   policySource: 'tenant' | 'user';
 }
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): `GET /users/me` declares a `content?: never`
+ * 200 response in the document (no `MeDto`/`CurrentUserDto` schema emitted), so neither `Me` nor
+ * its nested {@link MfaPolicy} has a generated type to swap onto.
+ */
 export interface Me {
   id: string;
   email: string;

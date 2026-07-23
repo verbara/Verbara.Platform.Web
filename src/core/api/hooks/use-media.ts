@@ -3,6 +3,11 @@ import { useAuthStore } from '@/core/auth/auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { toast } from 'sonner';
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): `POST /media/upload` declares a `content?: never`
+ * 200 response (no response schema), and this hook bypasses `customFetch` for a raw multipart
+ * `fetch().json()` — there is nothing generated to swap onto.
+ */
 export interface MediaUploadResult {
   id: string;
   fileName: string;

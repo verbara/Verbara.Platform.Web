@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 
 /**
  * Profile-scoped recovery-codes regenerate hook backing
@@ -17,10 +18,19 @@ import { customFetch } from '@/core/api/client';
  * the typed response below.
  */
 
-export interface RegenerateRecoveryCodesRequest {
-  totpCode: string;
-}
+/**
+ * Migrated to the generated request schema (openapi-typed-client-agent, Platform/ADR-0035):
+ * exact match `{ totpCode }`. NB the PROFILE-scoped `ProfileRegenerateRecoveryCodesRequest` — NOT
+ * the legacy `RegenerateRecoveryCodesRequest` that binds the `/auth/mfa/...` path.
+ */
+export type RegenerateRecoveryCodesRequest =
+  components['schemas']['ProfileRegenerateRecoveryCodesRequest'];
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): POST `/profile/security/recovery-codes/regenerate`
+ * declares a `content?: never` 200 response (no response schema); no generated schema models
+ * `{ recoveryCodes }`, which the caller reads.
+ */
 export interface RecoveryCodesPayload {
   recoveryCodes: string[];
 }

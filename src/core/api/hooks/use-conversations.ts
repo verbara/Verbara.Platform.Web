@@ -1,8 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): the document's `Conversation` is the raw ENTITY
+ * (`conversationId`, `owner`, `sessions`, PascalCase `state`) — a different shape from this inbox
+ * view-model (`id`, lowercase `state`, `contactName`/`queueName`/`lastMessage`/`unread`/`assignedAt`),
+ * so there is no structurally compatible schema to swap onto.
+ */
 export interface Conversation {
   id: string;
   contactId: string;
@@ -24,6 +31,11 @@ export interface Conversation {
   assignedAt: string;
 }
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): the document's `Message` is the raw ENTITY
+ * (`messageId`, `direction`, `content` MessageEnvelope, `deliveryStatus`) — not this view-model
+ * (`sender`/`senderName`/`text`/`timestamp`/`type`), so there is no structural match to swap onto.
+ */
 export interface Message {
   id: string;
   conversationId: string;
@@ -164,11 +176,12 @@ export function useTransferConversation() {
   });
 }
 
-/** Server result of a blind voice transfer (3B.2c). On success `accepted` is true. */
-export interface VoiceTransferResult {
-  accepted: boolean;
-  error?: string | null;
-}
+/**
+ * Server result of a blind voice transfer (3B.2c). On success `accepted` is true.
+ * Migrated to the generated schema (openapi-typed-client-agent, Platform/ADR-0035):
+ * `VoiceTransferResponse` is a structural match; no consumer reads its fields.
+ */
+export type VoiceTransferResult = components['schemas']['VoiceTransferResponse'];
 
 /**
  * Blind-transfer a live VOICE call to a queue or another agent (3B.2c). Distinct from
@@ -196,12 +209,12 @@ export function useVoiceTransfer() {
   });
 }
 
-/** Server result of an agent click-to-dial (3B.2d). On success `correlationId` is the outbound Conversation id. */
-export interface VoiceDialResult {
-  accepted: boolean;
-  correlationId?: string | null;
-  error?: string | null;
-}
+/**
+ * Server result of an agent click-to-dial (3B.2d). On success `correlationId` is the outbound Conversation id.
+ * Migrated to the generated schema (openapi-typed-client-agent, Platform/ADR-0035):
+ * `VoiceDialResponse` is a structural match (`accepted`/`correlationId` read by contact-info are present).
+ */
+export type VoiceDialResult = components['schemas']['VoiceDialResponse'];
 
 /**
  * Agent click-to-dial (3B.2d): server-side AMI Originate of an outbound call (reusing the Pro Dialer

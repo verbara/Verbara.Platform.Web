@@ -1,10 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { toast } from 'sonner';
 
 export type NotificationCategory = 'Operational' | 'System' | 'Security' | 'Billing';
 export type NotificationSeverity = 'Info' | 'Warning' | 'Critical';
 
+/**
+ * Kept hand-written (openapi-typed-client-agent): matches `NotificationDto` field-for-field EXCEPT
+ * the DTO widens `category`/`severity` to bare `string`, whereas consumers require the literal
+ * unions above (notification-item's `SeverityIcon` prop; notification-drawer keying a
+ * `Record<TabValue, number>` by `category`). A string-widening the swap-the-T idiom cannot bridge,
+ * so it stays hand-written.
+ */
 export interface Notification {
   notificationId: string;
   type: string;
@@ -18,8 +26,21 @@ export interface Notification {
   readAt: string | null;
 }
 
+/**
+ * Normalized domain shape for the unread-count badge. The wire response is the generated
+ * `UnreadCountDto` (openapi-typed-client-agent, Platform/ADR-0035), whose `count` is the AOT
+ * `number | string` union; {@link normalizeUnreadCount} coerces it to `number` at the fetch
+ * boundary so the optimistic-update arithmetic (`previousCount.count - 1`) and the bell's
+ * `count > 0` stay valid. Genuine `number | string` coercion site — reported to the shared tally
+ * in `openapi-typed-client-admin`.
+ */
 export interface UnreadCountResponse {
   count: number;
+}
+
+/** Boundary coercion for the AOT `number | string` union on `count` (see {@link UnreadCountResponse}). */
+function normalizeUnreadCount(dto: components['schemas']['UnreadCountDto']): UnreadCountResponse {
+  return { count: Number(dto.count) };
 }
 
 export interface NotificationListParams {
@@ -51,11 +72,13 @@ export function useNotifications(params: NotificationListParams = {}) {
 export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
-    queryFn: () =>
-      customFetch<UnreadCountResponse>({
+    queryFn: async () => {
+      const dto = await customFetch<components['schemas']['UnreadCountDto']>({
         url: '/api/v1/notifications/unread-count',
         method: 'GET',
-      }),
+      });
+      return normalizeUnreadCount(dto);
+    },
   });
 }
 
@@ -73,19 +96,12 @@ export function useMarkNotificationRead() {
       const previousLists = qc.getQueriesData<Notification[]>({
         queryKey: ['notifications', 'list'],
       });
-      const previousCount = qc.getQueryData<UnreadCountResponse>([
-        'notifications',
-        'unread-count',
-      ]);
+      const previousCount = qc.getQueryData<UnreadCountResponse>(['notifications', 'unread-count']);
 
-      qc.setQueriesData<Notification[]>(
-        { queryKey: ['notifications', 'list'] },
-        (old) =>
-          old?.map((n) =>
-            n.notificationId === id
-              ? { ...n, isRead: true, readAt: new Date().toISOString() }
-              : n,
-          ),
+      qc.setQueriesData<Notification[]>({ queryKey: ['notifications', 'list'] }, (old) =>
+        old?.map((n) =>
+          n.notificationId === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n,
+        ),
       );
 
       if (previousCount) {
@@ -125,17 +141,10 @@ export function useMarkAllNotificationsRead() {
       const previousLists = qc.getQueriesData<Notification[]>({
         queryKey: ['notifications', 'list'],
       });
-      const previousCount = qc.getQueryData<UnreadCountResponse>([
-        'notifications',
-        'unread-count',
-      ]);
+      const previousCount = qc.getQueryData<UnreadCountResponse>(['notifications', 'unread-count']);
 
-      qc.setQueriesData<Notification[]>(
-        { queryKey: ['notifications', 'list'] },
-        (old) =>
-          old?.map((n) =>
-            n.isRead ? n : { ...n, isRead: true, readAt: new Date().toISOString() },
-          ),
+      qc.setQueriesData<Notification[]>({ queryKey: ['notifications', 'list'] }, (old) =>
+        old?.map((n) => (n.isRead ? n : { ...n, isRead: true, readAt: new Date().toISOString() })),
       );
 
       qc.setQueryData<UnreadCountResponse>(['notifications', 'unread-count'], { count: 0 });
