@@ -4,6 +4,13 @@ import { toast } from 'sonner';
 
 // ── Types ──
 
+/**
+ * Kept hand-written (openapi-typed-client-operations): read off `useClusterNodes`
+ * (GET `/management/cluster/nodes`) and the create/update mutation responses, all of which the
+ * document declares with `content?: never` (no response schema). It also carries `amiHostname`
+ * and `amiPort` (read by `node-detail-drawer.tsx`) that the document's `MgmtClusterNodeDto`
+ * omits — so it is not structurally interchangeable with that DTO either.
+ */
 export interface ClusterNode {
   nodeId: string;
   state: string;
@@ -16,6 +23,11 @@ export interface ClusterNode {
   amiPort?: number;
 }
 
+/**
+ * Kept hand-written (openapi-typed-client-operations): the drain/force-drain endpoints return
+ * `content?: never` / `StatusUpdateResponse` (not a drain shape), and this type is nested in the
+ * hand-written `ClusterStatus` below — so there is no matching response schema to swap onto.
+ */
 export interface DrainStatus {
   nodeId: string;
   state: string;
@@ -27,6 +39,12 @@ export interface DrainStatus {
   forceDisconnected: number;
 }
 
+/**
+ * Kept hand-written (openapi-typed-client-operations): `useClusterInstances`
+ * (GET `/management/cluster/instances`) has `content?: never` (no response schema). The
+ * document's `MgmtInstanceDto` is also a different shape (`ownedNodeIds`, no `startedAt`/
+ * `activeChannels` — both read by `cluster-page.tsx`), so it is not interchangeable.
+ */
 export interface ClusterInstance {
   instanceId: string;
   startedAt: string;
@@ -35,6 +53,13 @@ export interface ClusterInstance {
   activeChannels: number;
 }
 
+/**
+ * Kept hand-written (openapi-typed-client-operations): although GET `/management/cluster/status`
+ * DOES declare `MgmtClusterStatusDto`, its nested `nodes`/`instances` are `MgmtClusterNodeDto`/
+ * `MgmtInstanceDto`, which diverge from the `ClusterNode`/`ClusterInstance` fields the cluster UI
+ * reads (`amiHostname`, `activeChannels`, `ownedNodes`). Swapping onto it would break those
+ * consumers, so it stays hand-written until the nested DTOs carry those fields.
+ */
 export interface ClusterStatus {
   instanceId: string;
   nodes: ClusterNode[];
@@ -44,6 +69,13 @@ export interface ClusterStatus {
   instances: ClusterInstance[];
 }
 
+/**
+ * Kept hand-written (openapi-typed-client-operations): the document's `CreateNodeRequest` makes
+ * `weight`/`priorityTier`/`maxCapacity` REQUIRED (`number | string`), but the add-node form's zod
+ * schema declares them `.optional()` (`number | undefined`) so the server can apply its defaults —
+ * swapping onto the required shape would force the form to always send explicit values, changing
+ * the create contract. `amiPort` alone would migrate, but the whole body cannot cleanly.
+ */
 export interface CreateNodeInput {
   nodeId: string;
   amiHostname: string;
@@ -55,6 +87,12 @@ export interface CreateNodeInput {
   maxCapacity?: number;
 }
 
+/**
+ * Kept hand-written (openapi-typed-client-operations): the document's `UpdateNodeRequest` adds a
+ * required `tags` field and makes `weight`/`priorityTier`/`maxCapacity` required-nullable, whereas
+ * the edit-node form submits only `{ weight, priorityTier, maxCapacity }` — swapping onto it would
+ * force the form to send a `tags` payload it has no field for.
+ */
 export interface UpdateNodeInput {
   weight?: number;
   priorityTier?: number;
@@ -85,7 +123,10 @@ export function useClusterInstances() {
   return useQuery({
     queryKey: ['cluster', 'instances'],
     queryFn: () =>
-      customFetch<ClusterInstance[]>({ url: '/api/v1/management/cluster/instances', method: 'GET' }),
+      customFetch<ClusterInstance[]>({
+        url: '/api/v1/management/cluster/instances',
+        method: 'GET',
+      }),
     refetchInterval: 10_000,
   });
 }

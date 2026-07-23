@@ -1,5 +1,5 @@
 {
-  "_comment": "ADR-0012 Ola 2 gate #5 (generated-types adoption ratchet). These API hooks do NOT yet import the generated OpenAPI types (@/core/api/generated). This is the FROZEN floor (45 at 2026-07-20). The gate fails if a hook not on this list is unadopted (a NEW hand-maintained DTO when a generated type exists). Ratchets DOWN: as a hook adopts generated types, remove it here. Never add to this list.",
+  "_comment": "ADR-0012 Ola 2 gate #5 (generated-types adoption ratchet). These API hooks do NOT yet import the generated OpenAPI types (@/core/api/generated). Floor originally 45 at 2026-07-20; ratcheted to 43 by openapi-typed-client-operations (use-queue-metrics + use-supervisor adopted). The gate fails if a hook not on this list is unadopted (a NEW hand-maintained DTO when a generated type exists). Ratchets DOWN: as a hook adopts generated types, remove it here. Never add to this list.",
   "unadopted_hooks": [
     "src/core/api/hooks/use-agent-assist-feature.ts",
     "src/core/api/hooks/use-agent-assist.ts",
@@ -33,7 +33,6 @@
     "src/core/api/hooks/use-notifications.ts",
     "src/core/api/hooks/use-onboarding.ts",
     "src/core/api/hooks/use-queue-members.ts",
-    "src/core/api/hooks/use-queue-metrics.ts",
     "src/core/api/hooks/use-rbac.ts",
     "src/core/api/hooks/use-reason-hints.ts",
     "src/core/api/hooks/use-recording.ts",
@@ -41,7 +40,6 @@
     "src/core/api/hooks/use-reports.ts",
     "src/core/api/hooks/use-routes.ts",
     "src/core/api/hooks/use-skills.ts",
-    "src/core/api/hooks/use-supervisor.ts",
     "src/core/api/hooks/use-surveys.ts",
     "src/core/api/hooks/use-trunks.ts",
     "src/core/api/hooks/use-user-sessions.ts",
