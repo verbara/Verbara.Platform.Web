@@ -10,6 +10,7 @@ import {
   useTakeoverConversation,
   useCloseDigitalConversation,
   useSendCoachingNote,
+  useStuckConversations,
   useRetryCallback,
 } from './use-supervisor';
 import type { ActiveSession, SupervisorConversation, SupervisorMessage } from './use-supervisor';
@@ -338,6 +339,43 @@ describe('useRetryCallback', () => {
     act(() => {
       result.current.mutate('voice-1');
     });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useStuckConversations', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should fetch stuck conversations and coerce the failoverAttempts wire union to a number', async () => {
+    // `failoverAttempts` arrives as a string on the AOT `number | string` wire union;
+    // `normalizeStuckConversation` must narrow it to `number` for the `> 0` compare.
+    const wireRow = {
+      conversationId: 'conv-1',
+      channel: 'chat',
+      state: 'Active',
+      ownerAgentId: 'agent-1',
+      ownerAgentName: 'Agent One',
+      ownerOfflineSince: '2026-01-01T00:00:00Z',
+      failoverAttempts: '3',
+      escalated: true,
+    };
+    vi.mocked(client.customFetch).mockResolvedValue([wireRow]);
+    const { result } = renderHook(() => useStuckConversations(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/supervisor/conversations/stuck',
+      method: 'GET',
+    });
+    expect(result.current.data?.[0]?.failoverAttempts).toBe(3);
+    expect(typeof result.current.data?.[0]?.failoverAttempts).toBe('number');
+    expect(result.current.data?.[0]?.ownerOfflineSince).toBe('2026-01-01T00:00:00Z');
+  });
+
+  it('should handle error', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new Error('Stuck fetch failed'));
+    const { result } = renderHook(() => useStuckConversations(), { wrapper });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
