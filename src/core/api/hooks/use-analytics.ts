@@ -3,6 +3,15 @@ import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 
 // Dashboard
+//
+// The numeric union is now extinct at the source (openapi-numeric-schema-truth,
+// Platform/ADR-0036), so the fully-required analytics shapes below alias their
+// generated schemas directly (swap-the-T; `client.ts` untouched). `DashboardData`
+// stays hand-written: `DashboardKpis` matches the generated `DashboardKpisDto`, but the
+// generated `DashboardDto` types `previousPeriodKpis` as required-nullable
+// (`null | DashboardKpisDto`) whereas the consumer (`dashboard-page.tsx`) treats it as
+// optional (`| undefined`) — an optional-vs-nullable structural divergence the swap
+// cannot bridge.
 export interface DashboardData {
   kpis: DashboardKpis;
   previousPeriodKpis?: DashboardKpis;
@@ -10,21 +19,9 @@ export interface DashboardData {
   slaTrend: TrendPoint[];
   channelDistribution: ChannelDistribution[];
 }
-export interface DashboardKpis {
-  conversationsHandled: number;
-  avgWaitMs: number;
-  avgHandleTimeMs: number;
-  slaPercent: number;
-  abandonRatePercent: number;
-}
-export interface TrendPoint {
-  label: string;
-  value: number;
-}
-export interface ChannelDistribution {
-  channel: string;
-  count: number;
-}
+export type DashboardKpis = components['schemas']['DashboardKpisDto'];
+export type TrendPoint = components['schemas']['TrendPointDto'];
+export type ChannelDistribution = components['schemas']['ChannelDistributionDto'];
 
 // CDR
 export interface CdrRow {
@@ -130,16 +127,8 @@ export interface ComplianceViolationInfo {
   description: string;
   evidence?: string;
 }
-export interface TopicInfo {
-  name: string;
-  confidence: number;
-}
-export interface TurnSentimentInfo {
-  turnIndex: number;
-  speaker: string;
-  score: number;
-  label: string;
-}
+export type TopicInfo = components['schemas']['TopicDto'];
+export type TurnSentimentInfo = components['schemas']['TurnSentimentDto'];
 
 // Transcript
 export interface TranscriptSegment {
@@ -278,15 +267,7 @@ export function useIntervals(from?: string, to?: string, queue?: string) {
 }
 
 // ─── Live State ─────────────────────────────────────────
-export interface LiveState {
-  queueName: string;
-  callsWaiting: number;
-  longestWaitMs: number;
-  agentsAvailable: number;
-  agentsOnCall: number;
-  agentsPaused: number;
-  agentsInWrapUp: number;
-}
+export type LiveState = components['schemas']['LiveStateDto'];
 
 export function useAllLiveStates() {
   return useQuery({
@@ -310,17 +291,7 @@ export function useLiveState(queueName: string) {
 }
 
 // ─── Current Interval ───────────────────────────────────
-export interface CurrentInterval {
-  intervalStart: string;
-  intervalEnd: string;
-  callsOffered: number;
-  callsAnswered: number;
-  callsAbandoned: number;
-  ahtMs: number;
-  asaMs: number;
-  slaPercent: number;
-  abandonRatePercent: number;
-}
+export type CurrentInterval = components['schemas']['CurrentIntervalDto'];
 
 export function useCurrentInterval(queueName?: string) {
   const params = queueName ? `?queueName=${encodeURIComponent(queueName)}` : '?queueName=default';
@@ -336,18 +307,7 @@ export function useCurrentInterval(queueName?: string) {
 }
 
 // ─── Agent Intervals ────────────────────────────────────
-export interface AgentInterval {
-  agentId: string;
-  intervalStart: string;
-  intervalSeconds: number;
-  callsHandled: number;
-  ahtMs: number;
-  occupancyPercent: number;
-  rnaCount: number;
-  transfers: number;
-  totalPauseMs: number;
-  loginDurationMs: number;
-}
+export type AgentInterval = components['schemas']['AgentIntervalDto'];
 
 export function useAgentIntervals(filters: { from: string; to: string; agentId?: string }) {
   const params = new URLSearchParams({ from: filters.from, to: filters.to });
@@ -364,12 +324,13 @@ export function useAgentIntervals(filters: { from: string; to: string; agentId?:
 
 // ─── Speech Analytics / CallAnalytics aggregations (v1.9.3) ──────────────────
 
-export interface TopicTrendDto {
-  topic: string;
-  occurrences: number;
-  avgConfidence: number;
-}
+export type TopicTrendDto = components['schemas']['TopicTrendDto'];
 
+/**
+ * KEEP hand-written (structural-divergence, logged as a separate Platform contract bug):
+ * the generated `TopicTrendsResponse` renames `topics`→`trends` and drops `from`/`to`, so it
+ * cannot back the consumer's `{ topics, totalAnalyzed, from, to }` shape.
+ */
 export interface TopicTrendsResponse {
   topics: TopicTrendDto[];
   totalAnalyzed: number;
@@ -377,22 +338,16 @@ export interface TopicTrendsResponse {
   to: string;
 }
 
-export interface SentimentTrendPointDto {
-  bucketStart: string;
-  avgSentimentScore: number | null;
-  positiveCount: number;
-  neutralCount: number;
-  negativeCount: number;
-  totalCount: number;
-}
+export type SentimentTrendPointDto = components['schemas']['SentimentTrendPointDto'];
+export type SentimentTrendsResponse = components['schemas']['SentimentTrendsResponse'];
 
-export interface SentimentTrendsResponse {
-  points: SentimentTrendPointDto[];
-  bucket: string;
-  from: string;
-  to: string;
-}
-
+/**
+ * KEEP hand-written (structural-divergence, logged as a separate Platform contract bug):
+ * the generated `ComplianceRuleSummaryDto` widens `severity` from the
+ * `'Info' | 'Warning' | 'Critical'` literal union to bare `string`, which the consumer's
+ * severity-keyed display requires narrowed. `ComplianceSummaryResponse` transitively keeps its
+ * local `rules` element type for the same reason.
+ */
 export interface ComplianceRuleSummaryDto {
   ruleId: string;
   ruleName: string;
@@ -403,11 +358,8 @@ export interface ComplianceRuleSummaryDto {
   lastSeen: string;
 }
 
-export interface ComplianceSeverityBreakdownDto {
-  info: number;
-  warning: number;
-  critical: number;
-}
+export type ComplianceSeverityBreakdownDto =
+  components['schemas']['ComplianceSeverityBreakdownDto'];
 
 export interface ComplianceSummaryResponse {
   rules: ComplianceRuleSummaryDto[];
@@ -479,6 +431,11 @@ export function useComplianceSummary(
 }
 
 // ─── Bot Analytics ─────────────────────────────────────
+/**
+ * KEEP hand-written: no generated counterpart. The generated `BotDto` describes a bot
+ * configuration entity (`id`, `name`, `defaultFlowId`, `confidenceThreshold`, …), not this
+ * per-period analytics roll-up (`totalConversations`, `handoffRate`, `resolutionRate`, …).
+ */
 export interface BotAnalyticsSummary {
   totalConversations: number;
   handedOff: number;
@@ -514,31 +471,22 @@ export function useBotAnalytics(from?: string, to?: string) {
  * camelCased over the wire — do NOT rename without changing the consumer, or
  * deserialization silently yields `undefined`.
  *
- * Native AOT number handling means `totalResponses` / `averageRating` are
- * generated as `number | string` (the document's `["integer","string"]` /
- * `["number","string"]` union types). The JSON wire payload always sends a
- * numeric JSON value for these fields; the `string` arm exists only to cover
- * the schema's declared pattern, not an observed runtime shape.
+ * `totalResponses` / `averageRating` are now single-typed `number` on the regenerated
+ * document (openapi-numeric-schema-truth, Platform/ADR-0036 strips the spurious AOT
+ * `string` arm at the source).
  */
 export type CsatResponseDto = components['schemas']['CsatResponseDto'];
 
 /**
- * Consumer-facing CSAT summary: `CsatResponseDto` with `totalResponses` /
- * `averageRating` normalized to `number` (see {@link CsatResponseDto}'s doc
- * comment on the generated union). Kept as the hook's resolved type so
- * existing consumers (e.g. `CsatKpiCard`) keep doing plain numeric
- * comparisons/formatting without re-deriving the coercion at every call site.
+ * Consumer-facing CSAT summary. `totalResponses` / `averageRating` are already `number`
+ * on the regenerated `CsatResponseDto`, so this collapses to a direct alias and the former
+ * `select`-normalizer coercion is retired — consumers (e.g. `CsatKpiCard`) read the fields
+ * straight off the DTO.
  *
- * `averageRating` is `0` (NOT null) for a period with zero responses, so
- * emptiness is derived from `totalResponses === 0`, never from the score.
+ * `averageRating` is `0` (NOT null) for a period with zero responses, so emptiness is
+ * derived from `totalResponses === 0`, never from the score.
  */
-export interface CsatQueueSummary extends Omit<
-  CsatResponseDto,
-  'totalResponses' | 'averageRating'
-> {
-  totalResponses: number;
-  averageRating: number;
-}
+export type CsatQueueSummary = CsatResponseDto;
 
 export function useCsatQueueAnalytics(queueId: string | undefined) {
   return useQuery({
@@ -548,94 +496,36 @@ export function useCsatQueueAnalytics(queueId: string | undefined) {
         url: `/api/v1/analytics/csat/queues/${queueId}`,
         method: 'GET',
       }),
-    select: (data): CsatQueueSummary => ({
-      ...data,
-      totalResponses: Number(data.totalResponses),
-      averageRating: Number(data.averageRating),
-    }),
     enabled: !!queueId,
   });
 }
 
 // ─── CSAT scope-wide aggregate (csat-completion) ───────
 /**
- * Wire type for the NEW scope-wide aggregate CSAT read
+ * Generated wire type for the scope-wide aggregate CSAT read
  * `GET /api/v1/analytics/csat` (csat-completion, Platform/ADR-0020 — the
- * aggregate-across-queues option the product owner chose 2026-07-13). The
- * envelope carries the tenant/scope roll-up (`totalResponses`, `averageRating`,
- * `rangeStart`, `rangeEnd`); each `queues[]` row reuses the per-queue
- * projection {@link CsatResponseDto} verbatim (`queueName`, `channel`,
- * `totalResponses`, `averageRating`, `rangeStart`, `rangeEnd`; `channel` is
- * `all` when unfiltered). Field names are cited VERBATIM from the frozen golden
- * fixture `Verbara.Platform/openspec/changes/csat-completion/fixtures/csat-aggregate-analytics.v1.json`
- * (verbatim-fixture-citation rule).
- *
- * INTERIM TYPING (API-first): Platform ships `GET /api/v1/analytics/csat` in
- * this same cross-repo train, so `openapi.d.ts` does NOT yet carry its schema.
- * Per `openapi-typed-client-phase2`'s interim-fixture posture ("the generated
- * file remains authoritative only for the schemas it actually covers"), this
- * shape is hand-declared here, typed 1:1 to the fixture, and MUST be replaced
- * with the generated `components['schemas']['CsatAggregateAnalyticsDto']` (or
- * whatever name Platform emits) once the endpoint is in the served contract and
- * `npm run generate:api-types` is re-run. Like {@link CsatResponseDto}, the
- * numeric fields are the AOT-safe `number | string` union (the JSON wire always
- * sends a numeric value; the `string` arm covers the declared schema pattern).
+ * aggregate-across-queues option the product owner chose 2026-07-13). The endpoint is now in
+ * the served contract, so this adopts the generated `CsatAggregateDto` (retiring the interim
+ * hand-declared `CsatAggregateAnalyticsDto`): the envelope carries the scope roll-up
+ * (`totalResponses`, `averageRating`, `rangeStart`, `rangeEnd`) and each `queues[]` row reuses
+ * the per-queue projection {@link CsatResponseDto}. Numeric fields are single-typed `number`
+ * on the regenerated document (openapi-numeric-schema-truth, Platform/ADR-0036).
  */
-export interface CsatAggregateAnalyticsDto {
-  totalResponses: number | string;
-  averageRating: number | string;
-  rangeStart: string;
-  rangeEnd: string;
-  queues: CsatResponseDto[];
-}
+export type CsatAggregateSummary = components['schemas']['CsatAggregateDto'];
 
 /**
- * Consumer-facing scope-wide CSAT summary: {@link CsatAggregateAnalyticsDto}
- * with `totalResponses` / `averageRating` (envelope AND each `queues[]` row)
- * normalized to `number` so consumers (`CsatKpiCard`) do plain numeric
- * formatting. As with {@link CsatQueueSummary}, `averageRating` is `0` (NOT
- * null) for a period with zero responses, so emptiness is derived from
- * `totalResponses === 0`, never from the score.
- */
-export interface CsatAggregateSummary extends Omit<
-  CsatAggregateAnalyticsDto,
-  'totalResponses' | 'averageRating' | 'queues'
-> {
-  totalResponses: number;
-  averageRating: number;
-  queues: CsatQueueSummary[];
-}
-
-/**
- * Scope-wide aggregate CSAT KPI read for the supervisor wallboard
- * (csat-completion). Mirrors {@link useCsatQueueAnalytics} (see
- * `use-analytics.ts:508-558`): a `useQuery` fetching the aggregate DTO with a
- * `select` that normalizes the AOT-safe `number | string` union fields to
- * `number` on the envelope and on every `queues[]` row.
- *
- * This hook is the **second concrete call site** of the `number | string`
- * AOT-union normalization pattern that `openapi-typed-client-phase2` tracks as
- * an open design question (whether to introduce a shared coercion helper once
- * 2-3 sites exist). It adds the data point but does NOT itself introduce the
- * helper — that decision stays with phase2.
+ * Scope-wide aggregate CSAT KPI read for the supervisor wallboard (csat-completion). Mirrors
+ * {@link useCsatQueueAnalytics}: the numeric fields are already `number` on the regenerated
+ * `CsatAggregateDto`, so the former `select`-normalizer coercion (envelope + each `queues[]`
+ * row) is retired and the hook returns the generated DTO directly.
  */
 export function useCsatAggregateAnalytics() {
   return useQuery({
     queryKey: ['analytics', 'csat', 'aggregate'],
     queryFn: () =>
-      customFetch<CsatAggregateAnalyticsDto>({
+      customFetch<components['schemas']['CsatAggregateDto']>({
         url: '/api/v1/analytics/csat',
         method: 'GET',
       }),
-    select: (data): CsatAggregateSummary => ({
-      ...data,
-      totalResponses: Number(data.totalResponses),
-      averageRating: Number(data.averageRating),
-      queues: data.queues.map((q) => ({
-        ...q,
-        totalResponses: Number(q.totalResponses),
-        averageRating: Number(q.averageRating),
-      })),
-    }),
   });
 }

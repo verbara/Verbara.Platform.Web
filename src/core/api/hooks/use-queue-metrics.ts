@@ -18,24 +18,22 @@ export interface QueueMetricsResult {
 
 /**
  * Server response is the named `QueueMetricsDto[]` schema (openapi-response-adoption,
- * Platform/ADR-0035). Every numeric field is generated as the AOT-safe `number | string`
- * wire union; the store's {@link QueueMetrics} domain type and its consumers
- * (`queue-metrics-store.computeGlobals`, `queue-card.tsx`) do arithmetic on them, so they
- * are coerced to `number` at the fetch boundary here (mirrors the `use-teams` CSAT precedent).
- * Genuine `number | string` coercion site — reported to the shared tally in
- * `openapi-typed-client-admin` (6 fields: waiting, avgWaitSeconds, slaPercent,
- * agentsAvailable, agentsBusy, agentsAway).
+ * Platform/ADR-0035). The numeric fields are now single-typed (`number` / `null | number`)
+ * on the regenerated document (openapi-numeric-schema-truth, Platform/ADR-0036 strips the
+ * spurious AOT `string` arm at the source), so the store's {@link QueueMetrics} domain type
+ * and its consumers (`queue-metrics-store.computeGlobals`, `queue-card.tsx`) read them
+ * directly — no boundary coercion. This mapper only projects the DTO onto the store shape.
  */
 function toQueueMetrics(dto: components['schemas']['QueueMetricsDto']): QueueMetrics {
   return {
     queueId: dto.queueId,
     queueName: dto.queueName,
-    waiting: dto.waiting == null ? null : Number(dto.waiting),
-    avgWaitSeconds: dto.avgWaitSeconds == null ? null : Number(dto.avgWaitSeconds),
-    slaPercent: Number(dto.slaPercent),
-    agentsAvailable: Number(dto.agentsAvailable),
-    agentsBusy: Number(dto.agentsBusy),
-    agentsAway: Number(dto.agentsAway),
+    waiting: dto.waiting,
+    avgWaitSeconds: dto.avgWaitSeconds,
+    slaPercent: dto.slaPercent,
+    agentsAvailable: dto.agentsAvailable,
+    agentsBusy: dto.agentsBusy,
+    agentsAway: dto.agentsAway,
   };
 }
 

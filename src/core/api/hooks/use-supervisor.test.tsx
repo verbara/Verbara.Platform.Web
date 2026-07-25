@@ -348,9 +348,10 @@ describe('useStuckConversations', () => {
     vi.clearAllMocks();
   });
 
-  it('should fetch stuck conversations and coerce the failoverAttempts wire union to a number', async () => {
-    // `failoverAttempts` arrives as a string on the AOT `number | string` wire union;
-    // `normalizeStuckConversation` must narrow it to `number` for the `> 0` compare.
+  it('should fetch stuck conversations and pass the numeric failoverAttempts through', async () => {
+    // `failoverAttempts` is now single-typed `number` on the regenerated document — the AOT
+    // `number | string` union is extinct at the source (openapi-numeric-schema-truth,
+    // Platform/ADR-0036), so the hook returns the DTO directly with no boundary coercion.
     const wireRow = {
       conversationId: 'conv-1',
       channel: 'chat',
@@ -358,7 +359,7 @@ describe('useStuckConversations', () => {
       ownerAgentId: 'agent-1',
       ownerAgentName: 'Agent One',
       ownerOfflineSince: '2026-01-01T00:00:00Z',
-      failoverAttempts: '3',
+      failoverAttempts: 3,
       escalated: true,
     };
     vi.mocked(client.customFetch).mockResolvedValue([wireRow]);

@@ -9,6 +9,26 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **OpenAPI numeric wire-union extinct at the source — Analytics migration completed + coercion
+  class retired (`openapi-numeric-schema-truth`; Platform/ADR-0036).** Regenerated
+  `src/core/api/generated/openapi.d.ts` from Platform's corrected OpenAPI document: the spurious
+  .NET 10 `number | string` AOT wire-union (543 occurrences, root cause dotnet/aspnetcore #64145) is
+  now stripped upstream by an `IOpenApiSchemaTransformer`, so every numeric body/response field
+  collapses to single-typed `number` / `number | null`. This unblocks and **completes the held
+  Analytics typed-client migration** (`openapi-typed-client-analytics`): the now-cleanly-matching
+  shapes in `use-analytics.ts`, `use-surveys.ts`, `use-recording.ts`, and `use-csat.ts` adopt
+  `components['schemas'][...]` behind `client.ts`'s generic `<T>`, and **retires the whole `Number()`
+  coercion class** (~30 wire-boundary sites across `use-billing.ts`, `use-partner.ts`,
+  `use-queue-metrics.ts`, `use-analytics.ts`, `use-teams.ts`, `use-notifications.ts`,
+  `use-supervisor.ts`, `use-typification-llm.ts`) that only existed to strip the never-arriving
+  `string` arm. Structural-divergence shapes stay hand-written and are logged as separate Platform
+  contract bugs (`TopicTrendsResponse` `topics`→`trends` rename, `ComplianceRuleSummaryDto.severity`
+  literal-union widening, the `PagedResult` envelope). Adoption ratchet floor 39 → 37
+  (`use-recording` + `use-surveys` adopted). **Compile-time only — no runtime behavior change**
+  (Platform's transformer is document-only; the serializer stays lenient).
+
 ## [3.16.0-web] - 2026-07-24
 
 Maintenance + internal-quality release — **no user-facing feature or behavior changes.**

@@ -5,17 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 /** Server response is the named `TeamDto` schema (openapi-response-adoption, Platform/ADR-0035).
- *  `memberCount` is generated as the AOT-safe `number | string` wire union; consumers
- *  (`teams-page.tsx`) compare it numerically (`=== 0`, `!== 1`), so it is coerced to `number`
- *  at the fetch boundary below and narrowed to `number` here. */
-export type Team = Omit<components['schemas']['TeamDto'], 'memberCount'> & {
-  memberCount: number;
-};
-
-/** Boundary coercion for the AOT `number | string` union on `memberCount` (see {@link Team}). */
-function normalizeTeam(dto: components['schemas']['TeamDto']): Team {
-  return { ...dto, memberCount: Number(dto.memberCount) };
-}
+ *  `memberCount` is now single-typed `number` on the regenerated document
+ *  (openapi-numeric-schema-truth, Platform/ADR-0036 strips the spurious AOT `string` arm at the
+ *  source), so consumers (`teams-page.tsx`) that compare it numerically (`=== 0`, `!== 1`) read
+ *  it directly. The former `Omit & { memberCount: number }` wrapper and its boundary coercion
+ *  collapse to the generated DTO. */
+export type Team = components['schemas']['TeamDto'];
 
 export function useTeams() {
   return useQuery({
@@ -26,7 +21,7 @@ export function useTeams() {
         method: 'GET',
         params: { page: '1', pageSize: '100' },
       });
-      return result.items.map(normalizeTeam);
+      return result.items;
     },
   });
 }
@@ -39,7 +34,6 @@ export function useTeam(id: string | undefined) {
         url: `/api/v1/admin/teams/${id}`,
         method: 'GET',
       }),
-    select: normalizeTeam,
     enabled: !!id,
   });
 }

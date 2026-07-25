@@ -37,39 +37,20 @@ export interface PartnerGenerateInvoiceResponse {
 
 /**
  * Server response is the named `PartnerRevenueSummaryDto` schema
- * (openapi-response-adoption, Platform/ADR-0035). Native AOT emits every numeric
- * field as the `number | string` wire union (the document's `["number","string"]` /
- * `["integer","string"]` types); the JSON payload always sends a numeric value.
- * Consumers (`revenue-page.tsx`) do plain arithmetic/`formatCurrency` on these, so
- * the exported consumer type keeps them as `number` and `usePartnerRevenueSummary`
- * normalizes the union at the fetch boundary via `select` (mirrors
- * `use-analytics.ts` `CsatQueueSummary`). */
-export interface PartnerRevenueSummary extends Omit<
-  components['schemas']['PartnerRevenueSummaryDto'],
-  'totalGross' | 'totalPlatformCost' | 'totalMargin' | 'customerCount' | 'invoiceCount'
-> {
-  totalGross: number;
-  totalPlatformCost: number;
-  totalMargin: number;
-  customerCount: number;
-  invoiceCount: number;
-}
+ * (openapi-response-adoption, Platform/ADR-0035). Every numeric field is now
+ * single-typed `number` on the regenerated document (openapi-numeric-schema-truth,
+ * Platform/ADR-0036 strips the spurious AOT `string` arm at the source), so
+ * `revenue-page.tsx` reads them straight off the DTO — the former fetch-boundary
+ * `select` coercion is retired and the type aliases the generated schema directly. */
+export type PartnerRevenueSummary = components['schemas']['PartnerRevenueSummaryDto'];
 
 /**
  * Server response is the named `PartnerRevenueDetailDto` schema
  * (openapi-response-adoption, Platform/ADR-0035). As with {@link PartnerRevenueSummary},
- * the AOT `number | string` union amount fields are normalized to `number` at the
- * fetch boundary (`usePartnerRevenueDetails`'s `select`) so `revenue-page.tsx` keeps
- * doing arithmetic (`grossAmount > 0`, `partnerMargin / grossAmount`, `+=`) and
- * `formatCurrency` on them. */
-export interface PartnerRevenueDetail extends Omit<
-  components['schemas']['PartnerRevenueDetailDto'],
-  'grossAmount' | 'platformCost' | 'partnerMargin'
-> {
-  grossAmount: number;
-  platformCost: number;
-  partnerMargin: number;
-}
+ * the amount fields are now single-typed `number`, so `revenue-page.tsx` keeps doing
+ * arithmetic (`grossAmount > 0`, `partnerMargin / grossAmount`, `+=`) and
+ * `formatCurrency` on them directly — the fetch-boundary `select` coercion is retired. */
+export type PartnerRevenueDetail = components['schemas']['PartnerRevenueDetailDto'];
 
 export interface TenantSettings {
   platformName?: string;
@@ -363,14 +344,6 @@ export function usePartnerRevenueSummary(from?: string, until?: string) {
         method: 'GET',
         params,
       }),
-    // Boundary coercion: normalize the AOT `number | string` wire union to `number`.
-    select: (d): PartnerRevenueSummary => ({
-      totalGross: Number(d.totalGross),
-      totalPlatformCost: Number(d.totalPlatformCost),
-      totalMargin: Number(d.totalMargin),
-      customerCount: Number(d.customerCount),
-      invoiceCount: Number(d.invoiceCount),
-    }),
   });
 }
 
@@ -386,14 +359,6 @@ export function usePartnerRevenueDetails(from?: string, until?: string) {
         method: 'GET',
         params,
       }),
-    // Boundary coercion: normalize each row's AOT `number | string` amount union to `number`.
-    select: (rows): PartnerRevenueDetail[] =>
-      rows.map((r) => ({
-        ...r,
-        grossAmount: Number(r.grossAmount),
-        platformCost: Number(r.platformCost),
-        partnerMargin: Number(r.partnerMargin),
-      })),
   });
 }
 

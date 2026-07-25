@@ -100,19 +100,14 @@ export interface TestLlmConnectionInput {
 
 /**
  * Server response is the named `TestLlmConnectionResponse` schema
- * (openapi-response-adoption, Platform/ADR-0035). Native AOT emits `latencyMs`
- * as the `number | string` wire union (the document's `["integer","string"]`);
- * the JSON payload always sends a numeric value, so this consumer-facing type
- * narrows it back to `number` (see the boundary coercion in
- * {@link useTestLlmConnection}) — the `LlmTestButton` interpolates/compares it
- * as a plain number.
+ * (openapi-response-adoption, Platform/ADR-0035). `latencyMs` is now single-typed
+ * `number` on the regenerated document (openapi-numeric-schema-truth,
+ * Platform/ADR-0036 strips the spurious AOT `string` arm at the source), so the
+ * `LlmTestButton` interpolates/compares it directly. The former
+ * `Omit & { latencyMs: number }` wrapper and its boundary coercion collapse to the
+ * generated DTO.
  */
-export type TestLlmConnectionResult = Omit<
-  components['schemas']['TestLlmConnectionResponse'],
-  'latencyMs'
-> & {
-  latencyMs: number;
-};
+export type TestLlmConnectionResult = components['schemas']['TestLlmConnectionResponse'];
 
 const LLM_CONFIG_KEY = ['typification', 'llm'] as const;
 
@@ -176,17 +171,12 @@ export function useDeleteTenantLlmConfig() {
  */
 export function useTestLlmConnection() {
   return useMutation({
-    mutationFn: async (draft: TestLlmConnectionInput = {}): Promise<TestLlmConnectionResult> => {
-      const res = await customFetch<components['schemas']['TestLlmConnectionResponse']>({
+    mutationFn: (draft: TestLlmConnectionInput = {}): Promise<TestLlmConnectionResult> =>
+      customFetch<components['schemas']['TestLlmConnectionResponse']>({
         url: '/api/v1/admin/ai/llm-config/test',
         method: 'POST',
         data: draft,
-      });
-      // Boundary coercion: `latencyMs` is the AOT-safe `number | string` wire
-      // union; the payload always sends a numeric value. Normalize to `number`
-      // so consumers (`LlmTestButton`) keep plain numeric handling.
-      return { ...res, latencyMs: Number(res.latencyMs) };
-    },
+      }),
   });
 }
 

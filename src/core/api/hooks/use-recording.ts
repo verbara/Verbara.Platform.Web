@@ -1,12 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 
-export interface RecordingMetadata {
-  sessionId: string;
-  recordingName: string;
-  hasRecording: boolean;
-  streamUrl: string;
-}
+/** Adopts the generated `RecordingMetadataDto`, which matches this shape field-for-field
+ *  (openapi-numeric-schema-truth completes the Analytics-module aliasing). */
+export type RecordingMetadata = components['schemas']['RecordingMetadataDto'];
 
 export function useRecordingMetadata(sessionId: string) {
   return useQuery({
