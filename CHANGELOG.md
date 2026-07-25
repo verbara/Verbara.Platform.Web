@@ -12,7 +12,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - **OpenAPI numeric wire-union extinct at the source — Analytics migration completed + coercion
-  class retired (`openapi-numeric-schema-truth`; Platform/ADR-0036).** Regenerated
+  class retired (`openapi-numeric-schema-truth` #222; Platform/ADR-0036).** Regenerated
   `src/core/api/generated/openapi.d.ts` from Platform's corrected OpenAPI document: the spurious
   .NET 10 `number | string` AOT wire-union (543 occurrences, root cause dotnet/aspnetcore #64145) is
   now stripped upstream by an `IOpenApiSchemaTransformer`, so every numeric body/response field
