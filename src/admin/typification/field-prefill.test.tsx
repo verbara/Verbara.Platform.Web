@@ -25,7 +25,7 @@ vi.mock('@/core/api/hooks/use-typification', () => ({
   }),
 }));
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useParams: () => ({ id: routeState.id }),
   useNavigate: () => vi.fn(),
 }));

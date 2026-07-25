@@ -49,7 +49,7 @@ export default defineConfig({
           groups: [
             {
               name: 'vendor-react',
-              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom)[\\/]/,
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router)[\\/]/,
             },
             { name: 'vendor-charts', test: /[\\/]node_modules[\\/]recharts[\\/]/ },
             { name: 'vendor-grid', test: /[\\/]node_modules[\\/]ag-grid/ },

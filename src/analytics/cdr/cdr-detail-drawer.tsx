@@ -1,5 +1,5 @@
 import { useRef, useState, Suspense, lazy } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Phone, PhoneOff, UserCheck, Clock, ArrowRightLeft } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/core/ui/sheet';

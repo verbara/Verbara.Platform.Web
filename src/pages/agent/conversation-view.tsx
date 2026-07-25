@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ConversationPanel } from '@/agent/conversation/conversation-panel';
 import { useConversationStore } from '@/agent/stores/conversation-store';

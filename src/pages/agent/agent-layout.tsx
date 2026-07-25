@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { initConversationSSE } from '@/agent/stores/conversation-store';

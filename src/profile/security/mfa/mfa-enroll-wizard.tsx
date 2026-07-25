@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { QRCodeSVG } from 'qrcode.react';
 import { Check, Download, Shield, ShieldCheck, Smartphone } from 'lucide-react';
 

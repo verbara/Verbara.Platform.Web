@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { AdminSidebar } from '@/admin/sidebar';
 import { SetupBanner } from '@/admin/setup/setup-banner';

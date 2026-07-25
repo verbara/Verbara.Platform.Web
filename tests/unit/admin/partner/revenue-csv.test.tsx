@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 
 // ─── Mock i18n ───────────────────────────────────────────────────────────────
 vi.mock('react-i18next', () => ({
@@ -21,10 +21,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 // ─── Mock partner revenue hooks ─────────────────────────────────────────────
-import type {
-  PartnerRevenueDetail,
-  PartnerRevenueSummary,
-} from '@/core/api/hooks/use-partner';
+import type { PartnerRevenueDetail, PartnerRevenueSummary } from '@/core/api/hooks/use-partner';
 
 const summary: PartnerRevenueSummary = {
   totalGross: 1000,

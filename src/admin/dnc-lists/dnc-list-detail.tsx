@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { ArrowLeft, Plus, Trash2, Upload, CircleCheck, CircleX } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
