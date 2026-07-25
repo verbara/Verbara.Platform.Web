@@ -6,6 +6,11 @@ stakeholder: Platform product
 decision_ref: Platform/ADR-0035
 ---
 
+> **SUPERSEDED (2026-07-25)** by `openapi-numeric-schema-truth` (Platform/ADR-0036). This child was HELD
+> on the `number | string` union; that cross-repo change stripped the union at the source and completed
+> the Analytics typed-client migration + retired the coercion class in Web #222. Archived unimplemented
+> (0/10 tasks) as its scope is subsumed. See `archive/2026-07-25-openapi-numeric-schema-truth/`.
+
 ## Why
 
 `openapi-typed-client` (archived 2026-07-12, Web PR#161) proved the swap-the-T mechanism and

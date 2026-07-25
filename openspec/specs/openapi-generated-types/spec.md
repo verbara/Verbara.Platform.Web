@@ -84,7 +84,7 @@ at the source (Platform host change `openapi-numeric-schema-truth`, `Platform/AD
 `select`-normalizers that previously coerced `CsatResponseDto`'s and `CsatAggregateAnalyticsDto`'s
 `number | string` fields (`CsatQueueSummary` / `CsatAggregateSummary`) are **retired** — the
 regenerated fields are already `number`. The generated type's fields MUST match the corrected golden
-fixture `../Verbara.Platform/openspec/changes/openapi-numeric-schema-truth/fixtures/openapi-numeric-schema.v1.json`
+fixture `../Verbara.Platform/openspec/changes/archive/2026-07-25-openapi-numeric-schema-truth/fixtures/openapi-numeric-schema.v1.json`
 verbatim: schema `CsatResponseDto` carries `queueName` (`type: string`), `channel` (`type: string`),
 `totalResponses` (`type: integer` / `int32`), `averageRating` (`type: number` / `double`),
 `rangeStart` (`type: string` / `date-time`), and `rangeEnd` (`type: string` / `date-time`).
@@ -158,7 +158,7 @@ SHALL map to a plain TypeScript `number` (or `number | null`), and consumers SHA
 with no `Number()` coercion at the wire boundary.
 
 The corrected single-typed shape is pinned in the Platform host change's golden fixture
-`../Verbara.Platform/openspec/changes/openapi-numeric-schema-truth/fixtures/openapi-numeric-schema.v1.json`.
+`../Verbara.Platform/openspec/changes/archive/2026-07-25-openapi-numeric-schema-truth/fixtures/openapi-numeric-schema.v1.json`.
 The regenerated `openapi.d.ts` MUST type each cited field with the single JSON type that fixture
 declares, verbatim — never a `number | string` union:
 
@@ -176,7 +176,7 @@ declares, verbatim — never a `number | string` union:
 #### Scenario: Regenerated numeric fields carry the fixture's single JSON type, never a string arm
 
 - **GIVEN** the Platform host change's corrected document, whose golden fixture
-  `../Verbara.Platform/openspec/changes/openapi-numeric-schema-truth/fixtures/openapi-numeric-schema.v1.json`
+  `../Verbara.Platform/openspec/changes/archive/2026-07-25-openapi-numeric-schema-truth/fixtures/openapi-numeric-schema.v1.json`
   declares `CsatAggregateDto.totalResponses` as `type: integer` / `format: int32`,
   `CsatAggregateDto.averageRating` as `type: number` / `format: double`,
   `DashboardKpisDto.avgWaitMs` as `type: number` / `format: double`, and `QueueMetricsDto.waiting`
