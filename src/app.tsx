@@ -1,5 +1,5 @@
 import { Suspense, useEffect } from 'react';
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router/dom';
 import { ThemeProvider } from 'next-themes';
 import { router } from './router';
 import { ApiQueryProvider } from '@/core/api/query-provider';

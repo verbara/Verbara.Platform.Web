@@ -20,7 +20,7 @@ vi.mock('@/core/api/hooks/use-typification', () => ({
 }));
 
 // New-schema route — no id param.
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useParams: () => ({ id: 'new' }),
   useNavigate: () => vi.fn(),
 }));

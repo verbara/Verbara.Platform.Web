@@ -44,8 +44,8 @@ vi.mock('@/core/api/hooks/use-billing', () => ({
   },
 }));
 
-// ─── Stub react-router-dom hooks so the page can mount outside a Router ──────
-vi.mock('react-router-dom', () => ({
+// ─── Stub react-router hooks so the page can mount outside a Router ──────
+vi.mock('react-router', () => ({
   useParams: () => ({ id: 'tenant-abc' }),
   useNavigate: () => vi.fn(),
 }));

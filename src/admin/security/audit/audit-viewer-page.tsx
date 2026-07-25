@@ -16,7 +16,7 @@ import { useMemo, useState } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Download, FileText, Filter, RotateCcw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';

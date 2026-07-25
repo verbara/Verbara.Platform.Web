@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { createColumnHelper } from '@tanstack/react-table';
 import { ShieldBan, Trash2, Plus, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

@@ -3,7 +3,7 @@ import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createColumnHelper } from '@tanstack/react-table';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Plus, Building2, Trash2, Pencil, Clock, CreditCard, Ban, CircleCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '@/core/tenant/tenant-store';

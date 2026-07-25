@@ -223,8 +223,35 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - name: npm audit (HIGH or CRITICAL fails)
+      # Production-scoped vuln floor (queue-required). Advisories confined to build/dev tooling that
+      # never reach the shipped bundle do NOT freeze the merge queue — they are covered by the
+      # non-blocking `audit-full` job below plus Dependabot's weekly npm-security group. This keeps a
+      # supply-chain check off the critical delivery path per ADR-0003 §2 while still enforcing a
+      # production vuln floor (ADR-0014 §2 G8). Rationale: docs/decisions/0010-audit-gate-production-scope.md.
+      - name: npm audit — production deps (HIGH or CRITICAL fails)
+        run: npm audit --omit=dev --audit-level=high
+
+  audit-full:
+    name: audit-full
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Informational, NOT queue-required (not in the main-protection required-checks set): surfaces
+    # build/dev-tooling advisories (which never ship to users) for visibility without blocking
+    # delivery. Remediation cadence is Dependabot's job (npm-security group). continue-on-error keeps
+    # it from failing the run; the advisories appear in the step log. See docs/decisions/0010.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: npm audit — full tree (informational; build-only advisories, non-blocking)
         run: npm audit --audit-level=high
+        continue-on-error: true
 
   lint:
     name: lint
