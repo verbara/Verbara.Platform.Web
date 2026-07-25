@@ -562,28 +562,11 @@ describe('useCsatQueueAnalytics', () => {
     expect(data).toEqual(mockData);
   });
 
-  it('should coerce numeric-or-string wire fields to number', async () => {
-    // Native AOT number handling: the generated type allows `totalResponses` /
-    // `averageRating` to arrive as `number | string`. The hook must normalize
-    // both to `number` so existing consumers (e.g. CsatKpiCard) can keep doing
-    // plain numeric comparisons/formatting.
-    vi.mocked(client.customFetch).mockResolvedValue({
-      queueName: 'support',
-      channel: 'webchat',
-      totalResponses: '8',
-      averageRating: '4.5',
-      rangeStart: '2026-07-01T00:00:00Z',
-      rangeEnd: '2026-07-12T00:00:00Z',
-    });
-
-    const { result } = renderHook(() => useCsatQueueAnalytics('queue-001'), { wrapper });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.totalResponses).toBe(8);
-    expect(result.current.data?.averageRating).toBe(4.5);
-    expect(typeof result.current.data?.totalResponses).toBe('number');
-    expect(typeof result.current.data?.averageRating).toBe('number');
-  });
+  // (The former `should coerce numeric-or-string wire fields to number` test is retired:
+  // `totalResponses` / `averageRating` are now single-typed `number` on the regenerated
+  // `CsatResponseDto` — the AOT `number | string` union is extinct at the source
+  // (openapi-numeric-schema-truth, Platform/ADR-0036), so the hook returns the DTO directly
+  // with no boundary coercion left to assert.)
 
   it('should not fetch when queueId is undefined', () => {
     const { result } = renderHook(() => useCsatQueueAnalytics(undefined), { wrapper });

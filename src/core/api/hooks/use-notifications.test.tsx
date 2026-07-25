@@ -87,17 +87,11 @@ describe('useUnreadCount', () => {
     });
   });
 
-  it('should_CoerceStringCount_ToNumber_WhenWireSendsAotUnion', async () => {
-    // UnreadCountDto.count is the AOT `number | string` wire union; normalizeUnreadCount
-    // must narrow it to a real number so the badge arithmetic/compare stays valid.
-    mockFetch.mockResolvedValueOnce({ count: '5' });
-
-    const { result } = renderHook(() => useUnreadCount(), { wrapper });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual({ count: 5 });
-    expect(typeof result.current.data?.count).toBe('number');
-  });
+  // (The former `should_CoerceStringCount_ToNumber_WhenWireSendsAotUnion` test is
+  // retired: `UnreadCountDto.count` is now single-typed `number` on the regenerated
+  // document — the AOT `number | string` union is extinct at the source
+  // (openapi-numeric-schema-truth, Platform/ADR-0036), so there is no boundary
+  // coercion left to assert.)
 });
 
 describe('useMarkNotificationRead', () => {

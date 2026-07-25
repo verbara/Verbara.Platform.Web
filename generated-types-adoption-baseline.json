@@ -1,5 +1,5 @@
 {
-  "_comment": "ADR-0012 Ola 2 gate #5 (generated-types adoption ratchet). These API hooks do NOT yet import the generated OpenAPI types (@/core/api/generated). Floor originally 45 at 2026-07-20; ratcheted to 43 by openapi-typed-client-operations, then to 39 by openapi-typed-client-agent (use-conversations + use-mfa-enroll + use-notifications + use-recovery-codes adopted). The gate fails if a hook not on this list is unadopted (a NEW hand-maintained DTO when a generated type exists). Ratchets DOWN: as a hook adopts generated types, remove it here. Never add to this list.",
+  "_comment": "ADR-0012 Ola 2 gate #5 (generated-types adoption ratchet). These API hooks do NOT yet import the generated OpenAPI types (@/core/api/generated). Floor originally 45 at 2026-07-20; ratcheted to 43 by openapi-typed-client-operations, then to 39 by openapi-typed-client-agent (use-conversations + use-mfa-enroll + use-notifications + use-recovery-codes adopted), then to 37 by openapi-numeric-schema-truth (use-recording + use-surveys adopted once the numeric union went extinct at the source). use-csat.ts STAYS on this list: its only shape, CsatCaptureRequest, is kept hand-written (the generated CsatResponseRequest widens the optional `comment?` to required-nullable, and it is a verbatim-fixture-cited webchat-SDK boundary type outside the app tsconfig). The gate fails if a hook not on this list is unadopted (a NEW hand-maintained DTO when a generated type exists). Ratchets DOWN: as a hook adopts generated types, remove it here. Never add to this list.",
   "unadopted_hooks": [
     "src/core/api/hooks/use-agent-assist-feature.ts",
     "src/core/api/hooks/use-agent-assist.ts",
@@ -32,11 +32,9 @@
     "src/core/api/hooks/use-queue-members.ts",
     "src/core/api/hooks/use-rbac.ts",
     "src/core/api/hooks/use-reason-hints.ts",
-    "src/core/api/hooks/use-recording.ts",
     "src/core/api/hooks/use-reports.ts",
     "src/core/api/hooks/use-routes.ts",
     "src/core/api/hooks/use-skills.ts",
-    "src/core/api/hooks/use-surveys.ts",
     "src/core/api/hooks/use-trunks.ts",
     "src/core/api/hooks/use-user-sessions.ts",
     "src/core/api/hooks/use-voice-codecs.ts"

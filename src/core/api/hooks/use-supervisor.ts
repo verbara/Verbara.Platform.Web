@@ -202,35 +202,22 @@ export function useSendCoachingNote() {
  * `state` is the conversation state on the wire (PascalCase — normalize for display).
  *
  * Server response is the named `StuckConversationDto[]` schema (openapi-response-adoption,
- * Platform/ADR-0035). `failoverAttempts` is generated as the AOT-safe `number | string` wire
- * union; the stuck-work UI compares it numerically (`failoverAttempts > 0`), so it is coerced
- * to `number` at the fetch boundary below (mirrors the `use-teams` CSAT precedent). Genuine
- * `number | string` coercion site — reported to the shared tally in `openapi-typed-client-admin`.
+ * Platform/ADR-0035). `failoverAttempts` is now single-typed `number` on the regenerated
+ * document (openapi-numeric-schema-truth, Platform/ADR-0036 strips the spurious AOT `string`
+ * arm at the source), so the stuck-work UI compares it numerically (`failoverAttempts > 0`)
+ * directly off the DTO — the former `Omit & { failoverAttempts: number }` wrapper and its
+ * boundary coercion collapse to the generated schema.
  */
-export type StuckConversation = Omit<
-  components['schemas']['StuckConversationDto'],
-  'failoverAttempts'
-> & {
-  failoverAttempts: number;
-};
-
-/** Boundary coercion for the AOT `number | string` union on `failoverAttempts` (see {@link StuckConversation}). */
-function normalizeStuckConversation(
-  dto: components['schemas']['StuckConversationDto'],
-): StuckConversation {
-  return { ...dto, failoverAttempts: Number(dto.failoverAttempts) };
-}
+export type StuckConversation = components['schemas']['StuckConversationDto'];
 
 export function useStuckConversations() {
   return useQuery({
     queryKey: ['supervisor', 'stuck'],
-    queryFn: async () => {
-      const data = await customFetch<components['schemas']['StuckConversationDto'][]>({
+    queryFn: () =>
+      customFetch<components['schemas']['StuckConversationDto'][]>({
         url: '/api/v1/supervisor/conversations/stuck',
         method: 'GET',
-      });
-      return data.map(normalizeStuckConversation);
-    },
+      }),
     refetchInterval: 15_000,
   });
 }

@@ -971,8 +971,8 @@ export interface paths {
           state?: components['schemas']['ConversationState'];
           queueId?: string;
           agentId?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -1074,8 +1074,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          limit?: number | string;
-          offset?: number | string;
+          limit?: number;
+          offset?: number;
         };
         header?: never;
         path: {
@@ -1944,8 +1944,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
           email?: string;
         };
         header?: never;
@@ -2099,8 +2099,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -2326,8 +2326,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -2572,8 +2572,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -3355,8 +3355,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path: {
@@ -3396,8 +3396,8 @@ export interface paths {
       parameters: {
         query?: {
           search?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -4626,8 +4626,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -5058,8 +5058,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path: {
@@ -5555,8 +5555,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          offset?: number | string;
-          limit?: number | string;
+          offset?: number;
+          limit?: number;
         };
         header?: never;
         path: {
@@ -6959,7 +6959,7 @@ export interface paths {
       };
       requestBody: {
         content: {
-          'application/json': (number | string)[];
+          'application/json': number[];
         };
       };
       responses: {
@@ -7112,8 +7112,8 @@ export interface paths {
           queue?: string;
           agent?: string;
           channel?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -7196,9 +7196,9 @@ export interface paths {
         query?: {
           from?: string;
           to?: string;
-          minScore?: number | string;
-          page?: number | string;
-          pageSize?: number | string;
+          minScore?: number;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -7395,7 +7395,7 @@ export interface paths {
         query?: {
           from?: string;
           to?: string;
-          topN?: number | string;
+          topN?: number;
         };
         header?: never;
         path?: never;
@@ -7821,8 +7821,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -7948,7 +7948,7 @@ export interface paths {
       parameters: {
         query: {
           q: string;
-          limit?: number | string;
+          limit?: number;
         };
         header?: never;
         path?: never;
@@ -8401,8 +8401,8 @@ export interface paths {
           agent?: string;
           channel?: string;
           state?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -8439,8 +8439,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          limit?: number | string;
-          offset?: number | string;
+          limit?: number;
+          offset?: number;
         };
         header?: never;
         path: {
@@ -8987,8 +8987,8 @@ export interface paths {
           targetId?: string;
           targetType?: string;
           correlationId?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -9065,8 +9065,8 @@ export interface paths {
           from?: string;
           to?: string;
           tenantId?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -10681,8 +10681,8 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          page: number | string;
-          pageSize: number | string;
+          page: number;
+          pageSize: number;
         };
         header?: never;
         path?: never;
@@ -11129,7 +11129,7 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          limit: number | string;
+          limit: number;
         };
         header?: never;
         path: {
@@ -11479,8 +11479,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
           userId?: string;
           eventType?: string;
           startDate?: string;
@@ -11632,8 +11632,8 @@ export interface paths {
         query?: {
           status?: string;
           tenant?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -12665,8 +12665,8 @@ export interface paths {
       parameters: {
         query: {
           tenantId: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -13064,8 +13064,8 @@ export interface paths {
           from?: string;
           until?: string;
           type?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path: {
@@ -13259,8 +13259,8 @@ export interface paths {
       parameters: {
         query?: {
           actorTenantId?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -13339,8 +13339,8 @@ export interface paths {
           actorTenantId?: string;
           from?: string;
           to?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -13581,8 +13581,8 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          page: number | string;
-          pageSize: number | string;
+          page: number;
+          pageSize: number;
         };
         header?: never;
         path: {
@@ -13761,8 +13761,8 @@ export interface paths {
       parameters: {
         query: {
           tenantId: string;
-          page: number | string;
-          pageSize: number | string;
+          page: number;
+          pageSize: number;
         };
         header?: never;
         path?: never;
@@ -14826,8 +14826,8 @@ export interface paths {
     get: {
       parameters: {
         query?: {
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path: {
@@ -15165,8 +15165,8 @@ export interface paths {
       parameters: {
         query?: {
           unreadOnly?: boolean;
-          limit?: number | string;
-          offset?: number | string;
+          limit?: number;
+          offset?: number;
         };
         header?: never;
         path?: never;
@@ -15780,8 +15780,8 @@ export interface paths {
         query?: {
           status?: string;
           priority?: string;
-          page?: number | string;
-          pageSize?: number | string;
+          page?: number;
+          pageSize?: number;
         };
         header?: never;
         path?: never;
@@ -16086,14 +16086,14 @@ export interface components {
     AddMemberBody: {
       agentId: string;
       /** Format: int32 */
-      penalty?: null | number | string;
+      penalty?: null | number;
       allowedChannels?: null | string[];
     };
     AddQueueMemberRequest: {
       queueId: string;
       agentId: string;
       /** Format: int32 */
-      penalty?: null | number | string;
+      penalty?: null | number;
     };
     /**
      * @description W6-A6 — the admin agent representation returned by GET /admin/agents/{id} and
@@ -16131,17 +16131,17 @@ export interface components {
     };
     AgentAssistConfigSnapshot: {
       /** Format: int32 */
-      audioSocketPort: number | string;
+      audioSocketPort: number;
       /** Format: int32 */
-      suggestionTimeoutMs: number | string;
+      suggestionTimeoutMs: number;
       /** Format: int32 */
-      sentimentTimeoutMs: number | string;
+      sentimentTimeoutMs: number;
       /** Format: int32 */
-      complianceTimeoutMs: number | string;
+      complianceTimeoutMs: number;
       /** Format: int32 */
-      maxHistorySegments: number | string;
+      maxHistorySegments: number;
       /** Format: int32 */
-      inactivityTimeoutMinutes: number | string;
+      inactivityTimeoutMinutes: number;
       whisperEnabled: boolean;
       whisperThreshold: string;
       filterQueueNames: string[];
@@ -16176,32 +16176,32 @@ export interface components {
       /** Format: date-time */
       endedAt: null | string;
       /** Format: int32 */
-      suggestionCount: number | string;
+      suggestionCount: number;
       /** Format: int32 */
-      complianceAlerts: number | string;
+      complianceAlerts: number;
       /** Format: float */
-      finalSentiment: null | number | string;
+      finalSentiment: null | number;
     };
     AgentIntervalDto: {
       agentId: string;
       /** Format: date-time */
       intervalStart: string;
       /** Format: int32 */
-      intervalSeconds: number | string;
+      intervalSeconds: number;
       /** Format: int32 */
-      callsHandled: number | string;
+      callsHandled: number;
       /** Format: double */
-      ahtMs: number | string;
+      ahtMs: number;
       /** Format: double */
-      occupancyPercent: number | string;
+      occupancyPercent: number;
       /** Format: int32 */
-      rnaCount: number | string;
+      rnaCount: number;
       /** Format: int32 */
-      transfers: number | string;
+      transfers: number;
       /** Format: int64 */
-      totalPauseMs: number | string;
+      totalPauseMs: number;
       /** Format: int64 */
-      loginDurationMs: number | string;
+      loginDurationMs: number;
     };
     /**
      * @description Response payload for `GET /agents/me`. Mirrors the serialized shape of
@@ -16231,7 +16231,7 @@ export interface components {
       /** Format: date-time */
       pendingSince: null | string;
       /** Format: int32 */
-      activeWorkCount: number | string;
+      activeWorkCount: number;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -16247,7 +16247,7 @@ export interface components {
       queueId: string;
       queueName: string;
       /** Format: int32 */
-      penalty: number | string;
+      penalty: number;
       isExcluded: boolean;
       allowedChannels: null | string[];
       source: string;
@@ -16256,7 +16256,7 @@ export interface components {
       agentId: string;
       skillName: string;
       /** Format: int32 */
-      proficiency: number | string;
+      proficiency: number;
     };
     /** @enum {unknown} */
     AgentState: 'Offline' | 'Available' | 'Busy' | 'Break' | 'Lunch' | 'Training' | 'ACW' | 'DND';
@@ -16264,15 +16264,15 @@ export interface components {
       enabled: boolean;
       mode: string;
       /** Format: double */
-      suggestThreshold: number | string;
+      suggestThreshold: number;
       /** Format: double */
-      autoApplyThreshold: number | string;
+      autoApplyThreshold: number;
       /** Format: double */
-      autonomousThreshold: number | string;
+      autonomousThreshold: number;
       autonomous: boolean;
       sentimentGating: boolean;
       /** Format: int64 */
-      dailyTokenBudget: null | number | string;
+      dailyTokenBudget: null | number;
       entityFieldMap?: null | {
         [key: string]: string;
       };
@@ -16287,22 +16287,22 @@ export interface components {
        * Format: int64
        * @description Monthly AI Credit allowance, or `null` for unlimited / pay-as-you-go.
        */
-      allowanceCredits: null | number | string;
+      allowanceCredits: null | number;
       /**
        * Format: int64
        * @description Credits consumed in the current calendar month (floor of tokens ÷ ratio).
        */
-      consumedCredits: number | string;
+      consumedCredits: number;
       /**
        * Format: int64
        * @description Allowance minus consumed (floored at 0), or `null` when unlimited.
        */
-      remainingCredits: null | number | string;
+      remainingCredits: null | number;
       /**
        * Format: double
        * @description Consumed ÷ allowance × 100, or 0 when the allowance is unlimited / zero.
        */
-      usagePercent: number | string;
+      usagePercent: number;
       /**
        * Format: date-time
        * @description Exclusive end of the current usage period (first instant of next month, UTC).
@@ -16340,7 +16340,7 @@ export interface components {
     AssignSkillRequest: {
       skillName: string;
       /** Format: int32 */
-      proficiency: null | number | string;
+      proficiency: null | number;
     };
     /**
      * @description Wire shape returned by the R5.2 PB.1 audit log viewer endpoints. Mirrors
@@ -16392,27 +16392,27 @@ export interface components {
       mfaPolicy: string;
       mfaRequiredRoles: string[];
       /** Format: int32 */
-      passwordMinLength: number | string;
+      passwordMinLength: number;
       passwordRequireUppercase: boolean;
       passwordRequireNumber: boolean;
       passwordRequireSpecial: boolean;
       /** Format: int32 */
-      lockoutThreshold: number | string;
+      lockoutThreshold: number;
       /** Format: int32 */
-      lockoutDurationMinutes: number | string;
+      lockoutDurationMinutes: number;
       /** Format: int32 */
-      sessionIdleTimeoutMinutes: number | string;
+      sessionIdleTimeoutMinutes: number;
       /** Format: int32 */
-      sessionAbsoluteTimeoutHours: number | string;
+      sessionAbsoluteTimeoutHours: number;
       oidcEnabled: boolean;
       oidcAuthority: null | string;
       oidcClientId: null | string;
       oidcAutoCreateUsers: boolean;
       oidcDefaultRole: string;
       /** Format: int32 */
-      impersonationMaxConcurrentSessions: number | string;
+      impersonationMaxConcurrentSessions: number;
       /** Format: int32 */
-      impersonationAutoTimeoutMinutes: number | string;
+      impersonationAutoTimeoutMinutes: number;
       ipAllowlistEnabled: boolean;
     };
     BotDto: {
@@ -16421,9 +16421,9 @@ export interface components {
       defaultFlowId: null | string;
       fallbackQueueId: null | string;
       /** Format: double */
-      confidenceThreshold: number | string;
+      confidenceThreshold: number;
       /** Format: int32 */
-      maxTurns: number | string;
+      maxTurns: number;
       isActive: boolean;
       /** Format: date-time */
       createdAt: string;
@@ -16445,36 +16445,36 @@ export interface components {
     };
     CalibrationStatusDto: {
       /** Format: int32 */
-      samples: number | string;
+      samples: number;
       /** Format: double */
-      accuracy: number | string;
+      accuracy: number;
       autoFillReady: boolean;
       autonomousReady: boolean;
     };
     CallbackDto: {
       /** Format: int64 */
-      campaignId: number | string;
+      campaignId: number;
       /** Format: int64 */
-      contactId: number | string;
+      contactId: number;
       /** Format: date-time */
       scheduledAt: string;
       agentId: null | string;
     };
     CallerIdEntryDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       phoneNumber: string;
       areaCode: null | string;
       isActive: boolean;
     };
     CallerIdPoolDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       name: string;
     };
     CampaignDetailDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       name: string;
       description: null | string;
       status: string;
@@ -16482,11 +16482,11 @@ export interface components {
       queueName: string;
       teamName: null | string;
       /** Format: int32 */
-      maxConcurrentCalls: number | string;
+      maxConcurrentCalls: number;
       /** Format: double */
-      powerRatio: null | number | string;
+      powerRatio: null | number;
       /** Format: double */
-      targetAbandonRate: null | number | string;
+      targetAbandonRate: null | number;
       timezone: string;
       campaignStart: null | string;
       campaignEnd: null | string;
@@ -16494,48 +16494,48 @@ export interface components {
       holidays: string[];
       dncEnabled: boolean;
       /** Format: int32 */
-      maxAttemptsPerContact: number | string;
+      maxAttemptsPerContact: number;
       /** Format: int32 */
-      retryIntervalMinutes: number | string;
+      retryIntervalMinutes: number;
       /** Format: int32 */
-      timeBetweenAttemptsMinutes: number | string;
+      timeBetweenAttemptsMinutes: number;
       complianceNotes: null | string;
       /** Format: int32 */
-      totalContacts: number | string;
+      totalContacts: number;
       /** Format: int32 */
-      contactsDialed: number | string;
+      contactsDialed: number;
       /** Format: date-time */
       createdAt: string;
     };
     CampaignMetricsDto: {
       /** Format: int64 */
-      campaignId: number | string;
+      campaignId: number;
       campaignName: string;
       status: string;
       /** Format: int32 */
-      contactsDialed: number | string;
+      contactsDialed: number;
       /** Format: int32 */
-      contactsRemaining: number | string;
+      contactsRemaining: number;
       /** Format: double */
-      connectRate: number | string;
+      connectRate: number;
       /** Format: double */
-      abandonRate: number | string;
+      abandonRate: number;
       /** Format: int32 */
-      activeCalls: number | string;
+      activeCalls: number;
       /** Format: double */
-      pacingRate: number | string;
+      pacingRate: number;
     };
     CampaignSummaryDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       name: string;
       status: string;
       queueName: string;
       mode: string;
       /** Format: int32 */
-      totalContacts: number | string;
+      totalContacts: number;
       /** Format: int32 */
-      contactsDialed: number | string;
+      contactsDialed: number;
     };
     CannedResponseDto: {
       responseId: string;
@@ -16577,7 +16577,7 @@ export interface components {
       calledNumber: null | string;
       linkedSessionId: null | string;
       /** Format: int16 */
-      transferCount: number | string;
+      transferCount: number;
       recordingName: null | string;
       recordingStreamUrl: null | string;
       hasTranscript: boolean;
@@ -16587,7 +16587,7 @@ export interface components {
       outcome: null | string;
       narrative: null | string;
       /** Format: double */
-      qaScore: null | number | string;
+      qaScore: null | number;
       sentimentLabel: null | string;
     };
     CdrRowDto: {
@@ -16603,29 +16603,29 @@ export interface components {
       queueName: null | string;
       agentName: null | string;
       /** Format: int64 */
-      durationMs: number | string;
+      durationMs: number;
       /** Format: int64 */
-      talkTimeMs: null | number | string;
+      talkTimeMs: null | number;
       /** Format: int64 */
-      waitTimeMs: null | number | string;
+      waitTimeMs: null | number;
       disposition: string;
       slaMet: boolean;
       hasQaScore: boolean;
       /** Format: double */
-      qaScore: null | number | string;
+      qaScore: null | number;
       sentimentLabel: null | string;
       hasRecording: boolean;
       transferredTo: null | string;
       /** Format: int16 */
-      transferType: null | number | string;
+      transferType: null | number;
       /** Format: int16 */
-      hangupSource: null | number | string;
+      hangupSource: null | number;
       /** Format: int64 */
-      wrapUpDurationMs: null | number | string;
+      wrapUpDurationMs: null | number;
       /** Format: int16 */
-      holdCount: number | string;
+      holdCount: number;
       /** Format: int64 */
-      ringDurationMs: null | number | string;
+      ringDurationMs: null | number;
       campaignName: null | string;
       dispositionName: null | string;
       metadata: null | {
@@ -16653,13 +16653,13 @@ export interface components {
     };
     ChannelCapacity: {
       /** Format: int32 */
-      maxVoice?: number | string;
+      maxVoice?: number;
       /** Format: int32 */
-      maxChat?: number | string;
+      maxChat?: number;
       /** Format: int32 */
-      maxEmail?: number | string;
+      maxEmail?: number;
       /** Format: int32 */
-      maxSms?: number | string;
+      maxSms?: number;
       /**
        * Format: int32
        * @description W6 — the cap on the SUM of concurrently handled async channels (chat-pool +
@@ -16667,7 +16667,7 @@ export interface components {
        *     strictly per-channel limit); the capacity service tallies async load across
        *     channels and rejects work that would push the combined count past this cap.
        */
-      maxTotal?: number | string;
+      maxTotal?: number;
     };
     /**
      * @description W6-A6 — wire shape for the per-agent ChannelCapacityOverride. Each null field
@@ -16677,20 +16677,20 @@ export interface components {
      */
     ChannelCapacityOverrideDto: {
       /** Format: int32 */
-      maxVoice: null | number | string;
+      maxVoice: null | number;
       /** Format: int32 */
-      maxChat: null | number | string;
+      maxChat: null | number;
       /** Format: int32 */
-      maxEmail: null | number | string;
+      maxEmail: null | number;
       /** Format: int32 */
-      maxSms: null | number | string;
+      maxSms: null | number;
       /** Format: int32 */
-      maxTotal: null | number | string;
+      maxTotal: null | number;
     };
     ChannelDistributionDto: {
       channel: string;
       /** Format: int32 */
-      count: number | string;
+      count: number;
     };
     ChannelTestResponse: {
       success: boolean;
@@ -16723,13 +16723,13 @@ export interface components {
       subscriptionId: string;
       status: string;
       /** Format: int32 */
-      failures: number | string;
+      failures: number;
       /** Format: date-time */
       openedAt: null | string;
       /** Format: date-time */
       nextProbeAt: null | string;
       /** Format: int32 */
-      probeAttempts: number | string;
+      probeAttempts: number;
     };
     CloneTenantRoleRequest: {
       name: string;
@@ -16740,7 +16740,7 @@ export interface components {
     };
     ComplianceAlertRowDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       sessionId: string;
       tenantId: string;
       /** Format: date-time */
@@ -16761,9 +16761,9 @@ export interface components {
       ruleName: string;
       severity: string;
       /** Format: int32 */
-      occurrences: number | string;
+      occurrences: number;
       /** Format: int32 */
-      sessionsAffected: number | string;
+      sessionsAffected: number;
       /** Format: date-time */
       firstSeen: string;
       /** Format: date-time */
@@ -16771,18 +16771,18 @@ export interface components {
     };
     ComplianceSeverityBreakdownDto: {
       /** Format: int32 */
-      info: number | string;
+      info: number;
       /** Format: int32 */
-      warning: number | string;
+      warning: number;
       /** Format: int32 */
-      critical: number | string;
+      critical: number;
     };
     ComplianceSummaryResponse: {
       rules: components['schemas']['ComplianceRuleSummaryDto'][];
       /** Format: int32 */
-      totalViolations: number | string;
+      totalViolations: number;
       /** Format: int32 */
-      totalSessionsWithViolations: number | string;
+      totalSessionsWithViolations: number;
       severityBreakdown: components['schemas']['ComplianceSeverityBreakdownDto'];
       /** Format: date-time */
       from: string;
@@ -16838,14 +16838,14 @@ export interface components {
     };
     ContactListDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       name: string;
       /** Format: int32 */
-      totalContacts: number | string;
+      totalContacts: number;
       /** Format: int32 */
-      pendingContacts: number | string;
+      pendingContacts: number;
       /** Format: int32 */
-      completedContacts: number | string;
+      completedContacts: number;
       sourceFileName: null | string;
       /** Format: date-time */
       createdAt: string;
@@ -16882,7 +16882,7 @@ export interface components {
        * @description W5 — queue ordering priority; lower sorts earlier. 0 = normal FIFO (by CreatedAt);
        *     failover re-queue sets -1 to jump to the front.
        */
-      queuePriority?: number | string;
+      queuePriority?: number;
       metadata?: null | {
         [key: string]: string;
       };
@@ -16940,7 +16940,7 @@ export interface components {
       schemaId: string;
       subtreeRootNodeId: null | string;
       /** Format: int32 */
-      priority: number | string;
+      priority: number;
       aiConfigOverride?: null | components['schemas']['AiConfigDto'];
     };
     CreateBotRequest: {
@@ -16948,14 +16948,14 @@ export interface components {
       defaultFlowId?: null | string;
       fallbackQueueId?: null | string;
       /** Format: double */
-      confidenceThreshold?: null | number | string;
+      confidenceThreshold?: null | number;
       /** Format: int32 */
-      maxTurns?: null | number | string;
+      maxTurns?: null | number;
       isActive?: null | boolean;
     };
     CreateCallbackRequest: {
       /** Format: int64 */
-      contactId: number | string;
+      contactId: number;
       phone: string;
       agentId: null | string;
       scheduledAt: string;
@@ -16970,11 +16970,11 @@ export interface components {
       targetQueueName: string;
       teamId: null | string;
       /** Format: int32 */
-      maxConcurrentCalls: number | string;
+      maxConcurrentCalls: number;
       /** Format: double */
-      powerRatio: null | number | string;
+      powerRatio: null | number;
       /** Format: double */
-      targetAbandonRate: null | number | string;
+      targetAbandonRate: null | number;
       timezone: string;
       campaignStart: null | string;
       campaignEnd: null | string;
@@ -16982,11 +16982,11 @@ export interface components {
       holidays: string[];
       dncEnabled: boolean;
       /** Format: int32 */
-      maxAttemptsPerContact: number | string;
+      maxAttemptsPerContact: number;
       /** Format: int32 */
-      retryIntervalMinutes: number | string;
+      retryIntervalMinutes: number;
       /** Format: int32 */
-      timeBetweenAttemptsMinutes: number | string;
+      timeBetweenAttemptsMinutes: number;
       complianceNotes: null | string;
     };
     CreateCannedResponseRequest: {
@@ -17035,7 +17035,7 @@ export interface components {
       isSuccess: boolean;
       triggerRetry: boolean;
       /** Format: int32 */
-      retryDelayMinutes: null | number | string;
+      retryDelayMinutes: null | number;
       triggerCallback: boolean;
     };
     CreateDncListRequest: {
@@ -17049,11 +17049,11 @@ export interface components {
       codecs: null | string;
       webrtc: null | boolean;
       /** Format: int32 */
-      maxContacts: null | number | string;
+      maxContacts: null | number;
       directMedia: null | boolean;
       context: null | string;
       /** Format: int32 */
-      qualifyFrequency: null | number | string;
+      qualifyFrequency: null | number;
     };
     CreateFlowRequest: {
       name: string;
@@ -17066,7 +17066,7 @@ export interface components {
     CreateMgmtApiKeyRequest: {
       name?: null | string;
       /** Format: int32 */
-      expiresInDays?: null | number | string;
+      expiresInDays?: null | number;
     };
     CreateMgmtApiKeyResponse: {
       keyId: string;
@@ -17081,9 +17081,9 @@ export interface components {
       type?: components['schemas']['TenantType'];
       parentTenantId?: null | string;
       /** Format: int32 */
-      maxConcurrentChannels?: null | number | string;
+      maxConcurrentChannels?: null | number;
       /** Format: int32 */
-      maxActiveCampaigns?: null | number | string;
+      maxActiveCampaigns?: null | number;
       metadata?: null | {
         [key: string]: string;
       };
@@ -17093,40 +17093,40 @@ export interface components {
       nodeId: string;
       amiHostname: string;
       /** Format: int32 */
-      amiPort: number | string;
+      amiPort: number;
       amiUsername: string;
       amiPassword: string;
       /**
        * Format: double
        * @default 1
        */
-      weight: number | string;
+      weight: number;
       /**
        * Format: int32
        * @default 0
        */
-      priorityTier: number | string;
+      priorityTier: number;
       /**
        * Format: int32
        * @default 500
        */
-      maxCapacity: number | string;
+      maxCapacity: number;
       tags?: null | {
         [key: string]: string;
       };
     };
     CreateOutboundRouteRequest: {
       /** Format: int64 */
-      campaignId: null | number | string;
+      campaignId: null | number;
       pattern: string;
       patternType: string;
       /** Format: int64 */
-      trunkId: number | string;
+      trunkId: number;
       /** Format: int64 */
-      overflowTrunkId: null | number | string;
+      overflowTrunkId: null | number;
       dialPrefix: null | string;
       /** Format: int32 */
-      priority: number | string;
+      priority: number;
     };
     CreatePartnerCustomerRequest: {
       tenantId: string;
@@ -17140,7 +17140,7 @@ export interface components {
       overflowRule?: null | components['schemas']['QueueOverflowRuleDto'];
       wrapUp?: null | components['schemas']['WrapUpConfigDto'];
       /** Format: int32 */
-      maxWaiting?: null | number | string;
+      maxWaiting?: null | number;
       requiredSkills?: null | string[];
       autoAnswerDefault?: null | boolean;
     };
@@ -17159,7 +17159,7 @@ export interface components {
       scopeRef: string;
       reasonPath: string;
       /** Format: int32 */
-      priority: number | string;
+      priority: number;
       isActive: boolean;
     };
     CreateScheduledReportRequest: {
@@ -17176,7 +17176,7 @@ export interface components {
     CreateSchemaRequest: {
       name: string;
       /** Format: int32 */
-      maxDepth: number | string;
+      maxDepth: number;
       nodes: components['schemas']['TypificationNodeDto'][];
       fields: components['schemas']['TypificationFieldDto'][];
       aiConfig?: null | components['schemas']['AiConfigDto'];
@@ -17214,7 +17214,7 @@ export interface components {
       type: string;
       isActive: boolean;
       /** Format: int32 */
-      maxChannels: number | string;
+      maxChannels: number;
       transport: null | string;
       codecs: null | string;
       authUsername: null | string;
@@ -17241,7 +17241,7 @@ export interface components {
        * Format: double
        * @description Current credit balance (never negative).
        */
-      balance: number | string;
+      balance: number;
     };
     /**
      * @description c1 — a single AI-credit ledger entry projected for the tenant read API. The domain
@@ -17258,7 +17258,7 @@ export interface components {
        * Format: double
        * @description Signed credit amount (positive for grants, negative for debits).
        */
-      amount: number | string;
+      amount: number;
       /** @description Top-up idempotency key, if any. */
       externalRef: null | string;
       /**
@@ -17283,12 +17283,12 @@ export interface components {
        * Format: int32
        * @description Sum of CSAT responses across every queue in the scope/range.
        */
-      totalResponses: number | string;
+      totalResponses: number;
       /**
        * Format: double
        * @description Response-weighted mean rating (1..5) across the scope; 0 when none.
        */
-      averageRating: number | string;
+      averageRating: number;
       /**
        * Format: date-time
        * @description Inclusive start of the captured-at range.
@@ -17317,12 +17317,12 @@ export interface components {
        * Format: int32
        * @description Number of CSAT responses in the requested range.
        */
-      totalResponses: number | string;
+      totalResponses: number;
       /**
        * Format: double
        * @description Mean CSAT rating (1..5) across the responses; 0 when none.
        */
-      averageRating: number | string;
+      averageRating: number;
       /**
        * Format: date-time
        * @description Inclusive start of the captured-at range.
@@ -17361,7 +17361,7 @@ export interface components {
        * Format: int32
        * @description The CSAT rating in 1..5 (fixture `rating`); values outside 1..5 are rejected.
        */
-      rating: number | string;
+      rating: number;
       /** @description Optional free-text comment (fixture `comment`). */
       comment: null | string;
       /**
@@ -17396,19 +17396,19 @@ export interface components {
       /** Format: date-time */
       intervalEnd: string;
       /** Format: int32 */
-      callsOffered: number | string;
+      callsOffered: number;
       /** Format: int32 */
-      callsAnswered: number | string;
+      callsAnswered: number;
       /** Format: int32 */
-      callsAbandoned: number | string;
+      callsAbandoned: number;
       /** Format: double */
-      ahtMs: number | string;
+      ahtMs: number;
       /** Format: double */
-      asaMs: number | string;
+      asaMs: number;
       /** Format: double */
-      slaPercent: number | string;
+      slaPercent: number;
       /** Format: double */
-      abandonRatePercent: number | string;
+      abandonRatePercent: number;
     };
     DashboardDto: {
       kpis: components['schemas']['DashboardKpisDto'];
@@ -17419,15 +17419,15 @@ export interface components {
     };
     DashboardKpisDto: {
       /** Format: int32 */
-      conversationsHandled: number | string;
+      conversationsHandled: number;
       /** Format: double */
-      avgWaitMs: number | string;
+      avgWaitMs: number;
       /** Format: double */
-      avgHandleTimeMs: number | string;
+      avgHandleTimeMs: number;
       /** Format: double */
-      slaPercent: number | string;
+      slaPercent: number;
       /** Format: double */
-      abandonRatePercent: number | string;
+      abandonRatePercent: number;
     };
     DidRouteDto: {
       id: string;
@@ -17441,25 +17441,25 @@ export interface components {
     };
     DispositionCodeDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       code: string;
       label: string;
       category: string;
       isSuccess: boolean;
       triggerRetry: boolean;
       /** Format: int32 */
-      retryDelayMinutes: null | number | string;
+      retryDelayMinutes: null | number;
       triggerCallback: boolean;
       isActive: boolean;
       /** Format: int32 */
-      sortOrder: number | string;
+      sortOrder: number;
     };
     DncCheckResultDto: {
       exists: boolean;
     };
     DncEntryDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       phoneNumber: string;
       reason: null | string;
       /** Format: date-time */
@@ -17469,17 +17469,17 @@ export interface components {
     };
     DncImportResultDto: {
       /** Format: int32 */
-      imported: number | string;
+      imported: number;
       /** Format: int32 */
-      skipped: number | string;
+      skipped: number;
     };
     DncListDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       name: string;
       scope: string;
       /** Format: int32 */
-      entryCount: number | string;
+      entryCount: number;
       /** Format: date-time */
       createdAt: string;
     };
@@ -17508,7 +17508,7 @@ export interface components {
     };
     EndpointProfileDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       name: string;
       type: string;
       isDefault: boolean;
@@ -17516,11 +17516,11 @@ export interface components {
       codecs: string;
       webrtc: boolean;
       /** Format: int32 */
-      maxContacts: number | string;
+      maxContacts: number;
       directMedia: boolean;
       context: string;
       /** Format: int32 */
-      qualifyFrequency: number | string;
+      qualifyFrequency: number;
     };
     EntityId: unknown;
     ErrorDetailResponse: {
@@ -17537,11 +17537,11 @@ export interface components {
     FieldValidationDto: {
       regex: null | string;
       /** Format: double */
-      min: null | number | string;
+      min: null | number;
       /** Format: double */
-      max: null | number | string;
+      max: null | number;
       /** Format: int32 */
-      maxLength: null | number | string;
+      maxLength: null | number;
     };
     FlowEdgeDto: {
       condition: string;
@@ -17587,12 +17587,12 @@ export interface components {
     };
     HolidayCalendarDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       name: string;
     };
     HolidayDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       date: string;
       name: string;
       allowedStart: null | string;
@@ -17602,7 +17602,7 @@ export interface components {
       type?: null | string;
       title?: null | string;
       /** Format: int32 */
-      status?: null | number | string;
+      status?: null | number;
       detail?: null | string;
       instance?: null | string;
       errors?: {
@@ -17674,7 +17674,7 @@ export interface components {
       status: string;
       closeReason: null | string;
       /** Format: int32 */
-      timeRemainingSeconds: null | number | string;
+      timeRemainingSeconds: null | number;
       /** Format: date-time */
       expiresAt: null | string;
     };
@@ -17683,34 +17683,34 @@ export interface components {
     };
     ImportResultDto: {
       /** Format: int32 */
-      imported: number | string;
+      imported: number;
       /** Format: int32 */
-      skipped: number | string;
+      skipped: number;
       /** Format: int32 */
-      duplicates: number | string;
+      duplicates: number;
     };
     IntervalDto: {
       queueName: string;
       /** Format: date-time */
       intervalStart: string;
       /** Format: int32 */
-      intervalSeconds: number | string;
+      intervalSeconds: number;
       /** Format: int32 */
-      callsOffered: number | string;
+      callsOffered: number;
       /** Format: int32 */
-      callsAnswered: number | string;
+      callsAnswered: number;
       /** Format: int32 */
-      callsAbandoned: number | string;
+      callsAbandoned: number;
       /** Format: double */
-      slaPercent: number | string;
+      slaPercent: number;
       /** Format: double */
-      asaMs: number | string;
+      asaMs: number;
       /** Format: double */
-      ahtMs: number | string;
+      ahtMs: number;
       /** Format: double */
-      abandonRatePercent: number | string;
+      abandonRatePercent: number;
       /** Format: int32 */
-      slaMetCount: number | string;
+      slaMetCount: number;
     };
     InvoiceDto: {
       invoiceId: string;
@@ -17722,11 +17722,11 @@ export interface components {
       currency: string;
       lineItems: components['schemas']['InvoiceLineItemDto'][];
       /** Format: double */
-      subtotal: number | string;
+      subtotal: number;
       /** Format: double */
-      tax: number | string;
+      tax: number;
       /** Format: double */
-      total: number | string;
+      total: number;
       status: string;
       /** Format: date-time */
       generatedAt: string;
@@ -17742,15 +17742,15 @@ export interface components {
       usageType: string;
       description: string;
       /** Format: double */
-      quantity: number | string;
+      quantity: number;
       /** Format: double */
-      unitPrice: number | string;
+      unitPrice: number;
       /** Format: double */
-      amount: number | string;
+      amount: number;
       /** Format: double */
-      includedQuantity: number | string;
+      includedQuantity: number;
       /** Format: double */
-      overageQuantity: number | string;
+      overageQuantity: number;
     };
     IpAllowlistEntryDto: {
       /** Format: uuid */
@@ -17775,7 +17775,7 @@ export interface components {
       category: string;
       triggerRetry: boolean;
       /** Format: int32 */
-      retryDelayMinutes: null | number | string;
+      retryDelayMinutes: null | number;
       triggerCallback: boolean;
       dialerCode: null | string;
       isActive: boolean;
@@ -17789,7 +17789,7 @@ export interface components {
       expiresAt: null | string;
       licensedFeatures: string[];
       /** Format: int32 */
-      maxNodes: number | string;
+      maxNodes: number;
       /** Format: date-time */
       lastValidatedAt: string;
       inGrace: boolean;
@@ -17803,11 +17803,11 @@ export interface components {
       /** Format: date-time */
       expiresAt?: null | string;
       /** Format: int32 */
-      maxAgents?: null | number | string;
+      maxAgents?: null | number;
       /** Format: int32 */
-      maxNodes?: null | number | string;
+      maxNodes?: null | number;
       /** Format: int32 */
-      authorizedDigestsCount?: number | string;
+      authorizedDigestsCount?: number;
       lastValidationResult?: components['schemas']['LicenseValidationResult'];
       /** Format: date-time */
       lastValidationAt?: null | string;
@@ -17825,12 +17825,7 @@ export interface components {
       | 'WhiteLabel';
     /** @enum {unknown} */
     LicenseValidationResult:
-      | 'Valid'
-      | 'Invalid'
-      | 'Expired'
-      | 'GracePeriod'
-      | 'MissingFeature'
-      | 'UnauthorizedImage';
+      'Valid' | 'Invalid' | 'Expired' | 'GracePeriod' | 'MissingFeature' | 'UnauthorizedImage';
     ListenEntry: {
       supervisorId: string;
       sessionId: string;
@@ -17843,17 +17838,17 @@ export interface components {
     LiveStateDto: {
       queueName: string;
       /** Format: int32 */
-      callsWaiting: number | string;
+      callsWaiting: number;
       /** Format: int64 */
-      longestWaitMs: number | string;
+      longestWaitMs: number;
       /** Format: int32 */
-      agentsAvailable: number | string;
+      agentsAvailable: number;
       /** Format: int32 */
-      agentsOnCall: number | string;
+      agentsOnCall: number;
       /** Format: int32 */
-      agentsPaused: number | string;
+      agentsPaused: number;
       /** Format: int32 */
-      agentsInWrapUp: number | string;
+      agentsInWrapUp: number;
     };
     LoginRequest: {
       tenantId: null | string;
@@ -17914,7 +17909,7 @@ export interface components {
       fileName: string;
       mimeType: null | string;
       /** Format: int64 */
-      sizeBytes: null | number | string;
+      sizeBytes: null | number;
       type?: components['schemas']['MessageBlockType'];
     };
     MessageBlockImageBlock: {
@@ -17936,9 +17931,9 @@ export interface components {
       /** @enum {string} */
       $type?: 'location';
       /** Format: double */
-      latitude: number | string;
+      latitude: number;
       /** Format: double */
-      longitude: number | string;
+      longitude: number;
       name: null | string;
       type?: components['schemas']['MessageBlockType'];
     };
@@ -18001,11 +17996,11 @@ export interface components {
       nodeId: string;
       state: string;
       /** Format: double */
-      weight: number | string;
+      weight: number;
       /** Format: int32 */
-      priorityTier: number | string;
+      priorityTier: number;
       /** Format: int32 */
-      maxCapacity: number | string;
+      maxCapacity: number;
       asteriskVersion: null | string;
       startupTime: null | string;
     };
@@ -18013,15 +18008,15 @@ export interface components {
       instanceId: string;
       nodes: components['schemas']['MgmtClusterNodeDto'][];
       /** Format: int32 */
-      totalChannels: number | string;
+      totalChannels: number;
       /** Format: int32 */
-      totalAgents: number | string;
+      totalAgents: number;
       activeDrains: components['schemas']['MgmtDrainStatusDto'][];
       instances: components['schemas']['MgmtInstanceDto'][];
     };
     MgmtDrainNodeRequest: {
       /** Format: int32 */
-      gracePeriodSeconds: null | number | string;
+      gracePeriodSeconds: null | number;
     };
     MgmtDrainStatusDto: {
       nodeId: string;
@@ -18031,13 +18026,13 @@ export interface components {
       /** Format: date-time */
       deadline: string;
       /** Format: int32 */
-      initialCallCount: number | string;
+      initialCallCount: number;
       /** Format: int32 */
-      remainingCallCount: number | string;
+      remainingCallCount: number;
       /** Format: int32 */
-      naturallyCompleted: number | string;
+      naturallyCompleted: number;
       /** Format: int32 */
-      forceDisconnected: number | string;
+      forceDisconnected: number;
       estimatedTimeToZero: null | string;
     };
     MgmtInstanceDto: {
@@ -18046,9 +18041,9 @@ export interface components {
       lastSeen: string;
       ownedNodeIds: string[];
       /** Format: int32 */
-      totalChannels: number | string;
+      totalChannels: number;
       /** Format: int32 */
-      totalAgents: number | string;
+      totalAgents: number;
     };
     MgmtTenantDto: {
       tenantId: string;
@@ -18057,9 +18052,9 @@ export interface components {
       type: string;
       parentTenantId: null | string;
       /** Format: int32 */
-      maxConcurrentChannels: number | string;
+      maxConcurrentChannels: number;
       /** Format: int32 */
-      maxActiveCampaigns: number | string;
+      maxActiveCampaigns: number;
       metadata: null | {
         [key: string]: string;
       };
@@ -18090,38 +18085,38 @@ export interface components {
     };
     OperationalSettingsDto: {
       /** Format: int32 */
-      maxConcurrentChannels: number | string;
+      maxConcurrentChannels: number;
       /** Format: int32 */
-      maxActiveCampaigns: number | string;
+      maxActiveCampaigns: number;
       dialplanContextPrefix: null | string;
       nodeAffinity: null | string[];
-      allowedDialingModes: null | (number | string)[];
+      allowedDialingModes: null | number[];
       outboundCallerId: null | string;
       /** Format: int32 */
-      maxVoiceDefault: number | string;
+      maxVoiceDefault: number;
       /** Format: int32 */
-      maxChatDefault: number | string;
+      maxChatDefault: number;
       /** Format: int32 */
-      maxEmailDefault: number | string;
+      maxEmailDefault: number;
       /** Format: int32 */
-      maxSmsDefault: number | string;
+      maxSmsDefault: number;
       /** Format: int32 */
-      maxTotalDefault: number | string;
+      maxTotalDefault: number;
     };
     OutboundRouteDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       /** Format: int64 */
-      campaignId: null | number | string;
+      campaignId: null | number;
       pattern: string;
       patternType: string;
       /** Format: int64 */
-      trunkId: number | string;
+      trunkId: number;
       /** Format: int64 */
-      overflowTrunkId: null | number | string;
+      overflowTrunkId: null | number;
       dialPrefix: null | string;
       /** Format: int32 */
-      priority: number | string;
+      priority: number;
     };
     OwnershipResult: {
       success: boolean;
@@ -18133,184 +18128,184 @@ export interface components {
       data: components['schemas']['CdrRowDto'][];
       hasMore: boolean;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
     };
     PagedDataResponseOfQaRowDto: {
       data: components['schemas']['QaRowDto'][];
       hasMore: boolean;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
     };
     PagedResultOfAdminAgentResponseDto: {
       items: components['schemas']['AdminAgentResponseDto'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfAuditEventDto: {
       items: components['schemas']['AuditEventDto'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfAuthEvent: {
       items: components['schemas']['AuthEvent'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfCampaignSummaryDto: {
       items: components['schemas']['CampaignSummaryDto'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfCase: {
       items: components['schemas']['Case'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfContact: {
       items: components['schemas']['Contact'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfConversation: {
       items: components['schemas']['Conversation'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfCreditLedgerEntryDto: {
       items: components['schemas']['CreditLedgerEntryDto'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfImpersonationSessionDto: {
       items: components['schemas']['ImpersonationSessionDto'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfQueueDto: {
       items: components['schemas']['QueueDto'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfTeamDto: {
       items: components['schemas']['TeamDto'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfUserDto: {
       items: components['schemas']['UserDto'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
     PagedResultOfWebhookDelivery: {
       items: components['schemas']['WebhookDelivery'][];
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
       /** Format: int32 */
-      page: number | string;
+      page: number;
       /** Format: int32 */
-      pageSize: number | string;
+      pageSize: number;
       /** Format: int32 */
-      totalPages?: number | string;
+      totalPages?: number;
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
@@ -18325,7 +18320,7 @@ export interface components {
        * Format: double
        * @description Σ `|Partner-source debits|` for this customer in the window.
        */
-      credits: number | string;
+      credits: number;
     };
     /**
      * @description c2 — derive-on-read partner attribution for the caller's Partner tenant over a window: the total partner-funded
@@ -18337,7 +18332,7 @@ export interface components {
        * Format: double
        * @description Σ of the per-customer decimal PartnerAttributionLineDto.Credits.
        */
-      total: number | string;
+      total: number;
       /** @description One line per direct Customer child with attributable partner-funded consumption. */
       customers: components['schemas']['PartnerAttributionLineDto'][];
     };
@@ -18361,7 +18356,7 @@ export interface components {
        * Format: double
        * @description Positive credit amount to grant.
        */
-      amount: number | string;
+      amount: number;
       /** @description Caller-supplied idempotency key; a repeat is a no-op. */
       idempotencyKey: string;
     };
@@ -18370,11 +18365,11 @@ export interface components {
       customerTenantId: string;
       invoiceId: string;
       /** Format: double */
-      grossAmount: number | string;
+      grossAmount: number;
       /** Format: double */
-      platformCost: number | string;
+      platformCost: number;
       /** Format: double */
-      partnerMargin: number | string;
+      partnerMargin: number;
       /** Format: date-time */
       periodStart: string;
       /** Format: date-time */
@@ -18382,15 +18377,15 @@ export interface components {
     };
     PartnerRevenueSummaryDto: {
       /** Format: double */
-      totalGross: number | string;
+      totalGross: number;
       /** Format: double */
-      totalPlatformCost: number | string;
+      totalPlatformCost: number;
       /** Format: double */
-      totalMargin: number | string;
+      totalMargin: number;
       /** Format: int32 */
-      customerCount: number | string;
+      customerCount: number;
       /** Format: int32 */
-      invoiceCount: number | string;
+      invoiceCount: number;
     };
     PauseMemberBody: {
       reason: null | string;
@@ -18450,7 +18445,7 @@ export interface components {
        * Format: double
        * @description Positive credit amount to grant.
        */
-      amount: number | string;
+      amount: number;
       /** @description Caller-supplied idempotency key; a repeat is a no-op. */
       idempotencyKey: string;
       /**
@@ -18493,7 +18488,7 @@ export interface components {
     PurgeResult: {
       purgeId: string;
       entitiesDeleted: {
-        [key: string]: number | string;
+        [key: string]: number;
       };
       /** Format: date-time */
       purgedAt: string;
@@ -18501,9 +18496,9 @@ export interface components {
     QaCriterionDto: {
       category: string;
       /** Format: double */
-      score: number | string;
+      score: number;
       /** Format: double */
-      weight: number | string;
+      weight: number;
       passed: boolean;
       feedback: null | string;
     };
@@ -18518,24 +18513,24 @@ export interface components {
       narrative: null | string;
       actionItems: string[];
       /** Format: double */
-      qaScore: number | string;
+      qaScore: number;
       /** Format: double */
-      maxPossibleScore: number | string;
+      maxPossibleScore: number;
       criteria: components['schemas']['QaCriterionDto'][];
       violations: components['schemas']['ComplianceViolationDto'][];
       sentimentLabel: null | string;
       sentimentTrend: null | string;
       /** Format: float */
-      sentimentScore: null | number | string;
+      sentimentScore: null | number;
       primaryTopic: null | string;
       allTopics: components['schemas']['TopicDto'][];
       sentimentTimeline: components['schemas']['TurnSentimentDto'][];
       /** Format: double */
-      agentTalkRatio: null | number | string;
+      agentTalkRatio: null | number;
       /** Format: int32 */
-      silenceCount: null | number | string;
+      silenceCount: null | number;
       /** Format: int32 */
-      interruptionCount: null | number | string;
+      interruptionCount: null | number;
     };
     QaRowDto: {
       sessionId: string;
@@ -18544,11 +18539,11 @@ export interface components {
       agentName: null | string;
       queueName: null | string;
       /** Format: double */
-      qaScore: number | string;
+      qaScore: number;
       summaryNarrative: null | string;
       hasComplianceViolations: boolean;
       /** Format: int32 */
-      violationCount: number | string;
+      violationCount: number;
       sentimentLabel: null | string;
       topics: string[];
     };
@@ -18557,7 +18552,7 @@ export interface components {
       name: string;
       isActive: boolean;
       /** Format: int32 */
-      maxWaiting: null | number | string;
+      maxWaiting: null | number;
       slaTargets: null | components['schemas']['SlaPolicyTarget'];
       overflowRule: null | components['schemas']['QueueOverflowRule'];
       wrapUp: components['schemas']['WrapUpConfig'];
@@ -18578,7 +18573,7 @@ export interface components {
        * Format: int32
        * @description Queue penalty (0-10); higher = lower priority.
        */
-      penalty: number | string;
+      penalty: number;
       /** @description True when the agent is excluded from this queue. */
       isExcluded: boolean;
       /**
@@ -18613,33 +18608,33 @@ export interface components {
       queueId: string;
       allowedChannels?: null | string[];
       /** Format: int32 */
-      penalty?: null | number | string;
+      penalty?: null | number;
     };
     QueueMetricsDto: {
       queueId: string;
       queueName: string;
       /** Format: int32 */
-      waiting: null | number | string;
+      waiting: null | number;
       /** Format: double */
-      avgWaitSeconds: null | number | string;
+      avgWaitSeconds: null | number;
       /** Format: double */
-      slaPercent: number | string;
+      slaPercent: number;
       /** Format: int32 */
-      agentsAvailable: number | string;
+      agentsAvailable: number;
       /** Format: int32 */
-      agentsBusy: number | string;
+      agentsBusy: number;
       /** Format: int32 */
-      agentsAway: number | string;
+      agentsAway: number;
     };
     QueueOverflowRule: {
       overflowQueueId: components['schemas']['EntityId'];
       /** Format: int32 */
-      overflowAfterSeconds: number | string;
+      overflowAfterSeconds: number;
     };
     QueueOverflowRuleDto: {
       overflowQueueId: string;
       /** Format: int32 */
-      overflowAfterSeconds: number | string;
+      overflowAfterSeconds: number;
     };
     QuickReply: {
       id: string;
@@ -18647,28 +18642,28 @@ export interface components {
     };
     QuotaDto: {
       /** Format: int32 */
-      maxConcurrentChannels: number | string;
+      maxConcurrentChannels: number;
       /** Format: int32 */
-      maxActiveCampaigns: number | string;
+      maxActiveCampaigns: number;
       /** Format: int64 */
-      maxMonthlyVoiceMinutes: null | number | string;
+      maxMonthlyVoiceMinutes: null | number;
       /** Format: int64 */
-      maxMonthlyMessages: null | number | string;
+      maxMonthlyMessages: null | number;
       /** Format: int64 */
-      maxStorageBytes: null | number | string;
+      maxStorageBytes: null | number;
       /** Format: int32 */
-      maxActiveAgents: null | number | string;
+      maxActiveAgents: null | number;
       quotaAction: string;
     };
     QuotaSettingsDto: {
       /** Format: int64 */
-      maxMonthlyVoiceMinutes: null | number | string;
+      maxMonthlyVoiceMinutes: null | number;
       /** Format: int64 */
-      maxMonthlyMessages: null | number | string;
+      maxMonthlyMessages: null | number;
       /** Format: int64 */
-      maxStorageBytes: null | number | string;
+      maxStorageBytes: null | number;
       /** Format: int32 */
-      maxActiveAgents: null | number | string;
+      maxActiveAgents: null | number;
       quotaAction: string;
     };
     QuotaStatusDto: {
@@ -18691,20 +18686,20 @@ export interface components {
     RateEntryDto: {
       usageType: string;
       /** Format: double */
-      unitPrice: number | string;
+      unitPrice: number;
       /** Format: double */
-      includedQuantity: number | string;
+      includedQuantity: number;
       tiers: null | components['schemas']['RateTierDto'][];
     };
     /** @enum {unknown} */
     RateLimitTier: 'Unlimited' | 'Free' | 'Standard' | 'Professional' | 'Enterprise';
     RateTierDto: {
       /** Format: double */
-      fromQuantity: number | string;
+      fromQuantity: number;
       /** Format: double */
-      toQuantity: null | number | string;
+      toQuantity: null | number;
       /** Format: double */
-      unitPrice: number | string;
+      unitPrice: number;
     };
     ReasonHintDto: {
       id: string;
@@ -18712,7 +18707,7 @@ export interface components {
       scopeRef: string;
       reasonPath: string;
       /** Format: int32 */
-      priority: number | string;
+      priority: number;
       isActive: boolean;
     };
     ReassignConversationRequest: {
@@ -18751,27 +18746,27 @@ export interface components {
     RetentionPolicyDto: {
       tenantId: string;
       /** Format: int32 */
-      conversationRetentionDays: null | number | string;
+      conversationRetentionDays: null | number;
       /** Format: int32 */
-      authEventRetentionDays: null | number | string;
+      authEventRetentionDays: null | number;
       /** Format: int32 */
-      auditRetentionDays: null | number | string;
+      auditRetentionDays: null | number;
       /** Format: int32 */
-      usageRecordRetentionDays: null | number | string;
+      usageRecordRetentionDays: null | number;
     };
     RetentionSettingsDto: {
       /** Format: int32 */
-      conversationRetentionDays: null | number | string;
+      conversationRetentionDays: null | number;
       /** Format: int32 */
-      authEventRetentionDays: null | number | string;
+      authEventRetentionDays: null | number;
       /** Format: int32 */
-      auditRetentionDays: null | number | string;
+      auditRetentionDays: null | number;
       /** Format: int32 */
-      usageRecordRetentionDays: null | number | string;
+      usageRecordRetentionDays: null | number;
     };
     RevokedSessionsResponse: {
       /** Format: int32 */
-      revokedCount: number | string;
+      revokedCount: number;
     };
     RevokeImpersonationSessionRequest: {
       reason?: null | string;
@@ -18817,7 +18812,7 @@ export interface components {
       schemaId: string;
       subtreeRootNodeId: null | string;
       /** Format: int32 */
-      priority: number | string;
+      priority: number;
       aiConfigOverride?: null | components['schemas']['AiConfigDto'];
     };
     SendMessageRequest: {
@@ -18827,15 +18822,15 @@ export interface components {
       /** Format: date-time */
       bucketStart: string;
       /** Format: double */
-      avgSentimentScore: null | number | string;
+      avgSentimentScore: null | number;
       /** Format: int32 */
-      positiveCount: number | string;
+      positiveCount: number;
       /** Format: int32 */
-      neutralCount: number | string;
+      neutralCount: number;
       /** Format: int32 */
-      negativeCount: number | string;
+      negativeCount: number;
       /** Format: int32 */
-      totalCount: number | string;
+      totalCount: number;
     };
     SentimentTrendsResponse: {
       points: components['schemas']['SentimentTrendPointDto'][];
@@ -18865,19 +18860,19 @@ export interface components {
     };
     SlaPolicyTarget: {
       /** Format: int32 */
-      answerWithinSeconds?: null | number | string;
+      answerWithinSeconds?: null | number;
       /** Format: int32 */
-      firstResponseWithinSeconds?: null | number | string;
+      firstResponseWithinSeconds?: null | number;
       /** Format: int32 */
-      resolutionWithinSeconds?: null | number | string;
+      resolutionWithinSeconds?: null | number;
     };
     SlaPolicyTargetDto: {
       /** Format: int32 */
-      answerWithinSeconds?: null | number | string;
+      answerWithinSeconds?: null | number;
       /** Format: int32 */
-      firstResponseWithinSeconds?: null | number | string;
+      firstResponseWithinSeconds?: null | number;
       /** Format: int32 */
-      resolutionWithinSeconds?: null | number | string;
+      resolutionWithinSeconds?: null | number;
     };
     /**
      * @description c2 — open (drawable) remaining credit for one CreditSource, surfaced as the enum name. The Σ of
@@ -18890,7 +18885,7 @@ export interface components {
        * Format: double
        * @description Open, non-expired remaining credit for this source.
        */
-      remaining: number | string;
+      remaining: number;
     };
     /** @description c2 — the per-source open-remaining breakdown for the resolved tenant (Σ == balance). */
     SourceRemainingResponse: {
@@ -18910,7 +18905,7 @@ export interface components {
       /** Format: date-time */
       ownerOfflineSince: null | string;
       /** Format: int32 */
-      failoverAttempts: number | string;
+      failoverAttempts: number;
       escalated: boolean;
     };
     /**
@@ -18920,7 +18915,7 @@ export interface components {
     SubmissionSource: 'Manual' | 'AutoAi' | 'Rule';
     SuggestionLogRowDto: {
       /** Format: int64 */
-      id: number | string;
+      id: number;
       sessionId: string;
       tenantId: string;
       /** Format: date-time */
@@ -18954,17 +18949,17 @@ export interface components {
     /** @description Aggregated score metrics for a survey. */
     SurveyScoreSummary: {
       /** Format: int32 */
-      totalResponses: number | string;
+      totalResponses: number;
       /** Format: double */
-      averageScore: number | string;
+      averageScore: number;
       /** Format: int32 */
-      promoters: null | number | string;
+      promoters: null | number;
       /** Format: int32 */
-      passives: null | number | string;
+      passives: null | number;
       /** Format: int32 */
-      detractors: null | number | string;
+      detractors: null | number;
       /** Format: double */
-      npsScore: null | number | string;
+      npsScore: null | number;
     };
     /**
      * @description Survey classification — determines scoring logic.
@@ -18996,7 +18991,7 @@ export interface components {
       id: string;
       name: string;
       /** Format: int32 */
-      memberCount: number | string;
+      memberCount: number;
       /** Format: date-time */
       createdAt: string;
     };
@@ -19011,18 +19006,18 @@ export interface components {
       mfaPolicy: string;
       mfaRequiredRoles: string[];
       /** Format: int32 */
-      passwordMinLength: number | string;
+      passwordMinLength: number;
       passwordRequireUppercase: boolean;
       passwordRequireNumber: boolean;
       passwordRequireSpecial: boolean;
       /** Format: int32 */
-      lockoutThreshold: number | string;
+      lockoutThreshold: number;
       /** Format: int32 */
-      lockoutDurationMinutes: number | string;
+      lockoutDurationMinutes: number;
       /** Format: int32 */
-      sessionIdleTimeoutMinutes: number | string;
+      sessionIdleTimeoutMinutes: number;
       /** Format: int32 */
-      sessionAbsoluteTimeoutHours: number | string;
+      sessionAbsoluteTimeoutHours: number;
       oidcEnabled: boolean;
       oidcAuthority: null | string;
       oidcClientId: null | string;
@@ -19031,9 +19026,9 @@ export interface components {
       oidcAutoCreateUsers: boolean;
       oidcDefaultRole: string;
       /** Format: int32 */
-      impersonationMaxConcurrentSessions: number | string;
+      impersonationMaxConcurrentSessions: number;
       /** Format: int32 */
-      impersonationAutoTimeoutMinutes: number | string;
+      impersonationAutoTimeoutMinutes: number;
       ipAllowlistEnabled: boolean;
       /** Format: date-time */
       updatedAt: null | string;
@@ -19144,26 +19139,26 @@ export interface components {
        * Format: int64
        * @description Round-trip latency of the probe in milliseconds.
        */
-      latencyMs: number | string;
+      latencyMs: number;
       /** @description A short, secret-free error summary when the probe failed; `null` on success. */
       error: null | string;
     };
     TopicDto: {
       name: string;
       /** Format: float */
-      confidence: number | string;
+      confidence: number;
     };
     TopicTrendDto: {
       topic: string;
       /** Format: int32 */
-      occurrences: number | string;
+      occurrences: number;
       /** Format: double */
-      avgConfidence: number | string;
+      avgConfidence: number;
     };
     TopicTrendsResponse: {
       trends: components['schemas']['TopicTrendDto'][];
       /** Format: int32 */
-      totalAnalyzed: number | string;
+      totalAnalyzed: number;
     };
     /**
      * @description c1 — operator top-up request body. Mints a fungible CreditSource.TopUp grant for
@@ -19177,7 +19172,7 @@ export interface components {
        * Format: double
        * @description Positive credit amount to grant.
        */
-      amount: number | string;
+      amount: number;
       /** @description Caller-supplied idempotency key; a repeat is a no-op. */
       idempotencyKey: string;
     };
@@ -19188,14 +19183,14 @@ export interface components {
     TrendPointDto: {
       label: string;
       /** Format: double */
-      value: number | string;
+      value: number;
     };
     TurnSentimentDto: {
       /** Format: int32 */
-      turnIndex: number | string;
+      turnIndex: number;
       speaker: string;
       /** Format: float */
-      score: number | string;
+      score: number;
       label: string;
     };
     /**
@@ -19238,7 +19233,7 @@ export interface components {
       visibleWhen: null | components['schemas']['ConditionExprDto'];
       prefillSource: null | components['schemas']['PrefillSourceDto'];
       /** Format: int32 */
-      sortOrder: number | string;
+      sortOrder: number;
     };
     /**
      * @description The resolved typification form for a conversation: the cascading schema, the
@@ -19262,7 +19257,7 @@ export interface components {
       label: string;
       code: string;
       /** Format: int32 */
-      sortOrder: number | string;
+      sortOrder: number;
       isLeaf: boolean;
       channelApplicability: null | string[];
       leaf: null | components['schemas']['LeafOutcomeDto'];
@@ -19271,10 +19266,10 @@ export interface components {
       schemaId: string;
       name: string;
       /** Format: int32 */
-      version: number | string;
+      version: number;
       isPublished: boolean;
       /** Format: int32 */
-      maxDepth: number | string;
+      maxDepth: number;
       nodes: components['schemas']['TypificationNodeDto'][];
       fields: components['schemas']['TypificationFieldDto'][];
       aiConfig: components['schemas']['AiConfigDto'];
@@ -19293,7 +19288,7 @@ export interface components {
       agentId: components['schemas']['EntityId'];
       schemaId: components['schemas']['EntityId'];
       /** Format: int32 */
-      schemaVersion?: number | string;
+      schemaVersion?: number;
       /** @description root..leaf. */
       selectedNodePath: unknown[];
       leafNodeId: components['schemas']['EntityId'];
@@ -19304,7 +19299,7 @@ export interface components {
       notes?: null | string;
       aiSuggested?: boolean;
       /** Format: double */
-      aiConfidence?: null | number | string;
+      aiConfidence?: null | number;
       /** @description Did the agent keep the AI suggestion? */
       aiAccepted?: null | boolean;
       source?: components['schemas']['SubmissionSource'];
@@ -19349,7 +19344,7 @@ export interface components {
         [key: string]: string;
       };
       /** Format: double */
-      confidence: null | number | string;
+      confidence: null | number;
       sentiment: null | string;
       band?: components['schemas']['TypificationBand'];
     };
@@ -19378,11 +19373,11 @@ export interface components {
       aiAccepted?: null | boolean;
       aiSuggested?: null | boolean;
       /** Format: double */
-      aiConfidence?: null | number | string;
+      aiConfidence?: null | number;
     };
     UnreadCountDto: {
       /** Format: int32 */
-      count: number | string;
+      count: number;
     };
     UpdateAgentRequest: {
       displayName: null | string;
@@ -19408,18 +19403,18 @@ export interface components {
       mfaPolicy?: null | string;
       mfaRequiredRoles?: null | string[];
       /** Format: int32 */
-      passwordMinLength?: null | number | string;
+      passwordMinLength?: null | number;
       passwordRequireUppercase?: null | boolean;
       passwordRequireNumber?: null | boolean;
       passwordRequireSpecial?: null | boolean;
       /** Format: int32 */
-      lockoutThreshold?: null | number | string;
+      lockoutThreshold?: null | number;
       /** Format: int32 */
-      lockoutDurationMinutes?: null | number | string;
+      lockoutDurationMinutes?: null | number;
       /** Format: int32 */
-      sessionIdleTimeoutMinutes?: null | number | string;
+      sessionIdleTimeoutMinutes?: null | number;
       /** Format: int32 */
-      sessionAbsoluteTimeoutHours?: null | number | string;
+      sessionAbsoluteTimeoutHours?: null | number;
       oidcEnabled?: null | boolean;
       oidcAuthority?: null | string;
       oidcClientId?: null | string;
@@ -19427,9 +19422,9 @@ export interface components {
       oidcAutoCreateUsers?: null | boolean;
       oidcDefaultRole?: null | string;
       /** Format: int32 */
-      impersonationMaxConcurrentSessions?: null | number | string;
+      impersonationMaxConcurrentSessions?: null | number;
       /** Format: int32 */
-      impersonationAutoTimeoutMinutes?: null | number | string;
+      impersonationAutoTimeoutMinutes?: null | number;
       ipAllowlistEnabled?: null | boolean;
     };
     UpdateBindingRequest: {
@@ -19438,7 +19433,7 @@ export interface components {
       schemaId: string;
       subtreeRootNodeId: null | string;
       /** Format: int32 */
-      priority: number | string;
+      priority: number;
       aiConfigOverride?: null | components['schemas']['AiConfigDto'];
     };
     UpdateBotRequest: {
@@ -19446,9 +19441,9 @@ export interface components {
       defaultFlowId?: null | string;
       fallbackQueueId?: null | string;
       /** Format: double */
-      confidenceThreshold?: null | number | string;
+      confidenceThreshold?: null | number;
       /** Format: int32 */
-      maxTurns?: null | number | string;
+      maxTurns?: null | number;
       isActive?: null | boolean;
     };
     UpdateBrandingSettingsDto: {
@@ -19467,7 +19462,7 @@ export interface components {
     };
     UpdateCallAttemptDispositionRequest: {
       /** Format: int64 */
-      dispositionId: number | string;
+      dispositionId: number;
       agentComment: null | string;
     };
     UpdateCallerIdPoolRequest: {
@@ -19479,11 +19474,11 @@ export interface components {
       targetQueueName: null | string;
       teamId: null | string;
       /** Format: int32 */
-      maxConcurrentCalls: null | number | string;
+      maxConcurrentCalls: null | number;
       /** Format: double */
-      powerRatio: null | number | string;
+      powerRatio: null | number;
       /** Format: double */
-      targetAbandonRate: null | number | string;
+      targetAbandonRate: null | number;
       timezone: null | string;
       campaignStart: null | string;
       campaignEnd: null | string;
@@ -19491,11 +19486,11 @@ export interface components {
       holidays: null | string[];
       dncEnabled: null | boolean;
       /** Format: int32 */
-      maxAttemptsPerContact: null | number | string;
+      maxAttemptsPerContact: null | number;
       /** Format: int32 */
-      retryIntervalMinutes: null | number | string;
+      retryIntervalMinutes: null | number;
       /** Format: int32 */
-      timeBetweenAttemptsMinutes: null | number | string;
+      timeBetweenAttemptsMinutes: null | number;
       complianceNotes: null | string;
     };
     UpdateCannedResponseRequest: {
@@ -19533,22 +19528,22 @@ export interface components {
     };
     UpdateDialerSettingsRequest: {
       /** Format: int32 */
-      maxGlobalChannels: null | number | string;
+      maxGlobalChannels: null | number;
       /** Format: int32 */
-      defaultRingTimeoutSeconds: null | number | string;
+      defaultRingTimeoutSeconds: null | number;
       /** Format: int32 */
-      campaignPollIntervalSeconds: null | number | string;
+      campaignPollIntervalSeconds: null | number;
       /** Format: int32 */
-      maxConcurrentCampaigns: null | number | string;
+      maxConcurrentCampaigns: null | number;
       blendModeEnabled: null | boolean;
       /** Format: int32 */
-      jitterMinMs: null | number | string;
+      jitterMinMs: null | number;
       /** Format: int32 */
-      jitterMaxMs: null | number | string;
+      jitterMaxMs: null | number;
       /** Format: int32 */
-      ahtCacheDurationSeconds: null | number | string;
+      ahtCacheDurationSeconds: null | number;
       /** Format: int32 */
-      scheduledCallbackPollSeconds: null | number | string;
+      scheduledCallbackPollSeconds: null | number;
     };
     UpdateDidRouteRequest: {
       did: null | string;
@@ -19561,11 +19556,11 @@ export interface components {
       isSuccess: null | boolean;
       triggerRetry: null | boolean;
       /** Format: int32 */
-      retryDelayMinutes: null | number | string;
+      retryDelayMinutes: null | number;
       triggerCallback: null | boolean;
       isActive: null | boolean;
       /** Format: int32 */
-      sortOrder: null | number | string;
+      sortOrder: null | number;
     };
     UpdateDncListRequest: {
       name: null | string;
@@ -19577,12 +19572,12 @@ export interface components {
       codecs: null | string;
       webrtc: null | boolean;
       /** Format: int32 */
-      maxContacts: null | number | string;
+      maxContacts: null | number;
       isDefault: null | boolean;
       directMedia: null | boolean;
       context: null | string;
       /** Format: int32 */
-      qualifyFrequency: null | number | string;
+      qualifyFrequency: null | number;
     };
     UpdateFlowRequest: {
       name?: null | string;
@@ -19618,7 +19613,7 @@ export interface components {
      */
     UpdateMemberBody: {
       /** Format: int32 */
-      penalty: null | number | string;
+      penalty: null | number;
       isExcluded: null | boolean;
       allowedChannels?: null | string[];
       clearAllowedChannels?: null | boolean;
@@ -19627,63 +19622,63 @@ export interface components {
       name?: null | string;
       status?: null | string;
       /** Format: int32 */
-      maxConcurrentChannels?: null | number | string;
+      maxConcurrentChannels?: null | number;
       /** Format: int32 */
-      maxActiveCampaigns?: null | number | string;
+      maxActiveCampaigns?: null | number;
       metadata?: null | {
         [key: string]: string;
       };
     };
     UpdateNodeRequest: {
       /** Format: double */
-      weight: null | number | string;
+      weight: null | number;
       /** Format: int32 */
-      priorityTier: null | number | string;
+      priorityTier: null | number;
       /** Format: int32 */
-      maxCapacity: null | number | string;
+      maxCapacity: null | number;
       tags: null | {
         [key: string]: string;
       };
     };
     UpdateOperationalSettingsDto: {
       /** Format: int32 */
-      maxConcurrentChannels?: null | number | string;
+      maxConcurrentChannels?: null | number;
       /** Format: int32 */
-      maxActiveCampaigns?: null | number | string;
+      maxActiveCampaigns?: null | number;
       dialplanContextPrefix?: null | string;
       nodeAffinity?: null | string[];
-      allowedDialingModes?: null | (number | string)[];
+      allowedDialingModes?: null | number[];
       outboundCallerId?: null | string;
       /** Format: int32 */
-      maxVoiceDefault?: null | number | string;
+      maxVoiceDefault?: null | number;
       /** Format: int32 */
-      maxChatDefault?: null | number | string;
+      maxChatDefault?: null | number;
       /** Format: int32 */
-      maxEmailDefault?: null | number | string;
+      maxEmailDefault?: null | number;
       /** Format: int32 */
-      maxSmsDefault?: null | number | string;
+      maxSmsDefault?: null | number;
       /** Format: int32 */
-      maxTotalDefault?: null | number | string;
+      maxTotalDefault?: null | number;
     };
     UpdateOutboundRouteRequest: {
       /** Format: int64 */
-      campaignId: null | number | string;
+      campaignId: null | number;
       pattern: null | string;
       patternType: null | string;
       /** Format: int64 */
-      trunkId: null | number | string;
+      trunkId: null | number;
       /** Format: int64 */
-      overflowTrunkId: null | number | string;
+      overflowTrunkId: null | number;
       dialPrefix: null | string;
       /** Format: int32 */
-      priority: null | number | string;
+      priority: null | number;
     };
     UpdatePartnerCustomerRequest: {
       name?: null | string;
       /** Format: int32 */
-      maxConcurrentChannels?: null | number | string;
+      maxConcurrentChannels?: null | number;
       /** Format: int32 */
-      maxActiveCampaigns?: null | number | string;
+      maxActiveCampaigns?: null | number;
     };
     UpdateQueueRequest: {
       name?: null | string;
@@ -19692,34 +19687,34 @@ export interface components {
       overflowRule?: null | components['schemas']['QueueOverflowRuleDto'];
       wrapUp?: null | components['schemas']['WrapUpConfigDto'];
       /** Format: int32 */
-      maxWaiting?: null | number | string;
+      maxWaiting?: null | number;
       requiredSkills?: null | string[];
       autoAnswerDefault?: null | boolean;
     };
     UpdateQuotaRequest: {
       /** Format: int32 */
-      maxConcurrentChannels?: null | number | string;
+      maxConcurrentChannels?: null | number;
       /** Format: int32 */
-      maxActiveCampaigns?: null | number | string;
+      maxActiveCampaigns?: null | number;
       /** Format: int64 */
-      maxMonthlyVoiceMinutes?: null | number | string;
+      maxMonthlyVoiceMinutes?: null | number;
       /** Format: int64 */
-      maxMonthlyMessages?: null | number | string;
+      maxMonthlyMessages?: null | number;
       /** Format: int64 */
-      maxStorageBytes?: null | number | string;
+      maxStorageBytes?: null | number;
       /** Format: int32 */
-      maxActiveAgents?: null | number | string;
+      maxActiveAgents?: null | number;
       quotaAction?: null | string;
     };
     UpdateQuotaSettingsDto: {
       /** Format: int64 */
-      maxMonthlyVoiceMinutes?: null | number | string;
+      maxMonthlyVoiceMinutes?: null | number;
       /** Format: int64 */
-      maxMonthlyMessages?: null | number | string;
+      maxMonthlyMessages?: null | number;
       /** Format: int64 */
-      maxStorageBytes?: null | number | string;
+      maxStorageBytes?: null | number;
       /** Format: int32 */
-      maxActiveAgents?: null | number | string;
+      maxActiveAgents?: null | number;
       quotaAction?: null | string;
     };
     UpdateReasonHintRequest: {
@@ -19727,28 +19722,28 @@ export interface components {
       scopeRef: null | string;
       reasonPath: null | string;
       /** Format: int32 */
-      priority: null | number | string;
+      priority: null | number;
       isActive: null | boolean;
     };
     UpdateRetentionPolicyRequest: {
       /** Format: int32 */
-      conversationRetentionDays: null | number | string;
+      conversationRetentionDays: null | number;
       /** Format: int32 */
-      authEventRetentionDays: null | number | string;
+      authEventRetentionDays: null | number;
       /** Format: int32 */
-      auditRetentionDays: null | number | string;
+      auditRetentionDays: null | number;
       /** Format: int32 */
-      usageRecordRetentionDays: null | number | string;
+      usageRecordRetentionDays: null | number;
     };
     UpdateRetentionSettingsDto: {
       /** Format: int32 */
-      conversationRetentionDays?: null | number | string;
+      conversationRetentionDays?: null | number;
       /** Format: int32 */
-      authEventRetentionDays?: null | number | string;
+      authEventRetentionDays?: null | number;
       /** Format: int32 */
-      auditRetentionDays?: null | number | string;
+      auditRetentionDays?: null | number;
       /** Format: int32 */
-      usageRecordRetentionDays?: null | number | string;
+      usageRecordRetentionDays?: null | number;
     };
     UpdateScheduledReportRequest: {
       name?: null | string;
@@ -19764,7 +19759,7 @@ export interface components {
     UpdateSchemaRequest: {
       name: string;
       /** Format: int32 */
-      maxDepth: number | string;
+      maxDepth: number;
       nodes: components['schemas']['TypificationNodeDto'][];
       fields: components['schemas']['TypificationFieldDto'][];
       aiConfig?: null | components['schemas']['AiConfigDto'];
@@ -19782,18 +19777,18 @@ export interface components {
       mfaPolicy?: null | string;
       mfaRequiredRoles?: null | string[];
       /** Format: int32 */
-      passwordMinLength?: null | number | string;
+      passwordMinLength?: null | number;
       passwordRequireUppercase?: null | boolean;
       passwordRequireNumber?: null | boolean;
       passwordRequireSpecial?: null | boolean;
       /** Format: int32 */
-      lockoutThreshold?: null | number | string;
+      lockoutThreshold?: null | number;
       /** Format: int32 */
-      lockoutDurationMinutes?: null | number | string;
+      lockoutDurationMinutes?: null | number;
       /** Format: int32 */
-      sessionIdleTimeoutMinutes?: null | number | string;
+      sessionIdleTimeoutMinutes?: null | number;
       /** Format: int32 */
-      sessionAbsoluteTimeoutHours?: null | number | string;
+      sessionAbsoluteTimeoutHours?: null | number;
       oidcEnabled?: null | boolean;
       oidcAuthority?: null | string;
       oidcClientId?: null | string;
@@ -19822,7 +19817,7 @@ export interface components {
       type: null | string;
       isActive: null | boolean;
       /** Format: int32 */
-      maxChannels: null | number | string;
+      maxChannels: null | number;
       transport: null | string;
       codecs: null | string;
       authUsername: null | string;
@@ -19893,7 +19888,7 @@ export interface components {
       recordId: string;
       usageType: string;
       /** Format: double */
-      quantity: number | string;
+      quantity: number;
       unit: string;
       channel: null | string;
       referenceId: null | string;
@@ -19903,9 +19898,9 @@ export interface components {
     UsageSummaryDto: {
       usageType: string;
       /** Format: double */
-      totalQuantity: number | string;
+      totalQuantity: number;
       /** Format: int32 */
-      recordCount: number | string;
+      recordCount: number;
       /** Format: date-time */
       periodStart: string;
       /** Format: date-time */
@@ -19931,9 +19926,9 @@ export interface components {
       userId: string;
       tenantId: string;
       /** Format: int32 */
-      authEventCount: number | string;
+      authEventCount: number;
       /** Format: int32 */
-      auditTrailCount: number | string;
+      auditTrailCount: number;
       /** Format: date-time */
       previewedAt: string;
     };
@@ -19990,13 +19985,13 @@ export interface components {
       payload: string;
       status: components['schemas']['WebhookDeliveryStatus'];
       /** Format: int32 */
-      attempts: number | string;
+      attempts: number;
       /** Format: int32 */
-      maxAttempts: number | string;
+      maxAttempts: number;
       /** Format: date-time */
       nextRetryAt: null | string;
       /** Format: int32 */
-      lastResponseCode: null | number | string;
+      lastResponseCode: null | number;
       lastError: null | string;
       /** Format: date-time */
       createdAt: string;
@@ -20022,7 +20017,7 @@ export interface components {
        * Format: int32
        * @default 0
        */
-      circuitFailures: number | string;
+      circuitFailures: number;
       /** Format: date-time */
       circuitOpenedAt?: null | string;
       /** Format: date-time */
@@ -20031,14 +20026,14 @@ export interface components {
        * Format: int32
        * @default 0
        */
-      circuitProbeAttempts: number | string;
+      circuitProbeAttempts: number;
     };
     WhisperRequest: {
       text: string;
     };
     WrapUpConfig: {
       /** Format: int32 */
-      defaultWrapUpSeconds?: number | string;
+      defaultWrapUpSeconds?: number;
       forceWrapUp?: boolean;
     };
     WrapUpConfigDto: {
@@ -20046,7 +20041,7 @@ export interface components {
        * Format: int32
        * @default 30
        */
-      defaultWrapUpSeconds: number | string;
+      defaultWrapUpSeconds: number;
       /** @default false */
       forceWrapUp: boolean;
     };

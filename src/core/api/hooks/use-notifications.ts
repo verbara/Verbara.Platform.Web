@@ -27,21 +27,13 @@ export interface Notification {
 }
 
 /**
- * Normalized domain shape for the unread-count badge. The wire response is the generated
- * `UnreadCountDto` (openapi-typed-client-agent, Platform/ADR-0035), whose `count` is the AOT
- * `number | string` union; {@link normalizeUnreadCount} coerces it to `number` at the fetch
- * boundary so the optimistic-update arithmetic (`previousCount.count - 1`) and the bell's
- * `count > 0` stay valid. Genuine `number | string` coercion site — reported to the shared tally
- * in `openapi-typed-client-admin`.
+ * Domain shape for the unread-count badge. The wire response is the generated `UnreadCountDto`
+ * (openapi-typed-client-agent, Platform/ADR-0035), whose `count` is now single-typed `number`
+ * on the regenerated document (openapi-numeric-schema-truth, Platform/ADR-0036 strips the spurious
+ * AOT `string` arm at the source), so the optimistic-update arithmetic (`previousCount.count - 1`)
+ * and the bell's `count > 0` read it directly — no boundary coercion.
  */
-export interface UnreadCountResponse {
-  count: number;
-}
-
-/** Boundary coercion for the AOT `number | string` union on `count` (see {@link UnreadCountResponse}). */
-function normalizeUnreadCount(dto: components['schemas']['UnreadCountDto']): UnreadCountResponse {
-  return { count: Number(dto.count) };
-}
+export type UnreadCountResponse = components['schemas']['UnreadCountDto'];
 
 export interface NotificationListParams {
   unreadOnly?: boolean;
@@ -72,13 +64,11 @@ export function useNotifications(params: NotificationListParams = {}) {
 export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
-    queryFn: async () => {
-      const dto = await customFetch<components['schemas']['UnreadCountDto']>({
+    queryFn: () =>
+      customFetch<components['schemas']['UnreadCountDto']>({
         url: '/api/v1/notifications/unread-count',
         method: 'GET',
-      });
-      return normalizeUnreadCount(dto);
-    },
+      }),
   });
 }
 

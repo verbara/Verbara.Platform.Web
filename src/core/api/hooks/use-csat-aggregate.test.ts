@@ -1,14 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type {
-  CsatAggregateAnalyticsDto,
-  CsatAggregateSummary,
-} from '@/core/api/hooks/use-analytics';
 
 /**
- * Verbatim-fixture-citation guard (csat-completion, task 3.1) + `select`
- * normalization test (task 3.2).
+ * Verbatim-fixture-citation guard (csat-completion, task 3.1).
  *
  * The scope-wide aggregate read and the `OnCsatResponseRecorded` push are hard
  * cross-repo boundaries: their wire shapes MUST match the golden fixtures owned
@@ -19,6 +14,12 @@ import type {
  *
  * Each fixture's `_comment` documentation key is metadata, not a wire field, and
  * is excluded. The remaining keys are the contract.
+ *
+ * NOTE: the former `select`-normalization test (task 3.2) is retired — the AOT
+ * `number | string` wire union is now extinct at the source
+ * (openapi-numeric-schema-truth, Platform/ADR-0036), so `totalResponses` /
+ * `averageRating` are single-typed `number` on the generated `CsatAggregateDto` and
+ * the hook returns it directly with no boundary coercion to test.
  */
 
 // Resolve the fixtures from the sibling Verbara.Platform repo (READ-ONLY).
@@ -107,82 +108,5 @@ describe('csat-completion aggregate — verbatim-fixture-citation guard', () => 
     }
     const keys = Object.keys(fixture).filter((k) => k !== '_comment');
     expect([...keys].sort()).toEqual([...PUSH_PAYLOAD_KEYS].sort());
-  });
-});
-
-/**
- * `select` normalization (task 3.2): the hook's `select` coerces the AOT-safe
- * `number | string` union (envelope AND each `queues[]` row) to `number`. The
- * hook body is a thin `useQuery` wrapper, so the normalization is tested
- * directly against the same transform to keep the test deterministic and free
- * of a live QueryClient/network.
- */
-function normalize(data: CsatAggregateAnalyticsDto): CsatAggregateSummary {
-  return {
-    ...data,
-    totalResponses: Number(data.totalResponses),
-    averageRating: Number(data.averageRating),
-    queues: data.queues.map((q) => ({
-      ...q,
-      totalResponses: Number(q.totalResponses),
-      averageRating: Number(q.averageRating),
-    })),
-  };
-}
-
-describe('useCsatAggregateAnalytics — number | string AOT-union normalization', () => {
-  it('SelectNormalizes_ShouldCoerceStringUnionToNumber_WhenWireSendsStrings', () => {
-    const wire: CsatAggregateAnalyticsDto = {
-      totalResponses: '128',
-      averageRating: '4.4',
-      rangeStart: '2026-07-06T00:00:00Z',
-      rangeEnd: '2026-07-13T00:00:00Z',
-      queues: [
-        {
-          queueName: 'support-tier1',
-          channel: 'all',
-          totalResponses: '97',
-          averageRating: '4.5',
-          rangeStart: '2026-07-06T00:00:00Z',
-          rangeEnd: '2026-07-13T00:00:00Z',
-        },
-      ],
-    };
-
-    const out = normalize(wire);
-
-    expect(out.totalResponses).toBe(128);
-    expect(out.averageRating).toBe(4.4);
-    expect(typeof out.totalResponses).toBe('number');
-    expect(typeof out.averageRating).toBe('number');
-    expect(out.queues[0].totalResponses).toBe(97);
-    expect(out.queues[0].averageRating).toBe(4.5);
-    expect(typeof out.queues[0].totalResponses).toBe('number');
-  });
-
-  it('SelectNormalizes_ShouldKeepNumbers_WhenWireSendsNumericValues', () => {
-    const wire: CsatAggregateAnalyticsDto = {
-      totalResponses: 128,
-      averageRating: 4.4,
-      rangeStart: '2026-07-06T00:00:00Z',
-      rangeEnd: '2026-07-13T00:00:00Z',
-      queues: [
-        {
-          queueName: 'billing',
-          channel: 'all',
-          totalResponses: 31,
-          averageRating: 4.1,
-          rangeStart: '2026-07-06T00:00:00Z',
-          rangeEnd: '2026-07-13T00:00:00Z',
-        },
-      ],
-    };
-
-    const out = normalize(wire);
-
-    expect(out.totalResponses).toBe(128);
-    expect(out.averageRating).toBe(4.4);
-    expect(out.queues[0].totalResponses).toBe(31);
-    expect(out.queues[0].averageRating).toBe(4.1);
   });
 });
