@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Plus, Eye, Pause, Play, Pencil } from 'lucide-react';

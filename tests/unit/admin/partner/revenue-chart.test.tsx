@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 
 // ─── Mock i18n ───────────────────────────────────────────────────────────────
 vi.mock('react-i18next', () => ({
@@ -20,10 +20,10 @@ vi.mock('react-i18next', () => ({
   Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
 }));
 
-// ─── Mock react-router-dom navigate so we can capture drill-down target ─────
+// ─── Mock react-router navigate so we can capture drill-down target ─────
 const navigateMock = vi.fn();
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router-dom')>();
+vi.mock('react-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router')>();
   return {
     ...actual,
     useNavigate: () => navigateMock,
@@ -44,10 +44,7 @@ vi.mock('recharts', async (importOriginal) => {
 });
 
 // ─── Mock partner revenue hooks with multi-day spread for chart ─────────────
-import type {
-  PartnerRevenueDetail,
-  PartnerRevenueSummary,
-} from '@/core/api/hooks/use-partner';
+import type { PartnerRevenueDetail, PartnerRevenueSummary } from '@/core/api/hooks/use-partner';
 
 const summary: PartnerRevenueSummary = {
   totalGross: 1500,

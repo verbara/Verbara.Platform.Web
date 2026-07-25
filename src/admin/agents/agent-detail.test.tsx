@@ -14,7 +14,7 @@ vi.mock('@/core/api/hooks/use-skills', () => ({ useAgentSkills: () => ({ data: [
 // The edit sheet pulls users/agents/teams/tenant hooks; stub it out — this suite
 // only exercises the read-only effective-capacity card.
 vi.mock('./agent-form', () => ({ AgentForm: () => null }));
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useParams: () => ({ agentId: 'a1' }),
   useNavigate: () => vi.fn(),
 }));

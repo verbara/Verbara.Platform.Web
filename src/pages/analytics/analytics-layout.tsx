@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { AnalyticsSidebar } from '@/analytics/sidebar/analytics-sidebar';
 import { FilterBar } from '@/analytics/shared/filter-bar';

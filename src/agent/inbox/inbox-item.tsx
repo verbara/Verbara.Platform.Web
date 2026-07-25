@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { es, enUS, ptBR } from 'date-fns/locale';
 import type { Locale } from 'date-fns';

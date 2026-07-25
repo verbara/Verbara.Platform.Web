@@ -18,7 +18,7 @@ vi.mock('@/core/api/hooks/use-typification', () => ({
   useUpdateTypificationBinding: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useNavigate: () => vi.fn(),
 }));
 

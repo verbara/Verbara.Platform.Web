@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useUiStore } from '@/core/stores/ui-store';
 import {

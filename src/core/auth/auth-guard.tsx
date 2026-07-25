@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router';
 import { useAuthStore } from './auth-store';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
