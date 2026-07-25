@@ -68,7 +68,7 @@ function TopicTrendsTab() {
 
   if (isLoading) return <PageSkeleton variant="cards" rows={3} />;
 
-  const topics = data?.topics ?? [];
+  const topics = data?.trends ?? [];
 
   return (
     <div className="space-y-4" data-testid="topics-tab">

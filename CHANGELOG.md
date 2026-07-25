@@ -28,6 +28,20 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   literal-union widening, the `PagedResult` envelope). Adoption ratchet floor 39 → 37
   (`use-recording` + `use-surveys` adopted). **Compile-time only — no runtime behavior change**
   (Platform's transformer is document-only; the serializer stays lenient).
+- **Residual contract-shape shadows retired — TopicTrends + compliance severity adopt the generated
+  types (`openapi-residual-contract-shapes`; Platform/ADR-0036).** Consumer-side follow-up to the
+  migration above: Platform's host change corrects two of the three logged structural divergences at
+  the source, so the stale hand-written shadows in `use-analytics.ts` are dropped and repointed to
+  `components['schemas'][...]` behind `client.ts`'s generic `<T>`. **`TopicTrendsResponse`** adopts
+  the generated `{ trends, totalAnalyzed }` (the `topics`→`trends` rename; `from`/`to` gone) and the
+  consumer `speech-analytics-page.tsx` reads `data?.trends` instead of `data?.topics`.
+  **`ComplianceRuleSummaryDto` / `ComplianceSummaryResponse`** adopt the generated types now that
+  Platform narrows `severity` back from bare `string` to the `Info | Warning | Critical` literal
+  union, so the severity display/filter/sort drives off the generated union. The `PagedResult`
+  envelope stays hand-written by design (its `PagedResultOf<T>` monomorphization already matches; the
+  `AuditEventsPagedResult` retirement is a separate future migration). Adoption ratchet floor
+  **unchanged at 37** (`use-analytics.ts` already adopts `components`). **Compile-time only — no
+  runtime behavior change** (same resolved field values under generated type names).
 
 ## [3.16.0-web] - 2026-07-24
 
