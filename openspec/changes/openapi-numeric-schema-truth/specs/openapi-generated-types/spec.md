@@ -35,7 +35,7 @@ declares, verbatim — never a `number | string` union:
 - `CsatAggregateDto.averageRating` — fixture `type: number` / `format: double` → `number`.
 - `CsatResponseDto.totalResponses` — fixture `type: integer` / `format: int32` → `number`.
 - `CsatResponseDto.averageRating` — fixture `type: number` / `format: double` → `number`.
-- `DashboardKpisDto.avgWaitMs` — fixture `type: integer` / `format: int64` → `number`.
+- `DashboardKpisDto.avgWaitMs` — fixture `type: number` / `format: double` → `number`.
 - `DashboardKpisDto.slaPercent` — fixture `type: number` / `format: double` → `number`.
 - `QueueMetricsDto.waiting` — fixture nullable `type: integer` / `format: int32` (`nullable: true`)
   → `number | null` (nullable, never `| string`).
@@ -48,7 +48,7 @@ declares, verbatim — never a `number | string` union:
   `../Verbara.Platform/openspec/changes/openapi-numeric-schema-truth/fixtures/openapi-numeric-schema.v1.json`
   declares `CsatAggregateDto.totalResponses` as `type: integer` / `format: int32`,
   `CsatAggregateDto.averageRating` as `type: number` / `format: double`,
-  `DashboardKpisDto.avgWaitMs` as `type: integer` / `format: int64`, and `QueueMetricsDto.waiting`
+  `DashboardKpisDto.avgWaitMs` as `type: number` / `format: double`, and `QueueMetricsDto.waiting`
   as a nullable `type: integer` / `format: int32`
 - **WHEN** `npm run generate:api-types` regenerates `src/core/api/generated/openapi.d.ts` against
   that corrected document
