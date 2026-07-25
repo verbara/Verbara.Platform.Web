@@ -29,7 +29,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`use-recording` + `use-surveys` adopted). **Compile-time only — no runtime behavior change**
   (Platform's transformer is document-only; the serializer stays lenient).
 - **Residual contract-shape shadows retired — TopicTrends + compliance severity adopt the generated
-  types (`openapi-residual-contract-shapes`; Platform/ADR-0036).** Consumer-side follow-up to the
+  types (`openapi-residual-contract-shapes` #226; Platform/ADR-0036).** Consumer-side follow-up to the
   migration above: Platform's host change corrects two of the three logged structural divergences at
   the source, so the stale hand-written shadows in `use-analytics.ts` are dropped and repointed to
   `components['schemas'][...]` behind `client.ts`'s generic `<T>`. **`TopicTrendsResponse`** adopts
