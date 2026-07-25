@@ -69,6 +69,16 @@ declares, verbatim — never a `number | string` union:
   retired site reads the regenerated `number` field directly with no `Number()` coercion at the wire
   boundary
 
+#### Scenario: A second migrated hook hits the same union pattern
+
+- **GIVEN** the `number | string` numeric union is now EXTINCT at the source (Platform's
+  `IOpenApiSchemaTransformer` strips it, `openapi-numeric-schema-truth`), so the regenerated
+  `openapi.d.ts` exposes no such union field
+- **WHEN** any hook is migrated to the generated types after this change
+- **THEN** no per-hook `number | string` normalization can arise — the field is already `number` /
+  `number | null` — so the deferred "shared coercion helper at ≥3 genuine sites" design question is
+  moot and CLOSED as obsolete, superseding the earlier defer-and-track posture
+
 ### Requirement: CSAT analytics hook consumes the generated CsatResponseDto type
 
 `useCsatQueueAnalytics` in `src/core/api/hooks/use-analytics.ts` SHALL consume the generated type for
@@ -90,6 +100,24 @@ verbatim: schema `CsatResponseDto` carries `queueName` (`type: string`), `channe
 - **THEN** `totalResponses` and `averageRating` are already `number` on the generated type, the
   `CsatQueueSummary` / `CsatAggregateSummary` `select`-normalizers' `Number()` coercions are removed,
   and the obsolete string-arm assertions in `use-csat-aggregate.test.ts` are dropped
+
+#### Scenario: Hook return type carries every fixture field
+
+- **GIVEN** `useCsatQueueAnalytics` resolves a successful response
+- **WHEN** a caller reads the resolved data's fields
+- **THEN** the type exposes exactly `queueName`, `channel`, `totalResponses`,
+  `averageRating`, `rangeStart`, and `rangeEnd`, matching the golden fixture's
+  `CsatResponseDto` schema field-for-field with no extra or renamed keys
+
+#### Scenario: No hand-written duplicate remains for the migrated shape
+
+- **GIVEN** the CSAT slice has migrated to the generated type
+- **WHEN** the repo is searched for a hand-written `CsatQueueSummary` interface
+  declaration
+- **THEN** none remains in `src/core/api/hooks/use-analytics.ts` — the generated type is
+  the only declaration of that shape
+
+## ADDED Requirements
 
 ### Requirement: Analytics module hooks adopt generated types now that the numeric union is gone
 
