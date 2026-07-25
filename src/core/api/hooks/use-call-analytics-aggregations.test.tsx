@@ -34,10 +34,8 @@ describe('useTopicTrends', () => {
 
   it('fetches_topic_trends_with_correct_url_and_params', async () => {
     const response: TopicTrendsResponse = {
-      topics: [{ topic: 'Billing', occurrences: 42, avgConfidence: 0.91 }],
+      trends: [{ topic: 'Billing', occurrences: 42, avgConfidence: 0.91 }],
       totalAnalyzed: 100,
-      from: '2026-04-01',
-      to: '2026-04-30',
     };
     mockCustomFetch.mockResolvedValue(response);
 

@@ -58,13 +58,11 @@ function makeWrapper() {
 }
 
 const sampleTopics = {
-  topics: [
+  trends: [
     { topic: 'Billing', occurrences: 42, avgConfidence: 0.91 },
     { topic: 'Support', occurrences: 31, avgConfidence: 0.78 },
   ],
   totalAnalyzed: 200,
-  from: '2026-04-01',
-  to: '2026-04-30',
 };
 
 const sampleSentiment = {
@@ -162,7 +160,7 @@ describe('SpeechAnalyticsPage', () => {
 
   it('shows_empty_state_when_no_data', () => {
     mockUseTopicTrends.mockReturnValue({
-      data: { topics: [], totalAnalyzed: 0, from: '2026-04-01', to: '2026-04-30' },
+      data: { trends: [], totalAnalyzed: 0 },
       isLoading: false,
     });
 

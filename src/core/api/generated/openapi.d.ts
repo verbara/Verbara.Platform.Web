@@ -16759,7 +16759,8 @@ export interface components {
     ComplianceRuleSummaryDto: {
       ruleId: string;
       ruleName: string;
-      severity: string;
+      /** @enum {string} */
+      severity: 'Info' | 'Warning' | 'Critical';
       /** Format: int32 */
       occurrences: number;
       /** Format: int32 */

@@ -327,48 +327,28 @@ export function useAgentIntervals(filters: { from: string; to: string; agentId?:
 export type TopicTrendDto = components['schemas']['TopicTrendDto'];
 
 /**
- * KEEP hand-written (structural-divergence, logged as a separate Platform contract bug):
- * the generated `TopicTrendsResponse` renames `topics`→`trends` and drops `from`/`to`, so it
- * cannot back the consumer's `{ topics, totalAnalyzed, from, to }` shape.
+ * Adopts the generated type (openapi-residual-contract-shapes, Platform/ADR-0036): the
+ * document emits `trends` (an array of `{ topic, occurrences, avgConfidence }`) and
+ * `totalAnalyzed` — no `topics`, no `from`/`to`. The earlier hand-written
+ * `{ topics, totalAnalyzed, from, to }` shadow was a stale mirror of that corrected contract.
  */
-export interface TopicTrendsResponse {
-  topics: TopicTrendDto[];
-  totalAnalyzed: number;
-  from: string;
-  to: string;
-}
+export type TopicTrendsResponse = components['schemas']['TopicTrendsResponse'];
 
 export type SentimentTrendPointDto = components['schemas']['SentimentTrendPointDto'];
 export type SentimentTrendsResponse = components['schemas']['SentimentTrendsResponse'];
 
 /**
- * KEEP hand-written (structural-divergence, logged as a separate Platform contract bug):
- * the generated `ComplianceRuleSummaryDto` widens `severity` from the
- * `'Info' | 'Warning' | 'Critical'` literal union to bare `string`, which the consumer's
- * severity-keyed display requires narrowed. `ComplianceSummaryResponse` transitively keeps its
- * local `rules` element type for the same reason.
+ * Adopts the generated type (openapi-residual-contract-shapes, Platform/ADR-0036): Platform now
+ * narrows `severity` back to the `Info | Warning | Critical` literal union at the source, so the
+ * hand-written shadow (which existed only while the document widened it to bare `string`) is gone.
+ * `ComplianceSummaryResponse` adopts transitively — its `rules` element is now the generated DTO.
  */
-export interface ComplianceRuleSummaryDto {
-  ruleId: string;
-  ruleName: string;
-  severity: 'Info' | 'Warning' | 'Critical';
-  occurrences: number;
-  sessionsAffected: number;
-  firstSeen: string;
-  lastSeen: string;
-}
+export type ComplianceRuleSummaryDto = components['schemas']['ComplianceRuleSummaryDto'];
 
 export type ComplianceSeverityBreakdownDto =
   components['schemas']['ComplianceSeverityBreakdownDto'];
 
-export interface ComplianceSummaryResponse {
-  rules: ComplianceRuleSummaryDto[];
-  totalViolations: number;
-  totalSessionsWithViolations: number;
-  severityBreakdown: ComplianceSeverityBreakdownDto;
-  from: string;
-  to: string;
-}
+export type ComplianceSummaryResponse = components['schemas']['ComplianceSummaryResponse'];
 
 export function useTopicTrends(from?: string, to?: string, topN = 10) {
   return useQuery({
