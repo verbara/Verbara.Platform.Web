@@ -9,6 +9,22 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.17.0-web] - 2026-07-25
+
+### Security
+
+- **`react-router-dom@7` → `react-router@8.3.0` — remediate the RSC-mode CSRF advisory
+  GHSA-qwww-vcr4-c8h2 (`#223`; Platform/ADR-0010).** v8 consolidates the packages (every symbol
+  imports from `react-router`, only `RouterProvider` from `react-router/dom`): 82 import rewrites + 7
+  `vi.mock` specifier updates. This SPA is data-mode with zero route actions/loaders, so the advisory
+  was not exploitable here, but `react-router` is a production dependency, so it gets a real version
+  fix, not an allowlist. `shadcn` (a CLI scaffolding tool, zero `src/` imports) moved from
+  `dependencies` → `devDependencies` where it belongs. The required `audit` merge-queue gate is scoped
+  to production dependencies — clearing the **7 HIGH** advisories (2 production, remediated on merits;
+  5 build/dev-only — `brace-expansion`/`minimatch` ReDoS et al., never shipped) that had frozen the
+  queue for all Web PRs. **Compile-time only for the app — no runtime behavior change** beyond the
+  react-router import surface.
+
 ### Changed
 
 - **OpenAPI numeric wire-union extinct at the source — Analytics migration completed + coercion
