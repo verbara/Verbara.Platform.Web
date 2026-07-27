@@ -15,7 +15,11 @@ name: Lighthouse
 on:
   pull_request:
     branches: [main]
-    types: [labeled, synchronize]
+    # Docs/data-only fast-path §2 (verbara-meta/ADR-0016): drop `synchronize` so a
+    # push to an open PR no longer re-triggers Lighthouse (non-required, signal-only).
+    # It now runs only when the `lighthouse` label is applied (or via
+    # workflow_dispatch) — an explicit opt-in, never on every docs push.
+    types: [labeled]
   workflow_dispatch:
 
 permissions:

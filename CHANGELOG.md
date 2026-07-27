@@ -30,6 +30,20 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     Playwright E2E cover both surfaces. All three consumed wire shapes are pinned to committed
     golden fixtures.
 
+### Changed
+
+- **ci: docs/data-only CI fast-path (gate job, ADR-0016).** `ci.yml` gains a lightweight `gate`
+  job that classifies the PR/`merge_group` diff against the event-specific base
+  (`scripts/ci/classify-docs-only.sh`, fail-closed strict allowlist: `docs/**`, `openspec/**`,
+  `CHANGELOG.md`, top-level `*.md`, `**/README.md`). The six heavy required jobs (`build`, `test`,
+  `coverage`, `i18n`, `lint`, `audit`) take `needs: gate` + a fail-closed `if:` guard and report
+  `skipped` (which satisfies the required check) on a docs-only diff; `openspec` stays always-run
+  with no gate edge. Additive §2 optimization: `codeql.yml` gains a `paths-ignore` (non-required,
+  no `merge_group`) and the non-blocking Lighthouse workflow drops its `synchronize` trigger. The
+  classifier ships with bash unit tests in the `Coverage Script Tests` job. No ruleset change; the
+  §6 canary (one real docs-only PR) is required before the fast path is trusted
+  (verbara-meta/ADR-0016).
+
 ## [3.17.0-web] - 2026-07-25
 
 ### Security
