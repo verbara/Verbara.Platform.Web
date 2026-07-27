@@ -35,8 +35,31 @@ permissions:
   contents: read
 
 jobs:
+  # Docs/data-only CI fast-path — the gate job (verbara-meta/ADR-0016 §1).
+  # Classifies the PR/merge_group diff against the event-specific base and exposes
+  # docs_only. The HEAVY required jobs (build, test, coverage, i18n, lint, audit)
+  # gate on it and skip (conclusion `skipped`, which satisfies a required check) on
+  # a docs-only diff; the always-run required job `openspec` carries NO needs:gate
+  # edge (§3.3 — it is cheap and validates exactly the docs diff). Triggers are
+  # UNCHANGED: no workflow-level paths filter on a required-context workflow (the
+  # banned trap — it strands the required contexts as permanently Expected).
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # base sha must be reachable for the diff
+      - id: classify
+        env: # §3.1 event-specific base — never hardcode origin/main
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+        run: ./scripts/ci/classify-docs-only.sh "$BASE_SHA" "${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
   build:
     name: build
+    needs: gate
+    if: ${{ !cancelled() && (needs.gate.result != 'success' || needs.gate.outputs.docs_only != 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -73,6 +96,8 @@ jobs:
 
   test:
     name: test
+    needs: gate
+    if: ${{ !cancelled() && (needs.gate.result != 'success' || needs.gate.outputs.docs_only != 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -93,6 +118,8 @@ jobs:
 
   coverage:
     name: coverage
+    needs: gate
+    if: ${{ !cancelled() && (needs.gate.result != 'success' || needs.gate.outputs.docs_only != 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Coverage-gate-v2 (verbara-meta/ADR-0013), Web variant. Two gates over the
@@ -189,8 +216,16 @@ jobs:
       - name: Run coverage-script unit tests
         run: python3 -m unittest discover scripts/tests
 
+      # Docs/data-only fast-path classifier unit tests (verbara-meta/ADR-0016 §3.4):
+      # the gate job's classifier ships with tests so a mis-widened allowlist is
+      # caught here before it can ever mis-skip a code PR. Pure bash, no deps.
+      - name: Run docs-only classifier unit tests (ADR-0016)
+        run: bash scripts/tests/test_classify_docs_only.sh
+
   i18n:
     name: i18n
+    needs: gate
+    if: ${{ !cancelled() && (needs.gate.result != 'success' || needs.gate.outputs.docs_only != 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -211,6 +246,8 @@ jobs:
 
   audit:
     name: audit
+    needs: gate
+    if: ${{ !cancelled() && (needs.gate.result != 'success' || needs.gate.outputs.docs_only != 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -255,6 +292,8 @@ jobs:
 
   lint:
     name: lint
+    needs: gate
+    if: ${{ !cancelled() && (needs.gate.result != 'success' || needs.gate.outputs.docs_only != 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

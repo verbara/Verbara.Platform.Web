@@ -12,6 +12,16 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    # Docs/data-only fast-path §2 (verbara-meta/ADR-0016): CodeQL is NON-required and
+    # has NO merge_group trigger, so a workflow-level paths-ignore is SAFE here (no
+    # required context to strand). Skip the SAST scan on doc/spec-only PRs — the
+    # allowlist inverse of §3.4. (This §2 lever is ONLY for non-required, non-queued
+    # workflows; ci.yml uses the §1 gate job instead.)
+    paths-ignore:
+      - 'docs/**'
+      - 'openspec/**'
+      - '**/*.md'
+      - 'CHANGELOG.md'
   schedule:
     - cron: '0 6 * * 0'
 
