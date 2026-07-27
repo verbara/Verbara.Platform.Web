@@ -8,6 +8,7 @@ import {
   useCreateAgent,
   useUpdateAgent,
   useDeleteAgent,
+  useForceOffline,
   useUpdateAgentState,
   useUpdateAgentStateAdmin,
 } from './use-agents';
@@ -15,6 +16,9 @@ import * as client from '@/core/api/client';
 
 vi.mock('@/core/api/client', () => ({
   customFetch: vi.fn(),
+}));
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -274,6 +278,64 @@ describe('useDeleteAgent', () => {
     const { result } = renderHook(() => useDeleteAgent(), { wrapper });
     act(() => {
       result.current.mutate('agent-1');
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useForceOffline', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should POST { revokeSessions: true } to the force-offline endpoint when the toggle is on', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+    const { result } = renderHook(() => useForceOffline(), { wrapper });
+    act(() => {
+      result.current.mutate({ id: 'agent-1', revokeSessions: true });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/agents/agent-1/force-offline',
+      method: 'POST',
+      data: { revokeSessions: true },
+    });
+  });
+
+  it('should POST { revokeSessions: false } when the toggle is off', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+    const { result } = renderHook(() => useForceOffline(), { wrapper });
+    act(() => {
+      result.current.mutate({ id: 'agent-1', revokeSessions: false });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/agents/agent-1/force-offline',
+      method: 'POST',
+      data: { revokeSessions: false },
+    });
+  });
+
+  it('should invalidate both the agents list and the agent detail on success', async () => {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+    const localWrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+    const { result } = renderHook(() => useForceOffline(), { wrapper: localWrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ id: 'agent-1', revokeSessions: true });
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['agents'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['agents', 'agent-1'] });
+  });
+
+  it('should handle error when mutation fails', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new Error('Forbidden'));
+    const { result } = renderHook(() => useForceOffline(), { wrapper });
+    act(() => {
+      result.current.mutate({ id: 'agent-1', revokeSessions: true });
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });

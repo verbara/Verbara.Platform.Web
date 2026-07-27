@@ -498,7 +498,8 @@
       "agentStateUpdated": "Agent state updated",
       "pauseCancelled": "Pause cancelled",
       "pauseApplied": "Pause applied",
-      "pausePending": "Pause pending — finish your active work"
+      "pausePending": "Pause pending — finish your active work",
+      "forcedOffline": "Agent forced offline"
     },
     "typification": {
       "schemaCreated": "Typification schema created",

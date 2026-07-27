@@ -215,7 +215,11 @@
       "maxVoicePinnedHint": "A voz está limitada a 1 chamada por agente até que a voz simultânea seja lançada.",
       "maxTotalBelowCapWarning": "O total máximo é inferior a um limite por canal; esse canal nunca atingirá seu limite.",
       "voiceFixed": "1 (fixo)"
-    }
+    },
+    "forceOffline": "Forçar desconexão",
+    "forceOfflineEntityType": "agente",
+    "forceOfflineRevokeLabel": "Revogar sessões ativas",
+    "forceOfflineRevokeHint": "Também revoga as sessões de token de atualização do agente para que um cliente travado não possa se reconectar silenciosamente."
   },
   "teams": {
     "title": "Equipes",
@@ -2865,7 +2869,9 @@
     "showing": "Mostrando {{from}}-{{to}} de {{total}}",
     "started": "Iniciada",
     "timestamp": "Marca temporal",
-    "user": "Usuário"
+    "user": "Usuário",
+    "pending_pause_timeout": "Timeout de pausa diferida",
+    "pending_pause_timeout_hint": "minutos — defina 0 para desabilitar"
   },
   "knowledge": {
     "title": "Título",

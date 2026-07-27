@@ -9,6 +9,7 @@ vi.mock('@/core/api/hooks/use-agents', () => ({
   useAgent: () => useAgentMock(),
   useUpdateAgent: () => ({ mutate: vi.fn() }),
   useDeleteAgent: () => ({ mutate: vi.fn() }),
+  useForceOffline: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock('@/core/api/hooks/use-skills', () => ({ useAgentSkills: () => ({ data: [] }) }));
 // The edit sheet pulls users/agents/teams/tenant hooks; stub it out — this suite

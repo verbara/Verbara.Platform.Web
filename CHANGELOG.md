@@ -9,6 +9,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Agent-presence admin surfaces — ADR-0009 Grupo A W3/W4 UI (`Verbara.Platform.Web/ADR-0009`).**
+  Closes the two admin-facing affordances deferred when ADR-0009's backend shipped, consuming the
+  already-LIVE Platform endpoints (no Platform change):
+  - **Force-offline button** on the admin agent-detail view (`src/admin/agents/agent-detail.tsx`).
+    A destructive, `users:user:edit`-gated action reusing `confirm-delete-dialog.tsx` with
+    `confirmationWord="FORCE"` plus a `revokeSessions` toggle (default off). Backed by a net-new
+    `useForceOffline` mutation hook (`POST /api/v1/admin/agents/{id}/force-offline`, body
+    `{ revokeSessions }`) that invalidates `['agents']` + `['agents', id]` and toasts. The
+    operations agent-states stub stays a stub — this is the real admin surface.
+  - **`pendingPauseTimeoutMinutes` editor** on the system auth-config page
+    (`src/admin/system/auth-config-page.tsx`), mirroring the `sessionIdleTimeoutMinutes` control
+    (`min={0}`, where `0` disables the deferred-pause force-apply per tenant). Backed by extending
+    the hand-written `AuthConfig` type + `useAuthConfig`/`useUpdateAuthConfig`
+    (`GET`/`PUT /api/v1/admin/auth/config`, partial PUT).
+  - New i18n keys added across all three locales (`en-US`, `es-419`, `pt-BR`) so
+    `scripts/i18n-parity-check.mjs` stays green. Unit tests for both hooks and a `data-testid`-only
+    Playwright E2E cover both surfaces. All three consumed wire shapes are pinned to committed
+    golden fixtures.
+
 ## [3.17.0-web] - 2026-07-25
 
 ### Security

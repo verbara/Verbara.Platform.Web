@@ -220,6 +220,22 @@ export default function AuthConfigPage() {
             />
             <p className="text-xs text-muted-foreground">{t('admin:auth.hours', 'hours')}</p>
           </div>
+          {/* W4 (ADR-0009) deferred-pause force-apply timeout. Mirrors the idle
+              control but allows min=0; 0 disables the timeout (server-enforced). */}
+          <div className="space-y-2">
+            <Label>{t('admin:auth.pending_pause_timeout', 'Deferred Pause Timeout')}</Label>
+            <Input
+              type="number"
+              min={0}
+              max={480}
+              data-testid="auth-config-pendingPauseTimeout"
+              value={form.pendingPauseTimeoutMinutes ?? 30}
+              onChange={(e) => update('pendingPauseTimeoutMinutes', Number(e.target.value))}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('admin:auth.pending_pause_timeout_hint', 'minutes — set to 0 to disable')}
+            </p>
+          </div>
         </div>
       </div>
 
