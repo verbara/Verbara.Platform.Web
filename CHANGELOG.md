@@ -11,7 +11,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Agent-presence admin surfaces — ADR-0009 Grupo A W3/W4 UI (`Verbara.Platform.Web/ADR-0009`).**
+- **Agent-presence admin surfaces — ADR-0009 Grupo A W3/W4 UI (`#229`; `Verbara.Platform.Web/ADR-0009`).**
   Closes the two admin-facing affordances deferred when ADR-0009's backend shipped, consuming the
   already-LIVE Platform endpoints (no Platform change):
   - **Force-offline button** on the admin agent-detail view (`src/admin/agents/agent-detail.tsx`).
