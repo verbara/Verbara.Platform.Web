@@ -17,6 +17,15 @@ export interface AuthConfig {
   lockoutDurationMinutes: number;
   sessionIdleTimeoutMinutes: number;
   sessionAbsoluteTimeoutHours: number;
+  /**
+   * W4 (ADR-0009) per-tenant deferred-pause force-apply timeout, in minutes.
+   * Field name matches the golden fixture `tenant-auth-config-response.json`
+   * verbatim (`pendingPauseTimeoutMinutes`, default `30`). `0` disables the
+   * force-apply timeout for the tenant (ADR-0009 line 133); the disabling
+   * semantics are enforced server-side. Read from GET, written back as a partial
+   * PUT of `{ "pendingPauseTimeoutMinutes": <n> }`.
+   */
+  pendingPauseTimeoutMinutes: number;
   oidcEnabled: boolean;
   oidcAuthority: string | null;
   oidcClientId: string | null;

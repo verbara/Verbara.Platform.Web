@@ -498,7 +498,8 @@
       "agentStateUpdated": "Estado del agente actualizado",
       "pauseCancelled": "Pausa cancelada",
       "pauseApplied": "Pausa aplicada",
-      "pausePending": "Pausa pendiente — termina tu trabajo activo"
+      "pausePending": "Pausa pendiente — termina tu trabajo activo",
+      "forcedOffline": "Agente forzado a desconectarse"
     },
     "typification": {
       "schemaCreated": "Esquema de tipificación creado",

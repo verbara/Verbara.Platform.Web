@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
+  useAuthConfig,
+  useUpdateAuthConfig,
   useConfirmMfa,
   useDisableMfa,
   useChangePassword,
@@ -18,7 +20,9 @@ vi.mock('sonner', () => ({
 }));
 
 function createWrapper() {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={qc}>{children}</QueryClientProvider>
   );
@@ -82,10 +86,64 @@ describe('use-auth-admin mutations', () => {
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['auth', 'sessions', 'me'] });
   });
 
+  it('useAuthConfig should seed pendingPauseTimeoutMinutes from the GET response (fixture: 30)', async () => {
+    const { wrapper } = createWrapper();
+    vi.mocked(client.customFetch).mockResolvedValue({
+      sessionIdleTimeoutMinutes: 30,
+      sessionAbsoluteTimeoutHours: 24,
+      pendingPauseTimeoutMinutes: 30,
+    });
+
+    const { result } = renderHook(() => useAuthConfig(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.pendingPauseTimeoutMinutes).toBe(30);
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/auth/config',
+      method: 'GET',
+    });
+  });
+
+  it('useUpdateAuthConfig should PUT the partial { pendingPauseTimeoutMinutes: 20 } body (fixture)', async () => {
+    const { qc, wrapper } = createWrapper();
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useUpdateAuthConfig(), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ pendingPauseTimeoutMinutes: 20 });
+    });
+
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/auth/config',
+      method: 'PUT',
+      data: { pendingPauseTimeoutMinutes: 20 },
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['auth-config'] });
+  });
+
+  it('useUpdateAuthConfig should send pendingPauseTimeoutMinutes: 0 verbatim (0 disables)', async () => {
+    const { wrapper } = createWrapper();
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useUpdateAuthConfig(), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ pendingPauseTimeoutMinutes: 0 });
+    });
+
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/auth/config',
+      method: 'PUT',
+      data: { pendingPauseTimeoutMinutes: 0 },
+    });
+  });
+
   it('usePasswordPolicy should cache with infinite stale time on success', async () => {
     const { wrapper } = createWrapper();
     vi.mocked(client.customFetch).mockResolvedValue({
-      minLength: 12, requireUppercase: true, requireNumber: true, requireSpecial: false,
+      minLength: 12,
+      requireUppercase: true,
+      requireNumber: true,
+      requireSpecial: false,
     });
 
     const { result } = renderHook(() => usePasswordPolicy(), { wrapper });

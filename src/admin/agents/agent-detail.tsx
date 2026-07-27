@@ -15,16 +15,25 @@ import {
   ArrowRight,
   Phone,
   Gauge,
+  PowerOff,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
+import { Label } from '@/core/ui/label';
+import { Switch } from '@/core/ui/switch';
 import { Separator } from '@/core/ui/separator';
 import { ConfirmDialog } from '@/core/ui/confirm-dialog';
+import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import { AgentForm } from './agent-form';
 import { toCapacityOverride } from './capacity-override';
-import { useAgent, useUpdateAgent, useDeleteAgent } from '@/core/api/hooks/use-agents';
+import {
+  useAgent,
+  useUpdateAgent,
+  useDeleteAgent,
+  useForceOffline,
+} from '@/core/api/hooks/use-agents';
 import { useAgentSkills } from '@/core/api/hooks/use-skills';
 
 interface AgentSkill {
@@ -107,6 +116,8 @@ export default function AgentDetailPage() {
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [forceOfflineOpen, setForceOfflineOpen] = useState(false);
+  const [revokeSessions, setRevokeSessions] = useState(false);
   const [skills, setSkills] = useState<AgentSkill[]>([]);
   const [newSkillName, setNewSkillName] = useState('');
   const [newSkillProf, setNewSkillProf] = useState('5');
@@ -116,6 +127,7 @@ export default function AgentDetailPage() {
   const { data: agentSkills = [] } = useAgentSkills(agentId);
   const updateAgent = useUpdateAgent();
   const deleteAgent = useDeleteAgent();
+  const forceOffline = useForceOffline();
 
   /* Initialize skills from agent data once loaded */
   if (agent && !skillsInitialized) {
@@ -138,6 +150,18 @@ export default function AgentDetailPage() {
         navigate('/admin/agents');
       },
     });
+  };
+
+  const handleForceOffline = () => {
+    forceOffline.mutate(
+      { id: agent.id, revokeSessions },
+      {
+        onSuccess: () => {
+          setForceOfflineOpen(false);
+          setRevokeSessions(false);
+        },
+      },
+    );
   };
 
   const handleAddSkill = () => {
@@ -167,6 +191,17 @@ export default function AgentDetailPage() {
             <Pencil className="mr-1.5 h-4 w-4" />
             Edit
           </Button>
+          <PermissionGuard requires="users:user:edit">
+            <Button
+              data-testid="agent-detail-force-offline"
+              variant="destructive"
+              size="sm"
+              onClick={() => setForceOfflineOpen(true)}
+            >
+              <PowerOff className="mr-1.5 h-4 w-4" />
+              {t('admin:agents.forceOffline')}
+            </Button>
+          </PermissionGuard>
           <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="mr-1.5 h-4 w-4" />
             Delete
@@ -411,6 +446,43 @@ export default function AgentDetailPage() {
         onConfirm={handleDelete}
         confirmLabel="Delete"
         variant="destructive"
+      />
+
+      {/* Force-offline (W3, ADR-0009): word-gated destructive action. The
+          `revokeSessions` toggle is a sibling control read into the mutation on
+          confirm. Default off — only revokes the refresh-token family when on. */}
+      {forceOfflineOpen && (
+        <div
+          data-testid="agent-detail-force-offline-revoke-row"
+          className="flex items-center justify-between rounded-md border bg-card px-3 py-2"
+        >
+          <div className="flex flex-col">
+            <Label htmlFor="agent-detail-force-offline-revoke">
+              {t('admin:agents.forceOfflineRevokeLabel')}
+            </Label>
+            <span className="text-xs text-muted-foreground">
+              {t('admin:agents.forceOfflineRevokeHint')}
+            </span>
+          </div>
+          <Switch
+            id="agent-detail-force-offline-revoke"
+            data-testid="agent-detail-force-offline-revoke"
+            checked={revokeSessions}
+            onCheckedChange={(checked) => setRevokeSessions(checked)}
+          />
+        </div>
+      )}
+      <ConfirmDeleteDialog
+        open={forceOfflineOpen}
+        onOpenChange={(open) => {
+          setForceOfflineOpen(open);
+          if (!open) setRevokeSessions(false);
+        }}
+        onConfirm={handleForceOffline}
+        entityName={agent.displayName}
+        entityType={t('admin:agents.forceOfflineEntityType')}
+        isPending={forceOffline.isPending}
+        confirmationWord="FORCE"
       />
     </div>
   );

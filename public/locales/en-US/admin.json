@@ -215,7 +215,11 @@
       "maxVoicePinnedHint": "Voice is limited to 1 call per agent until simultaneous voice ships.",
       "maxTotalBelowCapWarning": "MaxTotal is below a per-channel cap; that channel can never reach its limit.",
       "voiceFixed": "1 (fixed)"
-    }
+    },
+    "forceOffline": "Force offline",
+    "forceOfflineEntityType": "agent",
+    "forceOfflineRevokeLabel": "Revoke active sessions",
+    "forceOfflineRevokeHint": "Also revoke the agent's refresh-token sessions so a wedged client cannot silently reconnect."
   },
   "teams": {
     "title": "Teams",
@@ -2865,7 +2869,9 @@
     "showing": "Showing {{from}}-{{to}} of {{total}}",
     "started": "Started",
     "timestamp": "Timestamp",
-    "user": "User"
+    "user": "User",
+    "pending_pause_timeout": "Deferred Pause Timeout",
+    "pending_pause_timeout_hint": "minutes — set to 0 to disable"
   },
   "knowledge": {
     "title": "Title",

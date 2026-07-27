@@ -263,6 +263,37 @@ export function useForcePendingPause() {
   });
 }
 
+/**
+ * W3 (ADR-0009) admin force-offline lever. Consumes the LIVE endpoint
+ * `POST /api/v1/admin/agents/{id}/force-offline` (`AdminOnly` +
+ * `RequireOperationalTenant`): forces the agent Offline, removes the presence
+ * key, optionally revokes the refresh-token family, and writes an audit entry.
+ *
+ * The request body is the golden fixture `force-offline-request.json`
+ * (`{ "revokeSessions": boolean }`) — `revokeSessions` is sent verbatim (exact
+ * camelCase). The endpoint returns no body of interest, so the response is typed
+ * `void`; presence refresh is driven by invalidating `['agents']` + `['agents', id]`
+ * (mirrors `useDeleteAgent`).
+ */
+export function useForceOffline() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
+  return useMutation({
+    mutationFn: ({ id, revokeSessions }: { id: string; revokeSessions: boolean }) =>
+      customFetch<void>({
+        url: `/api/v1/admin/agents/${id}/force-offline`,
+        method: 'POST',
+        data: { revokeSessions },
+      }),
+    onSuccess: (_result, { id }) => {
+      qc.invalidateQueries({ queryKey: ['agents'] });
+      qc.invalidateQueries({ queryKey: ['agents', id] });
+      toast.success(t('toasts.agents.forcedOffline'));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 export function useUpdateAgentStateAdmin() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
