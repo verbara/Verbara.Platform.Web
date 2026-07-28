@@ -9,6 +9,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed — CI
+
+- **`release.yml` now creates the GitHub Release object itself.** The workflow built and
+  cosign-signed the multi-arch image on every `v*` tag but never created the Release, so each
+  version reopened the gap — 22 Release objects over 52 tags as of 2026-07-28, with
+  `v3.14.0-web` / `v3.15.0-web` / `v3.16.0-web` backfilled by hand. The new final step runs
+  **after** `cosign sign` + `cosign verify`, so a Release object can never exist for an image
+  whose signature did not verify; it is **idempotent** (an existing themed Release created by
+  `/xr:release` §H is left untouched); its body is this repo's own `CHANGELOG.md` section for the
+  version, plus the signed digest and the customer verify command; and it claims the `Latest`
+  badge **only when the tag is the highest version**, so a hotfix cut on an older line (as
+  `v3.13.1-web` was) cannot steal it from a newer minor. Workflow `permissions` widened
+  `contents: read` → `write` for this. Platform's `release.yml` and Sdk's `publish.yml` still do
+  not create Releases — for those, `/xr:release` §H creates them by hand.
+
 ## [3.18.0-web] - 2026-07-27
 
 **Platform floor: ≥ 2.22.0.** This release's `pendingPauseTimeoutMinutes` editor reads and writes a

@@ -38,6 +38,9 @@
 #   - Multi-arch + :latest is currently a Web-only posture (API is amd64-only
 #     because Native AOT publishes per-arch). If/when API adopts the same,
 #     consider unifying via a reusable workflow.
+#   - Creates the GitHub Release object itself (final step). Platform's
+#     `release.yml` and Sdk's `publish.yml` still do NOT — for those, `/xr:release`
+#     §H creates it by hand, which is why unreleased tags accumulated here.
 
 name: Release
 
@@ -47,7 +50,10 @@ name: Release
       - 'v*'
 
 permissions:
-  contents: read
+  # `contents: write` (not `read`) so the final step can create the GitHub Release
+  # object for the tag. Single-job workflow, so a job-level override would scope
+  # nothing — the same job builds, pushes, signs and releases.
+  contents: write
   packages: write
   id-token: write
 
@@ -170,6 +176,79 @@ jobs:
             --key .github/cosign.pub \
             --insecure-ignore-tlog \
             "$IMAGE_REF"
+
+      - name: Create GitHub Release
+        # This workflow historically built and cosign-signed the image but never
+        # created the Release object, so EVERY version reopened the gap: as of
+        # 2026-07-28 the repo had 22 Release objects over 52 tags, and
+        # v3.14.0-web / v3.15.0-web / v3.16.0-web had to be backfilled by hand.
+        #
+        # Deliberately placed AFTER `cosign sign` + `cosign verify`, so a Release
+        # object can never exist for an image whose signature did not verify.
+        #
+        # Idempotent: `/xr:release` §H may already have created a themed Release
+        # for this tag (its title carries the release theme, which this workflow
+        # cannot know). If one exists, leave it alone — never overwrite an
+        # operator-authored body with the generated one.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.release_tag }}
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::notice::Release object for $TAG already exists — leaving it untouched."
+            exit 0
+          fi
+
+          VERSION="${TAG#v}"
+          NOTES_FILE="$(mktemp)"
+
+          # This version's own CHANGELOG section: everything between its heading
+          # (`## [3.18.0-web] - 2026-07-27`) and the next `## [` heading.
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" { grab = 1; next }
+            grab && /^## \[/       { exit }
+            grab                   { print }
+          ' CHANGELOG.md > "$NOTES_FILE"
+
+          if [ ! -s "$NOTES_FILE" ]; then
+            echo "::warning::No CHANGELOG.md section found for [$VERSION] — falling back to a pointer body."
+            printf 'See [`CHANGELOG.md`](https://github.com/%s/blob/main/CHANGELOG.md) for this release.\n' \
+              "$GITHUB_REPOSITORY" > "$NOTES_FILE"
+          fi
+
+          # Drop trailing blank lines and any horizontal rule the section ended on,
+          # so the image footer below contributes the only `---` in the body.
+          awk '{ line[NR] = $0 }
+               END { last = NR
+                     while (last > 0 && (line[last] ~ /^[[:space:]]*$/ || line[last] == "---")) last--
+                     for (i = 1; i <= last; i++) print line[i] }' "$NOTES_FILE" > "${NOTES_FILE}.trimmed"
+          mv "${NOTES_FILE}.trimmed" "$NOTES_FILE"
+
+          {
+            printf '\n---\n\n'
+            printf 'Signed multi-arch image (linux/amd64 + linux/arm64):\n\n'
+            printf '    %s\n\n' "$IMAGE_REF"
+            printf 'Verify:\n\n'
+            printf '    cosign verify --key https://verbara.io/keys/cosign.pub --insecure-ignore-tlog \\\n'
+            printf '      %s/%s:%s\n' "$REGISTRY" "$IMAGE_NAME" "$TAG"
+          } >> "$NOTES_FILE"
+
+          # Claim the `Latest` badge only when this really is the highest version
+          # tag. A hotfix cut on an older line (as v3.13.1-web was) must not steal
+          # it from a newer minor. Tags come from the API so no extra git fetch is
+          # needed — `actions/checkout` is shallow here and carries no tag refs.
+          HIGHEST="$(gh api "repos/${GITHUB_REPOSITORY}/tags" --paginate -q '.[].name' | sort -V | tail -1)"
+          if [ "$HIGHEST" = "$TAG" ]; then LATEST=true; else LATEST=false; fi
+          echo "highest tag=$HIGHEST · this tag=$TAG · --latest=$LATEST"
+
+          gh release create "$TAG" \
+            --verify-tag \
+            --latest="$LATEST" \
+            --title "$TAG" \
+            --notes-file "$NOTES_FILE"
 
       - name: Print final image reference
         env:
