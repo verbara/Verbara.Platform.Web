@@ -95,7 +95,7 @@ After the deep analysis the user chose a layered, defense-in-depth design: one u
 
 - **SignalR `PresenceTracker.AgentOffline` cross-process fast-path** — a latency optimizer (~30 s) for the SignalR subset only; the 60 s heartbeat TTL already covers those agents. Add later if data shows the latency matters.
 - **Asterisk `ContactStatus` / PJSIP-registration backstop** — a voice-only corroborator; defer.
-- **Admin force-offline UI button (B4)** — the backend endpoint shipped; the UI affordance + 3-locale i18n are deferred to keep W3 focused and avoid opening the i18n-parity surface for a non-critical convenience.
+- **Admin force-offline UI button (B4)** — ✅ **SHIPPED 2026-07-27** (Web `#229`, released in `v3.18.0-web`). The original deferral here — _the backend endpoint shipped; the UI affordance + 3-locale i18n are deferred to keep W3 focused and avoid opening the i18n-parity surface for a non-critical convenience_ — was closed later as one half of the ADR-0009 Grupo A W3/W4 UI pair: a destructive, `users:user:edit`-gated action on the admin agent-detail view (`src/admin/agents/agent-detail.tsx`) over a net-new `useForceOffline` hook, with the 3-locale i18n keys. Consumes the W3 endpoint live since **Platform 2.9.0**.
 
 ### Latent fix found during implementation
 
@@ -155,7 +155,7 @@ This ADR originally proposed a watcher over `AgentCapacityChangedEvent` / `Conve
 
 - **Offline deferred sign-off** — "log me off when my work drains", on the same PendingState machinery. Offline stays immediate for now.
 - **A dedicated `agent.pending_state_changed` browser push** — for an instant cross-tab pending indicator; today the indicator reflects from the response + `['agent-me']` invalidation.
-- **Admin UI to edit `PendingPauseTimeoutMinutes`** — the per-tenant value ships server-side; the editor is deferred (align with the `AgentLivenessTimeoutSeconds` admin surface when built).
+- **Admin UI to edit `PendingPauseTimeoutMinutes`** — ✅ **SHIPPED 2026-07-27** (Web `#229`, released in `v3.18.0-web`). The original deferral here — _the per-tenant value ships server-side; the editor is deferred (align with the `AgentLivenessTimeoutSeconds` admin surface when built)_ — was closed later as the other half of the ADR-0009 Grupo A W3/W4 UI pair: a `min={0}` control on the system auth-config page (`src/admin/system/auth-config-page.tsx`) mirroring `sessionIdleTimeoutMinutes`, with the 3-locale i18n keys. Unlike the force-offline half this needs **Platform ≥ 2.22.0** — `TenantAuthConfigResponse` did not expose the field at `v2.21.2`; Platform `#198` adds it.
 
 ### Delivery
 

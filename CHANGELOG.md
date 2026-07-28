@@ -9,11 +9,24 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.18.0-web] - 2026-07-27
+
+**Platform floor: ≥ 2.22.0.** This release's `pendingPauseTimeoutMinutes` editor reads and writes a
+field that Platform first exposes in `v2.22.0` (cut in the same release train). Against an older
+Platform the `GET` omits the field, so the control falls back to its hard-coded `30`
+(`value={form.pendingPauseTimeoutMinutes ?? 30}` in `auth-config-page.tsx`) — it displays a
+plausible number that is **not** the tenant's configured value — and a `PUT` carrying the field is
+silently ignored by the older server. Degraded and misleading, not fatal. The other new surface,
+force-offline, has been live since Platform **2.9.0**.
+
 ### Added
 
 - **Agent-presence admin surfaces — ADR-0009 Grupo A W3/W4 UI (`#229`; `Verbara.Platform.Web/ADR-0009`).**
-  Closes the two admin-facing affordances deferred when ADR-0009's backend shipped, consuming the
-  already-LIVE Platform endpoints (no Platform change):
+  Closes the two admin-facing affordances deferred when ADR-0009's backend shipped. **The two carry
+  different Platform floors** — force-offline consumes an endpoint live since
+  **Platform 2.9.0**, while the `pendingPauseTimeoutMinutes` editor requires
+  **Platform ≥ 2.22.0**: `TenantAuthConfigResponse` did not carry that field at `v2.21.2`; Platform
+  `#198` adds it, and it ships in the same train as this version.
   - **Force-offline button** on the admin agent-detail view (`src/admin/agents/agent-detail.tsx`).
     A destructive, `users:user:edit`-gated action reusing `confirm-delete-dialog.tsx` with
     `confirmationWord="FORCE"` plus a `revokeSessions` toggle (default off). Backed by a net-new
@@ -32,17 +45,55 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- **ci: docs/data-only CI fast-path (gate job, ADR-0016).** `ci.yml` gains a lightweight `gate`
-  job that classifies the PR/`merge_group` diff against the event-specific base
+- **ci: docs/data-only CI fast-path (gate job, ADR-0016) (`#231`).** `ci.yml` gains a lightweight
+  `gate` job that classifies the PR/`merge_group` diff against the event-specific base
   (`scripts/ci/classify-docs-only.sh`, fail-closed strict allowlist: `docs/**`, `openspec/**`,
   `CHANGELOG.md`, top-level `*.md`, `**/README.md`). The six heavy required jobs (`build`, `test`,
   `coverage`, `i18n`, `lint`, `audit`) take `needs: gate` + a fail-closed `if:` guard and report
   `skipped` (which satisfies the required check) on a docs-only diff; `openspec` stays always-run
   with no gate edge. Additive §2 optimization: `codeql.yml` gains a `paths-ignore` (non-required,
   no `merge_group`) and the non-blocking Lighthouse workflow drops its `synchronize` trigger. The
-  classifier ships with bash unit tests in the `Coverage Script Tests` job. No ruleset change; the
-  §6 canary (one real docs-only PR) is required before the fast path is trusted
+  classifier ships with bash unit tests in the `Coverage Script Tests` job. No ruleset change. The
+  **ADR-0016 §6 canary passed on 2026-07-27 in both phases**: `#242` (a throwaway docs-only PR,
+  closed unmerged) exercised `pull_request` and `#243` exercised `merge_group`, each with `gate`
+  green and `build`/`test`/`coverage`/`i18n`/`lint`/`audit` reporting `skipped` while still
+  satisfying their required contexts. The fast path is validated and in effect
   (verbara-meta/ADR-0016).
+
+### Security
+
+- **`@hono/node-server` forced to the patched 2.x via `overrides` — GHSA-frvp-7c67-39w9 (`#244`).**
+  Path traversal in `serve-static` through an encoded backslash (`%5C`). **MEDIUM, CVSS 5.9, and
+  development-scope only** — the package is reachable exclusively through the `shadcn` CLI
+  (a `devDependencies` entry since v3.17.0-web) → `@modelcontextprotocol/sdk` →
+  `@hono/node-server`, so `npm ls --omit=dev @hono/node-server` is empty and it **never reaches the
+  shipped bundle**; the exploit is additionally Windows-only and the hono server is never run in
+  this repo. The installed `@modelcontextprotocol/sdk@1.29.0` declares `@hono/node-server: ^1.19.9`,
+  which cannot reach the patched 2.x, so an `overrides` entry (`"@hono/node-server": "^2.0.5"`)
+  forces it — resolving 1.19.14 → 2.0.12. Upstream has since caught up:
+  `@modelcontextprotocol/sdk@1.30.0` (published 2026-07-27) widens the range to
+  `^1.19.9 || ^2.0.5`, so the override becomes redundant once the lockfile picks that up and can be
+  dropped then. Dependabot alert `#11` was already in state `fixed` before
+  this release was cut, and the repo carries **zero open Dependabot alerts**. Recorded for
+  completeness; **this is not an emergency and did not expedite the release.**
+
+### Housekeeping
+
+- **Routine dependency bumps (`#232`–`#240`)** — runtime: `react` + `react-dom` 19.2.8,
+  `@tanstack/react-query` 5.101.4 + `@tanstack/react-virtual` 3.14.8, `react-i18next` 17.0.11,
+  `react-is` 19.2.8, `@fontsource-variable/geist` 5.3.0; dev/tooling: `@vitejs/plugin-react` 6.0.4,
+  `prettier` 3.9.6, `shadcn` 4.14.1; CI actions: `docker/login-action` 4 → 4.4.0 (`#238`) — note
+  this one lives in `release.yml`, so this release is its first real execution. All are patch/minor,
+  no behavior change.
+- **OpenSpec housekeeping** — archived `surface-agent-presence-admin-controls` (`#230`). Grupo B
+  (offline deferred sign-off + a dedicated `agent.pending_state_changed` push) stays deferred per
+  ADR-0009 — no new open change.
+- **Fast-path operator doc (`#243`)** — `docs/ci-docs-fast-path.md` records the ADR-0016 classifier
+  allowlist and what a docs-only PR looks like in CI. This PR doubled as the §6 `merge_group` canary
+  noted above.
+- **ADR-0009 status markers refreshed** — the two W3.x/W4.x entries that `#229` actually built
+  (admin force-offline UI, `PendingPauseTimeoutMinutes` editor) no longer read "deferred", so the
+  `decision_ref` in these notes resolves to a document that agrees with them.
 
 ## [3.17.0-web] - 2026-07-25
 
