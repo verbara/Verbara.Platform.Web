@@ -68,6 +68,46 @@ export async function establishSession(
 }
 
 /**
+ * Grants extra permissions to an already-authenticated page, for specs that exercise a surface no
+ * seeded role reaches (partner-portal, for one — there is no partner-admin fixture yet).
+ *
+ * Writing them into `sessionStorage` is not enough on its own. Every navigation now restores the
+ * session through `POST /api/v1/auth/refresh`, and `client.ts` prefers a non-empty server-side
+ * permission set over whatever is in the store — so the injected entry survives the first paint and
+ * is then erased the moment the restore lands. This patches both ends:
+ *
+ *  - the restore response, by fetching the real one and merging `extra` into its `permissions`
+ *    (`route.fetch()` + `fulfill({ response })` keeps the genuine token and the rotated refresh
+ *    cookie, so the session stays valid);
+ *  - the persisted slice, so the pre-restore render is already correct.
+ *
+ * Only affects the client's view. The API resolves permissions per request, so a granted-here
+ * affordance still gets rejected server-side — which is why these specs route-mock their endpoints.
+ */
+export async function grantPermissions(page: Page, extra: readonly string[]): Promise<void> {
+  await page.route('**/api/v1/auth/refresh', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as { permissions?: string[] };
+    await route.fulfill({
+      response,
+      json: { ...body, permissions: [...new Set([...(body.permissions ?? []), ...extra])] },
+    });
+  });
+
+  const patch = ([key, granted]: readonly [string, readonly string[]]) => {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as { state: { permissions?: string[] } };
+    parsed.state.permissions = [...new Set([...(parsed.state.permissions ?? []), ...granted])];
+    sessionStorage.setItem(key, JSON.stringify(parsed));
+  };
+
+  // The current document (the fixture already navigated to /login) and every later one.
+  await page.evaluate(patch, [AUTH_PERSIST_KEY, extra] as const);
+  await page.addInitScript(patch, [AUTH_PERSIST_KEY, extra] as const);
+}
+
+/**
  * Waits until the guarded shell is mounted.
  *
  * Credentials are no longer persisted, so every navigation first lands on `AuthGuard`'s restoring

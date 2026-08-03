@@ -2,7 +2,7 @@ import { test as base, type Page, type APIRequestContext } from '@playwright/tes
 import { API_BASE, PLATFORM_ADMIN, DEMO_ADMIN } from '../helpers/credentials';
 import { authenticatedPage, type Credentials, type LoginResult } from '../helpers/auth-session';
 
-export { AUTH_PERSIST_KEY } from '../helpers/auth-session';
+export { AUTH_PERSIST_KEY, grantPermissions, waitForAppReady } from '../helpers/auth-session';
 
 type AuthFixtures = {
   platformAdminPage: Page;
