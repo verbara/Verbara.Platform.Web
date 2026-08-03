@@ -112,7 +112,7 @@ export function TransferDialog({ open, onOpenChange, conversationId }: TransferD
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-2.5 top-2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-2.5 top-2 h-4 w-4 text-slate-500" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -124,7 +124,7 @@ export function TransferDialog({ open, onOpenChange, conversationId }: TransferD
           {/* Results list */}
           <div className="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-lg border border-slate-200 p-1 dark:border-slate-700">
             {items.length === 0 && (
-              <span className="px-2 py-3 text-center text-xs text-slate-400">
+              <span className="px-2 py-3 text-center text-xs text-slate-500">
                 {t('transfer.no_results')}
               </span>
             )}
@@ -179,7 +179,7 @@ export function TransferDialog({ open, onOpenChange, conversationId }: TransferD
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                 {warm ? t('transfer.warm') : t('transfer.cold')}
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500">
                 {warm ? t('transfer.warm_description') : t('transfer.cold_description')}
               </span>
             </div>

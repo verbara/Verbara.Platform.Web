@@ -246,7 +246,7 @@ export function LoginPage() {
             <button
               type="button"
               onClick={() => setShowTenant((v) => !v)}
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
               data-testid="login-tenant-toggle"
             >
               <ChevronDown
@@ -296,7 +296,7 @@ export function LoginPage() {
               <button
                 type="button"
                 onClick={() => navigate('/forgot-password')}
-                className="text-xs text-brand hover:underline"
+                className="text-xs text-brand-dark hover:underline"
                 data-testid="login-forgot-password"
               >
                 {t('auth.forgot_password')}

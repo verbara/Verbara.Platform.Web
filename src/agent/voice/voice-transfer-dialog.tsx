@@ -146,7 +146,7 @@ export function VoiceTransferDialog({
           ) : (
             <>
               <div className="relative">
-                <Search className="absolute top-2 left-2.5 size-4 text-slate-400" />
+                <Search className="absolute top-2 left-2.5 size-4 text-slate-500" />
                 <Input
                   data-testid="voice-transfer-search"
                   value={search}
@@ -158,7 +158,7 @@ export function VoiceTransferDialog({
 
               <div className="flex max-h-48 flex-col gap-1 overflow-y-auto rounded-lg border border-slate-200 p-1 dark:border-slate-700">
                 {items.length === 0 && (
-                  <span className="px-2 py-3 text-center text-xs text-slate-400">
+                  <span className="px-2 py-3 text-center text-xs text-slate-500">
                     {t('voice.transfer.no_results', 'No results')}
                   </span>
                 )}

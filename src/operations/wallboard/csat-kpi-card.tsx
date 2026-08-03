@@ -71,7 +71,7 @@ export function CsatKpiCard() {
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
             {t('csat.title')}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500" data-testid="csat-kpi-scope">
+          <p className="text-xs text-slate-500 dark:text-slate-500" data-testid="csat-kpi-scope">
             {t('csat.scope')}
           </p>
           {hasResponses ? (
@@ -90,7 +90,7 @@ export function CsatKpiCard() {
       </div>
 
       {hasResponses && (
-        <p className="mt-3 text-xs text-slate-400" data-testid="csat-kpi-responses">
+        <p className="mt-3 text-xs text-slate-500" data-testid="csat-kpi-responses">
           {t('csat.responses')}: {formatNumber(data.totalResponses)}
         </p>
       )}

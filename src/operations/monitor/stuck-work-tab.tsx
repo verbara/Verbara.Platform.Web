@@ -181,7 +181,7 @@ function StuckRow({ conversation }: StuckRowProps) {
         <p className="mt-1 truncate text-xs text-muted-foreground">
           {t('stuck_work.owned_by_offline', { name: conversation.ownerAgentName })}
         </p>
-        <p className="mt-0.5 text-xs text-slate-400">
+        <p className="mt-0.5 text-xs text-slate-500">
           {t('stuck_work.stuck_for', { duration: stuckFor })}
           {conversation.failoverAttempts > 0 && (
             <span className="ml-2">

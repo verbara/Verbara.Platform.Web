@@ -72,11 +72,9 @@ export function CannedResponses({ open, onSelect, onClose, contactName }: Canned
         />
         <CommandList>
           {search.length === 0 ? (
-            <p className="py-4 text-center text-xs text-slate-400">
-              {t('canned.search_hint')}
-            </p>
+            <p className="py-4 text-center text-xs text-slate-500">{t('canned.search_hint')}</p>
           ) : isLoading ? (
-            <p className="py-4 text-center text-xs text-slate-400">{t('canned.loading')}</p>
+            <p className="py-4 text-center text-xs text-slate-500">{t('canned.loading')}</p>
           ) : (
             <>
               <CommandEmpty>{t('canned.no_results')}</CommandEmpty>

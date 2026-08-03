@@ -29,7 +29,7 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-2.5 py-2">
-      <Icon size={16} className="mt-0.5 shrink-0 text-slate-400" />
+      <Icon size={16} className="mt-0.5 shrink-0 text-slate-500" />
       <div className="min-w-0 flex-1">
         <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
         <div className="flex items-center">
@@ -112,7 +112,7 @@ export function ContactInfo() {
 
   if (!contact) {
     return (
-      <div className="flex items-center justify-center p-6 text-sm text-slate-400">
+      <div className="flex items-center justify-center p-6 text-sm text-slate-500">
         {t('agent:context.no_contact')}
       </div>
     );

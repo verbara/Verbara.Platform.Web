@@ -30,7 +30,7 @@ export function TranscriptTab({ conversationId }: { conversationId: string | nul
 
   if (transcript.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center px-4 py-8 text-sm text-slate-400 dark:text-slate-500">
+      <div className="flex h-full items-center justify-center px-4 py-8 text-sm text-slate-500 dark:text-slate-500">
         {t('ai.waiting_transcript')}
       </div>
     );
@@ -47,7 +47,7 @@ export function TranscriptTab({ conversationId }: { conversationId: string | nul
             key={key}
             className={`group flex flex-col gap-0.5 ${isCaller ? 'items-start' : 'items-end'}`}
           >
-            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
+            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-500">
               {segment.speaker} · {timeFmt.format(new Date(segment.timestamp))}
             </span>
             <button

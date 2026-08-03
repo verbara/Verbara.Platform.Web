@@ -41,7 +41,7 @@ export function OverlayChart({
     <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
       <p className="mb-4 text-sm font-medium text-slate-700 dark:text-slate-300">{title}</p>
       {data.length === 0 ? (
-        <div className="flex h-[300px] items-center justify-center text-sm text-slate-400 dark:text-slate-500">
+        <div className="flex h-[300px] items-center justify-center text-sm text-slate-500 dark:text-slate-500">
           {resolvedEmptyLabel}
         </div>
       ) : (
@@ -49,7 +49,11 @@ export function OverlayChart({
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 11 }}
+                stroke="hsl(var(--muted-foreground))"
+              />
               <YAxis
                 yAxisId="left"
                 orientation="left"

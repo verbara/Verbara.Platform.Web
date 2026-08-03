@@ -19,7 +19,7 @@ export default function ConversationView() {
 
   if (!id) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-slate-400">
+      <div className="flex h-full items-center justify-center text-sm text-slate-500">
         {t('agent_layout.select_conversation')}
       </div>
     );

@@ -185,7 +185,7 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
             setRecoveryMode((v) => !v);
             setError('');
           }}
-          className="text-xs text-brand hover:underline"
+          className="text-xs text-brand-dark hover:underline"
           data-testid="login-mfa-use-recovery"
         >
           {recoveryMode ? t('auth.mfa_use_code') : t('auth.mfa_use_recovery')}

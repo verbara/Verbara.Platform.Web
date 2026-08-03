@@ -103,7 +103,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
 
   if (!conversation) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-slate-400">
+      <div className="flex h-full items-center justify-center text-sm text-slate-500">
         Conversation not found
       </div>
     );
@@ -149,7 +149,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
             <ChannelIcon className="h-3 w-3" />
             {conversation.channel}
           </span>
-          <span className="text-xs text-slate-400 dark:text-slate-500">
+          <span className="text-xs text-slate-500 dark:text-slate-500">
             {conversation.queueName}
           </span>
           <SentimentGauge conversationId={conversationId} />
@@ -236,7 +236,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
           in the floating call card); contact + history hydrate in the right-side ContextPanel. */}
       {isVoice ? (
         <div
-          className="flex flex-1 flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500"
+          className="flex flex-1 flex-col items-center justify-center gap-2 text-slate-500 dark:text-slate-500"
           data-testid="voice-call-body"
         >
           <Phone className="h-8 w-8" />

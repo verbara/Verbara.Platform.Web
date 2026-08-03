@@ -67,6 +67,9 @@ export function Rail() {
                 <button
                   {...props}
                   onClick={openCommandPalette}
+                  // Icon-only trigger: the tooltip is not an accessible name, so axe flags this as
+                  // `button-name`. Reuses the existing label key — no new string, no i18n parity churn.
+                  aria-label={t('actions.search')}
                   className="flex h-10 w-10 items-center justify-center rounded-md text-rail-icon hover:bg-slate-800 hover:text-rail-icon-active"
                 />
               )}

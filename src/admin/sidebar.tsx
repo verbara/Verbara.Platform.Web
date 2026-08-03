@@ -604,7 +604,7 @@ function CollapsibleGroup({
         type="button"
         data-testid={`sidebar-group-${groupKey}`}
         onClick={handleClick}
-        className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+        className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
       >
         {label}
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? '' : '-rotate-90'}`} />

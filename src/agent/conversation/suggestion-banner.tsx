@@ -81,7 +81,7 @@ export function SuggestionBanner({ conversationId }: { conversationId: string })
                   {t('ai.suggestion')} · {suggestion.priority}
                 </span>
                 {suggestion.source && (
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-500">
                     {suggestion.source}
                   </span>
                 )}
@@ -90,7 +90,7 @@ export function SuggestionBanner({ conversationId }: { conversationId: string })
             </div>
             <button
               onClick={() => dismissSuggestion(conversationId, suggestion.id)}
-              className="mt-0.5 shrink-0 rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+              className="mt-0.5 shrink-0 rounded p-0.5 text-slate-500 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
               aria-label={t('ai.dismiss')}
             >
               <X className="h-3.5 w-3.5" />

@@ -123,7 +123,7 @@ function LazyLoad({ children }: { children: React.ReactNode }) {
   return (
     <Suspense
       fallback={
-        <div className="flex h-full items-center justify-center text-slate-400">Loading...</div>
+        <div className="flex h-full items-center justify-center text-slate-500">Loading...</div>
       }
     >
       {children}
@@ -1161,7 +1161,7 @@ export const router = createBrowserRouter([
             index: true,
             element: (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-slate-400">Select a conversation to begin.</p>
+                <p className="text-sm text-slate-500">Select a conversation to begin.</p>
               </div>
             ),
           },
