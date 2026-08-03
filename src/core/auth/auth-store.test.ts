@@ -260,6 +260,39 @@ describe('AuthStore', () => {
       expect(useAuthStore.getState().hasSession()).toBe(true);
     });
 
+    it('should_RehydrateVerbatim_WhenEntryComesFromANewerVersion', async () => {
+      // The rollback case. zustand only calls `migrate` when the stored version differs from the
+      // configured one — so it also runs on a DOWNGRADE, where "strip the v0 secrets" must not
+      // apply. The entry is already partialized (a newer build wrote it), so it is handed back
+      // untouched and the session survives the rollback instead of being silently dropped.
+      sessionStorage.setItem(
+        PERSIST_KEY,
+        JSON.stringify({
+          state: {
+            user: A_USER,
+            tenantId: 'tenant-1',
+            permissions: ['users.read'],
+            features: { dialer: true },
+            rememberMe: true,
+            sessionIdleTimeoutMinutes: 45,
+          },
+          version: 99,
+        }),
+      );
+
+      await useAuthStore.persist.rehydrate();
+
+      expect(useAuthStore.getState().user).toEqual(A_USER);
+      expect(useAuthStore.getState().tenantId).toBe('tenant-1');
+      expect(useAuthStore.getState().permissions).toEqual(['users.read']);
+      expect(useAuthStore.getState().features).toEqual({ dialer: true });
+      expect(useAuthStore.getState().rememberMe).toBe(true);
+      expect(useAuthStore.getState().sessionIdleTimeoutMinutes).toBe(45);
+      expect(useAuthStore.getState().hasSession()).toBe(true);
+      // Nothing was persisted to carry a credential, and none appeared.
+      expect(useAuthStore.getState().accessToken).toBeNull();
+    });
+
     it('should_ReportNoSession_WhenNothingPersisted', () => {
       sessionStorage.clear();
       expect(useAuthStore.getState().hasSession()).toBe(false);
