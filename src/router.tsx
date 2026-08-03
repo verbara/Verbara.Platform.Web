@@ -791,7 +791,7 @@ export const router = createBrowserRouter([
           {
             path: 'security/audit',
             element: (
-              <PermissionGuard requires="audit.read" redirect>
+              <PermissionGuard requires="system:audit:view" redirect>
                 <LazyLoad>
                   <AuditViewerPage />
                 </LazyLoad>
@@ -800,11 +800,13 @@ export const router = createBrowserRouter([
           },
           {
             path: 'security/impersonation',
-            // R5.2 PB.2 — replace P0.10 fallback gate with the seeded
-            // dot-notation permission (`security.impersonation.manage`,
-            // P0.9 commit f20892e).
+            // Gated on the canonical `domain:resource:action` key. The R5.2 P0.9 seeder grants both
+            // this and a legacy dot-notation alias (`security.impersonation.manage`) to the same
+            // role template; the API still gates the endpoint on the alias
+            // (Platform `Program.cs`, PlatformAdminRequirement), so retiring it there is a
+            // Platform-side follow-up.
             element: (
-              <PermissionGuard requires="security.impersonation.manage" redirect>
+              <PermissionGuard requires="platform:tenant:impersonate" redirect>
                 <LazyLoad>
                   <ImpersonationAdminPage />
                 </LazyLoad>
