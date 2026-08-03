@@ -19,13 +19,12 @@ test.describe('Flows', () => {
     await api.createFlow({ name });
     await page.reload();
 
+    // Filter before asserting. There is no delete endpoint for flows, so the demo tenant
+    // accumulates one row per run and GET /admin/flows has no ORDER BY — the new flow lands on an
+    // arbitrary page of the table. Asserting on the unfiltered table was a slow-burning flake that
+    // got likelier with every suite run.
+    await page.getByTestId('data-table-search').fill(name);
     await expect(page.getByText(name)).toBeVisible();
-
-    const flows = await api.listFlows();
-    const created = flows.find((f: any) => f.name === name);
-    if (created) {
-      // Flows may not have a delete API; cleanup is best-effort
-    }
   });
 
   test('should navigate to designer on row click', async ({
@@ -38,6 +37,8 @@ test.describe('Flows', () => {
     await api.createFlow({ name });
     await page.reload();
 
+    // Same pagination caveat as above — filter down to the row this spec created.
+    await page.getByTestId('data-table-search').fill(name);
     await page.getByText(name).click();
     await expect(page).toHaveURL(/\/admin\/flows\//);
   });
