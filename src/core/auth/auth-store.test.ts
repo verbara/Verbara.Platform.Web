@@ -1,5 +1,15 @@
 import { useAuthStore } from './auth-store';
 
+const PERSIST_KEY = 'verbara-auth';
+
+/** The raw persisted entry, as any script on the origin would read it. */
+function readPersistedEntry(): { state?: Record<string, unknown>; version?: number } | null {
+  const raw = sessionStorage.getItem(PERSIST_KEY);
+  return raw === null ? null : JSON.parse(raw);
+}
+
+const A_USER = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'admin' } as const;
+
 describe('AuthStore', () => {
   beforeEach(() => useAuthStore.getState().logout());
 
@@ -158,5 +168,125 @@ describe('AuthStore', () => {
         {},
       );
     expect(useAuthStore.getState().sessionIdleTimeoutMinutes).toBe(45);
+  });
+
+  describe('persistence', () => {
+    it('should_OmitCredentials_WhenSetAuthPersists', () => {
+      useAuthStore
+        .getState()
+        .setAuth('token-123', Date.now() + 3600_000, A_USER, 'tenant-1', ['users.read'], {
+          dialer: true,
+        });
+
+      const entry = readPersistedEntry();
+      expect(entry?.state).toBeDefined();
+      // Non-secret session facts survive — the restore path rebuilds from user + tenantId +
+      // features, so dropping these would break it.
+      expect(entry?.state).toMatchObject({
+        user: A_USER,
+        tenantId: 'tenant-1',
+        permissions: ['users.read'],
+        features: { dialer: true },
+      });
+      // Credentials never reach storage.
+      expect(entry?.state).not.toHaveProperty('accessToken');
+      expect(entry?.state).not.toHaveProperty('tokenExpiry');
+      expect(entry?.state).not.toHaveProperty('mfaPending');
+      expect(entry?.state).not.toHaveProperty('impersonation');
+      // Belt and braces: the token value must not appear anywhere in the serialised blob.
+      expect(sessionStorage.getItem(PERSIST_KEY)).not.toContain('token-123');
+    });
+
+    it('should_OmitMfaToken_WhenMfaPendingPersists', () => {
+      useAuthStore.getState().setMfaPending('mfa-token-123', 'user@example.com');
+
+      expect(readPersistedEntry()?.state).not.toHaveProperty('mfaPending');
+      expect(sessionStorage.getItem(PERSIST_KEY)).not.toContain('mfa-token-123');
+    });
+
+    it('should_OmitOriginalToken_WhenImpersonationPersists', () => {
+      useAuthStore
+        .getState()
+        .setAuth('operator-token', Date.now() + 3600_000, A_USER, 'tenant-1', [], {});
+      useAuthStore.getState().startImpersonation(
+        {
+          accessToken: 'impersonated-token',
+          expiresAt: new Date(Date.now() + 600_000).toISOString(),
+          targetTenantId: 'tenant-9',
+          targetTenantName: 'ACME',
+        },
+        'operator-token',
+        'tenant-1',
+      );
+
+      expect(readPersistedEntry()?.state).not.toHaveProperty('impersonation');
+      const raw = sessionStorage.getItem(PERSIST_KEY);
+      expect(raw).not.toContain('operator-token');
+      expect(raw).not.toContain('impersonated-token');
+    });
+
+    it('should_StripSecrets_WhenMigratingLegacyV0Entry', async () => {
+      // A v0 entry as the previous build wrote it: the whole state, credentials included.
+      sessionStorage.setItem(
+        PERSIST_KEY,
+        JSON.stringify({
+          state: {
+            accessToken: 'legacy-token',
+            tokenExpiry: Date.now() + 3600_000,
+            user: A_USER,
+            tenantId: 'tenant-1',
+            permissions: ['users.read'],
+            features: { dialer: true },
+            rememberMe: false,
+            mfaPending: { mfaToken: 'legacy-mfa', email: 'a@b.com' },
+            impersonation: null,
+            sessionIdleTimeoutMinutes: 45,
+          },
+          version: 0,
+        }),
+      );
+
+      await useAuthStore.persist.rehydrate();
+
+      // In memory: the legacy credential is gone, the session identity survives so the restore
+      // path can mint a fresh token from the refresh cookie.
+      expect(useAuthStore.getState().accessToken).toBeNull();
+      expect(useAuthStore.getState().tokenExpiry).toBeNull();
+      expect(useAuthStore.getState().mfaPending).toBeNull();
+      expect(useAuthStore.getState().user).toEqual(A_USER);
+      expect(useAuthStore.getState().tenantId).toBe('tenant-1');
+      expect(useAuthStore.getState().features).toEqual({ dialer: true });
+      expect(useAuthStore.getState().sessionIdleTimeoutMinutes).toBe(45);
+      expect(useAuthStore.getState().hasSession()).toBe(true);
+    });
+
+    it('should_ReportNoSession_WhenNothingPersisted', () => {
+      sessionStorage.clear();
+      expect(useAuthStore.getState().hasSession()).toBe(false);
+    });
+  });
+
+  it('should_RestoreOperatorToken_WhenImpersonationEndedInSameSession', () => {
+    useAuthStore
+      .getState()
+      .setAuth('operator-token', Date.now() + 3600_000, A_USER, 'tenant-1', [], {});
+    useAuthStore.getState().startImpersonation(
+      {
+        accessToken: 'impersonated-token',
+        expiresAt: new Date(Date.now() + 600_000).toISOString(),
+        targetTenantId: 'tenant-9',
+        targetTenantName: 'ACME',
+      },
+      'operator-token',
+      'tenant-1',
+    );
+    expect(useAuthStore.getState().accessToken).toBe('impersonated-token');
+
+    // In-memory `originalToken` is untouched by the persistence change, so ending impersonation
+    // inside one page session still works without a network round-trip.
+    useAuthStore.getState().endImpersonation();
+    expect(useAuthStore.getState().accessToken).toBe('operator-token');
+    expect(useAuthStore.getState().tenantId).toBe('tenant-1');
+    expect(useAuthStore.getState().impersonation).toBeNull();
   });
 });

@@ -49,6 +49,7 @@ interface AuthState {
   logout: () => void;
   hasPermission: (permission: string) => boolean;
   isTokenExpired: () => boolean;
+  hasSession: () => boolean;
   startImpersonation: (
     response: {
       accessToken: string;
@@ -62,6 +63,27 @@ interface AuthState {
   ) => void;
   endImpersonation: () => void;
 }
+
+/**
+ * The slice written to `sessionStorage` — non-secret session facts only. Deriving it from
+ * {@link AuthState} means a new credential-bearing field cannot be persisted by accident: it has to
+ * be added here explicitly.
+ */
+export type PersistedAuthState = Pick<
+  AuthState,
+  'user' | 'tenantId' | 'permissions' | 'features' | 'rememberMe' | 'sessionIdleTimeoutMinutes'
+>;
+
+/** Bumped to 1 when credentials stopped being persisted, so {@link LEGACY_SECRET_KEYS} get stripped. */
+const PERSIST_VERSION = 1;
+
+/** Fields a v0 entry may carry that must never survive into a v1 entry. */
+const LEGACY_SECRET_KEYS = [
+  'accessToken',
+  'tokenExpiry',
+  'mfaPending',
+  'impersonation',
+] as const satisfies readonly (keyof AuthState)[];
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -118,6 +140,10 @@ export const useAuthStore = create<AuthState>()(
           sessionIdleTimeoutMinutes: null,
         }),
       hasPermission: (permission) => get().permissions.includes(permission),
+      // "There is a session worth restoring." With credentials no longer persisted, the rehydrated
+      // `user` is the only discriminator between a fresh browser and a reloaded authenticated tab.
+      // Single source of truth for AuthGuard and the customFetch pre-flight so they cannot drift.
+      hasSession: () => get().user !== null,
       isTokenExpired: () => {
         const expiry = get().tokenExpiry;
         if (!expiry) return true;
@@ -152,6 +178,34 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'verbara-auth',
       storage: createJSONStorage(() => sessionStorage),
+      version: PERSIST_VERSION,
+      // Credentials are NEVER written to browser storage — they are readable by any script on the
+      // origin. The durable credential is the httpOnly refresh cookie (ADR-0009 W1), which JS cannot
+      // read; on reload `session-restore` exchanges it for a fresh access token.
+      //
+      // `features` and `permissions` stay persisted deliberately: the refresh response does not
+      // return features, so dropping them would leave a rehydrated session with none until the next
+      // full login.
+      partialize: (state): PersistedAuthState => ({
+        user: state.user,
+        tenantId: state.tenantId,
+        permissions: state.permissions,
+        features: state.features,
+        rememberMe: state.rememberMe,
+        sessionIdleTimeoutMinutes: state.sessionIdleTimeoutMinutes,
+      }),
+      // `partialize` only governs writes. An entry written by the previous build still holds a token,
+      // and would be merged back into memory and left on disk until something triggered a write.
+      // Stripping it on read is what makes the upgrade actively clean. The migrated state still names
+      // the user, so the restore mints a fresh token and the upgrade is invisible.
+      migrate: (persisted, version) => {
+        if (version < PERSIST_VERSION && persisted !== null && typeof persisted === 'object') {
+          const legacy: Record<string, unknown> = { ...(persisted as Record<string, unknown>) };
+          for (const secret of LEGACY_SECRET_KEYS) delete legacy[secret];
+          return legacy as unknown as PersistedAuthState;
+        }
+        return persisted as PersistedAuthState;
+      },
     },
   ),
 );
