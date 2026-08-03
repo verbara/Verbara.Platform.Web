@@ -79,9 +79,11 @@ test.describe('WebChat embed — CSAT rating panel submit flow', () => {
 
     await page.goto(EMBED_URL);
 
-    // The embed shows a "Loading…" shell until it receives init-config. Wait for the
-    // app root to mount, then hand it a config that enables the CSAT panel.
-    await page.waitForSelector('#root', { state: 'attached' });
+    // The embed shows a "Loading…" shell until it receives init-config. Waiting on `#root` only
+    // proves the container exists — the React app may not have registered its postMessage
+    // listener yet, and postMessage does not buffer, so an early config is silently dropped.
+    // The loading shell's testid is the signal that the bridge is listening.
+    await expect(page.getByTestId('webchat-embed-loading')).toBeVisible();
     await page.evaluate((csat) => {
       window.postMessage(
         {

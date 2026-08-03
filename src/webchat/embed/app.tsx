@@ -68,7 +68,12 @@ export function App() {
 
   if (!config) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-gray-500">
+      // The testid marks that the app mounted and the postMessage bridge is listening. A host
+      // that posts `init-config` before this exists loses it — postMessage has no buffering.
+      <div
+        className="flex h-screen items-center justify-center text-sm text-gray-500"
+        data-testid="webchat-embed-loading"
+      >
         Loading…
       </div>
     );
