@@ -19,7 +19,7 @@ test.describe('Partner customer detail — dunning toggle', () => {
 
     // Inject partner:customer:view into the auth state so the route renders.
     await page.evaluate(() => {
-      const raw = sessionStorage.getItem('asterisk-auth');
+      const raw = sessionStorage.getItem('verbara-auth');
       if (!raw) return;
       const parsed = JSON.parse(raw) as {
         state: { permissions: string[]; [k: string]: unknown };
@@ -28,7 +28,7 @@ test.describe('Partner customer detail — dunning toggle', () => {
       parsed.state.permissions = Array.from(
         new Set([...(parsed.state.permissions ?? []), 'partner:customer:view']),
       );
-      sessionStorage.setItem('asterisk-auth', JSON.stringify(parsed));
+      sessionStorage.setItem('verbara-auth', JSON.stringify(parsed));
     });
 
     // Customer endpoint — minimal payload required by the page.
@@ -63,22 +63,16 @@ test.describe('Partner customer detail — dunning toggle', () => {
     });
 
     // Dunning pause/resume POSTs — count + flip state.
-    await page.route(
-      `**/api/v1/management/tenants/${tenantId}/dunning/pause`,
-      async (route) => {
-        pauseCalled += 1;
-        isPaused = true;
-        await route.fulfill({ status: 200, body: '' });
-      },
-    );
-    await page.route(
-      `**/api/v1/management/tenants/${tenantId}/dunning/resume`,
-      async (route) => {
-        resumeCalled += 1;
-        isPaused = false;
-        await route.fulfill({ status: 200, body: '' });
-      },
-    );
+    await page.route(`**/api/v1/management/tenants/${tenantId}/dunning/pause`, async (route) => {
+      pauseCalled += 1;
+      isPaused = true;
+      await route.fulfill({ status: 200, body: '' });
+    });
+    await page.route(`**/api/v1/management/tenants/${tenantId}/dunning/resume`, async (route) => {
+      resumeCalled += 1;
+      isPaused = false;
+      await route.fulfill({ status: 200, body: '' });
+    });
 
     await page.goto(`/admin/partner/customers/${tenantId}`);
 

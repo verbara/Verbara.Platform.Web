@@ -1,18 +1,19 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Caller ID Pools', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/caller-id-pools');
   });
 
-  test('should display caller ID pools page', async ({ platformAdminPage: page }) => {
+  test('should display caller ID pools page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('caller-id-pools-page')).toBeVisible();
     await expect(page.getByTestId('caller-id-pools-create-btn')).toBeVisible();
   });
 
-  test('should create a pool', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a pool', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Pool ${Date.now()}`;
 
     await page.getByTestId('caller-id-pools-create-btn').click();
@@ -28,8 +29,11 @@ test.describe('Caller ID Pools', () => {
     if (created) await api.deleteCallerIdPool(created.id);
   });
 
-  test('should delete a pool with 3s confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should delete a pool with 3s confirmation', async ({
+    demoAdminPage: page,
+    demoApiContext,
+  }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Del Pool ${Date.now()}`;
 
     const res = await api.createCallerIdPool({ name });
@@ -48,7 +52,7 @@ test.describe('Caller ID Pools', () => {
     await expect(page.getByText(name)).not.toBeVisible();
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
     await page.getByTestId('sidebar-group-telephony').click();
     await page.getByTestId('sidebar-link-caller-id-pools').click();

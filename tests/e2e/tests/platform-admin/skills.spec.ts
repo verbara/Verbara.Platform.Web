@@ -1,18 +1,19 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Skills', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/skills');
   });
 
-  test('should display skills page', async ({ platformAdminPage: page }) => {
+  test('should display skills page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('skills-page')).toBeVisible();
     await expect(page.getByTestId('skills-create-btn')).toBeVisible();
   });
 
-  test('should create a skill', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a skill', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `e2e-skill-${Date.now()}`;
 
     await page.getByTestId('skills-create-btn').click();
@@ -26,8 +27,8 @@ test.describe('Skills', () => {
     await api.deleteSkill(name);
   });
 
-  test('should search skills', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should search skills', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `e2e-search-skill-${Date.now()}`;
 
     await api.createSkill({ name, category: 'testing' });
@@ -39,8 +40,8 @@ test.describe('Skills', () => {
     await api.deleteSkill(name);
   });
 
-  test('should delete with browser confirm', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should delete with browser confirm', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `e2e-delete-skill-${Date.now()}`;
 
     await api.createSkill({ name, category: 'testing' });
@@ -53,7 +54,7 @@ test.describe('Skills', () => {
     await expect(page.getByText(name)).not.toBeVisible();
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
     await page.getByTestId('sidebar-group-communication').click();
     await page.getByTestId('sidebar-link-skills').click();

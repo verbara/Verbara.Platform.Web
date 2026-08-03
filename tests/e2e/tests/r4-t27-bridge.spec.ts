@@ -1,11 +1,6 @@
-import {
-  test as base,
-  expect,
-  type Page,
-  type Browser,
-  type APIRequestContext,
-} from '@playwright/test';
-import { API_BASE, DEMO_SUPERVISOR } from '../helpers/credentials';
+import { test as base, expect } from '@playwright/test';
+import { DEMO_SUPERVISOR } from '../helpers/credentials';
+import { authenticatedPage as authenticate } from '../helpers/auth-session';
 
 /**
  * R5.3 Phase C · S4.7 — R4 T27 bridge end-to-end.
@@ -29,60 +24,6 @@ import { API_BASE, DEMO_SUPERVISOR } from '../helpers/credentials';
 
 const SHOULD_RUN = process.env.E2E_FULL_STACK === 'true';
 
-interface LoginResponse {
-  accessToken: string;
-  expiresAt: string;
-  user?: { id: string; email: string; displayName: string; role: string };
-  tenantId?: string;
-  permissions?: string[];
-  features?: Record<string, boolean>;
-}
-
-async function authenticate(
-  browser: Browser,
-  request: APIRequestContext,
-  creds: { tenantId: string; email: string; password: string },
-): Promise<{ page: Page; token: string }> {
-  const response = await request.post(`${API_BASE}/api/v1/auth/login`, {
-    data: creds,
-  });
-  if (!response.ok()) throw new Error(`Login failed: ${response.status()}`);
-  const login: LoginResponse = await response.json();
-
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  await page.goto('/login');
-  await page.evaluate(
-    ([token, expiry, user, tenantId, perms, features]) => {
-      sessionStorage.setItem(
-        'asterisk-auth',
-        JSON.stringify({
-          state: {
-            accessToken: token,
-            tokenExpiry: new Date(expiry as string).getTime(),
-            user,
-            tenantId,
-            permissions: perms,
-            features,
-            rememberMe: false,
-            mfaPending: null,
-          },
-          version: 0,
-        }),
-      );
-    },
-    [
-      login.accessToken,
-      login.expiresAt,
-      login.user ?? null,
-      creds.tenantId,
-      login.permissions ?? [],
-      login.features ?? {},
-    ],
-  );
-  return { page, token: login.accessToken };
-}
-
 base.describe('R4 T27 bridge (conversation close → call-analytics invalidation)', () => {
   base.skip(
     !SHOULD_RUN,
@@ -92,7 +33,7 @@ base.describe('R4 T27 bridge (conversation close → call-analytics invalidation
   base(
     'conversation close invalidates ["call-analytics"] within 500ms',
     async ({ browser, request }) => {
-      const { page, token } = await authenticate(browser, request, DEMO_SUPERVISOR);
+      const { page, token } = await authenticate(browser, DEMO_SUPERVISOR);
 
       try {
         await page.goto('/analytics/speech');
@@ -122,17 +63,13 @@ base.describe('R4 T27 bridge (conversation close → call-analytics invalidation
         // newState === "ended" invalidates ["call-analytics"], which causes
         // the active topics/sentiment/compliance hooks to refetch.
         const refetchPromise = page.waitForRequest(
-          (req) =>
-            req.url().includes('/api/v1/call-analytics/') && req.method() === 'GET',
+          (req) => req.url().includes('/api/v1/call-analytics/') && req.method() === 'GET',
           { timeout: 500 },
         );
 
-        const closeRes = await request.post(
-          `${API_BASE}/api/v1/conversations/${sessionId}/close`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+        const closeRes = await request.post(`${API_BASE}/api/v1/conversations/${sessionId}/close`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         expect(closeRes.ok()).toBeTruthy();
 
         // Bridge round-trip: Pro publishes → Platform relays → Web invalidates.

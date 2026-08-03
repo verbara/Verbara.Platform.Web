@@ -1,18 +1,19 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Bots', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/bots');
   });
 
-  test('should display bots page', async ({ platformAdminPage: page }) => {
+  test('should display bots page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('bots-page')).toBeVisible();
     await expect(page.getByTestId('bots-create-btn')).toBeVisible();
   });
 
-  test('should create a bot', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a bot', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Bot ${Date.now()}`;
 
     await page.getByTestId('bots-create-btn').click();
@@ -28,8 +29,11 @@ test.describe('Bots', () => {
     if (created) await api.deleteBot(created.id);
   });
 
-  test('should delete a bot with 3s confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should delete a bot with 3s confirmation', async ({
+    demoAdminPage: page,
+    demoApiContext,
+  }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Bot Del ${Date.now()}`;
 
     const res = await api.createBot({ name, maxTurns: 5, isActive: false });
@@ -48,7 +52,7 @@ test.describe('Bots', () => {
     await expect(page.getByText(name)).not.toBeVisible();
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
     await page.getByTestId('sidebar-group-ai-automation').click();
     await page.getByTestId('sidebar-link-bots').click();

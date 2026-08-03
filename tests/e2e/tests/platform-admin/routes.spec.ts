@@ -1,24 +1,35 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Routes', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/routes');
   });
 
-  test('should display routes page', async ({ platformAdminPage: page }) => {
+  test('should display routes page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('routes-page')).toBeVisible();
     await expect(page.getByTestId('routes-create-btn')).toBeVisible();
   });
 
-  test('should show routes in sortable table', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should show routes in sortable table', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const trunkName = `e2e-route-trunk-${Date.now()}`;
 
-    const trunkRes = await api.createTrunk({ name: trunkName, displayName: 'Route Trunk', type: 'SIP', maxChannels: 10 });
+    const trunkRes = await api.createTrunk({
+      name: trunkName,
+      displayName: 'Route Trunk',
+      type: 'SIP',
+      maxChannels: 10,
+    });
     const trunk = await trunkRes.json();
 
-    const routeRes = await api.createRoute({ pattern: `1${Date.now()}`, patternType: 'prefix', trunkId: trunk.id, priority: 1 });
+    const routeRes = await api.createRoute({
+      pattern: `1${Date.now()}`,
+      patternType: 'prefix',
+      trunkId: trunk.id,
+      priority: 1,
+    });
     const route = await routeRes.json();
 
     await page.reload();
@@ -29,13 +40,18 @@ test.describe('Routes', () => {
     await api.deleteTrunk(trunk.id);
   });
 
-  test('should create a route', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a route', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const trunkName = `e2e-create-route-trunk-${Date.now()}`;
     const trunkDisplayName = `E2E Route Trunk ${Date.now()}`;
     const pattern = `9${Date.now()}`;
 
-    const trunkRes = await api.createTrunk({ name: trunkName, displayName: trunkDisplayName, type: 'SIP', maxChannels: 10 });
+    const trunkRes = await api.createTrunk({
+      name: trunkName,
+      displayName: trunkDisplayName,
+      type: 'SIP',
+      maxChannels: 10,
+    });
     const trunk = await trunkRes.json();
 
     await page.reload();
@@ -64,14 +80,27 @@ test.describe('Routes', () => {
     await api.deleteTrunk(trunk.id);
   });
 
-  test('should delete a route with 3s confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should delete a route with 3s confirmation', async ({
+    demoAdminPage: page,
+    demoApiContext,
+  }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const trunkName = `e2e-del-route-trunk-${Date.now()}`;
 
-    const trunkRes = await api.createTrunk({ name: trunkName, displayName: 'Del Route Trunk', type: 'SIP', maxChannels: 10 });
+    const trunkRes = await api.createTrunk({
+      name: trunkName,
+      displayName: 'Del Route Trunk',
+      type: 'SIP',
+      maxChannels: 10,
+    });
     const trunk = await trunkRes.json();
 
-    const routeRes = await api.createRoute({ pattern: `8${Date.now()}`, patternType: 'prefix', trunkId: trunk.id, priority: 1 });
+    const routeRes = await api.createRoute({
+      pattern: `8${Date.now()}`,
+      patternType: 'prefix',
+      trunkId: trunk.id,
+      priority: 1,
+    });
     const route = await routeRes.json();
 
     await page.reload();
@@ -87,7 +116,7 @@ test.describe('Routes', () => {
     await api.deleteTrunk(trunk.id);
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
     await page.getByTestId('sidebar-group-telephony').click();
     await page.getByTestId('sidebar-link-routes').click();

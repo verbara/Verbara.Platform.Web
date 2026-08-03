@@ -270,7 +270,7 @@ export function WebhookForm({ open, onOpenChange, subscription }: WebhookFormPro
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" data-testid="webhook-secret-dialog">
           <DialogHeader>
             <DialogTitle>{t('webhooks.form.secret_dialog.title')}</DialogTitle>
             <DialogDescription>{t('webhooks.form.secret_dialog.description')}</DialogDescription>

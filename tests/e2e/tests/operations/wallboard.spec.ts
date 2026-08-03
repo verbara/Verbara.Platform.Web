@@ -28,25 +28,23 @@ function aggregateBody(overrides: { totalResponses?: number; averageRating?: num
 }
 
 test.describe('Wallboard', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/operations/wallboard');
   });
 
-  test('should display wallboard page', async ({ platformAdminPage: page }) => {
+  test('should display wallboard page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('wallboard-page')).toBeVisible();
   });
 
-  test('should show global KPI cards', async ({ platformAdminPage: page }) => {
+  test('should show global KPI cards', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('wallboard-global-kpis')).toBeVisible();
   });
 
-  test('should show queue cards section', async ({ platformAdminPage: page }) => {
+  test('should show queue cards section', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('wallboard-queue-cards')).toBeVisible();
   });
 
-  test('should show live states section when data available', async ({
-    platformAdminPage: page,
-  }) => {
+  test('should show live states section when data available', async ({ demoAdminPage: page }) => {
     // Live states section is conditionally rendered; verify it exists or the page loads without error
     const liveStates = page.getByTestId('wallboard-live-states');
     const isVisible = await liveStates.isVisible().catch(() => false);
@@ -58,9 +56,9 @@ test.describe('Wallboard', () => {
     }
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/operations/agents');
-    await page.getByRole('link', { name: /tablero/i }).click();
+    await page.getByTestId('sidebar-link-wallboard').click();
     await expect(page).toHaveURL(/\/operations\/wallboard/);
     await expect(page.getByTestId('wallboard-page')).toBeVisible();
   });
@@ -84,7 +82,7 @@ test.describe('Wallboard', () => {
    * locally.
    */
   test('should show scope-wide CSAT aggregate score via data-* selectors', async ({
-    platformAdminPage: page,
+    demoAdminPage: page,
   }) => {
     await page.route(CSAT_AGGREGATE_URL_GLOB, async (route) => {
       if (route.request().method() === 'GET') {
@@ -116,7 +114,7 @@ test.describe('Wallboard', () => {
   });
 
   test('should refresh the CSAT aggregate on an OnCsatResponseRecorded push', async ({
-    platformAdminPage: page,
+    demoAdminPage: page,
   }) => {
     // Serve an evolving aggregate: the second (post-invalidation) fetch reflects
     // the newly-recorded response so we can prove the refresh actually re-read.

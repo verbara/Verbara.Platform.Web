@@ -42,6 +42,8 @@ export function AnalyticsSidebar() {
             <li key={item.to}>
               <NavLink
                 to={item.to}
+                // Locale-proof handle for E2E: the visible label is translated, the route is not.
+                data-testid={`sidebar-link-${item.to.split('/').pop()}`}
                 className={({ isActive }) =>
                   `flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors ${
                     isActive

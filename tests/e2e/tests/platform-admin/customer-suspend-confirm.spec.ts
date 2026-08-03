@@ -16,7 +16,7 @@ test.describe('Partner customer detail — suspend confirm dialog', () => {
     let suspendCalled = 0;
 
     await page.evaluate(() => {
-      const raw = sessionStorage.getItem('asterisk-auth');
+      const raw = sessionStorage.getItem('verbara-auth');
       if (!raw) return;
       const parsed = JSON.parse(raw) as {
         state: { permissions: string[]; [k: string]: unknown };
@@ -25,7 +25,7 @@ test.describe('Partner customer detail — suspend confirm dialog', () => {
       parsed.state.permissions = Array.from(
         new Set([...(parsed.state.permissions ?? []), 'partner:customer:view']),
       );
-      sessionStorage.setItem('asterisk-auth', JSON.stringify(parsed));
+      sessionStorage.setItem('verbara-auth', JSON.stringify(parsed));
     });
 
     await page.route(`**/api/v1/partner/customers/${tenantId}`, async (route) => {
@@ -71,9 +71,7 @@ test.describe('Partner customer detail — suspend confirm dialog', () => {
     await expect(page.getByTestId('suspend-confirm-submit')).toBeDisabled();
 
     // Fill reason — submit enabled.
-    await page
-      .getByTestId('suspend-confirm-reason')
-      .fill('Non-payment 30 days overdue');
+    await page.getByTestId('suspend-confirm-reason').fill('Non-payment 30 days overdue');
     await expect(page.getByTestId('suspend-confirm-submit')).toBeEnabled();
 
     // Confirm — endpoint hit, dialog closes.
