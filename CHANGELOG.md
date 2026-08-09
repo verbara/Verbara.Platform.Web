@@ -9,6 +9,82 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Security
+
+- **The browser no longer persists bearer credentials (`#247`; `Verbara.Platform.Web/ADR-0011`,
+  openspec `stop-persisting-auth-secrets`).** `auth-store` wrapped its whole state in Zustand's
+  `persist` with no `partialize`, so every field reached `sessionStorage` under `verbara-auth` in
+  the clear: the **access token**, its expiry, the pre-authentication **`mfaPending.mfaToken`**
+  (a credential that bypasses the first factor), and, while impersonating, the operator's own
+  **`impersonation.originalToken`** — strictly more valuable than the impersonated tenant's. Any
+  script on the origin (an XSS, a compromised dependency, an extension with page access) could
+  read them. The persisted slice is now exactly the non-secret session facts — `user`, `tenantId`,
+  `permissions`, `features`, `rememberMe`, `sessionIdleTimeoutMinutes` — and the credential is
+  **rehydrated instead of stored**, from the httpOnly refresh cookie that has existed since
+  ADR-0009 W1 (**Platform ≥ 2.9.0**, so no new floor).
+  - **`restoring` phase in `AuthGuard`.** On a reload the store rehydrates with a user but no
+    token; rather than bouncing to `/login`, the guard re-mints an access token exactly once per
+    page load, rendering `PageSkeleton` meanwhile (carrying a `data-*` attribute and **no text**,
+    so no new i18n keys and the parity gate is untouched) and falling back to `/login` — with
+    `state={{ from: location }}` preserved — only when the refresh genuinely fails.
+  - **One in-flight refresh, shared.** The new `session-restore` module memoises a single promise
+    per page load and delegates to the existing `refreshAccessToken`, so the per-tab dedupe and
+    the cross-tab Web Locks serialisation keep applying; mounting several guards concurrently
+    still issues one request. A `hasSession` selector is the single source of truth for "there is
+    a session worth restoring", shared by the guard and `customFetch`'s pre-flight (widened to
+    cover the rehydrated-but-tokenless case in **both** the main function and the metrics-aware
+    variant), so the two cannot drift. A fresh browser issues no request at all.
+  - **Secrets already on disk are erased.** The persist `version` moves to `1` with a `migrate`
+    that strips the four fields from any v0 entry. The cleanup happens the first time a user loads
+    the new build, **without dropping the session** (verified by hand against a v0 entry).
+  - **Two behaviour changes, both deliberate.** Impersonation no longer survives a reload — the
+    refresh cookie belongs to the original login, so a refresh already swapped the operator's
+    token back in while the store still reported `impersonation.active`; it is now honest instead
+    of inconsistent. Within a session `endImpersonation` is unaffected. A reload **mid-MFA
+    challenge** now returns to the login step rather than a broken screen.
+  - **Rollback impact.** Reverting to a build older than this one forces every open session to log
+    in again: the old `AuthGuard` expects a token in storage, finds none, and redirects. No data
+    loss, and rolling forward again is clean.
+  - Fixes a latent defect the work surfaced: `refreshAccessToken` **keeps the current permission
+    set when the server returns `[]`**. `/auth/refresh` serialises an unresolvable RBAC lookup as
+    an empty array, indistinguishable from "genuinely none", and overwriting stripped the very set
+    the route guards depend on.
+  - **E2E fixture rebuilt around the cookie.** `createAuthenticatedPage` now logs in through the
+    browser context so the httpOnly cookie lands there, seeding only the non-secret slice; the
+    stale `asterisk-auth` key is gone from the ~9 specs that still wrote or read it. Three new
+    specs fence the behaviour: a fixture-authenticated page renders a guarded route (so a silently
+    unauthenticated fixture fails instead of passing), a reload restores the session, and
+    **`sessionStorage` holds no token after login** — the regression fence for the whole change.
+
+### Fixed
+
+- **Audit and impersonation routes gate on the canonical permission keys (`#247`).** Both guards
+  required the dot-notation strings seeded in R5.2 P0.9 (`audit.read`,
+  `security.impersonation.manage`) rather than the `domain:resource:action` vocabulary the rest of
+  the app speaks. The seeder grants both spellings to the same role template, so the guards move
+  to `system:audit:view` and `platform:tenant:impersonate`, retiring the app's last two callers of
+  the legacy aliases. The API still gates the matching endpoints on the aliases
+  (`PlatformAdminRequirement` in Platform's `Program.cs`) — retiring them there is a Platform-side
+  follow-up.
+- **Muted text now meets WCAG AA, and icon-only rail controls have accessible names (`#247`).**
+  The axe-core baseline had only ever scanned unauthenticated screens: its fixture seeded a token
+  under a key the store stopped reading at the rebrand, so every page it asserted on as
+  "authenticated" was really the login page. Repairing it pointed the scan at the real shell and
+  surfaced a backlog of genuine violations — `text-slate-400` on white fails at 2.8:1 and moves to
+  `text-slate-500` (4.6:1) across 36 surfaces; the two link-style buttons using `text-brand` (3.4:1)
+  move to `text-brand-dark`; the rail's icon-only search trigger and nav links had no accessible
+  name (a tooltip is not one) and now reuse their already-translated label, so the i18n parity gate
+  is untouched. Dark-mode variants already passed and are unchanged.
+- **The webchat embed page is emitted at the outDir root with prefixed asset URLs (`#247`).**
+  `vite.webchat-embed.config.ts` set no `root`, so Rollup kept the entry's source path in the
+  output and the page landed at `public/webchat/embed/src/webchat/embed/index.html` — while the
+  widget's public contract and `nginx.conf`'s `try_files $uri /webchat/embed/index.html` both
+  expect it at the root. Setting `root` alone then emitted assets as `/assets/…`, which 404 against
+  the host app's own asset folder, so `base` is pinned to `/webchat/embed/`. The embed's loading
+  shell also gained a testid marking the point where the React app has registered its `postMessage`
+  listener — `#root` being attached does not imply that, and `postMessage` has no buffering, so a
+  spec's config could be dropped silently.
+
 ### Changed — CI
 
 - **`release.yml` now creates the GitHub Release object itself.** The workflow built and
@@ -23,6 +99,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `v3.13.1-web` was) cannot steal it from a newer minor. Workflow `permissions` widened
   `contents: read` → `write` for this. Platform's `release.yml` and Sdk's `publish.yml` still do
   not create Releases — for those, `/xr:release` §H creates them by hand.
+- **Line-coverage floor ratcheted `38` → `41` after the tests above (`#247`).** The band is
+  two-sided on purpose: adding tests without raising the floor leaves a stale number that would let
+  a later regression slip back under it unnoticed, so the gate fails on the ceiling too and prints
+  the remedy. Measured 41.07% in CI (41.05% locally), so `floor(measured)` = 41. `branch` is a
+  one-sided lower bound and stays at `28`.
 
 ## [3.18.0-web] - 2026-07-27
 
