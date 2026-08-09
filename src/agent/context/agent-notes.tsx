@@ -21,7 +21,7 @@ export function AgentNotes() {
   const [allNotes, setAllNotes] = useState<NotesMap>({});
   const [draft, setDraft] = useState('');
 
-  const notes = selectedId ? allNotes[selectedId] ?? [] : [];
+  const notes = selectedId ? (allNotes[selectedId] ?? []) : [];
 
   const handleSave = useCallback(() => {
     if (!selectedId || !draft.trim()) return;
@@ -62,7 +62,7 @@ export function AgentNotes() {
 
   if (!selectedId) {
     return (
-      <div className="flex items-center justify-center p-6 text-sm text-slate-400">
+      <div className="flex items-center justify-center p-6 text-sm text-slate-500">
         {t('agent:context.no_contact')}
       </div>
     );
@@ -93,7 +93,7 @@ export function AgentNotes() {
       {/* Notes list */}
       <div className="flex-1 overflow-y-auto">
         {notes.length === 0 ? (
-          <div className="flex items-center justify-center p-6 text-sm text-slate-400">
+          <div className="flex items-center justify-center p-6 text-sm text-slate-500">
             {t('agent:context.no_notes')}
           </div>
         ) : (
@@ -113,7 +113,7 @@ export function AgentNotes() {
                     <Trash2 size={14} />
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   {format(new Date(note.timestamp), 'HH:mm')}
                 </p>
               </div>

@@ -96,7 +96,7 @@ export function InboxItem({ conversation }: { readonly conversation: Conversatio
           >
             {conversation.contactName}
           </span>
-          <span className="shrink-0 text-[11px] text-slate-400 dark:text-slate-500">
+          <span className="shrink-0 text-[11px] text-slate-500 dark:text-slate-500">
             {relativeTime}
           </span>
         </div>
@@ -118,9 +118,7 @@ export function InboxItem({ conversation }: { readonly conversation: Conversatio
             <span className={cn('h-2 w-2 rounded-full', stateColors[conversation.state])} />
 
             {/* Unread indicator */}
-            {conversation.unread && (
-              <span className="h-2 w-2 rounded-full bg-blue-500" />
-            )}
+            {conversation.unread && <span className="h-2 w-2 rounded-full bg-blue-500" />}
           </div>
         </div>
       </div>

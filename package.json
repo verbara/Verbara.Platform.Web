@@ -19,6 +19,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test -c tests/e2e/playwright.config.ts",
+    "e2e:reference": "playwright test -c tests/e2e/playwright.reference.config.ts",
     "e2e:ui": "playwright test -c tests/e2e/playwright.config.ts --ui",
     "e2e:headed": "playwright test -c tests/e2e/playwright.config.ts --headed",
     "e2e:debug": "playwright test -c tests/e2e/playwright.config.ts --debug",

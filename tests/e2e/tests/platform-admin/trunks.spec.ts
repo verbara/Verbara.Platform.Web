@@ -1,21 +1,28 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Trunks', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/trunks');
   });
 
-  test('should display trunks page', async ({ platformAdminPage: page }) => {
+  test('should display trunks page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('trunks-page')).toBeVisible();
     await expect(page.getByTestId('trunks-create-btn')).toBeVisible();
   });
 
-  test('should show trunks in data table', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should show trunks in data table', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `e2e-trunk-${Date.now()}`;
 
-    const res = await api.createTrunk({ name, displayName: 'E2E Trunk', type: 'SIP', maxChannels: 30, isActive: true });
+    const res = await api.createTrunk({
+      name,
+      displayName: 'E2E Trunk',
+      type: 'SIP',
+      maxChannels: 30,
+      isActive: true,
+    });
     const created = await res.json();
 
     await page.reload();
@@ -26,8 +33,8 @@ test.describe('Trunks', () => {
     await api.deleteTrunk(created.id);
   });
 
-  test('should create a trunk via form', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a trunk via form', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `e2e-create-trunk-${Date.now()}`;
 
     await page.getByTestId('trunks-create-btn').click();
@@ -48,11 +55,16 @@ test.describe('Trunks', () => {
     if (created) await api.deleteTrunk(created.id);
   });
 
-  test('should search trunks by name', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should search trunks by name', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `e2e-search-trunk-${Date.now()}`;
 
-    const res = await api.createTrunk({ name, displayName: 'E2E Search', type: 'SIP', maxChannels: 10 });
+    const res = await api.createTrunk({
+      name,
+      displayName: 'E2E Search',
+      type: 'SIP',
+      maxChannels: 10,
+    });
     const created = await res.json();
 
     await page.reload();
@@ -63,11 +75,17 @@ test.describe('Trunks', () => {
     await api.deleteTrunk(created.id);
   });
 
-  test('should filter active only', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should filter active only', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `e2e-inactive-trunk-${Date.now()}`;
 
-    const res = await api.createTrunk({ name, displayName: 'Inactive', type: 'SIP', maxChannels: 10, isActive: false });
+    const res = await api.createTrunk({
+      name,
+      displayName: 'Inactive',
+      type: 'SIP',
+      maxChannels: 10,
+      isActive: false,
+    });
     const created = await res.json();
 
     await page.reload();
@@ -78,11 +96,19 @@ test.describe('Trunks', () => {
     await api.deleteTrunk(created.id);
   });
 
-  test('should delete a trunk with 3s confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should delete a trunk with 3s confirmation', async ({
+    demoAdminPage: page,
+    demoApiContext,
+  }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `e2e-del-trunk-${Date.now()}`;
 
-    const res = await api.createTrunk({ name, displayName: 'E2E Delete', type: 'SIP', maxChannels: 10 });
+    const res = await api.createTrunk({
+      name,
+      displayName: 'E2E Delete',
+      type: 'SIP',
+      maxChannels: 10,
+    });
     const created = await res.json();
 
     await page.reload();
@@ -91,9 +117,7 @@ test.describe('Trunks', () => {
     // the filtered view before clicking — this keeps the subsequent delete flow
     // deterministic against the paginated table.
     await page.getByTestId('trunks-search').fill(name);
-    await expect(
-      page.getByTestId('data-table').getByText(name),
-    ).toBeVisible();
+    await expect(page.getByTestId('data-table').getByText(name)).toBeVisible();
     await page.getByTestId(`delete-trunk-${created.id}`).click();
 
     const confirmBtn = page.getByTestId('confirm-delete-btn');
@@ -107,12 +131,10 @@ test.describe('Trunks', () => {
     // gone. The toast message also quotes the trunk name, so scope the
     // visibility assertion to the table.
     await page.getByTestId('trunks-search').fill('');
-    await expect(
-      page.getByTestId('data-table').getByText(name),
-    ).not.toBeVisible();
+    await expect(page.getByTestId('data-table').getByText(name)).not.toBeVisible();
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
     await page.getByTestId('sidebar-group-telephony').click();
     await page.getByTestId('sidebar-link-trunks').click();

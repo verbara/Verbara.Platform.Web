@@ -87,14 +87,14 @@ export function KnowledgeTab() {
       </div>
 
       {showEmpty && (
-        <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-slate-400">
+        <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-slate-500">
           <BookOpen className="h-8 w-8 opacity-40" />
           <p>{t('agent:knowledge.empty_state')}</p>
         </div>
       )}
 
       {showNoResults && (
-        <p className="py-4 text-center text-sm text-slate-400">{t('agent:knowledge.no_results')}</p>
+        <p className="py-4 text-center text-sm text-slate-500">{t('agent:knowledge.no_results')}</p>
       )}
 
       {!showEmpty && results.length > 0 && (

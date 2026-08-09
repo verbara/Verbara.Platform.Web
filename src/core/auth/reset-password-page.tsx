@@ -69,7 +69,7 @@ function PasswordStrength({ password, policy }: { password: string; policy: Pass
             ) : (
               <CircleX className="h-3 w-3 text-slate-300" />
             )}
-            <span className={check.met ? 'text-green-600' : 'text-slate-400'}>{check.label}</span>
+            <span className={check.met ? 'text-green-600' : 'text-slate-500'}>{check.label}</span>
           </li>
         ))}
       </ul>

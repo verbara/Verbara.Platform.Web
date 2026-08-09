@@ -1,18 +1,19 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Teams', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/teams');
   });
 
-  test('should display teams page', async ({ platformAdminPage: page }) => {
+  test('should display teams page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('teams-page')).toBeVisible();
     await expect(page.getByTestId('teams-create-btn')).toBeVisible();
   });
 
-  test('should create a team via dialog', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a team via dialog', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Team ${Date.now()}`;
 
     await page.getByTestId('teams-create-btn').click();
@@ -28,8 +29,8 @@ test.describe('Teams', () => {
     if (created) await api.deleteTeam(created.id);
   });
 
-  test('should edit a team', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should edit a team', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Edit Team ${Date.now()}`;
 
     const res = await api.createTeam({ name });
@@ -48,8 +49,8 @@ test.describe('Teams', () => {
     await api.deleteTeam(created.id);
   });
 
-  test('should delete a team', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should delete a team', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Del Team ${Date.now()}`;
 
     const res = await api.createTeam({ name });
@@ -64,8 +65,8 @@ test.describe('Teams', () => {
     await expect(page.getByText(name)).not.toBeVisible();
   });
 
-  test('should search teams', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should search teams', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Search Team ${Date.now()}`;
 
     const res = await api.createTeam({ name });
@@ -79,7 +80,7 @@ test.describe('Teams', () => {
     await api.deleteTeam(created.id);
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
     await page.getByTestId('sidebar-group-people').click();
     // Teams link is under people but note the sidebar key may vary
@@ -90,7 +91,7 @@ test.describe('Teams', () => {
     }
   });
 
-  test('should navigate to teams via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate to teams via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/users');
     await expect(page).toHaveURL(/\/admin\/users/);
 

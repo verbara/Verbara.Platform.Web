@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/auth.fixture';
+import { test, expect, grantPermissions } from '../../fixtures/auth.fixture';
 
 /**
  * Partner customer-detail suspend ConfirmDialog smoke test (R5.3 Phase B B.3 / S4.3).
@@ -15,18 +15,7 @@ test.describe('Partner customer detail — suspend confirm dialog', () => {
     const tenantId = 'tenant-acme';
     let suspendCalled = 0;
 
-    await page.evaluate(() => {
-      const raw = sessionStorage.getItem('asterisk-auth');
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as {
-        state: { permissions: string[]; [k: string]: unknown };
-        version: number;
-      };
-      parsed.state.permissions = Array.from(
-        new Set([...(parsed.state.permissions ?? []), 'partner:customer:view']),
-      );
-      sessionStorage.setItem('asterisk-auth', JSON.stringify(parsed));
-    });
+    await grantPermissions(page, ['partner:customer:view']);
 
     await page.route(`**/api/v1/partner/customers/${tenantId}`, async (route) => {
       await route.fulfill({
@@ -71,9 +60,7 @@ test.describe('Partner customer detail — suspend confirm dialog', () => {
     await expect(page.getByTestId('suspend-confirm-submit')).toBeDisabled();
 
     // Fill reason — submit enabled.
-    await page
-      .getByTestId('suspend-confirm-reason')
-      .fill('Non-payment 30 days overdue');
+    await page.getByTestId('suspend-confirm-reason').fill('Non-payment 30 days overdue');
     await expect(page.getByTestId('suspend-confirm-submit')).toBeEnabled();
 
     // Confirm — endpoint hit, dialog closes.

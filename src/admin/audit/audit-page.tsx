@@ -11,9 +11,15 @@ import { useAuditSearch, type AuditEntry } from '@/core/api/hooks/use-audit';
 
 /* ---------- Action badge ---------- */
 
-const ACTION_BADGE: Record<string, { variant: 'default' | 'destructive' | 'secondary' | 'outline'; className: string }> = {
+const ACTION_BADGE: Record<
+  string,
+  { variant: 'default' | 'destructive' | 'secondary' | 'outline'; className: string }
+> = {
   create: { variant: 'default', className: 'bg-green-600 text-white hover:bg-green-700' },
-  update: { variant: 'secondary', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
+  update: {
+    variant: 'secondary',
+    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  },
   delete: { variant: 'destructive', className: '' },
 };
 
@@ -41,7 +47,9 @@ function DetailsCell({ details }: Readonly<{ details?: Record<string, string> | 
   const entries = Object.entries(details);
   if (entries.length === 0) return <span className="text-muted-foreground">—</span>;
 
-  const text = entries.map(([k, v]) => k + '=' + (typeof v === 'string' ? v : JSON.stringify(v))).join(' · ');
+  const text = entries
+    .map(([k, v]) => k + '=' + (typeof v === 'string' ? v : JSON.stringify(v)))
+    .join(' · ');
   const truncated = text.length > 80;
   const display = truncated && !expanded ? `${text.slice(0, 80)}…` : text;
 
@@ -51,7 +59,7 @@ function DetailsCell({ details }: Readonly<{ details?: Record<string, string> | 
       {truncated && (
         <button
           type="button"
-          className="ml-1 text-xs text-brand underline"
+          className="ml-1 text-xs text-brand-dark underline"
           onClick={(e) => {
             e.stopPropagation();
             setExpanded((v) => !v);
@@ -129,10 +137,7 @@ export default function AuditPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('admin:audit.title')}
-        description={t('admin:audit.description')}
-      />
+      <PageHeader title={t('admin:audit.title')} description={t('admin:audit.description')} />
 
       {/* Filter bar */}
       <div className="rounded-lg border bg-card p-4 shadow-sm">
@@ -214,10 +219,7 @@ export default function AuditPage() {
 
       {/* Results */}
       {items.length === 0 && !isFetching ? (
-        <EmptyState
-          icon={FileSearch}
-          message={t('admin:audit.empty')}
-        />
+        <EmptyState icon={FileSearch} message={t('admin:audit.empty')} />
       ) : (
         <div className="space-y-3">
           {/* Table */}
@@ -225,22 +227,46 @@ export default function AuditPage() {
             <table data-testid="audit-table" className="w-full text-sm">
               <thead className="border-b bg-muted/50">
                 <tr>
-                  <th data-testid="audit-col-timestamp" data-column="timestamp" className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th
+                    data-testid="audit-col-timestamp"
+                    data-column="timestamp"
+                    className="px-4 py-3 text-left font-medium text-muted-foreground"
+                  >
                     {t('admin:audit.col.timestamp')}
                   </th>
-                  <th data-testid="audit-col-action" data-column="action" className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th
+                    data-testid="audit-col-action"
+                    data-column="action"
+                    className="px-4 py-3 text-left font-medium text-muted-foreground"
+                  >
                     {t('admin:audit.col.action')}
                   </th>
-                  <th data-testid="audit-col-entityType" data-column="entityType" className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th
+                    data-testid="audit-col-entityType"
+                    data-column="entityType"
+                    className="px-4 py-3 text-left font-medium text-muted-foreground"
+                  >
                     {t('admin:audit.col.entityType')}
                   </th>
-                  <th data-testid="audit-col-entityId" data-column="entityId" className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th
+                    data-testid="audit-col-entityId"
+                    data-column="entityId"
+                    className="px-4 py-3 text-left font-medium text-muted-foreground"
+                  >
                     {t('admin:audit.col.entityId')}
                   </th>
-                  <th data-testid="audit-col-performedBy" data-column="performedBy" className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th
+                    data-testid="audit-col-performedBy"
+                    data-column="performedBy"
+                    className="px-4 py-3 text-left font-medium text-muted-foreground"
+                  >
                     {t('admin:audit.col.performedBy')}
                   </th>
-                  <th data-testid="audit-col-details" data-column="details" className="px-4 py-3 text-left font-medium text-muted-foreground">
+                  <th
+                    data-testid="audit-col-details"
+                    data-column="details"
+                    className="px-4 py-3 text-left font-medium text-muted-foreground"
+                  >
                     {t('admin:audit.col.details')}
                   </th>
                 </tr>

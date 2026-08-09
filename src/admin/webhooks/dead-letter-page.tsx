@@ -173,7 +173,10 @@ export default function DeadLetterPage() {
 
       {/* Empty state when no tenant searched */}
       {!searchTenantId && (
-        <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-lg border border-dashed">
+        <div
+          className="flex h-48 flex-col items-center justify-center gap-2 rounded-lg border border-dashed"
+          data-testid="dead-letter-empty-state"
+        >
           <TriangleAlert className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
             {t('admin:deadLetter.enterTenant', 'Enter a tenant ID to view dead-letter deliveries.')}

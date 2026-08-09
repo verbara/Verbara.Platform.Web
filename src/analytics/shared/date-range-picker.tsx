@@ -54,7 +54,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
           onChange={(e) => onChange({ ...value, from: e.target.value })}
           className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
         />
-        <span className="text-xs text-slate-400">–</span>
+        <span className="text-xs text-slate-500">–</span>
         <input
           type="date"
           value={value.to}

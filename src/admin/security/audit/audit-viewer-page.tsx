@@ -234,7 +234,7 @@ export default function AuditViewerPage() {
             )}
             <Link
               to="/admin/retention"
-              className="inline-block text-xs text-brand underline"
+              className="inline-block text-xs text-brand-dark underline"
               data-testid="audit-drawer-retention-link"
             >
               {t('admin:security_admin.audit.drawer.retention_disclosure')}

@@ -15,9 +15,10 @@
  *      07-validacion-e2e.md §3 with SIPp, not here — Playwright can't
  *      drive a real softphone).
  *
- * Tag: `@reference-deployment`. Run with:
+ * Tag: `@reference-deployment`. The main config ignores this file, because it needs a different
+ * stack than the regular dev one. Run it with its own config:
  *
- *   npx playwright test --grep @reference-deployment
+ *   npm run e2e:reference
  *
  * Pre-requisitos:
  *   - Stack levantado vía docker-compose.reference-smb.yml.
@@ -49,16 +50,16 @@ test.describe('@reference-deployment — SMB customer deploy', () => {
 
   test('Setup_ShouldBeComplete_WithAdminTenantQueueAndAgent', async ({
     platformAdminPage,
-    platformAdminRequest,
+    authenticatedApiContext,
   }) => {
     // Aterriza al /admin sin redirect a /setup (significa setup ya completo)
     await platformAdminPage.goto('/admin');
     await expect(platformAdminPage).toHaveURL(/\/admin(?!\/setup)/);
 
-    const api = new ApiHelper(platformAdminRequest);
+    const api = new ApiHelper(authenticatedApiContext);
 
     // Al menos 1 queue debe existir (creada por el wizard)
-    const queuesResponse = await platformAdminRequest.get(`${API_BASE}/api/v1/admin/queues`, {
+    const queuesResponse = await authenticatedApiContext.get(`${API_BASE}/api/v1/admin/queues`, {
       headers: { 'X-Tenant-Id': api.tenantId },
     });
     expect(queuesResponse.ok()).toBeTruthy();
@@ -66,7 +67,7 @@ test.describe('@reference-deployment — SMB customer deploy', () => {
     expect(queues.length).toBeGreaterThanOrEqual(1);
 
     // Al menos 1 agente debe existir
-    const agentsResponse = await platformAdminRequest.get(`${API_BASE}/api/v1/admin/agents`, {
+    const agentsResponse = await authenticatedApiContext.get(`${API_BASE}/api/v1/admin/agents`, {
       headers: { 'X-Tenant-Id': api.tenantId },
     });
     expect(agentsResponse.ok()).toBeTruthy();
@@ -88,8 +89,8 @@ test.describe('@reference-deployment — SMB customer deploy', () => {
     await expect(iframe).toBeVisible({ timeout: 5_000 });
   });
 
-  test('WebChat_ShouldPersistConfig_OnPatch', async ({ platformAdminRequest }) => {
-    const channels = new ChannelHelper(platformAdminRequest);
+  test('WebChat_ShouldPersistConfig_OnPatch', async ({ authenticatedApiContext }) => {
+    const channels = new ChannelHelper(authenticatedApiContext);
 
     // Patch con allowedOrigins reproducible
     const testOrigins = [
@@ -111,8 +112,8 @@ test.describe('@reference-deployment — SMB customer deploy', () => {
     expect(channel.allowedOrigins).toEqual(expect.arrayContaining(testOrigins));
   });
 
-  test('Email_ShouldPersistConfig_OnPatch', async ({ platformAdminRequest }) => {
-    const channels = new ChannelHelper(platformAdminRequest);
+  test('Email_ShouldPersistConfig_OnPatch', async ({ authenticatedApiContext }) => {
+    const channels = new ChannelHelper(authenticatedApiContext);
 
     const fromAddress = 'reference-deploy-test@verbara.invalid';
     const patchResponse = await channels.enableEmail({
@@ -131,9 +132,9 @@ test.describe('@reference-deployment — SMB customer deploy', () => {
   });
 
   test('Voice_ShouldExposeTrunkCrud_AndAgentWebRtcProvisioning', async ({
-    platformAdminRequest,
+    authenticatedApiContext,
   }) => {
-    const channels = new ChannelHelper(platformAdminRequest);
+    const channels = new ChannelHelper(authenticatedApiContext);
 
     // List trunks — endpoint debe responder (puede venir vacío)
     const listResponse = await channels.listTrunks();

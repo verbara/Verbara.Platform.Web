@@ -1,5 +1,6 @@
-import { test as base, expect, type Browser, type APIRequestContext, type Page } from '@playwright/test';
-import { API_BASE, DEMO_ADMIN } from '../../helpers/credentials';
+import { test as base, expect } from '@playwright/test';
+import { authenticatedPage as authenticate } from '../../helpers/auth-session';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 /**
  * R5.1 Task I — queue-member management end-to-end.
@@ -11,66 +12,14 @@ import { API_BASE, DEMO_ADMIN } from '../../helpers/credentials';
  */
 const SHOULD_RUN = process.env.E2E_FULL_STACK === 'true';
 
-interface LoginResponse {
-  accessToken: string;
-  expiresAt: string;
-  user?: { id: string; email: string; displayName: string; role: string };
-  tenantId?: string;
-  permissions?: string[];
-  features?: Record<string, boolean>;
-}
-
-async function authenticate(
-  browser: Browser,
-  request: APIRequestContext,
-  creds: { tenantId: string; email: string; password: string },
-): Promise<Page> {
-  const response = await request.post(`${API_BASE}/api/v1/auth/login`, { data: creds });
-  if (!response.ok()) throw new Error(`Login failed: ${response.status()}`);
-  const login: LoginResponse = await response.json();
-
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  await page.goto('/login');
-  await page.evaluate(
-    ([token, expiry, user, tenantId, perms, features]) => {
-      sessionStorage.setItem(
-        'asterisk-auth',
-        JSON.stringify({
-          state: {
-            accessToken: token,
-            tokenExpiry: new Date(expiry as string).getTime(),
-            user,
-            tenantId,
-            permissions: perms,
-            features,
-            rememberMe: false,
-            mfaPending: null,
-          },
-          version: 0,
-        }),
-      );
-    },
-    [
-      login.accessToken,
-      login.expiresAt,
-      login.user ?? null,
-      creds.tenantId,
-      login.permissions ?? [],
-      login.features ?? {},
-    ],
-  );
-  return page;
-}
-
 base.describe('Queue members (RESTful management)', () => {
   base.skip(
     !SHOULD_RUN,
     'requires E2E_FULL_STACK=true with docker-compose.full.yml (Platform + demo seed)',
   );
 
-  base('admin can add, pause, resume, and remove a queue member', async ({ browser, request }) => {
-    const page = await authenticate(browser, request, DEMO_ADMIN);
+  base('admin can add, pause, resume, and remove a queue member', async ({ browser }) => {
+    const page = await authenticate(browser, DEMO_ADMIN);
 
     try {
       // Navigate to queues list, pick the first queue.

@@ -9,6 +9,8 @@ vi.mock('@/core/auth/auth-store', () => ({
       accessToken: 'valid-token',
       tenantId: 'tenant-1',
       isTokenExpired: () => false,
+      // Mirrors the real selector: "there is a session worth restoring", keyed on the persisted user.
+      hasSession: () => true,
       user: { id: 'u1', email: 'test@example.com' },
       permissions: [],
       features: {},

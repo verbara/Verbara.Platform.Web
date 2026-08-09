@@ -1,12 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { QueueMetrics } from '@/operations/stores/queue-metrics-store';
 import { useLiveState } from '@/core/api/hooks/use-analytics';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/core/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/core/ui/tooltip';
 
 function slaColor(sla: number): string {
   if (sla >= 80) return 'border-emerald-400 dark:border-emerald-600';
@@ -64,7 +59,7 @@ export function QueueCard({ queue }: QueueCardProps) {
               <Tooltip>
                 <TooltipTrigger
                   data-testid="queue-card-waiting-unavailable"
-                  className="cursor-help text-3xl font-bold text-slate-400 dark:text-slate-500"
+                  className="cursor-help text-3xl font-bold text-slate-500 dark:text-slate-500"
                 >
                   {emDash}
                 </TooltipTrigger>
@@ -87,7 +82,7 @@ export function QueueCard({ queue }: QueueCardProps) {
               <Tooltip>
                 <TooltipTrigger
                   data-testid="queue-card-wait-unavailable"
-                  className="cursor-help text-sm font-medium text-slate-400 dark:text-slate-500"
+                  className="cursor-help text-sm font-medium text-slate-500 dark:text-slate-500"
                 >
                   {emDash}
                 </TooltipTrigger>

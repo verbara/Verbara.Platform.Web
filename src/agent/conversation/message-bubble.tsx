@@ -104,7 +104,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
           <span
             className={cn(
               'text-[10px]',
-              isAgent ? 'text-white/60' : 'text-slate-400 dark:text-slate-500',
+              isAgent ? 'text-white/60' : 'text-slate-500 dark:text-slate-500',
             )}
           >
             {formatTimestamp(message.timestamp, locale)}

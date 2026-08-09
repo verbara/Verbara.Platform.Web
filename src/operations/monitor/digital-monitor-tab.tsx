@@ -64,7 +64,7 @@ function ConversationCard({ conversation, isSelected, onClick }: ConversationCar
       <p className="mt-1 truncate text-xs text-muted-foreground">
         {conversation.queueName} · {conversation.state}
       </p>
-      <p className="mt-0.5 line-clamp-1 text-xs text-slate-400">{conversation.lastMessage}</p>
+      <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">{conversation.lastMessage}</p>
     </button>
   );
 }
@@ -79,7 +79,10 @@ export function DigitalMonitorTab() {
   return (
     <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
       {/* Left panel — conversation list */}
-      <div className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto" data-testid="digital-conversations-list">
+      <div
+        className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto"
+        data-testid="digital-conversations-list"
+      >
         {conversations.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
             {t('monitor.no_digital_sessions')}

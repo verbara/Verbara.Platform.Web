@@ -17,6 +17,9 @@ export function RailIcon({ to, icon: Icon, label }: RailIconProps) {
             <NavLink
               {...props}
               to={to}
+              // Icon-only link: the tooltip is not an accessible name, so axe flags `link-name`.
+              // Reuses the already-translated label — no new i18n key.
+              aria-label={label}
               className={({ isActive }) =>
                 `flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
                   isActive

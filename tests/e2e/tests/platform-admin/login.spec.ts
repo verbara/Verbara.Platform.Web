@@ -1,7 +1,22 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { test as authTest } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
 import { PLATFORM_ADMIN, DEMO_ADMIN } from '../../helpers/credentials';
+
+/**
+ * Signs in through the form, always supplying the tenant.
+ *
+ * The API rejects a login without one (`400 Tenant identification required`) unless the host
+ * resolves a tenant by subdomain, which `localhost` does not — so the tenant toggle has to be
+ * opened and filled even for the demo tenant.
+ */
+async function loginAs(page: Page, creds: { tenantId: string; email: string; password: string }) {
+  await page.getByTestId('login-tenant-toggle').click();
+  await page.getByTestId('login-tenant').fill(creds.tenantId);
+  await page.getByTestId('login-email').fill(creds.email);
+  await page.getByTestId('login-password').fill(creds.password);
+  await page.getByTestId('login-submit').click();
+}
 
 test.describe('Login', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,20 +24,16 @@ test.describe('Login', () => {
   });
 
   test('should login successfully as platform admin', async ({ page }) => {
-    await page.getByTestId('login-tenant-toggle').click();
-    await page.getByTestId('login-tenant').fill(PLATFORM_ADMIN.tenantId);
-    await page.getByTestId('login-email').fill(PLATFORM_ADMIN.email);
-    await page.getByTestId('login-password').fill(PLATFORM_ADMIN.password);
-    await page.getByTestId('login-submit').click();
+    await loginAs(page, PLATFORM_ADMIN);
 
     await expect(page).not.toHaveURL(/\/login/);
-    await expect(page.getByText(PLATFORM_ADMIN.email)).toBeVisible();
+    // The shell renders the identity as initials in an avatar, never the raw email, so the menu
+    // trigger is the assertable signal that an authenticated shell mounted.
+    await expect(page.getByTestId('user-menu-trigger')).toBeVisible();
   });
 
   test('should login successfully as demo admin', async ({ page }) => {
-    await page.getByTestId('login-email').fill(DEMO_ADMIN.email);
-    await page.getByTestId('login-password').fill(DEMO_ADMIN.password);
-    await page.getByTestId('login-submit').click();
+    await loginAs(page, DEMO_ADMIN);
 
     await expect(page).not.toHaveURL(/\/login/);
   });
@@ -52,9 +63,7 @@ test.describe('Login', () => {
   });
 
   test('should logout and redirect to login', async ({ page }) => {
-    await page.getByTestId('login-email').fill(DEMO_ADMIN.email);
-    await page.getByTestId('login-password').fill(DEMO_ADMIN.password);
-    await page.getByTestId('login-submit').click();
+    await loginAs(page, DEMO_ADMIN);
     await expect(page).not.toHaveURL(/\/login/);
 
     await page.getByTestId('user-menu-trigger').click();
@@ -71,9 +80,7 @@ test.describe('Login', () => {
   });
 
   test('should persist session after page reload', async ({ page }) => {
-    await page.getByTestId('login-email').fill(DEMO_ADMIN.email);
-    await page.getByTestId('login-password').fill(DEMO_ADMIN.password);
-    await page.getByTestId('login-submit').click();
+    await loginAs(page, DEMO_ADMIN);
     await expect(page).not.toHaveURL(/\/login/);
 
     await page.reload();

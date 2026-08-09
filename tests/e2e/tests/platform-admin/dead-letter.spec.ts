@@ -10,7 +10,8 @@ test.describe('Dead Letter Queue', () => {
   });
 
   test('should show empty state without search', async ({ platformAdminPage: page }) => {
-    await expect(page.getByText('Enter a tenant ID to view dead-letter deliveries.')).toBeVisible();
+    // The copy is translated, so asserting the English string only passes in en-US.
+    await expect(page.getByTestId('dead-letter-empty-state')).toBeVisible();
     await expect(page.getByTestId('dead-letter-search-btn')).toBeDisabled();
   });
 

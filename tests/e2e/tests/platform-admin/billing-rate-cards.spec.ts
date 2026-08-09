@@ -18,7 +18,10 @@ test.describe('Billing — Rate Cards', () => {
     await expect(table).toBeVisible();
   });
 
-  test('should create a rate card via UI', async ({ platformAdminPage: page, authenticatedApiContext }) => {
+  test('should create a rate card via UI', async ({
+    platformAdminPage: page,
+    authenticatedApiContext,
+  }) => {
     const api = new ApiHelper(authenticatedApiContext);
     const name = `E2E Rate Card ${Date.now()}`;
 
@@ -40,7 +43,10 @@ test.describe('Billing — Rate Cards', () => {
     if (created) await api.deleteRateCard(TENANT_ID, created.rateCardId);
   });
 
-  test('should edit an existing rate card', async ({ platformAdminPage: page, authenticatedApiContext }) => {
+  test('should edit an existing rate card', async ({
+    platformAdminPage: page,
+    authenticatedApiContext,
+  }) => {
     const api = new ApiHelper(authenticatedApiContext);
     const name = `E2E Edit RC ${Date.now()}`;
 
@@ -55,6 +61,8 @@ test.describe('Billing — Rate Cards', () => {
 
     const cards = await api.listRateCards(TENANT_ID);
     const card = cards.find((c: any) => c.name === name);
+    // Leftover cards from earlier runs push the new row off page 1, so filter first.
+    await page.getByTestId('data-table-search').fill(name);
     await page.getByTestId(`edit-rate-card-${card.rateCardId}`).click();
 
     await page.getByTestId('rate-card-name').clear();
@@ -66,7 +74,10 @@ test.describe('Billing — Rate Cards', () => {
     await api.deleteRateCard(TENANT_ID, card.rateCardId);
   });
 
-  test('should delete a rate card with 3s confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
+  test('should delete a rate card with 3s confirmation', async ({
+    platformAdminPage: page,
+    authenticatedApiContext,
+  }) => {
     const api = new ApiHelper(authenticatedApiContext);
     const name = `E2E Delete RC ${Date.now()}`;
 
@@ -81,6 +92,8 @@ test.describe('Billing — Rate Cards', () => {
 
     const cards = await api.listRateCards(TENANT_ID);
     const card = cards.find((c: any) => c.name === name);
+    // Leftover cards from earlier runs push the new row off page 1, so filter first.
+    await page.getByTestId('data-table-search').fill(name);
     await page.getByTestId(`delete-rate-card-${card.rateCardId}`).click();
 
     const confirmBtn = page.getByTestId('confirm-delete-btn');
@@ -113,7 +126,10 @@ test.describe('Billing — Rate Cards', () => {
     if (card) await api.deleteRateCard(TENANT_ID, card.rateCardId);
   });
 
-  test('should display rate entry count in table', async ({ platformAdminPage: page, authenticatedApiContext }) => {
+  test('should display rate entry count in table', async ({
+    platformAdminPage: page,
+    authenticatedApiContext,
+  }) => {
     const api = new ApiHelper(authenticatedApiContext);
     const name = `E2E Entries RC ${Date.now()}`;
 
@@ -129,7 +145,11 @@ test.describe('Billing — Rate Cards', () => {
     });
     await page.reload();
 
-    await expect(page.getByText('2 entries')).toBeVisible();
+    // Several rows show "2 entries", so a page-wide text match trips strict mode. Scope the
+    // assertion to this card's own row instead of relying on the (debounced) search filter.
+    await page.getByTestId('data-table-search').fill(name);
+    const row = page.getByRole('row').filter({ hasText: name });
+    await expect(row.getByText('2 entries')).toBeVisible();
 
     const cards = await api.listRateCards(TENANT_ID);
     const card = cards.find((c: any) => c.name === name);

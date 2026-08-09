@@ -90,12 +90,10 @@ export function AgentTour() {
         className="w-64 rounded-lg border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-800"
         style={tooltipStyle}
       >
-        <p className="mb-1 text-xs text-slate-400">
+        <p className="mb-1 text-xs text-slate-500">
           {step + 1} / {TOUR_STEPS.length}
         </p>
-        <p className="mb-1 font-bold text-slate-900 dark:text-white">
-          {t(current.titleKey)}
-        </p>
+        <p className="mb-1 font-bold text-slate-900 dark:text-white">{t(current.titleKey)}</p>
         <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
           {t(current.descriptionKey)}
         </p>
@@ -103,7 +101,7 @@ export function AgentTour() {
           <button
             type="button"
             onClick={dismiss}
-            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            className="text-xs text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
           >
             {t('tour.skipTour')}
           </button>

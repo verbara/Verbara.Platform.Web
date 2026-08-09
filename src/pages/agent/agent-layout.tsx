@@ -72,7 +72,7 @@ export default function AgentLayout() {
             <button
               type="button"
               onClick={toggleContext}
-              className="absolute top-2 right-2 z-10 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+              className="absolute top-2 right-2 z-10 rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
               title={t('agent_layout.toggle_context')}
             >
               {contextOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}

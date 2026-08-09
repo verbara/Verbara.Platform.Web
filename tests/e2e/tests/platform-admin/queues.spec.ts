@@ -1,22 +1,33 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Queues', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/queues');
   });
 
-  test('should display queues page', async ({ platformAdminPage: page }) => {
+  test('should display queues page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('queues-page')).toBeVisible();
     await expect(page.getByTestId('queues-create-btn')).toBeVisible();
   });
 
-  test('should show queues in data table', async ({ platformAdminPage: page }) => {
+  test('should show queues in data table', async ({ demoAdminPage: page, demoApiContext }) => {
+    // The table only renders once there is at least one row, and the Customer tenant starts
+    // empty ("No queues yet"). Seeding here keeps the test independent of demo-seed state
+    // instead of asserting against data some other spec happened to leave behind.
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
+    const res = await api.createQueue({ name: `E2E Table Queue ${Date.now()}` });
+    const created = await res.json();
+
+    await page.reload();
     await expect(page.getByTestId('data-table')).toBeVisible();
+
+    await api.deleteQueue(created.id);
   });
 
-  test('should create a queue', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a queue', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Queue ${Date.now()}`;
 
     await page.getByTestId('queues-create-btn').click();
@@ -35,8 +46,8 @@ test.describe('Queues', () => {
     if (created) await api.deleteQueue(created.id);
   });
 
-  test('should search queues', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should search queues', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Search Queue ${Date.now()}`;
 
     await api.createQueue({ name });
@@ -50,8 +61,8 @@ test.describe('Queues', () => {
     if (created) await api.deleteQueue(created.id);
   });
 
-  test('should navigate to queue detail', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should navigate to queue detail', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Detail Queue ${Date.now()}`;
 
     const res = await api.createQueue({ name });
@@ -68,7 +79,7 @@ test.describe('Queues', () => {
     await api.deleteQueue(created.id);
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
     await page.getByTestId('sidebar-group-communication').click();
     await page.getByTestId('sidebar-link-queues').click();

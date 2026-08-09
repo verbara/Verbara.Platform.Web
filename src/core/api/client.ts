@@ -81,7 +81,15 @@ async function doRefresh(): Promise<boolean> {
         new Date(data.expiresAt).getTime(),
         store.user,
         store.tenantId,
-        data.permissions ?? store.permissions,
+        // An EMPTY array is treated as "the server did not tell us", not as "this user has no
+        // permissions". `?? store.permissions` alone was dead code: /auth/refresh always serialises
+        // `permissions?.ToArray() ?? []`, so an unresolvable RBAC lookup arrives as `[]` rather than
+        // as an absent field — and every refresh wiped the permission set the UI routes on, sending
+        // the user to /unauthorized. Server-side authorization is unaffected either way: the API
+        // resolves permissions per request, so a stale client set can only show an affordance the
+        // API then rejects. Belt to the real fix in the refresh endpoint, which must apply the same
+        // role-default fallback the login path already does.
+        data.permissions?.length ? data.permissions : store.permissions,
         store.features,
         data.sessionIdleTimeoutMinutes ?? store.sessionIdleTimeoutMinutes,
       );
@@ -219,16 +227,31 @@ async function executeRequest<T>(config: RequestConfig): Promise<T> {
   return result.data;
 }
 
-export async function customFetch<T>(config: RequestConfig): Promise<T> {
-  // Pre-flight: refresh if token expired
-  if (useAuthStore.getState().isTokenExpired() && useAuthStore.getState().accessToken) {
-    const refreshed = await refreshAccessToken();
-    if (!refreshed) {
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
-      throw new Error('Session expired');
-    }
+/**
+ * Pre-flight: make sure a usable token exists before the request goes out.
+ *
+ * The condition used to be `isTokenExpired() && accessToken`, where the `&& accessToken` term
+ * existed to skip the refresh for anonymous callers (the login page). Now that credentials are no
+ * longer persisted, that term also excluded the legitimate rehydrated-but-tokenless case, so a
+ * request issued while the session was restoring would have travelled unauthenticated. It is keyed
+ * on `hasSession()` instead — "we believe there is a session" — and lives in one place because both
+ * fetch variants need it and previously duplicated it.
+ */
+async function ensureTokenBeforeRequest(): Promise<void> {
+  const state = useAuthStore.getState();
+  if (!state.hasSession()) return;
+  if (state.accessToken && !state.isTokenExpired()) return;
+
+  const refreshed = await refreshAccessToken();
+  if (!refreshed) {
+    useAuthStore.getState().logout();
+    window.location.href = '/login';
+    throw new Error('Session expired');
   }
+}
+
+export async function customFetch<T>(config: RequestConfig): Promise<T> {
+  await ensureTokenBeforeRequest();
 
   try {
     return await executeRequest<T>(config);
@@ -256,14 +279,7 @@ export async function customFetch<T>(config: RequestConfig): Promise<T> {
  * unless they need to read response headers.
  */
 export async function customFetchWithHeaders<T>(config: RequestConfig): Promise<FetchResult<T>> {
-  if (useAuthStore.getState().isTokenExpired() && useAuthStore.getState().accessToken) {
-    const refreshed = await refreshAccessToken();
-    if (!refreshed) {
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
-      throw new Error('Session expired');
-    }
-  }
+  await ensureTokenBeforeRequest();
 
   try {
     return await executeRequestRaw<T>(config);

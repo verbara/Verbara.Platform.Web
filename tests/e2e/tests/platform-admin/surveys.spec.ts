@@ -1,18 +1,19 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Surveys', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/surveys');
   });
 
-  test('should display surveys page', async ({ platformAdminPage: page }) => {
+  test('should display surveys page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('surveys-page')).toBeVisible();
     await expect(page.getByTestId('surveys-create-btn')).toBeVisible();
   });
 
-  test('should create a survey', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a survey', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Survey ${Date.now()}`;
 
     await page.getByTestId('surveys-create-btn').click();
@@ -34,8 +35,11 @@ test.describe('Surveys', () => {
     if (created) await api.deleteSurvey(created.id);
   });
 
-  test('should delete a survey with 3s confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should delete a survey with 3s confirmation', async ({
+    demoAdminPage: page,
+    demoApiContext,
+  }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Delete Survey ${Date.now()}`;
 
     const res = await api.createSurvey({ name, type: 'Csat', questions: [] });
@@ -55,7 +59,7 @@ test.describe('Surveys', () => {
     await expect(page.getByText(name)).not.toBeVisible();
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
     await page.getByTestId('sidebar-group-communication').click();
     await page.getByTestId('sidebar-link-surveys').click();

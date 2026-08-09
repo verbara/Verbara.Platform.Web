@@ -123,7 +123,7 @@ function LazyLoad({ children }: { children: React.ReactNode }) {
   return (
     <Suspense
       fallback={
-        <div className="flex h-full items-center justify-center text-slate-400">Loading...</div>
+        <div className="flex h-full items-center justify-center text-slate-500">Loading...</div>
       }
     >
       {children}
@@ -791,7 +791,7 @@ export const router = createBrowserRouter([
           {
             path: 'security/audit',
             element: (
-              <PermissionGuard requires="audit.read" redirect>
+              <PermissionGuard requires="system:audit:view" redirect>
                 <LazyLoad>
                   <AuditViewerPage />
                 </LazyLoad>
@@ -800,11 +800,13 @@ export const router = createBrowserRouter([
           },
           {
             path: 'security/impersonation',
-            // R5.2 PB.2 — replace P0.10 fallback gate with the seeded
-            // dot-notation permission (`security.impersonation.manage`,
-            // P0.9 commit f20892e).
+            // Gated on the canonical `domain:resource:action` key. The R5.2 P0.9 seeder grants both
+            // this and a legacy dot-notation alias (`security.impersonation.manage`) to the same
+            // role template; the API still gates the endpoint on the alias
+            // (Platform `Program.cs`, PlatformAdminRequirement), so retiring it there is a
+            // Platform-side follow-up.
             element: (
-              <PermissionGuard requires="security.impersonation.manage" redirect>
+              <PermissionGuard requires="platform:tenant:impersonate" redirect>
                 <LazyLoad>
                   <ImpersonationAdminPage />
                 </LazyLoad>
@@ -1159,7 +1161,7 @@ export const router = createBrowserRouter([
             index: true,
             element: (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-slate-400">Select a conversation to begin.</p>
+                <p className="text-sm text-slate-500">Select a conversation to begin.</p>
               </div>
             ),
           },

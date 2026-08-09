@@ -11,7 +11,7 @@ export interface EmptyStateProps {
 export function EmptyState({ icon: Icon, message, actionLabel, onAction }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-16 dark:border-slate-600">
-      <Icon className="mb-3 h-10 w-10 text-slate-400" />
+      <Icon className="mb-3 h-10 w-10 text-slate-500" />
       <p className="text-sm text-slate-500">{message}</p>
       {actionLabel && onAction && (
         <Button variant="outline" size="sm" className="mt-4" onClick={onAction}>

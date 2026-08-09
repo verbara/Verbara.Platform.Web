@@ -3,14 +3,22 @@ import { generate as generateTotp } from 'otplib';
 import { API_BASE, PLATFORM_ADMIN } from '../helpers/credentials';
 
 export class ApiHelper {
-  constructor(private readonly request: APIRequestContext) {}
-
   /**
-   * Tenant that the authenticated request context is scoped to.
-   * The auth fixture bakes PLATFORM_ADMIN.tenantId into X-Tenant-Id, so
-   * any user created via this helper lives in that tenant.
+   * Tenant that the authenticated request context is scoped to, so any resource created via this
+   * helper lives in the same tenant the paired page is authenticated against.
+   *
+   * Defaults to PLATFORM_ADMIN's tenant to match `authenticatedApiContext`. Specs driving
+   * operational surfaces pair `demoAdminPage` with `demoApiContext` and must pass DEMO_ADMIN's
+   * tenant here — those endpoints reject the Platform tenant with 409 `tenant-type-mismatch`.
    */
-  readonly tenantId = PLATFORM_ADMIN.tenantId;
+  readonly tenantId: string;
+
+  constructor(
+    private readonly request: APIRequestContext,
+    tenantId: string = PLATFORM_ADMIN.tenantId,
+  ) {
+    this.tenantId = tenantId;
+  }
 
   async createTenant(data: {
     tenantId: string;
@@ -61,14 +69,17 @@ export class ApiHelper {
 
   // --- Billing: Rate Cards ---
 
-  async createRateCard(tenantId: string, data: {
-    name: string;
-    currency: string;
-    effectiveFrom: string;
-    effectiveTo?: string | null;
-    isDefault: boolean;
-    rates: Array<{ usageType: string; unitPrice: number; includedQuantity: number; tiers: null }>;
-  }) {
+  async createRateCard(
+    tenantId: string,
+    data: {
+      name: string;
+      currency: string;
+      effectiveFrom: string;
+      effectiveTo?: string | null;
+      isDefault: boolean;
+      rates: Array<{ usageType: string; unitPrice: number; includedQuantity: number; tiers: null }>;
+    },
+  ) {
     const response = await this.request.post(
       `${API_BASE}/api/v1/management/rate-cards?tenantId=${tenantId}`,
       { data },
@@ -164,20 +175,14 @@ export class ApiHelper {
   }
 
   async updateRetentionPolicy(tenantId: string, data: Record<string, unknown>) {
-    return this.request.put(
-      `${API_BASE}/api/v1/management/tenants/${tenantId}/retention`,
-      { data },
-    );
+    return this.request.put(`${API_BASE}/api/v1/management/tenants/${tenantId}/retention`, {
+      data,
+    });
   }
 
   // --- Users ---
 
-  async createUser(data: {
-    email: string;
-    displayName: string;
-    role: string;
-    password?: string;
-  }) {
+  async createUser(data: { email: string; displayName: string; role: string; password?: string }) {
     return this.request.post(`${API_BASE}/api/v1/admin/users`, { data });
   }
 
@@ -305,12 +310,47 @@ export class ApiHelper {
     return this.request.post(`${API_BASE}/api/v1/admin/queues`, { data });
   }
 
+  // --- Agents ---
+
+  /**
+   * Seeds an agent, creating the backing user first — the agent endpoint takes a `userId`,
+   * it does not provision one. Returns both ids so the caller can clean up in order.
+   */
+  async createAgentWithUser(suffix: string) {
+    const email = `e2e-agent-${suffix}@test.local`;
+    const userResponse = await this.createUser({
+      email,
+      displayName: `E2E Agent ${suffix}`,
+      role: 'agent',
+      password: 'TestPassword123!',
+    });
+    if (!userResponse.ok()) {
+      throw new Error(`createUser failed for ${email}: ${userResponse.status()}`);
+    }
+    const user = await userResponse.json();
+
+    const agentResponse = await this.request.post(`${API_BASE}/api/v1/admin/agents`, {
+      data: { userId: user.id, displayName: `E2E Agent ${suffix}` },
+    });
+    if (!agentResponse.ok()) {
+      await this.deleteUser(user.id);
+      throw new Error(`createAgent failed for ${email}: ${agentResponse.status()}`);
+    }
+    const agent = await agentResponse.json();
+    return { agentId: agent.id as string, userId: user.id as string };
+  }
+
+  async deleteAgentWithUser(ids: { agentId: string; userId: string }) {
+    await this.request.delete(`${API_BASE}/api/v1/admin/agents/${ids.agentId}`);
+    await this.deleteUser(ids.userId);
+  }
+
   async listQueues() {
     const response = await this.request.get(`${API_BASE}/api/v1/admin/queues`);
     // Endpoint returns PagedResult<QueueDto>: { items, totalCount, page, pageSize }.
     // Return the items array so callers can `.find(...)` without unwrapping.
     const body = await response.json();
-    return Array.isArray(body) ? body : body.items ?? [];
+    return Array.isArray(body) ? body : (body.items ?? []);
   }
 
   async deleteQueue(queueId: string) {
@@ -345,7 +385,12 @@ export class ApiHelper {
 
   // --- Surveys ---
 
-  async createSurvey(data: { name: string; type: string; questions?: unknown[]; isActive?: boolean }) {
+  async createSurvey(data: {
+    name: string;
+    type: string;
+    questions?: unknown[];
+    isActive?: boolean;
+  }) {
     return this.request.post(`${API_BASE}/api/v1/admin/surveys`, { data });
   }
 
@@ -482,7 +527,13 @@ export class ApiHelper {
 
   // --- Reports ---
 
-  async createReport(data: { name: string; type: string; schedule: string; format: string; isActive?: boolean }) {
+  async createReport(data: {
+    name: string;
+    type: string;
+    schedule: string;
+    format: string;
+    isActive?: boolean;
+  }) {
     const response = await this.request.post(`${API_BASE}/api/v1/admin/reports`, { data });
     return response.json();
   }

@@ -40,7 +40,7 @@ export function ConversationHistory() {
 
   if (history.length === 0) {
     return (
-      <div className="flex items-center justify-center p-6 text-sm text-slate-400">
+      <div className="flex items-center justify-center p-6 text-sm text-slate-500">
         {t('agent:context.no_history')}
       </div>
     );
@@ -54,8 +54,11 @@ export function ConversationHistory() {
             <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
               {channelLabels[item.channel] ?? item.channel}
             </span>
-            <span className="text-xs text-slate-400">
-              {formatDistanceToNow(new Date(item.closedAt ?? item.createdAt), { addSuffix: true, locale })}
+            <span className="text-xs text-slate-500">
+              {formatDistanceToNow(new Date(item.closedAt ?? item.createdAt), {
+                addSuffix: true,
+                locale,
+              })}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">

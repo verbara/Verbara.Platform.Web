@@ -1,96 +1,70 @@
 import { test as base, type Page, type APIRequestContext } from '@playwright/test';
 import { API_BASE, PLATFORM_ADMIN, DEMO_ADMIN } from '../helpers/credentials';
+import { authenticatedPage, type Credentials, type LoginResult } from '../helpers/auth-session';
 
-interface LoginResult {
-  accessToken: string;
-  expiresAt: string;
-  user?: { id: string; email: string; displayName: string; role: string };
-  tenantId?: string;
-  permissions?: string[];
-  features?: Record<string, boolean>;
-}
-
-async function loginViaApi(
-  request: APIRequestContext,
-  creds: { tenantId: string; email: string; password: string },
-): Promise<LoginResult> {
-  const response = await request.post(`${API_BASE}/api/v1/auth/login`, {
-    data: {
-      tenantId: creds.tenantId,
-      email: creds.email,
-      password: creds.password,
-    },
-  });
-  if (!response.ok()) {
-    throw new Error(`Login failed for ${creds.email}: ${response.status()}`);
-  }
-  return response.json();
-}
-
-function buildAuthState(loginResult: LoginResult, tenantId: string) {
-  return JSON.stringify({
-    state: {
-      accessToken: loginResult.accessToken,
-      tokenExpiry: new Date(loginResult.expiresAt).getTime(),
-      user: loginResult.user ?? null,
-      tenantId,
-      permissions: loginResult.permissions ?? [],
-      features: loginResult.features ?? {},
-      rememberMe: false,
-      mfaPending: null,
-    },
-    version: 0,
-  });
-}
-
-async function createAuthenticatedPage(
-  browser: Parameters<Parameters<typeof base.extend>[0]['platformAdminPage']>[0]['browser'],
-  request: APIRequestContext,
-  creds: { tenantId: string; email: string; password: string },
-): Promise<Page> {
-  const loginResult = await loginViaApi(request, creds);
-  const authState = buildAuthState(loginResult, creds.tenantId);
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  // Navigate first to set origin, then inject into sessionStorage
-  await page.goto('/login');
-  await page.evaluate((state) => {
-    sessionStorage.setItem('asterisk-auth', state);
-  }, authState);
-  return page;
-}
+export { AUTH_PERSIST_KEY, grantPermissions, waitForAppReady } from '../helpers/auth-session';
 
 type AuthFixtures = {
   platformAdminPage: Page;
   demoAdminPage: Page;
   authenticatedApiContext: APIRequestContext;
+  demoApiContext: APIRequestContext;
 };
 
+/**
+ * Builds a bearer-authenticated API context for the given credentials.
+ *
+ * Pure API context — no browser involved, so a bearer header is the right mechanism here and there
+ * is no storage to seed.
+ */
+async function apiContextFor(
+  playwright: { request: { newContext: (o?: object) => Promise<APIRequestContext> } },
+  creds: Credentials,
+): Promise<{ ctx: APIRequestContext; login: APIRequestContext }> {
+  const login = await playwright.request.newContext();
+  const response = await login.post(`${API_BASE}/api/v1/auth/login`, { data: creds });
+  if (!response.ok()) {
+    throw new Error(`Login failed for ${creds.email}: ${response.status()}`);
+  }
+  const loginResult = (await response.json()) as LoginResult;
+  const ctx = await playwright.request.newContext({
+    extraHTTPHeaders: {
+      Authorization: `Bearer ${loginResult.accessToken}`,
+      'X-Tenant-Id': creds.tenantId,
+    },
+  });
+  return { ctx, login };
+}
+
 export const test = base.extend<AuthFixtures>({
-  platformAdminPage: async ({ browser, request }, use) => {
-    const page = await createAuthenticatedPage(browser, request, PLATFORM_ADMIN);
+  platformAdminPage: async ({ browser }, use) => {
+    const page = await authenticatedPage(browser, PLATFORM_ADMIN);
     await use(page);
     await page.context().close();
   },
 
-  demoAdminPage: async ({ browser, request }, use) => {
-    const page = await createAuthenticatedPage(browser, request, DEMO_ADMIN);
+  demoAdminPage: async ({ browser }, use) => {
+    const page = await authenticatedPage(browser, DEMO_ADMIN);
     await use(page);
     await page.context().close();
   },
 
   authenticatedApiContext: async ({ playwright }, use) => {
-    const ctx = await playwright.request.newContext();
-    const loginResult = await loginViaApi(ctx, PLATFORM_ADMIN);
-    const authedCtx = await playwright.request.newContext({
-      extraHTTPHeaders: {
-        Authorization: `Bearer ${loginResult.accessToken}`,
-        'X-Tenant-Id': PLATFORM_ADMIN.tenantId,
-      },
-    });
-    await use(authedCtx);
-    await authedCtx.dispose();
+    const { ctx, login } = await apiContextFor(playwright, PLATFORM_ADMIN);
+    await use(ctx);
     await ctx.dispose();
+    await login.dispose();
+  },
+
+  // Operational endpoints (teams, queues, trunks, skills, …) are rejected with 409
+  // `tenant-type-mismatch` on the Platform tenant — they exist only on Customer tenants. Specs that
+  // exercise those surfaces must pair `demoAdminPage` with this context so page and API agree on
+  // the tenant.
+  demoApiContext: async ({ playwright }, use) => {
+    const { ctx, login } = await apiContextFor(playwright, DEMO_ADMIN);
+    await use(ctx);
+    await ctx.dispose();
+    await login.dispose();
   },
 });
 

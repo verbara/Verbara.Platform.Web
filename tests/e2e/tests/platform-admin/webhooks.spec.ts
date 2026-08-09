@@ -1,18 +1,19 @@
 import { test, expect } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
+import { DEMO_ADMIN } from '../../helpers/credentials';
 
 test.describe('Webhooks', () => {
-  test.beforeEach(async ({ platformAdminPage: page }) => {
+  test.beforeEach(async ({ demoAdminPage: page }) => {
     await page.goto('/admin/webhooks');
   });
 
-  test('should display webhooks page', async ({ platformAdminPage: page }) => {
+  test('should display webhooks page', async ({ demoAdminPage: page }) => {
     await expect(page.getByTestId('webhooks-page')).toBeVisible();
     await expect(page.getByTestId('webhooks-create-btn')).toBeVisible();
   });
 
-  test('should create a webhook subscription', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should create a webhook subscription', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Webhook ${Date.now()}`;
 
     await page.getByTestId('webhooks-create-btn').click();
@@ -33,7 +34,7 @@ test.describe('Webhooks', () => {
     if (created) await api.deleteWebhookSubscription(created.subscriptionId);
   });
 
-  test('should show validation for HTTP URL', async ({ platformAdminPage: page }) => {
+  test('should show validation for HTTP URL', async ({ demoAdminPage: page }) => {
     await page.getByTestId('webhooks-create-btn').click();
     await page.getByTestId('webhook-form-name').fill('Validation Test');
     await page.getByTestId('webhook-form-url').fill('http://insecure.com');
@@ -48,8 +49,11 @@ test.describe('Webhooks', () => {
     await expect(page.getByTestId('webhook-form-url-error')).toContainText(/https/i);
   });
 
-  test('should show one-time secret dialog after creation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should show one-time secret dialog after creation', async ({
+    demoAdminPage: page,
+    demoApiContext,
+  }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Secret ${Date.now()}`;
 
     await page.getByTestId('webhooks-create-btn').click();
@@ -62,15 +66,18 @@ test.describe('Webhooks', () => {
 
     await page.getByTestId('webhook-form-submit').click();
 
-    await expect(page.getByText(/secret/i)).toBeVisible();
+    // A /secret/i text match also hits the subscription's own name and the dialog body copy —
+    // four nodes, so strict mode rejects it. The dialog's own testid is the unambiguous, and
+    // locale-proof, handle.
+    await expect(page.getByTestId('webhook-secret-dialog')).toBeVisible();
 
     const subscriptions = await api.listWebhookSubscriptions();
     const created = subscriptions.find((s: any) => s.name === name);
     if (created) await api.deleteWebhookSubscription(created.subscriptionId);
   });
 
-  test('should edit a webhook subscription', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should edit a webhook subscription', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Edit ${Date.now()}`;
 
     const res = await api.createWebhookSubscription({
@@ -93,8 +100,11 @@ test.describe('Webhooks', () => {
     await api.deleteWebhookSubscription(created.subscriptionId);
   });
 
-  test('should delete a webhook with confirmation', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should delete a webhook with confirmation', async ({
+    demoAdminPage: page,
+    demoApiContext,
+  }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Delete ${Date.now()}`;
 
     const res = await api.createWebhookSubscription({
@@ -118,8 +128,8 @@ test.describe('Webhooks', () => {
     await expect(page.getByText(name)).not.toBeVisible();
   });
 
-  test('should open detail sheet', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should open detail sheet', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Detail ${Date.now()}`;
 
     const res = await api.createWebhookSubscription({
@@ -138,8 +148,8 @@ test.describe('Webhooks', () => {
     await api.deleteWebhookSubscription(created.subscriptionId);
   });
 
-  test('should send test webhook', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should send test webhook', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Send Test ${Date.now()}`;
 
     const res = await api.createWebhookSubscription({
@@ -162,8 +172,8 @@ test.describe('Webhooks', () => {
     await api.deleteWebhookSubscription(created.subscriptionId);
   });
 
-  test('should rotate webhook secret', async ({ platformAdminPage: page, authenticatedApiContext }) => {
-    const api = new ApiHelper(authenticatedApiContext);
+  test('should rotate webhook secret', async ({ demoAdminPage: page, demoApiContext }) => {
+    const api = new ApiHelper(demoApiContext, DEMO_ADMIN.tenantId);
     const name = `E2E Rotate ${Date.now()}`;
 
     const res = await api.createWebhookSubscription({
@@ -186,7 +196,7 @@ test.describe('Webhooks', () => {
     await api.deleteWebhookSubscription(created.subscriptionId);
   });
 
-  test('should navigate via sidebar', async ({ platformAdminPage: page }) => {
+  test('should navigate via sidebar', async ({ demoAdminPage: page }) => {
     await page.goto('/admin/system');
 
     await page.getByTestId('sidebar-group-integrations').click();

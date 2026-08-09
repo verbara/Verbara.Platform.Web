@@ -47,7 +47,7 @@ export function Heatmap({ title, data, dayLabels, emptyLabel }: HeatmapProps) {
       <p className="mb-4 text-sm font-medium text-slate-700 dark:text-slate-300">{title}</p>
 
       {isEmpty ? (
-        <div className="flex h-44 items-center justify-center text-sm text-slate-400 dark:text-slate-500">
+        <div className="flex h-44 items-center justify-center text-sm text-slate-500 dark:text-slate-500">
           {resolvedEmptyLabel}
         </div>
       ) : (

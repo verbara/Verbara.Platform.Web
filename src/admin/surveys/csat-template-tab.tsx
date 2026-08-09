@@ -31,7 +31,7 @@ export function CsatTemplateTab() {
 
       <dl className="space-y-3">
         <div className="flex flex-col gap-1" data-testid="csat-template-rating-question">
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
             {t('admin:surveys.csat.ratingQuestion')}
           </dt>
           <dd className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
@@ -41,7 +41,7 @@ export function CsatTemplateTab() {
         </div>
 
         <div className="flex flex-col gap-1" data-testid="csat-template-scale">
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
             {t('admin:surveys.csat.scaleLabel')}
           </dt>
           <dd>
@@ -52,7 +52,7 @@ export function CsatTemplateTab() {
         </div>
       </dl>
 
-      <p className="text-xs text-slate-400" data-testid="csat-template-readonly-note">
+      <p className="text-xs text-slate-500" data-testid="csat-template-readonly-note">
         {t('admin:surveys.csat.readOnlyNote')}
       </p>
     </div>

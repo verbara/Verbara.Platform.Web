@@ -27,9 +27,7 @@ export function KpiCard({ label, value, delta, deltaLabel }: KpiCardProps) {
             {isPositive ? '+' : ''}
             {delta}%
           </span>
-          {deltaLabel && (
-            <span className="text-xs text-slate-400">{deltaLabel}</span>
-          )}
+          {deltaLabel && <span className="text-xs text-slate-500">{deltaLabel}</span>}
         </div>
       )}
     </div>
