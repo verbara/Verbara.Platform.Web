@@ -78,3 +78,40 @@ cookie-only bearer design). In-memory is the accepted resting place; this ADR go
 - **Move it to `localStorage` with a short TTL.** Strictly worse — same readability, wider scope.
 - **Keep persisting and rely on CSP to prevent XSS.** Defence in depth argues for both; a CSP is a
   control that can regress silently, whereas not storing the secret is structural.
+
+## Addendum — 2026-08-09 · follow-ups harvested at archive time
+
+Recorded here, per the archive-on-merge closing routine, so that neither item survives only in the
+archived change's prose. Neither blocks anything shipped.
+
+1. **`storageState` for the end-to-end suite (deferred optimisation, design D7).** The rebuilt
+   `createAuthenticatedPage` logs in through the browser context on every worker. Playwright's
+   `storageState`, captured once in a global setup, would be faster across a large suite, but it
+   snapshots cookies whose lifetime the suite then has to manage — including the refresh cookie's
+   rotation grace. Deferred deliberately: it is an optimisation, and it trades a fixture that
+   exercises the real login for one that replays a frozen one. Revisit only if fixture login becomes
+   a measured bottleneck.
+
+2. **The Web and the API gate the same two surfaces on different permission vocabularies.** This
+   change moved the audit and impersonation route guards onto the canonical
+   `domain:resource:action` keys (`system:audit:view`, `platform:tenant:impersonate`), while
+   `Verbara.Platform`'s `Program.cs` still gates the matching endpoints on the dot-notation aliases
+   `audit.read` and `security.impersonation.manage`. **This is not simply Platform-side debt to
+   retire** — as the change's own commit message framed it. Those aliases are the second lock of the
+   deliberate `PlatformAdminRequirement` double-lock (host/partner-tenant gate **plus** a seeded
+   dot-notation permission), a pattern Platform documents in its own ADR-0019 and applies uniformly
+   across the `/management/*` admin surfaces. Retiring them there would unpick that decision, not
+   pay down debt.
+
+   What is genuinely fragile is the **coupling neither side states**: the two vocabularies only stay
+   interchangeable because the R5.2 P0.9 seeder grants both spellings to the same role template. If
+   a future seeder change drops one spelling, the Web lets a user through to a screen whose API
+   calls answer 403 — a silent, confusing failure rather than a clean "unauthorized". Any work that
+   touches either the seeder or `PlatformAdminRequirement` should make the mapping explicit
+   (canonical key ↔ alias) rather than leaving it as a coincidence two repos rely on.
+
+For the record, a third item found during this work needed no follow-up: `POST /api/v1/auth/refresh`
+serialising an unresolvable RBAC lookup as `[]` — indistinguishable from "genuinely no permissions" —
+was fixed at the source by Platform `#213` (role-default permission fallback on refresh, with tests,
+both in `main`). The Web's defensive "keep the current set when the server returns an empty array"
+stays as belt-and-braces.
