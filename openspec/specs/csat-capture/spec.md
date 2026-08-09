@@ -2,7 +2,17 @@
 
 ## Purpose
 
-TBD - created by archiving change csat-runner. Update Purpose after archive.
+Defines the customer-facing half of CSAT: the dismissible post-conversation panel the webchat embed
+shows a visitor, capturing a 1–5 star score plus an optional comment and submitting it to Platform —
+never blocking a visitor who would rather just close the chat. It was the surface deferred from
+webchat `v3.0.0-web`, unblocked once Platform shipped the capture endpoint. Its companion capability
+`csat-operator-views` governs where that score surfaces for operators.
+
+The second requirement — the capture payload matching a **committed golden fixture verbatim** — is
+deliberate rather than ceremonial. This surface is written by the customer's browser, outside any
+authenticated typed client, so a silent wire-shape drift produces ratings that are accepted and then
+never counted. That failure class is exactly what the `v3.13.1-web` csat-runner incident cost, and
+the fixture is the fence against its recurrence.
 
 ## Requirements
 

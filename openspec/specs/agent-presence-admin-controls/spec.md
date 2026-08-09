@@ -2,7 +2,17 @@
 
 ## Purpose
 
-TBD - created by archiving change surface-agent-presence-admin-controls. Update Purpose after archive.
+Covers the two admin-facing affordances that ADR-0009's presence work left without a UI when its
+backend shipped: the **force-offline** action on admin agent detail (a destructive,
+`users:user:edit`-gated escape hatch for an agent the liveness reaper has not yet reclaimed, with an
+opt-in session revoke) and the **`pendingPauseTimeoutMinutes` editor** on the system auth-config page
+(the per-tenant ceiling after which a deferred "pause when free" is forced through). It also holds
+the three-locale i18n parity these surfaces must keep.
+
+The two carry **different Platform floors** — force-offline consumes an endpoint live since Platform
+`2.9.0`, while the timeout editor requires `≥ 2.22.0`, below which the control silently displays its
+hard-coded default instead of the tenant's configured value. That asymmetry is the reason the
+capability pins both consumed wire shapes to committed golden fixtures.
 
 ## Requirements
 
