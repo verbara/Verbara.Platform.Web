@@ -116,7 +116,7 @@
     "otpauth": "^9.5.1",
     "otplib": "^13.4.1",
     "prettier": "^3.9.6",
-    "shadcn": "^4.14.1",
+    "shadcn": "^4.16.1",
     "size-limit": "^12.1.0",
     "tailwindcss": "^4.2.2",
     "tsx": "^4.23.10",
