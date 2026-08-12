@@ -1,10 +1,9 @@
 // R5.2 PA.1 — MFA admin page.
 //
 // PlatformAdmin-only surface for managing user MFA enrollment across the
-// platform. The route guard tightens P0.10's `system:auth:configure`
-// fallback to the new `security.mfa.admin` permission seeded by P0.9
-// (`f20892e`). Backend lives at `/api/v1/management/mfa/*` (see
-// `MfaAdminEndpoints.cs`).
+// platform. The route guard requires `system:mfa:manage`, matching the
+// backend `PlatformAdminRequirement` id one-for-one (Platform/ADR-0037).
+// Backend lives at `/api/v1/management/mfa/*` (see `MfaAdminEndpoints.cs`).
 //
 // Brownfield audit:
 //   - DataTable + StatusBadge primitives ship from R5.1 (Phase 0/2).

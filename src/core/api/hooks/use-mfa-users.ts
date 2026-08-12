@@ -1,6 +1,6 @@
 // R5.2 PA.1 — MFA admin hooks.
 //
-// Backend surface (PlatformAdminOnly + `security.mfa.admin` permission):
+// Backend surface (PlatformAdminOnly + `system:mfa:manage` permission):
 //   - GET   /api/v1/management/mfa/users?status=...&tenant=...&page=...&pageSize=...
 //   - POST  /api/v1/management/mfa/users/{id}/reset
 //   - POST  /api/v1/management/mfa/users/{id}/sessions/revoke

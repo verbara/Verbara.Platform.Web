@@ -45,7 +45,7 @@ test.describe('Audit viewer flow', () => {
   test('should download CSV export when export button clicked', async ({ demoAdminPage: page }) => {
     const exportButton = page.getByTestId('audit-export-button');
     if (!(await exportButton.isVisible())) {
-      test.skip(true, 'audit.export permission not granted to this fixture');
+      test.skip(true, 'system:audit:export permission not granted to this fixture');
       return;
     }
 

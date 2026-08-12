@@ -440,7 +440,7 @@ const groups: SidebarGroup[] = [
         labelKey: 'admin:sidebar.securityAudit',
         to: '/admin/security/audit',
         icon: FileSearch,
-        requiredPermission: 'audit.read',
+        requiredPermission: 'system:audit:view',
       },
       {
         key: 'security-impersonation',

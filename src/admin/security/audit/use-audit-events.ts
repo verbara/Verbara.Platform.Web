@@ -7,7 +7,7 @@
 // `entityType/entityId` mental model the PB.1 spec deliberately moved away
 // from.
 //
-// Backend: GET /api/v1/admin/audit/events (audit.read). Returns a paged
+// Backend: GET /api/v1/admin/audit/events (system:audit:view). Returns a paged
 // `AuditEventDto` list and an `X-Audit-Retention-Days` response header that
 // the page surfaces in its disclosure link.
 

@@ -1,7 +1,8 @@
 // R5.2 PC.1 — admin retention policy page. DryRun toggle (PlatformAdmin only) +
 // per-target overview table + manual run-now (dry-run / purge with ConfirmDialog).
 //
-// Backend: /api/v1/management/retention/* (retention.read | retention.manage).
+// Backend: /api/v1/management/retention/*
+// (system:retention:view | system:retention:manage — Platform/ADR-0037).
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +22,7 @@ export default function RetentionAdminPage() {
   const { formatDateTime } = useFormatDate();
   const formatTimestamp = (iso: string | null): string => (iso ? formatDateTime(iso) : '—');
   const permissions = useAuthStore((s) => s.permissions);
-  const canManage = permissions.includes('retention.manage');
+  const canManage = permissions.includes('system:retention:manage');
 
   const { data: targets, isLoading: targetsLoading, error: targetsError } = useRetentionTargets();
   const { data: config, isLoading: configLoading } = useRetentionConfig();

@@ -1,7 +1,7 @@
 // R5.2 PB.1 — admin audit log viewer.
 //
-// PlatformAdmin / partner-admin surface backed by the new
-// `audit.read` / `audit.export` permissions seeded by P0.9 (`f20892e`).
+// PlatformAdmin / partner-admin surface backed by the canonical
+// `system:audit:view` / `system:audit:export` permissions (Platform/ADR-0037).
 // Replaces the P0.10 placeholder with a filter panel + paged DataTable
 // + drawer detail (overview / diff / metadata) + CSV/JSON export.
 //
@@ -110,7 +110,7 @@ export default function AuditViewerPage() {
   const { t } = useTranslation(['admin']);
   const { formatDate, formatRelative } = useFormatDate();
   const isPlatformAdmin = useAuthStore((s) => s.permissions.includes('platform:tenant:manage'));
-  const canExport = useAuthStore((s) => s.permissions.includes('audit.export'));
+  const canExport = useAuthStore((s) => s.permissions.includes('system:audit:export'));
 
   const [draft, setDraft] = useState<DraftFilters>(EMPTY_DRAFT);
   const [applied, setApplied] = useState<DraftFilters>(EMPTY_DRAFT);

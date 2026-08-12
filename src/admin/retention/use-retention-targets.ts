@@ -1,7 +1,8 @@
 // R5.2 PC.1 — retention admin hooks backing the DryRun toggle + per-target
 // overview + manual run-now flows. Wraps GET/POST/PATCH /management/retention/*.
 //
-// Backend gates: retention.read (list/config) + retention.manage (run-now/patch).
+// Backend gates: system:retention:view (list/config) + system:retention:manage
+// (run-now/patch) — Platform/ADR-0037.
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/core/auth/auth-store';

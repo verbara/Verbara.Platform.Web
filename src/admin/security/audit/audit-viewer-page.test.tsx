@@ -33,7 +33,7 @@ vi.mock('next-themes', () => ({
 
 vi.mock('@/core/auth/auth-store', () => {
   const stub = {
-    permissions: ['audit.read', 'audit.export', 'platform:tenant:manage'],
+    permissions: ['system:audit:view', 'system:audit:export', 'platform:tenant:manage'],
   };
   return {
     useAuthStore: <T,>(selector: (s: typeof stub) => T) => selector(stub),
@@ -187,7 +187,8 @@ describe('AuditViewerPage', () => {
 
 // ─── Permission gate ────────────────────────────────────────────────────────
 //
-// PermissionGuard wraps this page in router.tsx with `requires="audit.read"`.
+// PermissionGuard wraps this page in router.tsx with
+// `requires="system:audit:view"`.
 // Verify a user lacking the permission can't see the rendered content.
 
 vi.mock('@/core/auth/auth-store-no-perm', () => ({}));
@@ -202,7 +203,7 @@ describe('AuditViewerPage permission gate', () => {
     });
     const { PermissionGuard } = await import('@/core/auth/permission-guard');
     const { container } = render(
-      <PermissionGuard requires="audit.read">
+      <PermissionGuard requires="system:audit:view">
         <div data-testid="audit-viewer-rendered">child</div>
       </PermissionGuard>,
       { wrapper: makeWrapper() },

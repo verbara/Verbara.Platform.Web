@@ -203,12 +203,12 @@ describe('ImpersonationAdminPage', () => {
 // ─── Permission gate ────────────────────────────────────────────────────────
 //
 // The PermissionGuard wraps this page in router.tsx with
-// `requires="security.impersonation.manage"`. Replicate the gate test pattern
+// `requires="system:impersonation:manage"`. Replicate the gate test pattern
 // from MFA/Audit so a missing permission renders nothing.
 
 vi.mock('@/core/auth/auth-store', () => {
   const stub = {
-    permissions: ['users:user:view'], // intentionally NOT containing security.impersonation.manage
+    permissions: ['users:user:view'], // intentionally NOT containing system:impersonation:manage
   };
   return {
     useAuthStore: <T,>(selector: (s: typeof stub) => T) => selector(stub),
@@ -219,7 +219,7 @@ describe('ImpersonationAdminPage permission gate', () => {
   it('Renders_Nothing_When_PermissionMissing', async () => {
     const { PermissionGuard } = await import('@/core/auth/permission-guard');
     const { container } = render(
-      <PermissionGuard requires="security.impersonation.manage">
+      <PermissionGuard requires="system:impersonation:manage">
         <div data-testid="impersonation-admin-rendered">child</div>
       </PermissionGuard>,
       { wrapper: makeWrapper() },

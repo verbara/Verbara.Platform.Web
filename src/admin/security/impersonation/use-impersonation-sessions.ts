@@ -1,6 +1,6 @@
 // R5.2 PB.2 — admin impersonation session-management hooks.
 //
-// Backend surface (PlatformAdminOnly + `security.impersonation.manage`):
+// Backend surface (PlatformAdminOnly + `system:impersonation:manage`):
 //   - GET   /api/v1/management/impersonation/sessions/active
 //   - POST  /api/v1/management/impersonation/sessions/{id}/revoke
 //   - GET   /api/v1/management/impersonation/sessions/history?from=&to=
@@ -18,10 +18,7 @@ import { customFetch } from '@/core/api/client';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type ImpersonationSessionStatus =
-  | 'Active'
-  | 'Completed'
-  | 'ManuallyRevoked'
-  | 'AutoTimedOut';
+  'Active' | 'Completed' | 'ManuallyRevoked' | 'AutoTimedOut';
 
 export interface ImpersonationSessionDto {
   readonly id: string;
@@ -101,14 +98,7 @@ export function useActiveImpersonationSessions(filter: ActiveSessionsFilter = {}
 export function useImpersonationSessionHistory(filter: SessionHistoryFilter = {}) {
   const { actorTenantId, from, to, page = 1, pageSize = 50 } = filter;
   return useQuery({
-    queryKey: [
-      ...HISTORY_KEY,
-      actorTenantId ?? '',
-      from ?? '',
-      to ?? '',
-      page,
-      pageSize,
-    ] as const,
+    queryKey: [...HISTORY_KEY, actorTenantId ?? '', from ?? '', to ?? '', page, pageSize] as const,
     queryFn: () => {
       const params: Record<string, string> = {
         page: String(page),
