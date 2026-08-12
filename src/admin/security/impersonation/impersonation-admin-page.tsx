@@ -1,7 +1,8 @@
 // R5.2 PB.2 — admin impersonation session-management page.
 //
-// PlatformAdmin-only surface (gated by `security.impersonation.manage`,
-// seeded P0.9 + wired in `router.tsx`). Provides:
+// PlatformAdmin-only surface (gated by `system:impersonation:manage` — the
+// administer-sessions id, distinct from the start-a-session id
+// `platform:tenant:impersonate`; Platform/ADR-0037). Provides:
 //   - Active sessions DataTable with live countdown to auto-timeout (ticks
 //     every 5s client-side; the server returns a fresh `timeRemainingSeconds`
 //     once a minute via React Query refetchInterval).

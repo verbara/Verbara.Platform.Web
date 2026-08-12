@@ -769,19 +769,15 @@ export const router = createBrowserRouter([
               </LazyLoad>
             ),
           },
-          // R5.2 Phase 0 placeholders — Phase A/B/C subagents replace
-          // these with real components and may tighten the permission gate
-          // (auth.read / security.mfa.admin / security.impersonation.manage)
-          // once the corresponding Platform permissions land.
-          //
-          // R5.2 PA.1 (shipped): MFA admin gate tightened from the P0.10
-          // fallback (`system:auth:configure`) to the new
-          // `security.mfa.admin` permission seeded by P0.9 — matches the
-          // backend `/management/mfa/*` policy.
+          // Security admin gates use the canonical `domain:resource:action`
+          // vocabulary and match the backend `PlatformAdminRequirement` ids
+          // one-for-one (Platform/ADR-0037). The R5.2 P0.9 dot-notation
+          // spellings they replaced were never catalogued, so no principal
+          // could hold them.
           {
             path: 'security/mfa',
             element: (
-              <PermissionGuard requires="security.mfa.admin" redirect>
+              <PermissionGuard requires="system:mfa:manage" redirect>
                 <LazyLoad>
                   <MfaAdminPage />
                 </LazyLoad>
@@ -800,13 +796,12 @@ export const router = createBrowserRouter([
           },
           {
             path: 'security/impersonation',
-            // Gated on the canonical `domain:resource:action` key. The R5.2 P0.9 seeder grants both
-            // this and a legacy dot-notation alias (`security.impersonation.manage`) to the same
-            // role template; the API still gates the endpoint on the alias
-            // (Platform `Program.cs`, PlatformAdminRequirement), so retiring it there is a
-            // Platform-side follow-up.
+            // This page administers impersonation sessions (list active, revoke, history), so it
+            // gates on `system:impersonation:manage` — the id its three endpoints require.
+            // `platform:tenant:impersonate` is a distinct id that authorises *starting* a session
+            // and is deliberately not held by `system_admin` (Platform/ADR-0037).
             element: (
-              <PermissionGuard requires="platform:tenant:impersonate" redirect>
+              <PermissionGuard requires="system:impersonation:manage" redirect>
                 <LazyLoad>
                   <ImpersonationAdminPage />
                 </LazyLoad>
@@ -816,7 +811,7 @@ export const router = createBrowserRouter([
           {
             path: 'retention',
             element: (
-              <PermissionGuard requires="retention.read" redirect>
+              <PermissionGuard requires="system:retention:view" redirect>
                 <LazyLoad>
                   <RetentionAdminPage />
                 </LazyLoad>

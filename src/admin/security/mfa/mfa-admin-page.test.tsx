@@ -184,13 +184,13 @@ describe('MfaAdminPage', () => {
 // ─── Permission gate ────────────────────────────────────────────────────────
 //
 // The PermissionGuard wraps this page in router.tsx with
-// `requires="security.mfa.admin"`. We verify the gate rendering separately by
+// `requires="system:mfa:manage"`. We verify the gate rendering separately by
 // importing PermissionGuard with a stubbed auth-store — exercising the same
 // flow used by /admin/security/mfa/.
 
 vi.mock('@/core/auth/auth-store', () => {
   const stub = {
-    permissions: ['users:user:view'], // intentionally NOT containing security.mfa.admin
+    permissions: ['users:user:view'], // intentionally NOT containing system:mfa:manage
   };
   return {
     useAuthStore: <T,>(selector: (s: typeof stub) => T) => selector(stub),
@@ -201,7 +201,7 @@ describe('MfaAdminPage permission gate', () => {
   it('Renders_Nothing_When_PermissionMissing', async () => {
     const { PermissionGuard } = await import('@/core/auth/permission-guard');
     const { container } = render(
-      <PermissionGuard requires="security.mfa.admin">
+      <PermissionGuard requires="system:mfa:manage">
         <div data-testid="mfa-admin-rendered">child</div>
       </PermissionGuard>,
       { wrapper: makeWrapper() },

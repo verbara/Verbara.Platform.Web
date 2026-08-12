@@ -7,7 +7,7 @@
 // content.
 //
 // Gating: skipped when the impersonation admin page is not reachable
-// (`platform:tenant:impersonate` permission not granted to the fixture
+// (`system:impersonation:manage` permission not granted to the fixture
 // account, e.g. in environments where the seeded role template doesn't
 // include the new permission yet).
 
@@ -20,7 +20,7 @@ test.describe('Impersonation admin lifecycle', () => {
     await page.goto('/admin/security/impersonation');
 
     // Permission gate redirect — skip cleanly when the fixture account lacks the seeded
-    // `platform:tenant:impersonate` permission.
+    // `system:impersonation:manage` permission.
     //
     // The gate has to be decided on rendered state, not on the URL. PermissionGuard redirects
     // client-side and only once the session restore has resolved the permission set, so reading
@@ -31,7 +31,7 @@ test.describe('Impersonation admin lifecycle', () => {
     await expect(guarded.or(denied)).toBeVisible();
 
     if (await denied.isVisible()) {
-      test.skip(true, 'platform:tenant:impersonate permission not granted to this fixture');
+      test.skip(true, 'system:impersonation:manage permission not granted to this fixture');
       return;
     }
 
