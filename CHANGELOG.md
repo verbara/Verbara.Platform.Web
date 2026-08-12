@@ -66,6 +66,55 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the legacy aliases. The API still gates the matching endpoints on the aliases
   (`PlatformAdminRequirement` in Platform's `Program.cs`) — retiring them there is a Platform-side
   follow-up.
+- **Every security-admin permission guard moves onto the canonical `domain:resource:action` id
+  (`#275`; Platform/ADR-0037).** Five of the six guards below named the dot-notation ids introduced
+  by R5.2 P0.9; the sixth named a canonical id, but the wrong one of the two Platform keeps for
+  impersonation (see the `security/impersonation` bullet below). Those dot ids were granted by
+  `RoleTemplateSeeder` but never catalogued by
+  `PermissionSeeder`, and `role_template_permissions` carries a foreign key onto `permissions` —
+  the first orphan grant raised `23503` and aborted the whole un-transacted seeding loop, so the
+  ids never came to exist and **no principal could ever hold one**. A Web guard naming one had
+  nothing to match: even the hardcoded `RoleDefaultPermissions.Admin` list the API serves when the
+  RBAC resolver resolves nothing was canonical-only and never listed them either. Server-side those
+  surfaces answered at all only through the `Admin`/`SystemAdmin` shortcut in
+  `PlatformAdminAuthorizationHandler`, which skips the permission check entirely. Each guard now
+  names the id its endpoint's `PlatformAdminRequirement` names, one-for-one:
+  - **`src/admin/sidebar.tsx`** — the security-audit entry, `audit.read` → `system:audit:view`.
+    `#247` had already moved the router guard for that same destination, so the sidebar entry and
+    the route protecting it had been naming two different ids for one destination. The same
+    nav-versus-route divergence survives on three destinations this change does not touch:
+    `sidebar.tsx` gates `security-mfa` and `security-impersonation` on `system:auth:configure` and
+    `retention` on `system:tenant:configure`, while those routes require `system:mfa:manage`,
+    `system:impersonation:manage` and `system:retention:view` — all canonical ids, so nothing is
+    unsatisfiable, but a user holding the route's permission and not the nav's still sees no entry
+    for a page they can reach.
+  - **`src/admin/security/audit/audit-viewer-page.tsx`** — the `canExport` check,
+    `audit.export` → `system:audit:export`.
+  - **`src/router.tsx`, `security/mfa`** — `security.mfa.admin` → `system:mfa:manage`.
+  - **`src/router.tsx`, `retention`** — `retention.read` → `system:retention:view`; and the page's
+    own write gate `canManage` in `src/admin/retention/retention-admin-page.tsx`,
+    `retention.manage` → `system:retention:manage`.
+  - **`src/router.tsx`, `security/impersonation`** — `platform:tenant:impersonate` →
+    `system:impersonation:manage`. **A behavioural correction, not a rename.** Platform keeps the
+    two ids distinct by design: `platform:tenant:impersonate` authorises _starting_ a session,
+    `system:impersonation:manage` authorises _administering_ them — and `system_admin` is excluded
+    from the former in `RoleTemplateSeeder` while retaining the latter. `ImpersonationAdminPage`
+    has no start-impersonation surface; its only data import wraps the three session-admin
+    endpoints (list active, revoke, read history), so gating it on the start id asked for a
+    permission none of its own endpoints require.
+  - **Coverage followed the guards.** `retention-admin-page.test.tsx` is new (7 tests) — the page
+    had no test at all, so the `canManage` gate this change moves was entirely unverified; it now
+    pins both sides of it plus the table, empty, error and run-now / confirm-before-purge paths,
+    and was checked against a mutation (restoring the retired `retention.manage` fails three of
+    them). `use-impersonation-sessions.test.tsx` is new (5 tests) — the page spec mocks that module
+    wholesale, so neither query hook had ever executed; both now run directly, including that the
+    date range is part of the query key and that a new range refetches instead of serving the
+    previous window. The MFA, audit and impersonation page specs and the two
+    `tests/e2e/tests/platform-admin/` specs (`audit-viewer-flow.spec.ts`,
+    `impersonation-lifecycle.spec.ts`) move their gate assertions and skip reasons onto the same
+    ids, so no retired spelling is used as a permission id anywhere in `src/` or the specs — the one
+    remaining occurrence is an explanatory comment in `retention-admin-page.test.tsx` that names the
+    retired `retention.manage` to document the move.
 - **Muted text now meets WCAG AA, and icon-only rail controls have accessible names (`#247`).**
   The axe-core baseline had only ever scanned unauthenticated screens: its fixture seeded a token
   under a key the store stopped reading at the rebrand, so every page it asserted on as

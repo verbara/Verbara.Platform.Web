@@ -115,3 +115,43 @@ serialising an unresolvable RBAC lookup as `[]` — indistinguishable from "genu
 was fixed at the source by Platform `#213` (role-default permission fallback on refresh, with tests,
 both in `main`). The Web's defensive "keep the current set when the server returns an empty array"
 stays as belt-and-braces.
+
+## Amendment — 2026-08-12 · addendum item 2 was wrong
+
+Item 2 above is left standing as written, per append-only. It is corrected here by
+[Platform ADR-0037](../../../Verbara.Platform/docs/decisions/0037-canonical-rbac-permission-vocabulary.md),
+merged as Platform `#225` (`fd2e37ca`) — evidence that was not available when the addendum was
+written.
+
+1. **The dot-notation aliases were retirable debt, not a second lock.** `audit.read` and
+   `security.impersonation.manage` — with five siblings from R5.2 P0.9 — were granted by
+   `RoleTemplateSeeder` but never added to `PermissionSeeder`'s catalog. `role_template_permissions`
+   carries a foreign key onto `permissions`, so the grants raised `23503`
+   (`role_template_permissions_permission_id_fkey`) and were never inserted in any database. No
+   principal could ever hold one, and `PermissionResolver.HasPermission` is an exact set-membership
+   test with no alias layer, so the `PlatformAdminRequirement` gates naming them were unsatisfiable
+   by permission: the audit, MFA-admin, impersonation-session and retention surfaces answered only
+   through the `Admin`/`SystemAdmin` shortcut in `PlatformAdminAuthorizationHandler`, which skips the
+   permission check. One dot id is exempt and keeps its spelling — `security.jwt.rotate` **is**
+   catalogued, so the JWT-rotation gate was satisfiable by permission all along. A double-lock whose second lock cannot be held by anyone is not
+   a second lock. Retiring them was the right call and `#247`'s original commit-message framing was
+   correct; the addendum's "correction" of it was not. Nor did the seeder listing both spellings keep
+   the vocabularies interchangeable — un-transacted row-by-row inserts meant the first orphan grant
+   aborted the whole loop, which on a live database left 5 of 11 role templates and a partially
+   granted `admin`. Platform `#225` moves the six gated ids onto `domain:resource:action` (catalog
+   83 → 88) and makes catalog membership of every granted or gated id a test-enforced build-time
+   invariant.
+
+2. **Concrete consequence — the impersonation id was also wrong.** `#247` gated
+   `security/impersonation` on `platform:tenant:impersonate`, but that page administers impersonation
+   sessions (list active, revoke, history) rather than starting one. Web `#275` (`48b88cb2`) moved the
+   route guard onto `system:impersonation:manage`, the id its three endpoints require; the page itself
+   holds no permission check of its own, so only its header comment changed with it.
+   ADR-0037 keeps the two ids deliberately distinct — one authorises _starting_ a session, the other
+   _administering_ them — and `system_admin` is excluded from `platform:tenant:impersonate` by design
+   in `RoleTemplateSeeder` while retaining `system:impersonation:manage`.
+
+3. **What item 2 got right and survives.** That a role shortcut can silently stand in for the gate is
+   a real question, and a separate one. Platform `#225` declares it explicitly out of scope: "this
+   change makes the permissions work, it does not remove the shortcut." Item 1 of the addendum (the
+   deferred Playwright `storageState` optimisation) is unaffected.
