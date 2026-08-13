@@ -41,3 +41,22 @@ rules:
     - 'For user-facing flows, include `npx playwright test` coverage using data-* selectors.'
     - 'E2E/Playwright tasks MUST follow the anti-flake fences: no waitForTimeout/wall-clock waits, assert via expect(...) polling or waitForResponse, and respect the suite posture (workers:1, retries:1, data-testid selectors). AI-generated specs are held to the same rule.'
     - 'Use Subagent-Driven Development with FCM batching: Phase A foundation (batch) -> Phase B critical components (focused) -> Phase C integration (batch).'
+
+operations:
+  apply:
+    guidance:
+      - 'Do not check off a verification task until it actually ran: `npm run build` (type-check + bundle), `npx vitest run`, `npx eslint .`, and i18n parity green across EN-US, ES-419 and PT-BR — parity is CI-enforced, so a missing key reds the PR, not the local run.'
+      - 'User-facing flows also need `npx playwright test` with `data-*` selectors. Never assert dynamic content with `toContainText` — it breaks under a locale switch.'
+      - 'E2E anti-flake fences are not negotiable: no `waitForTimeout`/wall-clock waits, assert via `expect(...)` polling or `waitForResponse`, keep the suite posture (workers:1, retries:1). AI-generated specs are held to the same rule.'
+      - "This repo is API-first: the behaviour contract lives in Platform's specs. If apply reveals the API shape is wrong, fix it there — never reshape the client to match an unblessed surface."
+      - 'Add the `CHANGELOG.md [Unreleased]` entry in this PR; leave its `(#N)` citation for close-out.'
+      - 'Conventional Commits (`feat:`/`fix:`/`docs:`/`refactor:`/`test:`/`chore:`), and never a `Co-Authored-By` trailer.'
+      - 'Anything deferred or discovered mid-apply goes into `tasks.md` or an open change — never only into the PR prose, which nothing reads at close-out.'
+  archive:
+    guidance:
+      - 'Close out with the CLI: `openspec archive <name> --yes`. Do NOT use `/opsx:archive`, `/opsx:bulk-archive` or `/opsx:sync` — the agent archive path never invokes the CLI, and its no-sync branch moves the change away with the main specs never updated (a later `validate --all --strict` still passes, because the deltas are gone).'
+      - 'Add `--skip-specs` only if this change already went through a sync. On a change that never synced it silently drops the deltas.'
+      - 'Before archiving: reconcile the living spec, harvest every deferred AND incidentally discovered follow-up into an open change or an ADR addendum, and check off `tasks.md`.'
+      - 'Sweep referrers to the change path before the directory moves — `.github/workflows/`, `scripts/` and test fixtures, not only Markdown.'
+      - "If archive aborts because this change removes a capability's LAST requirement, that is expected: add `retire_capabilities: true` to the change's `.openspec.yaml`. It DELETES the living spec — use it only for genuine retirement."
+      - "Land the close-out as its own `docs(openspec):` PR; `main` is protected. Backfill the feature PR's `(#N)` citation into `CHANGELOG.md [Unreleased]` here — the number did not exist at apply time."
