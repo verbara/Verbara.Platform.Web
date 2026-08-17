@@ -136,6 +136,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed — CI
 
+- **The patch-coverage mis-wiring trip now arms from the lcov report, not from the line text**
+  (verbatim replication of `Verbara.Sdk.Pro` PR #95; the script is byte-identical across the four
+  repos that adopt verbara-meta/ADR-0013, and nothing enforces that identity).
+  `check-patch-coverage.py`'s second liveness self-test asks _"diff-cover measured 0 lines — did this
+  diff add something it was supposed to measure?"_ and answered from `_NON_EXECUTABLE_PREFIXES`, a
+  prefix heuristic. It now asks the report: `report_instrumented_lines()` reads every
+  `DA:<line>,<hits>` between `SF:` and `end_of_record`, and an added line arms the trip only when its
+  **number** is in that file's instrumented set. The numbers line up because the report is built by
+  that same job from HEAD and `@@ -a,b +c,d @@` seeds a HEAD-side counter that `+` lines advance and
+  `-` lines do not. A file the report does **not** carry and that did not exist at the merge base
+  keeps the text heuristic, so the path-normalization break this trip exists to catch — which puts
+  _every_ file outside the report — still fires on the first added file. **This repo is where the
+  rule is sharper rather than merely more correct**: istanbul emits `DA:` on `import` lines, which
+  the heuristic waved through by name; the trip now notices them. That only changes a verdict when
+  diff-cover measured 0 on a line the report says it instruments — i.e. when the report is genuinely
+  mis-wired, which is the case the trip is for. The C# defect that prompted it (a `[LoggerMessage(…)]`
+  attribute line read as executable, when no attribute is ever a sequence point) has no analogue
+  here. Suite 7 → 10 cases (`python3 -m unittest discover scripts/tests`: 32 passed). No version
+  bump, no image rebuild — CI machinery only. Rationale, alternatives and the rule as a spec: Pro
+  `openspec/specs/patch-coverage-liveness/`.
+
 - **`release.yml` now creates the GitHub Release object itself.** The workflow built and
   cosign-signed the multi-arch image on every `v*` tag but never created the Release, so each
   version reopened the gap — 22 Release objects over 52 tags as of 2026-07-28, with
