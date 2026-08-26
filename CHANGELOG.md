@@ -9,6 +9,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+---
+
+## [3.19.0-web] - 2026-08-26
+
 ### Security
 
 - **The browser no longer persists bearer credentials (`#247`; `Verbara.Platform.Web/ADR-0011`,
@@ -155,7 +159,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   attribute line read as executable, when no attribute is ever a sequence point) has no analogue
   here. Suite 7 → 10 cases (`python3 -m unittest discover scripts/tests`: 32 passed). No version
   bump, no image rebuild — CI machinery only. Rationale, alternatives and the rule as a spec: Pro
-  `openspec/specs/patch-coverage-liveness/`.
+  `openspec/specs/patch-coverage-liveness/`. (#290)
 
 - **`release.yml` now creates the GitHub Release object itself.** The workflow built and
   cosign-signed the multi-arch image on every `v*` tag but never created the Release, so each
@@ -167,13 +171,36 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   version, plus the signed digest and the customer verify command; and it claims the `Latest`
   badge **only when the tag is the highest version**, so a hotfix cut on an older line (as
   `v3.13.1-web` was) cannot steal it from a newer minor. Workflow `permissions` widened
-  `contents: read` → `write` for this. Platform's `release.yml` and Sdk's `publish.yml` still do
-  not create Releases — for those, `/xr:release` §H creates them by hand.
+  `contents: read` → `write` for this. **Superseded note:** at the time this shipped, Platform's
+  `release.yml` and Sdk's `publish.yml` still created no Release. Both closed the gap the same day
+  — Platform #207/#208 and Sdk #138 — so all four repos now create the Release object in-workflow
+  and `/xr:release` §H verifies rather than creates. (#246)
 - **Line-coverage floor ratcheted `38` → `41` after the tests above (`#247`).** The band is
   two-sided on purpose: adding tests without raising the floor leaves a stale number that would let
   a later regression slip back under it unnoticed, so the gate fails on the ceiling too and prints
   the remedy. Measured 41.07% in CI (41.05% locally), so `floor(measured)` = 41. `branch` is a
   one-sided lower bound and stays at `28`.
+
+### Dependencies
+
+- **npm pins swept forward — 45 Dependabot merges across the cycle, recorded here as one movement
+  because one tag is how they ship.** Six of them are the `npm-security` group and carry the reason
+  this entry is not just housekeeping: **`dompurify` `3.4.12` → `3.4.14`** (the sanitizer standing
+  between rendered channel content and the DOM), `undici`, `postcss`, `fast-uri`, `hono` and
+  `js-yaml` (#260, #262, #299). The rest of the runtime surface: `@microsoft/signalr` `10.0.0` →
+  `10.0.11` (the realtime transport), `@base-ui/react`, `zustand` `5.0.14` → `5.0.15`,
+  `react-hook-form` + `@hookform/resolvers`, `react-i18next` + `i18next-http-backend`, `recharts`
+  `3.9.2` → `3.10.1`, `@xyflow/react`, `@tanstack/react-virtual`, `libphonenumber-js`,
+  `lucide-react` `1.25.0` → `1.31.0` and `sonner`. Dev/toolchain only, never in the bundle: `vite`,
+  `typescript-eslint`, the `eslint-toolchain` and `playwright` groups, `@sentry/react`, `tsx`,
+  `shadcn`, `globals` and the GitHub Actions pins. **No source change accompanies any of them.**
+  Tooling moved alongside: the OpenSpec Validate pin advanced to `@fission-ai/openspec@1.8.0`
+  (#277), which brings the archive-blocking validation forward to PR time instead of leaving it to
+  discover a bad change at archive.
+
+- **`@base-ui/react` stays the primitive layer.** Recorded because the group Dependabot files these
+  under is still named `base-ui-radix`: the migration off Radix is done, the group name is
+  historical, and the `render`-prop API (never `asChild`) is unchanged by this sweep.
 
 ## [3.18.0-web] - 2026-07-27
 
