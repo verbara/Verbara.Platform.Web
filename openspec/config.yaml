@@ -11,6 +11,9 @@ context: |
   - i18n parity is enforced in CI: EN-US, ES-419, PT-BR must all match.
   - E2E selectors use data-* attributes (locale-proof); never assert dynamic content with toContainText.
   - `npm run build` runs type-check + bundle and must pass clean.
+  - Before any commit or push, run the fast, deterministic, non-service steps of this repo's own
+    .github/workflows/ci.yml on the integrated branch — build plus the touched tests plus `openspec validate`
+    is a strict subset, because a tree-scanning guard is tripped by a change anywhere.
 
   Note: Platform + Platform.Web share an authoritative workstream — plans/specs/ADRs touching the API OR the
   frontend are authored under the Verbara.Platform repo's docs/ tree, AND (hub rule, verbara-meta/ADR-0005)
@@ -40,7 +43,8 @@ rules:
     - 'Verification tasks MUST include `npm run build` (type-check + bundle), `npx vitest run`, and i18n parity green.'
     - 'For user-facing flows, include `npx playwright test` coverage using data-* selectors.'
     - 'E2E/Playwright tasks MUST follow the anti-flake fences: no waitForTimeout/wall-clock waits, assert via expect(...) polling or waitForResponse, and respect the suite posture (workers:1, retries:1, data-testid selectors). AI-generated specs are held to the same rule.'
-    - 'Use Subagent-Driven Development with FCM batching: Phase A foundation (batch) -> Phase B critical components (focused) -> Phase C integration (batch).'
+    - 'Order execution in three phases — A foundation (batched), B critical components (one focused subagent each), C integration (batched) — with a fresh subagent per task, never inline in the main session.'
+    - 'For a bug fix, write the failing regression test first, against the unfixed code, and paste its failure verbatim into `tasks.md`. For new capability, tests may batch into Phase C.'
 
 operations:
   apply:

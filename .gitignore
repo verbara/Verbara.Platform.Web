@@ -45,7 +45,16 @@ CLAUDE.md
 
 # claudelint
 .claudelint-cache/
+
+# Scratch trees written by third-party process plugins — never committed. The cockpit
+# halts on a dirty tree (verbara-meta scripts/xr-preflight.sh), so an untracked write
+# here blocks every /xr:* command (verbara-meta/ADR-0023).
 .superpowers/
+docs/superpowers/
+
+# Worktrees (convention is a sibling dir, but cover both in-repo layouts anyway).
+.worktrees/
+.claude/worktrees/
 
 # Track 7C — webchat build outputs
 public/webchat/v1/
