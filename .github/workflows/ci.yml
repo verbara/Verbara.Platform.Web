@@ -332,3 +332,9 @@ jobs:
 
       - name: Validate specs and changes (strict)
         run: npx -y @fission-ai/openspec@1.13.1 validate --all --strict --no-interactive
+
+      # Archived changes must carry no unticked task. ADR-0023 §7 deferred this gate
+      # until this repo reached rc=0, which it did on 2026-09-21; before that the repo
+      # carried closed changes with work still outstanding, invisible to every gate.
+      - name: Validate archived changes (no unticked tasks)
+        run: npx -y @fission-ai/openspec@1.13.1 validate --archived --no-interactive
