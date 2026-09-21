@@ -62,20 +62,54 @@
 > `design.md` for the tracked, actionable form of each item below. Left unchecked here
 > deliberately: this archived change does not itself resolve them.
 
-- [ ] 4.1 Record the codegen delivery mechanism (committed file vs CI fetch) as a
+- [x] 4.1 Record the codegen delivery mechanism (committed file vs CI fetch) as a
       durable decision in `Verbara.Platform/docs/decisions/` if a later phase revisits it
       (per the shared-workstream rule — this child's design.md documents the initial
       decision but does not itself author a Platform-repo ADR)
-      — tracked as `openapi-typed-client-phase2` design.md open question 1.
-- [ ] 4.2 Plan the next migration phase (remaining 61 hook files) grouped by module
+      — RESOLVED 2026-07-16 in `openapi-typed-client-phase2` design.md § "Resolved
+      Questions" 1: "no new Platform-repo ADR is written ... no separate ADR is owed" —
+      the durable record is `Platform/ADR-0035` plus this child's design.md Decision. The
+      conditional never fired: no later phase weighed CI-fetch against the committed file.
+      All three per-module children restate it as settled (`openapi-typed-client-admin`
+      design.md:15 "**Delivery**: committed generated file"; `-agent` design.md:11 and
+      `-analytics` design.md:12 "`npm run generate:api-types` (not CI-fetch)"), and the one
+      real drift incident (543 `number | string` unions, `Platform/ADR-0036`) was resolved
+      by regenerating the committed file, not by changing delivery. Re-check trigger
+      preserved: write the ADR if a CI-artifact-fetch delivery is ever actually weighed
+      against the committed-file approach.
+- [x] 4.2 Plan the next migration phase (remaining 61 hook files) grouped by module
       (Admin, Agent, Analytics, Operations) once the Platform host CI artifact
       (buildOrder 1) is live and a real generated document can replace the
       fixture-derived interim file from 1.3
-      — tracked as `openapi-typed-client-phase2` design.md open question 2.
-- [ ] 4.3 Consider whether `totalResponses`/`averageRating`'s generated `number | string`
+      — DONE 2026-07-16: this box owed the _plan_, not the migration.
+      `openapi-typed-client-phase2` design.md § "Resolved Questions" 2 adopted exactly the
+      per-module grouping ("four separate child changes ... one per product module") and
+      recorded the gate as satisfied ("The gate that motivated waiting is now LIVE" —
+      `Platform/ADR-0035`'s CI export; the committed `openapi.d.ts` is generated from the
+      real document, 324 paths / 182 schemas, per 1.3). All four children were created and
+      archived: `2026-07-16-openapi-typed-client-admin` (51/51),
+      `2026-07-23-openapi-typed-client-agent` (14/14),
+      `2026-07-23-openapi-typed-client-operations` (12/12),
+      `2026-07-25-openapi-typed-client-analytics` (0/10, never executed). Execution of the
+      plan is floored by a CI ratchet (`scripts/check-generated-types-adoption.mjs`,
+      `npm run lint:generated-types`): 45 unadopted hooks frozen 2026-07-20 → 37 today
+      ("25/62 hooks adopted, 37 unadopted (floor 37)"). The residual hook migration is not
+      this box's debt — it is carried in `analytics-contract-residue`.
+- [x] 4.3 Consider whether `totalResponses`/`averageRating`'s generated `number | string`
       union (Native AOT number handling) should get a repo-wide coercion convention
       (e.g. a shared helper) once more numeric AOT-typed fields migrate in later phases,
       rather than each hook re-deriving its own `select` normalization
       (`ai-credits-readout.tsx` already has a similar `as number` cast precedent).
-      — tracked as `openapi-typed-client-phase2` design.md open question 3 / spec.md's new
-      "Numeric AOT wire unions" requirement.
+      — CONSIDERED AND ANSWERED: no coercion convention. First deferred in
+      `openapi-typed-client-phase2` design.md § "Resolved Questions" 3 ("revisit ... once >=3 genuine sites exist"); the threshold was then blown past (543 unions / ~30
+      `Number()` sites) and the answer was to delete the class at its source rather than
+      abstract it — `Platform/ADR-0036`'s `NumericSchemaTruthTransformer` strips the
+      spurious `string` arm from the emitted document, and the Web child
+      `2026-07-25-openapi-numeric-schema-truth` (26/26) regenerated `openapi.d.ts` and
+      retired the ~30 `Number()` coercion sites (its Phase C). Verified in the tree
+      2026-09-20: `grep -c 'number | string' src/core/api/generated/openapi.d.ts` = 0;
+      `CsatResponseDto.totalResponses` is `number` (openapi.d.ts:17321); the task-2.3
+      `Omit<...>` wrapper is gone — `use-analytics.ts:469` is now
+      `export type CsatQueueSummary = CsatResponseDto;`; no shared coercion helper exists,
+      deliberately. `ai-credits-readout.tsx` was explicitly ruled out as an instance of the
+      pattern (phase2 § 3, retro run 4).
