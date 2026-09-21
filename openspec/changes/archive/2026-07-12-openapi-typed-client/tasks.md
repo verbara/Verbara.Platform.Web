@@ -60,7 +60,10 @@
 > Carried forward at archive time (2026-07-12) into
 > `openspec/changes/openapi-typed-client-phase2/` — see that change's `proposal.md` /
 > `design.md` for the tracked, actionable form of each item below. Left unchecked here
-> deliberately: this archived change does not itself resolve them.
+> deliberately **at archive time (2026-07-12)**: this archived change did not itself
+> resolve them. All three were resolved downstream and are ticked below (re-verified
+> against the tree 2026-09-20, `verbara-meta/ADR-0023`), each citing the artifact that
+> resolved it.
 
 - [x] 4.1 Record the codegen delivery mechanism (committed file vs CI fetch) as a
       durable decision in `Verbara.Platform/docs/decisions/` if a later phase revisits it
@@ -94,7 +97,10 @@
       plan is floored by a CI ratchet (`scripts/check-generated-types-adoption.mjs`,
       `npm run lint:generated-types`): 45 unadopted hooks frozen 2026-07-20 → 37 today
       ("25/62 hooks adopted, 37 unadopted (floor 37)"). The residual hook migration is not
-      this box's debt — it is carried in `analytics-contract-residue`.
+      this box's debt, and no single change carries it: the Analytics slice is in
+      `analytics-contract-residue`, while the other 36 unadopted hooks (Admin / Operations
+      files) are carried by `generated-types-adoption-baseline.json` itself — the ratchet's
+      own down-only list, which is the tracked home for them.
 - [x] 4.3 Consider whether `totalResponses`/`averageRating`'s generated `number | string`
       union (Native AOT number handling) should get a repo-wide coercion convention
       (e.g. a shared helper) once more numeric AOT-typed fields migrate in later phases,

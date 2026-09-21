@@ -14,8 +14,9 @@ total).
   The box's "preserve the two already-migrated CSAT coercions unchanged" instruction was
   deliberately reversed by Platform/ADR-0036, which stripped the `number | string` union at the
   source and retired both `select` normalizers. The 15 hand-written interfaces still in the
-  file — 10 of them with an unadopted counterpart the document names on the very endpoint the
-  hook calls — moved to `analytics-contract-residue`.
+  file — 11 of them with an unadopted counterpart the document names on the very endpoint the
+  hook calls (all 11 verified present in `openapi.d.ts` 2026-09-20; enumerated in
+  `analytics-contract-residue` task 1.1) — moved to `analytics-contract-residue`.
 - 1.2 `use-csat.ts` (1) — NOT EXECUTED: the file was never touched by the superseding work (its
   only commit is `496af57a`, 2026-07-11) and still hand-declares `CsatCaptureRequest` with 0
   generated-type references, although the document names
