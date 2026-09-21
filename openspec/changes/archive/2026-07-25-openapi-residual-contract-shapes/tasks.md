@@ -26,5 +26,19 @@
 - [x] 5.1 `npm run build` (type-check + bundle) passes clean — the compile-time drift gate confirms the hook usage matches the regenerated `openapi.d.ts`
 - [x] 5.2 `npx vitest run` passes; update or drop any unit test that asserted the old `topics`/`from`/`to` shape or the hand-written severity literal type
 - [x] 5.3 i18n parity green across EN-US, ES-419, PT-BR (no keys change, but run the parity check)
-- [ ] 5.4 `npx playwright test` for the speech-analytics page passes using data-* selectors (anti-flake fences: no waitForTimeout, assert via expect(...) polling or waitForResponse, workers:1/retries:1) — N/A this apply: no speech-analytics E2E spec exists (analytics E2E covers dashboard/cdr/agent-intervals/qa/intervals) and Playwright needs a live Platform + dev server unavailable in this file-based apply; the passing `speech-analytics-page.test.tsx` unit test is the component-level coverage for the topic/severity repoint
+- 5.4 (NOT DONE — harvested to `analytics-contract-residue`) `npx playwright test` for the
+  speech-analytics page using data-* selectors (anti-flake fences: no waitForTimeout, assert
+  via expect(...) polling or waitForResponse, workers:1/retries:1) — never ran, and no spec
+  exists to run it: verified 2026-09-20 that `tests/e2e/tests/` holds 73 specs, none covering
+  this page (`analytics/` = dashboard, cdr, agent-intervals, intervals, qa).
+  `tests/e2e/tests/r4-t27-bridge.spec.ts:39-40` does drive `/analytics/speech` via
+  `getByTestId('speech-analytics-page')`, but it is a T27 push-bridge spec skipped unless
+  `E2E_FULL_STACK=true` and it references an unimported `API_BASE` (lines 47, 70), so it
+  verifies nothing here. The original "N/A this apply" label is not an exemption
+  (`openspec/config.yaml` `operations.archive`: such a label "does not exempt a finding
+  recorded in `tasks.md`"); the fences already exist (`tests/e2e/playwright.config.ts:12-13`)
+  and the page exposes the full data-testid surface, so the missing E2E coverage is real work,
+  now tracked in `analytics-contract-residue`. The shipped topic/severity repoint stays covered
+  at component level by `src/analytics/speech-analytics/speech-analytics-page.test.tsx` (5/5
+  passing, 2026-09-20, asserting `trends` and `severity: 'Critical'`).
 - [x] 5.5 Confirm the adoption ratchet is unaffected: `npm run lint:generated-types` passes with baseline floor 37 unchanged (`use-analytics.ts` already adopts `components`)
