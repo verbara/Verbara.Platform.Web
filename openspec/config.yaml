@@ -21,6 +21,14 @@ context: |
   openspec/specs/README.md here for the pointer list; e.g. ai-credits-readout). This repo's openspec exists
   for genuinely frontend-independent changes. Cross-repo standards live in the private verbara-meta repo as ADRs.
 
+  Where work runs (verbara-meta/ADR-0006): a change whose commits land only in this repo is
+  proposed, applied and archived here. A change that needs a commit in another repo is hosted from
+  the verbara-meta cockpit via `/xr:change`, not here — if a change turns out to need one, record
+  the finding in `tasks.md` and recommend `/xr:change` before capturing more.
+  The hub rule (verbara-meta/ADR-0005) is unchanged and is not a cross-repo change for this rule: a
+  Web-behaviour change keeps its OpenSpec change in Verbara.Platform while its code lands in
+  Verbara.Platform.Web.
+
   openspec/ is the planning home since 2026-06; docs/plans/ holds ExitPlanMode-style plans only, so a quiet
   docs/plans/ tree is expected here, not drift.
 
