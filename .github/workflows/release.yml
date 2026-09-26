@@ -7,8 +7,7 @@
 # same `cosign.pub` to verify Web. The keypair is shared across both repos by
 # design (see `.github/cosign.pub` — same fingerprint as the API repo).
 #
-# Web-image-adoption plan (`docs/plans/active/2026-05-23-web-image-adoption.md`)
-# refinements baked in here:
+# Web-image-adoption refinements baked in here:
 #   - MULTI-ARCH: builds for linux/amd64 AND linux/arm64 in one pass (QEMU
 #     emulated). Web is a static nginx-served bundle so this is essentially
 #     free build-side. Unlocks Mac Mini M-series, AWS Graviton, Raspberry Pi

@@ -34,8 +34,8 @@ export default defineConfig({
     // Track 2B — Performance budget. Pull the heaviest dependencies into
     // named long-lived vendor chunks so they cache across page transitions
     // and the per-page bundles only carry domain code.
-    // See docs/research/2026-05-03-bundle-baseline.md for the rationale,
-    // measured pre/post sizes, and the chunk-size budget acceptance.
+    // Rationale, measured pre/post sizes and the chunk-size budget acceptance
+    // are recorded in the 2026-05-03 bundle-baseline research note.
     //
     // Bumped from default 500 kB. Only justified offender is vendor-grid
     // (ag-grid-community, ~1.1 MB raw / 306 kB gzip). ag-grid is loaded

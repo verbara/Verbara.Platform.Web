@@ -38,10 +38,16 @@ coverage/
 __pycache__/
 *.pyc
 
-# Claude Code
+# Agent instructions and internal development records are kept locally (not tracked).
+AGENTS.md
 CLAUDE.md
 .claude/
 .project-memory/
+openspec/
+docs/decisions/
+docs/plans/
+docs/research/
+docs/specs/
 
 # claudelint
 .claudelint-cache/

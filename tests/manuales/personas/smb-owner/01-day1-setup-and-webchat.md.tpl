@@ -224,8 +224,8 @@ Click **Finalizar wizard / Finish**.
 > ✅ **A partir de v2.5.5 (ADR-0026 Phase A.2):** el wizard ahora se puede
 > completar end-to-end sin workarounds. Antes (v2.5.4), un bug AOT en la
 > serialización de `TenantChannelConfig` y los anonymous types del audit
-> trail bloqueaba este paso — ver historial en
-> [docs/decisions/0026-queue-membership-executive-routing.md](../../../docs/decisions/0026-queue-membership-executive-routing.md).
+> trail bloqueaba este paso — ver historial en ADR-0026
+> (queue membership / executive routing).
 
 ## Paso 11 — Confirmar que el wizard se completó
 

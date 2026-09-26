@@ -3,7 +3,7 @@ import { test, expect } from '../../fixtures/auth.fixture';
 /**
  * The scope-wide aggregate CSAT read the wallboard card consumes
  * (`GET /api/v1/analytics/csat` — csat-completion). Shape is the golden fixture
- * `Verbara.Platform/openspec/changes/csat-completion/fixtures/csat-aggregate-analytics.v1.json`
+ * `tests/fixtures/contracts/csat-aggregate-analytics.v1.json`
  * (verbatim-fixture-citation). The card reads the envelope roll-up only.
  */
 const CSAT_AGGREGATE_URL_GLOB = '**/api/v1/analytics/csat';

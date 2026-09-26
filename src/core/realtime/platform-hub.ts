@@ -41,8 +41,7 @@ interface WhisperReceivedPayload {
 /**
  * Typed payload of the `OnCsatResponseRecorded` push to the
  * `supervisor:{tenantId}` group (csat-completion). Declared 1:1 with the frozen
- * golden fixture
- * `Verbara.Platform/openspec/changes/csat-completion/fixtures/csat-response-recorded-payload.v1.json`
+ * golden fixture `tests/fixtures/contracts/csat-response-recorded-payload.v1.json`
  * (camelCase over the SignalR JSON protocol) — field names cited VERBATIM
  * (verbatim-fixture-citation rule). `comment` is nullable (voice DTMF captures
  * carry no free text); `channel` extends the enum with `voice`.

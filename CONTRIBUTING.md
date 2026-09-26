@@ -31,7 +31,7 @@ npm run format:check   # CI-style check, no writes
 
 After `npm ci`, the `prepare` script auto-installs git hooks via [husky](https://typicode.github.io/husky/) at `.husky/`. The hooks enforce:
 
-- **`pre-commit`** — runs [`lint-staged`](https://github.com/lint-staged/lint-staged) on staged files. Currently scoped to `prettier --write` for `*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml,css}`. ESLint is NOT in the pre-commit gate yet — 111 deferred eslint errors block enforcement until [Track 3A](docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md) clears them. Track 3A flips eslint to blocking when the count reaches 0.
+- **`pre-commit`** — runs [`lint-staged`](https://github.com/lint-staged/lint-staged) on staged files. Currently scoped to `prettier --write` for `*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml,css}`. ESLint is NOT in the pre-commit gate yet — 111 deferred eslint errors block enforcement until Track 3A clears them. Track 3A flips eslint to blocking when the count reaches 0.
 - **`commit-msg`** — validates [Conventional Commits](https://www.conventionalcommits.org/) format on the first line. Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`. Optional scope in parentheses, optional `!` for breaking changes. Examples in `.husky/commit-msg`.
 
 ### Hook bypass policy (`--no-verify`)
@@ -69,7 +69,7 @@ Open a GitHub Discussion (or Issue with the `enhancement` label) describing:
 - Why this fits Verbara Web's scope (admin, agent, analytics, or operations).
 - Any prior art or links to similar features in other tools.
 
-The core team triages weekly. Larger features (multi-week) may need a `docs/specs/` proposal before code review.
+The core team triages weekly. Larger features (multi-week) may need a design proposal (as an issue) before code review.
 
 ## Pull request process
 
@@ -115,7 +115,7 @@ See [`CLAUDE.md`](CLAUDE.md) for the canonical conventions.
 
 ## i18n parity
 
-Every key in `public/locales/es-419/*.json` must exist in `public/locales/en-US/*.json` and `public/locales/pt-BR/*.json` (and vice versa). CI enforces this — `npm run lint` runs both ESLint and `npm run i18n:check`. Drift fails CI. See [ADR-0001](docs/decisions/0001-i18n-parity-ci-gate.md) for the rationale.
+Every key in `public/locales/es-419/*.json` must exist in `public/locales/en-US/*.json` and `public/locales/pt-BR/*.json` (and vice versa). CI enforces this — `npm run lint` runs both ESLint and `npm run i18n:check`. Drift fails CI. See ADR-0001 for the rationale.
 
 ## License of contributions
 
