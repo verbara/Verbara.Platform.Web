@@ -19,7 +19,6 @@ on:
     # workflows; ci.yml uses the §1 gate job instead.)
     paths-ignore:
       - 'docs/**'
-      - 'openspec/**'
       - '**/*.md'
       - 'CHANGELOG.md'
   schedule:

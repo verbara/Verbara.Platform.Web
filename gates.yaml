@@ -6,7 +6,7 @@
 repo: Verbara.Platform.Web
 role: decoupled
 visibility: public
-charter: docs/specs/architecture.md
+charter: README.md
 decision_ref: verbara-meta/ADR-0014
 gates:
   - id: G1
@@ -85,7 +85,3 @@ gates:
       with a settle-before-PR cooldown (security updates exempt); auto-merge for patch+minor via
       .github/workflows/dependabot-auto-merge.yml. CodeQL SAST (security-extended +
       security-and-quality) in .github/workflows/codeql.yml scans the app's own JS/TS source.
-
-# Non-gate-class required check (not one of G1-G8, recorded for completeness):
-#   openspec — .github/workflows/ci.yml `openspec` job: `openspec validate --all --strict`
-#   validates agent-edited spec/change markdown; required on main.

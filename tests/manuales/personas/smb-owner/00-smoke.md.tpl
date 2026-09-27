@@ -45,6 +45,6 @@ suelen aparecer los bugs de race condition o template engine.
 ## ¿Qué viene después?
 
 Cuando este smoke pase y la salida `.md` se vea bien, arrancamos
-[Fase 1 — SMB Owner Día 1](../../docs/plans/active/2026-05-27-living-docs-from-e2e-tests.md):
+la Fase 1 — SMB Owner Día 1:
 instalar Verbara con `docker compose`, completar el setup wizard,
 configurar el canal WebChat y recibir el primer mensaje.

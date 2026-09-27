@@ -5,8 +5,8 @@ import { toast } from 'sonner';
 /**
  * Typed CSAT capture request — the single source of truth for the wire shape of
  * `POST /api/v1/csat/responses/webchat`. Mirrors the golden fixture
- * `Verbara.Platform/openspec/changes/csat-runner/fixtures/csat-response-capture.v1.json`
- * field-for-field (verbatim-fixture-citation rule, `/xr:propagate`).
+ * `tests/fixtures/contracts/csat-response-capture.v1.json` field-for-field
+ * (verbatim-fixture-citation rule).
  *
  * `responseToken`, `surveyId`, `questionId`, `channel`, `queueName`, and
  * `conversationId` are sourced from the embed session context (server-issued);

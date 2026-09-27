@@ -1,9 +1,9 @@
 # Verbara Web
 
 > Frontend for the **Verbara** open-core contact-center platform.
-> Repository rebranded to **Verbara** ([ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)).
+> Repository rebranded to **Verbara** (ADR-0006).
 >
-> **Visibility status:** This repository is **public**. The Apache 2.0 license has been chosen (see [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md)); all triggers in [ADR-0007](docs/decisions/0007-visibility-decision-3-private-now-public-on-trigger.md) were met and the repo transitioned to public. Tier 0 (Community) self-host and the Tier 0.5 Developer self-issue portal are available.
+> **Visibility status:** This repository is **public**. The Apache 2.0 license has been chosen (ADR-0006); all triggers in ADR-0007 were met and the repo transitioned to public. Tier 0 (Community) self-host and the Tier 0.5 Developer self-issue portal are available.
 
 React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
@@ -92,19 +92,19 @@ The dev server expects the Platform backend running on `localhost:5000`. See the
 
 ## Available scripts
 
-| Script                  | What it does                                                                                                            |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`           | Vite dev server with HMR                                                                                                |
-| `npm run build`         | Production build (`tsc -b && vite build`)                                                                               |
-| `npm run preview`       | Preview the production build locally                                                                                    |
-| `npm run test`          | Run unit tests (Vitest, excludes `tests/e2e/**`)                                                                        |
-| `npm run test:watch`    | Vitest in watch mode                                                                                                    |
-| `npm run test:coverage` | Run tests with V8 coverage report (HTML in `coverage/`) — see [baseline](docs/research/2026-05-03-coverage-baseline.md) |
-| `npm run lint`          | ESLint + i18n parity check ([ADR-0001](docs/decisions/0001-i18n-parity-ci-gate.md))                                     |
-| `npm run i18n:check`    | Standalone i18n locale parity check                                                                                     |
-| `npm run e2e`           | Playwright E2E (requires backend running)                                                                               |
-| `npm run e2e:ui`        | Playwright UI mode                                                                                                      |
-| `npm run e2e:debug`     | Playwright debug mode                                                                                                   |
+| Script                  | What it does                                            |
+| ----------------------- | ------------------------------------------------------- |
+| `npm run dev`           | Vite dev server with HMR                                |
+| `npm run build`         | Production build (`tsc -b && vite build`)               |
+| `npm run preview`       | Preview the production build locally                    |
+| `npm run test`          | Run unit tests (Vitest, excludes `tests/e2e/**`)        |
+| `npm run test:watch`    | Vitest in watch mode                                    |
+| `npm run test:coverage` | Run tests with V8 coverage report (HTML in `coverage/`) |
+| `npm run lint`          | ESLint + i18n parity check (ADR-0001)                   |
+| `npm run i18n:check`    | Standalone i18n locale parity check                     |
+| `npm run e2e`           | Playwright E2E (requires backend running)               |
+| `npm run e2e:ui`        | Playwright UI mode                                      |
+| `npm run e2e:debug`     | Playwright debug mode                                   |
 
 ## Architecture overview
 
@@ -117,24 +117,16 @@ Four layout areas, all behind `AuthGuard`:
 | Analytics  | `/analytics/*`  | Historical: dashboards, CDR, QA, surveys                             |
 | Agent      | `/agent/*`      | Agent workspace: inbox, conversation, AI assist                      |
 
-Each layout is wrapped in an `AreaErrorBoundary` ([ADR-0002](docs/decisions/0002-area-error-boundary-pattern.md)) so a render-time crash in one area does not tumble the others.
+Each layout is wrapped in an `AreaErrorBoundary` (ADR-0002) so a render-time crash in one area does not tumble the others.
 
 For deeper detail see [`CLAUDE.md`](CLAUDE.md) (project overview) or [`docs/`](docs/) (specs, decisions, plans, research).
 
 ## Documentation layout
 
-All documentation lives under `docs/`, git-tracked:
-
-| Folder                                           | Purpose                                          | Lifecycle                     |
-| ------------------------------------------------ | ------------------------------------------------ | ----------------------------- |
-| [`docs/specs/`](docs/specs/)                     | Technical designs (input to implementation)      | Add on new feature            |
-| [`docs/decisions/`](docs/decisions/)             | Architecture Decision Records (ADRs)             | Append-only                   |
-| [`docs/plans/active/`](docs/plans/active/)       | Execution plans currently in progress            | Moves to `completed/` on ship |
-| [`docs/plans/completed/`](docs/plans/completed/) | Shipped plans (historical record)                | Append-only                   |
-| [`docs/plans/archived/`](docs/plans/archived/)   | Skeletons / superseded / abandoned plans         | Append-only                   |
-| [`docs/research/`](docs/research/)               | Exploratory findings, market analysis, discovery | Freeform                      |
-
-Roadmap: [`docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md`](docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadmap.md) — 7 niveles · 24 tracks · ~3 months calendar para llegar a `v1.21.0`.
+Public documentation lives under `docs/` (currently the CI docs-only fast-path note,
+`docs/ci-docs-fast-path.md`). Architecture decision records, technical designs, plans and
+research notes are internal development records kept outside the repository; they are cited
+by opaque id (e.g. ADR-0006) where relevant.
 
 ## Conventions
 
@@ -142,7 +134,7 @@ Roadmap: [`docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadma
 - **No `Co-Authored-By` in commits** — ever
 - **Spanish for conversation, English for code/commits/docs**
 - **TypeScript strict mode** + `noUncheckedIndexedAccess`, `noUnusedLocals`, `noUnusedParameters`
-- **i18n parity required** — every key in `es-419/*.json` must exist in `en-US/*.json` and `pt-BR/*.json` ([ADR-0001](docs/decisions/0001-i18n-parity-ci-gate.md))
+- **i18n parity required** — every key in `es-419/*.json` must exist in `en-US/*.json` and `pt-BR/*.json` (ADR-0001)
 - **shadcn/ui v4** uses `@base-ui/react` — use the `render` prop, NOT Radix's `asChild`:
   ```tsx
   // CORRECT
@@ -155,7 +147,7 @@ Roadmap: [`docs/plans/completed/2026-05-03-v1.14.x-operational-foundation-roadma
 
 ## Versioning
 
-Track-end versioning ([ADR-0005](docs/decisions/0005-versioning-track-end-tags.md)): patches inside a track ship without git tags; only the final patch of a track receives a tag (`v1.X.Y-web`) and a GitHub release. Releases summarize the whole track narrative.
+Track-end versioning (ADR-0005): patches inside a track ship without git tags; only the final patch of a track receives a tag (`v1.X.Y-web`) and a GitHub release. Releases summarize the whole track narrative.
 
 ## Contributing
 
@@ -178,6 +170,6 @@ This is the open-source UI of the **Verbara** open-core contact-center stack:
 | **Verbara Platform**              | Apache 2.0     | Backend application — full contact-center engine                                              |
 | **Verbara Sdk Pro**               | Commercial     | Enterprise overlays (multi-tenant, analytics, cluster, licensing)                             |
 
-**Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See [ADR-0006](docs/decisions/0006-license-and-commercial-tier-strategy.md) for the full rationale (license decision + 5-tier commercial model).
+**Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See ADR-0006 for the full rationale (license decision + 5-tier commercial model).
 
 **Trademark note:** "Asterisk" is a registered trademark of Sangoma Technologies/Digium. Verbara integrates with Asterisk PBX but is an independent project.

@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
 /**
  * Verbatim-fixture-citation guard (csat-completion, task 3.1).
  *
  * The scope-wide aggregate read and the `OnCsatResponseRecorded` push are hard
- * cross-repo boundaries: their wire shapes MUST match the golden fixtures owned
- * by Verbara.Platform key-for-key. This test loads both fixtures at runtime and
- * asserts the keys the Web consumer relies on equal exactly the fixtures' keys
- * (envelope + `queues[]` rows for the aggregate; the full payload for the push).
- * If either side drifts, this fails.
+ * cross-repo boundaries: their wire shapes MUST match the golden fixtures under
+ * `tests/fixtures/contracts/` key-for-key. This test loads both fixtures at
+ * runtime and asserts the keys the Web consumer relies on equal exactly the
+ * fixtures' keys (envelope + `queues[]` rows for the aggregate; the full payload
+ * for the push). If either side drifts, this fails.
  *
  * Each fixture's `_comment` documentation key is metadata, not a wire field, and
  * is excluded. The remaining keys are the contract.
@@ -22,21 +22,20 @@ import { fileURLToPath } from 'node:url';
  * the hook returns it directly with no boundary coercion to test.
  */
 
-// Resolve the fixtures from the sibling Verbara.Platform repo (READ-ONLY).
-const AGGREGATE_FIXTURE_URL = new URL(
-  '../../../../../Verbara.Platform/openspec/changes/csat-completion/fixtures/csat-aggregate-analytics.v1.json',
-  import.meta.url,
+// Resolved from the repo root (vitest's cwd) — `import.meta.url` is not a
+// `file:` URL under the jsdom environment.
+const AGGREGATE_FIXTURE_PATH = resolve(
+  process.cwd(),
+  'tests/fixtures/contracts/csat-aggregate-analytics.v1.json',
 );
-const PUSH_FIXTURE_URL = new URL(
-  '../../../../../Verbara.Platform/openspec/changes/csat-completion/fixtures/csat-response-recorded-payload.v1.json',
-  import.meta.url,
+const PUSH_FIXTURE_PATH = resolve(
+  process.cwd(),
+  'tests/fixtures/contracts/csat-response-recorded-payload.v1.json',
 );
 
 /**
- * Embedded golden keys as a fallback so the guard still runs if the sibling repo
- * is not checked out alongside this one (e.g. an isolated CI shallow clone).
- * When the real fixture IS present it takes precedence and the two are
- * cross-checked, so these lists can never silently rot.
+ * The golden keys, embedded so the fixture file and the consumer are cross-checked
+ * against each other: drift on EITHER side fails the guard.
  */
 const AGGREGATE_ENVELOPE_KEYS = [
   'totalResponses',
@@ -67,32 +66,19 @@ const PUSH_PAYLOAD_KEYS = [
   'capturedAt',
 ] as const;
 
-function loadFixture(url: URL): Record<string, unknown> | null {
-  try {
-    return JSON.parse(readFileSync(fileURLToPath(url), 'utf-8')) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
+function loadFixture(path: string): Record<string, unknown> {
+  return JSON.parse(readFileSync(path, 'utf-8')) as Record<string, unknown>;
 }
 
 describe('csat-completion aggregate — verbatim-fixture-citation guard', () => {
-  it('AggregateEnvelopeKeys_ShouldEqualGoldenFixture_WhenPresent', () => {
-    const fixture = loadFixture(AGGREGATE_FIXTURE_URL);
-    if (!fixture) {
-      // Sibling repo absent — the embedded list stands in for the on-disk keys.
-      expect([...AGGREGATE_ENVELOPE_KEYS].sort()).toEqual([...AGGREGATE_ENVELOPE_KEYS].sort());
-      return;
-    }
+  it('AggregateEnvelopeKeys_ShouldEqualGoldenFixture', () => {
+    const fixture = loadFixture(AGGREGATE_FIXTURE_PATH);
     const keys = Object.keys(fixture).filter((k) => k !== '_comment');
     expect([...keys].sort()).toEqual([...AGGREGATE_ENVELOPE_KEYS].sort());
   });
 
-  it('AggregateQueueRowKeys_ShouldEqualGoldenFixture_WhenPresent', () => {
-    const fixture = loadFixture(AGGREGATE_FIXTURE_URL);
-    if (!fixture) {
-      expect([...AGGREGATE_QUEUE_ROW_KEYS].sort()).toEqual([...AGGREGATE_QUEUE_ROW_KEYS].sort());
-      return;
-    }
+  it('AggregateQueueRowKeys_ShouldEqualGoldenFixture', () => {
+    const fixture = loadFixture(AGGREGATE_FIXTURE_PATH);
     const rows = fixture.queues as Array<Record<string, unknown>>;
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {
@@ -100,12 +86,8 @@ describe('csat-completion aggregate — verbatim-fixture-citation guard', () => 
     }
   });
 
-  it('PushPayloadKeys_ShouldEqualGoldenFixture_WhenPresent', () => {
-    const fixture = loadFixture(PUSH_FIXTURE_URL);
-    if (!fixture) {
-      expect([...PUSH_PAYLOAD_KEYS].sort()).toEqual([...PUSH_PAYLOAD_KEYS].sort());
-      return;
-    }
+  it('PushPayloadKeys_ShouldEqualGoldenFixture', () => {
+    const fixture = loadFixture(PUSH_FIXTURE_PATH);
     const keys = Object.keys(fixture).filter((k) => k !== '_comment');
     expect([...keys].sort()).toEqual([...PUSH_PAYLOAD_KEYS].sort());
   });

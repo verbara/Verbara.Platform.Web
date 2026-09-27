@@ -1,6 +1,6 @@
 # Verbara WebChat — Embedding Guide
 
-This directory contains the customer-embeddable WebChat widget. See [Track 7C spec](../../docs/specs/2026-05-09-track-7c.md) for design rationale.
+This directory contains the customer-embeddable WebChat widget (Track 7C).
 
 ## Quick start
 
@@ -83,4 +83,4 @@ Below 600px viewport width, the widget takes over the full screen. The bubble bu
 
 ## Out of scope (deferred)
 
-See the [spec's Out of Scope section](../../docs/specs/2026-05-09-track-7c.md) for the full list. Notable deferrals: file uploads from visitor, voice/video, bot routing, NPM package, mobile-native SDK, external CDN.
+Notable deferrals: file uploads from visitor, voice/video, bot routing, NPM package, mobile-native SDK, external CDN.

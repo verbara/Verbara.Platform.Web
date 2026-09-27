@@ -58,7 +58,6 @@ commit() { # commit <file> <content>
 
 # --- true cases (allowlisted) ---
 new_repo; commit "docs/guide.md" x;        run_case true  "docs/ nested"
-new_repo; commit "openspec/changes/x.md" x; run_case true  "openspec/ nested"
 new_repo; commit "CHANGELOG.md" x;         run_case true  "top-level CHANGELOG.md"
 new_repo; commit "README.md" x;            run_case true  "top-level README.md (matches */README.md? -> top-level *.md)"
 new_repo; commit "src/feature/README.md" x; run_case true  "nested README.md at any depth"

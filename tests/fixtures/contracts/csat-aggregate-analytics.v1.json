@@ -1,0 +1,25 @@
+{
+  "_comment": "Golden wire shape for GET /api/v1/analytics/csat - the scope-wide aggregate CSAT read. The envelope carries the tenant/scope rollup; each queues[] row is the per-queue projection (queueName, channel, totalResponses, averageRating, rangeStart, rangeEnd). channel echoes the requested filter and is all when unfiltered.",
+  "totalResponses": 128,
+  "averageRating": 4.4,
+  "rangeStart": "2026-07-06T00:00:00Z",
+  "rangeEnd": "2026-07-13T00:00:00Z",
+  "queues": [
+    {
+      "queueName": "support-tier1",
+      "channel": "all",
+      "totalResponses": 97,
+      "averageRating": 4.5,
+      "rangeStart": "2026-07-06T00:00:00Z",
+      "rangeEnd": "2026-07-13T00:00:00Z"
+    },
+    {
+      "queueName": "billing",
+      "channel": "all",
+      "totalResponses": 31,
+      "averageRating": 4.1,
+      "rangeStart": "2026-07-06T00:00:00Z",
+      "rangeEnd": "2026-07-13T00:00:00Z"
+    }
+  ]
+}
