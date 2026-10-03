@@ -22,8 +22,9 @@ import { API_BASE } from '../../helpers/credentials';
  *
  * Run with `E2E_FULL_STACK=true npm run e2e`.
  *
- * The expiry close (Platform ends the hub at the token's `exp`, 15 minutes) is out of reach of a
- * browser test; it is covered in Vitest over an in-memory SignalR transport.
+ * The expiry close (Platform ends the hub at the token's `exp`, 15 minutes) is covered in Vitest over
+ * an in-memory SignalR transport, and against the real stack by the opt-in
+ * `auth/session-expiry.spec.ts` (`E2E_TOKEN_EXPIRY=true`, about 17 minutes per run).
  */
 
 const SHOULD_RUN = process.env.E2E_FULL_STACK === 'true';
