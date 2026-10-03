@@ -63,6 +63,23 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - `/login?reason=session-ended`, where the console lands after Platform ends a revoked session,
     shows the session-ended notice (`data-notice-code="session-ended"`). Any other reason value
     shows nothing and is never rendered.
+- **Administrators can suspend, deactivate and re-activate users from the console (`#N`; openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`).** The user form offered `active` /
+  `inactive`, and `inactive` is not one of Platform's account statuses, so choosing it made the
+  update fail with a 400. The form also opened on `active` whatever the user's real status, and
+  the status badges printed the raw wire value in every locale.
+  - The edit form offers exactly Platform's three statuses, Active, Suspended and Deactivated,
+    labelled in EN-US, ES-419 and PT-BR, and opens on the user's current status. `inactive` is
+    gone. Choosing Suspended or Deactivated shows a hint that saving signs the user out of every
+    session and live connection.
+  - The update sends `status` (as the enum name Platform takes) only when the administrator chose
+    a different status. A name-only edit carries no `status` at all, and a status the console does
+    not recognise no longer blocks the form.
+  - The create form no longer shows a status field, which the create endpoint ignored: every new
+    account starts Active, and the create request no longer carries a status.
+  - The users list and the detail page show the status as a translated badge with a variant per
+    status and a locale-independent `data-status` (`active`, `suspended`, `deactivated`, or
+    `unknown` for a value the console does not recognise, which is shown as reported).
 
 ### Security
 

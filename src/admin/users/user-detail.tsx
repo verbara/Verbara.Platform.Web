@@ -23,6 +23,7 @@ import { PermissionGuard } from '@/core/auth/permission-guard';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { AuditTimeline } from '@/core/ui/audit-timeline';
 import { UserForm } from './user-form';
+import { UserStatusBadge } from './user-status-badge';
 import { useUser, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
 import { useUserRoles, useAssignRole, useRemoveRole, useRoles } from '@/core/api/hooks/use-rbac';
 import { useForceLogoutUser } from '@/core/api/hooks/use-auth-admin';
@@ -157,9 +158,7 @@ export default function UserDetailPage() {
           <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
         </InfoRow>
         <InfoRow icon={CircleDot} label={t('admin:users.status')}>
-          <Badge variant={user.status === 'active' ? 'default' : 'destructive'}>
-            {user.status}
-          </Badge>
+          <UserStatusBadge status={user.status} />
         </InfoRow>
         <InfoRow icon={KeyRound} label={t('admin:users.mfa_status', 'MFA')}>
           <Badge variant={mfaEnabled ? 'default' : 'secondary'}>
@@ -252,8 +251,8 @@ export default function UserDetailPage() {
           email: user.email,
           displayName: user.displayName,
           role: user.role as 'admin' | 'supervisor' | 'agent' | 'readonly',
-          status: user.status as 'active' | 'inactive',
         }}
+        currentStatus={user.status}
         onSubmit={(v) => updateUser.mutate({ id: user.id, ...v })}
       />
 
