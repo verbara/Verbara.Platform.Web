@@ -9,6 +9,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+---
+
+## [3.20.0-web] - 2026-10-03
+
+**Requires Platform ≥ v2.24.0.** The console no longer restarts the realtime hub on token refresh; it
+picks up the refreshed token when Platform closes the connection at the token's expiry, which
+Platform does from v2.24.0. Against an older Platform a hub connection outlives its token until
+sign-out or reload.
+
 ### Fixed
 
 - **The realtime hub no longer drops on every other token refresh, keeps its state across a
@@ -105,6 +114,25 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     user stays signed in. During an impersonation the check never installs the operator's own
     token.
   - Against a Platform older than v2.24.0 nothing changes: those versions never send these frames.
+
+### Changed — CI
+
+- **A real token expiry is now provable in a browser (#371).** The opt-in Playwright spec
+  `tests/e2e/tests/auth/session-expiry.spec.ts` (runs with `E2E_FULL_STACK=true
+E2E_TOKEN_EXPIRY=true`) waits out a real 15-minute access token on the full lab stack and asserts
+  that the server's expiry close is followed by a new hub socket and SSE stream carrying a fresh
+  token, with the user still signed in. It passed first try against Platform v2.24.0.
+- **The OpenSpec CLI is pinned to 1.13.1 (#339), and archived changes are gated on having no
+  unticked tasks (#342).**
+- **Agent instructions and internal process records stay local** (#355; verbara-meta/ADR-0024).
+
+### Dependencies
+
+- **npm pins swept forward — 55 Dependabot merges since `v3.19.0-web`, recorded here as one
+  movement** (two of them the `npm-security` group, #327 and #368). Runtime highlights: `react` /
+  `react-dom` 19.2.8 → 19.3.0, `@base-ui/react` 1.7.0 → 1.8.0, `react-router` 8.3.0 → 8.4.0,
+  `@tanstack/react-query` 5.101.4 → 5.103.2, `zod` 4.4.3 → 4.6.5, `dompurify` 3.4.14 → 3.4.16,
+  `i18next` 26.3.6 → 26.4.2; `github/codeql-action` bumped four times.
 
 ---
 
