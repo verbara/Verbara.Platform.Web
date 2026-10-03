@@ -12,7 +12,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - **The realtime hub no longer drops on every other token refresh, keeps its state across a
-  refresh, and is no longer restarted by a page after sign-out (`#N`; openspec
+  refresh, and is no longer restarted by a page after sign-out (#369; openspec
   `a-suspended-account-is-visible-and-enforced-in-the-console`).** The bootstrap hook was keyed on
   the access-token value, so every refresh ran an un-awaited stop followed by a start. The start
   met a connection that was still stopping and failed ("Cannot start a HubConnection that is not in
@@ -32,7 +32,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     `HubNotConnectedError`, so a presence page's unsubscribe cleanup can no longer reconnect the
     hub, with no bearer, right after sign-out. A failed supervisor action now always shows its
     translated message instead of the error's English text.
-- **The SSE event stream no longer spends its retries on an expired token (`#N`; openspec
+- **The SSE event stream no longer spends its retries on an expired token (#369; openspec
   `a-suspended-account-is-visible-and-enforced-in-the-console`).** Platform ends the stream at the
   token's expiry and refuses a stream opened past it, but EventSource cannot see that 401, so
   `use-sse.ts` retried with its jittered back-off and the expired token, up to ten times, until an
@@ -43,7 +43,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   reopens when the impersonation ends. An error with a valid token keeps the existing back-off.
 - **A suspended or deactivated account is told that the account is not active, instead of
   "Invalid email or password", on the password, MFA and API-key sign-in paths, and a locked
-  account is told that it is locked (`#N`; openspec
+  account is told that it is locked (#369; openspec
   `a-suspended-account-is-visible-and-enforced-in-the-console`).** The login page read a `detail`
   field that Platform's `ErrorResponse` never carries, so every refused sign-in fell through to
   "invalid credentials". The MFA step turned Platform v2.24.0's 403 into "Invalid code" and asked
@@ -63,7 +63,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - `/login?reason=session-ended`, where the console lands after Platform ends a revoked session,
     shows the session-ended notice (`data-notice-code="session-ended"`). Any other reason value
     shows nothing and is never rendered.
-- **Administrators can suspend, deactivate and re-activate users from the console (`#N`; openspec
+- **Administrators can suspend, deactivate and re-activate users from the console (#369; openspec
   `a-suspended-account-is-visible-and-enforced-in-the-console`).** The user form offered `active` /
   `inactive`, and `inactive` is not one of Platform's account statuses, so choosing it made the
   update fail with a 400. The form also opened on `active` whatever the user's real status, and
@@ -84,7 +84,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Security
 
 - **When Platform ends a live connection for an account that lost access, the console now signs
-  the user out with a session-ended notice (`#N`; GHSA-757c-652x-p67g;
+  the user out with a session-ended notice (#369; GHSA-757c-652x-p67g;
   `Verbara.Platform.Web/ADR-0012`, openspec
   `a-suspended-account-is-visible-and-enforced-in-the-console`). Supported pairing: Platform ≥
   v2.24.0.** Since v2.24.0 Platform aborts the realtime hub connections of an account
