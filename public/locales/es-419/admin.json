@@ -144,6 +144,12 @@
     "name": "Nombre",
     "role": "Rol",
     "status": "Estado",
+    "statuses": {
+      "active": "Activo",
+      "suspended": "Suspendido",
+      "deactivated": "Desactivado"
+    },
+    "status_hint_inactive": "Al guardar este estado se cerrarán todas las sesiones y conexiones en tiempo real del usuario.",
     "assign_role": "Asignar",
     "auth_provider": "Proveedor de auth",
     "force_logout": "Cerrar sesión",
