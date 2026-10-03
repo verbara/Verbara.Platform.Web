@@ -31,6 +31,8 @@ class UnauthorizedError extends Error {
 }
 
 let _refreshPromise: Promise<boolean> | null = null;
+/** The in-flight {@link probeSession} of this tab, shared by concurrent callers. */
+let _probePromise: Promise<SessionProbeResult> | null = null;
 
 /**
  * Lazily-created cross-tab bus. Built on first successful refresh so SSR /
@@ -48,10 +50,57 @@ function getSessionChannel(): SessionChannel | null {
   return _sessionChannel;
 }
 
+/** The body of a successful `POST /api/v1/auth/refresh`. */
+interface RefreshResponseBody {
+  accessToken: string;
+  expiresAt: string;
+  permissions?: string[];
+  sessionIdleTimeoutMinutes?: number;
+}
+
+function postRefresh(): Promise<Response> {
+  return fetch('/api/v1/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+/**
+ * Applies a successful refresh: pushes the new token into the auth store and broadcasts
+ * `'refreshed'` to other tabs so they reschedule their proactive-refresh timers. Shared by
+ * {@link doRefresh} and {@link probeSession}, so both apply a token the same way.
+ */
+function applyRefreshedToken(data: RefreshResponseBody): void {
+  const store = useAuthStore.getState();
+  if (store.user && store.tenantId) {
+    store.setAuth(
+      data.accessToken,
+      new Date(data.expiresAt).getTime(),
+      store.user,
+      store.tenantId,
+      // An EMPTY array is treated as "the server did not tell us", not as "this user has no
+      // permissions". `?? store.permissions` alone was dead code: /auth/refresh always serialises
+      // `permissions?.ToArray() ?? []`, so an unresolvable RBAC lookup arrives as `[]` rather than
+      // as an absent field — and every refresh wiped the permission set the UI routes on, sending
+      // the user to /unauthorized. Server-side authorization is unaffected either way: the API
+      // resolves permissions per request, so a stale client set can only show an affordance the
+      // API then rejects. Belt to the real fix in the refresh endpoint, which must apply the same
+      // role-default fallback the login path already does.
+      data.permissions?.length ? data.permissions : store.permissions,
+      store.features,
+      data.sessionIdleTimeoutMinutes ?? store.sessionIdleTimeoutMinutes,
+    );
+  }
+
+  // Tell other tabs a fresh token landed so they reschedule (and don't each
+  // race to refresh). Only on success — a failed refresh broadcasts nothing.
+  getSessionChannel()?.post('refreshed');
+}
+
 /**
  * Performs the actual network refresh: POST `/auth/refresh`, parse the new
- * token, push it into the auth store, and broadcast `'refreshed'` to other
- * tabs so they reschedule their proactive-refresh timers. Returns `true` when
+ * token and apply it ({@link applyRefreshedToken}). Returns `true` when
  * the token is now valid, `false` on any failure. Never throws.
  *
  * This is the body extracted from the original `refreshAccessToken`; the
@@ -59,45 +108,12 @@ function getSessionChannel(): SessionChannel | null {
  */
 async function doRefresh(): Promise<boolean> {
   try {
-    const res = await fetch('/api/v1/auth/refresh', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const res = await postRefresh();
 
     if (!res.ok) return false;
 
-    const data = (await res.json()) as {
-      accessToken: string;
-      expiresAt: string;
-      permissions?: string[];
-      sessionIdleTimeoutMinutes?: number;
-    };
-
-    const store = useAuthStore.getState();
-    if (store.user && store.tenantId) {
-      store.setAuth(
-        data.accessToken,
-        new Date(data.expiresAt).getTime(),
-        store.user,
-        store.tenantId,
-        // An EMPTY array is treated as "the server did not tell us", not as "this user has no
-        // permissions". `?? store.permissions` alone was dead code: /auth/refresh always serialises
-        // `permissions?.ToArray() ?? []`, so an unresolvable RBAC lookup arrives as `[]` rather than
-        // as an absent field — and every refresh wiped the permission set the UI routes on, sending
-        // the user to /unauthorized. Server-side authorization is unaffected either way: the API
-        // resolves permissions per request, so a stale client set can only show an affordance the
-        // API then rejects. Belt to the real fix in the refresh endpoint, which must apply the same
-        // role-default fallback the login path already does.
-        data.permissions?.length ? data.permissions : store.permissions,
-        store.features,
-        data.sessionIdleTimeoutMinutes ?? store.sessionIdleTimeoutMinutes,
-      );
-    }
-
-    // Tell other tabs a fresh token landed so they reschedule (and don't each
-    // race to refresh). Only on success — a failed refresh broadcasts nothing.
-    getSessionChannel()?.post('refreshed');
+    const data = (await res.json()) as RefreshResponseBody;
+    applyRefreshedToken(data);
     return true;
   } catch {
     return false;
@@ -120,6 +136,9 @@ export async function refreshAccessToken(): Promise<boolean> {
 
   _refreshPromise = (async () => {
     try {
+      // Never overlap a session probe in this tab: without Web Locks the two POSTs would present
+      // the same refresh cookie concurrently. (With Web Locks the lock already serializes them.)
+      if (_probePromise) await _probePromise;
       if (typeof navigator !== 'undefined' && navigator.locks) {
         return await navigator.locks.request('verbara-refresh', async () => {
           // Another tab may have refreshed while we waited for the lock.
@@ -134,6 +153,74 @@ export async function refreshAccessToken(): Promise<boolean> {
   })();
 
   return _refreshPromise;
+}
+
+/**
+ * What a session probe found out about the session (design D5):
+ * - `active` — the server minted a new access token, so the session holds;
+ * - `ended` — the server refused the refresh (401 or 403), so the session is gone;
+ * - `unknown` — no verdict (network failure, 5xx, or any other answer). Never a reason to sign out.
+ */
+export type SessionProbeResult = 'active' | 'ended' | 'unknown';
+
+async function doProbe(): Promise<SessionProbeResult> {
+  let res: Response;
+  try {
+    res = await postRefresh();
+  } catch {
+    return 'unknown';
+  }
+
+  if (res.status === 401 || res.status === 403) return 'ended';
+  if (!res.ok) return 'unknown';
+
+  let data: RefreshResponseBody;
+  try {
+    data = (await res.json()) as RefreshResponseBody;
+  } catch {
+    return 'unknown';
+  }
+
+  // The refresh cookie belongs to the original sign-in — during an impersonation, the operator's.
+  // Applying its token would install the operator's own token next to the target tenant while the
+  // impersonation stays active, dropping its read-only guard and its attribution. So the probe only
+  // reports the verdict and keeps the impersonation token.
+  if (useAuthStore.getState().impersonation?.active) return 'active';
+
+  applyRefreshedToken(data);
+  return 'active';
+}
+
+/**
+ * Asks the server whether the session still exists, by a REAL `POST /api/v1/auth/refresh`.
+ *
+ * Unlike {@link refreshAccessToken} it has no "held token is not expired" short-circuit: a
+ * suspended account keeps a valid access token for up to its lifetime, and only the server knows
+ * the refresh lineage was revoked. It runs under the same `verbara-refresh` Web Lock (so it never
+ * overlaps another tab's refresh), never overlaps an in-flight refresh in this tab, and concurrent
+ * probes in one tab share one request.
+ *
+ * On `active` the new token is applied exactly as {@link refreshAccessToken} applies one, except
+ * while an impersonation is active (see {@link doProbe}). Never throws.
+ */
+export function probeSession(): Promise<SessionProbeResult> {
+  if (_probePromise) return _probePromise;
+
+  _probePromise = (async () => {
+    try {
+      if (_refreshPromise) await _refreshPromise;
+      if (typeof navigator !== 'undefined' && navigator.locks) {
+        return await navigator.locks.request('verbara-refresh', () => doProbe());
+      }
+      return await doProbe();
+    } catch {
+      return 'unknown' as const;
+    } finally {
+      _probePromise = null;
+    }
+  })();
+
+  return _probePromise;
 }
 
 /**
