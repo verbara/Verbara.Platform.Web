@@ -307,4 +307,44 @@ describe('probeSession', () => {
     await expect(probing).resolves.toBe('active');
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it('refreshAccessToken_ShouldWaitForAnInFlightProbe_WhenWebLocksAreMissing', async () => {
+    removeLocks();
+    let releaseProbe: (value: Response) => void = () => undefined;
+    /** The token the store held when each POST went out. */
+    const heldAtPost: (string | null)[] = [];
+    let useAuthStoreRef: Loaded['useAuthStore'] | null = null;
+    const fetchMock = vi.fn((): Promise<Response> => {
+      heldAtPost.push(useAuthStoreRef?.getState().accessToken ?? null);
+      if (heldAtPost.length === 1) {
+        return new Promise<Response>((resolve) => {
+          releaseProbe = resolve;
+        });
+      }
+      return Promise.resolve(response(200, { ...refreshBody, accessToken: 'second-token' }));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const { probeSession, refreshAccessToken, useAuthStore } = await load();
+    useAuthStoreRef = useAuthStore;
+    signIn(useAuthStore);
+    // The usual caller of a refresh holds an expired token (the hub's token factory, the SSE
+    // reconnect, a customFetch pre-flight).
+    useAuthStore.setState({ tokenExpiry: Date.now() - 1000 });
+
+    const probing = probeSession();
+    const refreshing = refreshAccessToken();
+    for (let i = 0; i < 5; i++) await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    // Both would present the same rotating refresh cookie: only the probe's POST is out.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    releaseProbe(response(200, refreshBody));
+    await expect(probing).resolves.toBe('active');
+    await expect(refreshing).resolves.toBe(true);
+
+    // Without Web Locks the refresh has no "token is valid now" check, so it does POST, but only
+    // once the probe has applied its token (and the rotated cookie with it).
+    expect(heldAtPost).toEqual([HELD_TOKEN, FRESH_TOKEN]);
+    expect(useAuthStore.getState().accessToken).toBe('second-token');
+  });
 });
