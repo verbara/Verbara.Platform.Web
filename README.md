@@ -106,6 +106,17 @@ The dev server expects the Platform backend running on `localhost:5000`. See the
 | `npm run e2e:ui`        | Playwright UI mode                                      |
 | `npm run e2e:debug`     | Playwright debug mode                                   |
 
+### Opt-in E2E environment flags
+
+Some specs skip themselves unless a flag says the stack, or the time, they need is available:
+
+| Flag                    | Enables                                                                                                                                                                                               |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `E2E_FULL_STACK=true`   | Specs that need the full containerised stack (Platform's `docker/docker-compose.full.yml`, live Realtime hub and SSE), e.g. `auth/account-suspension.spec.ts`, `operations/realtime-presence.spec.ts` |
+| `E2E_TOKEN_EXPIRY=true` | Together with `E2E_FULL_STACK=true`: `auth/session-expiry.spec.ts`, which waits out a real 15-minute access token (about 17 minutes per run)                                                          |
+
+Each spec's header lists the stack it expects.
+
 ## Architecture overview
 
 Four layout areas, all behind `AuthGuard`:
