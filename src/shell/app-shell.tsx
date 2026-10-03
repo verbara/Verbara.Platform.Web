@@ -6,12 +6,19 @@ import { useSSE } from '@/core/hooks/use-sse';
 import { ImpersonationBanner } from '@/core/auth/impersonation-banner';
 import { SkipLink } from '@/core/ui/skip-link';
 import { SessionManager } from '@/core/session/session-manager';
+import { useRealtimeStore } from '@/core/stores/realtime-store';
 
 export function AppShell() {
   useSSE();
   const { t } = useTranslation();
+  // Exposed as data for end-to-end tests and diagnostics, never rendered (design D7).
+  const realtimeState = useRealtimeStore((s) => s.connectionState);
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div
+      className="flex h-screen flex-col overflow-hidden"
+      data-testid="app-shell"
+      data-realtime-state={realtimeState}
+    >
       <SkipLink targetId="main-content">{t('a11y.skipToMain')}</SkipLink>
       <SessionManager />
       <ImpersonationBanner />
