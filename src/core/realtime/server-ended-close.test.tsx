@@ -364,8 +364,11 @@ describe('a server close that forbids a reconnect', () => {
     await change(() => hubServer.pushRevocation());
 
     // The agent teardown runs first, with the app's shared query client, and the sign-out waits.
+    // Identity, not equality: every QueryClient keeps its state in private fields, so
+    // `toHaveBeenCalledWith` would accept any instance, including an empty one whose ['agent-me']
+    // cache would make the teardown skip the offline write.
     expect(m.safeAgentTeardown).toHaveBeenCalledTimes(1);
-    expect(m.safeAgentTeardown).toHaveBeenCalledWith(m.queryClient);
+    expect(m.safeAgentTeardown.mock.calls[0]![0]).toBe(m.queryClient);
     expect(log).toEqual(['teardown']);
     expect(m.useAuthStore.getState().accessToken).toBe('T1');
 
