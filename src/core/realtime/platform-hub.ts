@@ -5,6 +5,7 @@ import {
   LogLevel,
 } from '@microsoft/signalr';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { refreshAccessToken } from '@/core/api/client';
 import { queryClient } from '@/core/api/query-client';
 import {
   useRealtimeStore,
@@ -59,7 +60,51 @@ interface CsatResponseRecordedPayload {
 }
 
 let connection: HubConnection | null = null;
-let startPromise: Promise<void> | null = null;
+
+/**
+ * The tail of the serialized start/stop chain (design D3). Every {@link startPlatformHub} and
+ * {@link stopPlatformHub} runs after the previous one has settled, so a start can never meet a
+ * connection that is still stopping. It never rejects: each caller gets its own operation's
+ * outcome, and the chain only carries the ordering.
+ */
+let operations: Promise<void> = Promise.resolve();
+
+/**
+ * Set while a stop this module was asked for is in progress, so the close it causes is not mistaken
+ * for one the server initiated (design D3, read by `onclose`):
+ * - set only when the connection is not already `Disconnected` (a stop there fires no `onclose`, so
+ *   a record set then would outlive the stop and mislabel the next session's first close);
+ * - cleared when the stop settles (`HubConnection.stop()` resolves after `onclose` has run);
+ * - reset by every start.
+ */
+let stopRequested = false;
+
+/**
+ * Set while the library's automatic reconnect loop is running, so `onclose` can tell a connection
+ * that ran out of retries from one the server ended (design D5):
+ * - set by `onreconnecting`;
+ * - cleared by `onreconnected`, and by every start before it connects (so it is clear the moment a
+ *   start succeeds, and a flag left over from an earlier exhausted loop never reaches a new
+ *   connection's first close).
+ */
+let reconnecting = false;
+
+/**
+ * Thrown by {@link invokeHub} when the hub is not connected. A hub method call never starts the hub
+ * (design D3): only the connection lifecycle does. The message is for logs, never for the UI.
+ */
+export class HubNotConnectedError extends Error {
+  constructor(method: string) {
+    super(`The realtime hub is not connected; '${method}' was not sent.`);
+    this.name = 'HubNotConnectedError';
+  }
+}
+
+function enqueue(operation: () => Promise<void>): Promise<void> {
+  const result = operations.then(operation);
+  operations = result.catch(() => undefined);
+  return result;
+}
 
 /**
  * Registered server->client handlers, mirrored here so an opt-in E2E seam can
@@ -125,11 +170,41 @@ function normalizePresenceState(raw: string): PresenceStateValue {
   }
 }
 
+/**
+ * The token every (re)connect presents (design D4). The library calls this at each connect and
+ * each automatic reconnect, so a reconnect always carries the token the console holds THEN, never
+ * the one the connection was opened with.
+ *
+ * When that token has expired it refreshes first. That is the normal path at Platform's expiry
+ * close, not an edge case: the proactive refresh is a no-op under Web Locks, so on a page that made
+ * no API call in the token's last 30 s the token has expired when the close arrives. A failed
+ * refresh throws, which fails this attempt and leaves the library's retry policy in charge; the
+ * hub never connects with a token it knows is stale.
+ *
+ * During an impersonation it never refreshes: the refresh cookie is the operator's, and the shared
+ * refresh path would install the operator's own token next to the impersonated tenant (the gap
+ * design D5 keeps the session probe out of). It presents the impersonation token as held; when
+ * that has expired the attempt is refused, and the impersonation's end restarts the hub under the
+ * operator's own token.
+ */
+async function currentAccessToken(): Promise<string> {
+  const auth = useAuthStore.getState();
+  if (!auth.accessToken) {
+    throw new Error('The realtime hub cannot connect without an access token.');
+  }
+  if (!auth.isTokenExpired() || auth.impersonation?.active) return auth.accessToken;
+
+  const refreshed = await refreshAccessToken();
+  const token = useAuthStore.getState().accessToken;
+  if (!refreshed || !token) {
+    throw new Error('The access token could not be refreshed; the hub connection attempt failed.');
+  }
+  return token;
+}
+
 function buildConnection(): HubConnection {
   return new HubConnectionBuilder()
-    .withUrl(HUB_URL, {
-      accessTokenFactory: () => useAuthStore.getState().accessToken ?? '',
-    })
+    .withUrl(HUB_URL, { accessTokenFactory: currentAccessToken })
     .withAutomaticReconnect()
     .configureLogging(LogLevel.Warning)
     .build();
@@ -196,46 +271,118 @@ export function registerHandlers(conn: HubConnection) {
     void queryClient.invalidateQueries({ queryKey: ['analytics', 'csat', 'aggregate'] });
   });
 
-  conn.onreconnecting(() => store.setConnectionState('reconnecting'));
-  conn.onreconnected(() => store.setConnectionState('connected'));
-  conn.onclose(() => useRealtimeStore.getState().setConnectionState('disconnected'));
+  conn.onreconnecting(() => {
+    reconnecting = true;
+    store.setConnectionState('reconnecting');
+  });
+  conn.onreconnected(() => {
+    reconnecting = false;
+    store.setConnectionState('connected');
+  });
+  conn.onclose((error?: Error) => {
+    switch (classifyClose(error)) {
+      case 'requested':
+        // The stop operation settles the store itself: its `reset()` writes `disconnected`.
+        return;
+      case 'exhausted':
+        useRealtimeStore.getState().setConnectionState('disconnected');
+        return;
+      case 'server-ended':
+        useRealtimeStore.getState().setConnectionState('ended');
+        return;
+    }
+  });
 }
 
-export async function startPlatformHub(): Promise<void> {
-  if (connection && connection.state === HubConnectionState.Connected) return;
-  if (startPromise) return startPromise;
+type CloseKind = 'requested' | 'exhausted' | 'server-ended';
 
-  if (!connection) {
-    connection = buildConnection();
-    registerHandlers(connection);
-    installE2eBridgeIfRequested();
-  }
+/**
+ * Sorts a close by what the connection was doing when it closed, plus whether the close carries an
+ * error (design D5). The close text is never read: Platform's revocation (`Abort()`) sends a bare
+ * `Close` frame, which reaches `onclose` with no error, exactly like a client stop or exhausted
+ * retries, so the error alone cannot carry the decision.
+ *
+ * - **Requested** (a stop this module was asked for is in progress): `disconnected`, written by the
+ *   stop operation's own `reset()`.
+ * - **Exhausted** (no error, and the reconnect loop was running): the library's own retries ran
+ *   out. `disconnected`, which the bootstrap's revival heals at the next token refresh.
+ * - **Server-ended** (every other close): `ended`, which the bootstrap resolves with a session
+ *   probe. That is an established connection closed with or without an error (the revocation's
+ *   bare frame, a refusal of an admitted connection), and any close that carries an error whatever
+ *   the loop was doing: with automatic reconnect configured, only a server `Close` frame puts an
+ *   error on `onclose` (a refusal processed in the same receive as a reconnect's handshake).
+ *
+ * This relies on the retry policy never declining the first attempt (the default
+ * `withAutomaticReconnect()` policy); otherwise a transport loss would close from `Connected`
+ * without `onreconnecting`.
+ */
+function classifyClose(error: Error | undefined): CloseKind {
+  if (stopRequested) return 'requested';
+  if (!error && reconnecting) return 'exhausted';
+  return 'server-ended';
+}
 
-  useRealtimeStore.getState().setConnectionState('connecting');
+/**
+ * Starts the hub, or does nothing when it is already connected, connecting or reconnecting. Runs on
+ * the serialized chain (design D3), so it waits for any stop issued before it. The one
+ * `HubConnection` is built on the first start and reused afterwards: SignalR allows `start()` again
+ * once a connection is `Disconnected`, and the handlers registered on it (including every
+ * {@link onHubEvent} subscription) survive.
+ *
+ * Only the connection lifecycle calls this (the bootstrap hook, and the single reconnect after a
+ * session check); a hub method call never does.
+ */
+export function startPlatformHub(): Promise<void> {
+  return enqueue(async () => {
+    if (!connection) {
+      connection = buildConnection();
+      registerHandlers(connection);
+      installE2eBridgeIfRequested();
+    }
+    const conn = connection;
 
-  startPromise = connection
-    .start()
-    .then(() => {
-      useRealtimeStore.getState().setConnectionState(mapHubState(connection!.state));
-    })
-    .catch((err) => {
+    if (
+      conn.state === HubConnectionState.Connected ||
+      conn.state === HubConnectionState.Connecting ||
+      conn.state === HubConnectionState.Reconnecting
+    ) {
+      return;
+    }
+    if (conn.state === HubConnectionState.Disconnecting) {
+      // A close the server initiated is still in progress; the library's own stop() joins it
+      // ("subsequent calls to stop() will await this"). Not a requested stop, so no record.
+      await conn.stop().catch(() => undefined);
+    }
+
+    stopRequested = false;
+    reconnecting = false;
+    useRealtimeStore.getState().setConnectionState('connecting');
+    try {
+      await conn.start();
+    } catch (err) {
       useRealtimeStore.getState().setConnectionState('failed');
       throw err;
-    })
-    .finally(() => {
-      startPromise = null;
-    });
-
-  return startPromise;
+    }
+    useRealtimeStore.getState().setConnectionState(mapHubState(conn.state));
+  });
 }
 
-export async function stopPlatformHub(): Promise<void> {
-  if (!connection) return;
-  try {
-    await connection.stop();
-  } finally {
-    useRealtimeStore.getState().reset();
-  }
+/**
+ * Stops the hub and resets the realtime store. Runs on the serialized chain (design D3), after any
+ * start issued before it.
+ */
+export function stopPlatformHub(): Promise<void> {
+  return enqueue(async () => {
+    const conn = connection;
+    if (!conn) return;
+    if (conn.state !== HubConnectionState.Disconnected) stopRequested = true;
+    try {
+      await conn.stop();
+    } finally {
+      stopRequested = false;
+      useRealtimeStore.getState().reset();
+    }
+  });
 }
 
 export function getPlatformHub(): HubConnection {
@@ -245,10 +392,16 @@ export function getPlatformHub(): HubConnection {
   return connection;
 }
 
+/**
+ * Invokes a hub method on a CONNECTED hub. On any other state it rejects with a
+ * {@link HubNotConnectedError} and starts nothing (design D3): a group join or leave on a dead
+ * connection is moot, because the server drops group membership with the connection, and a
+ * supervisor action reports its own translated failure.
+ */
 export async function invokeHub<T = void>(method: string, ...args: unknown[]): Promise<T> {
-  const conn = getPlatformHub();
-  if (conn.state !== HubConnectionState.Connected) {
-    await startPlatformHub();
+  const conn = connection;
+  if (!conn || conn.state !== HubConnectionState.Connected) {
+    throw new HubNotConnectedError(method);
   }
   return conn.invoke<T>(method, ...args);
 }

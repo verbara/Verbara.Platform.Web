@@ -99,6 +99,28 @@ describe('useCreateUser', () => {
     });
   });
 
+  it('UseCreateUser_ShouldPostOnlyEmailDisplayNameAndRole_WhenTheCallerPassesAStatus', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(mockUser);
+    const { result } = renderHook(() => useCreateUser(), { wrapper });
+    // `CreateUserRequest` has no status: a form value passed through must not reach the body.
+    const formValues = {
+      email: 'new@example.com',
+      displayName: 'New User',
+      role: 'agent',
+      status: 'Suspended' as const,
+    };
+    act(() => {
+      result.current.mutate(formValues);
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [config] = vi.mocked(client.customFetch).mock.calls[0]!;
+    expect(config).toStrictEqual({
+      url: '/api/v1/admin/users',
+      method: 'POST',
+      data: { email: 'new@example.com', displayName: 'New User', role: 'agent' },
+    });
+  });
+
   it('should handle error when creation fails', async () => {
     vi.mocked(client.customFetch).mockRejectedValue(new Error('fail'));
     const { result } = renderHook(() => useCreateUser(), { wrapper });
@@ -126,6 +148,49 @@ describe('useUpdateUser', () => {
       method: 'PUT',
       data: { displayName: 'Updated' },
     });
+  });
+
+  it('UseUpdateUser_ShouldSendNoStatusKey_WhenOnlyTheNameIsUpdated', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(mockUser);
+    const { result } = renderHook(() => useUpdateUser(), { wrapper });
+    act(() => {
+      result.current.mutate({ id: 'u1', displayName: 'Updated' });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const [config] = vi.mocked(client.customFetch).mock.calls[0]!;
+    expect(config.data).toStrictEqual({ displayName: 'Updated' });
+    expect(Object.keys(config.data as object)).not.toContain('status');
+  });
+
+  it('UseUpdateUser_ShouldSendTheEnumName_WhenAStatusIsGiven', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(mockUser);
+    const { result } = renderHook(() => useUpdateUser(), { wrapper });
+    act(() => {
+      result.current.mutate({ id: 'u1', status: 'Suspended' });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/admin/users/u1',
+      method: 'PUT',
+      data: { status: 'Suspended' },
+    });
+  });
+
+  it('UseUpdateUser_ShouldInvalidateTheListAndTheDetail_WhenTheUpdateSucceeds', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(mockUser);
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    const invalidate = vi.spyOn(qc, 'invalidateQueries');
+    const { result } = renderHook(() => useUpdateUser(), {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+      ),
+    });
+    act(() => {
+      result.current.mutate({ id: 'u1', status: 'Suspended' });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    // `['users']` is a prefix of both the list's key and the detail's `['users', id]`.
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['users'] });
   });
 
   it('should handle error when update fails', async () => {

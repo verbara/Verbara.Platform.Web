@@ -144,6 +144,12 @@
     "name": "Name",
     "role": "Role",
     "status": "Status",
+    "statuses": {
+      "active": "Active",
+      "suspended": "Suspended",
+      "deactivated": "Deactivated"
+    },
+    "status_hint_inactive": "Saving this status signs the user out of every session and live connection.",
     "assign_role": "Assign",
     "auth_provider": "Auth Provider",
     "force_logout": "Force Logout",

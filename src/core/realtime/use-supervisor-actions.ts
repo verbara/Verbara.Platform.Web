@@ -11,6 +11,11 @@ export type SupervisionMode = 'Listen' | 'Whisper' | 'Barge';
  * whispers, start, and stop supervision are delivered in-band with the presence
  * hub. Errors are surfaced through `sonner` toasts so callers don't have to wire
  * per-action error handlers.
+ *
+ * A failure always shows the action's translated message, never the error's own
+ * text: that text is English (a `HubNotConnectedError` when the hub is down — a
+ * call never starts the hub — or a server `HubException`), and would reach
+ * ES-419 and PT-BR users untranslated.
  */
 export function useSupervisorActions(conversationId: string | undefined) {
   const { t } = useTranslation('common');
@@ -20,8 +25,8 @@ export function useSupervisorActions(conversationId: string | undefined) {
       if (!conversationId) return;
       try {
         await invokeHub('StartSupervisionAsync', conversationId, mode);
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : t('toasts.supervisor.startSupervisionFailed'));
+      } catch {
+        toast.error(t('toasts.supervisor.startSupervisionFailed'));
       }
     },
     [conversationId, t],
@@ -35,8 +40,8 @@ export function useSupervisorActions(conversationId: string | undefined) {
       try {
         await invokeHub('WhisperToAgentAsync', conversationId, payload);
         toast.success(t('toasts.supervisor.whisperSent'));
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : t('toasts.supervisor.whisperFailed'));
+      } catch {
+        toast.error(t('toasts.supervisor.whisperFailed'));
       }
     },
     [conversationId, t],
@@ -46,8 +51,8 @@ export function useSupervisorActions(conversationId: string | undefined) {
     if (!conversationId) return;
     try {
       await invokeHub('StopSupervisingAsync', conversationId);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('toasts.supervisor.stopSupervisionFailed'));
+    } catch {
+      toast.error(t('toasts.supervisor.stopSupervisionFailed'));
     }
   }, [conversationId, t]);
 

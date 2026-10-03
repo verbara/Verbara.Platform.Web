@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { useAuthStore } from '@/core/auth/auth-store';
+import type { SignInErrorCode } from './sign-in-refusal';
 
 interface LoginResponse {
   accessToken?: string;
@@ -20,9 +21,21 @@ interface MfaVerifyProps {
   email: string;
   onSuccess: (data: LoginResponse) => void;
   onCancel: () => void;
+  /**
+   * The sign-in was refused for good: Platform answered 403 (the account, or its tenant, may not
+   * sign in) after consuming the challenge, so another code cannot succeed. The caller leaves the
+   * MFA step and shows the code on the sign-in form.
+   */
+  onRefused: (code: SignInErrorCode) => void;
 }
 
-export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaVerifyProps) {
+export function MfaVerify({
+  mfaToken,
+  email: _email,
+  onSuccess,
+  onCancel,
+  onRefused,
+}: MfaVerifyProps) {
   const { t } = useTranslation();
   const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
   const [recoveryMode, setRecoveryMode] = useState(false);
@@ -45,6 +58,13 @@ export function MfaVerify({ mfaToken, email: _email, onSuccess, onCancel }: MfaV
       });
 
       if (!res.ok) {
+        // A 403 is final: the account (or its tenant) may not sign in, and Platform has already
+        // consumed the challenge, so asking for another code would only fail again.
+        if (res.status === 403) {
+          onRefused('account-inactive');
+          return;
+        }
+
         // Sub C T0.3: distinguish rate-limit, expired token, and generic errors
         if (res.status === 429) {
           setError(t('auth.mfa_rate_limited'));

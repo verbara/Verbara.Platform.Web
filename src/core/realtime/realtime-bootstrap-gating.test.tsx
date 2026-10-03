@@ -1,35 +1,20 @@
 import { renderHook } from '@testing-library/react';
-import { useEffect } from 'react';
 import { useAuthStore } from '@/core/auth/auth-store';
-import { startPlatformHub, stopPlatformHub } from '@/core/realtime';
+import { startPlatformHub, stopPlatformHub } from '@/core/realtime/platform-hub';
+import { useRealtimeBootstrap } from '@/core/realtime/use-realtime-bootstrap';
 
-vi.mock('@/core/realtime', () => ({
+vi.mock('@/core/realtime/platform-hub', () => ({
   startPlatformHub: vi.fn(() => Promise.resolve()),
   stopPlatformHub: vi.fn(() => Promise.resolve()),
 }));
 
 /**
- * Mirror of `useRealtimeBootstrap` in `app.tsx`. It is the ONLY credential-dependent consumer that
- * lives outside `AuthGuard` (AppShell's SSE hook and the agent layout's heartbeat/departure beacon
- * mount inside the guard, so they cannot run during a restore). This test pins the invariant that
- * it never opens a connection while the session is still restoring — i.e. while the store has been
- * rehydrated with a user but no token.
+ * `useRealtimeBootstrap` is the ONLY credential-dependent consumer that lives outside `AuthGuard`
+ * (AppShell's SSE hook and the agent layout's heartbeat/departure beacon mount inside the guard, so
+ * they cannot run during a restore). This test pins the invariant that it never opens a connection
+ * while the session is still restoring — i.e. while the store has been rehydrated with a user but
+ * no token.
  */
-function useRealtimeBootstrap() {
-  const accessToken = useAuthStore((s) => s.accessToken);
-  const signalREnabled = useAuthStore((s) => s.features?.realtimePushSignalR === true);
-
-  useEffect(() => {
-    if (!accessToken || !signalREnabled) {
-      void stopPlatformHub();
-      return;
-    }
-    void startPlatformHub();
-    return () => {
-      void stopPlatformHub();
-    };
-  }, [accessToken, signalREnabled]);
-}
 
 const A_USER = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'admin' } as const;
 

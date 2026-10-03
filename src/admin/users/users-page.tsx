@@ -9,6 +9,7 @@ import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/core/ui/data-table';
 import { UserForm } from './user-form';
+import { UserStatusBadge } from './user-status-badge';
 import { useUsers, useCreateUser } from '@/core/api/hooks/use-users';
 import type { User } from '@/core/api/hooks/use-users';
 
@@ -33,9 +34,7 @@ export default function UsersPage() {
     () => [
       columnHelper.accessor('email', {
         header: () => t('admin:users.email'),
-        cell: (info) => (
-          <span className="font-medium text-foreground">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="font-medium text-foreground">{info.getValue()}</span>,
       }),
       columnHelper.accessor('displayName', {
         header: () => t('admin:users.name'),
@@ -44,18 +43,12 @@ export default function UsersPage() {
       columnHelper.accessor('role', {
         header: () => t('admin:users.role'),
         cell: (info) => (
-          <Badge variant={roleBadgeVariant[info.getValue()] ?? 'outline'}>
-            {info.getValue()}
-          </Badge>
+          <Badge variant={roleBadgeVariant[info.getValue()] ?? 'outline'}>{info.getValue()}</Badge>
         ),
       }),
       columnHelper.accessor('status', {
         header: () => t('admin:users.status'),
-        cell: (info) => (
-          <Badge variant={info.getValue() === 'active' ? 'default' : 'destructive'}>
-            {info.getValue()}
-          </Badge>
-        ),
+        cell: (info) => <UserStatusBadge status={info.getValue()} />,
       }),
     ],
     [t],
@@ -73,10 +66,7 @@ export default function UsersPage() {
       </PageHeader>
 
       {isEmpty ? (
-        <EmptyState
-          icon={Users}
-          message="No users yet &mdash; Create your first user"
-        />
+        <EmptyState icon={Users} message="No users yet &mdash; Create your first user" />
       ) : (
         <DataTable
           data={users}

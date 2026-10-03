@@ -144,6 +144,12 @@
     "name": "Nome",
     "role": "Função",
     "status": "Status",
+    "statuses": {
+      "active": "Ativo",
+      "suspended": "Suspenso",
+      "deactivated": "Desativado"
+    },
+    "status_hint_inactive": "Ao salvar este status, o usuário será desconectado de todas as sessões e conexões em tempo real.",
     "assign_role": "Atribuir",
     "auth_provider": "Provedor de auth",
     "force_logout": "Forçar logout",

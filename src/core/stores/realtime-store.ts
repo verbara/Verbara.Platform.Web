@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 
+/**
+ * The realtime hub's state as the console exposes it (`data-realtime-state` on the app shell).
+ * `ended` means the server closed an established connection without allowing a reconnect and the
+ * console did not ask for it — the close the session check resolves (realtime-connection-lifecycle).
+ */
 export type SignalRConnectionState =
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
-  | 'reconnecting'
-  | 'failed';
+  'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'failed' | 'ended';
 
 export type PresenceStateValue =
   | 'available'

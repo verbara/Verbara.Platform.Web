@@ -39,8 +39,14 @@ export function useCreateUser() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: (data: { email: string; displayName: string; role: string }) =>
-      customFetch<User>({ url: '/api/v1/admin/users', method: 'POST', data }),
+    // `CreateUserRequest` has no status (every new account is `Active`), so the body is built from
+    // the fields the endpoint takes rather than from whatever the caller passes.
+    mutationFn: (input: { email: string; displayName: string; role: string }) =>
+      customFetch<User>({
+        url: '/api/v1/admin/users',
+        method: 'POST',
+        data: { email: input.email, displayName: input.displayName, role: input.role },
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
       toast.success(t('toasts.users.created'));
@@ -60,7 +66,13 @@ export function useUpdateUser() {
       id: string;
       displayName?: string;
       role?: string;
-      status?: string;
+      /**
+       * Platform's `UserStatus` name, typed from the contract so a rename fails the build. Omit it
+       * to leave the status unchanged: an omitted status is absent from the body, never `null`.
+       * Only `status` is typed from `UpdateUserRequest`: its fields are all required-nullable, and
+       * its `UserRole` (`Agent` | `Supervisor` | `Admin` | `Api`) does not match the form's roles.
+       */
+      status?: NonNullable<components['schemas']['UserStatus']>;
     }) =>
       customFetch<User>({
         url: `/api/v1/admin/users/${id}`,

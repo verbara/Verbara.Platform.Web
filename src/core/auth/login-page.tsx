@@ -14,6 +14,14 @@ import { MfaVerify } from './mfa-verify';
 import { ChevronDown } from 'lucide-react';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import type { UserProfile, Features } from './auth-store';
+import {
+  LOGIN_NOTICE_KEYS,
+  SIGN_IN_ERROR_KEYS,
+  apiKeyRefusalCode,
+  loginNoticeCode,
+  passwordRefusalCode,
+  type SignInErrorCode,
+} from './sign-in-refusal';
 
 interface LoginResponse {
   accessToken?: string;
@@ -35,7 +43,8 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
-  const [error, setError] = useState('');
+  // A code, never display text: it picks the translation and is exposed as `data-error-code`.
+  const [errorCode, setErrorCode] = useState<SignInErrorCode | null>(null);
   const [loading, setLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showTenant, setShowTenant] = useState(!resolveDefaultTenant());
@@ -48,6 +57,8 @@ export function LoginPage() {
   const rememberMe = useAuthStore((s) => s.rememberMe);
 
   const successMessage = (location.state as { message?: string } | null)?.message;
+  // Only an allow-listed `reason` shows a notice; the raw value is never rendered (design D7).
+  const noticeCode = loginNoticeCode(new URLSearchParams(location.search).get('reason'));
 
   const roleDefaultRoute: Record<string, string> = {
     admin: '/admin',
@@ -132,7 +143,7 @@ export function LoginPage() {
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    setErrorCode(null);
     setLoading(true);
 
     try {
@@ -148,8 +159,8 @@ export function LoginPage() {
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: '' }));
-        setError((err as { detail?: string }).detail || t('auth.invalid_credentials'));
+        // The status decides; the body's English `error` text is never shown.
+        setErrorCode(passwordRefusalCode(res.status));
         return;
       }
 
@@ -162,7 +173,7 @@ export function LoginPage() {
 
       completeLogin(data);
     } catch {
-      setError(t('auth.invalid_credentials'));
+      setErrorCode('invalid-credentials');
     } finally {
       setLoading(false);
     }
@@ -170,7 +181,7 @@ export function LoginPage() {
 
   async function handleApiKeyLogin(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    setErrorCode(null);
     setLoading(true);
 
     try {
@@ -182,14 +193,14 @@ export function LoginPage() {
       });
 
       if (!res.ok) {
-        setError(t('auth.invalid_key'));
+        setErrorCode(apiKeyRefusalCode(res.status));
         return;
       }
 
       const data = (await res.json()) as LoginResponse;
       completeLogin(data);
     } catch {
-      setError(t('auth.invalid_key'));
+      setErrorCode('invalid-key');
     } finally {
       setLoading(false);
     }
@@ -198,7 +209,7 @@ export function LoginPage() {
   function handleSsoLogin() {
     const effectiveTenant = tenant.trim() || resolveDefaultTenant();
     if (!effectiveTenant) {
-      setError(t('auth.sso_no_tenant', 'Cannot determine tenant for SSO login'));
+      setErrorCode('sso-no-tenant');
       return;
     }
     const returnUrl = encodeURIComponent(window.location.origin + '/login');
@@ -215,6 +226,11 @@ export function LoginPage() {
             email={mfaPending.email}
             onSuccess={completeLogin}
             onCancel={() => useAuthStore.getState().clearMfaPending()}
+            onRefused={(code) => {
+              // Back to the sign-in form with the refusal: the challenge is spent.
+              setErrorCode(code);
+              useAuthStore.getState().clearMfaPending();
+            }}
           />
         </div>
       </div>
@@ -234,6 +250,17 @@ export function LoginPage() {
 
         {successMessage && (
           <p className="text-sm text-center text-green-600 dark:text-green-400">{successMessage}</p>
+        )}
+
+        {noticeCode && (
+          <p
+            className="text-sm text-center text-slate-600 dark:text-slate-300"
+            role="status"
+            data-testid="login-notice"
+            data-notice-code={noticeCode}
+          >
+            {t(LOGIN_NOTICE_KEYS[noticeCode])}
+          </p>
         )}
 
         {/* Email/Password form */}
@@ -326,9 +353,13 @@ export function LoginPage() {
             </Label>
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400" data-testid="login-error">
-              {error}
+          {errorCode && (
+            <p
+              className="text-sm text-red-600 dark:text-red-400"
+              data-testid="login-error"
+              data-error-code={errorCode}
+            >
+              {t(SIGN_IN_ERROR_KEYS[errorCode])}
             </p>
           )}
 

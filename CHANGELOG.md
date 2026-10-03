@@ -9,6 +9,103 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The realtime hub no longer drops on every other token refresh, keeps its state across a
+  refresh, and is no longer restarted by a page after sign-out (`#N`; openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`).** The bootstrap hook was keyed on
+  the access-token value, so every refresh ran an un-awaited stop followed by a start. The start
+  met a connection that was still stopping and failed ("Cannot start a HubConnection that is not in
+  the 'Disconnected' state."), which left the hub down until the next refresh, and every refresh's
+  stop reset the realtime store, wiping agent presence, the observed-supervision banner and the
+  last whisper.
+  - `platform-hub.ts` runs start and stop on one serialized chain and reuses its one
+    `HubConnection`. A start on a hub that is connected, connecting or reconnecting does nothing.
+  - The hook restarts the hub only when the principal changes (sign-in, sign-out, another user or
+    tenant, an impersonation starting or ending, the realtime feature turning off). A refresh for
+    the same principal restarts nothing; it only revives a hub that is `disconnected`, `failed` or
+    `ended`. Platform bounds each connection by its token and closes it at expiry with a reconnect
+    allowed, and every (re)connect now presents the token the console holds at that moment,
+    refreshing it first when it has expired (never during an impersonation, whose refresh cookie
+    is the operator's).
+  - Calling a hub method no longer starts the hub. On a hub that is not connected it rejects with
+    `HubNotConnectedError`, so a presence page's unsubscribe cleanup can no longer reconnect the
+    hub, with no bearer, right after sign-out. A failed supervisor action now always shows its
+    translated message instead of the error's English text.
+- **The SSE event stream no longer spends its retries on an expired token (`#N`; openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`).** Platform ends the stream at the
+  token's expiry and refuses a stream opened past it, but EventSource cannot see that 401, so
+  `use-sse.ts` retried with its jittered back-off and the expired token, up to ten times, until an
+  API request happened to rotate the token or the retries ran out. When the stream errors while the held token has expired, the hook now
+  refreshes first, schedules no retry and spends none: the new token reopens the stream, and a
+  refused refresh opens nothing (the next API request's pre-flight signs the user out). During an
+  impersonation it does not refresh, because the refresh cookie is the operator's: the stream
+  reopens when the impersonation ends. An error with a valid token keeps the existing back-off.
+- **A suspended or deactivated account is told that the account is not active, instead of
+  "Invalid email or password", on the password, MFA and API-key sign-in paths, and a locked
+  account is told that it is locked (`#N`; openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`).** The login page read a `detail`
+  field that Platform's `ErrorResponse` never carries, so every refused sign-in fell through to
+  "invalid credentials". The MFA step turned Platform v2.24.0's 403 into "Invalid code" and asked
+  for another code against a challenge the server had already consumed, and the API-key form said
+  "Invalid API key".
+  - The sign-in surfaces choose the message from the HTTP status, never from the server's English
+    text: 403 shows "This account is not active. Contact your administrator.", 423 shows the
+    account-locked message, and 401 or any other failure keeps "invalid credentials" (or "Invalid
+    API key" on the API-key form). The 403 wording also holds for Platform's other 403 on these
+    endpoints, a suspended or pending-deletion tenant.
+  - On a 403 the MFA step returns to the sign-in form with that message and drops the spent
+    challenge. A wrong code, rate limiting and an expired challenge behave as before.
+  - The error element carries `data-error-code` (`account-inactive`, `account-locked`,
+    `invalid-credentials`, `invalid-key`, `sso-no-tenant`), and every message exists in EN-US,
+    ES-419 and PT-BR. The SSO no-tenant message, until now an inline English default, is
+    translated.
+  - `/login?reason=session-ended`, where the console lands after Platform ends a revoked session,
+    shows the session-ended notice (`data-notice-code="session-ended"`). Any other reason value
+    shows nothing and is never rendered.
+- **Administrators can suspend, deactivate and re-activate users from the console (`#N`; openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`).** The user form offered `active` /
+  `inactive`, and `inactive` is not one of Platform's account statuses, so choosing it made the
+  update fail with a 400. The form also opened on `active` whatever the user's real status, and
+  the status badges printed the raw wire value in every locale.
+  - The edit form offers exactly Platform's three statuses, Active, Suspended and Deactivated,
+    labelled in EN-US, ES-419 and PT-BR, and opens on the user's current status. `inactive` is
+    gone. Choosing Suspended or Deactivated shows a hint that saving signs the user out of every
+    session and live connection.
+  - The update sends `status` (as the enum name Platform takes) only when the administrator chose
+    a different status. A name-only edit carries no `status` at all, and a status the console does
+    not recognise no longer blocks the form.
+  - The create form no longer shows a status field, which the create endpoint ignored: every new
+    account starts Active, and the create request no longer carries a status.
+  - The users list and the detail page show the status as a translated badge with a variant per
+    status and a locale-independent `data-status` (`active`, `suspended`, `deactivated`, or
+    `unknown` for a value the console does not recognise, which is shown as reported).
+
+### Security
+
+- **When Platform ends a live connection for an account that lost access, the console now signs
+  the user out with a session-ended notice (`#N`; GHSA-757c-652x-p67g;
+  `Verbara.Platform.Web/ADR-0012`, openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`). Supported pairing: Platform ≥
+  v2.24.0.** Since v2.24.0 Platform aborts the realtime hub connections of an account
+  that is suspended, deactivated or deleted with a bare `Close` frame (no error, no reconnect
+  allowed), and refuses such an account at connect with a `Close` that carries an error. The
+  console treated both like an ordinary drop: it reported `disconnected` and kept the session, so a
+  suspended user's console looked signed in while nothing reached it, until the access token
+  expired.
+  - `platform-hub.ts` classifies a close it did not ask for by what the connection was doing, never
+    by the close text: a close after the library's reconnect retries ran out stays `disconnected`
+    (revived at the next token refresh); every other unrequested close, with or without an error,
+    puts the hub in the new `ended` state (`data-realtime-state="ended"` on the app shell).
+  - On `ended` the console asks the server whether the session still exists, with a forced
+    `POST /api/v1/auth/refresh` that skips the "token not expired" short-circuit (`probeSession`).
+    401 or 403: the agent-aware teardown runs (a routable agent is set offline first), the session
+    is cleared and `/login?reason=session-ended` opens. 200: the hub reconnects once, and a second
+    such close under the same token leaves it `ended` until the next refresh. No HTTP answer: the
+    user stays signed in. During an impersonation the check never installs the operator's own
+    token.
+  - Against a Platform older than v2.24.0 nothing changes: those versions never send these frames.
+
 ---
 
 ## [3.19.0-web] - 2026-08-26
