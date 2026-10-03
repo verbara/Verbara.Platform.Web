@@ -110,12 +110,14 @@ export function ResetPasswordPage() {
       const res = await fetch('/api/v1/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resetToken: token, newPassword }),
+        // Platform's ResetPasswordRequest(Token, NewPassword), camelCase on the wire.
+        body: JSON.stringify({ token, newPassword }),
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: '' }));
-        setError((err as { detail?: string }).detail || t('auth.reset_error'));
+        // Platform answers `{ error }` (ErrorResponse) or a ProblemDetails `detail`.
+        const err = (await res.json().catch(() => ({}))) as { error?: string; detail?: string };
+        setError(err.error || err.detail || t('auth.reset_error'));
         return;
       }
 
