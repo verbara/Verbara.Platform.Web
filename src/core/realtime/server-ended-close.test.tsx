@@ -24,6 +24,12 @@ import { hubServer } from '@/test/signalr-harness';
 import type { SessionProbeResult } from '@/core/api/client';
 
 const A_USER = { id: 'user-1', email: 'a@b.com', displayName: 'Test', role: 'supervisor' } as const;
+const B_USER = {
+  id: 'user-2',
+  email: 'b@b.com',
+  displayName: 'Other',
+  role: 'supervisor',
+} as const;
 const FIFTEEN_MINUTES = 15 * 60_000;
 const REFUSAL = 'Connection closed with an error. HubException: Account is not active.';
 const SESSION_ENDED_LOGIN = '/login?reason=session-ended';
@@ -109,11 +115,19 @@ async function settle(turns = 10): Promise<void> {
   }
 }
 
-function signIn(m: Loaded, token: string) {
-  m.useAuthStore.getState().setAuth(token, Date.now() + FIFTEEN_MINUTES, A_USER, 'tenant-1', [], {
+function signIn(
+  m: Loaded,
+  token: string,
+  user: typeof A_USER | typeof B_USER = A_USER,
+  tenantId = 'tenant-1',
+) {
+  m.useAuthStore.getState().setAuth(token, Date.now() + FIFTEEN_MINUTES, user, tenantId, [], {
     realtimePushSignalR: true,
   });
 }
+
+/** An impersonation of the tenant the operator is already in: only the impersonation flag flips. */
+const SAME_TENANT_IMPERSONATION = { ...IMPERSONATION, targetTenantId: 'tenant-1' };
 
 /** Applies a refreshed token for the SAME principal, exactly as `applyRefreshedToken` does. */
 function rotate(m: Loaded, token: string) {
@@ -530,6 +544,72 @@ describe('a server close that forbids a reconnect', () => {
     expect(hubServer.bearers).toEqual(['T1', 'IMP', 'IMP-2']);
     expect(m.useRealtimeStore.getState().connectionState).toBe('connected');
   });
+
+  // One case per part of the session check's principal key, each changing that part ALONE: a
+  // verdict about the previous principal must neither restart the new principal's hub nor spend
+  // its single restart (which would leave its next server-ended close unchecked).
+  it.each<[string, { before?: (m: Loaded) => void; apply: (m: Loaded) => void; token: string }]>([
+    [
+      'AnImpersonationOfTheSameTenantStarts',
+      {
+        apply: (m) =>
+          m.useAuthStore.getState().startImpersonation(SAME_TENANT_IMPERSONATION, 'T1', 'tenant-1'),
+        token: 'IMP',
+      },
+    ],
+    [
+      'AnImpersonationOfTheSameTenantEnds',
+      {
+        before: (m) =>
+          m.useAuthStore.getState().startImpersonation(SAME_TENANT_IMPERSONATION, 'T1', 'tenant-1'),
+        apply: (m) => m.useAuthStore.getState().endImpersonation(),
+        token: 'T1',
+      },
+    ],
+    [
+      'TheSameUserSwitchesTenant',
+      { apply: (m) => signIn(m, 'T2', A_USER, 'tenant-2'), token: 'T2' },
+    ],
+    [
+      'AnotherUserSignsInToTheSameTenant',
+      { apply: (m) => signIn(m, 'T2', B_USER, 'tenant-1'), token: 'T2' },
+    ],
+  ])(
+    'ServerEndedClose_ShouldDropTheEarlierPrincipalsVerdict_When%s',
+    async (_change, { before, apply, token }) => {
+      const m = await load();
+      await mountConnected(m);
+      if (before) await change(() => before(m));
+      const verdicts: ((result: SessionProbeResult) => void)[] = [];
+      m.probeSession.mockImplementation(
+        () =>
+          new Promise<SessionProbeResult>((resolve) => {
+            verdicts.push(resolve);
+          }),
+      );
+      await change(() => hubServer.pushRevocation());
+      expect(m.probeSession).toHaveBeenCalledTimes(1);
+
+      // Only this one part of the principal changes while the check is in flight; the lifecycle
+      // restarts the hub for the new principal.
+      await change(() => apply(m));
+      expect(m.useAuthStore.getState().accessToken).toBe(token);
+      expect(m.useRealtimeStore.getState().connectionState).toBe('connected');
+      vi.mocked(m.hub.startPlatformHub).mockClear();
+      const negotiationsBefore = hubServer.negotiations.length;
+
+      // The previous principal's verdict lands: no restart.
+      await change(() => verdicts[0]!('active'));
+      expect(starts(m)).toBe(0);
+      expect(bearersSince(negotiationsBefore)).toEqual([]);
+
+      // The new principal's single restart is still unspent: its first server-ended close is
+      // checked.
+      await change(() => hubServer.pushRevocation());
+      expect(m.useRealtimeStore.getState().connectionState).toBe('ended');
+      expect(m.probeSession).toHaveBeenCalledTimes(2);
+    },
+  );
 
   it('Revival_ShouldNotWaitForAnEarlierPrincipalsCheck_WhenTheNewPrincipalsHubFailedToStart', async () => {
     const m = await load();
