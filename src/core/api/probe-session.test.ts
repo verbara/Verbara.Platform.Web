@@ -144,20 +144,26 @@ describe('probeSession', () => {
     expect(postSpy).not.toHaveBeenCalled();
   });
 
-  it.each([500, 502, 503])('probeSession_ShouldReturnUnknown_When %i', async (status) => {
-    installFakeLocks();
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => response(status)),
-    );
-    const { probeSession, useAuthStore, postSpy } = await load();
-    signIn(useAuthStore);
+  // Only 401 and 403 are a refusal of the session. Any other 4xx (a malformed request, a missing
+  // route, a rate limiter or proxy in front of the API) says nothing about it, so it must never
+  // sign a valid user out.
+  it.each([400, 404, 408, 429, 500, 502, 503])(
+    'probeSession_ShouldReturnUnknown_When %i',
+    async (status) => {
+      installFakeLocks();
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => response(status)),
+      );
+      const { probeSession, useAuthStore, postSpy } = await load();
+      signIn(useAuthStore);
 
-    await expect(probeSession()).resolves.toBe('unknown');
+      await expect(probeSession()).resolves.toBe('unknown');
 
-    expect(useAuthStore.getState().accessToken).toBe(HELD_TOKEN);
-    expect(postSpy).not.toHaveBeenCalled();
-  });
+      expect(useAuthStore.getState().accessToken).toBe(HELD_TOKEN);
+      expect(postSpy).not.toHaveBeenCalled();
+    },
+  );
 
   it('probeSession_ShouldReturnUnknown_WhenTheNetworkFails', async () => {
     installFakeLocks();
