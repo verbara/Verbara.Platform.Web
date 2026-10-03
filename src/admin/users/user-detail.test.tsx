@@ -154,6 +154,34 @@ describe('UserDetailPage edit sheet', () => {
     expect(badge().label).toBe('Suspended');
   });
 
+  it('UserDetailPage_ShouldOpenTheSheetOnSuspendedAndPutNoStatusKey_WhenSuspendedIsChosenAgain', async () => {
+    seed('suspended');
+    await renderPage();
+    await openEdit();
+
+    // The sheet opens on the status the GET reported, with no leaving-Active hint.
+    expect(
+      screen.getByTestId('user-form-status').querySelector('[data-slot="select-value"]')
+        ?.textContent,
+    ).toBe('Suspended');
+    expect(screen.queryByTestId('user-form-status-hint')).toBeNull();
+    fireEvent.click(screen.getByTestId('user-form-status'));
+    const current = await screen.findByTestId('user-form-status-option-Suspended');
+    expect(current).toHaveAttribute('aria-selected', 'true');
+
+    // Choosing the current status again is not a change.
+    fireEvent.pointerDown(current);
+    fireEvent.click(current);
+    await waitFor(() => expect(screen.queryAllByRole('option')).toHaveLength(0));
+    expect(screen.queryByTestId('user-form-status-hint')).toBeNull();
+    await save();
+
+    expect(puts).toStrictEqual([
+      { email: 'ana@demo.test', displayName: 'Ana Rivera', role: 'supervisor' },
+    ]);
+    expect(Object.keys(puts[0] as object)).not.toContain('status');
+  });
+
   it('UserDetailPage_ShouldPutNoStatusKey_WhenOnlyTheNameOfASuspendedUserIsEdited', async () => {
     seed('suspended');
     await renderPage();
