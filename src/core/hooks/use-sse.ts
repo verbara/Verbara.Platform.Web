@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { refreshAccessToken } from '@/core/api/client';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import {
   useCampaignMetricsStore,
@@ -14,6 +15,24 @@ import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
 type SseEventHandler = (data: unknown) => void;
 const handlers: Record<string, SseEventHandler[]> = {};
+
+/**
+ * The stream ended while the held token is expired (design D6). Platform ends the stream at the
+ * token's `exp` and refuses one opened past it, and EventSource cannot read that 401 (or a 403), so
+ * reopening with the held token would only spend the back-off's retries. Refresh instead: on success
+ * the token change re-runs `connect` with the new token; on failure nothing reopens, and the next
+ * request's pre-flight signs the user out. The SSE path never signs anyone out by itself.
+ */
+function refreshBeforeReconnecting(): void {
+  const auth = useAuthStore.getState();
+  // Signed out between the error and the effect cleanup: there is no session to resume.
+  if (!auth.accessToken) return;
+  // The refresh cookie belongs to the original sign-in, during an impersonation the operator's: a
+  // refresh would install the operator's token next to the impersonated tenant. The impersonation's
+  // end (the banner, at `expiresAt`) swaps the token instead, and that change reopens the stream.
+  if (auth.impersonation?.active) return;
+  void refreshAccessToken();
+}
 
 export function useSSE() {
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -282,6 +301,12 @@ export function useSSE() {
       sourceRef.current = null;
       // Catch up missed notifications on reconnect
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+
+      // An expired token is refreshed first, with no back-off timer and no retry spent.
+      if (useAuthStore.getState().isTokenExpired()) {
+        refreshBeforeReconnecting();
+        return;
+      }
 
       const attempt = reconnectAttemptRef.current;
       if (attempt >= 10) {

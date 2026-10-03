@@ -32,6 +32,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     `HubNotConnectedError`, so a presence page's unsubscribe cleanup can no longer reconnect the
     hub, with no bearer, right after sign-out. A failed supervisor action now always shows its
     translated message instead of the error's English text.
+- **The SSE event stream no longer spends its retries on an expired token (`#N`; openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`).** Platform ends the stream at the
+  token's expiry and refuses a stream opened past it, but EventSource cannot see that 401, so
+  `use-sse.ts` retried with its jittered back-off and the expired token, up to ten times, until an
+  API request happened to rotate the token or the retries ran out. When the stream errors while the held token has expired, the hook now
+  refreshes first, schedules no retry and spends none: the new token reopens the stream, and a
+  refused refresh opens nothing (the next API request's pre-flight signs the user out). During an
+  impersonation it does not refresh, because the refresh cookie is the operator's: the stream
+  reopens when the impersonation ends. An error with a valid token keeps the existing back-off.
 
 ### Security
 
