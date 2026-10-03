@@ -9,6 +9,30 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The realtime hub no longer drops on every other token refresh, keeps its state across a
+  refresh, and is no longer restarted by a page after sign-out (`#N`; openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`).** The bootstrap hook was keyed on
+  the access-token value, so every refresh ran an un-awaited stop followed by a start. The start
+  met a connection that was still stopping and failed ("Cannot start a HubConnection that is not in
+  the 'Disconnected' state."), which left the hub down until the next refresh, and every refresh's
+  stop reset the realtime store, wiping agent presence, the observed-supervision banner and the
+  last whisper.
+  - `platform-hub.ts` runs start and stop on one serialized chain and reuses its one
+    `HubConnection`. A start on a hub that is connected, connecting or reconnecting does nothing.
+  - The hook restarts the hub only when the principal changes (sign-in, sign-out, another user or
+    tenant, an impersonation starting or ending, the realtime feature turning off). A refresh for
+    the same principal restarts nothing; it only revives a hub that is `disconnected`, `failed` or
+    `ended`. Platform bounds each connection by its token and closes it at expiry with a reconnect
+    allowed, and every (re)connect now presents the token the console holds at that moment,
+    refreshing it first when it has expired (never during an impersonation, whose refresh cookie
+    is the operator's).
+  - Calling a hub method no longer starts the hub. On a hub that is not connected it rejects with
+    `HubNotConnectedError`, so a presence page's unsubscribe cleanup can no longer reconnect the
+    hub, with no bearer, right after sign-out. A failed supervisor action now always shows its
+    translated message instead of the error's English text.
+
 ---
 
 ## [3.19.0-web] - 2026-08-26
