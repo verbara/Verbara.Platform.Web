@@ -80,6 +80,16 @@ let operations: Promise<void> = Promise.resolve();
 let stopRequested = false;
 
 /**
+ * Set while the library's automatic reconnect loop is running, so `onclose` can tell a connection
+ * that ran out of retries from one the server ended (design D5):
+ * - set by `onreconnecting`;
+ * - cleared by `onreconnected`, and by every start before it connects (so it is clear the moment a
+ *   start succeeds, and a flag left over from an earlier exhausted loop never reaches a new
+ *   connection's first close).
+ */
+let reconnecting = false;
+
+/**
  * Thrown by {@link invokeHub} when the hub is not connected. A hub method call never starts the hub
  * (design D3): only the connection lifecycle does. The message is for logs, never for the UI.
  */
@@ -261,13 +271,55 @@ export function registerHandlers(conn: HubConnection) {
     void queryClient.invalidateQueries({ queryKey: ['analytics', 'csat', 'aggregate'] });
   });
 
-  conn.onreconnecting(() => store.setConnectionState('reconnecting'));
-  conn.onreconnected(() => store.setConnectionState('connected'));
-  conn.onclose(() => {
-    // A close this module asked for is settled by the stop operation itself, which resets the store.
-    if (stopRequested) return;
-    useRealtimeStore.getState().setConnectionState('disconnected');
+  conn.onreconnecting(() => {
+    reconnecting = true;
+    store.setConnectionState('reconnecting');
   });
+  conn.onreconnected(() => {
+    reconnecting = false;
+    store.setConnectionState('connected');
+  });
+  conn.onclose((error?: Error) => {
+    switch (classifyClose(error)) {
+      case 'requested':
+        // The stop operation settles the store itself: its `reset()` writes `disconnected`.
+        return;
+      case 'exhausted':
+        useRealtimeStore.getState().setConnectionState('disconnected');
+        return;
+      case 'server-ended':
+        useRealtimeStore.getState().setConnectionState('ended');
+        return;
+    }
+  });
+}
+
+type CloseKind = 'requested' | 'exhausted' | 'server-ended';
+
+/**
+ * Sorts a close by what the connection was doing when it closed, plus whether the close carries an
+ * error (design D5). The close text is never read: Platform's revocation (`Abort()`) sends a bare
+ * `Close` frame, which reaches `onclose` with no error, exactly like a client stop or exhausted
+ * retries, so the error alone cannot carry the decision.
+ *
+ * - **Requested** (a stop this module was asked for is in progress): `disconnected`, written by the
+ *   stop operation's own `reset()`.
+ * - **Exhausted** (no error, and the reconnect loop was running): the library's own retries ran
+ *   out. `disconnected`, which the bootstrap's revival heals at the next token refresh.
+ * - **Server-ended** (every other close): `ended`, which the bootstrap resolves with a session
+ *   probe. That is an established connection closed with or without an error (the revocation's
+ *   bare frame, a refusal of an admitted connection), and any close that carries an error whatever
+ *   the loop was doing: with automatic reconnect configured, only a server `Close` frame puts an
+ *   error on `onclose` (a refusal processed in the same receive as a reconnect's handshake).
+ *
+ * This relies on the retry policy never declining the first attempt (the default
+ * `withAutomaticReconnect()` policy); otherwise a transport loss would close from `Connected`
+ * without `onreconnecting`.
+ */
+function classifyClose(error: Error | undefined): CloseKind {
+  if (stopRequested) return 'requested';
+  if (!error && reconnecting) return 'exhausted';
+  return 'server-ended';
 }
 
 /**
@@ -303,6 +355,7 @@ export function startPlatformHub(): Promise<void> {
     }
 
     stopRequested = false;
+    reconnecting = false;
     useRealtimeStore.getState().setConnectionState('connecting');
     try {
       await conn.start();

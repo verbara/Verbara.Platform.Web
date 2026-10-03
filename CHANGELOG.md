@@ -33,6 +33,31 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     hub, with no bearer, right after sign-out. A failed supervisor action now always shows its
     translated message instead of the error's English text.
 
+### Security
+
+- **When Platform ends a live connection for an account that lost access, the console now signs
+  the user out with a session-ended notice (`#N`; GHSA-757c-652x-p67g;
+  `Verbara.Platform.Web/ADR-0012`, openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`). Supported pairing: Platform ≥
+  v2.24.0.** Since v2.24.0 Platform aborts the realtime hub connections of an account
+  that is suspended, deactivated or deleted with a bare `Close` frame (no error, no reconnect
+  allowed), and refuses such an account at connect with a `Close` that carries an error. The
+  console treated both like an ordinary drop: it reported `disconnected` and kept the session, so a
+  suspended user's console looked signed in while nothing reached it, until the access token
+  expired.
+  - `platform-hub.ts` classifies a close it did not ask for by what the connection was doing, never
+    by the close text: a close after the library's reconnect retries ran out stays `disconnected`
+    (revived at the next token refresh); every other unrequested close, with or without an error,
+    puts the hub in the new `ended` state (`data-realtime-state="ended"` on the app shell).
+  - On `ended` the console asks the server whether the session still exists, with a forced
+    `POST /api/v1/auth/refresh` that skips the "token not expired" short-circuit (`probeSession`).
+    401 or 403: the agent-aware teardown runs (a routable agent is set offline first), the session
+    is cleared and `/login?reason=session-ended` opens. 200: the hub reconnects once, and a second
+    such close under the same token leaves it `ended` until the next refresh. No HTTP answer: the
+    user stays signed in. During an impersonation the check never installs the operator's own
+    token.
+  - Against a Platform older than v2.24.0 nothing changes: those versions never send these frames.
+
 ---
 
 ## [3.19.0-web] - 2026-08-26
