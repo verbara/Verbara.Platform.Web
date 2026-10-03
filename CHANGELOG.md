@@ -41,6 +41,28 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   refused refresh opens nothing (the next API request's pre-flight signs the user out). During an
   impersonation it does not refresh, because the refresh cookie is the operator's: the stream
   reopens when the impersonation ends. An error with a valid token keeps the existing back-off.
+- **A suspended or deactivated account is told that the account is not active, instead of
+  "Invalid email or password", on the password, MFA and API-key sign-in paths, and a locked
+  account is told that it is locked (`#N`; openspec
+  `a-suspended-account-is-visible-and-enforced-in-the-console`).** The login page read a `detail`
+  field that Platform's `ErrorResponse` never carries, so every refused sign-in fell through to
+  "invalid credentials". The MFA step turned Platform v2.24.0's 403 into "Invalid code" and asked
+  for another code against a challenge the server had already consumed, and the API-key form said
+  "Invalid API key".
+  - The sign-in surfaces choose the message from the HTTP status, never from the server's English
+    text: 403 shows "This account is not active. Contact your administrator.", 423 shows the
+    account-locked message, and 401 or any other failure keeps "invalid credentials" (or "Invalid
+    API key" on the API-key form). The 403 wording also holds for Platform's other 403 on these
+    endpoints, a suspended or pending-deletion tenant.
+  - On a 403 the MFA step returns to the sign-in form with that message and drops the spent
+    challenge. A wrong code, rate limiting and an expired challenge behave as before.
+  - The error element carries `data-error-code` (`account-inactive`, `account-locked`,
+    `invalid-credentials`, `invalid-key`, `sso-no-tenant`), and every message exists in EN-US,
+    ES-419 and PT-BR. The SSO no-tenant message, until now an inline English default, is
+    translated.
+  - `/login?reason=session-ended`, where the console lands after Platform ends a revoked session,
+    shows the session-ended notice (`data-notice-code="session-ended"`). Any other reason value
+    shows nothing and is never rendered.
 
 ### Security
 
