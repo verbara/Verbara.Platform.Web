@@ -11,6 +11,36 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [3.20.3-web] - 2026-10-04
+
+**Hotfix, tagged on its own under the emergency-hotfix exception of
+[ADR-0005](docs/decisions/0005-versioning-track-end-tags.md).** Against Platform v2.26.0, opening a
+conversation with stored messages in the Agent Workspace crashed with "Invalid time value", in all
+three languages. Platform v2.26.0 fixed the error that kept the console from loading a
+conversation's message history, so the console received that history for the first time and could
+not display it. **Compatible with Platform v2.24.0 and later; with Platform v2.26.0 the Agent
+Workspace requires 3.20.3-web.**
+
+### Fixed
+
+- **A conversation with message history opens in the Agent Workspace.** Platform returns each stored
+  message with its time in `createdAt` and its text in `content.blocks`, but the console read
+  `timestamp` and `text`, which Platform does not send. With no valid time the message's timestamp
+  could not be formatted and the whole workspace fell to its error screen. The console now converts
+  Platform's message format when the history loads, so the thread shows each message's text
+  and time. A message whose time is missing or unreadable now shows no time instead of
+  crashing the workspace.
+- **Opening a conversation with no messages no longer crashes the Agent Workspace** with React error
+  #185 (a render loop: the thread built a new empty list on every render).
+- **The supervisor's digital-conversation detail converts Platform's message format too.** It
+  showed empty messages stamped with the current time. The monitor still cannot open that detail from
+  its cards, which read an `id` Platform does not send; that is planned for 3.21.0-web.
+- New regression tests load the history through the real API client from a mock that answers with
+  Platform's message format, for the agent thread and the supervisor monitor in all three
+  languages. The earlier tests had used the console's own format, so they did not catch this. (#376)
+
+---
+
 ## [3.20.2-web] - 2026-10-04
 
 **Hotfix, tagged on its own under the emergency-hotfix exception of

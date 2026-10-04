@@ -32,8 +32,11 @@ function DeliveryStatus({ status }: { readonly status: Message['status'] }) {
   }
 }
 
-function formatTimestamp(iso: string, locale: Locale): string {
+/** Empty for a missing or unparseable date: one bad field must never take the workspace down. */
+function formatTimestamp(iso: string | undefined, locale: Locale): string {
+  if (!iso) return '';
   const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
   if (isToday(date)) return format(date, 'p', { locale });
   return format(date, 'PP p', { locale });
 }
@@ -102,6 +105,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
           className={cn('mt-1 flex items-center gap-1', isAgent ? 'justify-end' : 'justify-end')}
         >
           <span
+            data-testid="message-time"
             className={cn(
               'text-[10px]',
               isAgent ? 'text-white/60' : 'text-slate-500 dark:text-slate-500',

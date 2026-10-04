@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
+import { mapPlatformMessage } from '@/core/api/platform-message';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -35,6 +36,7 @@ export interface Conversation {
  * Kept hand-written (openapi-typed-client-agent): the document's `Message` is the raw ENTITY
  * (`messageId`, `direction`, `content` MessageEnvelope, `deliveryStatus`) — not this view-model
  * (`sender`/`senderName`/`text`/`timestamp`/`type`), so there is no structural match to swap onto.
+ * The wire entity is mapped onto it at the data boundary by `mapPlatformMessage`.
  */
 export interface Message {
   id: string;
@@ -98,12 +100,14 @@ export function useConversation(id: string | undefined) {
 export function useMessages(conversationId: string | undefined) {
   return useQuery({
     queryKey: ['messages', conversationId],
-    queryFn: () =>
-      customFetch<Message[]>({
+    queryFn: async () => {
+      const messages = await customFetch<components['schemas']['Message'][]>({
         url: `/api/v1/conversations/${conversationId}/messages`,
         method: 'GET',
         params: { limit: '50', offset: '0' },
-      }),
+      });
+      return messages.map(mapPlatformMessage);
+    },
     enabled: !!conversationId,
   });
 }
@@ -111,12 +115,14 @@ export function useMessages(conversationId: string | undefined) {
 export function useSendMessage() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
-      customFetch<Message>({
-        url: `/api/v1/conversations/${conversationId}/messages`,
-        method: 'POST',
-        data: { text },
-      }),
+    mutationFn: async ({ conversationId, text }: { conversationId: string; text: string }) =>
+      mapPlatformMessage(
+        await customFetch<components['schemas']['Message']>({
+          url: `/api/v1/conversations/${conversationId}/messages`,
+          method: 'POST',
+          data: { text },
+        }),
+      ),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['messages', variables.conversationId] });
     },
