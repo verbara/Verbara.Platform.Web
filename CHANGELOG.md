@@ -11,6 +11,28 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [3.20.2-web] - 2026-10-04
+
+**Hotfix, tagged on its own under the emergency-hotfix exception of
+[ADR-0005](docs/decisions/0005-versioning-track-end-tags.md).** 3.20.1-web did not fully restore
+password reset from the console: against Platform v2.25.0 a person following a reset link was sent
+to the sign-in page before they could use the form, so the reset still failed. **Console password
+reset with Platform v2.25.0 requires 3.20.2-web.**
+
+### Fixed
+
+- **The reset-password page works for someone who is not signed in.** The page loaded the tenant's
+  password policy from `GET /api/v1/auth/password-policy`, which Platform v2.25.0 serves only to a
+  signed-in user. Without a session that request was refused with 401, and the console's 401
+  handling signs out and redirects to `/login`, so the page left before the form could be used.
+  The page no longer requests the policy: it shows the generic password hint, and Platform still
+  checks the new password against the tenant's policy and the page shows its error. Pages used
+  while signed in handle a 401 exactly as before. A new regression test renders the app's real
+  router with the real API client against Platform's anonymous answers, which the 3.20.1 tests did
+  not cover.
+
+---
+
 ## [3.20.1-web] - 2026-10-03
 
 **Hotfix, tagged on its own under the emergency-hotfix exception of
