@@ -27,7 +27,7 @@ v2.24.x mailed.
   reset. The page now sends `{ token, newPassword }` and reads the failure message from the
   `ErrorResponse` `error` field, falling back to a ProblemDetails `detail`.
 - **A reset link whose token contains `+` works, whether the token in the link is unencoded or
-  percent-encoded (this PR).** Platform v2.24.x put the Base64 reset token into the link without
+  percent-encoded (#374).** Platform v2.24.x put the Base64 reset token into the link without
   encoding it, and about half of those tokens contain `+`. Reading the query string turns an
   unencoded `+` into a space, so the API received a different token and rejected it. Base64 never
   contains a space, so the page now turns spaces in the token back into `+`. Links from Platform
