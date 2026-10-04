@@ -50,6 +50,25 @@ const sampleMessage: Message = {
   type: 'text',
 };
 
+/** `sampleMessage` as Platform serializes its `Message` record (Conversations/Message.cs). */
+const platformSampleMessage = {
+  messageId: 'msg-1',
+  conversationId: 'conv-1',
+  tenantId: 'tenant-1',
+  direction: 'Inbound',
+  channel: 'WebChat',
+  senderId: 'John Doe',
+  content: { blocks: [{ $type: 'text', text: 'Hello', type: 'Text' }] },
+  deliveryStatus: 'Delivered',
+  externalMessageId: null,
+  createdAt: '2026-01-01T00:00:00Z',
+  deliveredAt: null,
+  readAt: null,
+  updatedAt: null,
+  createdBy: null,
+  updatedBy: null,
+};
+
 describe('useConversations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -140,8 +159,8 @@ describe('useMessages', () => {
     vi.clearAllMocks();
   });
 
-  it('should fetch messages for a conversation', async () => {
-    vi.mocked(client.customFetch).mockResolvedValue([sampleMessage]);
+  it('useMessages_ShouldMapPlatformMessageRecord_WhenApiReturnsHistory', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue([platformSampleMessage]);
     const { result } = renderHook(() => useMessages('conv-1'), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual([sampleMessage]);

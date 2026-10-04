@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
+import { mapPlatformMessage } from '@/core/api/platform-message';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -87,7 +88,8 @@ interface PagedResult<T> {
  * Kept hand-written (openapi-typed-client-operations): supervisor message view-model
  * (`sender`, `senderName`, `text`, `timestamp`, `type`). The document's `Message` is the raw
  * entity (`messageId`, `direction`, `content` envelope, `deliveryStatus`, …) — a different
- * shape — so there is no structurally compatible schema to swap onto.
+ * shape — so there is no structurally compatible schema to swap onto. The wire entity is mapped
+ * onto it at the data boundary by `mapPlatformMessage`.
  */
 export interface SupervisorMessage {
   id: string;
@@ -133,12 +135,14 @@ export function useSupervisorConversations(filters?: SupervisorConversationFilte
 export function useSupervisorMessages(conversationId: string | undefined) {
   return useQuery({
     queryKey: ['supervisor', 'conversations', conversationId, 'messages'],
-    queryFn: () =>
-      customFetch<SupervisorMessage[]>({
+    queryFn: async (): Promise<SupervisorMessage[]> => {
+      const messages = await customFetch<components['schemas']['Message'][]>({
         url: `/api/v1/supervisor/conversations/${conversationId}/messages`,
         method: 'GET',
         params: { limit: '50', offset: '0' },
-      }),
+      });
+      return messages.map(mapPlatformMessage);
+    },
     enabled: !!conversationId,
     refetchInterval: 5_000,
   });

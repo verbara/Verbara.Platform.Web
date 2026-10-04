@@ -39,7 +39,10 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
   }
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-border" data-testid="digital-conversation-detail">
+    <div
+      className="flex h-full flex-col rounded-lg border border-border"
+      data-testid="digital-conversation-detail"
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
@@ -75,7 +78,9 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
       {/* Messages (read-only) */}
       <div className="flex-1 space-y-2 overflow-y-auto p-4" data-testid="digital-messages">
         {messages.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">{t('monitor.no_messages_yet')}</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {t('monitor.no_messages_yet')}
+          </p>
         ) : (
           messages.map((msg) => {
             const isAgent = msg.sender === 'agent';
@@ -86,16 +91,16 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
                 ? 'bg-teal-100 text-teal-900 dark:bg-teal-900/30 dark:text-teal-200'
                 : 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100';
             return (
-              <div
-                key={msg.id}
-                className={`flex ${isAgent ? 'justify-end' : 'justify-start'}`}
-              >
+              <div key={msg.id} className={`flex ${isAgent ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${bubbleClass}`}>
                   {!isSystem && (
                     <p className="text-[10px] font-semibold opacity-70">{msg.senderName}</p>
                   )}
                   <p>{msg.text}</p>
-                  <p className="mt-0.5 text-[10px] opacity-50">
+                  <p
+                    className="mt-0.5 text-[10px] opacity-50"
+                    data-testid="supervisor-message-time"
+                  >
                     {formatTimeShort(msg.timestamp)}
                   </p>
                 </div>

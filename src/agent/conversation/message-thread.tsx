@@ -1,14 +1,19 @@
 import { useEffect } from 'react';
-import { useConversationStore } from '@/agent/stores/conversation-store';
+import { useConversationStore, type Message } from '@/agent/stores/conversation-store';
 import { useMessages } from '@/core/api/hooks/use-conversations';
 import { VirtualList } from '@/core/ui/virtual-list';
 import { MessageBubble } from './message-bubble';
 import { SystemEvent } from './system-event';
 
 const ESTIMATED_MESSAGE_HEIGHT_PX = 64;
+/**
+ * One stable empty list for a conversation the store has no messages for yet: a fresh `[]` from the
+ * selector is a new snapshot on every read, which React rejects with "Maximum update depth exceeded".
+ */
+const NO_MESSAGES: Message[] = [];
 
 export function MessageThread({ conversationId }: { conversationId: string }) {
-  const messages = useConversationStore((s) => s.messages[conversationId] ?? []);
+  const messages = useConversationStore((s) => s.messages[conversationId] ?? NO_MESSAGES);
   const setMessages = useConversationStore((s) => s.setMessages);
 
   const { data: fetchedMessages } = useMessages(conversationId);
