@@ -7,9 +7,14 @@ import { Label } from '@/core/ui/label';
 import { FieldError } from '@/core/ui/field-error';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { CircleCheckBig, CircleX } from 'lucide-react';
-import { usePasswordPolicy, type PasswordPolicy } from '@/core/api/hooks/use-auth-admin';
+import { type PasswordPolicy } from '@/core/api/hooks/use-auth-admin';
 
-const defaultPolicy: PasswordPolicy = {
+// The generic hint shown while resetting. The tenant's own policy cannot be read here: the person
+// following a reset link has no session, and `GET /api/v1/auth/password-policy` requires one (it
+// resolves the tenant from the token) — loading it through `customFetch` answered 401, which signs
+// out and redirects to /login before the form could be used. Platform still validates the new
+// password against the tenant's policy and the page shows its error.
+const resetPolicy: PasswordPolicy = {
   minLength: 12,
   requireUppercase: true,
   requireNumber: true,
@@ -90,11 +95,9 @@ export function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { data: policy } = usePasswordPolicy();
-  const effectivePolicy = policy ?? defaultPolicy;
 
   const passwordsMatch = newPassword === confirmPassword;
-  const canSubmit = newPassword.length >= effectivePolicy.minLength && passwordsMatch && !loading;
+  const canSubmit = newPassword.length >= resetPolicy.minLength && passwordsMatch && !loading;
 
   const mismatchError =
     confirmPassword && !passwordsMatch ? { message: 'auth.passwords_do_not_match' } : undefined;
@@ -171,7 +174,7 @@ export function ResetPasswordPage() {
               // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus first field on mount for keyboard users
               autoFocus
             />
-            <PasswordStrength password={newPassword} policy={effectivePolicy} />
+            <PasswordStrength password={newPassword} policy={resetPolicy} />
             <FieldError id={newPasswordA11y.errorId} />
           </div>
 

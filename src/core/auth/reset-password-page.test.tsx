@@ -32,7 +32,7 @@ const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
       headers: resetAnswer.body === undefined ? {} : { 'Content-Type': 'application/json' },
     });
   }
-  // The page also loads the password policy; answer "not found" so the page uses its default.
+  // The page loads nothing else; anything unexpected is "not found".
   return new Response(null, { status: 404 });
 });
 
