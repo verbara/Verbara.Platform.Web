@@ -29,10 +29,12 @@ Workspace requires 3.20.3-web.**
   could not be formatted and the whole workspace fell to its error screen. The console now converts
   Platform's message format when the history loads, so the thread shows each message's text
   and time. A message whose time is missing or unreadable now shows no time instead of
-  crashing the workspace, and a conversation with no messages yet no longer risks a render loop.
-- **The supervisor's digital-conversation monitor shows the stored text and time.** It reads the
-  same history from Platform and showed empty messages stamped with the current time; it now uses
-  the same conversion.
+  crashing the workspace.
+- **Opening a conversation with no messages no longer crashes the Agent Workspace** with React error
+  #185 (a render loop: the thread built a new empty list on every render).
+- **The supervisor's digital-conversation detail converts Platform's message format too.** It
+  showed empty messages stamped with the current time. The monitor still cannot open that detail from
+  its cards, which read an `id` Platform does not send; that is planned for 3.21.0-web.
 - New regression tests load the history through the real API client from a mock that answers with
   Platform's message format, for the agent thread and the supervisor monitor in all three
   languages. The earlier tests had used the console's own format, so they did not catch this. (#376)
