@@ -29,7 +29,7 @@ reset with Platform v2.25.0 requires 3.20.2-web.**
   checks the new password against the tenant's policy and the page shows its error. Pages used
   while signed in handle a 401 exactly as before. A new regression test renders the app's real
   router with the real API client against Platform's anonymous answers, which the 3.20.1 tests did
-  not cover.
+  not cover. (#375)
 
 ---
 
