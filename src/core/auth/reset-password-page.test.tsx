@@ -120,6 +120,32 @@ describe('ResetPasswordPage', () => {
     );
   });
 
+  // Platform 2.24.x mailed the Base64 reset token unencoded, and about half of those tokens
+  // contain '+'. A query-string parser reads an unencoded '+' as a space, so the API received a
+  // different token and rejected it. Platform 2.25.0 percent-encodes the token. Both links must
+  // reach the API with the token Platform issued.
+  it('submit_ShouldSendThePlusSignsIntact_WhenTheTokenIsUnencodedInTheLink', async () => {
+    await renderPage('/reset-password?token=ab+cd/ef+gh==');
+    await submitNewPassword();
+
+    const [, init] = resetCalls()[0]!;
+    expect(JSON.parse(String(init?.body))).toEqual({
+      token: 'ab+cd/ef+gh==',
+      newPassword: NEW_PASSWORD,
+    });
+  });
+
+  it('submit_ShouldSendTheDecodedToken_WhenTheTokenIsPercentEncodedInTheLink', async () => {
+    await renderPage('/reset-password?token=ab%2Bcd%2Fef%2Bgh%3D%3D');
+    await submitNewPassword();
+
+    const [, init] = resetCalls()[0]!;
+    expect(JSON.parse(String(init?.body))).toEqual({
+      token: 'ab+cd/ef+gh==',
+      newPassword: NEW_PASSWORD,
+    });
+  });
+
   it('submit_ShouldShowTheApiErrorField_WhenTheApiAnswersWithAnErrorResponse', async () => {
     resetAnswer = { status: 400, body: { error: 'Invalid or expired reset token' } };
     await renderPage();

@@ -81,7 +81,11 @@ export function ResetPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') ?? '';
+  // Platform 2.24.x mailed the Base64 token unencoded, and the query parser reads its '+' as a
+  // space. Base64 never contains a space, so a space can only be a '+' that lost its meaning in
+  // transit; restoring it keeps those links working. Platform 2.25.0 percent-encodes the token
+  // ('%2B'), which decodes straight to '+' and is untouched by this.
+  const token = (searchParams.get('token') ?? '').replaceAll(' ', '+');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');

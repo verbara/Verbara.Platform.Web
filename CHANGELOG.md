@@ -11,6 +11,30 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [3.20.1-web] - 2026-10-03
+
+**Hotfix, tagged on its own under the emergency-hotfix exception of
+[ADR-0005](docs/decisions/0005-versioning-track-end-tags.md).** Password reset from the console
+did not work against any Platform version before this release. **Console password reset with
+Platform v2.25.0 requires 3.20.1-web**, and this release also accepts the reset links that Platform
+v2.24.x mailed.
+
+### Fixed
+
+- **The reset-password page sends the field Platform expects and shows Platform's error message
+  (#373).** The page posted `resetToken`, but Platform's `ResetPasswordRequest` expects `token`
+  (with `newPassword`), so every submission was rejected with 400 and the password could not be
+  reset. The page now sends `{ token, newPassword }` and reads the failure message from the
+  `ErrorResponse` `error` field, falling back to a ProblemDetails `detail`.
+- **A reset link whose token contains `+` works, whether the token in the link is unencoded or
+  percent-encoded (#374).** Platform v2.24.x put the Base64 reset token into the link without
+  encoding it, and about half of those tokens contain `+`. Reading the query string turns an
+  unencoded `+` into a space, so the API received a different token and rejected it. Base64 never
+  contains a space, so the page now turns spaces in the token back into `+`. Links from Platform
+  v2.25.0, which percent-encodes the token, are unaffected.
+
+---
+
 ## [3.20.0-web] - 2026-10-03
 
 **Requires Platform ≥ v2.24.0.** The console no longer restarts the realtime hub on token refresh; it
