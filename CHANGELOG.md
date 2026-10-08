@@ -9,6 +9,24 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The supervisor's digital monitor opens a conversation and takes it over.** Its cards read an
+  `id` Platform does not send (Platform sends `conversationId`), so every card was the same
+  "undefined" card and a takeover went to `/supervisor/conversations/undefined/takeover`, which
+  Platform answered with 404. The console now converts Platform's conversation format when the list
+  loads. Platform's list carries no contact name, queue name or last message, so the cards leave
+  those blank. (N16)
+- **Starting a conversation from the contact search works.** The search results read an `id`
+  Platform does not send (Platform sends `contactId`), so the request carried no contact and
+  Platform refused it with 400. The console now converts Platform's contact format, which also fixes
+  the contact pickers on the cases and consent pages and the contact search panel. (N16)
+- **The agent inbox shows a conversation as soon as it arrives.** A conversation assigned live
+  updated the counter but not the list until the agent switched tabs; the list now updates
+  immediately. The conversations the inbox loads from the API are now converted from Platform's
+  format too, and a conversation without a usable time shows no time instead of crashing the
+  inbox. (N17)
+
 ---
 
 ## [3.20.3-web] - 2026-10-04
