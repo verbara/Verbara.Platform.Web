@@ -1,6 +1,15 @@
 import type { APIRequestContext, Page, Response } from '@playwright/test';
 import { test, expect, waitForAppReady } from '../../fixtures/auth.fixture';
+import { skipAgentTour } from '../../helpers/agent-tour';
 import { authenticatedPage } from '../../helpers/auth-session';
+import {
+  activateForAgent,
+  bearerApiContext,
+  idOf,
+  leaveQueue,
+  openWebChatSession,
+  type RoutedConversation,
+} from '../../helpers/conversation-routing';
 import { API_BASE } from '../../helpers/credentials';
 
 /**
@@ -19,6 +28,11 @@ import { API_BASE } from '../../helpers/credentials';
  * user with no Agent profile. The lab seed's `demo-user-*` agents are linked to no user, so every
  * seeded agent would be refused with `not-an-agent`.
  *
+ * Agent A comes to own the conversation the way Platform (>= v2.26.0) allows it: a fresh conversation
+ * is `Queued`, and `Queued → Active` is refused ("Cannot transition from Queued to Active."), so the
+ * spec routes it from a WebChat visitor's message, lets the distribution worker offer it, and
+ * reassigns the offered conversation to A (`helpers/conversation-routing.ts`).
+ *
  * The monitor card and the agent's inbox read the conversation's id, which Platform sends as
  * `conversationId`: this spec relies on group 12 of the same change (N16, N17), which maps those
  * entities at the data boundary.
@@ -29,23 +43,14 @@ import { API_BASE } from '../../helpers/credentials';
 const SHOULD_RUN = process.env.E2E_FULL_STACK === 'true';
 
 /**
- * The test's budget: four users, two Agent profiles, a contact, a conversation, two reassigns, two
- * browser sign-ins and two monitored refusals. A budget, not a wait: every step below is fenced on a
- * response or on `expect`.
+ * The test's budget: four users, two Agent profiles, a contact, a conversation, its routing and offer
+ * (up to 45 s), two reassigns, two browser sign-ins and two monitored refusals. A budget, not a wait:
+ * every step below is fenced on a response or on `expect`.
  */
-const TEST_BUDGET = 90_000;
+const TEST_BUDGET = 150_000;
 
 /** The monitor lists conversations on a 10 s poll; the agent's inbox loads on mount. */
 const LIST_TIMEOUT = 15_000;
-
-/** Platform serializes an `EntityId` as its string value; tolerate the `{ value }` object form. */
-function idOf(value: unknown): string {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'object' && value !== null && 'value' in value) {
-    return String((value as { value: unknown }).value);
-  }
-  throw new Error(`Unexpected id shape: ${JSON.stringify(value)}`);
-}
 
 interface Account {
   tenantId: string;
@@ -90,9 +95,18 @@ async function createAgentProfile(
   return idOf(((await created.json()) as { agentId: unknown }).agentId);
 }
 
-async function createConversation(api: APIRequestContext, stamp: string): Promise<string> {
+/** A WebChat conversation whose contact the visitor of `sessionId` resolves to. */
+async function createConversation(
+  api: APIRequestContext,
+  stamp: string,
+  sessionId: string,
+): Promise<string> {
   const contact = await api.post(`${API_BASE}/api/v1/contacts`, {
-    data: { firstName: 'E2E Refusals', lastName: stamp },
+    data: {
+      firstName: 'E2E Refusals',
+      lastName: stamp,
+      addresses: [{ channel: 'WebChat', address: sessionId }],
+    },
   });
   expect(contact.status(), 'create contact').toBe(201);
   const contactId = idOf(((await contact.json()) as { contactId: unknown }).contactId);
@@ -134,6 +148,7 @@ test.describe('Conversation refusals (full stack)', () => {
   test('a supervisor without an Agent profile and a former owner see the localized refusal of their action', async ({
     browser,
     demoApiContext,
+    playwright,
   }) => {
     test.setTimeout(TEST_BUDGET);
 
@@ -143,9 +158,12 @@ test.describe('Conversation refusals (full stack)', () => {
     const supervisor = await createUser(demoApiContext, stamp, 'supervisor', 'Supervisor');
     const agentAId = await createAgentProfile(demoApiContext, agentA.userId, `Agent A ${stamp}`);
     const agentBId = await createAgentProfile(demoApiContext, agentB.userId, `Agent B ${stamp}`);
-    const conversationId = await createConversation(demoApiContext, stamp);
+    const sessionId = await openWebChatSession(demoApiContext, 'demo');
+    const conversationId = await createConversation(demoApiContext, stamp, sessionId);
 
     const pages: Page[] = [];
+    let agentApi: APIRequestContext | undefined;
+    let routed: RoutedConversation | undefined;
     try {
       // ── A supervisor with no Agent profile takes over: 403 not-an-agent ─────────────────────
       const supervisorPage = await authenticatedPage(browser, supervisor.account);
@@ -167,12 +185,18 @@ test.describe('Conversation refusals (full stack)', () => {
       await expect(refusal(supervisorPage, 'not-an-agent')).toBeVisible();
 
       // ── Agent A owns the conversation, loses it to B, and sends: 403 not-owner ──────────────
-      await reassignToAgent(demoApiContext, conversationId, agentAId);
+      agentApi = await bearerApiContext(playwright, agentA.account);
+      routed = await activateForAgent(demoApiContext, agentApi, {
+        conversationId,
+        sessionId,
+        agentId: agentAId,
+      });
 
       const agentPage = await authenticatedPage(browser, agentA.account);
       pages.push(agentPage);
       await agentPage.goto(`/agent/conversation/${conversationId}`);
       await waitForAppReady(agentPage);
+      await skipAgentTour(agentPage);
       const input = agentPage.getByTestId('reply-composer-input');
       await expect(input).toBeVisible({ timeout: LIST_TIMEOUT });
 
@@ -187,6 +211,8 @@ test.describe('Conversation refusals (full stack)', () => {
       await expect(refusal(agentPage, 'not-owner')).toBeVisible();
     } finally {
       for (const page of pages) await page.context().close();
+      await agentApi?.dispose();
+      await leaveQueue(demoApiContext, routed, agentAId);
       // Best effort: the users and profiles are unique per run, so a failed delete leaks nothing
       // another run depends on.
       for (const agentId of [agentAId, agentBId]) {

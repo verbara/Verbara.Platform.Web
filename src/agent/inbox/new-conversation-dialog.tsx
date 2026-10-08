@@ -149,7 +149,11 @@ export function NewConversationDialog({
               </SelectTrigger>
               <SelectContent>
                 {CHANNELS.map((ch) => (
-                  <SelectItem key={ch.value} value={ch.value}>
+                  <SelectItem
+                    key={ch.value}
+                    value={ch.value}
+                    data-testid={`new-conv-channel-option-${ch.value}`}
+                  >
                     {ch.label}
                   </SelectItem>
                 ))}
