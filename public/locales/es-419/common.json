@@ -123,7 +123,6 @@
     "back_to_login": "Volver al inicio de sesión",
     "reset_password": "Restablecer contraseña",
     "reset_password_description": "Ingresa tu nueva contraseña.",
-    "reset_error": "No se pudo restablecer la contraseña. El enlace puede haber expirado.",
     "reset_token_missing": "Token de restablecimiento inválido o faltante.",
     "password_reset_success": "Tu contraseña ha sido restablecida. Inicia sesión.",
     "new_password": "Nueva contraseña",

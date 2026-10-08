@@ -8,6 +8,7 @@ import {
   apiKeyRefusalCode,
   loginNoticeCode,
   passwordRefusalCode,
+  resetRefusalCode,
 } from './sign-in-refusal';
 
 const LOCALES = [
@@ -97,5 +98,33 @@ describe('sign-in-refusal', () => {
     ['a key of the error map', 'account-inactive'],
   ])('LoginNoticeCode_ShouldReturnNull_ForAReasonOutsideTheAllowList: %s', (_case, reason) => {
     expect(loginNoticeCode(reason)).toBeNull();
+  });
+
+  // Platform v2.25.0+ AuthEndpoints.ResetPassword: a policy refusal is 400
+  // `ErrorDetailResponse(string Error, IReadOnlyList<string> Details)`, camelCase on the wire.
+  it('ResetRefusalCode_ShouldReturnResetPolicy_WhenTheBodyIsPlatformsErrorDetailResponse', () => {
+    const body = {
+      error: 'Password does not meet policy',
+      details: ['Password must be at least 12 characters'],
+    };
+    expect(resetRefusalCode(400, body)).toBe('reset-policy');
+  });
+
+  it.each([
+    ['a token refusal (ErrorResponse)', { error: 'Invalid or expired reset token' }],
+    ['details that is not a list', { error: 'x', details: 'Password too short' }],
+    ['a list under another name', { error: 'x', errors: ['Password too short'] }],
+    ['a ProblemDetails', { title: 'Bad Request', detail: 'Something went wrong' }],
+    ['no body', null],
+  ])('ResetRefusalCode_ShouldReturnResetInvalid_ForA400Without_details: %s', (_case, body) => {
+    expect(resetRefusalCode(400, body)).toBe('reset-invalid');
+  });
+
+  it.each([
+    [500, { error: 'x', details: ['y'] }],
+    [429, { error: 'Too many requests' }],
+    [null, null],
+  ])('ResetRefusalCode_ShouldReturnResetFailed_WhenTheStatusIsNot400: %s', (status, body) => {
+    expect(resetRefusalCode(status, body)).toBe('reset-failed');
   });
 });

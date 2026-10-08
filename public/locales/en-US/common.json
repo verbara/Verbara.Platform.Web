@@ -123,7 +123,6 @@
     "back_to_login": "Back to login",
     "reset_password": "Reset password",
     "reset_password_description": "Enter your new password below.",
-    "reset_error": "Unable to reset password. The link may have expired.",
     "reset_token_missing": "Invalid or missing reset token.",
     "password_reset_success": "Your password has been reset. Please sign in.",
     "new_password": "New password",

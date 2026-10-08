@@ -123,7 +123,6 @@
     "back_to_login": "Voltar ao login",
     "reset_password": "Redefinir senha",
     "reset_password_description": "Digite sua nova senha abaixo.",
-    "reset_error": "Não foi possível redefinir a senha. O link pode ter expirado.",
     "reset_token_missing": "Token de redefinição inválido ou ausente.",
     "password_reset_success": "Sua senha foi redefinida. Faça login.",
     "new_password": "Nova senha",

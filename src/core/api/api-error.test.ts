@@ -45,10 +45,11 @@ describe('ApiError', () => {
     expect(err.name).toBe('ApiError');
   });
 
-  it('should keep a policy errors list of strings', () => {
+  // Platform's password-policy refusal is `ErrorDetailResponse(Error, Details)`: `details` on the wire.
+  it('should keep the policy details list of strings of an ErrorDetailResponse', () => {
     const err = new ApiError(400, {
       error: 'Password does not meet policy',
-      errors: ['Too short', 'Needs a digit'],
+      details: ['Too short', 'Needs a digit'],
     });
     expect(err.code).toBeNull();
     expect(err.errors).toEqual(['Too short', 'Needs a digit']);

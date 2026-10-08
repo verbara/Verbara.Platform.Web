@@ -76,13 +76,15 @@ export const RESET_REFUSAL_KEYS: Readonly<Record<ResetRefusalCode, string>> = {
 
 /**
  * The code for a refused `POST /api/v1/auth/reset-password`, from the status and the shape of the
- * body, never from its text. Platform answers 400 `ErrorDetailResponse { error, errors[] }` for a
- * password the tenant's policy rejects and 400 `ErrorResponse { error }` for an unknown, used or
+ * body, never from its text. Platform (v2.25.0+, `AuthEndpoints.ResetPassword`) answers 400
+ * `ErrorDetailResponse(Error, Details)` — `{ error, details: string[] }` on the wire — for a
+ * password the tenant's policy rejects, and 400 `ErrorResponse { error }` for an unknown, used or
  * expired token; anything else (another status, or a network failure: pass `null`) is generic.
+ * The `details` strings are English and are never shown: the page renders `auth.reset_policy`.
  */
 export function resetRefusalCode(status: number | null, body: unknown): ResetRefusalCode {
   if (status !== 400) return 'reset-failed';
-  const errors =
-    typeof body === 'object' && body !== null ? (body as { errors?: unknown }).errors : undefined;
-  return Array.isArray(errors) ? 'reset-policy' : 'reset-invalid';
+  const details =
+    typeof body === 'object' && body !== null ? (body as { details?: unknown }).details : undefined;
+  return Array.isArray(details) ? 'reset-policy' : 'reset-invalid';
 }

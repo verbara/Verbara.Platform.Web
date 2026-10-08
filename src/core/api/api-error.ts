@@ -3,8 +3,9 @@
  *
  * Platform's error bodies mix two things: machine codes (`ErrorResponse { error: "not-owner" }`) and
  * English prose (`ErrorResponse { error: "Cannot hold conversation" }`, a ProblemDetails `detail`, a
- * typify `errors[].message`). Only the first is a contract. {@link ApiError} keeps the HTTP status,
- * the machine code when the body carries one, and the `errors` list; the message shown to a user
+ * typify `errors[].message`, a password policy's `details[]`). Only the first is a contract.
+ * {@link ApiError} keeps the HTTP status, the machine code when the body carries one, and the item
+ * list (`errors`, else `details`); the message shown to a user
  * comes from a closed map keyed by those ({@link describeApiError}), never from the server's text.
  *
  * `message` keeps the value the client produced before this type existed (`detail`, else `error`,
@@ -12,7 +13,10 @@
  * `err.message` behave as before until they move to a map.
  */
 
-/** One item of a body's `errors` list: typify's `{ field, message }`, or a policy message string. */
+/**
+ * One item of a refusal's list: typify's `{ field, message }` (`TypifyErrorResponse.errors`), or a
+ * policy message string (`ErrorDetailResponse.details`).
+ */
 export type ApiErrorItem = { readonly field?: string; readonly message?: string } | string;
 
 /**
@@ -29,11 +33,16 @@ export function machineCodeOf(body: unknown): string | null {
   return typeof error === 'string' && MACHINE_CODE.test(error) ? error : null;
 }
 
+/**
+ * The body's item list: `errors` (typify's `TypifyErrorResponse`) or, failing that, `details`
+ * (Platform's `ErrorDetailResponse(Error, Details)`, e.g. a password-policy refusal).
+ */
 function errorItemsOf(body: unknown): readonly ApiErrorItem[] | null {
   if (typeof body !== 'object' || body === null) return null;
-  const errors = (body as { errors?: unknown }).errors;
-  if (!Array.isArray(errors)) return null;
-  return errors.filter(
+  const b = body as { errors?: unknown; details?: unknown };
+  const items = Array.isArray(b.errors) ? b.errors : b.details;
+  if (!Array.isArray(items)) return null;
+  return items.filter(
     (e): e is ApiErrorItem => typeof e === 'string' || (typeof e === 'object' && e !== null),
   );
 }
@@ -64,7 +73,7 @@ export class ApiError extends Error {
   readonly status: number;
   /** Platform's machine code (`not-owner`), or `null` when the body carried prose or nothing. */
   readonly code: string | null;
-  /** The body's `errors` list when it had one (typify's field errors, a password policy's). */
+  /** The body's item list when it had one: typify's `errors`, or an `ErrorDetailResponse`'s `details`. */
   readonly errors: readonly ApiErrorItem[] | null;
 
   constructor(status: number, body: unknown) {

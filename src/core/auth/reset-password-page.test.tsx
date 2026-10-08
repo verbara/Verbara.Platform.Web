@@ -174,10 +174,14 @@ describe('ResetPasswordPage', () => {
 
   it.each([
     [
-      'a policy refusal (400 with an errors list)',
+      // Platform v2.25.0+ ErrorDetailResponse(Error, Details), byte for byte.
+      'a policy refusal (400 ErrorDetailResponse with details)',
       {
         status: 400,
-        body: { error: 'Password does not meet policy', errors: ['Password too short'] },
+        body: {
+          error: 'Password does not meet policy',
+          details: ['Password must be at least 12 characters'],
+        },
       },
       'reset-policy',
       'reset_policy',
@@ -189,7 +193,7 @@ describe('ResetPasswordPage', () => {
       'reset_invalid',
     ],
     [
-      'a 400 ProblemDetails without an errors list',
+      'a 400 ProblemDetails without a details list',
       { status: 400, body: { title: 'Bad Request', detail: 'Something went wrong' } },
       'reset-invalid',
       'reset_invalid',
@@ -210,7 +214,7 @@ describe('ResetPasswordPage', () => {
 
       await waitFor(() => expect(resetError()).toEqual({ code, text: enCommon.auth[key] }));
       expect(document.body.textContent).not.toMatch(
-        /Password does not meet policy|Password too short|Invalid or expired|Something went wrong|Too many requests/,
+        /Password does not meet policy|Password must be at least|Invalid or expired|Something went wrong|Too many requests/,
       );
     },
   );
@@ -228,7 +232,13 @@ describe('ResetPasswordPage', () => {
   it.each(['en-US', 'es-419', 'pt-BR'] as const)(
     'submit_ShouldShowThePolicyMessageInTheActiveLocale %s',
     async (lng) => {
-      resetAnswer = { status: 400, body: { error: 'Password policy', errors: ['x'] } };
+      resetAnswer = {
+        status: 400,
+        body: {
+          error: 'Password does not meet policy',
+          details: ['Password must contain a digit'],
+        },
+      };
       await renderPage('/reset-password?token=abc123', lng);
       await submitNewPassword();
 
@@ -239,7 +249,7 @@ describe('ResetPasswordPage', () => {
   );
 
   // H4: Platform's reset errors are English prose (`ErrorResponse { error }` for a bad token,
-  // `ErrorDetailResponse { error, errors[] }` for a policy refusal). The page chooses its message
+  // `ErrorDetailResponse { error, details[] }` for a policy refusal). The page chooses its message
   // from the status and the shape of the body, never from that text.
   it('submit_ShouldShowTheLocalizedInvalidLinkMessageAndNotTheServerText_WhenTheTokenIsRefusedInEs419', async () => {
     resetAnswer = { status: 400, body: { error: 'Invalid or expired reset token' } };
