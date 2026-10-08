@@ -23,29 +23,65 @@ import {
   normalizeAccountStatus,
   type AccountStatus,
 } from './account-status';
+import {
+  USER_ROLES,
+  isLowerRole,
+  normalizeUserRole,
+  userRoleLabelKey,
+  type UserRole,
+} from './user-role';
 
-const userSchema = z.object({
+const displayNameSchema = z.string().min(2, 'admin:users.validation.displayNameMinLength');
+// Platform's `UserStatus` names. Optional, so a status the console does not know (normalized to
+// `undefined`) never fails validation.
+const statusSchema = z.enum(ACCOUNT_STATUSES).optional();
+
+/** Create: the email is typed and validated, and a role is always chosen. */
+const createSchema = z.object({
   email: z.string().email('admin:users.validation.emailInvalid'),
-  displayName: z.string().min(2, 'admin:users.validation.displayNameMinLength'),
-  role: z.enum(['admin', 'supervisor', 'agent', 'readonly']),
-  // Platform's `UserStatus` names. Optional, so a status the console does not know (normalized to
-  // `undefined`) never fails validation.
-  status: z.enum(ACCOUNT_STATUSES).optional(),
+  displayName: displayNameSchema,
+  role: z.enum(USER_ROLES),
+  status: statusSchema,
 });
 
 /**
- * What the form submits. `status` is present only in edit mode, and only when the administrator
- * picked a status other than the user's current one; otherwise the key is absent.
+ * Edit: the email is shown read-only and never validated or sent (`UpdateUserRequest` has none).
+ * The role is optional for the same reason as the status: a role the console does not know is
+ * normalized to `undefined` and must never block the save of another field (H1).
  */
-export type UserFormValues = z.infer<typeof userSchema>;
+const editSchema = z.object({
+  email: z.string(),
+  displayName: displayNameSchema,
+  role: z.enum(USER_ROLES).optional(),
+  status: statusSchema,
+});
 
-const ROLES = ['admin', 'supervisor', 'agent', 'readonly'] as const;
+type UserFormFields = z.infer<typeof editSchema>;
+
+/**
+ * What the form submits.
+ * - Create: `email`, `displayName` and `role`.
+ * - Edit: `displayName`, plus `role` and `status` only when the administrator picked a value other
+ *   than the user's current one; otherwise the key is absent. `email` is never present (H2).
+ */
+export interface UserFormValues {
+  email?: string;
+  displayName: string;
+  role?: UserRole;
+  status?: AccountStatus;
+}
 
 interface UserFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode: 'create' | 'edit';
-  defaultValues?: Partial<Omit<UserFormValues, 'status'>>;
+  defaultValues?: { email?: string; displayName?: string };
+  /**
+   * Edit mode: the user's role as `UserDto.role` reports it, in any casing. The role field opens on
+   * it, and it is the baseline the lower-role hint and a change are measured against. Ignored in
+   * create mode, which opens on `Agent`.
+   */
+  currentRole?: string | null;
   /**
    * Edit mode: the user's status as `UserDto.status` reports it, in any casing. The status field
    * opens on it, and it is the baseline a change is measured against. Ignored in create mode,
@@ -60,13 +96,17 @@ export function UserForm({
   onOpenChange,
   mode,
   defaultValues,
+  currentRole,
   currentStatus,
   onSubmit,
 }: UserFormProps) {
   const { t } = useTranslation(['admin']);
   const statusHintId = useId();
+  const roleHintId = useId();
   const initialStatus: AccountStatus | undefined =
     mode === 'edit' ? normalizeAccountStatus(currentStatus) : undefined;
+  const initialRole: UserRole | undefined =
+    mode === 'edit' ? normalizeUserRole(currentRole) : 'Agent';
 
   const {
     register,
@@ -74,13 +114,13 @@ export function UserForm({
     control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<UserFormValues>({
-    resolver: zodResolver(userSchema),
+  } = useForm<UserFormFields>({
+    resolver: zodResolver(mode === 'create' ? createSchema : editSchema),
     defaultValues: {
       email: '',
       displayName: '',
-      role: 'agent',
       ...defaultValues,
+      role: initialRole,
       status: initialStatus,
     },
   });
@@ -93,12 +133,12 @@ export function UserForm({
       reset({
         email: '',
         displayName: '',
-        role: 'agent',
         ...defaultValues,
+        role: initialRole,
         status: initialStatus,
       });
     }
-  }, [open, defaultValues, initialStatus, reset]);
+  }, [open, defaultValues, initialRole, initialStatus, reset]);
 
   const selectedStatus = useWatch({ control, name: 'status' });
   // Leaving Active signs the user out everywhere: warn before the change is saved.
@@ -108,13 +148,30 @@ export function UserForm({
     selectedStatus !== 'Active' &&
     selectedStatus !== initialStatus;
 
-  const handleFormSubmit = handleSubmit(({ status, ...values }) => {
-    const statusChanged = mode === 'edit' && status !== undefined && status !== initialStatus;
-    onSubmit?.(statusChanged ? { ...values, status } : values);
+  const selectedRole = useWatch({ control, name: 'role' });
+  // Lowering a role ends the user's sessions (Platform v2.25.0): warn before the change is saved.
+  const showRoleHint =
+    mode === 'edit' &&
+    selectedRole !== undefined &&
+    initialRole !== undefined &&
+    isLowerRole(selectedRole, initialRole);
+
+  const handleFormSubmit = handleSubmit(({ email, displayName, role, status }) => {
+    if (mode === 'create') {
+      onSubmit?.({ email, displayName, role });
+    } else {
+      const roleChanged = role !== undefined && role !== initialRole;
+      const statusChanged = status !== undefined && status !== initialStatus;
+      onSubmit?.({
+        displayName,
+        ...(roleChanged && { role }),
+        ...(statusChanged && { status }),
+      });
+    }
     onOpenChange(false);
   });
 
-  const title = mode === 'create' ? t('admin:users.create') : 'Edit user';
+  const title = mode === 'create' ? t('admin:users.create') : t('admin:users.edit');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -122,7 +179,9 @@ export function UserForm({
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>
-            {mode === 'create' ? 'Add a new user to the platform.' : 'Update user details.'}
+            {mode === 'create'
+              ? t('admin:users.create_description')
+              : t('admin:users.edit_description')}
           </SheetDescription>
         </SheetHeader>
 
@@ -132,11 +191,13 @@ export function UserForm({
             <Label htmlFor="user-email" required>
               {t('admin:users.email')}
             </Label>
+            {/* Edit: read-only, because `PUT /admin/users/{id}` takes no email (H2). */}
             <Input
               id="user-email"
               type="email"
               placeholder="user@example.com"
               data-testid="user-form-email"
+              readOnly={mode === 'edit'}
               {...emailA11y.inputProps}
               {...register('email')}
             />
@@ -171,14 +232,30 @@ export function UserForm({
               name="role"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger data-testid="user-form-role" className="w-full">
-                    <SelectValue />
+                <Select
+                  value={field.value ?? null}
+                  onValueChange={(value) => field.onChange(value ?? undefined)}
+                >
+                  <SelectTrigger
+                    data-testid="user-form-role"
+                    className="w-full"
+                    aria-describedby={showRoleHint ? roleHintId : undefined}
+                  >
+                    <SelectValue>
+                      {(value: UserRole | null) =>
+                        // An unknown role selects nothing and is shown as reported.
+                        value ? t(userRoleLabelKey(value)) : (currentRole ?? '')
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {ROLES.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
+                    {USER_ROLES.map((role) => (
+                      <SelectItem
+                        key={role}
+                        value={role}
+                        data-testid={`user-form-role-option-${role}`}
+                      >
+                        {t(userRoleLabelKey(role))}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -187,6 +264,15 @@ export function UserForm({
             />
             {errors.role && (
               <p className="text-xs text-destructive">{t(errors.role.message ?? '')}</p>
+            )}
+            {showRoleHint && (
+              <p
+                id={roleHintId}
+                data-testid="user-form-role-hint"
+                className="text-xs text-muted-foreground"
+              >
+                {t('admin:users.role_hint_lower')}
+              </p>
             )}
           </div>
 
@@ -242,7 +328,7 @@ export function UserForm({
 
           <SheetFooter className="mt-auto px-0">
             <Button data-testid="user-form-submit" type="submit" disabled={isSubmitting}>
-              {mode === 'create' ? t('admin:users.create') : 'Save changes'}
+              {mode === 'create' ? t('admin:users.create') : t('admin:users.save')}
             </Button>
           </SheetFooter>
         </form>
