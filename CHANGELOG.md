@@ -9,6 +9,28 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A stale user edit is refused instead of overwriting another administrator's change.** The
+  console sends back the user's version (`If-Match`, from the strong `ETag` Platform v2.25.0
+  returns) and, when Platform answers 412, shows "Someone else changed this user" and reloads the
+  user instead of reporting the edit as saved. A weak or absent `ETag` sends no precondition. (H14)
+- **The user form warns before a role change that signs the user out:** lowering a role ends the
+  user's sessions in Platform v2.25.0. (H15)
+
+### Changed
+
+- **The web image no longer compresses API responses it proxies.** Its nginx gzipped JSON from
+  `/api/`, which turned Platform's strong `ETag` into a weak `W/"…"` one; Platform compares
+  `If-Match` strongly, so every user save through the web image (the Kubernetes path) would have
+  been refused with 412. `/api/` responses now pass through as Platform sends them, as they already
+  did behind the compose gateway; the console's own files are still compressed. API JSON travels
+  uncompressed between the browser and the web pod.
+- **The web image's access log has a new format, without query strings.** Each line records the
+  method, the path without its query, the status, the size, the Referer's scheme, host and path, and
+  the user agent, the same fields as Platform's gateway (`verbara_noquery`). Point log parsers at the
+  new format.
+
 ### Fixed
 
 - **An impersonation never borrows the operator's own credentials or tenant.** No page of the
@@ -47,15 +69,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with its status. (H3)
 - **The user form's titles, descriptions and save button are translated** in ES-419 and PT-BR;
   they were inline English. (H5)
-
-### Added
-
-- **A stale user edit is refused instead of overwriting another administrator's change.** The
-  console sends back the user's version (`If-Match`, from the strong `ETag` Platform v2.25.0
-  returns) and, when Platform answers 412, shows "Someone else changed this user" and reloads the
-  user instead of reporting the edit as saved. A weak or absent `ETag` sends no precondition. (H14)
-- **The user form warns before a role change that signs the user out:** lowering a role ends the
-  user's sessions in Platform v2.25.0. (H15)
 - **The password-reset page explains a refused reset in your language.** It showed Platform's English
   text (for example "Invalid or expired reset token") in every locale. It now shows a translated
   message chosen from the answer: a password that breaks the tenant's policy, a link that is invalid,
@@ -82,22 +95,6 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Leaving a page while the notification stream waits to reconnect no longer reopens it.** The
   stream's reconnect timer was not cancelled when its page unmounted, so the stream reopened after a
   client-side navigation, possibly with an outdated token. (H8)
-
-### Changed
-
-- **The web image no longer compresses API responses it proxies.** Its nginx gzipped JSON from
-  `/api/`, which turned Platform's strong `ETag` into a weak `W/"…"` one; Platform compares
-  `If-Match` strongly, so every user save through the web image (the Kubernetes path) would have
-  been refused with 412. `/api/` responses now pass through as Platform sends them, as they already
-  did behind the compose gateway; the console's own files are still compressed. API JSON travels
-  uncompressed between the browser and the web pod.
-- **The web image's access log has a new format, without query strings.** Each line records the
-  method, the path without its query, the status, the size, the Referer's scheme, host and path, and
-  the user agent, the same fields as Platform's gateway (`verbara_noquery`). Point log parsers at the
-  new format.
-
-### Fixed
-
 - **The web image no longer writes credentials to its logs.** It logged the full request line and
   Referer, so password-reset tokens, SSE stream tokens and the hub's `access_token` landed in the
   container log, and its error log repeated the request line and upstream URL with their queries. The
