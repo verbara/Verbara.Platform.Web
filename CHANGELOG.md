@@ -9,6 +9,17 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The session is renewed before the access token expires, in every browser.** Where the browser
+  provides Web Locks (Chromium, Firefox, Safari), the console's scheduled renewal a minute before
+  expiry found the token still valid and skipped the request, so live connections were renewed only
+  when the server closed them at expiry. The scheduled renewal now reaches the server unless the
+  token outlives that minute. (H6)
+- **Leaving a page while the notification stream waits to reconnect no longer reopens it.** The
+  stream's reconnect timer was not cancelled when its page unmounted, so the stream reopened after a
+  client-side navigation, possibly with an outdated token. (H8)
+
 ---
 
 ## [3.20.3-web] - 2026-10-04

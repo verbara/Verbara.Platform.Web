@@ -122,6 +122,16 @@ async function doRefresh(): Promise<boolean> {
 }
 
 /**
+ * Whether the held token makes a refresh unnecessary: valid for longer than `minValidityMs`, or,
+ * when no minimum is given, not inside the store's expiry buffer ({@link refreshAccessToken}).
+ */
+function heldTokenStaysValid(minValidityMs: number | undefined): boolean {
+  const state = useAuthStore.getState();
+  if (minValidityMs === undefined) return !state.isTokenExpired();
+  return state.tokenExpiry !== null && state.tokenExpiry - Date.now() > minValidityMs;
+}
+
+/**
  * Refreshes the access token, deduplicated per-tab via `_refreshPromise` and
  * serialized across tabs via the Web Locks API (`'verbara-refresh'`). When
  * `navigator.locks` is unavailable the per-tab dedupe still applies and we fall
@@ -131,8 +141,14 @@ async function doRefresh(): Promise<boolean> {
  * valid (including the "another tab already refreshed" fast-path) and `false`
  * when the refresh failed (callers then log out). Exported so the session
  * manager can trigger proactive refreshes.
+ *
+ * `minValidityMs` (design D9) is how long the held token must stay valid for the lock body to skip
+ * the network. Omitted, the skip is the request pre-flight's own test (`isTokenExpired()`, a 30 s
+ * buffer). The session manager passes its refresh lead (60 s): it fires at `exp − lead`, when the
+ * held token is still valid for the whole lead, so with the 30 s test the proactive refresh found
+ * the token "fresh" and never reached the network wherever Web Locks exist (H6).
  */
-export async function refreshAccessToken(): Promise<boolean> {
+export async function refreshAccessToken(minValidityMs?: number): Promise<boolean> {
   if (_refreshPromise) return _refreshPromise;
 
   _refreshPromise = (async () => {
@@ -143,7 +159,7 @@ export async function refreshAccessToken(): Promise<boolean> {
       if (typeof navigator !== 'undefined' && navigator.locks) {
         return await navigator.locks.request('verbara-refresh', async () => {
           // Another tab may have refreshed while we waited for the lock.
-          if (!useAuthStore.getState().isTokenExpired()) return true;
+          if (heldTokenStaysValid(minValidityMs)) return true;
           return doRefresh();
         });
       }

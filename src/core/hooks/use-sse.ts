@@ -42,6 +42,9 @@ export function useSSE() {
   const sourceRef = useRef<EventSource | null>(null);
   const reconnectAttemptRef = useRef(0);
   const connectRef = useRef<() => void>(null);
+  // The pending back-off reconnect (design D11): cleared on unmount and before every new connect,
+  // so a stream is never opened after its owner unmounted (H8).
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const connect = useCallback(() => {
     if (!accessToken || sourceRef.current) return;
@@ -315,7 +318,10 @@ export function useSSE() {
       }
       const delay = Math.min(2000 * Math.pow(2, attempt), 30000) + Math.random() * 1000;
       reconnectAttemptRef.current = attempt + 1;
-      setTimeout(() => connectRef.current?.(), delay);
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectTimerRef.current = null;
+        connectRef.current?.();
+      }, delay);
     };
   }, [accessToken, queryClient, navigate, t]);
 
@@ -324,12 +330,21 @@ export function useSSE() {
   }, [connect]);
 
   useEffect(() => {
+    clearReconnectTimer(reconnectTimerRef);
     connect();
     return () => {
+      clearReconnectTimer(reconnectTimerRef);
       sourceRef.current?.close();
       sourceRef.current = null;
     };
   }, [connect]);
+}
+
+function clearReconnectTimer(timerRef: { current: ReturnType<typeof setTimeout> | null }): void {
+  if (timerRef.current !== null) {
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+  }
 }
 
 /**
