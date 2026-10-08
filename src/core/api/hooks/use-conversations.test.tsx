@@ -75,15 +75,39 @@ describe('useConversations', () => {
   });
 
   it('should fetch conversations with default params', async () => {
+    // Platform's `Conversation` record; a closed one has left the agent's working set.
+    const wire = {
+      conversationId: 'conv-1',
+      tenantId: 'tenant-1',
+      contactId: 'contact-1',
+      channel: 'WhatsApp',
+      owner: { kind: 'Agent', ownerId: 'agent-1' },
+      state: 'OnHold',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:05:00Z',
+    };
     vi.mocked(client.customFetch).mockResolvedValue({
-      items: [sampleConversation],
-      totalCount: 1,
+      items: [wire, { ...wire, conversationId: 'conv-2', state: 'Closed' }],
+      totalCount: 2,
       page: 1,
       pageSize: 50,
     });
     const { result } = renderHook(() => useConversations(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual([sampleConversation]);
+    expect(result.current.data).toEqual([
+      {
+        id: 'conv-1',
+        contactId: 'contact-1',
+        contactName: '',
+        channel: 'whatsapp',
+        queueName: '',
+        state: 'on_hold',
+        lastMessage: '',
+        lastMessageAt: '2026-01-01T00:05:00Z',
+        unread: false,
+        assignedAt: '2026-01-01T00:00:00Z',
+      },
+    ]);
     expect(client.customFetch).toHaveBeenCalledWith({
       url: '/api/v1/conversations',
       method: 'GET',

@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { LiveRegion } from '@/core/ui/live-region';
 import { VirtualList } from '@/core/ui/virtual-list';
-import { useConversationStore } from '@/agent/stores/conversation-store';
+import {
+  selectFilteredConversations,
+  useConversationStore,
+} from '@/agent/stores/conversation-store';
 import { useConversations } from '@/core/api/hooks/use-conversations';
 import { useAgentMe } from '@/core/api/hooks/use-agents';
 import { InboxFilters } from './inbox-filters';
@@ -19,7 +22,9 @@ export function InboxPanel() {
   const { t } = useTranslation(['agent']);
   const upsertConversation = useConversationStore((s) => s.upsertConversation);
   const filter = useConversationStore((s) => s.filter);
-  const filteredConversations = useConversationStore((s) => s.filteredConversations);
+  // Subscribe to the state the list is derived from, not to `filteredConversations` (a function
+  // reference that never changes): otherwise a conversation added by SSE does not re-render the list.
+  const conversationsById = useConversationStore((s) => s.conversations);
 
   const [newConvOpen, setNewConvOpen] = useState(false);
   const [announcement, setAnnouncement] = useState<string>('');
@@ -32,7 +37,10 @@ export function InboxPanel() {
     conversations.forEach((c) => upsertConversation(c));
   }, [conversations, upsertConversation]);
 
-  const visible = filteredConversations();
+  const visible = useMemo(
+    () => selectFilteredConversations(conversationsById, filter),
+    [conversationsById, filter],
+  );
 
   useEffect(() => {
     const currentFirst = visible[0];

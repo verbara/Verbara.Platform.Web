@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformMessage } from '@/core/api/platform-message';
+import { mapPlatformConversation } from '@/core/api/platform-conversation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -9,7 +10,8 @@ import { toast } from 'sonner';
  * Kept hand-written (openapi-typed-client-agent): the document's `Conversation` is the raw ENTITY
  * (`conversationId`, `owner`, `sessions`, PascalCase `state`) — a different shape from this inbox
  * view-model (`id`, lowercase `state`, `contactName`/`queueName`/`lastMessage`/`unread`/`assignedAt`),
- * so there is no structurally compatible schema to swap onto.
+ * so there is no structurally compatible schema to swap onto. The wire entity is mapped onto it at
+ * the data boundary by `mapPlatformConversation`.
  */
 export interface Conversation {
   id: string;
@@ -50,13 +52,6 @@ export interface Message {
   metadata?: Record<string, unknown>;
 }
 
-interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-}
-
 export function useConversations(filter?: {
   state?: string;
   queueId?: string;
@@ -75,12 +70,12 @@ export function useConversations(filter?: {
   return useQuery({
     queryKey: ['conversations', params],
     queryFn: async () => {
-      const result = await customFetch<PagedResult<Conversation>>({
+      const result = await customFetch<components['schemas']['PagedResultOfConversation']>({
         url: '/api/v1/conversations',
         method: 'GET',
         params,
       });
-      return result.items;
+      return result.items.map(mapPlatformConversation).filter((c): c is Conversation => c !== null);
     },
   });
 }
