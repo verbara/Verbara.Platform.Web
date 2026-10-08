@@ -47,6 +47,12 @@ interface ConversationState {
   select: (id: string) => void;
   setFilter: (f: ConversationFilter) => void;
   upsertConversation: (conv: Conversation) => void;
+  /**
+   * Folds a conversation loaded from `GET /api/v1/conversations` into the store. Platform's REST
+   * record carries no contact name, queue name, last message or unread flag, so it never replaces
+   * those once an SSE event has filled them; its state, channel, contact and time do win.
+   */
+  mergeFromRest: (conv: Conversation) => void;
   removeConversation: (id: string) => void;
   addMessage: (convId: string, message: Message) => void;
   setMessages: (convId: string, messages: Message[]) => void;
@@ -74,6 +80,17 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
     set((s) => ({
       conversations: { ...s.conversations, [conv.id]: conv },
     })),
+
+  mergeFromRest: (conv) =>
+    set((s) => {
+      const existing = s.conversations[conv.id];
+      return {
+        conversations: {
+          ...s.conversations,
+          [conv.id]: existing ? mergeRestOverExisting(existing, conv) : conv,
+        },
+      };
+    }),
 
   removeConversation: (id) =>
     set((s) => {
@@ -116,6 +133,29 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
     return selectFilteredConversations(conversations, filter);
   },
 }));
+
+/**
+ * A REST record over what the store already holds (LAB-W1 N17 follow-up). An empty REST field is
+ * "Platform's list does not carry this", not "it is now empty", so the existing value stays; a REST
+ * record cannot clear the unread flag (only `markRead` does); the assignment time is the one first
+ * seen, because Platform's `createdAt` is not when the agent got the conversation.
+ */
+function mergeRestOverExisting(existing: Conversation, rest: Conversation): Conversation {
+  return {
+    ...existing,
+    id: rest.id,
+    contactId: rest.contactId || existing.contactId,
+    contactName: rest.contactName || existing.contactName,
+    channel: rest.channel || existing.channel,
+    queueName: rest.queueName || existing.queueName,
+    state: rest.state,
+    lastMessage: rest.lastMessage || existing.lastMessage,
+    lastMessageAt: rest.lastMessageAt || existing.lastMessageAt,
+    unread: rest.unread || existing.unread,
+    assignedAt: existing.assignedAt || rest.assignedAt,
+    ...(rest.metadata !== undefined ? { metadata: rest.metadata } : {}),
+  };
+}
 
 /**
  * The conversations a filter shows, most recent first. A pure function of the two pieces of state,

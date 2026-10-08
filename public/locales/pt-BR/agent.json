@@ -7,6 +7,7 @@
     "empty": "Sem conversas. Tudo em dia!",
     "new_conversation": "Nova conversa atribuída",
     "announceNew": "Nova conversa de {{name}}",
+    "unknownContact": "Contato desconhecido",
     "aria": {
       "newConversation": "Nova conversa"
     }

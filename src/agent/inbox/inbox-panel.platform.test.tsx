@@ -55,7 +55,9 @@ const i18n = i18next.createInstance();
 void i18n.init({
   lng: 'en-US',
   fallbackLng: false,
-  resources: { 'en-US': { agent: { inbox: { title: 'Inbox' } } } },
+  resources: {
+    'en-US': { agent: { inbox: { title: 'Inbox', unknownContact: 'Unknown contact' } } },
+  },
   interpolation: { escapeValue: false },
   react: { useSuspense: false },
 });
@@ -149,5 +151,59 @@ describe('InboxPanel with Platform conversations', () => {
 
     await waitFor(() => expect(screen.queryByTestId('inbox-empty')).toBeNull());
     expect(screen.getByText('Ana')).toBeInTheDocument();
+  });
+
+  it('InboxPanel_ShouldKeepTheSseFields_WhenTheRestListRefetchesTheSameConversation', async () => {
+    const queryClient = renderInbox();
+    await waitFor(() => expect(restRequests).toBe(1));
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+
+    // `conversation.assigned` delivered the conversation with what Platform's REST record lacks.
+    act(() => {
+      useConversationStore.getState().upsertConversation({
+        id: CONVERSATION_ID,
+        contactId: '',
+        contactName: 'Ana',
+        channel: 'whatsapp',
+        queueName: 'Soporte',
+        state: 'offered',
+        lastMessage: 'Hola, necesito ayuda',
+        lastMessageAt: '2026-10-04T10:01:00.000Z',
+        unread: true,
+        assignedAt: '2026-10-04T10:01:00.000Z',
+      });
+    });
+    expect(await screen.findByText('Ana')).toBeInTheDocument();
+
+    // The REST list refetches (focus, invalidation, interval) and now carries the same id.
+    restItems = [platformConversation];
+    await act(async () => {
+      await queryClient.invalidateQueries();
+    });
+    await waitFor(() => expect(restRequests).toBe(2));
+    await waitFor(() =>
+      expect(useConversationStore.getState().conversations[CONVERSATION_ID]?.state).toBe('active'),
+    );
+
+    const conv = useConversationStore.getState().conversations[CONVERSATION_ID];
+    expect(conv).toMatchObject({
+      contactId: platformConversation.contactId,
+      contactName: 'Ana',
+      queueName: 'Soporte',
+      lastMessage: 'Hola, necesito ayuda',
+      unread: true,
+      state: 'active',
+      lastMessageAt: platformConversation.updatedAt,
+    });
+    expect(screen.getByText('Ana')).toBeInTheDocument();
+    expect(screen.getByText('Hola, necesito ayuda')).toBeInTheDocument();
+  });
+
+  it('InboxPanel_ShouldNameAnUnknownContact_WhenOnlyTheRestRecordIsKnown', async () => {
+    restItems = [platformConversation];
+    renderInbox();
+
+    const row = await screen.findByTestId(`inbox-item-${CONVERSATION_ID}`);
+    expect(row).toHaveTextContent('Unknown contact');
   });
 });

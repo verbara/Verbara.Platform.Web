@@ -169,16 +169,14 @@ describe('ConversationStore', () => {
 
   it('applyVoiceScreenPop_ShouldSpreadMerge_NotWipeExistingFields', () => {
     // P1 blank-inbox lesson: a thin screen-pop must not clobber an already-hydrated record.
-    useConversationStore
-      .getState()
-      .upsertConversation(
-        makeConversation({
-          id: 'voice-conv',
-          channel: 'voice',
-          queueName: 'Sales',
-          contactName: 'Existing Name',
-        }),
-      );
+    useConversationStore.getState().upsertConversation(
+      makeConversation({
+        id: 'voice-conv',
+        channel: 'voice',
+        queueName: 'Sales',
+        contactName: 'Existing Name',
+      }),
+    );
     applyVoiceScreenPop({
       conversationId: 'voice-conv',
       contactId: '',
@@ -188,6 +186,73 @@ describe('ConversationStore', () => {
     const conv = useConversationStore.getState().conversations['voice-conv'];
     expect(conv!.queueName).toBe('Sales'); // preserved
     expect(conv!.contactName).toBe('Existing Name'); // preserved (event carried empty)
+  });
+
+  // LAB-W1 N17 follow-up: Platform's REST `Conversation` carries no contact name, queue name, last
+  // message or unread flag, so the mapped record has them empty. A REST refetch must not wipe what
+  // an SSE event already delivered; the REST state and time still win.
+  it('mergeFromRest_ShouldKeepTheSseFields_WhenTheRestRecordHasNone', () => {
+    useConversationStore.getState().upsertConversation(
+      makeConversation({
+        id: 'c-sse',
+        contactId: '',
+        contactName: 'Ana',
+        queueName: 'Soporte',
+        state: 'offered',
+        lastMessage: 'Hola',
+        lastMessageAt: '2026-10-04T10:00:00Z',
+        unread: true,
+        assignedAt: '2026-10-04T10:00:00Z',
+        metadata: { source: 'sse' },
+      }),
+    );
+    useConversationStore.getState().mergeFromRest(
+      makeConversation({
+        id: 'c-sse',
+        contactId: 'contact-9',
+        contactName: '',
+        queueName: '',
+        state: 'active',
+        lastMessage: '',
+        lastMessageAt: '2026-10-04T10:05:00Z',
+        unread: false,
+        assignedAt: '2026-10-04T09:59:00Z',
+      }),
+    );
+
+    expect(useConversationStore.getState().conversations['c-sse']).toEqual({
+      id: 'c-sse',
+      contactId: 'contact-9',
+      contactName: 'Ana',
+      channel: 'whatsapp',
+      queueName: 'Soporte',
+      state: 'active',
+      lastMessage: 'Hola',
+      lastMessageAt: '2026-10-04T10:05:00Z',
+      unread: true,
+      assignedAt: '2026-10-04T10:00:00Z',
+      metadata: { source: 'sse' },
+    });
+  });
+
+  it('mergeFromRest_ShouldTakeTheRestValues_WhenTheRestRecordHasThem', () => {
+    useConversationStore
+      .getState()
+      .upsertConversation(makeConversation({ id: 'c1', contactName: 'Old', unread: false }));
+    useConversationStore
+      .getState()
+      .mergeFromRest(makeConversation({ id: 'c1', contactName: 'New', unread: true }));
+
+    const conv = useConversationStore.getState().conversations['c1'];
+    expect(conv!.contactName).toBe('New');
+    expect(conv!.unread).toBe(true);
+  });
+
+  it('mergeFromRest_ShouldAddTheRestRecord_WhenTheStoreDoesNotHaveIt', () => {
+    const rest = makeConversation({ id: 'c-rest', contactName: '', queueName: '', unread: false });
+    useConversationStore.getState().mergeFromRest(rest);
+
+    expect(useConversationStore.getState().conversations['c-rest']).toEqual(rest);
   });
 
   it('filteredConversations_ShouldSortByLastMessageAtDesc_WhenMultipleMatch', () => {

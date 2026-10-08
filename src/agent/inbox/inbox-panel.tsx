@@ -20,7 +20,7 @@ const INBOX_ITEM_HEIGHT_PX = 64;
 
 export function InboxPanel() {
   const { t } = useTranslation(['agent']);
-  const upsertConversation = useConversationStore((s) => s.upsertConversation);
+  const mergeFromRest = useConversationStore((s) => s.mergeFromRest);
   const filter = useConversationStore((s) => s.filter);
   // Subscribe to the state the list is derived from, not to `filteredConversations` (a function
   // reference that never changes): otherwise a conversation added by SSE does not re-render the list.
@@ -33,9 +33,11 @@ export function InboxPanel() {
   const { data: agent } = useAgentMe();
   const { data: conversations = [] } = useConversations({ agentId: agent?.id });
 
+  // A merge, not an upsert: Platform's list has no contact name, queue name, last message or unread
+  // flag, and replacing the record would wipe what SSE already delivered for the same id.
   useEffect(() => {
-    conversations.forEach((c) => upsertConversation(c));
-  }, [conversations, upsertConversation]);
+    conversations.forEach((c) => mergeFromRest(c));
+  }, [conversations, mergeFromRest]);
 
   const visible = useMemo(
     () => selectFilteredConversations(conversationsById, filter),
@@ -46,7 +48,11 @@ export function InboxPanel() {
     const currentFirst = visible[0];
     const previousFirstId = previousFirstIdRef.current;
     if (currentFirst && previousFirstId !== undefined && currentFirst.id !== previousFirstId) {
-      setAnnouncement(t('agent:inbox.announceNew', { name: currentFirst.contactName }));
+      setAnnouncement(
+        t('agent:inbox.announceNew', {
+          name: currentFirst.contactName || t('agent:inbox.unknownContact'),
+        }),
+      );
     }
     previousFirstIdRef.current = currentFirst?.id;
   }, [visible, t]);

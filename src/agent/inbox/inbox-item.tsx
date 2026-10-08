@@ -46,7 +46,7 @@ const stateColors: Record<Conversation['state'], string> = {
 };
 
 export function InboxItem({ conversation }: { readonly conversation: Conversation }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const select = useConversationStore((s) => s.select);
   const markRead = useConversationStore((s) => s.markRead);
@@ -98,7 +98,8 @@ export function InboxItem({ conversation }: { readonly conversation: Conversatio
                 : 'font-medium text-slate-700 dark:text-slate-200',
             )}
           >
-            {conversation.contactName}
+            {/* Platform's REST record has no contact name; until SSE fills it, say so. */}
+            {conversation.contactName || t('agent:inbox.unknownContact')}
           </span>
           {relativeTime !== null && (
             <span
