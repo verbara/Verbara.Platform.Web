@@ -164,11 +164,40 @@ describe('useSupervisorConversations', () => {
   });
 
   it('should fetch supervisor conversations with default params', async () => {
-    const pagedResult = { items: [sampleConversation], totalCount: 1, page: 1, pageSize: 25 };
-    vi.mocked(client.customFetch).mockResolvedValue(pagedResult);
+    // Platform's `Conversation` record (SupervisorEndpoints.ListDigitalConversations).
+    const wire = {
+      conversationId: 'conv-1',
+      tenantId: 'tenant-1',
+      contactId: 'contact-1',
+      channel: 'WebChat',
+      owner: { kind: 'Agent', ownerId: 'agent-1' },
+      state: 'Active',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: null,
+    };
+    vi.mocked(client.customFetch).mockResolvedValue({
+      items: [wire],
+      totalCount: 1,
+      page: 1,
+      pageSize: 25,
+      totalPages: 1,
+    });
     const { result } = renderHook(() => useSupervisorConversations(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(pagedResult);
+    expect(result.current.data).toEqual({
+      items: [
+        {
+          ...sampleConversation,
+          channel: 'WebChat',
+          contactName: '',
+          queueName: '',
+          lastMessage: '',
+        },
+      ],
+      totalCount: 1,
+      page: 1,
+      pageSize: 25,
+    });
     expect(client.customFetch).toHaveBeenCalledWith({
       url: '/api/v1/supervisor/conversations',
       method: 'GET',

@@ -113,12 +113,25 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
 
   filteredConversations: () => {
     const { conversations, filter } = get();
-    const allowed = filterStates[filter];
-    return Object.values(conversations)
-      .filter((c) => allowed.includes(c.state))
-      .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
+    return selectFilteredConversations(conversations, filter);
   },
 }));
+
+/**
+ * The conversations a filter shows, most recent first. A pure function of the two pieces of state,
+ * so a component can subscribe to `conversations` and `filter` and derive the list itself:
+ * subscribing to `filteredConversations` only subscribes to a function reference that never changes,
+ * so the list did not re-render when an SSE event added a conversation (LAB-W1 N17).
+ */
+export function selectFilteredConversations(
+  conversations: Record<string, Conversation>,
+  filter: ConversationFilter,
+): Conversation[] {
+  const allowed = filterStates[filter];
+  return Object.values(conversations)
+    .filter((c) => allowed.includes(c.state))
+    .sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''));
+}
 
 let sseInitialized = false;
 
