@@ -7,6 +7,12 @@ import {
   usePaymentRequiredStore,
 } from '@/core/licensing';
 import { ApiError } from './api-error';
+import {
+  ImpersonationEndedError,
+  endImpersonationLocally,
+} from '@/core/auth/end-impersonation-locally';
+
+export { ImpersonationEndedError };
 
 interface RequestConfig {
   url: string;
@@ -25,10 +31,26 @@ interface RequestConfig {
 }
 
 class UnauthorizedError extends Error {
-  constructor() {
+  /** Whether the refused request was sent with an impersonation token (design D3). */
+  readonly sentDuringImpersonation: boolean;
+
+  constructor(sentDuringImpersonation: boolean) {
     super('Unauthorized');
     this.name = 'UnauthorizedError';
+    this.sentDuringImpersonation = sentDuringImpersonation;
   }
+}
+
+/**
+ * Ends an impersonation that is over and rejects the request (design D3). Called for the 401 of a
+ * request sent during an impersonation (Platform answers 401 only for an invalid, expired or revoked
+ * token, and ending, revoking or timing out a session revokes its token) and by the pre-flight once
+ * the impersonation token is past its `exp`. The request is NOT refreshed and replayed: a refresh
+ * would mint the operator's own token from their cookie and send the request with it.
+ */
+function endImpersonationAndReject(): never {
+  endImpersonationLocally();
+  throw new ImpersonationEndedError();
 }
 
 let _refreshPromise: Promise<boolean> | null = null;
@@ -133,6 +155,13 @@ async function doRefresh(): Promise<boolean> {
  * manager can trigger proactive refreshes.
  */
 export async function refreshAccessToken(): Promise<boolean> {
+  // The refresh cookie belongs to the operator's own sign-in: during an impersonation a refresh
+  // would install the operator's token next to the impersonated tenant (H17, design D3). Like the
+  // session probe, it makes no call then, and reports whether the held impersonation token is still
+  // before its `exp` (the 30 s buffer applies only to tokens the console can renew).
+  const impersonation = useAuthStore.getState().impersonation;
+  if (impersonation?.active) return Date.now() < impersonation.expiresAt;
+
   if (_refreshPromise) return _refreshPromise;
 
   _refreshPromise = (async () => {
@@ -236,9 +265,16 @@ export interface FetchResult<T> {
 }
 
 async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<T>> {
-  const { accessToken } = useAuthStore.getState();
+  const { accessToken, impersonation } = useAuthStore.getState();
   const { activeTenantId } = useTenantStore.getState();
-  const tenantId = activeTenantId ?? useAuthStore.getState().tenantId;
+  // During an impersonation every request names the impersonated tenant, whatever the tenant store
+  // holds (H17, design D4): Platform refuses a header that differs from the impersonation token's
+  // `tid`. The tenant store is never touched by an impersonation, so once it ends, by any path, the
+  // header is again the one it was before the start.
+  const sentDuringImpersonation = impersonation?.active === true;
+  const tenantId = sentDuringImpersonation
+    ? impersonation.targetTenantId
+    : (activeTenantId ?? useAuthStore.getState().tenantId);
 
   const url = new URL(config.url, window.location.origin);
   if (config.params) {
@@ -259,7 +295,7 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
   });
 
   if (response.status === 401) {
-    throw new UnauthorizedError();
+    throw new UnauthorizedError(sentDuringImpersonation);
   }
 
   // Pro v2.4.0-pro + Platform v2.2.0 — LicenseGate middleware returns 402
@@ -315,6 +351,12 @@ async function executeRequest<T>(config: RequestConfig): Promise<T> {
  */
 async function ensureTokenBeforeRequest(): Promise<void> {
   const state = useAuthStore.getState();
+  // During an impersonation the request goes out with the impersonation token while it is before
+  // its `exp`; past it, the impersonation ends locally and the request is not sent (design D3).
+  if (state.impersonation?.active) {
+    if (Date.now() < state.impersonation.expiresAt) return;
+    endImpersonationAndReject();
+  }
   if (!state.hasSession()) return;
   if (state.accessToken && !state.isTokenExpired()) return;
 
@@ -334,6 +376,7 @@ export async function customFetch<T>(config: RequestConfig): Promise<T> {
   } catch (err) {
     // On 401: try refresh once
     if (err instanceof UnauthorizedError) {
+      if (err.sentDuringImpersonation) endImpersonationAndReject();
       const refreshed = await refreshAccessToken();
       if (refreshed) {
         return executeRequest<T>(config);
@@ -361,6 +404,7 @@ export async function customFetchWithHeaders<T>(config: RequestConfig): Promise<
     return await executeRequestRaw<T>(config);
   } catch (err) {
     if (err instanceof UnauthorizedError) {
+      if (err.sentDuringImpersonation) endImpersonationAndReject();
       const refreshed = await refreshAccessToken();
       if (refreshed) {
         return executeRequestRaw<T>(config);

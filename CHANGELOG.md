@@ -9,6 +9,24 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **An impersonation never borrows the operator's own credentials or tenant.** No page of the
+  console starts an impersonation yet, so these are defensive fixes to the request client and the
+  session store, ready for when one does:
+  - A token refresh during an impersonation no longer installs the operator's own token next to
+    the impersonated tenant; the impersonation token is used until it expires.
+  - A request Platform refuses with 401 during an impersonation is no longer re-sent with the
+    operator's token. The impersonation ends in the browser, the operator is back in their own
+    session, and a notice says the impersonation ended. The same happens when the impersonation
+    reaches its expiry.
+  - Ending an impersonation restores the operator's own token expiry too, so the next request
+    refreshes first if that token expired meanwhile.
+  - Every request of an impersonation names the impersonated tenant in `X-Tenant-Id` (Platform
+    refuses any other), and requests after it name the operator's tenant again.
+  - A reload during an impersonation restores the operator in their own tenant, not the
+    impersonated one.
+
 ---
 
 ## [3.20.3-web] - 2026-10-04
