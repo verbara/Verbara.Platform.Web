@@ -9,6 +9,29 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The user form offers exactly Platform's roles** (Administrator, Supervisor, Agent, API), with
+  labels in all three languages. It offered `readonly`, which Platform refuses with a 400, and a
+  user whose role is `api` opened a form that could not be saved. The form now sends Platform's
+  role names. (H1)
+- **The user edit form shows the email read-only and no longer sends it.** Platform's update
+  ignores the email, so a changed address was silently discarded. (H2)
+- **The agent form's user picker offers only active users.** A suspended or deactivated user could
+  be picked as a new agent with no indication; an agent's current user stays in its form, shown
+  with its status. (H3)
+- **The user form's titles, descriptions and save button are translated** in ES-419 and PT-BR;
+  they were inline English. (H5)
+
+### Added
+
+- **A stale user edit is refused instead of overwriting another administrator's change.** The
+  console sends back the user's version (`If-Match`, from the strong `ETag` Platform v2.25.0
+  returns) and, when Platform answers 412, shows "Someone else changed this user" and reloads the
+  user instead of reporting the edit as saved. A weak or absent `ETag` sends no precondition. (H14)
+- **The user form warns before a role change that signs the user out:** lowering a role ends the
+  user's sessions in Platform v2.25.0. (H15)
+
 ---
 
 ## [3.20.3-web] - 2026-10-04
