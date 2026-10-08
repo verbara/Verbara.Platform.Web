@@ -144,7 +144,14 @@
     "mfa_rate_limited": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
     "mfa_challenge_expired": "Tu sesión expiró. Por favor, inicia sesión de nuevo.",
     "mfa_use_code": "Usar código de autenticador",
-    "mfa_use_recovery": "Usar código de recuperación"
+    "mfa_use_recovery": "Usar código de recuperación",
+    "tenant": "Tenant",
+    "tenant_placeholder": "p. ej. demo, platform",
+    "reset_policy": "La nueva contraseña no cumple la política de contraseñas.",
+    "reset_invalid": "Este enlace de restablecimiento no es válido, expiró o ya se usó. Solicita uno nuevo.",
+    "reset_failed": "No se pudo restablecer la contraseña. Inténtalo de nuevo.",
+    "forgot_tenant": "Tenant",
+    "forgot_tenant_placeholder": "p. ej. demo"
   },
   "theme": {
     "label": "Tema",
@@ -203,6 +210,18 @@
       "agent": "Espacio de Agente",
       "analytics": "Analítica",
       "operations": "Operaciones"
+    },
+    "conversation": {
+      "not_an_agent": "Esta acción requiere un perfil de agente en este tenant.",
+      "not_owner": "Esta conversación no es tuya.",
+      "not_offered_to_you": "Esta conversación se ofreció a otro agente.",
+      "target_agent_not_found": "El agente seleccionado ya no existe.",
+      "target_queue_not_found": "La cola seleccionada ya no existe.",
+      "conversation_not_found": "Esta conversación ya no existe.",
+      "contact_not_found": "Este contacto ya no existe.",
+      "conflict": "La conversación no puede cambiar en su estado actual.",
+      "typify_invalid": "Revisa estos campos: {{fields}}.",
+      "failed": "No se pudo completar la acción. Inténtalo de nuevo."
     }
   },
   "agent_layout": {
@@ -212,7 +231,8 @@
   "impersonation": {
     "operating_as": "Operando como",
     "read_only": "Solo lectura",
-    "end": "Finalizar suplantación"
+    "end": "Finalizar suplantación",
+    "ended": "La suplantación finalizó. Volviste a tu propia sesión."
   },
   "confirm_delete_dialog": {
     "title": "¿Eliminar {{entityType}}?",

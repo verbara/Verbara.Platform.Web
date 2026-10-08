@@ -167,7 +167,21 @@
     },
     "namePlaceholder": "Jane Doe",
     "delete_title": "Excluir usuário",
-    "delete_confirm": "Tem certeza de que deseja excluir {{name}}? Esta ação não pode ser desfeita."
+    "delete_confirm": "Tem certeza de que deseja excluir {{name}}? Esta ação não pode ser desfeita.",
+    "edit": "Editar usuário",
+    "create_description": "Adicione um novo usuário à plataforma.",
+    "edit_description": "Atualize os dados do usuário.",
+    "save": "Salvar alterações",
+    "role_names": {
+      "agent": "Agente",
+      "supervisor": "Supervisor",
+      "admin": "Administrador",
+      "api": "API"
+    },
+    "role_hint_lower": "Ao salvar uma função inferior, as sessões do usuário serão encerradas; ele terá que entrar novamente.",
+    "errors": {
+      "user_changed": "Outra pessoa alterou este usuário. Sua alteração não foi salva; revise os valores atuais e tente novamente."
+    }
   },
   "agents": {
     "title": "Agentes",
