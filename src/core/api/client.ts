@@ -28,6 +28,12 @@ interface RequestConfig {
    * unlicensed tenants, like the optional typification AI suggestion).
    */
   suppressPaymentRequiredModal?: boolean;
+  /**
+   * How a successful body is read. `'json'` (the default) parses it; `'blob'` hands back the raw
+   * bytes untouched, for downloads that must be saved exactly as served (the licensed-agent ledger
+   * export, whose row hashes an offline verifier recomputes).
+   */
+  responseType?: 'json' | 'blob';
 }
 
 class UnauthorizedError extends Error {
@@ -346,7 +352,9 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
     throw new ApiError(response.status, body);
   }
 
-  const data = (await response.json()) as T;
+  const data = (
+    config.responseType === 'blob' ? await response.blob() : await response.json()
+  ) as T;
   return { data, headers: response.headers };
 }
 

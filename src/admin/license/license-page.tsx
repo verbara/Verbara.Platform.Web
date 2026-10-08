@@ -28,7 +28,10 @@ import { StatusBadge } from '@/core/ui/status-badge';
 import { CopyButton } from '@/core/ui/copy-button';
 import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { useFormatDate } from '@/core/i18n/use-format';
-import { useSystemLicense, useUpdateLicense } from '@/core/api/hooks/use-system';
+import { useLicenseStatus, useSystemLicense, useUpdateLicense } from '@/core/api/hooks/use-system';
+
+import { LicensedAgentsCard } from './licensed-agents-card';
+import { useTierLabel } from './use-tier-label';
 
 // ─── Status mapping ──────────────────────────────────────────────────────────
 
@@ -118,6 +121,10 @@ export default function LicensePage() {
   const { formatDate, formatRelative } = useFormatDate();
 
   const { data: license, isLoading } = useSystemLicense();
+  // The tier comes from the status snapshot: `LicenseInfoDto` has no tier, and its `licensee` is
+  // the licensee's name, which this card used to show as the tier.
+  const { data: status } = useLicenseStatus();
+  const tierLabel = useTierLabel();
   const update = useUpdateLicense();
 
   const [keyInput, setKeyInput] = useState('');
@@ -142,7 +149,7 @@ export default function LicensePage() {
 
   const badgeStatus = toBadgeStatus(license.status, license.inGrace);
 
-  const tierValue = license.licensee ?? t('admin:license.tier_unknown');
+  const tierValue = <span data-testid="license-tier-value">{tierLabel(status)}</span>;
   const expiryDescription = license.expiresAt
     ? formatDate(license.expiresAt)
     : t('admin:license.perpetual');
@@ -177,7 +184,13 @@ export default function LicensePage() {
           icon={<Shield className="h-4 w-4" aria-hidden="true" />}
           label={t('admin:license.tier')}
           value={tierValue}
-          description={license.licenseId ? maskLicenseId(license.licenseId) : '—'}
+          description={
+            license.licensee
+              ? `${t('admin:license.licensee')}: ${license.licensee}`
+              : license.licenseId
+                ? maskLicenseId(license.licenseId)
+                : '—'
+          }
           statusBadge={<StatusBadge status={badgeStatus} variant="license" />}
         />
         <StatCard
@@ -264,6 +277,8 @@ export default function LicensePage() {
           </div>
         </section>
       )}
+
+      <LicensedAgentsCard />
 
       <Separator />
 

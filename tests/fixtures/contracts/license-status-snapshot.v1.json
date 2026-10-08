@@ -1,0 +1,13 @@
+{
+  "isLoaded": true,
+  "isValid": true,
+  "tier": "SelfHostBusiness",
+  "expiresAt": "2027-09-01T00:00:00Z",
+  "maxAgents": 50,
+  "maxNodes": 3,
+  "authorizedDigestsCount": 4,
+  "lastValidationResult": "Valid",
+  "lastValidationAt": "2026-10-08T06:00:00Z",
+  "revalidationInterval": "06:00:00",
+  "licensee": "Example Contact Ltd"
+}
