@@ -27,6 +27,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSessionManager } from './use-session-manager';
 import { SessionWarningDialog } from './session-warning-dialog';
 import { safeAgentTeardown } from './agent-teardown';
+import { REFRESH_LEAD_MS } from './idle-config';
 import { refreshAccessToken } from '@/core/api/client';
 import { useAuthStore } from '@/core/auth/auth-store';
 import type { Agent } from '@/core/api/hooks/use-agents';
@@ -57,8 +58,10 @@ export function SessionManager() {
     window.location.href = '/login';
   }, []);
 
+  // The proactive refresh fires `REFRESH_LEAD_MS` before `exp`: it must reach the network unless
+  // the held token outlives that lead (another tab refreshed), not only the 30 s request buffer.
   const onRefresh = useCallback(() => {
-    void refreshAccessToken();
+    void refreshAccessToken(REFRESH_LEAD_MS);
   }, []);
 
   const shouldSuppressWarning = useCallback(() => {

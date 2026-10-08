@@ -100,7 +100,7 @@ const refreshBody = {
  * top-level static import would miss it.
  */
 async function loadClientWithChannelSpy(): Promise<{
-  refreshAccessToken: () => Promise<boolean>;
+  refreshAccessToken: (minValidityMs?: number) => Promise<boolean>;
   postSpy: ReturnType<typeof vi.spyOn>;
 }> {
   const channelModule = await import('@/core/session/session-channel');
@@ -241,5 +241,87 @@ describe('refreshAccessToken — cross-tab serialization', () => {
     expect(args?.[6]).toBe(15); // sessionIdleTimeoutMinutes preserved
 
     vi.unstubAllGlobals();
+  });
+});
+
+/**
+ * The minimum validity the session manager's proactive refresh asks for (design D9, H6): inside the
+ * lock the network is skipped only when the held token outlives that minimum.
+ */
+describe('refreshAccessToken — minimum validity', () => {
+  const LEAD = 60_000;
+
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    removeLocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('should_RefreshOverTheNetwork_WhenTheHeldTokenExpiresWithinTheMinimumValidity', async () => {
+    installFakeLocks();
+    // Valid for 59 s: outside the 30 s request buffer, inside the 60 s lead.
+    fakeAuthState = makeFreshAuthState({
+      tokenExpiry: Date.now() + 59_000,
+      isTokenExpired: () => false,
+    });
+    const fetchMock = vi.fn(async () => jsonResponse(refreshBody));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { refreshAccessToken } = await loadClientWithChannelSpy();
+    const result = await refreshAccessToken(LEAD);
+
+    expect(result).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('should_SkipTheNetwork_WhenAnotherTabLeftATokenThatOutlivesTheMinimumValidity', async () => {
+    installFakeLocks();
+    // While this tab waited for the lock the held token was renewed: valid for 15 min.
+    fakeAuthState = makeFreshAuthState({
+      tokenExpiry: Date.now() + 15 * 60_000,
+      isTokenExpired: () => false,
+    });
+    const fetchMock = vi.fn(async () => jsonResponse(refreshBody));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { refreshAccessToken, postSpy } = await loadClientWithChannelSpy();
+    const result = await refreshAccessToken(LEAD);
+
+    expect(result).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('should_RefreshOverTheNetwork_WhenThereIsNoExpiryAndAMinimumValidityIsAsked', async () => {
+    installFakeLocks();
+    fakeAuthState = makeFreshAuthState({ tokenExpiry: null, isTokenExpired: () => true });
+    const fetchMock = vi.fn(async () => jsonResponse(refreshBody));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { refreshAccessToken } = await loadClientWithChannelSpy();
+    await refreshAccessToken(LEAD);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('should_KeepTheThirtySecondBuffer_WhenNoMinimumValidityIsGiven', async () => {
+    installFakeLocks();
+    // The same 59 s token: the pre-flight's caller (no minimum) keeps it.
+    fakeAuthState = makeFreshAuthState({
+      tokenExpiry: Date.now() + 59_000,
+      isTokenExpired: () => false,
+    });
+    const fetchMock = vi.fn(async () => jsonResponse(refreshBody));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { refreshAccessToken } = await loadClientWithChannelSpy();
+    const result = await refreshAccessToken();
+
+    expect(result).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
