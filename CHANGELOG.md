@@ -83,6 +83,35 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stream's reconnect timer was not cancelled when its page unmounted, so the stream reopened after a
   client-side navigation, possibly with an outdated token. (H8)
 
+### Changed
+
+- **The web image no longer compresses API responses it proxies.** Its nginx gzipped JSON from
+  `/api/`, which turned Platform's strong `ETag` into a weak `W/"…"` one; Platform compares
+  `If-Match` strongly, so every user save through the web image (the Kubernetes path) would have
+  been refused with 412. `/api/` responses now pass through as Platform sends them, as they already
+  did behind the compose gateway; the console's own files are still compressed. API JSON travels
+  uncompressed between the browser and the web pod.
+- **The web image's access log has a new format, without query strings.** Each line records the
+  method, the path without its query, the status, the size, the Referer's scheme, host and path, and
+  the user agent, the same fields as Platform's gateway (`verbara_noquery`). Point log parsers at the
+  new format.
+
+### Fixed
+
+- **The web image no longer writes credentials to its logs.** It logged the full request line and
+  Referer, so password-reset tokens, SSE stream tokens and the hub's `access_token` landed in the
+  container log, and its error log repeated the request line and upstream URL with their queries. The
+  error log of the console's server is now discarded; a failed request still shows in the access log
+  with its status.
+- **The realtime hub connects when the console is served by the web image directly.** On Kubernetes
+  the console's host reaches the web image, which had no route for `/hubs/`: SignalR's negotiate
+  `POST` fell to the console's static files and was answered `405 Not Allowed`, so the console never
+  connected to the hub. The image now proxies `/hubs/` to the realtime service, resolved when a
+  request arrives, so the image still starts where none runs. The upstream defaults to
+  `platform-realtime.<namespace>.svc.cluster.local:5030` on Kubernetes and `realtime:5030`
+  elsewhere, and `VERBARA_REALTIME_UPSTREAM` (`host:port`) overrides it. Behind the compose gateway
+  nothing changes: the gateway sends `/hubs/` to the realtime service itself.
+
 ---
 
 ## [3.20.3-web] - 2026-10-04
