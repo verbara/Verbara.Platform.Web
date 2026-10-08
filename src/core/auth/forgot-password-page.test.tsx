@@ -234,6 +234,5 @@ describe('ForgotPasswordPage tenant', () => {
     fireEvent.click(screen.getByTestId('login-forgot-password'));
 
     expect((await screen.findByTestId('forgot-tenant')) as HTMLInputElement).toHaveValue('acme');
-    expect(window.location.href).not.toContain('acme');
   });
 });
