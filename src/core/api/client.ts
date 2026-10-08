@@ -6,6 +6,7 @@ import {
   isPaymentRequiredProblemDetails,
   usePaymentRequiredStore,
 } from '@/core/licensing';
+import { ApiError } from './api-error';
 
 interface RequestConfig {
   url: string;
@@ -287,22 +288,10 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
   }
 
   if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    const msg =
-      body?.detail ??
-      body?.error ??
-      (Array.isArray(body?.errors)
-        ? body.errors
-            .map((e: unknown) =>
-              typeof e === 'object' && e !== null && 'message' in e
-                ? (e as { message?: unknown }).message
-                : e,
-            )
-            .filter(Boolean)
-            .join('; ') || undefined
-        : undefined) ??
-      `API error: ${response.status}`;
-    throw new Error(msg);
+    const body: unknown = await response.json().catch(() => null);
+    // The status, Platform's machine code and the `errors` list survive; `message` keeps the
+    // value callers have always read (design D1, ADR-0013).
+    throw new ApiError(response.status, body);
   }
 
   const data = (await response.json()) as T;

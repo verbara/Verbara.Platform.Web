@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeAll, afterAll, afterEach, beforeEach } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw-server';
-import { customFetch } from './client';
+import { customFetch, customFetchWithHeaders } from './client';
+import { ApiError } from './api-error';
+import { PaymentRequiredError, usePaymentRequiredStore } from '@/core/licensing';
 
 vi.mock('@/core/auth/auth-store', () => ({
   useAuthStore: {
@@ -162,5 +164,122 @@ describe('customFetch', () => {
 
     expect(result).toEqual({ ok: true });
     expect(callCount).toBe(2);
+  });
+});
+
+describe('customFetch refusals as ApiError (design D1)', () => {
+  async function refusal(status: number, body: unknown): Promise<unknown> {
+    server.use(http.post('/api/v1/refused', () => HttpResponse.json(body, { status })));
+    return customFetch({ url: '/api/v1/refused', method: 'POST', data: {} }).catch(
+      (e: unknown) => e,
+    );
+  }
+
+  it('should carry the status and the machine code when the error is a hyphenated code', async () => {
+    const err = await refusal(403, { error: 'not-offered-to-you' });
+
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err).toMatchObject({ status: 403, code: 'not-offered-to-you', errors: null });
+    // The message callers have always read is unchanged.
+    expect((err as ApiError).message).toBe('not-offered-to-you');
+  });
+
+  it('should never turn prose into a code when the error is English text', async () => {
+    const err = await refusal(400, { error: 'Cannot hold conversation' });
+
+    expect(err).toMatchObject({ status: 400, code: null, message: 'Cannot hold conversation' });
+  });
+
+  it('should carry the errors list and keep the joined message when the body has field errors', async () => {
+    const err = await refusal(400, {
+      errors: [
+        { field: 'reason', message: 'Reason is required' },
+        { field: 'notes', message: 'Too long' },
+      ],
+    });
+
+    expect(err).toMatchObject({ status: 400, code: null });
+    expect((err as ApiError).errors).toEqual([
+      { field: 'reason', message: 'Reason is required' },
+      { field: 'notes', message: 'Too long' },
+    ]);
+    expect((err as ApiError).message).toBe('Reason is required; Too long');
+  });
+
+  it('should keep the ProblemDetails detail as the message when Platform answers 412', async () => {
+    const err = await refusal(412, {
+      title: 'User changed',
+      detail: 'Read the user again.',
+      status: 412,
+    });
+
+    expect(err).toMatchObject({ status: 412, code: null, message: 'Read the user again.' });
+  });
+
+  it('should fall back to the status message when the body is not JSON', async () => {
+    server.use(http.post('/api/v1/refused', () => new HttpResponse('oops', { status: 500 })));
+
+    const err = await customFetch({ url: '/api/v1/refused', method: 'POST', data: {} }).catch(
+      (e: unknown) => e,
+    );
+
+    expect(err).toMatchObject({ status: 500, code: null, errors: null, message: 'API error: 500' });
+  });
+
+  it('should throw the same ApiError through customFetchWithHeaders', async () => {
+    server.use(
+      http.get('/api/v1/refused', () => HttpResponse.json({ error: 'not-owner' }, { status: 403 })),
+    );
+
+    const err = await customFetchWithHeaders({ url: '/api/v1/refused', method: 'GET' }).catch(
+      (e: unknown) => e,
+    );
+
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err).toMatchObject({ status: 403, code: 'not-owner' });
+  });
+
+  it('should still throw PaymentRequiredError, not ApiError, when Platform answers 402', async () => {
+    const err = await refusal(402, {
+      type: 'https://verbara.io/errors/license-required',
+      title: 'Payment Required',
+      status: 402,
+      tier_required: 'Professional',
+    });
+
+    expect(err).toBeInstanceOf(PaymentRequiredError);
+    expect(err).not.toBeInstanceOf(ApiError);
+    usePaymentRequiredStore.getState().dismiss();
+  });
+
+  it('should still return undefined when Platform answers 204', async () => {
+    server.use(http.post('/api/v1/refused', () => new HttpResponse(null, { status: 204 })));
+
+    await expect(
+      customFetch({ url: '/api/v1/refused', method: 'POST', data: {} }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('should still refresh and retry once, never surfacing ApiError, when Platform answers 401', async () => {
+    let calls = 0;
+    server.use(
+      http.post('/api/v1/refused', () => {
+        calls++;
+        return calls === 1
+          ? HttpResponse.json({}, { status: 401 })
+          : HttpResponse.json({ ok: true });
+      }),
+      http.post('/api/v1/auth/refresh', () =>
+        HttpResponse.json({
+          accessToken: 'refreshed-token',
+          expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+        }),
+      ),
+    );
+
+    await expect(
+      customFetch({ url: '/api/v1/refused', method: 'POST', data: {} }),
+    ).resolves.toEqual({ ok: true });
+    expect(calls).toBe(2);
   });
 });
