@@ -1118,6 +1118,13 @@ export interface paths {
             'application/json': components['schemas']['Message'];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     delete?: never;
@@ -1155,6 +1162,13 @@ export interface paths {
             'application/json': components['schemas']['OwnershipResult'];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     delete?: never;
@@ -1191,6 +1205,13 @@ export interface paths {
           content: {
             'application/json': components['schemas']['OwnershipResult'];
           };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -1241,6 +1262,13 @@ export interface paths {
           content: {
             'application/json': components['schemas']['ErrorResponse'];
           };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -1477,6 +1505,13 @@ export interface paths {
             'application/json': components['schemas']['ErrorResponse'];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     delete?: never;
@@ -1522,6 +1557,13 @@ export interface paths {
           content: {
             'application/json': components['schemas']['ErrorResponse'];
           };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -2057,6 +2099,15 @@ export interface paths {
             [name: string]: unknown;
           };
           content?: never;
+        };
+        /** @description Precondition Failed */
+        412: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/problem+json': components['schemas']['ProblemDetails'];
+          };
         };
       };
     };
@@ -8495,14 +8546,12 @@ export interface paths {
             'application/json': components['schemas']['OwnershipResult'];
           };
         };
-        /** @description Bad Request */
-        400: {
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
-          content: {
-            'application/json': components['schemas']['ErrorResponse'];
-          };
+          content?: never;
         };
       };
     };
@@ -11629,6 +11678,7 @@ export interface paths {
         query?: {
           status?: string;
           tenant?: string;
+          targetTenant?: string;
           page?: number;
           pageSize?: number;
         };
@@ -15993,6 +16043,42 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/internal/user-access/{tenantId}/{userId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          tenantId: string;
+          userId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/internal/hub-audit': {
     parameters: {
       query?: never;
@@ -18428,6 +18514,14 @@ export interface components {
       kind: string;
       ref: string;
     };
+    ProblemDetails: {
+      type?: null | string;
+      title?: null | string;
+      /** Format: int32 */
+      status?: null | number;
+      detail?: null | string;
+      instance?: null | string;
+    };
     ProfileRegenerateRecoveryCodesRequest: {
       totpCode: string;
     };
@@ -19016,6 +19110,8 @@ export interface components {
       sessionIdleTimeoutMinutes: number;
       /** Format: int32 */
       sessionAbsoluteTimeoutHours: number;
+      /** Format: int32 */
+      pendingPauseTimeoutMinutes: number;
       oidcEnabled: boolean;
       oidcAuthority: null | string;
       oidcClientId: null | string;
@@ -19787,6 +19883,8 @@ export interface components {
       sessionIdleTimeoutMinutes?: null | number;
       /** Format: int32 */
       sessionAbsoluteTimeoutHours?: null | number;
+      /** Format: int32 */
+      pendingPauseTimeoutMinutes?: null | number;
       oidcEnabled?: null | boolean;
       oidcAuthority?: null | string;
       oidcClientId?: null | string;
