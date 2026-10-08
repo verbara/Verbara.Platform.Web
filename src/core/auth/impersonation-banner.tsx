@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Shield, X } from 'lucide-react';
 import { useAuthStore } from './auth-store';
 import { useEndImpersonate } from '@/core/api/hooks/use-impersonation';
+import { endImpersonationLocally } from './end-impersonation-locally';
 
 function formatTimeRemaining(ms: number): string {
   if (ms <= 0) return '00:00';
@@ -35,14 +36,16 @@ export function ImpersonationBanner() {
       const left = impersonation.expiresAt - Date.now();
       setRemaining(Math.max(0, left));
       if (left <= 0) {
-        endImpersonationStore();
+        // The same local end the request client uses when Platform refuses the token: restores
+        // the operator's token, expiry and tenant, and shows the impersonation-ended notice.
+        endImpersonationLocally();
       }
     };
 
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [impersonation?.active, impersonation?.expiresAt, endImpersonationStore]);
+  }, [impersonation?.active, impersonation?.expiresAt]);
 
   if (!impersonation?.active) return null;
 
