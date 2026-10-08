@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -7,24 +7,47 @@ import { Label } from '@/core/ui/label';
 import { FieldError } from '@/core/ui/field-error';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { ArrowLeft, CircleCheckBig } from 'lucide-react';
+import { resolveDefaultTenant } from '../tenant/resolve-tenant';
+
+/**
+ * The navigation state the login page passes when the user follows its forgot-password link: the
+ * tenant typed there. Carried in the state, never in the URL.
+ */
+export interface ForgotPasswordState {
+  tenant?: string;
+}
+
+function initialTenant(state: unknown): string {
+  const typed = (state as ForgotPasswordState | null)?.tenant;
+  if (typeof typed === 'string' && typed.trim()) return typed.trim();
+  return resolveDefaultTenant() ?? '';
+}
 
 export function ForgotPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Always shown and always sent (H16): Platform falls back to the host's first label when the body
+  // has no tenant, which on a single-domain deployment finds no user and sends no email.
+  const [tenant, setTenant] = useState(() => initialTenant(location.state));
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const tenantA11y = useFieldA11y(undefined, 'forgot-tenant', { required: true });
   const emailA11y = useFieldA11y(undefined, 'forgot-email', { required: true });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const tenantId = tenant.trim();
+    if (!tenantId) return;
     setLoading(true);
     try {
       await fetch('/api/v1/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        // Platform's ForgotPasswordRequest(TenantId, Email), camelCase on the wire.
+        body: JSON.stringify({ tenantId, email }),
       });
     } catch {
       // Intentionally swallow — always show success
@@ -48,7 +71,7 @@ export function ForgotPasswordPage() {
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4 dark:border-slate-800 dark:bg-slate-900">
           {sent ? (
-            <div className="text-center space-y-3 py-4">
+            <div className="text-center space-y-3 py-4" data-testid="forgot-sent">
               <CircleCheckBig className="mx-auto h-10 w-10 text-green-500" />
               <p className="text-sm text-slate-600 dark:text-slate-300">
                 {t('auth.reset_email_sent')}
@@ -56,6 +79,22 @@ export function ForgotPasswordPage() {
             </div>
           ) : (
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="forgot-tenant" required>
+                  {t('auth.forgot_tenant')}
+                </Label>
+                <Input
+                  id="forgot-tenant"
+                  type="text"
+                  placeholder={t('auth.forgot_tenant_placeholder')}
+                  value={tenant}
+                  onChange={(e) => setTenant(e.target.value)}
+                  required
+                  {...tenantA11y.inputProps}
+                  data-testid="forgot-tenant"
+                />
+                <FieldError id={tenantA11y.errorId} />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="forgot-email" required>
                   {t('auth.email')}
@@ -70,13 +109,15 @@ export function ForgotPasswordPage() {
                   {...emailA11y.inputProps}
                   // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus first field on mount for keyboard users
                   autoFocus
+                  data-testid="forgot-email"
                 />
                 <FieldError id={emailA11y.errorId} />
               </div>
               <Button
                 type="submit"
                 className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
-                disabled={loading || !email.trim()}
+                disabled={loading || !email.trim() || !tenant.trim()}
+                data-testid="forgot-submit"
               >
                 {loading ? t('status.loading') : t('auth.send_reset_link')}
               </Button>

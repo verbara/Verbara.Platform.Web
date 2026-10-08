@@ -12,6 +12,8 @@ import { I18nextProvider } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import i18next from 'i18next';
 import enCommon from '../../../public/locales/en-US/common.json';
+import esCommon from '../../../public/locales/es-419/common.json';
+import ptCommon from '../../../public/locales/pt-BR/common.json';
 import { ResetPasswordPage } from './reset-password-page';
 
 const RESET_URL = '/api/v1/auth/reset-password';
@@ -36,12 +38,24 @@ const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
   return new Response(null, { status: 404 });
 });
 
-async function createI18n() {
+type Locale = 'en-US' | 'es-419' | 'pt-BR';
+
+const COMMON: Record<Locale, typeof enCommon> = {
+  'en-US': enCommon,
+  'es-419': esCommon,
+  'pt-BR': ptCommon,
+};
+
+async function createI18n(lng: Locale = 'en-US') {
   const instance = i18next.createInstance();
   await instance.init({
-    lng: 'en-US',
+    lng,
     fallbackLng: false,
-    resources: { 'en-US': { common: enCommon } },
+    resources: {
+      'en-US': { common: enCommon },
+      'es-419': { common: esCommon },
+      'pt-BR': { common: ptCommon },
+    },
     ns: ['common'],
     defaultNS: 'common',
     interpolation: { escapeValue: false },
@@ -55,8 +69,8 @@ function LocationProbe() {
   return <output data-testid="location" data-path={location.pathname} />;
 }
 
-async function renderPage(entry = '/reset-password?token=abc123') {
-  const i18n = await createI18n();
+async function renderPage(entry = '/reset-password?token=abc123', lng: Locale = 'en-US') {
+  const i18n = await createI18n(lng);
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={queryClient}>
@@ -86,10 +100,17 @@ function resetCalls() {
   });
 }
 
+/** The field by its id, so the helper works in every locale. */
+function field(id: string): HTMLElement {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`#${id} not rendered`);
+  return el;
+}
+
 async function submitNewPassword() {
-  fireEvent.change(screen.getByLabelText(/^New password/), { target: { value: NEW_PASSWORD } });
-  fireEvent.change(screen.getByLabelText(/^Confirm password/), { target: { value: NEW_PASSWORD } });
-  const form = screen.getByLabelText(/^New password/).closest('form');
+  fireEvent.change(field('reset-new-password'), { target: { value: NEW_PASSWORD } });
+  fireEvent.change(field('reset-confirm-password'), { target: { value: NEW_PASSWORD } });
+  const form = field('reset-new-password').closest('form');
   if (!form) throw new Error('reset form not rendered');
   fireEvent.submit(form);
   await waitFor(() => expect(resetCalls()).toHaveLength(1));
@@ -146,27 +167,90 @@ describe('ResetPasswordPage', () => {
     });
   });
 
-  it('submit_ShouldShowTheApiErrorField_WhenTheApiAnswersWithAnErrorResponse', async () => {
+  function resetError() {
+    const el = screen.queryByTestId('reset-error');
+    return el === null ? null : { code: el.getAttribute('data-error-code'), text: el.textContent };
+  }
+
+  it.each([
+    [
+      'a policy refusal (400 with an errors list)',
+      {
+        status: 400,
+        body: { error: 'Password does not meet policy', errors: ['Password too short'] },
+      },
+      'reset-policy',
+      'reset_policy',
+    ],
+    [
+      'a refused token (400 ErrorResponse)',
+      { status: 400, body: { error: 'Invalid or expired reset token' } },
+      'reset-invalid',
+      'reset_invalid',
+    ],
+    [
+      'a 400 ProblemDetails without an errors list',
+      { status: 400, body: { title: 'Bad Request', detail: 'Something went wrong' } },
+      'reset-invalid',
+      'reset_invalid',
+    ],
+    ['a server failure (500, empty body)', { status: 500 }, 'reset-failed', 'reset_failed'],
+    [
+      'another status with a body',
+      { status: 429, body: { error: 'Too many requests' } },
+      'reset-failed',
+      'reset_failed',
+    ],
+  ] as const)(
+    'submit_ShouldShowTheLocalizedMessageWithItsCode_WhenTheApiAnswers %s',
+    async (_case, answer, code, key) => {
+      resetAnswer = answer;
+      await renderPage();
+      await submitNewPassword();
+
+      await waitFor(() => expect(resetError()).toEqual({ code, text: enCommon.auth[key] }));
+      expect(document.body.textContent).not.toMatch(
+        /Password does not meet policy|Password too short|Invalid or expired|Something went wrong|Too many requests/,
+      );
+    },
+  );
+
+  it('submit_ShouldShowTheGenericFailure_WhenTheRequestFailsOnTheNetwork', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    await renderPage();
+    await submitNewPassword();
+
+    await waitFor(() =>
+      expect(resetError()).toEqual({ code: 'reset-failed', text: enCommon.auth.reset_failed }),
+    );
+  });
+
+  it.each(['en-US', 'es-419', 'pt-BR'] as const)(
+    'submit_ShouldShowThePolicyMessageInTheActiveLocale %s',
+    async (lng) => {
+      resetAnswer = { status: 400, body: { error: 'Password policy', errors: ['x'] } };
+      await renderPage('/reset-password?token=abc123', lng);
+      await submitNewPassword();
+
+      await waitFor(() =>
+        expect(resetError()).toEqual({ code: 'reset-policy', text: COMMON[lng].auth.reset_policy }),
+      );
+    },
+  );
+
+  // H4: Platform's reset errors are English prose (`ErrorResponse { error }` for a bad token,
+  // `ErrorDetailResponse { error, errors[] }` for a policy refusal). The page chooses its message
+  // from the status and the shape of the body, never from that text.
+  it('submit_ShouldShowTheLocalizedInvalidLinkMessageAndNotTheServerText_WhenTheTokenIsRefusedInEs419', async () => {
     resetAnswer = { status: 400, body: { error: 'Invalid or expired reset token' } };
-    await renderPage();
+    await renderPage('/reset-password?token=abc123', 'es-419');
     await submitNewPassword();
 
-    expect(await screen.findByText('Invalid or expired reset token')).toBeTruthy();
-  });
-
-  it('submit_ShouldShowTheProblemDetail_WhenTheApiAnswersWithProblemDetails', async () => {
-    resetAnswer = { status: 400, body: { title: 'Bad Request', detail: 'Something went wrong' } };
-    await renderPage();
-    await submitNewPassword();
-
-    expect(await screen.findByText('Something went wrong')).toBeTruthy();
-  });
-
-  it('submit_ShouldShowTheGenericError_WhenTheErrorBodyIsEmpty', async () => {
-    resetAnswer = { status: 500 };
-    await renderPage();
-    await submitNewPassword();
-
-    expect(await screen.findByText(enCommon.auth.reset_error)).toBeTruthy();
+    expect(document.body.textContent).not.toContain('Invalid or expired reset token');
+    const el = await screen.findByTestId('reset-error');
+    expect({ code: el.getAttribute('data-error-code'), text: el.textContent }).toEqual({
+      code: 'reset-invalid',
+      text: esCommon.auth.reset_invalid,
+    });
   });
 });

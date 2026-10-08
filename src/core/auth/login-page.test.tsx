@@ -427,3 +427,147 @@ describe('LoginPage /login?reason= notice', () => {
     }).toEqual({ notice: 'session-ended', error: 'account-inactive' });
   });
 });
+
+describe('LoginPage tenant field', () => {
+  it('TenantField_ShouldRenderThePtBrLabelAndPlaceholder_WhenTheConsoleRunsInPtBr', async () => {
+    vi.stubEnv('VITE_DEFAULT_TENANT_ID', '');
+    await renderLogin({ lng: 'pt-BR' });
+
+    expect({
+      label: screen.getByTestId('login-tenant-toggle').textContent,
+      placeholder: screen.getByTestId('login-tenant').getAttribute('placeholder'),
+    }).toEqual({ label: ptCommon.auth.tenant, placeholder: ptCommon.auth.tenant_placeholder });
+  });
+
+  // The parity gate cannot see a key missing from all three locales, and an inline default hides it
+  // in English. With the keys removed from the bundle, the page must show the raw key (what the
+  // other labels would show), never an English default.
+  it('TenantField_ShouldNotFallBackToAnInlineEnglishDefault_WhenItsKeysAreMissing', async () => {
+    vi.stubEnv('VITE_DEFAULT_TENANT_ID', '');
+    const { tenant: _tenant, tenant_placeholder: _placeholder, ...auth } = ptCommon.auth;
+    const i18n = i18next.createInstance();
+    await i18n.init({
+      lng: 'pt-BR',
+      fallbackLng: false,
+      resources: { 'pt-BR': { common: { ...ptCommon, auth } } },
+      ns: ['common'],
+      defaultNS: 'common',
+      interpolation: { escapeValue: false },
+      react: { useSuspense: false },
+    });
+    render(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter initialEntries={['/login']}>
+          <LoginPage />
+        </MemoryRouter>
+      </I18nextProvider>,
+    );
+
+    expect({
+      label: screen.getByTestId('login-tenant-toggle').textContent,
+      placeholder: screen.getByTestId('login-tenant').getAttribute('placeholder'),
+    }).toEqual({ label: 'auth.tenant', placeholder: 'auth.tenant_placeholder' });
+  });
+
+  it('TenantField_ShouldBeOpenAndEmpty_WhenTheHostIsAnIPv4AddressAndNoDefaultIsBuiltIn', async () => {
+    vi.stubEnv('VITE_DEFAULT_TENANT_ID', '');
+    vi.stubGlobal('location', { ...window.location, hostname: '10.0.0.5' });
+    await renderLogin();
+
+    expect((screen.queryByTestId('login-tenant') as HTMLInputElement | null)?.value).toBe('');
+  });
+});
+
+describe('LoginPage single sign-on MFA challenge', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  function challengeToken() {
+    return `chal-${crypto.randomUUID()}`;
+  }
+
+  it('SsoMfaChallenge_ShouldOpenTheMfaStepWithTheFragmentsToken_WhenTheLoginPageLoadsWithTheChallengeFragment', async () => {
+    const token = challengeToken();
+    window.history.replaceState(
+      null,
+      '',
+      `/login#oidc_mfa_challenge&challenge_token=${encodeURIComponent(token)}&tenant_id=t1`,
+    );
+    await renderLogin();
+
+    expect(await screen.findByTestId('login-mfa-section')).toBeInTheDocument();
+    expect(useAuthStore.getState().mfaPending?.mfaToken).toBe(token);
+  });
+
+  it('SsoMfaChallenge_ShouldRemoveTheFragmentFromTheAddressBar_WhenItOpensTheMfaStep', async () => {
+    window.history.replaceState(
+      null,
+      '',
+      `/login?x=1#oidc_mfa_challenge&challenge_token=${challengeToken()}&tenant_id=t1`,
+    );
+    await renderLogin();
+
+    await screen.findByTestId('login-mfa-section');
+    expect({
+      hash: window.location.hash,
+      path: window.location.pathname + window.location.search,
+    }).toEqual({ hash: '', path: '/login?x=1' });
+  });
+
+  it.each([
+    ['without a token', '#oidc_mfa_challenge&tenant_id=t1'],
+    ['with an empty token', '#oidc_mfa_challenge&challenge_token=&tenant_id=t1'],
+    [
+      'the enrollment-required redirect',
+      '#oidc_mfa_enrollment_required&tenant_id=t1&email=a%40b.c',
+    ],
+  ])('SsoMfaChallenge_ShouldLeaveTheSignInForm_WhenTheFragmentIs %s', async (_case, hash) => {
+    window.history.replaceState(null, '', `/login${hash}`);
+    await renderLogin();
+    await settle();
+
+    expect({
+      mfaStep: screen.queryByTestId('login-mfa-section') !== null,
+      signInForm: screen.queryByTestId('login-submit') !== null,
+      mfaPending: useAuthStore.getState().mfaPending,
+    }).toEqual({ mfaStep: false, signInForm: true, mfaPending: null });
+  });
+
+  it('SsoMfaChallenge_ShouldSignTheUserInWithTheChallengeToken_WhenTheMfaCodeIsAccepted', async () => {
+    const token = challengeToken();
+    answers['/api/v1/auth/mfa/verify'] = {
+      status: 200,
+      body: {
+        accessToken: 'access-after-sso-mfa',
+        expiresAt: new Date(Date.now() + 900_000).toISOString(),
+        tenantId: 't1',
+        user: { id: 'u1', email: 'ana@t1.test', displayName: 'Ana', role: 'agent' },
+        permissions: [],
+        features: {},
+      },
+    };
+    window.history.replaceState(
+      null,
+      '',
+      `/login#oidc_mfa_challenge&challenge_token=${encodeURIComponent(token)}&tenant_id=t1`,
+    );
+    await renderLogin();
+    await screen.findByTestId('login-mfa-section');
+
+    await submitMfaCode('246810');
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    expect({
+      body: JSON.parse(String(init?.body)) as unknown,
+      accessToken: useAuthStore.getState().accessToken,
+      tenantId: useAuthStore.getState().tenantId,
+      path: currentPath(),
+    }).toEqual({
+      body: { mfaToken: token, code: '246810' },
+      accessToken: 'access-after-sso-mfa',
+      tenantId: 't1',
+      path: '/agent',
+    });
+  });
+});

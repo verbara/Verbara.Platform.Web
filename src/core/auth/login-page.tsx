@@ -14,6 +14,7 @@ import { MfaVerify } from './mfa-verify';
 import { ChevronDown } from 'lucide-react';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import type { UserProfile, Features } from './auth-store';
+import type { ForgotPasswordState } from './forgot-password-page';
 import {
   LOGIN_NOTICE_KEYS,
   SIGN_IN_ERROR_KEYS,
@@ -65,6 +66,22 @@ export function LoginPage() {
     supervisor: '/operations',
     agent: '/agent',
   };
+
+  // A single sign-on for a user with MFA enrolled ends at
+  // `#oidc_mfa_challenge&challenge_token=…&tenant_id=…` (H22, design D14). Platform stored the
+  // challenge where `POST /api/v1/auth/mfa/verify` reads it, so the token opens the same MFA step a
+  // password sign-in opens. Without a token the sign-in form stays as it is.
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.startsWith('#oidc_mfa_challenge')) return;
+    const params = new URLSearchParams(hash.slice(1));
+    if (!params.has('oidc_mfa_challenge')) return;
+    const challengeToken = params.get('challenge_token');
+    if (!challengeToken) return;
+    // Clear the hash so the token does not stay in the address bar or get re-processed.
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    useAuthStore.getState().setMfaPending(challengeToken, '');
+  }, []);
 
   // Handle OIDC callback via URL fragment (#oidc_callback&access_token=...&...)
   useEffect(() => {
@@ -279,7 +296,7 @@ export function LoginPage() {
               <ChevronDown
                 className={`h-3 w-3 transition-transform ${showTenant ? '' : '-rotate-90'}`}
               />
-              {t('auth.tenant', 'Tenant')}
+              {t('auth.tenant')}
               {tenant ? `: ${tenant}` : ''}
             </button>
             {showTenant && (
@@ -287,7 +304,7 @@ export function LoginPage() {
                 <Input
                   id="tenant"
                   type="text"
-                  placeholder={t('auth.tenant_placeholder', 'e.g. demo, platform')}
+                  placeholder={t('auth.tenant_placeholder')}
                   value={tenant}
                   onChange={(e) => setTenant(e.target.value)}
                   data-testid="login-tenant"
@@ -322,7 +339,11 @@ export function LoginPage() {
               </Label>
               <button
                 type="button"
-                onClick={() => navigate('/forgot-password')}
+                onClick={() =>
+                  navigate('/forgot-password', {
+                    state: { tenant: tenant.trim() } satisfies ForgotPasswordState,
+                  })
+                }
                 className="text-xs text-brand-dark hover:underline"
                 data-testid="login-forgot-password"
               >
