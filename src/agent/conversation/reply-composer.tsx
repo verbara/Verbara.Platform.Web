@@ -295,6 +295,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
           onKeyDown={handleKeyDown}
           placeholder={t('conversation.reply_placeholder')}
           rows={1}
+          data-testid="reply-composer-input"
           className="max-h-40 min-h-[40px] flex-1 resize-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-500 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/20"
         />
 
@@ -307,6 +308,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
                   type="button"
                   onClick={handleSend}
                   disabled={!canSend}
+                  data-testid="reply-composer-send"
                   className="mb-1.5 shrink-0 rounded-lg bg-teal-600 p-2 text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-teal-500 dark:hover:bg-teal-600"
                   aria-label={t('composer.send')}
                 />

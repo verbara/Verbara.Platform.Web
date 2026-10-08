@@ -9,6 +9,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A refused conversation action says why, in the user's language (H20).** When Platform refused
+  sending, accepting, rejecting, holding, resuming, transferring, closing, typifying, taking over,
+  reassigning or starting a conversation, the console showed Platform's raw machine code
+  (`not-owner`) or its English text ("Agent has no capacity.", "Cannot hold conversation", typify's
+  per-field messages). It now shows a localized message chosen from Platform's code (not an agent,
+  not your conversation, offered to another agent, the transfer target no longer exists) or, without
+  one, from the status: conversation or contact not found, the conversation cannot change in its
+  current state, or "check these fields" naming the refused fields by the wrap-up form's own labels.
+  Anything else shows a generic failure. The message carries `data-error-code`. Requires Platform
+  v2.25.0's conversation refusal codes.
+
 ---
 
 ## [3.20.3-web] - 2026-10-04
