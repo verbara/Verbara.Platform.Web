@@ -248,6 +248,37 @@ describe('ConversationStore', () => {
     expect(conv!.unread).toBe(true);
   });
 
+  it('mergeFromRest_ShouldFillEmptyExistingFields_FromTheRestRecord', () => {
+    useConversationStore.getState().upsertConversation(
+      makeConversation({
+        id: 'c2',
+        contactId: '',
+        channel: '',
+        lastMessageAt: '',
+        assignedAt: '',
+        unread: false,
+      }),
+    );
+    useConversationStore.getState().mergeFromRest(
+      makeConversation({
+        id: 'c2',
+        contactId: 'contact-2',
+        channel: 'email',
+        lastMessageAt: '',
+        assignedAt: '2026-10-04T09:00:00Z',
+        metadata: { origin: 'rest' },
+      }),
+    );
+
+    expect(useConversationStore.getState().conversations['c2']).toMatchObject({
+      contactId: 'contact-2',
+      channel: 'email',
+      lastMessageAt: '',
+      assignedAt: '2026-10-04T09:00:00Z',
+      metadata: { origin: 'rest' },
+    });
+  });
+
   it('mergeFromRest_ShouldAddTheRestRecord_WhenTheStoreDoesNotHaveIt', () => {
     const rest = makeConversation({ id: 'c-rest', contactName: '', queueName: '', unread: false });
     useConversationStore.getState().mergeFromRest(rest);

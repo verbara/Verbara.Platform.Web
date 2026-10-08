@@ -56,7 +56,15 @@ void i18n.init({
   lng: 'en-US',
   fallbackLng: false,
   resources: {
-    'en-US': { agent: { inbox: { title: 'Inbox', unknownContact: 'Unknown contact' } } },
+    'en-US': {
+      agent: {
+        inbox: {
+          title: 'Inbox',
+          unknownContact: 'Unknown contact',
+          announceNew: 'New conversation from {{name}}',
+        },
+      },
+    },
   },
   interpolation: { escapeValue: false },
   react: { useSuspense: false },
@@ -205,5 +213,30 @@ describe('InboxPanel with Platform conversations', () => {
 
     const row = await screen.findByTestId(`inbox-item-${CONVERSATION_ID}`);
     expect(row).toHaveTextContent('Unknown contact');
+  });
+
+  it('InboxPanel_ShouldAnnounceAnUnknownContact_WhenTheNewestConversationHasNoName', async () => {
+    restItems = [platformConversation];
+    renderInbox();
+    await screen.findByTestId(`inbox-item-${CONVERSATION_ID}`);
+
+    act(() => {
+      useConversationStore.getState().upsertConversation({
+        id: 'sse-conv-2',
+        contactId: '',
+        contactName: '',
+        channel: 'whatsapp',
+        queueName: '',
+        state: 'offered',
+        lastMessage: '',
+        lastMessageAt: '2099-01-01T00:00:00.000Z',
+        unread: true,
+        assignedAt: '2099-01-01T00:00:00.000Z',
+      });
+    });
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'New conversation from Unknown contact',
+    );
   });
 });
