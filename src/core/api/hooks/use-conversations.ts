@@ -4,6 +4,8 @@ import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformMessage } from '@/core/api/platform-message';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { conversationRefusals } from '@/core/api/conversation-refusals';
+import { toastApiError } from '@/core/api/toast-api-error';
 
 /**
  * Kept hand-written (openapi-typed-client-agent): the document's `Conversation` is the raw ENTITY
@@ -114,6 +116,7 @@ export function useMessages(conversationId: string | undefined) {
 
 export function useSendMessage() {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: async ({ conversationId, text }: { conversationId: string; text: string }) =>
       mapPlatformMessage(
@@ -126,7 +129,7 @@ export function useSendMessage() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['messages', variables.conversationId] });
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'send' }),
   });
 }
 
@@ -143,7 +146,7 @@ export function useAcceptConversation() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success(t('toasts.conversations.accepted'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'accept' }),
   });
 }
 
@@ -160,7 +163,7 @@ export function useRejectConversation() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success(t('toasts.conversations.rejected'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'reject' }),
   });
 }
 
@@ -178,7 +181,7 @@ export function useTransferConversation() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success(t('toasts.conversations.transferred'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'transfer' }),
   });
 }
 
@@ -252,7 +255,7 @@ export function useCloseConversation() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success(t('toasts.conversations.closed'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'close' }),
   });
 }
 
@@ -270,7 +273,7 @@ export function useHoldConversation() {
       qc.invalidateQueries({ queryKey: ['conversations', id] });
       toast.success(t('toasts.conversations.onHold'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'hold' }),
   });
 }
 
@@ -288,7 +291,7 @@ export function useUnholdConversation() {
       qc.invalidateQueries({ queryKey: ['conversations', id] });
       toast.success(t('toasts.conversations.resumed'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'unhold' }),
   });
 }
 
@@ -306,6 +309,6 @@ export function useCreateConversation() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success(t('toasts.conversations.created'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'create' }),
   });
 }

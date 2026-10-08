@@ -4,6 +4,8 @@ import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformMessage } from '@/core/api/platform-message';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { conversationRefusals } from '@/core/api/conversation-refusals';
+import { toastApiError } from '@/core/api/toast-api-error';
 
 /**
  * Kept hand-written (openapi-typed-client-operations): the document's `ActiveSessionDto`
@@ -161,7 +163,7 @@ export function useTakeoverConversation() {
       qc.invalidateQueries({ queryKey: ['supervisor', 'conversations'] });
       toast.success(t('toasts.conversations.takenOver'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'takeover' }),
   });
 }
 
@@ -179,7 +181,8 @@ export function useCloseDigitalConversation() {
       qc.invalidateQueries({ queryKey: ['supervisor', 'conversations'] });
       toast.success(t('toasts.conversations.closed'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) =>
+      toastApiError(err, conversationRefusals, t, { action: 'supervisor-close' }),
   });
 }
 
@@ -231,6 +234,7 @@ export type ReassignTarget = { targetQueueId: string } | { targetAgentId: string
 export function useReassignConversation() {
   const qc = useQueryClient();
   const { t } = useTranslation('operations');
+  const { t: tCommon } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...target }: { id: string } & ReassignTarget) =>
       customFetch<void>({
@@ -242,7 +246,8 @@ export function useReassignConversation() {
       qc.invalidateQueries({ queryKey: ['supervisor', 'stuck'] });
       toast.success(t('stuck_work.reassigned_toast'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) =>
+      toastApiError(err, conversationRefusals, tCommon, { action: 'reassign' }),
   });
 }
 
