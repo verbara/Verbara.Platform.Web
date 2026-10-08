@@ -92,8 +92,26 @@ describe('use-contacts', () => {
 
   describe('useSearchContacts', () => {
     it('should fetch contacts when search has 2+ chars', async () => {
+      // Platform's `Contact` record: `contactId`, nullable fields, PascalCase address channels.
       vi.mocked(client.customFetch).mockResolvedValue({
-        items: [sampleContact],
+        items: [
+          {
+            contactId: 'contact-1',
+            tenantId: 'tenant-1',
+            firstName: 'John',
+            lastName: 'Doe',
+            company: 'Acme Inc',
+            segment: 'Enterprise',
+            preferredChannel: 'voice',
+            preferredLanguage: 'en',
+            timezone: 'America/New_York',
+            addresses: [{ channel: 'Voice', address: '+15551234567' }],
+            customFields: null,
+            channelConsent: null,
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: null,
+          },
+        ],
         totalCount: 1,
         page: 1,
         pageSize: 20,

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformMessage } from '@/core/api/platform-message';
+import { mapPlatformSupervisorConversation } from '@/core/api/platform-conversation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -62,7 +63,9 @@ export function useStartListening() {
  * (`contactName`, `queueName`, `lastMessage`, `lastMessageAt`, `assignedAt`). The document's
  * `PagedResultOfConversation.items` is the raw `Conversation` ENTITY (`conversationId`,
  * `owner`, `sessions`, …) — a different shape — so there is nothing structurally compatible to
- * swap onto. `PagedResult<T>` below stays a local generic wrapper (design.md task 1.3).
+ * swap onto. The wire entity is mapped onto it at the data boundary by
+ * `mapPlatformSupervisorConversation`. `PagedResult<T>` below stays a local generic wrapper
+ * (design.md task 1.3).
  */
 export interface SupervisorConversation {
   id: string;
@@ -122,12 +125,19 @@ export function useSupervisorConversations(filters?: SupervisorConversationFilte
 
   return useQuery({
     queryKey: ['supervisor', 'conversations', params],
-    queryFn: () =>
-      customFetch<PagedResult<SupervisorConversation>>({
+    queryFn: async (): Promise<PagedResult<SupervisorConversation>> => {
+      const result = await customFetch<components['schemas']['PagedResultOfConversation']>({
         url: '/api/v1/supervisor/conversations',
         method: 'GET',
         params,
-      }),
+      });
+      return {
+        items: result.items.map(mapPlatformSupervisorConversation),
+        totalCount: result.totalCount,
+        page: result.page,
+        pageSize: result.pageSize,
+      };
+    },
     refetchInterval: 10_000,
   });
 }
