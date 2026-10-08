@@ -9,6 +9,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The password-reset page explains a refused reset in your language.** It showed Platform's English
+  text (for example "Invalid or expired reset token") in every locale. It now shows a translated
+  message chosen from the answer: a password that breaks the tenant's policy, a link that is invalid,
+  expired or already used, or a generic failure. Each message carries `data-error-code`
+  (`reset-policy`, `reset-invalid`, `reset-failed`). (H4)
+- **The login page's tenant field is translated.** Its label and placeholder rendered in English in
+  ES-419 and PT-BR. (H5)
+- **"Forgot password" sends a reset email on single-domain deployments.** The page sent only the
+  email, so Platform guessed the tenant from the host, found no user and sent nothing while still
+  confirming. The page now always shows a tenant field, prefilled with the tenant typed on the login
+  page or else the console's default, and sends it with the request; it still shows one confirmation
+  whether or not the email exists. The console no longer takes a tenant from an IP address (a console
+  opened at `10.0.0.5` used to guess the tenant `10`); the login page opens its tenant field there
+  instead. (H16)
+- **Single sign-on with MFA enrolled opens the MFA step.** After the identity provider, Platform sends
+  such users to the login page with an MFA challenge, which the console ignored: the user saw the
+  sign-in form again with no message. The login page now opens the MFA verification step with that
+  challenge and removes it from the address bar. (H22)
+
 ---
 
 ## [3.20.3-web] - 2026-10-04

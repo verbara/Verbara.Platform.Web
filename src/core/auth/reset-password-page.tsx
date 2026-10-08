@@ -8,6 +8,7 @@ import { FieldError } from '@/core/ui/field-error';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { type PasswordPolicy } from '@/core/api/hooks/use-auth-admin';
+import { RESET_REFUSAL_KEYS, resetRefusalCode, type ResetRefusalCode } from './sign-in-refusal';
 
 // The generic hint shown while resetting. The tenant's own policy cannot be read here: the person
 // following a reset link has no session, and `GET /api/v1/auth/password-policy` requires one (it
@@ -93,7 +94,8 @@ export function ResetPasswordPage() {
   const token = (searchParams.get('token') ?? '').replaceAll(' ', '+');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  // A code, never display text: it picks the translation and is exposed as `data-error-code`.
+  const [errorCode, setErrorCode] = useState<ResetRefusalCode | null>(null);
   const [loading, setLoading] = useState(false);
 
   const passwordsMatch = newPassword === confirmPassword;
@@ -110,7 +112,7 @@ export function ResetPasswordPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!passwordsMatch) return;
-    setError('');
+    setErrorCode(null);
     setLoading(true);
 
     try {
@@ -122,15 +124,15 @@ export function ResetPasswordPage() {
       });
 
       if (!res.ok) {
-        // Platform answers `{ error }` (ErrorResponse) or a ProblemDetails `detail`.
-        const err = (await res.json().catch(() => ({}))) as { error?: string; detail?: string };
-        setError(err.error || err.detail || t('auth.reset_error'));
+        // The status and the body's shape decide; Platform's English `error` text is never shown.
+        const body: unknown = await res.json().catch(() => null);
+        setErrorCode(resetRefusalCode(res.status, body));
         return;
       }
 
       navigate('/login', { state: { message: t('auth.password_reset_success') }, replace: true });
     } catch {
-      setError(t('auth.reset_error'));
+      setErrorCode(resetRefusalCode(null, null));
     } finally {
       setLoading(false);
     }
@@ -173,6 +175,7 @@ export function ResetPasswordPage() {
               {...newPasswordA11y.inputProps}
               // eslint-disable-next-line jsx-a11y/no-autofocus -- standalone page: focus first field on mount for keyboard users
               autoFocus
+              data-testid="reset-new-password"
             />
             <PasswordStrength password={newPassword} policy={resetPolicy} />
             <FieldError id={newPasswordA11y.errorId} />
@@ -189,6 +192,7 @@ export function ResetPasswordPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               {...confirmPasswordA11y.inputProps}
+              data-testid="reset-confirm-password"
             />
             <FieldError
               id={confirmPasswordA11y.errorId}
@@ -196,12 +200,21 @@ export function ResetPasswordPage() {
             />
           </div>
 
-          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+          {errorCode && (
+            <p
+              className="text-sm text-red-600 dark:text-red-400"
+              data-testid="reset-error"
+              data-error-code={errorCode}
+            >
+              {t(RESET_REFUSAL_KEYS[errorCode])}
+            </p>
+          )}
 
           <Button
             type="submit"
             className="w-full bg-brand text-brand-foreground hover:bg-brand/90"
             disabled={!canSubmit}
+            data-testid="reset-submit"
           >
             {loading ? t('status.loading') : t('auth.reset_password')}
           </Button>
