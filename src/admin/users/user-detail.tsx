@@ -24,7 +24,8 @@ import { PermissionButton } from '@/core/ui/permission-button';
 import { AuditTimeline } from '@/core/ui/audit-timeline';
 import { UserForm } from './user-form';
 import { UserStatusBadge } from './user-status-badge';
-import { useUser, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
+import { normalizeUserRole, userRoleLabelKey } from './user-role';
+import { useUser, useUserEtag, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
 import { useUserRoles, useAssignRole, useRemoveRole, useRoles } from '@/core/api/hooks/use-rbac';
 import { useForceLogoutUser } from '@/core/api/hooks/use-auth-admin';
 import { useFormatDate } from '@/core/i18n/use-format';
@@ -60,6 +61,7 @@ export default function UserDetailPage() {
   const [selectedRoleId, setSelectedRoleId] = useState('');
 
   const { data: user } = useUser(userId);
+  const { data: etag } = useUserEtag(userId);
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
   const { data: userRoles = [] } = useUserRoles(userId);
@@ -101,6 +103,7 @@ export default function UserDetailPage() {
 
   const availableRoles = allRoles.filter((r) => !userRoles.some((ur) => ur.roleId === r.roleId));
 
+  const role = normalizeUserRole(user.role);
   const mfaEnabled = user.mfaEnabled === true;
   const lastLogin = user.lastLoginAt;
   const authProvider = user.authProvider || 'local';
@@ -155,7 +158,13 @@ export default function UserDetailPage() {
           {user.email}
         </InfoRow>
         <InfoRow icon={Shield} label={t('admin:users.role')}>
-          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
+          <Badge
+            data-testid="user-detail-role"
+            data-role={role ? role.toLowerCase() : 'unknown'}
+            variant={role === 'Admin' ? 'default' : 'secondary'}
+          >
+            {role ? t(userRoleLabelKey(role)) : user.role}
+          </Badge>
         </InfoRow>
         <InfoRow icon={CircleDot} label={t('admin:users.status')}>
           <UserStatusBadge status={user.status} />
@@ -247,13 +256,20 @@ export default function UserDetailPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         mode="edit"
-        defaultValues={{
-          email: user.email,
-          displayName: user.displayName,
-          role: user.role as 'admin' | 'supervisor' | 'agent' | 'readonly',
-        }}
+        defaultValues={{ email: user.email, displayName: user.displayName }}
+        currentRole={user.role}
         currentStatus={user.status}
-        onSubmit={(v) => updateUser.mutate({ id: user.id, ...v })}
+        onSubmit={(v) =>
+          // The version the form was opened on travels back as `If-Match` (design D6); the email
+          // is never part of the update (H2).
+          updateUser.mutate({
+            id: user.id,
+            displayName: v.displayName,
+            role: v.role,
+            status: v.status,
+            etag,
+          })
+        }
       />
 
       {/* Delete confirmation dialog */}
