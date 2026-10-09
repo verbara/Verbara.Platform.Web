@@ -332,7 +332,25 @@
     "statusLabel": "Status",
     "detailTitle": "Channel: {{channel}}",
     "activeStatus": "Active",
-    "inactiveStatus": "Inactive"
+    "inactiveStatus": "Inactive",
+    "whatsapp": {
+      "accessToken": {
+        "label": "Access Token",
+        "help": "In the Meta app dashboard: WhatsApp > API Setup. Use a permanent token from a system user (Business Settings > System users) with the whatsapp_business_messaging permission; the temporary token expires in 24 hours."
+      },
+      "phoneNumberId": {
+        "label": "Phone Number ID",
+        "help": "In the Meta app dashboard: WhatsApp > API Setup, the \"Phone number ID\" under the sending number. It is a numeric ID, not the phone number itself."
+      },
+      "appSecret": {
+        "label": "App Secret",
+        "help": "In the Meta app dashboard: App settings > Basic > App secret (click Show). Meta signs every webhook with it."
+      },
+      "webhookVerifyToken": {
+        "label": "Webhook Verify Token",
+        "help": "A value you choose. Enter the same value as the \"Verify token\" in the Meta app dashboard: WhatsApp > Configuration > Webhook."
+      }
+    }
   },
   "flows": {
     "title": "Flows",
