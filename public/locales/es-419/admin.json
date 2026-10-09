@@ -167,7 +167,21 @@
     },
     "namePlaceholder": "Jane Doe",
     "delete_title": "Eliminar usuario",
-    "delete_confirm": "¿Está seguro de que desea eliminar a {{name}}? Esta acción no se puede deshacer."
+    "delete_confirm": "¿Está seguro de que desea eliminar a {{name}}? Esta acción no se puede deshacer.",
+    "edit": "Editar usuario",
+    "create_description": "Agrega un nuevo usuario a la plataforma.",
+    "edit_description": "Actualiza los datos del usuario.",
+    "save": "Guardar cambios",
+    "role_names": {
+      "agent": "Agente",
+      "supervisor": "Supervisor",
+      "admin": "Administrador",
+      "api": "API"
+    },
+    "role_hint_lower": "Al guardar un rol inferior se cerrarán las sesiones del usuario; tendrá que iniciar sesión de nuevo.",
+    "errors": {
+      "user_changed": "Otra persona cambió este usuario. Tu cambio no se guardó; revisa los valores actuales e inténtalo de nuevo."
+    }
   },
   "agents": {
     "title": "Agentes",

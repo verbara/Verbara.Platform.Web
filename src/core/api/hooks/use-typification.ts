@@ -4,6 +4,8 @@ import type { components } from '@/core/api/generated/openapi';
 import { PaymentRequiredError } from '@/core/licensing';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { conversationRefusals, refusedFieldLabels } from '@/core/api/conversation-refusals';
+import { toastApiError } from '@/core/api/toast-api-error';
 
 // ---------------------------------------------------------------------------
 // Types — mirror the Platform typification DTOs (camelCase over the wire).
@@ -494,6 +496,20 @@ export function useTypify() {
       });
       toast.success(t('toasts.typification.typified'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    // A validation refusal names the refused fields by the labels the wrap-up form shows (read from
+    // the loaded form in the cache); Platform's English field messages are never shown (H20).
+    onError: (err: Error, variables) => {
+      const form = qc.getQueryData<TypificationFormResponse>([
+        'typification',
+        'form',
+        variables.conversationId,
+      ]);
+      const fields = refusedFieldLabels(err, (field) =>
+        field === 'path'
+          ? t('typification.outcome', { ns: 'agent' })
+          : form?.schema.fields.find((f) => f.key === field)?.label,
+      );
+      toastApiError(err, conversationRefusals, t, { action: 'typify', values: { fields } });
+    },
   });
 }

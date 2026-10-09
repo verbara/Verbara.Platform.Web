@@ -9,6 +9,121 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A stale user edit is refused instead of overwriting another administrator's change.** The
+  console sends back the user's version (`If-Match`, from the strong `ETag` Platform v2.25.0
+  returns) and, when Platform answers 412, shows "Someone else changed this user" and reloads the
+  user instead of reporting the edit as saved. A weak or absent `ETag` sends no precondition. (H14)
+- **The user form warns before a role change that signs the user out:** lowering a role ends the
+  user's sessions in Platform v2.25.0. (H15)
+
+### Changed
+
+- **The web image no longer compresses API responses it proxies.** Its nginx gzipped JSON from
+  `/api/`, which turned Platform's strong `ETag` into a weak `W/"…"` one; Platform compares
+  `If-Match` strongly, so every user save through the web image (the Kubernetes path) would have
+  been refused with 412. `/api/` responses now pass through as Platform sends them, as they already
+  did behind the compose gateway; the console's own files are still compressed. API JSON travels
+  uncompressed between the browser and the web pod.
+- **The web image's access log has a new format, without query strings.** Each line records the
+  method, the path without its query, the status, the size, the Referer's scheme, host and path, and
+  the user agent, the same fields as Platform's gateway (`verbara_noquery`). Point log parsers at the
+  new format.
+
+### Fixed
+
+- **An impersonation never borrows the operator's own credentials or tenant.** No page of the
+  console starts an impersonation yet, so these are defensive fixes to the request client and the
+  session store, ready for when one does:
+  - A token refresh during an impersonation no longer installs the operator's own token next to
+    the impersonated tenant; the impersonation token is used until it expires.
+  - A request Platform refuses with 401 during an impersonation is no longer re-sent with the
+    operator's token. The impersonation ends in the browser, the operator is back in their own
+    session, and a notice says the impersonation ended. The same happens when the impersonation
+    reaches its expiry.
+  - Ending an impersonation restores the operator's own token expiry too, so the next request
+    refreshes first if that token expired meanwhile.
+  - Every request of an impersonation names the impersonated tenant in `X-Tenant-Id` (Platform
+    refuses any other), and requests after it name the operator's tenant again.
+  - A reload during an impersonation restores the operator in their own tenant, not the
+    impersonated one.
+- **A refused conversation action says why, in the user's language (H20).** When Platform refused
+  sending, accepting, rejecting, holding, resuming, transferring, closing, typifying, taking over,
+  reassigning or starting a conversation, the console showed Platform's raw machine code
+  (`not-owner`) or its English text ("Agent has no capacity.", "Cannot hold conversation", typify's
+  per-field messages). It now shows a localized message chosen from Platform's code (not an agent,
+  not your conversation, offered to another agent, the transfer target no longer exists) or, without
+  one, from the status: conversation or contact not found, the conversation cannot change in its
+  current state, or "check these fields" naming the refused fields by the wrap-up form's own labels.
+  Anything else shows a generic failure. The message carries `data-error-code`. Requires Platform
+  v2.25.0's conversation refusal codes.
+- **The user form offers exactly Platform's roles** (Administrator, Supervisor, Agent, API), with
+  labels in all three languages. It offered `readonly`, which Platform refuses with a 400, and a
+  user whose role is `api` opened a form that could not be saved. The form now sends Platform's
+  role names. (H1)
+- **The user edit form shows the email read-only and no longer sends it.** Platform's update
+  ignores the email, so a changed address was silently discarded. (H2)
+- **The agent form's user picker offers only active users.** A suspended or deactivated user could
+  be picked as a new agent with no indication; an agent's current user stays in its form, shown
+  with its status. (H3)
+- **The user form's titles, descriptions and save button are translated** in ES-419 and PT-BR;
+  they were inline English. (H5)
+- **The password-reset page explains a refused reset in your language.** It showed Platform's English
+  text (for example "Invalid or expired reset token") in every locale. It now shows a translated
+  message chosen from the answer: a password that breaks the tenant's policy, a link that is invalid,
+  expired or already used, or a generic failure. Each message carries `data-error-code`
+  (`reset-policy`, `reset-invalid`, `reset-failed`). (H4)
+- **The login page's tenant field is translated.** Its label and placeholder rendered in English in
+  ES-419 and PT-BR. (H5)
+- **"Forgot password" sends a reset email on single-domain deployments.** The page sent only the
+  email, so Platform guessed the tenant from the host, found no user and sent nothing while still
+  confirming. The page now always shows a tenant field, prefilled with the tenant typed on the login
+  page or else the console's default, and sends it with the request; it still shows one confirmation
+  whether or not the email exists. The console no longer takes a tenant from an IP address (a console
+  opened at `10.0.0.5` used to guess the tenant `10`); the login page opens its tenant field there
+  instead. (H16)
+- **Single sign-on with MFA enrolled opens the MFA step.** After the identity provider, Platform sends
+  such users to the login page with an MFA challenge, which the console ignored: the user saw the
+  sign-in form again with no message. The login page now opens the MFA verification step with that
+  challenge and removes it from the address bar. (H22)
+- **The session is renewed before the access token expires, in every browser.** Where the browser
+  provides Web Locks (Chromium, Firefox, Safari), the console's scheduled renewal a minute before
+  expiry found the token still valid and skipped the request, so live connections were renewed only
+  when the server closed them at expiry. The scheduled renewal now reaches the server unless the
+  token outlives that minute. (H6)
+- **Leaving a page while the notification stream waits to reconnect no longer reopens it.** The
+  stream's reconnect timer was not cancelled when its page unmounted, so the stream reopened after a
+  client-side navigation, possibly with an outdated token. (H8)
+- **The web image no longer writes credentials to its logs.** It logged the full request line and
+  Referer, so password-reset tokens, SSE stream tokens and the hub's `access_token` landed in the
+  container log, and its error log repeated the request line and upstream URL with their queries. The
+  error log of the console's server is now discarded; a failed request still shows in the access log
+  with its status.
+- **The realtime hub connects when the console is served by the web image directly.** On Kubernetes
+  the console's host reaches the web image, which had no route for `/hubs/`: SignalR's negotiate
+  `POST` fell to the console's static files and was answered `405 Not Allowed`, so the console never
+  connected to the hub. The image now proxies `/hubs/` to the realtime service, resolved when a
+  request arrives, so the image still starts where none runs. The upstream defaults to
+  `platform-realtime.<namespace>.svc.cluster.local:5030` on Kubernetes and `realtime:5030`
+  elsewhere, and `VERBARA_REALTIME_UPSTREAM` (`host:port`) overrides it. Behind the compose gateway
+  nothing changes: the gateway sends `/hubs/` to the realtime service itself.
+- **The supervisor's digital monitor opens a conversation and takes it over.** Its cards read an
+  `id` Platform does not send (Platform sends `conversationId`), so every card was the same
+  "undefined" card and a takeover went to `/supervisor/conversations/undefined/takeover`, which
+  Platform answered with 404. The console now converts Platform's conversation format when the list
+  loads. Platform's list carries no contact name, queue name or last message, so the cards leave
+  those blank. (N16)
+- **Starting a conversation from the contact search works.** The search results read an `id`
+  Platform does not send (Platform sends `contactId`), so the request carried no contact and
+  Platform refused it with 400. The console now converts Platform's contact format, which also fixes
+  the contact pickers on the cases and consent pages and the contact search panel. (N16)
+- **The agent inbox shows a conversation as soon as it arrives.** A conversation assigned live
+  updated the counter but not the list until the agent switched tabs; the list now updates
+  immediately. The conversations the inbox loads from the API are now converted from Platform's
+  format too, and a conversation without a usable time shows no time instead of crashing the
+  inbox. (N17)
+
 ---
 
 ## [3.20.3-web] - 2026-10-04

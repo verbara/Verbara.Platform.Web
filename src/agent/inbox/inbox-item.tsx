@@ -46,7 +46,7 @@ const stateColors: Record<Conversation['state'], string> = {
 };
 
 export function InboxItem({ conversation }: { readonly conversation: Conversation }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const select = useConversationStore((s) => s.select);
   const markRead = useConversationStore((s) => s.markRead);
@@ -62,15 +62,19 @@ export function InboxItem({ conversation }: { readonly conversation: Conversatio
   }
 
   const locale = LOCALE_MAP[i18n.resolvedLanguage ?? i18n.language] ?? es;
-  const relativeTime = formatDistanceToNow(new Date(conversation.lastMessageAt), {
-    addSuffix: false,
-    locale,
-  });
+  // A record without a usable date shows no time: `formatDistanceToNow` throws "Invalid time value"
+  // on an Invalid Date, which took the inbox down (LAB-W1 N17).
+  const lastActivity = conversation.lastMessageAt ? new Date(conversation.lastMessageAt) : null;
+  const relativeTime =
+    lastActivity && !Number.isNaN(lastActivity.getTime())
+      ? formatDistanceToNow(lastActivity, { addSuffix: false, locale })
+      : null;
 
   return (
     <button
       type="button"
       onClick={handleClick}
+      data-testid={`inbox-item-${conversation.id}`}
       className={cn(
         'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors',
         isSelected
@@ -94,11 +98,17 @@ export function InboxItem({ conversation }: { readonly conversation: Conversatio
                 : 'font-medium text-slate-700 dark:text-slate-200',
             )}
           >
-            {conversation.contactName}
+            {/* Platform's REST record has no contact name; until SSE fills it, say so. */}
+            {conversation.contactName || t('agent:inbox.unknownContact')}
           </span>
-          <span className="shrink-0 text-[11px] text-slate-500 dark:text-slate-500">
-            {relativeTime}
-          </span>
+          {relativeTime !== null && (
+            <span
+              className="shrink-0 text-[11px] text-slate-500 dark:text-slate-500"
+              data-testid="inbox-item-time"
+            >
+              {relativeTime}
+            </span>
+          )}
         </div>
 
         <div className="mt-0.5 flex items-center gap-2">

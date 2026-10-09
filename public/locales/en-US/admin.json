@@ -167,7 +167,21 @@
     },
     "namePlaceholder": "Jane Doe",
     "delete_title": "Delete user",
-    "delete_confirm": "Are you sure you want to delete {{name}}? This action cannot be undone."
+    "delete_confirm": "Are you sure you want to delete {{name}}? This action cannot be undone.",
+    "edit": "Edit user",
+    "create_description": "Add a new user to the platform.",
+    "edit_description": "Update user details.",
+    "save": "Save changes",
+    "role_names": {
+      "agent": "Agent",
+      "supervisor": "Supervisor",
+      "admin": "Administrator",
+      "api": "API"
+    },
+    "role_hint_lower": "Saving a lower role ends the user's sessions; they will have to sign in again.",
+    "errors": {
+      "user_changed": "Someone else changed this user. Your change was not saved; review the current values and try again."
+    }
   },
   "agents": {
     "title": "Agents",

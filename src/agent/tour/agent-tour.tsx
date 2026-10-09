@@ -71,7 +71,7 @@ export function AgentTour() {
   })();
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50" data-testid="agent-tour">
       {/* Spotlight cutout */}
       <div
         className="pointer-events-none absolute transition-all duration-300 ease-in-out"
@@ -101,6 +101,7 @@ export function AgentTour() {
           <button
             type="button"
             onClick={dismiss}
+            data-testid="agent-tour-skip"
             className="text-xs text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
           >
             {t('tour.skipTour')}

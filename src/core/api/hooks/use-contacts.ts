@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
+import { mapPlatformContact } from '@/core/api/platform-conversation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -7,7 +9,8 @@ import { toast } from 'sonner';
  * Kept hand-written (openapi-typed-client-agent): the document's `Contact` is a raw entity of a
  * different shape — no `id` (only `contactId`), `addresses` optional+nullable, `preferredChannel`
  * as the `ChannelType` enum. Consumers read `contact.id`, index `addresses` without a null-guard,
- * and bind `preferredChannel` to a plain-string form field, so a swap would not typecheck.
+ * and bind `preferredChannel` to a plain-string form field, so a swap would not typecheck. A search
+ * result is mapped onto it at the data boundary by `mapPlatformContact`.
  */
 export interface Contact {
   id: string;
@@ -78,12 +81,12 @@ export function useSearchContacts(search: string) {
   return useQuery({
     queryKey: ['contacts', 'search', search],
     queryFn: async () => {
-      const result = await customFetch<PagedResult<Contact>>({
+      const result = await customFetch<components['schemas']['PagedResultOfContact']>({
         url: '/api/v1/contacts',
         method: 'GET',
         params: { search, page: '1', pageSize: '20' },
       });
-      return result.items;
+      return result.items.map(mapPlatformContact);
     },
     enabled: search.length >= 2,
   });

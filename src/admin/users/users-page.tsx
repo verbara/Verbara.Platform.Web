@@ -82,7 +82,13 @@ export default function UsersPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         mode="create"
-        onSubmit={(v) => createUser.mutate(v)}
+        onSubmit={(v) =>
+          createUser.mutate({
+            email: v.email ?? '',
+            displayName: v.displayName,
+            role: v.role ?? 'Agent',
+          })
+        }
       />
     </div>
   );

@@ -12,15 +12,19 @@ import { UserForm, type UserFormValues } from './user-form';
 const onSubmit = vi.fn<(values: UserFormValues) => void>();
 const onOpenChange = vi.fn<(open: boolean) => void>();
 
-const ANA = { email: 'ana@demo.test', displayName: 'Ana Rivera', role: 'supervisor' as const };
+const ANA = { email: 'ana@demo.test', displayName: 'Ana Rivera' };
+/** What an unchanged edit of Ana submits: the name only (no email, no unchanged role or status). */
+const ANA_EDIT = { displayName: 'Ana Rivera' };
 
 async function renderForm({
   mode = 'edit',
   currentStatus,
+  currentRole = 'supervisor',
   lng = 'en-US',
 }: {
   mode?: 'create' | 'edit';
   currentStatus?: string;
+  currentRole?: string;
   lng?: TestLocale;
 } = {}) {
   const i18n = await createLocaleI18n(lng);
@@ -31,6 +35,7 @@ async function renderForm({
         onOpenChange={onOpenChange}
         mode={mode}
         defaultValues={mode === 'edit' ? ANA : undefined}
+        currentRole={currentRole}
         currentStatus={currentStatus}
         onSubmit={onSubmit}
       />
@@ -125,7 +130,7 @@ describe('UserForm account status', () => {
     await chooseStatus('Suspended');
     const values = await submit();
 
-    expect(values).toEqual({ ...ANA, status: 'Suspended' });
+    expect(values).toEqual({ ...ANA_EDIT, status: 'Suspended' });
   });
 
   it('UserForm_ShouldShowNoStatusFieldAndSubmitNoStatus_WhenCreating', async () => {
@@ -140,7 +145,7 @@ describe('UserForm account status', () => {
     expect(values).toStrictEqual({
       email: 'new@demo.test',
       displayName: 'New User',
-      role: 'agent',
+      role: 'Agent',
     });
   });
 
@@ -150,7 +155,7 @@ describe('UserForm account status', () => {
     rename('Ana R.');
     const values = await submit();
 
-    expect(values).toStrictEqual({ ...ANA, displayName: 'Ana R.' });
+    expect(values).toStrictEqual({ displayName: 'Ana R.' });
     expect(Object.keys(values)).not.toContain('status');
   });
 
@@ -160,7 +165,7 @@ describe('UserForm account status', () => {
     await chooseStatus('Active');
     const values = await submit();
 
-    expect(values).toStrictEqual({ ...ANA, status: 'Active' });
+    expect(values).toStrictEqual({ ...ANA_EDIT, status: 'Active' });
   });
 
   it('UserForm_ShouldSubmitDeactivated_WhenDeactivatedIsSelected', async () => {
@@ -169,7 +174,7 @@ describe('UserForm account status', () => {
     await chooseStatus('Deactivated');
     const values = await submit();
 
-    expect(values).toStrictEqual({ ...ANA, status: 'Deactivated' });
+    expect(values).toStrictEqual({ ...ANA_EDIT, status: 'Deactivated' });
   });
 
   it('UserForm_ShouldSubmitNoStatusKey_WhenTheCurrentStatusIsSelectedAgain', async () => {
@@ -178,7 +183,7 @@ describe('UserForm account status', () => {
     await chooseStatus('Suspended');
     const values = await submit();
 
-    expect(values).toStrictEqual(ANA);
+    expect(values).toStrictEqual(ANA_EDIT);
   });
 
   it.each(['ACTIVE', 'Active', ' active '])(
@@ -215,7 +220,7 @@ describe('UserForm with a status the console does not know', () => {
     rename('Ana R.');
     const values = await submit();
 
-    expect(values).toStrictEqual({ ...ANA, displayName: 'Ana R.' });
+    expect(values).toStrictEqual({ displayName: 'Ana R.' });
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -225,7 +230,7 @@ describe('UserForm with a status the console does not know', () => {
     await chooseStatus('Active');
     const values = await submit();
 
-    expect(values).toStrictEqual({ ...ANA, status: 'Active' });
+    expect(values).toStrictEqual({ ...ANA_EDIT, status: 'Active' });
   });
 });
 
@@ -310,5 +315,263 @@ describe.each(TEST_LOCALES)('UserForm status labels in %s', (lng) => {
     await chooseStatus('Suspended');
 
     expect(hint()).toBe(ADMIN_LOCALES[lng].users.status_hint_inactive);
+  });
+});
+
+/** The options the role field offers, in order, as a user reads them. */
+async function openRoleOptions() {
+  fireEvent.click(screen.getByTestId('user-form-role'));
+  const options = await screen.findAllByRole('option');
+  return options.map((o) => ({ testId: o.getAttribute('data-testid'), label: o.textContent }));
+}
+
+function sheetText(slot: 'sheet-title' | 'sheet-description') {
+  return document.querySelector(`[data-slot="${slot}"]`)?.textContent;
+}
+
+describe('UserForm roles (H1)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('UserForm_ShouldOfferExactlyThePlatformUserRolesWithTranslatedLabels_WhenEditing', async () => {
+    await renderForm({ currentStatus: 'active' });
+
+    const options = await openRoleOptions();
+
+    const names = ADMIN_LOCALES['en-US'].users.role_names;
+    expect(options.map((o) => o.label)).not.toContain('readonly');
+    expect(options.map((o) => o.label)).toEqual([
+      names.admin,
+      names.supervisor,
+      names.agent,
+      names.api,
+    ]);
+  });
+});
+
+describe('UserForm sheet text (H5)', () => {
+  it('UserForm_ShouldTitleAndDescribeTheEditSheetInPortuguese_WhenTheLocaleIsPtBR', async () => {
+    await renderForm({ currentStatus: 'active', lng: 'pt-BR' });
+
+    expect({
+      title: sheetText('sheet-title'),
+      description: sheetText('sheet-description'),
+    }).toEqual({
+      title: ADMIN_LOCALES['pt-BR'].users.edit,
+      description: ADMIN_LOCALES['pt-BR'].users.edit_description,
+    });
+  });
+});
+
+/** Opens the role field and clicks `role`'s option, the press starting on the option. */
+async function chooseRole(role: string) {
+  fireEvent.click(screen.getByTestId('user-form-role'));
+  const option = await screen.findByTestId(`user-form-role-option-${role}`);
+  fireEvent.pointerDown(option);
+  fireEvent.click(option);
+  await waitFor(() => expect(screen.queryAllByRole('option')).toHaveLength(0));
+}
+
+function roleFieldText() {
+  return screen.getByTestId('user-form-role').querySelector('[data-slot="select-value"]')
+    ?.textContent;
+}
+
+function roleHint() {
+  const el = screen.queryByTestId('user-form-role-hint');
+  return el === null ? null : el.textContent;
+}
+
+describe('UserForm roles against Platform UserRole', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('UserForm_ShouldIdentifyEveryRoleOptionByItsEnumName_WhenTheRoleFieldOpens', async () => {
+    await renderForm({ currentStatus: 'active' });
+
+    const options = await openRoleOptions();
+
+    expect(options.map((o) => o.testId)).toEqual([
+      'user-form-role-option-Admin',
+      'user-form-role-option-Supervisor',
+      'user-form-role-option-Agent',
+      'user-form-role-option-Api',
+    ]);
+  });
+
+  it.each(['api', 'API', 'Api'])(
+    'UserForm_ShouldOpenOnApiAndSubmit_WhenTheUsersRoleIsReportedAs_%j',
+    async (reported) => {
+      await renderForm({ currentStatus: 'active', currentRole: reported });
+
+      expect(roleFieldText()).toBe(ADMIN_LOCALES['en-US'].users.role_names.api);
+      const values = await submit();
+
+      expect(values).toStrictEqual(ANA_EDIT);
+    },
+  );
+
+  it('UserForm_ShouldShowTheReportedRoleAndStillSubmit_WhenTheRoleIsUnknown', async () => {
+    await renderForm({ currentStatus: 'active', currentRole: 'readonly' });
+
+    expect(roleFieldText()).toBe('readonly');
+    const values = await submit();
+
+    expect(values).toStrictEqual(ANA_EDIT);
+  });
+
+  it('UserForm_ShouldSubmitTheRoleEnumName_WhenAnotherRoleIsChosen', async () => {
+    await renderForm({ currentStatus: 'active' });
+
+    await chooseRole('Admin');
+    const values = await submit();
+
+    expect(values).toStrictEqual({ ...ANA_EDIT, role: 'Admin' });
+  });
+
+  it('UserForm_ShouldSubmitNoRoleKey_WhenTheCurrentRoleIsChosenAgain', async () => {
+    await renderForm({ currentStatus: 'active' });
+
+    await chooseRole('Supervisor');
+    const values = await submit();
+
+    expect(values).toStrictEqual(ANA_EDIT);
+  });
+
+  it('UserForm_ShouldSubmitTheChosenRoleAndTheEmail_WhenCreating', async () => {
+    await renderForm({ mode: 'create' });
+
+    fireEvent.change(screen.getByTestId('user-form-email'), { target: { value: 'new@demo.test' } });
+    rename('New User');
+    await chooseRole('Api');
+    const values = await submit();
+
+    expect(values).toStrictEqual({ email: 'new@demo.test', displayName: 'New User', role: 'Api' });
+  });
+
+  it('UserForm_ShouldKeepTheEmailEditable_WhenCreating', async () => {
+    await renderForm({ mode: 'create' });
+
+    expect((screen.getByTestId('user-form-email') as HTMLInputElement).readOnly).toBe(false);
+  });
+
+  it('UserForm_ShouldShowTheEmailReadOnlyAndNotSubmitIt_WhenEditing', async () => {
+    await renderForm({ currentStatus: 'active' });
+
+    const email = screen.getByTestId('user-form-email') as HTMLInputElement;
+    expect(email.readOnly).toBe(true);
+    const values = await submit();
+    expect(Object.keys(values)).not.toContain('email');
+  });
+});
+
+describe('UserForm lower-role hint (H15)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['supervisor', 'Agent'],
+    ['supervisor', 'Api'],
+    ['admin', 'Supervisor'],
+    ['agent', 'Api'],
+  ])('UserForm_ShouldShowTheHint_WhenA_%s_IsLoweredTo_%s', async (current, next) => {
+    await renderForm({ currentStatus: 'active', currentRole: current });
+    expect(roleHint()).toBeNull();
+
+    await chooseRole(next);
+
+    expect(roleHint()).toBe(ADMIN_LOCALES['en-US'].users.role_hint_lower);
+  });
+
+  it.each([
+    ['agent', 'Supervisor'],
+    ['supervisor', 'Admin'],
+    ['api', 'Agent'],
+    ['supervisor', 'Supervisor'],
+  ])('UserForm_ShouldNotShowTheHint_WhenA_%s_IsSetTo_%s', async (current, next) => {
+    await renderForm({ currentStatus: 'active', currentRole: current });
+
+    await chooseRole(next);
+
+    expect(roleHint()).toBeNull();
+  });
+
+  it('UserForm_ShouldNotShowTheHint_WhenTheCurrentRoleIsUnknown', async () => {
+    await renderForm({ currentStatus: 'active', currentRole: 'readonly' });
+
+    await chooseRole('Api');
+
+    expect(roleHint()).toBeNull();
+  });
+
+  it('UserForm_ShouldNotShowTheHint_WhenCreating', async () => {
+    await renderForm({ mode: 'create' });
+
+    await chooseRole('Api');
+
+    expect(roleHint()).toBeNull();
+  });
+
+  it('UserForm_ShouldDescribeTheRoleFieldWithTheHint_WhileTheHintIsShown', async () => {
+    await renderForm({ currentStatus: 'active' });
+    const trigger = screen.getByTestId('user-form-role');
+    expect(trigger.getAttribute('aria-describedby')).toBeNull();
+
+    await chooseRole('Agent');
+
+    expect(trigger.getAttribute('aria-describedby')).toBe(
+      screen.getByTestId('user-form-role-hint').id,
+    );
+  });
+});
+
+describe.each(TEST_LOCALES)('UserForm role labels and sheet text in %s', (lng) => {
+  const users = ADMIN_LOCALES[lng].users;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('UserForm_ShouldLabelEveryRoleFromTheActiveLocale', async () => {
+    await renderForm({ currentStatus: 'active', lng });
+
+    expect(roleFieldText()).toBe(users.role_names.supervisor);
+    const options = await openRoleOptions();
+    expect(options.map((o) => o.label)).toEqual([
+      users.role_names.admin,
+      users.role_names.supervisor,
+      users.role_names.agent,
+      users.role_names.api,
+    ]);
+  });
+
+  it('UserForm_ShouldShowTheRoleHintInTheActiveLocale_WhenTheRoleIsLowered', async () => {
+    await renderForm({ currentStatus: 'active', lng });
+
+    await chooseRole('Agent');
+
+    expect(roleHint()).toBe(users.role_hint_lower);
+  });
+
+  it('UserForm_ShouldTitleDescribeAndLabelTheEditSheetFromTheActiveLocale', async () => {
+    await renderForm({ currentStatus: 'active', lng });
+
+    expect({
+      title: sheetText('sheet-title'),
+      description: sheetText('sheet-description'),
+      submit: screen.getByTestId('user-form-submit').textContent,
+    }).toEqual({ title: users.edit, description: users.edit_description, submit: users.save });
+  });
+
+  it('UserForm_ShouldTitleAndDescribeTheCreateSheetFromTheActiveLocale', async () => {
+    await renderForm({ mode: 'create', lng });
+
+    expect({
+      title: sheetText('sheet-title'),
+      description: sheetText('sheet-description'),
+    }).toEqual({ title: users.create, description: users.create_description });
   });
 });

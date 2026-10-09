@@ -17,6 +17,12 @@ export interface ImpersonationState {
   targetTenantId: string;
   targetTenantName: string;
   originalToken: string;
+  /**
+   * The operator's own token expiry, restored with {@link originalToken} when the impersonation
+   * ends, so a request after a long impersonation refreshes first instead of presenting an expired
+   * token. In memory only, like the token itself (ADR-0011).
+   */
+  originalTokenExpiry: number | null;
   originalTenantId: string;
   expiresAt: number;
   readOnly: boolean;
@@ -150,7 +156,7 @@ export const useAuthStore = create<AuthState>()(
         return Date.now() >= expiry - 30_000; // 30s buffer
       },
       startImpersonation: (response, originalToken, originalTenantId) =>
-        set({
+        set((state) => ({
           accessToken: response.accessToken,
           tokenExpiry: new Date(response.expiresAt).getTime(),
           tenantId: response.targetTenantId,
@@ -159,16 +165,21 @@ export const useAuthStore = create<AuthState>()(
             targetTenantId: response.targetTenantId,
             targetTenantName: response.targetTenantName,
             originalToken,
+            originalTokenExpiry: state.tokenExpiry,
             originalTenantId,
             expiresAt: new Date(response.expiresAt).getTime(),
             readOnly: response.readOnly ?? false,
           },
-        }),
+        })),
+      // The one way an impersonation ends in this tab, whatever ended it: the banner's End, its
+      // expiry, or Platform refusing its token (design D3). Restores the operator's token, its expiry
+      // and tenant; a no-op when no impersonation is active.
       endImpersonation: () => {
         const imp = get().impersonation;
         if (imp) {
           set({
             accessToken: imp.originalToken,
+            tokenExpiry: imp.originalTokenExpiry,
             tenantId: imp.originalTenantId,
             impersonation: null,
           });
@@ -186,9 +197,15 @@ export const useAuthStore = create<AuthState>()(
       // `features` and `permissions` stay persisted deliberately: the refresh response does not
       // return features, so dropping them would leave a rehydrated session with none until the next
       // full login.
+      //
+      // While an impersonation is active the live `tenantId` is the target's, but a reload restores
+      // the operator's own session (the refresh cookie is theirs), so the operator's tenant is what
+      // gets written (H18, design D4). The persisted shape does not change.
       partialize: (state): PersistedAuthState => ({
         user: state.user,
-        tenantId: state.tenantId,
+        tenantId: state.impersonation?.active
+          ? state.impersonation.originalTenantId
+          : state.tenantId,
         permissions: state.permissions,
         features: state.features,
         rememberMe: state.rememberMe,

@@ -33,6 +33,8 @@ const mockConversations: Conversation[] = Array.from({ length: 200 }, (_, i) => 
   assignedAt: new Date(2026, 0, 1, 12, 0, i).toISOString(),
 }));
 
+const mockConversationsById = Object.fromEntries(mockConversations.map((c) => [c.id, c]));
+
 vi.mock('@/agent/stores/conversation-store', async () => {
   const actual = await vi.importActual<typeof import('@/agent/stores/conversation-store')>(
     '@/agent/stores/conversation-store',
@@ -43,13 +45,13 @@ vi.mock('@/agent/stores/conversation-store', async () => {
       selector: (s: {
         upsertConversation: () => void;
         filter: string;
-        filteredConversations: () => Conversation[];
+        conversations: Record<string, Conversation>;
       }) => T,
     ): T =>
       selector({
         upsertConversation: () => undefined,
         filter: 'active',
-        filteredConversations: () => mockConversations,
+        conversations: mockConversationsById,
       }),
   };
 });

@@ -1,0 +1,54 @@
+#!/bin/sh
+# Sourced by the nginx image's entrypoint at start-up (it runs scripts in
+# /docker-entrypoint.d/ whenever the command is nginx). Writes the file that
+# nginx.conf's /hubs/ location includes: a `resolver` and $verbara_realtime,
+# the host:port of the SignalR realtime service.
+#
+# VERBARA_REALTIME_UPSTREAM (host:port) overrides the default. nginx's own
+# resolver does not apply resolv.conf's search domains, so a bare Service name
+# does not resolve on Kubernetes; there the first search domain is the pod's
+# <namespace>.svc.cluster.local, and the Helm chart names the Service
+# platform-realtime. Elsewhere (compose) the service is `realtime`.
+#
+# The file goes under /var/run: the Helm chart runs this image with a
+# read-only root filesystem and mounts an emptyDir there.
+
+verbara_out=/var/run/verbara-realtime-upstream.conf
+
+verbara_upstream=${VERBARA_REALTIME_UPSTREAM:-}
+if [ -z "$verbara_upstream" ]; then
+  if [ -n "${KUBERNETES_SERVICE_HOST:-}" ]; then
+    verbara_search=$(awk '$1 == "search" { print $2; exit }' /etc/resolv.conf)
+    verbara_upstream="platform-realtime${verbara_search:+.$verbara_search}:5030"
+  else
+    verbara_upstream="realtime:5030"
+  fi
+fi
+
+verbara_host=${verbara_upstream%:*}
+verbara_port=${verbara_upstream##*:}
+case "$verbara_host:$verbara_port" in
+  *[!A-Za-z0-9.:-]* ) verbara_bad=1 ;;
+esac
+case "$verbara_port" in
+  '' | *[!0-9]* ) verbara_bad=1 ;;
+esac
+case "$verbara_host" in
+  '' | *:* ) verbara_bad=1 ;;
+esac
+if [ "$verbara_upstream" != "$verbara_host:$verbara_port" ] || [ -n "${verbara_bad:-}" ]; then
+  echo "18-verbara-realtime-upstream.envsh: VERBARA_REALTIME_UPSTREAM must be host:port, got '$verbara_upstream'" >&2
+  return 1
+fi
+
+verbara_resolvers=$(awk 'BEGIN { ORS = " " } $1 == "nameserver" { if ($2 ~ ":") print "[" $2 "]"; else print $2 }' /etc/resolv.conf)
+verbara_resolvers=${verbara_resolvers% }
+
+{
+  echo "# Written by 18-verbara-realtime-upstream.envsh at start-up."
+  [ -n "$verbara_resolvers" ] && echo "resolver $verbara_resolvers valid=10s;"
+  echo "set \$verbara_realtime $verbara_upstream;"
+} > "$verbara_out"
+
+echo "18-verbara-realtime-upstream.envsh: /hubs/ upstream $verbara_upstream (resolver: ${verbara_resolvers:-none})"
+unset verbara_out verbara_upstream verbara_search verbara_resolvers verbara_host verbara_port verbara_bad

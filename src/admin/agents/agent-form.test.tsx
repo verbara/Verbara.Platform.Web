@@ -1,10 +1,15 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@/core/api/hooks/use-users', () => ({
-  useUsers: () => ({ data: [{ id: 'u1', email: 'alice@acme.test', displayName: 'Alice' }] }),
+const directory = vi.hoisted(() => ({
+  users: [] as { id: string; email: string; displayName: string; status: string }[],
+  agents: [] as { userId: string }[],
 }));
-vi.mock('@/core/api/hooks/use-agents', () => ({ useAgents: () => ({ data: [] }) }));
+const ALICE = { id: 'u1', email: 'alice@acme.test', displayName: 'Alice', status: 'active' };
+vi.mock('@/core/api/hooks/use-users', () => ({
+  useUsers: () => ({ data: directory.users }),
+}));
+vi.mock('@/core/api/hooks/use-agents', () => ({ useAgents: () => ({ data: directory.agents }) }));
 vi.mock('@/core/api/hooks/use-teams', () => ({ useTeams: () => ({ data: [] }) }));
 // W6 — the capacity section reads tenant defaults (placeholder source) + the active
 // tenant id; stub both so the form renders without a QueryClient/auth provider.
@@ -31,7 +36,13 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+import { beforeEach } from 'vitest';
 import { AgentForm } from './agent-form';
+
+beforeEach(() => {
+  directory.users = [ALICE];
+  directory.agents = [];
+});
 import { generateSipPassword } from './sip-password';
 
 describe('generateSipPassword', () => {
@@ -145,5 +156,67 @@ describe('AgentForm channel capacity (W6)', () => {
     // Total 2 < Chat default 3 → advisory appears (non-blocking).
     fireEvent.change(screen.getByTestId('agent-capacity-maxTotal'), { target: { value: '2' } });
     expect(screen.getByTestId('agent-capacity-total-warning')).toBeInTheDocument();
+  });
+});
+
+// H3 — the user picker never offers a Suspended or Deactivated user as a new agent without saying so.
+describe('AgentForm user picker account status (H3)', () => {
+  const BOB = { id: 'u2', email: 'bob@acme.test', displayName: 'Bob', status: 'suspended' };
+  const CAROL = { id: 'u3', email: 'carol@acme.test', displayName: 'Carol', status: 'deactivated' };
+
+  async function openUserOptions() {
+    fireEvent.click(screen.getAllByRole('combobox')[0]!);
+    const options = await screen.findAllByRole('option');
+    return options.map((o) => o.textContent);
+  }
+
+  it('AgentForm_ShouldNotOfferASuspendedOrDeactivatedUser_WhenCreatingAnAgent', async () => {
+    directory.users = [ALICE, BOB, CAROL];
+    render(<AgentForm open mode="create" onOpenChange={() => {}} onSubmit={() => {}} />);
+
+    const offered = await openUserOptions();
+
+    expect(offered).toEqual(['Alice (alice@acme.test)']);
+  });
+
+  it('AgentForm_ShouldOfferOnlyActiveUnassignedUsers_WhenCreatingAnAgent', async () => {
+    const DAN = { id: 'u4', email: 'dan@acme.test', displayName: 'Dan', status: 'Active' };
+    const EVE = { id: 'u5', email: 'eve@acme.test', displayName: 'Eve', status: 'pending_review' };
+    directory.users = [ALICE, BOB, CAROL, DAN, EVE];
+    directory.agents = [{ userId: 'u4' }];
+    render(<AgentForm open mode="create" onOpenChange={() => {}} onSubmit={() => {}} />);
+
+    await openUserOptions();
+
+    expect(screen.getAllByRole('option').map((o) => o.getAttribute('data-testid'))).toEqual([
+      'agent-form-user-option-u1',
+    ]);
+  });
+
+  it('AgentForm_ShouldKeepTheAssignedSuspendedUserWithItsStatusBadge_WhenEditingItsAgent', async () => {
+    directory.users = [ALICE, BOB, CAROL];
+    directory.agents = [{ userId: 'u2' }];
+    render(
+      <AgentForm
+        open
+        mode="edit"
+        onOpenChange={() => {}}
+        onSubmit={() => {}}
+        defaultValues={{ userId: 'u2', displayName: 'Bob', teamId: '', skills: [] }}
+      />,
+    );
+
+    await openUserOptions();
+
+    const options = screen.getAllByRole('option');
+    expect(options.map((o) => o.getAttribute('data-testid'))).toEqual([
+      'agent-form-user-option-u1',
+      'agent-form-user-option-u2',
+    ]);
+    const bob = screen.getByTestId('agent-form-user-option-u2');
+    expect(bob.querySelector('[data-testid="user-status-badge"]')).toHaveAttribute(
+      'data-status',
+      'suspended',
+    );
   });
 });

@@ -24,6 +24,8 @@ import { useTeams } from '@/core/api/hooks/use-teams';
 import { useTenantSettings } from '@/admin/tenants/use-tenant-settings';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { generateSipPassword } from './sip-password';
+import { normalizeAccountStatus } from '@/admin/users/account-status';
+import { UserStatusBadge } from '@/admin/users/user-status-badge';
 
 const skillSchema = z.object({
   name: z.string().min(1, 'admin:agents.validation.skillNameRequired'),
@@ -147,13 +149,25 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     onOpenChange(false);
   });
 
-  /* Users not yet assigned as agents, plus the currently-edited user */
+  /*
+   * Active users not yet assigned as agents, plus the agent's currently assigned user whatever its
+   * status, shown with its status badge (H3, design D7): a Suspended or Deactivated user is never
+   * offered as a new agent, and an existing agent's user never silently disappears from its form.
+   */
   const assignedUserIds = useMemo(() => new Set(agents.map((a) => a.userId)), [agents]);
   const availableUsers = useMemo(() => {
-    const available = allUsers.filter(
-      (u) => !assignedUserIds.has(u.id) || u.id === defaultValues?.userId,
+    const available = allUsers.filter((u) =>
+      u.id === defaultValues?.userId
+        ? true
+        : !assignedUserIds.has(u.id) && normalizeAccountStatus(u.status) === 'Active',
     );
-    return available.map((u) => ({ id: u.id, email: u.email, displayName: u.displayName }));
+    return available.map((u) => ({
+      id: u.id,
+      email: u.email,
+      displayName: u.displayName,
+      status: u.status,
+      current: u.id === defaultValues?.userId,
+    }));
   }, [allUsers, assignedUserIds, defaultValues?.userId]);
 
   const title = mode === 'create' ? t('admin:agents.create') : t('admin:agents.edit');
@@ -223,8 +237,13 @@ export function AgentForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                   </SelectTrigger>
                   <SelectContent>
                     {availableUsers.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>
+                      <SelectItem
+                        key={u.id}
+                        value={u.id}
+                        data-testid={`agent-form-user-option-${u.id}`}
+                      >
                         {u.displayName} ({u.email})
+                        {u.current && <UserStatusBadge status={u.status} />}
                       </SelectItem>
                     ))}
                   </SelectContent>

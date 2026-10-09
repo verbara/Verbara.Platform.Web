@@ -313,4 +313,33 @@ describe('useSSE reconnect', () => {
     expect(refreshMock).not.toHaveBeenCalled();
     expect(urls()).toEqual([streamUrl('T1')]);
   });
+
+  it('UseSSE_ShouldOpenNoStream_WhenTheOwnerUnmountsDuringTheBackOff', async () => {
+    signIn('T1');
+    const { unmount } = renderHook(() => useSSE(), { wrapper: createWrapper() });
+    expect(urls()).toEqual([streamUrl('T1')]);
+
+    // A valid token: the error schedules the back-off reconnect (2 s to 3 s).
+    act(() => latest().fail());
+    // A client-side navigation unmounts the owner before the delay ends.
+    unmount();
+    await act(() => vi.advanceTimersByTimeAsync(60_000));
+
+    expect(urls()).toEqual([streamUrl('T1')]);
+  });
+
+  it('UseSSE_ShouldOpenOneStreamWithTheNewToken_WhenTheTokenChangesDuringTheBackOff', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    mountWithToken('T1');
+
+    act(() => latest().fail());
+    // The token changes before the back-off ends: the new token opens its stream at once.
+    act(() => signIn('T2'));
+    expect(urls()).toEqual([streamUrl('T1'), streamUrl('T2')]);
+
+    // The old back-off timer is gone: it neither reopens nor touches the T2 stream.
+    await act(() => vi.advanceTimersByTimeAsync(60_000));
+    expect(urls()).toEqual([streamUrl('T1'), streamUrl('T2')]);
+    expect(latest().closed).toBe(false);
+  });
 });

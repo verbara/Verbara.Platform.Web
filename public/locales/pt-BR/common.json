@@ -123,7 +123,6 @@
     "back_to_login": "Voltar ao login",
     "reset_password": "Redefinir senha",
     "reset_password_description": "Digite sua nova senha abaixo.",
-    "reset_error": "Não foi possível redefinir a senha. O link pode ter expirado.",
     "reset_token_missing": "Token de redefinição inválido ou ausente.",
     "password_reset_success": "Sua senha foi redefinida. Faça login.",
     "new_password": "Nova senha",
@@ -144,7 +143,14 @@
     "mfa_rate_limited": "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
     "mfa_challenge_expired": "Sua sessão expirou. Por favor, faça login novamente.",
     "mfa_use_code": "Usar código do autenticador",
-    "mfa_use_recovery": "Usar código de recuperação"
+    "mfa_use_recovery": "Usar código de recuperação",
+    "tenant": "Tenant",
+    "tenant_placeholder": "ex.: demo, platform",
+    "reset_policy": "A nova senha não atende à política de senhas.",
+    "reset_invalid": "Este link de redefinição é inválido, expirou ou já foi usado. Solicite um novo.",
+    "reset_failed": "Não foi possível redefinir a senha. Tente novamente.",
+    "forgot_tenant": "Tenant",
+    "forgot_tenant_placeholder": "ex.: demo"
   },
   "theme": {
     "label": "Tema",
@@ -203,6 +209,18 @@
       "agent": "Espaço do Agente",
       "analytics": "Análise",
       "operations": "Operações"
+    },
+    "conversation": {
+      "not_an_agent": "Esta ação exige um perfil de agente neste tenant.",
+      "not_owner": "Esta conversa não é sua.",
+      "not_offered_to_you": "Esta conversa foi oferecida a outro agente.",
+      "target_agent_not_found": "O agente selecionado não existe mais.",
+      "target_queue_not_found": "A fila selecionada não existe mais.",
+      "conversation_not_found": "Esta conversa não existe mais.",
+      "contact_not_found": "Este contato não existe mais.",
+      "conflict": "A conversa não pode mudar no estado atual.",
+      "typify_invalid": "Verifique estes campos: {{fields}}.",
+      "failed": "Não foi possível concluir a ação. Tente novamente."
     }
   },
   "agent_layout": {
@@ -212,7 +230,8 @@
   "impersonation": {
     "operating_as": "Operando como",
     "read_only": "Somente leitura",
-    "end": "Encerrar personificação"
+    "end": "Encerrar personificação",
+    "ended": "A personificação foi encerrada. Você voltou à sua própria sessão."
   },
   "confirm_delete_dialog": {
     "title": "Excluir {{entityType}}?",

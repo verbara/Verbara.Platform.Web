@@ -2,8 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformMessage } from '@/core/api/platform-message';
+import { mapPlatformSupervisorConversation } from '@/core/api/platform-conversation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { conversationRefusals } from '@/core/api/conversation-refusals';
+import { toastApiError } from '@/core/api/toast-api-error';
 
 /**
  * Kept hand-written (openapi-typed-client-operations): the document's `ActiveSessionDto`
@@ -62,7 +65,9 @@ export function useStartListening() {
  * (`contactName`, `queueName`, `lastMessage`, `lastMessageAt`, `assignedAt`). The document's
  * `PagedResultOfConversation.items` is the raw `Conversation` ENTITY (`conversationId`,
  * `owner`, `sessions`, …) — a different shape — so there is nothing structurally compatible to
- * swap onto. `PagedResult<T>` below stays a local generic wrapper (design.md task 1.3).
+ * swap onto. The wire entity is mapped onto it at the data boundary by
+ * `mapPlatformSupervisorConversation`. `PagedResult<T>` below stays a local generic wrapper
+ * (design.md task 1.3).
  */
 export interface SupervisorConversation {
   id: string;
@@ -122,12 +127,19 @@ export function useSupervisorConversations(filters?: SupervisorConversationFilte
 
   return useQuery({
     queryKey: ['supervisor', 'conversations', params],
-    queryFn: () =>
-      customFetch<PagedResult<SupervisorConversation>>({
+    queryFn: async (): Promise<PagedResult<SupervisorConversation>> => {
+      const result = await customFetch<components['schemas']['PagedResultOfConversation']>({
         url: '/api/v1/supervisor/conversations',
         method: 'GET',
         params,
-      }),
+      });
+      return {
+        items: result.items.map(mapPlatformSupervisorConversation),
+        totalCount: result.totalCount,
+        page: result.page,
+        pageSize: result.pageSize,
+      };
+    },
     refetchInterval: 10_000,
   });
 }
@@ -161,7 +173,7 @@ export function useTakeoverConversation() {
       qc.invalidateQueries({ queryKey: ['supervisor', 'conversations'] });
       toast.success(t('toasts.conversations.takenOver'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'takeover' }),
   });
 }
 
@@ -179,7 +191,8 @@ export function useCloseDigitalConversation() {
       qc.invalidateQueries({ queryKey: ['supervisor', 'conversations'] });
       toast.success(t('toasts.conversations.closed'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) =>
+      toastApiError(err, conversationRefusals, t, { action: 'supervisor-close' }),
   });
 }
 
@@ -231,6 +244,7 @@ export type ReassignTarget = { targetQueueId: string } | { targetAgentId: string
 export function useReassignConversation() {
   const qc = useQueryClient();
   const { t } = useTranslation('operations');
+  const { t: tCommon } = useTranslation('common');
   return useMutation({
     mutationFn: ({ id, ...target }: { id: string } & ReassignTarget) =>
       customFetch<void>({
@@ -242,7 +256,8 @@ export function useReassignConversation() {
       qc.invalidateQueries({ queryKey: ['supervisor', 'stuck'] });
       toast.success(t('stuck_work.reassigned_toast'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) =>
+      toastApiError(err, conversationRefusals, tCommon, { action: 'reassign' }),
   });
 }
 

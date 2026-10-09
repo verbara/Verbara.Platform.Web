@@ -322,4 +322,54 @@ describe('AuthStore', () => {
     expect(useAuthStore.getState().tenantId).toBe('tenant-1');
     expect(useAuthStore.getState().impersonation).toBeNull();
   });
+
+  describe('impersonation (H17, H18)', () => {
+    const OPERATOR_EXPIRY = Date.now() + 3600_000;
+    const IMPERSONATION_EXPIRY = Date.now() + 600_000;
+
+    function impersonateTenant9(): void {
+      useAuthStore
+        .getState()
+        .setAuth('operator-token', OPERATOR_EXPIRY, A_USER, 'tenant-1', [], {});
+      useAuthStore.getState().startImpersonation(
+        {
+          accessToken: 'impersonated-token',
+          expiresAt: new Date(IMPERSONATION_EXPIRY).toISOString(),
+          targetTenantId: 'tenant-9',
+          targetTenantName: 'ACME',
+        },
+        'operator-token',
+        'tenant-1',
+      );
+    }
+
+    it('should_RestoreTheOperatorTokenExpiry_WhenTheImpersonationEnds', () => {
+      impersonateTenant9();
+      expect(useAuthStore.getState().tokenExpiry).toBe(IMPERSONATION_EXPIRY);
+
+      useAuthStore.getState().endImpersonation();
+
+      expect(useAuthStore.getState().accessToken).toBe('operator-token');
+      expect(useAuthStore.getState().tokenExpiry).toBe(OPERATOR_EXPIRY);
+    });
+
+    it('should_PersistTheOperatorTenant_WhileAnImpersonationIsActive', () => {
+      impersonateTenant9();
+
+      // The live tenant is the target's (the hub's principal key and readers rely on it) ...
+      expect(useAuthStore.getState().tenantId).toBe('tenant-9');
+      // ... but a reload restores the operator's own session, so what it reads names theirs.
+      expect(readPersistedEntry()?.state?.tenantId).toBe('tenant-1');
+    });
+
+    it('should_PersistTheLiveTenant_WhenNoImpersonationIsActive', () => {
+      impersonateTenant9();
+      useAuthStore.getState().endImpersonation();
+      useAuthStore
+        .getState()
+        .setAuth('operator-token', OPERATOR_EXPIRY, A_USER, 'tenant-2', [], {});
+
+      expect(readPersistedEntry()?.state?.tenantId).toBe('tenant-2');
+    });
+  });
 });

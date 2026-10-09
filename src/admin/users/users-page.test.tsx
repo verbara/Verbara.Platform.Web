@@ -120,7 +120,8 @@ describe('UsersPage create sheet', () => {
     expect(post).toStrictEqual({
       url: '/api/v1/admin/users',
       method: 'POST',
-      data: { email: 'new@demo.test', displayName: 'New User', role: 'agent' },
+      // `CreateUserRequest.role` is Platform's `UserRole` enum name (H1).
+      data: { email: 'new@demo.test', displayName: 'New User', role: 'Agent' },
     });
   });
 });

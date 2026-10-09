@@ -14,5 +14,7 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Writes the /hubs/ upstream and resolver nginx.conf includes, at start-up.
+COPY --chmod=0755 docker/18-verbara-realtime-upstream.envsh /docker-entrypoint.d/
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
