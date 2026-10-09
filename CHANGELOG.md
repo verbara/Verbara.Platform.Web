@@ -9,6 +9,41 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Requires the Platform release that ships licensed-agent metering** (its peaks report
+`GET /api/v1/management/licensing/agents` and ledger export
+`GET /api/v1/management/licensing/agents/export`). Merge after the Platform change.
+
+### Added
+
+- **Licensed agents on the licence page.** A month selector offers the current calendar month and
+  the 14 before it; the selected month drives both the figures and the export. The card shows the
+  month's peak of licensed agents (counted identities, never sessions or seconds), the peak day and
+  the day zone, against the licence's advisory `maxAgents` band as a meter, or "not declared" with
+  no meter when the band is empty. The current month carries a "month in progress" hint, and a
+  month with no closed day yet shows an empty state instead of a figure. The peak day is broken
+  down per tenant (tenant name and licensed agents, largest first) so a BPO can account for the
+  number to its customers. No hash, per-day table or chain verification is shown. (#N)
+- **Warning-only advisory over the band.** When Platform reports the peak above the band, an amber
+  banner says nothing is blocked, the owner declares the band reached in the monthly
+  self-declaration, and the licence is then reissued at the new band. The copy is the same for
+  every tier. No control is disabled. (#N)
+- **Ledger export.** The export button downloads the selected month's verifiable ledger as
+  `licensed-agents-<from>-<to>.json`, byte for byte as Platform served it, so an offline verifier
+  can recompute every row hash. (#N)
+- **The billing quotas page's "Active agents" row explains itself:** it is a per-tenant operator
+  quota, not the licence's licensed-agent band. (#N)
+
+### Fixed
+
+- **The licence Tier card shows the tier.** The licence page and the system page showed the
+  licensee's name as the tier. Both now read the tier from the licence status, localized, with an
+  unknown future tier shown as received and "Unlicensed" when no licence is loaded. The licensee
+  is shown as the licensee. (#N)
+- **The system page's licence card is translated.** Its "License ID", "Max Nodes", "Last
+  Validated", "Perpetual" and "day/days" labels were hard-coded in English. (#N)
+
+---
+
 ## [3.21.0-web] - 2026-10-09
 
 **Requires Platform ≥ v2.25.0; Platform v2.26.1 recommended.** The console now reads what Platform

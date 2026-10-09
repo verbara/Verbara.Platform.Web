@@ -1210,7 +1210,39 @@
     "key_label": "License key",
     "submit": "Submit license",
     "confirm_title": "Replace the current license?",
-    "confirm_description": "Submitting a new key will replace the current license and may change available features. This action is audited."
+    "confirm_description": "Submitting a new key will replace the current license and may change available features. This action is audited.",
+    "licensee": "Licensee",
+    "tiers": {
+      "None": "Unlicensed",
+      "Developer": "Developer",
+      "SelfHostStartup": "Self-host Startup",
+      "SelfHostBusiness": "Self-host Business",
+      "SaaSBusiness": "SaaS Business",
+      "SaaSEnterprise": "SaaS Enterprise",
+      "WhiteLabel": "White label"
+    },
+    "card": {
+      "last_validated": "Last validated"
+    },
+    "agents": {
+      "title": "Licensed agents",
+      "subtitle": "Licensed agents are counted identities at the daily peak, never sessions or seconds.",
+      "month_label": "Month",
+      "month_in_progress": "Month in progress: the figure can still rise until the month ends.",
+      "day_zone": "Days are counted in the {{zone}} time zone.",
+      "peak_label": "Peak licensed agents",
+      "peak_day": "Peak day: {{day}}",
+      "band": "Licensed band: {{max}}",
+      "not_declared": "Licensed band not declared",
+      "empty": "No day of the selected month is closed yet. The peak appears once the first day closes.",
+      "breakdown_title": "Licensed agents per tenant on the peak day",
+      "breakdown_tenant": "Tenant",
+      "breakdown_agents": "Licensed agents",
+      "advisory": "The peak is above the licensed band. Nothing is blocked. Declare the band reached in your monthly self-declaration (Verbara does not learn it automatically); the license is then reissued at the new band.",
+      "export": "Export ledger (JSON)",
+      "loading": "Loading licensed agents...",
+      "error": "The licensed-agent figures could not be loaded."
+    }
   },
   "skills": {
     "title": "Skills",
@@ -2305,7 +2337,8 @@
         "monthly_voice_minutes": "Monthly voice minutes",
         "monthly_messages": "Monthly messages",
         "storage": "Storage",
-        "active_agents": "Active agents"
+        "active_agents": "Active agents",
+        "active_agents_hint": "Per-tenant operator quota. It is not the licensed-agent band of the license."
       },
       "dunning": {
         "overdue": "Account overdue",

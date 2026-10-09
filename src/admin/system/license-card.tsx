@@ -3,7 +3,8 @@ import { Check, TriangleAlert, Shield, ShieldCheck, ShieldX } from 'lucide-react
 import { Badge } from '@/core/ui/badge';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { differenceInDays, parseISO } from 'date-fns';
-import type { LicenseInfo } from '@/core/api/hooks/use-system';
+import type { LicenseInfo, LicenseStatusSnapshot } from '@/core/api/hooks/use-system';
+import { useTierLabel } from '@/admin/license/use-tier-label';
 
 const STATUS_STYLES: Record<
   string,
@@ -33,8 +34,16 @@ function featureLabel(key: string): string {
   return key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 }
 
-export function LicenseCard({ license }: { license: LicenseInfo }) {
+export function LicenseCard({
+  license,
+  status,
+}: {
+  license: LicenseInfo;
+  /** The status snapshot, the only source of the licence `tier`. */
+  status?: LicenseStatusSnapshot;
+}) {
   const { t } = useTranslation(['admin']);
+  const tierLabel = useTierLabel();
   const { formatDate, formatRelative } = useFormatDate();
 
   const defaultStyle = { variant: 'outline' as const, icon: Shield };
@@ -61,15 +70,25 @@ export function LicenseCard({ license }: { license: LicenseInfo }) {
           </Badge>
         </div>
         {license.licensee && (
-          <span className="text-sm font-medium text-foreground">{license.licensee}</span>
+          <span className="text-sm font-medium text-foreground" data-testid="license-licensee">
+            {t('admin:license.licensee')}: {license.licensee}
+          </span>
         )}
       </div>
 
-      {/* Info row: License ID, Max Nodes, Last Validated */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      {/* Info row: Tier, License ID, Max Nodes, Last Validated */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            License ID
+            {t('admin:license.tier')}
+          </p>
+          <p className="text-sm font-semibold text-foreground" data-testid="license-tier-value">
+            {tierLabel(status)}
+          </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t('admin:license.license_id')}
           </p>
           <p
             className="truncate font-mono text-sm text-foreground"
@@ -80,13 +99,13 @@ export function LicenseCard({ license }: { license: LicenseInfo }) {
         </div>
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Max Nodes
+            {t('admin:license.max_nodes')}
           </p>
           <p className="text-sm font-semibold text-foreground">{license.maxNodes}</p>
         </div>
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Last Validated
+            {t('admin:license.card.last_validated')}
           </p>
           <p className="text-sm text-foreground" title={formatDate(license.lastValidatedAt)}>
             {formatRelative(license.lastValidatedAt)}
@@ -106,12 +125,12 @@ export function LicenseCard({ license }: { license: LicenseInfo }) {
             {formatDate(license.expiresAt!)}
             {isExpiringSoon && (
               <span className="ml-2 text-xs">
-                ({daysUntilExpiry} {daysUntilExpiry === 1 ? 'day' : 'days'})
+                ({t('admin:license.expires_in_days', { days: daysUntilExpiry })})
               </span>
             )}
           </p>
         ) : (
-          <p className="text-sm font-medium text-foreground">Perpetual</p>
+          <p className="text-sm font-medium text-foreground">{t('admin:license.perpetual')}</p>
         )}
       </div>
 

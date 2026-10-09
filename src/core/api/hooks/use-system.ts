@@ -52,6 +52,93 @@ export function useSystemLicense() {
   });
 }
 
+/**
+ * `GET /api/v1/management/system/license/status` — the Pro `LicenseStatusSnapshot`, served
+ * verbatim (host contract fixture `license-status-snapshot.v1.json`). It carries the licence
+ * `tier`, which `LicenseInfoDto` does not; `licensee` is the licensee name, never the tier.
+ * `maxAgents` is the advisory licensed-agent band (null or 0 = not declared).
+ */
+export type LicenseStatusSnapshot = components['schemas']['LicenseStatusSnapshot'];
+
+/**
+ * `GET /api/v1/management/licensing/agents` — the licensed-agent peaks of a date range (host
+ * contract fixture `licensed-agent-peaks.v1.json`). `deployment.peakDay` is null, and
+ * `deployment.peakLicensedAgents` 0, while no day of the range is closed.
+ */
+export type LicensedAgentPeaks = components['schemas']['LicensedAgentPeaksResponse'];
+
+/** An inclusive range of calendar days, both `YYYY-MM-DD`. */
+export interface LicensedAgentRange {
+  readonly from: string;
+  readonly to: string;
+}
+
+export function useLicenseStatus() {
+  return useQuery({
+    queryKey: ['system', 'license', 'status'],
+    queryFn: () =>
+      customFetch<LicenseStatusSnapshot>({
+        url: '/api/v1/management/system/license/status',
+        method: 'GET',
+      }),
+  });
+}
+
+export function useLicensedAgentPeaks({ from, to }: LicensedAgentRange) {
+  return useQuery({
+    queryKey: ['licensing', 'agents', from, to],
+    queryFn: () =>
+      customFetch<LicensedAgentPeaks>({
+        url: '/api/v1/management/licensing/agents',
+        method: 'GET',
+        params: { from, to },
+      }),
+  });
+}
+
+/** The file name of a saved ledger export: `licensed-agents-<from>-<to>.json`. */
+export function licensedAgentExportFileName({ from, to }: LicensedAgentRange): string {
+  return `licensed-agents-${from}-${to}.json`;
+}
+
+/**
+ * Fetches `GET /api/v1/management/licensing/agents/export` (host contract fixture
+ * `licensed-agent-export.v1.json`) as a `Blob`. The body is never parsed: an offline verifier
+ * recomputes every `rowHash` from it, so the saved file must be the served bytes.
+ */
+export function fetchLicensedAgentExport({ from, to }: LicensedAgentRange): Promise<Blob> {
+  return customFetch<Blob>({
+    url: '/api/v1/management/licensing/agents/export',
+    method: 'GET',
+    params: { from, to },
+    responseType: 'blob',
+  });
+}
+
+/** Saves a blob through an object URL under the given file name. */
+export function saveBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+/** Downloads the ledger export of a range and saves it byte for byte (design D2). */
+export function useLicensedAgentExport() {
+  return useMutation({
+    mutationFn: async (range: LicensedAgentRange) => {
+      const blob = await fetchLicensedAgentExport(range);
+      saveBlob(blob, licensedAgentExportFileName(range));
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 export function useSystemSettings() {
   return useQuery({
     queryKey: ['system', 'settings'],

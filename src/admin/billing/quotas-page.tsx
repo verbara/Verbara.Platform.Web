@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { Pencil, ShieldAlert, ShieldCheck, ShieldX, TriangleAlert } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/ui/page-header';
+import { UsageMeter } from '@/core/ui/usage-meter';
 import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
@@ -71,13 +72,13 @@ interface QuotaRowProps {
   limit: number | null | undefined;
   usage?: number;
   formatter?: (v: number | null | undefined) => string;
+  hint?: string;
+  hintTestId?: string;
 }
 
-function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
+function QuotaRow({ label, limit, usage = 0, formatter, hint, hintTestId }: QuotaRowProps) {
   const { formatNumber } = useFormatNumber();
   const fmt = formatter ?? ((v: number | null | undefined) => (v == null ? '—' : formatNumber(v)));
-  const pct = limit && limit > 0 ? Math.min(100, (usage / limit) * 100) : 0;
-  const color = pct >= 90 ? 'bg-destructive' : pct >= 70 ? 'bg-warning' : 'bg-brand';
 
   return (
     <div className="space-y-1.5 rounded-md border bg-card p-3">
@@ -87,13 +88,11 @@ function QuotaRow({ label, limit, usage = 0, formatter }: QuotaRowProps) {
           {formatNumber(usage)} / {fmt(limit)}
         </span>
       </div>
-      {limit != null && limit > 0 && (
-        <div className="h-2 rounded-full bg-muted">
-          <div
-            className={`h-full rounded-full transition-all ${color}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
+      {limit != null && limit > 0 && <UsageMeter value={usage} limit={limit} label={label} />}
+      {hint && (
+        <p className="text-xs text-muted-foreground" data-testid={hintTestId}>
+          {hint}
+        </p>
       )}
     </div>
   );
@@ -266,6 +265,8 @@ export default function QuotasPage() {
             <QuotaRow
               label={t('billing.quotas.rows.active_agents')}
               limit={quota.maxActiveAgents}
+              hint={t('billing.quotas.rows.active_agents_hint')}
+              hintTestId="quota-active-agents-hint"
             />
           </div>
         </>

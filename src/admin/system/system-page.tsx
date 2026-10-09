@@ -12,6 +12,7 @@ import { LicenseCard } from './license-card';
 import { useEffect } from 'react';
 import {
   useSystemLicense,
+  useLicenseStatus,
   useSystemSettings,
   useUpdateSystemSettings,
 } from '@/core/api/hooks/use-system';
@@ -56,6 +57,7 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 export default function SystemPage() {
   const { t } = useTranslation(['admin']);
   const { data: license } = useSystemLicense();
+  const { data: licenseStatus } = useLicenseStatus();
   const { data: settings } = useSystemSettings();
   const updateSettings = useUpdateSystemSettings();
 
@@ -100,7 +102,7 @@ export default function SystemPage() {
         </h2>
         {license ? (
           <div data-testid="system-license-card">
-            <LicenseCard license={license} />
+            <LicenseCard license={license} status={licenseStatus} />
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">{t('admin:system.loading')}</p>

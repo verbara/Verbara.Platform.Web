@@ -4071,6 +4071,100 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v{version}/management/licensing/agents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          from?: string;
+          to?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['LicensedAgentPeaksResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/management/licensing/agents/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          from?: string;
+          to?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['LicensedAgentExportResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v{version}/management/cluster/status': {
     parameters: {
       query?: never;
@@ -17863,6 +17957,108 @@ export interface components {
       triggerCallback: boolean;
       dialerCode: null | string;
       isActive: boolean;
+    };
+    LicensedAgentChainHeadDto: {
+      tenantId: null | string;
+      /** Format: int64 */
+      headSequence: number;
+      headHash: string;
+      licenseId: null | string;
+    };
+    LicensedAgentDayDto: {
+      /** Format: date */
+      day: string;
+      /** Format: int32 */
+      deploymentLicensedAgents: number;
+      deploymentRowHash: string;
+      tenants: components['schemas']['LicensedAgentTenantDayDto'][];
+    };
+    LicensedAgentDeploymentPeakDto: {
+      /** Format: int32 */
+      peakLicensedAgents: number;
+      /** Format: date */
+      peakDay: null | string;
+      overBand: boolean;
+    };
+    LicensedAgentExportDailyDto: {
+      tenantId: null | string;
+      /** Format: int64 */
+      sequence: number;
+      /** Format: date */
+      day: string;
+      /** Format: int32 */
+      revision: number;
+      /** Format: int32 */
+      licensedAgents: number;
+      closedAt: string;
+      /** Format: int64 */
+      closedThroughSequence: number;
+      licenseId: null | string;
+      prevHash: string;
+      rowHash: string;
+    };
+    LicensedAgentExportEventDto: {
+      tenantId: null | string;
+      /** Format: int64 */
+      sequence: number;
+      eventId: string;
+      kind: string;
+      occurredAt: string;
+      agentId: null | string;
+      userId: null | string;
+      actorUserId: null | string;
+      conversationId: null | string;
+      userStatus: null | string;
+      counted: null | boolean;
+      licenseId: null | string;
+      prevHash: string;
+      rowHash: string;
+    };
+    LicensedAgentExportResponse: {
+      /** Format: int32 */
+      schemaVersion: number;
+      hashScheme: string;
+      generatedAt: string;
+      /** Format: date */
+      from: string;
+      /** Format: date */
+      to: string;
+      dayZone: string;
+      license: components['schemas']['LicensedAgentLicenseDto'];
+      events: components['schemas']['LicensedAgentExportEventDto'][];
+      daily: components['schemas']['LicensedAgentExportDailyDto'][];
+      chainHeads: components['schemas']['LicensedAgentChainHeadDto'][];
+    };
+    LicensedAgentLicenseDto: {
+      licenseId: null | string;
+      licensee: null | string;
+      tier: string;
+      /** Format: int32 */
+      maxAgents: null | number;
+      maxAgentsAdvisory: boolean;
+    };
+    LicensedAgentPeaksResponse: {
+      /** Format: int32 */
+      schemaVersion: number;
+      /** Format: date */
+      from: string;
+      /** Format: date */
+      to: string;
+      dayZone: string;
+      license: components['schemas']['LicensedAgentLicenseDto'];
+      deployment: components['schemas']['LicensedAgentDeploymentPeakDto'];
+      days: components['schemas']['LicensedAgentDayDto'][];
+      chainHeads: components['schemas']['LicensedAgentChainHeadDto'][];
+    };
+    LicensedAgentTenantDayDto: {
+      tenantId: string;
+      tenantName: string;
+      /** Format: int32 */
+      licensedAgents: number;
+      /** Format: int32 */
+      revision: number;
+      closedAt: string;
+      rowHash: string;
     };
     LicenseInfoDto: {
       isValid: boolean;

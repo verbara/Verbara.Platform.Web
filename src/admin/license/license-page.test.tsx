@@ -22,6 +22,7 @@ vi.mock('@/core/i18n/use-format', () => ({
     formatDate: (v: string) => `formatted(${v})`,
     formatRelative: (v: string) => `relative(${v})`,
   }),
+  useFormatNumber: () => ({ formatNumber: (n: number) => String(n) }),
 }));
 
 vi.mock('sonner', () => ({
@@ -31,14 +32,34 @@ vi.mock('sonner', () => ({
 vi.mock('@/core/api/hooks/use-system', () => ({
   useSystemLicense: vi.fn(),
   useUpdateLicense: vi.fn(),
+  useLicenseStatus: vi.fn(),
+  useLicensedAgentPeaks: vi.fn(),
+  useLicensedAgentExport: vi.fn(),
 }));
 
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { asMock } from '@/tests/utils/as-mock';
-import { useSystemLicense, useUpdateLicense, type LicenseInfo } from '@/core/api/hooks/use-system';
+import {
+  useLicenseStatus,
+  useLicensedAgentExport,
+  useLicensedAgentPeaks,
+  useSystemLicense,
+  useUpdateLicense,
+  type LicenseInfo,
+  type LicenseStatusSnapshot,
+  type LicensedAgentPeaks,
+} from '@/core/api/hooks/use-system';
 import LicensePage from './license-page';
 
 const mockUseLicense = asMock(useSystemLicense);
 const mockUseUpdate = asMock(useUpdateLicense);
+const mockUseStatus = asMock(useLicenseStatus);
+const mockUsePeaks = asMock(useLicensedAgentPeaks);
+const mockUseExport = asMock(useLicensedAgentExport);
+
+const fixture = <T,>(name: string): T =>
+  JSON.parse(readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8')) as T;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -75,6 +96,15 @@ describe('LicensePage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockUseUpdate.mockReturnValue({ mutate: vi.fn(), isPending: false });
+    mockUseStatus.mockReturnValue({
+      data: fixture<LicenseStatusSnapshot>('license-status-snapshot.v1.json'),
+    });
+    mockUsePeaks.mockReturnValue({
+      data: fixture<LicensedAgentPeaks>('licensed-agent-peaks.v1.json'),
+      isLoading: false,
+      isError: false,
+    });
+    mockUseExport.mockReturnValue({ mutate: vi.fn(), isPending: false });
   });
 
   it('renders_loading_state_when_license_is_pending', () => {
@@ -211,5 +241,69 @@ describe('LicensePage', () => {
     expect(mutate).toHaveBeenCalledTimes(1);
     const [payload] = mutate.mock.calls[0];
     expect(payload).toEqual({ licenseKey: 'new-license-key' });
+  });
+
+  // ─── licensed-agent-metering — tier and licensed-agents card ──────────────
+
+  it('TierCard_ShouldShowTierNotLicensee_WhenStatusHasSelfHostBusiness', () => {
+    mockUseLicense.mockReturnValue({
+      data: baseLicense({ licensee: 'Example Contact Ltd' }),
+      isLoading: false,
+    });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    const tier = screen.getByTestId('license-tier-value');
+    expect(tier.textContent).toContain('admin:license.tiers.SelfHostBusiness');
+    expect(tier.textContent).not.toContain('Example Contact Ltd');
+  });
+
+  it('TierCard_ShouldShowUnlicensed_WhenStatusIsNotLoaded', () => {
+    mockUseLicense.mockReturnValue({ data: baseLicense(), isLoading: false });
+    mockUseStatus.mockReturnValue({ data: { isLoaded: false, tier: 'Developer' } });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    expect(screen.getByTestId('license-tier-value').textContent).toBe('admin:license.tier_unknown');
+  });
+
+  it('LicensedAgentsCard_ShouldRenderOnTheLicencePage_WhenLicenseLoaded', () => {
+    mockUseLicense.mockReturnValue({ data: baseLicense(), isLoading: false });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    expect(screen.getByTestId('license-agents-card')).toBeDefined();
+    expect(screen.getByTestId('license-agents-meter')).toBeDefined();
+  });
+
+  it('AdvisoryBanner_ShouldKeepUploadControlsEnabled_WhenOverBandOnDeveloperTier', () => {
+    mockUseLicense.mockReturnValue({ data: baseLicense(), isLoading: false });
+    mockUseStatus.mockReturnValue({
+      data: {
+        ...fixture<LicenseStatusSnapshot>('license-status-snapshot.v1.json'),
+        tier: 'Developer',
+      },
+    });
+    const peaks = fixture<LicensedAgentPeaks>('licensed-agent-peaks.v1.json');
+    peaks.license.tier = 'Developer';
+    peaks.deployment.overBand = true;
+    mockUsePeaks.mockReturnValue({ data: peaks, isLoading: false, isError: false });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    const banner = screen.getByTestId('license-agents-advisory-banner');
+    // The tier-neutral advisory is the one key rendered, on a Developer licence too.
+    expect(banner.textContent).toBe('admin:license.agents.advisory');
+    expect(banner.getAttribute('data-i18n-key')).toBe('admin:license.agents.advisory');
+
+    // Nothing is blocked: the key input, the submit, the month select and the export stay usable.
+    const input = screen.getByTestId('license-key-input') as HTMLTextAreaElement;
+    expect(input.disabled).toBe(false);
+    fireEvent.change(input, { target: { value: 'new-license-key' } });
+    expect((screen.getByTestId('license-submit-button') as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByTestId('license-agents-export-button') as HTMLButtonElement).disabled).toBe(
+      false,
+    );
+    expect(screen.getByTestId('license-agents-month-select').hasAttribute('disabled')).toBe(false);
   });
 });

@@ -1210,7 +1210,39 @@
     "key_label": "Chave de licença",
     "submit": "Enviar licença",
     "confirm_title": "Substituir a licença atual?",
-    "confirm_description": "Enviar uma nova chave substituirá a licença atual e poderá alterar as funcionalidades disponíveis. Esta ação é auditada."
+    "confirm_description": "Enviar uma nova chave substituirá a licença atual e poderá alterar as funcionalidades disponíveis. Esta ação é auditada.",
+    "licensee": "Licenciado",
+    "tiers": {
+      "None": "Sem licença",
+      "Developer": "Desenvolvedor",
+      "SelfHostStartup": "Self-host Startup",
+      "SelfHostBusiness": "Self-host Business",
+      "SaaSBusiness": "SaaS Business",
+      "SaaSEnterprise": "SaaS Enterprise",
+      "WhiteLabel": "Marca branca"
+    },
+    "card": {
+      "last_validated": "Última validação"
+    },
+    "agents": {
+      "title": "Agentes licenciados",
+      "subtitle": "Agentes licenciados são identidades contadas no pico diário, nunca sessões nem segundos.",
+      "month_label": "Mês",
+      "month_in_progress": "Mês em andamento: o número ainda pode subir até o fim do mês.",
+      "day_zone": "Os dias são contados no fuso horário {{zone}}.",
+      "peak_label": "Pico de agentes licenciados",
+      "peak_day": "Dia de pico: {{day}}",
+      "band": "Faixa licenciada: {{max}}",
+      "not_declared": "Faixa licenciada não declarada",
+      "empty": "Nenhum dia do mês selecionado foi fechado ainda. O pico aparece quando o primeiro dia for fechado.",
+      "breakdown_title": "Agentes licenciados por tenant no dia de pico",
+      "breakdown_tenant": "Tenant",
+      "breakdown_agents": "Agentes licenciados",
+      "advisory": "O pico está acima da faixa licenciada. Nada é bloqueado. Declare a faixa atingida na sua autodeclaração mensal (a Verbara não a conhece automaticamente); em seguida, a licença é reemitida na nova faixa.",
+      "export": "Exportar registro (JSON)",
+      "loading": "Carregando agentes licenciados...",
+      "error": "Não foi possível carregar os números de agentes licenciados."
+    }
   },
   "skills": {
     "title": "Habilidades",
@@ -2305,7 +2337,8 @@
         "monthly_voice_minutes": "Minutos de voz mensais",
         "monthly_messages": "Mensagens mensais",
         "storage": "Armazenamento",
-        "active_agents": "Agentes ativos"
+        "active_agents": "Agentes ativos",
+        "active_agents_hint": "Cota de operador por tenant. Não é a faixa de agentes licenciados da licença."
       },
       "dunning": {
         "overdue": "Conta em atraso",
