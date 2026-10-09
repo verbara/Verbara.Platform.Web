@@ -41,6 +41,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   is shown as the licensee. (#389)
 - **The system page's licence card is translated.** Its "License ID", "Max Nodes", "Last
   Validated", "Perpetual" and "day/days" labels were hard-coded in English. (#389)
+- **The WhatsApp channel form saves the keys Platform reads:** `AccessToken`, `PhoneNumberId`,
+  `AppSecret` and `WebhookVerifyToken`. It used to save `ApiToken` and `PhoneNumber` and had no
+  App Secret field, so a WhatsApp config saved from the console was never read. Each field now has
+  a localized label and help text saying where to find the value in Meta's app dashboard; the
+  setup wizard uses the same fields. Requires Platform v2.27.0 for WhatsApp to work. A WhatsApp
+  config saved with an older console must be re-entered.
 
 ---
 

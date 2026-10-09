@@ -332,7 +332,25 @@
     "statusLabel": "Status",
     "detailTitle": "Canal: {{channel}}",
     "activeStatus": "Ativo",
-    "inactiveStatus": "Inativo"
+    "inactiveStatus": "Inativo",
+    "whatsapp": {
+      "accessToken": {
+        "label": "Token de acesso",
+        "help": "No painel do app da Meta: WhatsApp > Configuração da API. Use um token permanente de um usuário do sistema (Configurações do negócio > Usuários do sistema) com a permissão whatsapp_business_messaging; o token temporário expira em 24 horas."
+      },
+      "phoneNumberId": {
+        "label": "ID do número de telefone",
+        "help": "No painel do app da Meta: WhatsApp > Configuração da API, a \"Identificação do número de telefone\" abaixo do número de envio. É um ID numérico, não o número de telefone."
+      },
+      "appSecret": {
+        "label": "Chave secreta do app",
+        "help": "No painel do app da Meta: Configurações do app > Básico > Chave secreta do app (clique em Mostrar). A Meta assina cada webhook com ela."
+      },
+      "webhookVerifyToken": {
+        "label": "Token de verificação do webhook",
+        "help": "Um valor que você escolhe. Informe o mesmo valor como \"Token de verificação\" no painel do app da Meta: WhatsApp > Configuração > Webhook."
+      }
+    }
   },
   "flows": {
     "title": "Fluxos",

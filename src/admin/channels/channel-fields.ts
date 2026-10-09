@@ -1,16 +1,48 @@
 import { z } from 'zod';
 
 export interface FieldDef {
+  /** The credential key saved in the channel config; must match what Platform reads. */
   key: string;
+  /** Fallback label, shown when no `labelKey` is set. */
   label: string;
   type: 'text' | 'password';
+  /** Optional `admin:` i18n key for the label (wins over `label`). */
+  labelKey?: string;
+  /** Optional `admin:` i18n key for help text shown under the input. */
+  helpKey?: string;
 }
 
 export const channelFields: Record<string, FieldDef[]> = {
+  // Keys are the ones Platform's WhatsApp channel reads (WhatsAppCredentialKeys).
   whatsapp: [
-    { key: 'ApiToken', label: 'Business API Token', type: 'password' },
-    { key: 'PhoneNumber', label: 'Phone Number', type: 'text' },
-    { key: 'WebhookVerifyToken', label: 'Webhook Verify Token', type: 'text' },
+    {
+      key: 'AccessToken',
+      label: 'Access Token',
+      type: 'password',
+      labelKey: 'admin:channels.whatsapp.accessToken.label',
+      helpKey: 'admin:channels.whatsapp.accessToken.help',
+    },
+    {
+      key: 'PhoneNumberId',
+      label: 'Phone Number ID',
+      type: 'text',
+      labelKey: 'admin:channels.whatsapp.phoneNumberId.label',
+      helpKey: 'admin:channels.whatsapp.phoneNumberId.help',
+    },
+    {
+      key: 'AppSecret',
+      label: 'App Secret',
+      type: 'password',
+      labelKey: 'admin:channels.whatsapp.appSecret.label',
+      helpKey: 'admin:channels.whatsapp.appSecret.help',
+    },
+    {
+      key: 'WebhookVerifyToken',
+      label: 'Webhook Verify Token',
+      type: 'text',
+      labelKey: 'admin:channels.whatsapp.webhookVerifyToken.label',
+      helpKey: 'admin:channels.whatsapp.webhookVerifyToken.help',
+    },
   ],
   sms: [
     { key: 'ApiKey', label: 'API Key', type: 'password' },

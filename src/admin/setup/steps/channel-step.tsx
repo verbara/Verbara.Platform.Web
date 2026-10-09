@@ -38,18 +38,34 @@ interface ChannelConfigFieldProps {
 }
 
 function ChannelConfigField({ field, register, error }: ChannelConfigFieldProps) {
-  const a11y = useFieldA11y(error, `channel-${field.key}`, { required: true });
+  const { t } = useTranslation(['admin']);
+  const inputId = `channel-${field.key}`;
+  const a11y = useFieldA11y(error, inputId, { required: true });
+  const helpId = field.helpKey ? `${inputId}-help` : undefined;
+  const describedBy =
+    [helpId, a11y.inputProps['aria-describedby']].filter(Boolean).join(' ') || undefined;
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={`channel-${field.key}`} required>
-        {field.label}
+      <Label htmlFor={inputId} required>
+        {field.labelKey ? t(field.labelKey) : field.label}
       </Label>
       <Input
-        id={`channel-${field.key}`}
+        id={inputId}
         type={field.type}
+        data-channel-field={field.key}
         {...a11y.inputProps}
+        aria-describedby={describedBy}
         {...register(field.key)}
       />
+      {field.helpKey && (
+        <p
+          id={helpId}
+          data-channel-field-help={field.key}
+          className="text-xs text-muted-foreground"
+        >
+          {t(field.helpKey)}
+        </p>
+      )}
       <FieldError id={a11y.errorId} message={error?.message?.toString()} />
     </div>
   );
