@@ -86,6 +86,20 @@ describe('ChannelConfigForm', () => {
     expect(appSecret?.getAttribute('aria-describedby')).toContain('channel-AppSecret-help');
   });
 
+  it('submit_ShouldFlagRequiredFieldAndKeepHelp_WhenWhatsAppFieldEmpty', async () => {
+    render(<ChannelConfigForm open onOpenChange={vi.fn()} channelId="whatsapp" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'admin:channels.save' }));
+
+    const appSecret = document.querySelector<HTMLInputElement>('[data-channel-field="AppSecret"]');
+    await waitFor(() =>
+      expect(appSecret?.getAttribute('aria-describedby')).toBe(
+        'channel-AppSecret-help channel-AppSecret-error',
+      ),
+    );
+    expect(updateMutate).not.toHaveBeenCalled();
+  });
+
   it('render_ShouldKeepPlainLabels_WhenChannelIsNotWhatsApp', () => {
     render(<ChannelConfigForm open onOpenChange={vi.fn()} channelId="sms" />);
 

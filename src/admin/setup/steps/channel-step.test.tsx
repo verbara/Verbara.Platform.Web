@@ -19,14 +19,20 @@ import ChannelStep from './channel-step';
 
 let latestConfig: Record<string, string> = {};
 
-function Harness({ children }: { readonly children: ReactNode }) {
+function Harness({
+  channelId,
+  children,
+}: {
+  readonly channelId: string;
+  readonly children: ReactNode;
+}) {
   const methods = useForm<SetupFormValues>({
     defaultValues: {
       queueName: '',
       agentUserId: '',
       agentDisplayName: '',
       agentEmail: '',
-      channelId: 'whatsapp',
+      channelId,
       channelConfig: {},
     },
   });
@@ -37,7 +43,7 @@ function Harness({ children }: { readonly children: ReactNode }) {
 describe('ChannelStep', () => {
   it('channelConfig_ShouldUseCanonicalKeysWithHelp_WhenWhatsAppSelected', async () => {
     render(
-      <Harness>
+      <Harness channelId="whatsapp">
         <ChannelStep />
       </Harness>,
     );
@@ -56,5 +62,16 @@ describe('ChannelStep', () => {
 
     fireEvent.change(appSecret as HTMLInputElement, { target: { value: 's3cret' } });
     await waitFor(() => expect(latestConfig.AppSecret).toBe('s3cret'));
+  });
+
+  it('render_ShouldKeepPlainLabels_WhenChannelIsNotWhatsApp', () => {
+    render(
+      <Harness channelId="sms">
+        <ChannelStep />
+      </Harness>,
+    );
+
+    expect(screen.getByText('API Key')).toBeTruthy();
+    expect(document.querySelector('[data-channel-field-help]')).toBeNull();
   });
 });
