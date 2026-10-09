@@ -9,6 +9,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.21.0-web] - 2026-10-09
+
+**Requires Platform ≥ v2.25.0; Platform v2.26.1 recommended.** The console now reads what Platform
+v2.25.0 and later actually send: refusals are shown by status and machine code in the user's language
+(never Platform's English text), user edits are protected by `If-Match` against concurrent changes,
+impersonation never borrows the operator's credentials, the recovery pages and single sign-on with MFA
+work, and the supervisor monitor, contact search and inbox read Platform's ids. Against Platform v2.26.0
+a WebChat visitor's second message fails on the server (fixed in v2.26.1). Measured end to end in the
+lab against Platform v2.26.0 and v2.26.1 (verbara-lab #10, #11, #12). (#388)
+
+**Operators:** the web image's access log no longer contains query strings, and API responses that go
+through the web image are no longer compressed (the `ETag` must stay strong for `If-Match`); a proxy or
+CDN in front of the console that compresses API responses weakens the `ETag` and leaves user edits
+without concurrency protection.
+
 ### Added
 
 - **A stale user edit is refused instead of overwriting another administrator's change.** The
