@@ -22,6 +22,8 @@ vi.mock('@/core/api/hooks/use-billing', () => ({
   QUOTA_ACTIONS: ['Warn', 'SoftBlock', 'HardBlock'],
 }));
 
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+
 vi.mock('@/core/tenant/tenant-store', () => ({
   useTenantStore: (select: (s: { activeTenantId: string | null }) => unknown) =>
     select({ activeTenantId: 'ten-acme' }),
@@ -34,6 +36,7 @@ vi.mock('@/core/auth/auth-store', () => ({
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { toast } from 'sonner';
 import { ApiError } from '@/core/api/api-error';
 import { asMock } from '@/tests/utils/as-mock';
 import { useDunningStatus, useQuotaStatus, useUpdateQuota } from '@/core/api/hooks/use-billing';
@@ -104,6 +107,9 @@ describe('QuotasPage', () => {
       expect(note.textContent).toBe('billing.quotas.dunning.not_applicable');
       expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
       expect(screen.getByTestId('quotas-page')).toBeInTheDocument();
+      // A fact to state, not a failure: no error toast accompanies the note.
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(toast.warning).not.toHaveBeenCalled();
     });
 
     it('DunningBanner_ShouldStay_WhenTheTenantIsADirectCustomer', () => {

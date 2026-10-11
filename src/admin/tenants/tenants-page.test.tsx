@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { isValidElement, type ReactElement } from 'react';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
@@ -14,32 +16,57 @@ vi.mock('@/core/auth/permission-guard', () => ({
   PermissionGuard: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-const createMutate = vi.fn();
-const mutation = () => ({ mutate: vi.fn(), isPending: false });
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-vi.mock('@/core/api/hooks/use-tenants', () => ({
-  useTenants: () => ({
-    data: [
-      { tenantId: 'platform', name: 'Platform', type: 'Platform', status: 'Active' },
-      { tenantId: 'p1', name: 'Partner One', type: 'Partner', status: 'Active' },
-      { tenantId: 'dc1', name: 'Direct Customer', type: 'Customer', status: 'Active' },
-    ],
-    isLoading: false,
-  }),
-  useCreateTenant: () => ({ mutate: createMutate, isPending: false }),
-  useUpdateTenant: () => mutation(),
-  useDeleteTenant: () => mutation(),
-  useSuspendTenant: () => mutation(),
-  useActivateTenant: () => mutation(),
+vi.mock('@/core/api/client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/core/api/client')>()),
+  customFetch: vi.fn(),
 }));
 
+const createMutate = vi.fn();
+const mutation = () => ({ mutate: vi.fn(), isPending: false });
+// When true, the create sheet runs the real `useCreateTenant` against the mocked `customFetch`, so
+// the host's refusal goes through the hook's own error handling.
+let realCreateTenant = false;
+
+vi.mock('@/core/api/hooks/use-tenants', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/core/api/hooks/use-tenants')>();
+  return {
+    useTenants: () => ({
+      data: [
+        { tenantId: 'platform', name: 'Platform', type: 'Platform', status: 'Active' },
+        { tenantId: 'p1', name: 'Partner One', type: 'Partner', status: 'Active' },
+        { tenantId: 'dc1', name: 'Direct Customer', type: 'Customer', status: 'Active' },
+      ],
+      isLoading: false,
+    }),
+    useCreateTenant: () =>
+      realCreateTenant ? actual.useCreateTenant() : { mutate: createMutate, isPending: false },
+    useUpdateTenant: () => mutation(),
+    useDeleteTenant: () => mutation(),
+    useSuspendTenant: () => mutation(),
+    useActivateTenant: () => mutation(),
+  };
+});
+
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { toast } from 'sonner';
+import { customFetch } from '@/core/api/client';
+import { ApiError } from '@/core/api/api-error';
+import { asMock } from '@/tests/utils/as-mock';
 import TenantsPage from './tenants-page';
 
 function openCreateSheet() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
   render(
-    <MemoryRouter>
-      <TenantsPage />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <TenantsPage />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
   fireEvent.click(screen.getByTestId('tenants-create-button'));
 }
@@ -118,5 +145,50 @@ describe('TenantsPage create sheet — parent selector by type (P4, design D8)',
       type: 'Partner',
       parentTenantId: 'platform',
     });
+  });
+});
+
+describe('TenantsPage create sheet — host refusal (P2, plan-exceeds-parent)', () => {
+  const refusal = JSON.parse(
+    readFileSync(
+      resolve(process.cwd(), 'tests/fixtures/contracts/plan-above-parent-409.json'),
+      'utf-8',
+    ),
+  ) as { status: number; body: Record<string, unknown> };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    realCreateTenant = true;
+  });
+
+  afterEach(() => {
+    realCreateTenant = false;
+  });
+
+  it('CreateSheet_ShouldStayOpenAndToastTheLocalizedRefusal_WhenTheHostAnswersPlanExceedsParent', async () => {
+    asMock(customFetch).mockRejectedValue(new ApiError(refusal.status, refusal.body));
+    openCreateSheet();
+    await choose('tenants-form-parent', 'tenants-form-parent-option-p1');
+    fireEvent.change(screen.getByTestId('tenants-form-tenantId'), { target: { value: 'c2' } });
+    fireEvent.change(screen.getByTestId('tenants-form-name'), { target: { value: 'Customer 2' } });
+
+    fireEvent.click(screen.getByTestId('tenants-form-submit'));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
+    const shown = asMock(toast.error).mock.calls[0][0] as ReactElement<{
+      'data-error-code': string;
+      children: string;
+    }>;
+    expect(isValidElement(shown)).toBe(true);
+    expect(shown.props['data-error-code']).toBe('plan-exceeds-parent');
+    expect(shown.props.children).toBe('common:errors.partner_channel.plan_exceeds_parent');
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(customFetch).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/api/v1/management/tenants', method: 'POST' }),
+    );
+    // The sheet stays open with what the user typed.
+    expect(screen.getByTestId('tenants-create-sheet')).toBeInTheDocument();
+    expect(screen.getByTestId('tenants-form-tenantId')).toHaveValue('c2');
+    expect(screen.getByTestId('tenants-form-name')).toHaveValue('Customer 2');
   });
 });
