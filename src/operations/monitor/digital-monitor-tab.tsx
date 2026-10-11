@@ -69,12 +69,23 @@ function ConversationCard({ conversation, isSelected, onClick }: ConversationCar
   );
 }
 
-export function DigitalMonitorTab() {
+/**
+ * `initialSelectedId` opens that conversation's detail once the list carries it: the monitor's
+ * `?conversation=` link (the new-conversation dialog's `conversation-open-elsewhere` refusal). Viewing
+ * only; a takeover still needs the detail's own confirmed action.
+ */
+export function DigitalMonitorTab({
+  initialSelectedId,
+}: Readonly<{ initialSelectedId?: string | null }> = {}) {
   const { t } = useTranslation('operations');
-  const { data } = useSupervisorConversations();
+  const { data, isSuccess } = useSupervisorConversations();
   const conversations = data?.items ?? [];
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null);
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
+  // The list is the first page only (and Platform has no single-conversation read for supervisors):
+  // a linked conversation that closed or sits further down is said to be missing, not left blank.
+  const linkMissing =
+    isSuccess && selectedId !== null && selectedId === initialSelectedId && selected === null;
 
   return (
     <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
@@ -103,6 +114,16 @@ export function DigitalMonitorTab() {
       <div className="min-w-0 flex-1 overflow-hidden" data-testid="digital-detail-panel">
         {selected ? (
           <DigitalConversationDetail conversation={selected} />
+        ) : linkMissing ? (
+          <div
+            role="status"
+            data-testid="digital-linked-conversation-missing"
+            className="flex h-full items-center justify-center rounded-lg border border-dashed border-border p-4"
+          >
+            <p className="text-center text-sm text-muted-foreground">
+              {t('monitor.linked_conversation_missing')}
+            </p>
+          </div>
         ) : (
           <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-border">
             <p className="text-sm text-muted-foreground">

@@ -23,7 +23,8 @@ export default function TestStep() {
   const tenantId = useTenantStore.getState().activeTenantId ?? 'default';
 
   const isWebchat = channelId === 'webchat';
-  const webhookUrl = `https://your-api.com/api/v1/webhooks/${tenantId}/${channelId}`;
+  // The API is served next to the console, so its public address is the console's own origin.
+  const webhookUrl = `${window.location.origin}/api/v1/webhooks/${encodeURIComponent(tenantId)}/${channelId}`;
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-4">

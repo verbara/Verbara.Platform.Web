@@ -220,6 +220,15 @@
       "contact_not_found": "Este contato não existe mais.",
       "conflict": "A conversa não pode mudar no estado atual.",
       "typify_invalid": "Verifique estes campos: {{fields}}.",
+      "unknown_channel": "Este canal não está disponível para iniciar conversas.",
+      "contact_has_no_address": "Este contato não tem endereço neste canal.",
+      "channel_not_available": "Este canal ainda não pode enviar mensagens neste tenant.",
+      "open_elsewhere": "Este contato já tem uma conversa aberta neste canal, atendida por outra pessoa.",
+      "not_sendable": "Você já tem uma conversa com este contato neste canal, mas ela não aceita mensagens no estado atual.",
+      "agent_at_capacity": "Você não tem mais capacidade neste canal. Finalize uma conversa primeiro.",
+      "whatsapp_template_required": "O contato não escreveu nas últimas 24 horas, então o WhatsApp só permite um modelo. Informe um modelo aprovado.",
+      "channel_send_failed": "O provedor não aceitou a mensagem. Nada foi salvo; você pode tentar de novo.",
+      "start_persist_failed": "O contato recebeu a mensagem, mas a conversa não pôde ser salva. Não envie de novo; avise o seu administrador.",
       "failed": "Não foi possível concluir a ação. Tente novamente."
     }
   },

@@ -290,12 +290,23 @@ export function useUnholdConversation() {
   });
 }
 
-export function useCreateConversation() {
+/** `POST /conversations` body (Platform 2.28.0 `CreateConversationRequest`). */
+export type CreateConversationInput = components['schemas']['CreateConversationRequest'];
+
+/**
+ * Starts a conversation in the calling agent's name (Platform 2.28.0, spec agent-started-conversations).
+ * Answers the raw `Conversation` entity: a 201 for a new conversation and for the reuse of the
+ * caller's own open one alike. A refusal is reported as a toast unless `reportErrors` is `'inline'`,
+ * for a caller that shows the refusal itself (the new-conversation dialog, which acts on the
+ * refusal's `conversationId`).
+ */
+export function useCreateConversation(options: { reportErrors?: 'toast' | 'inline' } = {}) {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
+  const reportErrors = options.reportErrors ?? 'toast';
   return useMutation({
-    mutationFn: (data: { contactId: string; channel: string; initialMessage?: string }) =>
-      customFetch<Conversation>({
+    mutationFn: (data: CreateConversationInput) =>
+      customFetch<components['schemas']['Conversation']>({
         url: '/api/v1/conversations',
         method: 'POST',
         data,
@@ -304,6 +315,9 @@ export function useCreateConversation() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success(t('toasts.conversations.created'));
     },
-    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'create' }),
+    onError: (err: Error) => {
+      if (reportErrors === 'toast')
+        toastApiError(err, conversationRefusals, t, { action: 'create' });
+    },
   });
 }

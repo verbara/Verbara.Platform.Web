@@ -124,12 +124,19 @@
     "title": "Nova conversa",
     "contact": "Contato",
     "channel": "Canal",
-    "initial_message": "Mensagem inicial (opcional)",
+    "initial_message": "Mensagem inicial",
     "message_placeholder": "Digite uma mensagem...",
     "search_placeholder": "Buscar contatos (mín. 2 caracteres)...",
     "change": "Alterar",
     "submit": "Iniciar conversa",
-    "unnamed_contact": "Contato sem nome"
+    "unnamed_contact": "Contato sem nome",
+    "template_toggle": "Enviar um modelo do WhatsApp",
+    "template_name": "Nome do modelo",
+    "template_name_placeholder": "hello_world",
+    "template_language": "Idioma do modelo",
+    "template_hint": "Se um modelo for informado, o WhatsApp envia o modelo em vez do texto da mensagem. Modelos com parâmetros ainda não são suportados.",
+    "open_conversation": "Abrir essa conversa",
+    "view_open_conversation": "Ver no monitor"
   },
   "agent_status": {
     "available": "Disponível",

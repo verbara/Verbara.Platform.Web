@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import { PageHeader } from '@/core/ui/page-header';
 import { VirtualList } from '@/core/ui/virtual-list';
 import { useActiveSessions, useStartListening } from '@/core/api/hooks/use-supervisor';
@@ -12,7 +13,14 @@ const SESSION_CARD_HEIGHT_PX = 96;
 
 export default function MonitorPage() {
   const { t } = useTranslation('operations');
-  const [tab, setTab] = useState<'voice' | 'digital' | 'stuck'>('voice');
+  // `?tab=digital&conversation=<id>` opens the digital tab on that conversation (the link the
+  // new-conversation dialog offers when the contact's conversation is open elsewhere).
+  const [searchParams] = useSearchParams();
+  const linkedTab = searchParams.get('tab');
+  const linkedConversationId = searchParams.get('conversation');
+  const [tab, setTab] = useState<'voice' | 'digital' | 'stuck'>(
+    linkedTab === 'digital' || linkedTab === 'stuck' ? linkedTab : 'voice',
+  );
   const { data: sessions = [] } = useActiveSessions();
   const startListening = useStartListening();
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
@@ -122,7 +130,7 @@ export default function MonitorPage() {
         </div>
       )}
 
-      {tab === 'digital' && <DigitalMonitorTab />}
+      {tab === 'digital' && <DigitalMonitorTab initialSelectedId={linkedConversationId} />}
 
       {tab === 'stuck' && <StuckWorkTab />}
     </div>

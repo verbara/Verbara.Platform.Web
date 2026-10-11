@@ -9,6 +9,66 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Requires Platform ≥ v2.28.0.** The channel form reads the redacted credential list
+(`{ key, isSet }`) and the coded connection test, and the new-conversation dialog sends the
+`initialMessage` and template fields and reads the start refusal codes, all of which Platform
+v2.28.0 adds. Consoles before v3.23.0-web expect `/admin/channels` to send credential values back,
+which Platform v2.28.0 no longer does: their channel detail shows the key list as unreadable
+entries instead of values, and their channel form still makes the admin type every secret again on
+each save (consoles before v3.22.0-web, which send `ApiToken` and `PhoneNumber`, get
+`400 unknown-credential-key` on WhatsApp). Upgrade the console together with the API. The v3.21.0-web and v3.22.0-web
+end-to-end specs `conversation-refusals` and `monitor-takeover-and-contact-search` fail against
+Platform v2.28.0 because their routing helper gave the WebChat session id to a contact of its own;
+this release fixes the helper (see Changed).
+
+### Added
+
+- **Connection test on the channel form.** "Test connection" runs the provider test and shows the
+  result in place: on success, the WhatsApp number's verified name; on failure, a localized line for
+  the code (`provider-rejected`, `provider-unreachable`, `channel-not-configured`, `not-testable`,
+  or a generic line for any other code). When the provider rejects the configuration, its own
+  message follows.
+- **The webhook URL to give the provider.** For WhatsApp, Messenger and Instagram the channel form
+  shows the tenant's webhook URL (`<console origin>/api/v1/webhooks/<tenant>/<channel>`) with a
+  copy button. During an impersonation it names the impersonated tenant. The setup wizard's test
+  step shows the console's real address instead of `https://your-api.com`.
+- **More WhatsApp settings.** The form and the setup wizard list all seven keys Platform accepts:
+  `AccessToken`, `PhoneNumberId`, `AppSecret` and `WebhookVerifyToken` (required), and `WabaId`,
+  `ApiVersion` and the default queue for inbound conversations (optional, chosen from the tenant's
+  queues).
+- **Start a conversation with a message.** The agent's new-conversation dialog requires a first
+  message and starts the conversation in the agent's own name; on success it opens that
+  conversation, or the agent's existing open one with the contact. On WhatsApp, "Send a WhatsApp
+  template" adds the template name and language (default `en_US`); the template is sent instead of
+  the text, and templates with parameters are not supported.
+- **Refused starts are explained in place.** Each refusal code Platform v2.28.0 returns is shown
+  inside the dialog in the user's language, with the action it calls for:
+  `whatsapp-template-required` opens the template fields; `conversation-not-sendable` offers to open
+  the agent's own conversation; `conversation-open-elsewhere` links a supervisor (with
+  `contacts:conversation:monitor`) to that conversation in the monitor, and never takes it over;
+  `start-persist-failed` tells the agent the contact already got the message, so it must not be sent
+  again.
+- **The digital monitor opens from a link.** `/operations/monitor?tab=digital&conversation=<id>`
+  opens the digital tab with that conversation's detail. A takeover still asks for confirmation.
+  The tab lists only the first 25 conversations, so a linked conversation that closed or sits
+  further down shows a "not in this list" notice instead of its detail.
+
+### Changed
+
+- **Saved credentials are never shown again.** Each key carries a "set" or "not set" badge and the
+  inputs start empty. A field left blank keeps the stored value, so the form can be saved without
+  re-entering secrets, and a required key is only required until it is set. An optional key, or a
+  key outside the channel's list (such as the `ApiToken` and `PhoneNumber` that consoles before
+  v3.22.0-web saved, listed in their own section), can be removed, with undo until saving.
+  `WebhookVerifyToken` is masked like the other secrets. The channel detail shows key names and
+  badges, not values. `unknown-credential-key` and `invalid-channel` refusals are shown in the
+  user's language.
+- **End-to-end specs route the WebChat visitor's own contact and conversation.** The
+  `conversation-routing` helper reads `contactId` and `conversationId` from the WebChat session
+  response instead of creating a contact addressed by the session id, which Platform v2.28.0 no
+  longer resolves. `conversation-refusals` and `monitor-takeover-and-contact-search` pass against
+  Platform v2.28.0 again, and a new spec covers refused starts by code.
+
 ## [3.22.0-web] - 2026-10-10
 
 **Requires Platform ≥ v2.27.0.** The licence page shows licensed-agent peaks, the per-tenant peak day,

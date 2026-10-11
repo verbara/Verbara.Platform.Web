@@ -17,21 +17,22 @@ import { API_BASE } from '../../helpers/credentials';
  * never the server's text (change `the-console-account-and-session-surfaces-match-the-api`, H20,
  * spec `conversation-action-feedback`, task 4.4).
  *
- * Two refusals against a real Platform (>= v2.25.0), each asserted by `data-error-code` only:
+ * Two refusals against a real Platform (>= v2.28.0, whose WebChat session names its visitor), each asserted by `data-error-code` only:
  *  - a Supervisor with no Agent profile takes over a conversation from the operations monitor and
  *    Platform answers 403 `not-an-agent`;
  *  - agent A opens a conversation it owns, the spec reassigns it to agent B through the API, and
  *    A's send is answered 403 `not-owner`.
  *
- * The spec creates everything it uses through the API: a contact, a conversation, two Agent users
- * whose Agent profiles are linked to the ids `POST /api/v1/admin/users` returned, and a Supervisor
- * user with no Agent profile. The lab seed's `demo-user-*` agents are linked to no user, so every
- * seeded agent would be refused with `not-an-agent`.
+ * The spec creates everything it uses through the API: a WebChat visitor session — which brings its
+ * own contact and conversation (Platform >= v2.28.0) — two Agent users whose Agent profiles are linked
+ * to the ids `POST /api/v1/admin/users` returned, and a Supervisor user with no Agent profile. The lab
+ * seed's `demo-user-*` agents are linked to no user, so every seeded agent would be refused with
+ * `not-an-agent`.
  *
- * Agent A comes to own the conversation the way Platform (>= v2.26.0) allows it: a fresh conversation
- * is `Queued`, and `Queued → Active` is refused ("Cannot transition from Queued to Active."), so the
- * spec routes it from a WebChat visitor's message, lets the distribution worker offer it, and
- * reassigns the offered conversation to A (`helpers/conversation-routing.ts`).
+ * Agent A comes to own the session's conversation the way Platform allows it: it is born `Queued`,
+ * and `Queued → Active` is refused ("Cannot transition from Queued to Active."), so the spec routes it
+ * from the visitor's message, lets the distribution worker offer it, and reassigns the offered
+ * conversation to A (`helpers/conversation-routing.ts`).
  *
  * The monitor card and the agent's inbox read the conversation's id, which Platform sends as
  * `conversationId`: this spec relies on group 12 of the same change (N16, N17), which maps those
@@ -43,7 +44,7 @@ import { API_BASE } from '../../helpers/credentials';
 const SHOULD_RUN = process.env.E2E_FULL_STACK === 'true';
 
 /**
- * The test's budget: four users, two Agent profiles, a contact, a conversation, its routing and offer
+ * The test's budget: three users, two Agent profiles, a visitor session, its routing and offer
  * (up to 45 s), two reassigns, two browser sign-ins and two monitored refusals. A budget, not a wait:
  * every step below is fenced on a response or on `expect`.
  */
@@ -95,29 +96,6 @@ async function createAgentProfile(
   return idOf(((await created.json()) as { agentId: unknown }).agentId);
 }
 
-/** A WebChat conversation whose contact the visitor of `sessionId` resolves to. */
-async function createConversation(
-  api: APIRequestContext,
-  stamp: string,
-  sessionId: string,
-): Promise<string> {
-  const contact = await api.post(`${API_BASE}/api/v1/contacts`, {
-    data: {
-      firstName: 'E2E Refusals',
-      lastName: stamp,
-      addresses: [{ channel: 'WebChat', address: sessionId }],
-    },
-  });
-  expect(contact.status(), 'create contact').toBe(201);
-  const contactId = idOf(((await contact.json()) as { contactId: unknown }).contactId);
-
-  const conversation = await api.post(`${API_BASE}/api/v1/conversations`, {
-    data: { contactId, channel: 'WebChat' },
-  });
-  expect(conversation.status(), 'create conversation').toBe(201);
-  return idOf(((await conversation.json()) as { conversationId: unknown }).conversationId);
-}
-
 async function reassignToAgent(
   api: APIRequestContext,
   conversationId: string,
@@ -142,7 +120,7 @@ function refusal(page: Page, code: string) {
 test.describe('Conversation refusals (full stack)', () => {
   test.skip(
     !SHOULD_RUN,
-    'requires E2E_FULL_STACK=true with docker-compose.full.yml (Platform >= v2.25.0)',
+    'requires E2E_FULL_STACK=true with docker-compose.full.yml (Platform >= v2.28.0)',
   );
 
   test('a supervisor without an Agent profile and a former owner see the localized refusal of their action', async ({
@@ -158,8 +136,8 @@ test.describe('Conversation refusals (full stack)', () => {
     const supervisor = await createUser(demoApiContext, stamp, 'supervisor', 'Supervisor');
     const agentAId = await createAgentProfile(demoApiContext, agentA.userId, `Agent A ${stamp}`);
     const agentBId = await createAgentProfile(demoApiContext, agentB.userId, `Agent B ${stamp}`);
-    const sessionId = await openWebChatSession(demoApiContext, 'demo');
-    const conversationId = await createConversation(demoApiContext, stamp, sessionId);
+    const visitor = await openWebChatSession(demoApiContext, 'demo');
+    const { conversationId } = visitor;
 
     const pages: Page[] = [];
     let agentApi: APIRequestContext | undefined;
@@ -186,11 +164,7 @@ test.describe('Conversation refusals (full stack)', () => {
 
       // ── Agent A owns the conversation, loses it to B, and sends: 403 not-owner ──────────────
       agentApi = await bearerApiContext(playwright, agentA.account);
-      routed = await activateForAgent(demoApiContext, agentApi, {
-        conversationId,
-        sessionId,
-        agentId: agentAId,
-      });
+      routed = await activateForAgent(demoApiContext, agentApi, visitor, agentAId);
 
       const agentPage = await authenticatedPage(browser, agentA.account);
       pages.push(agentPage);
@@ -221,6 +195,9 @@ test.describe('Conversation refusals (full stack)', () => {
       for (const { userId } of [agentA, agentB, supervisor]) {
         await demoApiContext.delete(`${API_BASE}/api/v1/admin/users/${userId}`).catch(() => {});
       }
+      await demoApiContext
+        .delete(`${API_BASE}/api/v1/contacts/${visitor.contactId}`)
+        .catch(() => {});
     }
   });
 });

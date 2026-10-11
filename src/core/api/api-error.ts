@@ -75,6 +75,11 @@ export class ApiError extends Error {
   readonly code: string | null;
   /** The body's item list when it had one: typify's `errors`, or an `ErrorDetailResponse`'s `details`. */
   readonly errors: readonly ApiErrorItem[] | null;
+  /**
+   * The parsed body as Platform sent it, for the structured fields a coded refusal carries (for
+   * example a start refusal's `conversationId`). Never rendered: messages come from a map.
+   */
+  readonly body: unknown;
 
   constructor(status: number, body: unknown) {
     super(legacyMessageOf(body, status));
@@ -82,6 +87,7 @@ export class ApiError extends Error {
     this.status = status;
     this.code = machineCodeOf(body);
     this.errors = errorItemsOf(body);
+    this.body = body;
   }
 }
 

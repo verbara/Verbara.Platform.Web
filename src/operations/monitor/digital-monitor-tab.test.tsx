@@ -78,13 +78,13 @@ afterEach(() => {
   server.resetHandlers();
 });
 
-async function renderTab() {
+async function renderTab(initialSelectedId?: string) {
   const i18n = await createOperationsI18n();
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <DigitalMonitorTab />
+        <DigitalMonitorTab initialSelectedId={initialSelectedId} />
       </I18nextProvider>
     </QueryClientProvider>,
   );
@@ -111,5 +111,26 @@ describe('DigitalMonitorTab with Platform conversations', () => {
 
     await waitFor(() => expect(takeoverUrls).toHaveLength(1));
     expect(takeoverUrls[0]).toBe(`/api/v1/supervisor/conversations/${CONVERSATION_ID}/takeover`);
+  });
+
+  it('DigitalMonitorTab_ShouldOpenTheLinkedConversation_WhenStartedWithItsId', async () => {
+    // The new-conversation dialog links a `conversation-open-elsewhere` refusal here (no takeover).
+    await renderTab(CONVERSATION_ID);
+
+    expect(await screen.findByTestId('digital-conversation-detail')).toBeInTheDocument();
+    expect(takeoverUrls).toHaveLength(0);
+  });
+
+  it('DigitalMonitorTab_ShouldSayTheLinkedConversationIsNotListed_WhenItIsNotOnTheLoadedPage', async () => {
+    // The link names a conversation the first page does not carry (closed, or further down).
+    await renderTab('0000000000004000a000000000000000');
+
+    expect(await screen.findByTestId('digital-linked-conversation-missing')).toBeInTheDocument();
+    expect(screen.queryByTestId('digital-conversation-detail')).toBeNull();
+
+    // Picking a listed card replaces the notice with that conversation's detail.
+    fireEvent.click(await screen.findByTestId(`digital-conv-card-${CONVERSATION_ID}`));
+    expect(await screen.findByTestId('digital-conversation-detail')).toBeInTheDocument();
+    expect(screen.queryByTestId('digital-linked-conversation-missing')).toBeNull();
   });
 });

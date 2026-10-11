@@ -5,15 +5,23 @@ export interface FieldDef {
   key: string;
   /** Fallback label, shown when no `labelKey` is set. */
   label: string;
-  type: 'text' | 'password';
+  /** `password` masks a secret; `queue` picks one of the tenant's queues and saves its id. */
+  type: 'text' | 'password' | 'queue';
   /** Optional `admin:` i18n key for the label (wins over `label`). */
   labelKey?: string;
   /** Optional `admin:` i18n key for help text shown under the input. */
   helpKey?: string;
+  /**
+   * The channel works without this key. An optional key that is set can be removed from the form;
+   * a required one can only be replaced, and must be entered when it is not set yet.
+   */
+  optional?: boolean;
 }
 
 export const channelFields: Record<string, FieldDef[]> = {
-  // Keys are the ones Platform's WhatsApp channel reads (WhatsAppCredentialKeys).
+  // Platform's declared WhatsApp credential schema (channel-credential-config): the four keys the
+  // channel needs, then WabaId, ApiVersion and the default queue inbound routing reads. Platform
+  // refuses a value for any other key with `unknown-credential-key`.
   whatsapp: [
     {
       key: 'AccessToken',
@@ -39,9 +47,33 @@ export const channelFields: Record<string, FieldDef[]> = {
     {
       key: 'WebhookVerifyToken',
       label: 'Webhook Verify Token',
-      type: 'text',
+      type: 'password',
       labelKey: 'admin:channels.whatsapp.webhookVerifyToken.label',
       helpKey: 'admin:channels.whatsapp.webhookVerifyToken.help',
+    },
+    {
+      key: 'WabaId',
+      label: 'WhatsApp Business Account ID',
+      type: 'text',
+      labelKey: 'admin:channels.whatsapp.wabaId.label',
+      helpKey: 'admin:channels.whatsapp.wabaId.help',
+      optional: true,
+    },
+    {
+      key: 'ApiVersion',
+      label: 'Graph API version',
+      type: 'text',
+      labelKey: 'admin:channels.whatsapp.apiVersion.label',
+      helpKey: 'admin:channels.whatsapp.apiVersion.help',
+      optional: true,
+    },
+    {
+      key: 'defaultQueueId',
+      label: 'Default queue',
+      type: 'queue',
+      labelKey: 'admin:channels.whatsapp.defaultQueueId.label',
+      helpKey: 'admin:channels.whatsapp.defaultQueueId.help',
+      optional: true,
     },
   ],
   sms: [
@@ -95,18 +127,74 @@ export const channelFields: Record<string, FieldDef[]> = {
   ],
 };
 
-export function buildSchema(fields: FieldDef[]) {
+/**
+ * The form schema. A required key must be entered only while it is not set on the server: a blank
+ * field keeps the stored value (Platform merges a PUT key by key), so an admin who changes one key
+ * never retypes the others.
+ */
+export function buildSchema(fields: FieldDef[], isSet: (key: string) => boolean = () => false) {
   const shape: Record<string, z.ZodType> = { isActive: z.boolean() };
   for (const field of fields) {
-    shape[field.key] = z.string().min(1, 'admin:channels.validation.fieldRequired');
+    shape[field.key] =
+      field.optional || isSet(field.key)
+        ? z.string()
+        : z.string().trim().min(1, 'admin:channels.validation.fieldRequired');
   }
   return z.object(shape);
 }
 
-export function buildDefaults(fields: FieldDef[]): Record<string, string | boolean> {
-  const defaults: Record<string, string | boolean> = { isActive: false };
+export function buildDefaults(
+  fields: FieldDef[],
+  isActive = false,
+): Record<string, string | boolean> {
+  const defaults: Record<string, string | boolean> = { isActive };
   for (const field of fields) {
     defaults[field.key] = '';
   }
   return defaults;
+}
+
+/**
+ * The `credentials` of a `PUT /admin/channels/{channel}`: a non-blank field replaces the key, a
+ * blank one is left out so the stored value is kept, and a key the admin removed is sent as `null`,
+ * which deletes it (also for a stored key outside the form, such as a legacy `ApiToken`).
+ */
+export function buildCredentialUpdate(
+  fields: readonly FieldDef[],
+  values: Readonly<Record<string, unknown>>,
+  removed: Iterable<string> = [],
+): Record<string, string | null> {
+  const credentials: Record<string, string | null> = {};
+  for (const field of fields) {
+    const value = values[field.key];
+    if (typeof value === 'string' && value.trim() !== '') credentials[field.key] = value.trim();
+  }
+  for (const key of removed) credentials[key] = null;
+  return credentials;
+}
+
+/** Stored keys the form has no field for (keys older consoles saved), in the server's order. */
+export function legacyKeysOf(
+  fields: readonly FieldDef[],
+  credentials: readonly { key: string; isSet: boolean }[],
+): string[] {
+  const known = new Set(fields.map((f) => f.key));
+  return credentials.filter((c) => c.isSet && !known.has(c.key)).map((c) => c.key);
+}
+
+/** Channels whose provider calls Platform's inbound webhook route (`/webhooks/{tenantId}/{channel}`). */
+const WEBHOOK_CHANNELS = new Set(['whatsapp', 'messenger', 'instagram']);
+
+/**
+ * The URL the provider must call for this tenant and channel, or `null` when the channel takes no
+ * webhook or the tenant is unknown. The console and the API share an origin (`/api/v1` is served
+ * next to the console), so the console's own origin is the API's public address.
+ */
+export function webhookUrlFor(
+  origin: string,
+  tenantId: string | null | undefined,
+  channelId: string | null | undefined,
+): string | null {
+  if (!tenantId || !channelId || !WEBHOOK_CHANNELS.has(channelId)) return null;
+  return `${origin}/api/v1/webhooks/${encodeURIComponent(tenantId)}/${channelId}`;
 }

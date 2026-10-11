@@ -20,6 +20,7 @@ import { Button } from '@/core/ui/button';
 import { Label } from '@/core/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { ChannelConfigForm } from './channel-config-form';
+import { CredentialStatusBadge } from './credential-field';
 import { customFetch } from '@/core/api/client';
 import { useChannel } from '@/core/api/hooks/use-channels';
 import type { ChannelConfig } from '@/core/api/hooks/use-channels';
@@ -152,17 +153,18 @@ export default function ChannelsPage() {
                     : t('admin:channels.inactiveStatus')}
                 </Badge>
               </div>
-              {channelDetail.credentials && Object.keys(channelDetail.credentials).length > 0 && (
+              {channelDetail.credentials.length > 0 && (
                 <div>
                   <Label className="mb-2 block">{t('admin:channels.configuration')}</Label>
-                  <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-sm">
-                    {Object.entries(channelDetail.credentials).map(([k, v]) => (
-                      <div key={k} className="flex justify-between">
-                        <span className="text-muted-foreground">{k}</span>
-                        <span className="font-mono text-xs">{v}</span>
-                      </div>
+                  {/* Platform reports whether each key is set, never its value. */}
+                  <ul className="space-y-1 rounded-lg bg-muted/50 p-3 text-sm">
+                    {channelDetail.credentials.map((c) => (
+                      <li key={c.key} className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs text-muted-foreground">{c.key}</span>
+                        <CredentialStatusBadge credentialKey={c.key} isSet={c.isSet} />
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
             </div>

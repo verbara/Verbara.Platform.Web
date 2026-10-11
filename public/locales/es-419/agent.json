@@ -124,12 +124,19 @@
     "title": "Nueva conversación",
     "contact": "Contacto",
     "channel": "Canal",
-    "initial_message": "Mensaje inicial (opcional)",
+    "initial_message": "Mensaje inicial",
     "message_placeholder": "Escribe un mensaje...",
     "search_placeholder": "Buscar contactos (mín. 2 caracteres)...",
     "change": "Cambiar",
     "submit": "Iniciar conversación",
-    "unnamed_contact": "Contacto sin nombre"
+    "unnamed_contact": "Contacto sin nombre",
+    "template_toggle": "Enviar una plantilla de WhatsApp",
+    "template_name": "Nombre de la plantilla",
+    "template_name_placeholder": "hello_world",
+    "template_language": "Idioma de la plantilla",
+    "template_hint": "Si indicas una plantilla, WhatsApp envía la plantilla en lugar del texto del mensaje. Aún no se admiten plantillas con parámetros.",
+    "open_conversation": "Abrir esa conversación",
+    "view_open_conversation": "Verla en el monitor"
   },
   "agent_status": {
     "available": "Disponible",

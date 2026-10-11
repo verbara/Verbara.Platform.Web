@@ -45,6 +45,7 @@
     "listening": "Listening",
     "no_digital_sessions": "No digital conversations",
     "select_to_monitor": "Select a conversation to monitor.",
+    "linked_conversation_missing": "That conversation is not in this list. It may have closed, or be further down than the conversations shown here.",
     "no_messages_yet": "No messages yet",
     "takeover": "Takeover",
     "close": "Close",
