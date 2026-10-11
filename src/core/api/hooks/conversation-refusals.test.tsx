@@ -214,6 +214,41 @@ describe('conversation refusals (H20)', () => {
     });
   });
 
+  it('useCreateConversation_ShouldNotToast_WhenTheCallerReportsRefusalsInline', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(
+      new ApiError(409, { error: 'agent-at-capacity' }),
+    );
+    const { wrapper } = makeWrapper(es);
+    const { result } = renderHook(() => useCreateConversation({ reportErrors: 'inline' }), {
+      wrapper,
+    });
+
+    act(() =>
+      result.current.mutate({ contactId: 'c-1', channel: 'WhatsApp', initialMessage: 'hola' }),
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('useCreateConversation_ShouldToastTheStartCode_WhenPlatformAnswers409WhatsAppTemplateRequired', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(
+      new ApiError(409, { error: 'whatsapp-template-required' }),
+    );
+    const { wrapper } = makeWrapper(es);
+    const { result } = renderHook(() => useCreateConversation(), { wrapper });
+
+    act(() =>
+      result.current.mutate({ contactId: 'c-1', channel: 'WhatsApp', initialMessage: 'hola' }),
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(lastErrorToast()).toEqual({
+      code: 'whatsapp-template-required',
+      text: es.t('errors.conversation.whatsapp_template_required'),
+    });
+  });
+
   it('useTakeoverConversation_ShouldShowTheNeedsAnAgentProfileMessage_WhenPlatformAnswers403NotAnAgent', async () => {
     vi.mocked(client.customFetch).mockRejectedValue(new ApiError(403, { error: 'not-an-agent' }));
     const { wrapper } = makeWrapper(es);

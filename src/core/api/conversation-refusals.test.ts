@@ -7,6 +7,7 @@ import {
   conversationRefusals,
   refusedFieldLabels,
   refusedFieldsOf,
+  startRefusalOf,
   typifyInvalid,
   type ConversationAction,
 } from './conversation-refusals';
@@ -127,6 +128,56 @@ describe('conversationRefusals', () => {
     });
   });
 
+  describe('start refusals (Platform 2.28.0 ConversationStartRefusal)', () => {
+    it.each([
+      [400, 'unknown-channel'],
+      [400, 'contact-has-no-address'],
+      [409, 'channel-not-available'],
+      [409, 'conversation-open-elsewhere'],
+      [409, 'conversation-not-sendable'],
+      [409, 'agent-at-capacity'],
+      [409, 'whatsapp-template-required'],
+      [502, 'channel-send-failed'],
+      [500, 'start-persist-failed'],
+    ] as const)(
+      'describeApiError_ShouldReportTheStartCode_WhenStartingAConversationAnswers%s %s',
+      (status, code) => {
+        expect(codeFor(status, { error: code }, 'create')).toBe(code);
+      },
+    );
+
+    it('startRefusalOf_ShouldCarryTheOpenConversation_WhenTheRefusalNamesOne', () => {
+      const err = new ApiError(409, {
+        error: 'conversation-open-elsewhere',
+        conversationId: 'conv-9',
+        ownerKind: 'Agent',
+      });
+      expect(startRefusalOf(err)).toEqual({
+        code: 'conversation-open-elsewhere',
+        conversationId: 'conv-9',
+        ownerKind: 'Agent',
+      });
+    });
+
+    it('startRefusalOf_ShouldHaveNoConversation_WhenTheRefusalNamesNone', () => {
+      expect(startRefusalOf(new ApiError(409, { error: 'agent-at-capacity' }))).toEqual({
+        code: 'agent-at-capacity',
+        conversationId: null,
+        ownerKind: null,
+      });
+    });
+
+    it('startRefusalOf_ShouldBeNull_WhenTheErrorCarriesNoMachineCode', () => {
+      expect(startRefusalOf(new ApiError(404, { error: 'Contact not found' }))).toBeNull();
+      expect(startRefusalOf(new TypeError('Failed to fetch'))).toBeNull();
+    });
+
+    it('startRefusalOf_ShouldIgnoreANonStringConversationId_WhenTheBodyIsMalformed', () => {
+      const err = new ApiError(409, { error: 'conversation-not-sendable', conversationId: 42 });
+      expect(startRefusalOf(err)?.conversationId).toBeNull();
+    });
+  });
+
   describe('refused fields', () => {
     const err = new ApiError(400, {
       errors: [
@@ -181,6 +232,15 @@ describe('conversationRefusals locale coverage', () => {
         'conversation-conflict',
         'typify-invalid',
         'conversation-failed',
+        'unknown-channel',
+        'contact-has-no-address',
+        'channel-not-available',
+        'conversation-open-elsewhere',
+        'conversation-not-sendable',
+        'agent-at-capacity',
+        'whatsapp-template-required',
+        'channel-send-failed',
+        'start-persist-failed',
       ]),
     );
   });

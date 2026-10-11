@@ -78,13 +78,13 @@ afterEach(() => {
   server.resetHandlers();
 });
 
-async function renderTab() {
+async function renderTab(initialSelectedId?: string) {
   const i18n = await createOperationsI18n();
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <DigitalMonitorTab />
+        <DigitalMonitorTab initialSelectedId={initialSelectedId} />
       </I18nextProvider>
     </QueryClientProvider>,
   );
@@ -111,5 +111,13 @@ describe('DigitalMonitorTab with Platform conversations', () => {
 
     await waitFor(() => expect(takeoverUrls).toHaveLength(1));
     expect(takeoverUrls[0]).toBe(`/api/v1/supervisor/conversations/${CONVERSATION_ID}/takeover`);
+  });
+
+  it('DigitalMonitorTab_ShouldOpenTheLinkedConversation_WhenStartedWithItsId', async () => {
+    // The new-conversation dialog links a `conversation-open-elsewhere` refusal here (no takeover).
+    await renderTab(CONVERSATION_ID);
+
+    expect(await screen.findByTestId('digital-conversation-detail')).toBeInTheDocument();
+    expect(takeoverUrls).toHaveLength(0);
   });
 });

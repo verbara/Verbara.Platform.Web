@@ -124,12 +124,19 @@
     "title": "New Conversation",
     "contact": "Contact",
     "channel": "Channel",
-    "initial_message": "Initial Message (optional)",
+    "initial_message": "Initial Message",
     "message_placeholder": "Type a message...",
     "search_placeholder": "Search contacts (min 2 characters)...",
     "change": "Change",
     "submit": "Start Conversation",
-    "unnamed_contact": "Unnamed contact"
+    "unnamed_contact": "Unnamed contact",
+    "template_toggle": "Send a WhatsApp template",
+    "template_name": "Template name",
+    "template_name_placeholder": "hello_world",
+    "template_language": "Template language",
+    "template_hint": "When a template is named, WhatsApp sends the template instead of the message text. Templates with parameters are not supported yet.",
+    "open_conversation": "Open that conversation",
+    "view_open_conversation": "View it in the monitor"
   },
   "agent_status": {
     "available": "Available",

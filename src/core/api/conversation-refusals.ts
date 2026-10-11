@@ -42,6 +42,31 @@ export function refusedFieldsOf(err: unknown): string[] {
 }
 
 /**
+ * A refused start as Platform describes it (`ConversationStartRefusal`): the machine code, and for
+ * `conversation-open-elsewhere` / `conversation-not-sendable` the open conversation's id and owner
+ * kind (`Agent`, `Queue`, `Bot`, ...). `null` when the error carries no machine code.
+ */
+export interface StartRefusal {
+  readonly code: string;
+  readonly conversationId: string | null;
+  readonly ownerKind: string | null;
+}
+
+export function startRefusalOf(err: unknown): StartRefusal | null {
+  if (!isApiError(err) || err.code === null) return null;
+  const body = (typeof err.body === 'object' && err.body !== null ? err.body : {}) as {
+    conversationId?: unknown;
+    ownerKind?: unknown;
+  };
+  const text = (v: unknown) => (typeof v === 'string' && v !== '' ? v : null);
+  return {
+    code: err.code,
+    conversationId: text(body.conversationId),
+    ownerKind: text(body.ownerKind),
+  };
+}
+
+/**
  * The closed conversation-refusal map. Lookup order (see `describeApiError`): Platform's machine
  * code first; then, without a code, the status per action; then the status; then the generic
  * failure. Platform's prose (a 409 reason, a hold's 400 reason, typify's field messages) is never
@@ -62,6 +87,40 @@ export const conversationRefusals: ApiErrorMap<ConversationAction> = {
     'target-queue-not-found': {
       code: 'target-queue-not-found',
       key: 'errors.conversation.target_queue_not_found',
+    },
+    // Start refusals (Platform 2.28.0 `ConversationStartRefusal`, spec agent-started-conversations).
+    'unknown-channel': { code: 'unknown-channel', key: 'errors.conversation.unknown_channel' },
+    'contact-has-no-address': {
+      code: 'contact-has-no-address',
+      key: 'errors.conversation.contact_has_no_address',
+    },
+    'channel-not-available': {
+      code: 'channel-not-available',
+      key: 'errors.conversation.channel_not_available',
+    },
+    'conversation-open-elsewhere': {
+      code: 'conversation-open-elsewhere',
+      key: 'errors.conversation.open_elsewhere',
+    },
+    'conversation-not-sendable': {
+      code: 'conversation-not-sendable',
+      key: 'errors.conversation.not_sendable',
+    },
+    'agent-at-capacity': {
+      code: 'agent-at-capacity',
+      key: 'errors.conversation.agent_at_capacity',
+    },
+    'whatsapp-template-required': {
+      code: 'whatsapp-template-required',
+      key: 'errors.conversation.whatsapp_template_required',
+    },
+    'channel-send-failed': {
+      code: 'channel-send-failed',
+      key: 'errors.conversation.channel_send_failed',
+    },
+    'start-persist-failed': {
+      code: 'start-persist-failed',
+      key: 'errors.conversation.start_persist_failed',
     },
   },
   actions: {

@@ -69,11 +69,18 @@ function ConversationCard({ conversation, isSelected, onClick }: ConversationCar
   );
 }
 
-export function DigitalMonitorTab() {
+/**
+ * `initialSelectedId` opens that conversation's detail once the list carries it: the monitor's
+ * `?conversation=` link (the new-conversation dialog's `conversation-open-elsewhere` refusal). Viewing
+ * only; a takeover still needs the detail's own confirmed action.
+ */
+export function DigitalMonitorTab({
+  initialSelectedId,
+}: Readonly<{ initialSelectedId?: string | null }> = {}) {
   const { t } = useTranslation('operations');
   const { data } = useSupervisorConversations();
   const conversations = data?.items ?? [];
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null);
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
 
   return (
