@@ -1002,12 +1002,68 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['Conversation'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ConversationStartRefusal'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ConversationStartRefusal'];
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ConversationStartRefusal'];
+          };
+        };
+        /** @description Bad Gateway */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ConversationStartRefusal'];
+          };
         };
       };
     };
@@ -3171,7 +3227,9 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ChannelConfigResponse'][];
+          };
         };
       };
     };
@@ -3206,7 +3264,18 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['ChannelConfigResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorDetailResponse'];
+          };
         };
       };
     };
@@ -3231,7 +3300,7 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            'application/json': components['schemas']['TenantChannelConfig'];
+            'application/json': components['schemas']['ChannelConfigResponse'];
           };
         };
         /** @description Bad Request */
@@ -3240,7 +3309,7 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            'application/json': string;
+            'application/json': components['schemas']['ErrorDetailResponse'];
           };
         };
       };
@@ -3287,7 +3356,7 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            'application/json': string;
+            'application/json': components['schemas']['ErrorDetailResponse'];
           };
         };
       };
@@ -16864,14 +16933,37 @@ export interface components {
       /** Format: int32 */
       maxTotal: null | number;
     };
+    /** @description A tenant's configuration of one channel, credentials redacted to `{key, isSet}`. */
+    ChannelConfigResponse: {
+      /** @description The channel name, e.g. `WhatsApp`. */
+      channel: string;
+      /** @description Whether the channel is active for the tenant (false when never configured). */
+      isActive: boolean;
+      /** @description Whether a configuration row exists for the tenant. */
+      isConfigured: boolean;
+      /** @description Every canonical key of a declared schema then any stored key outside it, or the stored keys otherwise. */
+      credentials: components['schemas']['ChannelCredentialStatus'][];
+    };
+    /** @description Whether one credential key holds a non-blank value. The value itself is never returned. */
+    ChannelCredentialStatus: {
+      key: string;
+      isSet: boolean;
+    };
     ChannelDistributionDto: {
       channel: string;
       /** Format: int32 */
       count: number;
     };
+    /** @description The outcome of `POST /admin/channels/{channel}/test`. */
     ChannelTestResponse: {
+      /** @description Whether the provider accepted the tenant's configuration. */
       success: boolean;
+      /** @description Human-readable outcome; on a provider rejection, the provider's own message. */
       message: string;
+      /** @description On failure: `channel-not-configured`, `not-testable`, `provider-rejected` or `provider-unreachable`. */
+      code?: null | string;
+      /** @description The provider's display name for the account (WhatsApp: the number's verified name). */
+      verifiedName?: null | string;
     };
     /** @enum {unknown} */
     ChannelType:
@@ -17072,6 +17164,16 @@ export interface components {
     };
     /** @enum {unknown} */
     ConversationOwnerKind: 'System' | 'Bot' | 'Agent' | 'Queue';
+    /**
+     * @description A refused agent start (design D14): `error` is the stable code. For `conversation-open-elsewhere` and
+     *     `conversation-not-sendable` it names the open conversation and its owner kind (`Agent`,
+     *     `Queue`, `Bot`, `System`, or `None` when queued unowned).
+     */
+    ConversationStartRefusal: {
+      error: string;
+      conversationId?: null | string;
+      ownerKind?: null | string;
+    };
     /** @enum {unknown} */
     ConversationState:
       | 'Queued'
@@ -17196,10 +17298,17 @@ export interface components {
         [key: string]: string;
       };
     };
+    /**
+     * @description Body of `POST /conversations`. With `initialMessage` the caller starts the conversation in its own name
+     *     (design D14); `templateName` and `templateLanguage` send a provider template instead (WhatsApp outside
+     *     its 24-hour window). Without `initialMessage` the deprecated queued path runs.
+     */
     CreateConversationRequest: {
       contactId: string;
       channel: string;
       initialMessage?: null | string;
+      templateName?: null | string;
+      templateLanguage?: null | string;
     };
     CreateDidRouteRequest: {
       did: string;
@@ -17362,9 +17471,17 @@ export interface components {
     CreateSessionRequest: {
       tenantId: string;
     };
+    /**
+     * @description A created WebChat session: its transport handle (`sessionId`, `wsUrl`) and the visitor's
+     *     identity — its `webchat-` visitor address, the contact carrying it and that contact's
+     *     conversation (spec `webchat-visitor-identity`; the last three are additive in 2.28.0).
+     */
     CreateSessionResponse: {
       sessionId: string;
       wsUrl: string;
+      visitorAddress: string;
+      contactId: string;
+      conversationId: string;
     };
     CreateSkillRequest: {
       name: string;
@@ -19323,14 +19440,6 @@ export interface components {
       /** Format: date-time */
       updatedAt: null | string;
     };
-    TenantChannelConfig: {
-      tenantId: components['schemas']['TenantId'];
-      channel: components['schemas']['ChannelType'];
-      credentials: {
-        [key: string]: string;
-      };
-      isActive?: boolean;
-    };
     TenantId: unknown;
     /**
      * @description HTTP-safe projection of a tenant's TenantLlmConfig (P2c.1). The decrypted API key
@@ -19796,10 +19905,14 @@ export interface components {
       priority: null | string;
       assignedAgentId: null | string;
     };
+    /**
+     * @description `PUT /admin/channels/{channel}`. Credentials merges into what is stored: an omitted
+     *     key or a blank value keeps the stored value, a value replaces it, `null` removes the key.
+     */
     UpdateChannelConfigRequest: {
       isActive: boolean;
       credentials: null | {
-        [key: string]: string;
+        [key: string]: null | string;
       };
     };
     UpdateContactRequest: {
