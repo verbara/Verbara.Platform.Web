@@ -324,8 +324,6 @@
     "configuration": "Configuração",
     "configDescription": "Configurar credenciais e ajustes deste canal.",
     "save": "Salvar",
-    "test_success": "Conexão bem-sucedida!",
-    "test_failure": "Falha na conexão. Verifique suas credenciais.",
     "validation": {
       "fieldRequired": "{{field}} é obrigatório"
     },
@@ -349,7 +347,55 @@
       "webhookVerifyToken": {
         "label": "Token de verificação do webhook",
         "help": "Um valor que você escolhe. Informe o mesmo valor como \"Token de verificação\" no painel do app da Meta: WhatsApp > Configuração > Webhook."
+      },
+      "wabaId": {
+        "label": "ID da conta do WhatsApp Business",
+        "help": "Opcional. No painel do app da Meta: WhatsApp > Configuração da API, o \"ID da conta do WhatsApp Business\"."
+      },
+      "apiVersion": {
+        "label": "Versão da Graph API",
+        "help": "Opcional. Uma versão da Graph API como v21.0. Deixe sem configurar para usar o padrão da plataforma."
+      },
+      "defaultQueueId": {
+        "label": "Fila padrão",
+        "help": "Opcional. A fila para a qual as novas conversas do WhatsApp são encaminhadas."
       }
+    },
+    "credential": {
+      "set": "Configurada",
+      "notSet": "Não configurada",
+      "keepPlaceholder": "Salva. Deixe em branco para mantê-la.",
+      "remove": "Remover",
+      "undoRemove": "Manter",
+      "willBeRemoved": "Será removida ao salvar",
+      "queueKeep": "Manter a fila salva",
+      "queueNone": "Selecione uma fila"
+    },
+    "legacy": {
+      "title": "Chaves salvas por um console anterior",
+      "help": "O canal não lê mais essas chaves. Remova-as para limpar a configuração."
+    },
+    "webhook": {
+      "label": "URL do webhook",
+      "help": "Informe esta URL como URL de retorno de chamada nas configurações de webhook do provedor (painel do app da Meta: WhatsApp > Configuração > Webhook)."
+    },
+    "test": {
+      "success": "Conexão verificada.",
+      "successNamed": "Conexão verificada: {{name}}.",
+      "failed": "O teste de conexão falhou.",
+      "serverMessage": "Resposta do provedor: {{message}}",
+      "codes": {
+        "provider-rejected": "A Meta rejeitou a configuração salva.",
+        "provider-unreachable": "Não foi possível contatar a Meta. Tente novamente em instantes.",
+        "channel-not-configured": "Salve o token de acesso e o ID do número de telefone antes de testar.",
+        "not-testable": "Este canal não tem teste de conexão."
+      }
+    },
+    "errors": {
+      "unknown_credential_key": "O servidor não aceita uma das chaves enviadas para este canal. Nada foi salvo.",
+      "invalid_channel": "O servidor não conhece este canal.",
+      "update_failed": "Não foi possível salvar a configuração do canal.",
+      "test_request_failed": "Não foi possível executar o teste de conexão."
     }
   },
   "flows": {

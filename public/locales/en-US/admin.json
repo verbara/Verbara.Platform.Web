@@ -324,8 +324,6 @@
     "configuration": "Configuration",
     "configDescription": "Configure credentials and settings for this channel.",
     "save": "Save",
-    "test_success": "Connection successful!",
-    "test_failure": "Connection failed. Please check your credentials.",
     "validation": {
       "fieldRequired": "{{field}} is required"
     },
@@ -349,7 +347,55 @@
       "webhookVerifyToken": {
         "label": "Webhook Verify Token",
         "help": "A value you choose. Enter the same value as the \"Verify token\" in the Meta app dashboard: WhatsApp > Configuration > Webhook."
+      },
+      "wabaId": {
+        "label": "WhatsApp Business Account ID",
+        "help": "Optional. In the Meta app dashboard: WhatsApp > API Setup, the \"WhatsApp Business Account ID\"."
+      },
+      "apiVersion": {
+        "label": "Graph API version",
+        "help": "Optional. A Graph API version such as v21.0. Leave it unset to use the platform default."
+      },
+      "defaultQueueId": {
+        "label": "Default queue",
+        "help": "Optional. The queue new WhatsApp conversations are routed to."
       }
+    },
+    "credential": {
+      "set": "Set",
+      "notSet": "Not set",
+      "keepPlaceholder": "Saved. Leave blank to keep it.",
+      "remove": "Remove",
+      "undoRemove": "Keep",
+      "willBeRemoved": "Removed when you save",
+      "queueKeep": "Keep the saved queue",
+      "queueNone": "Select a queue"
+    },
+    "legacy": {
+      "title": "Keys saved by an older console",
+      "help": "The channel no longer reads these keys. Remove them to clean up the configuration."
+    },
+    "webhook": {
+      "label": "Webhook URL",
+      "help": "Enter this URL as the callback URL in the provider's webhook settings (Meta app dashboard: WhatsApp > Configuration > Webhook)."
+    },
+    "test": {
+      "success": "Connection verified.",
+      "successNamed": "Connection verified: {{name}}.",
+      "failed": "The connection test failed.",
+      "serverMessage": "Provider response: {{message}}",
+      "codes": {
+        "provider-rejected": "Meta rejected the saved configuration.",
+        "provider-unreachable": "Meta could not be reached. Try again in a moment.",
+        "channel-not-configured": "Save the Access Token and the Phone Number ID before testing.",
+        "not-testable": "This channel has no connection test."
+      }
+    },
+    "errors": {
+      "unknown_credential_key": "The server does not accept one of the keys sent for this channel. Nothing was saved.",
+      "invalid_channel": "The server does not know this channel.",
+      "update_failed": "The channel configuration could not be saved.",
+      "test_request_failed": "The connection test could not be run."
     }
   },
   "flows": {

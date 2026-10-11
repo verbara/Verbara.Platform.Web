@@ -324,8 +324,6 @@
     "configuration": "Configuración",
     "configDescription": "Configurar credenciales y ajustes de este canal.",
     "save": "Guardar",
-    "test_success": "Conexión exitosa!",
-    "test_failure": "Error de conexión. Verifique sus credenciales.",
     "validation": {
       "fieldRequired": "{{field}} es obligatorio"
     },
@@ -349,7 +347,55 @@
       "webhookVerifyToken": {
         "label": "Token de verificación del webhook",
         "help": "Un valor que usted elige. Ingrese el mismo valor como \"Token de verificación\" en el panel de la app de Meta: WhatsApp > Configuración > Webhook."
+      },
+      "wabaId": {
+        "label": "ID de la cuenta de WhatsApp Business",
+        "help": "Opcional. En el panel de la app de Meta: WhatsApp > Configuración de la API, el \"ID de la cuenta de WhatsApp Business\"."
+      },
+      "apiVersion": {
+        "label": "Versión de la Graph API",
+        "help": "Opcional. Una versión de la Graph API como v21.0. Déjela sin configurar para usar la predeterminada de la plataforma."
+      },
+      "defaultQueueId": {
+        "label": "Cola predeterminada",
+        "help": "Opcional. La cola a la que se enrutan las nuevas conversaciones de WhatsApp."
       }
+    },
+    "credential": {
+      "set": "Configurada",
+      "notSet": "Sin configurar",
+      "keepPlaceholder": "Guardada. Déjela en blanco para conservarla.",
+      "remove": "Quitar",
+      "undoRemove": "Conservar",
+      "willBeRemoved": "Se quitará al guardar",
+      "queueKeep": "Conservar la cola guardada",
+      "queueNone": "Seleccione una cola"
+    },
+    "legacy": {
+      "title": "Claves guardadas por una consola anterior",
+      "help": "El canal ya no lee estas claves. Quítelas para limpiar la configuración."
+    },
+    "webhook": {
+      "label": "URL del webhook",
+      "help": "Ingrese esta URL como URL de devolución de llamada en la configuración de webhooks del proveedor (panel de la app de Meta: WhatsApp > Configuración > Webhook)."
+    },
+    "test": {
+      "success": "Conexión verificada.",
+      "successNamed": "Conexión verificada: {{name}}.",
+      "failed": "La prueba de conexión falló.",
+      "serverMessage": "Respuesta del proveedor: {{message}}",
+      "codes": {
+        "provider-rejected": "Meta rechazó la configuración guardada.",
+        "provider-unreachable": "No se pudo contactar a Meta. Vuelva a intentarlo en un momento.",
+        "channel-not-configured": "Guarde el token de acceso y el ID del número de teléfono antes de probar.",
+        "not-testable": "Este canal no tiene prueba de conexión."
+      }
+    },
+    "errors": {
+      "unknown_credential_key": "El servidor no acepta una de las claves enviadas para este canal. No se guardó nada.",
+      "invalid_channel": "El servidor no conoce este canal.",
+      "update_failed": "No se pudo guardar la configuración del canal.",
+      "test_request_failed": "No se pudo ejecutar la prueba de conexión."
     }
   },
   "flows": {
