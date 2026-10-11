@@ -9,9 +9,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-**Requires the Platform release that ships licensed-agent metering** (its peaks report
-`GET /api/v1/management/licensing/agents` and ledger export
-`GET /api/v1/management/licensing/agents/export`). Merge after the Platform change.
+## [3.22.0-web] - 2026-10-10
+
+**Requires Platform ≥ v2.27.0.** The licence page shows licensed-agent peaks, the per-tenant peak day,
+a warning-only advisory over the band and the verifiable ledger export (`GET
+/api/v1/management/licensing/agents` and `…/agents/export`, which Platform v2.27.0 adds); against an
+older Platform those panels have no data. The WhatsApp channel form now saves the credential keys
+Platform v2.27.0 reads, so a WhatsApp configuration saved with an older console must be re-entered.
 
 ### Added
 
@@ -46,7 +50,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   App Secret field, so a WhatsApp config saved from the console was never read. Each field now has
   a localized label and help text saying where to find the value in Meta's app dashboard; the
   setup wizard uses the same fields. Requires Platform v2.27.0 for WhatsApp to work. A WhatsApp
-  config saved with an older console must be re-entered.
+  config saved with an older console must be re-entered. (#393)
 
 ---
 
