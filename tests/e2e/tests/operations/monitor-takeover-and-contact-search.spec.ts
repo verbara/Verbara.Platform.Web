@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext } from '@playwright/test';
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { ApiHelper } from '../../fixtures/api.fixture';
 import { skipAgentTour } from '../../helpers/agent-tour';
 import { authenticatedPage, waitForAppReady } from '../../helpers/auth-session';
@@ -7,32 +7,39 @@ import {
   bearerApiContext,
   idOf,
   leaveQueue,
+  nameVisitorContact,
   openWebChatSession,
   type RoutedConversation,
+  type WebChatVisitor,
 } from '../../helpers/conversation-routing';
 import { API_BASE, DEMO_ADMIN } from '../../helpers/credentials';
 
 /**
- * LAB-W1 N16 against a real Platform (v2.25.0 or later): the console reads Platform's own entities.
+ * LAB-W1 N16 against a real Platform (v2.28.0 or later): the console reads Platform's own entities,
+ * and the new-conversation dialog shows a refused start from its machine code.
  *
- * An agent finds a contact through the new-conversation dialog's search and starts a conversation —
- * the option must be keyed by Platform's `contactId` and the request must carry it (before
- * 3.21.0-web the option was `new-conv-contact-option-undefined` and Platform answered 400). A
- * supervisor then opens that conversation's card in the digital monitor and takes it over — the card
- * must be keyed by Platform's `conversationId` and the takeover must post to it (before, it posted to
- * `/supervisor/conversations/undefined/takeover`).
+ * An agent finds a contact through the new-conversation dialog's search and starts a WebChat
+ * conversation with a message — the option must be keyed by Platform's `contactId` and the request
+ * must carry it (before 3.21.0-web the option was `new-conv-contact-option-undefined` and Platform
+ * answered 400). The contact is a WebChat visitor's, whose session conversation is already open and
+ * queued with no owner, so Platform refuses the start with `conversation-open-elsewhere`, naming that
+ * conversation; the dialog shows the refusal by its code and, to an agent who may not monitor, offers
+ * no link to it.
  *
- * The spec creates everything it needs through the API: a contact, an agent user and a supervisor
- * user, each linked to an Agent profile created with the id `POST /api/v1/admin/users` returned (the
- * seed's `demo-user-*` agents are linked to no user, and a supervisor without an Agent profile is
- * refused a takeover with `not-an-agent`). Skipped unless E2E_FULL_STACK=true.
+ * Routing then offers the visitor's conversation and the spec reassigns it to the agent
+ * (`helpers/conversation-routing.ts`: Platform refuses to hand a `Queued` conversation to anyone). A
+ * supervisor sees that conversation's card in the digital monitor — keyed by Platform's
+ * `conversationId` (before, cards were `digital-conv-card-undefined`) — then tries the same start from
+ * the agent workspace: refused `conversation-open-elsewhere` again, now with a link a monitoring user
+ * may follow. The link opens the monitor on that conversation, and the supervisor takes it over — the
+ * takeover must post to its id (before, it posted to `/supervisor/conversations/undefined/takeover`).
  *
- * The conversation is started on WebChat, and the contact carries the address of a WebChat visitor
- * session: a conversation the agent starts is `Queued` with no owner, and Platform (>= v2.26.0) refuses
- * to hand a `Queued` conversation to anyone ("Cannot transition from Queued to Active."). The visitor's
- * message routes it, the distribution worker offers it, and the spec reassigns it to the agent
- * (`helpers/conversation-routing.ts`), so the supervisor takes over an agent's active conversation.
- * A new agent also meets the first-run tour, which covers the console until it is skipped.
+ * The spec creates everything it needs through the API: a WebChat visitor session (its contact,
+ * named and given a WhatsApp address so the search finds it, and its conversation), an agent user and
+ * a supervisor user, each linked to an Agent profile created with the id `POST /api/v1/admin/users`
+ * returned (the seed's `demo-user-*` agents are linked to no user, and a caller without an Agent
+ * profile is refused a start or a takeover with `not-an-agent`). A new agent also meets the first-run
+ * tour, which covers the console until it is skipped. Skipped unless E2E_FULL_STACK=true.
  */
 const SHOULD_RUN = process.env.E2E_FULL_STACK === 'true';
 const PASSWORD = 'TestPassword123!';
@@ -80,85 +87,92 @@ async function provisionUserWithAgent(
   return { userId, agentId, email };
 }
 
+/** Starts a WebChat conversation with `contactId` from the dialog and returns Platform's answer. */
+async function startFromDialog(
+  page: Page,
+  search: string,
+  contactId: string,
+  message: string,
+): Promise<{ status: number; body: { error?: string; conversationId?: string | null } }> {
+  await page.getByTestId('new-conversation-btn').click();
+  const searched = page.waitForResponse(
+    (r) => r.url().includes('/api/v1/contacts?') && r.request().method() === 'GET' && r.ok(),
+  );
+  await page.getByTestId('new-conv-contact-search').fill(search);
+  await searched;
+  await page.getByTestId(`new-conv-contact-option-${contactId}`).click();
+  await page.getByTestId('new-conv-channel-select').click();
+  await page.getByTestId('new-conv-channel-option-WebChat').click();
+  await page.getByTestId('new-conv-message-input').fill(message);
+
+  const isStart = (url: string, method: string) =>
+    new URL(url).pathname === '/api/v1/conversations' && method === 'POST';
+  const startRequest = page.waitForRequest((r) => isStart(r.url(), r.method()));
+  const startResponse = page.waitForResponse((r) => isStart(r.url(), r.request().method()));
+  await page.getByTestId('new-conv-submit-btn').click();
+
+  expect((await startRequest).postDataJSON()).toMatchObject({
+    contactId,
+    channel: 'WebChat',
+    initialMessage: message,
+  });
+  const response = await startResponse;
+  return { status: response.status(), body: (await response.json()) as never };
+}
+
 test.describe('Monitor takeover and contact search read Platform ids (N16)', () => {
   test.skip(
     !SHOULD_RUN,
-    'requires E2E_FULL_STACK=true with the full stack (Platform v2.25.0+ and the demo seed)',
+    'requires E2E_FULL_STACK=true with the full stack (Platform v2.28.0+ and the demo seed)',
   );
 
-  test('an agent starts a conversation from the contact search and a supervisor takes it over', async ({
+  test('an agent is refused a start on a contact whose conversation is open, and a supervisor follows the refusal to take it over', async ({
     browser,
     playwright,
   }) => {
-    // Two sign-ins, the contact search, the routing and offer (up to 45 s) and the monitor's 10 s poll.
+    // Two sign-ins, the contact search twice, the routing and offer (up to 45 s) and the monitor's
+    // 10 s poll.
     test.setTimeout(180_000);
     const suffix = `${Date.now()}`;
+    const search = `N16${suffix}`;
     const request = await adminApiContext(playwright);
     const api = new ApiHelper(request, DEMO_ADMIN.tenantId);
     const created: Provisioned[] = [];
-    let contactId: string | undefined;
+    let visitor: WebChatVisitor | undefined;
     let agentApi: APIRequestContext | undefined;
     let routed: RoutedConversation | undefined;
 
     try {
-      const sessionId = await openWebChatSession(request, DEMO_ADMIN.tenantId);
-      const contact = await request.post(`${API_BASE}/api/v1/contacts`, {
-        data: {
-          firstName: `N16${suffix}`,
-          lastName: 'Contact',
-          addresses: [
-            { channel: 'WhatsApp', address: `+57300${suffix.slice(-7)}` },
-            { channel: 'WebChat', address: sessionId },
-          ],
-        },
+      visitor = await openWebChatSession(request, DEMO_ADMIN.tenantId);
+      const { contactId, conversationId } = visitor;
+      await nameVisitorContact(request, visitor, {
+        firstName: search,
+        lastName: 'Contact',
+        addresses: [{ channel: 'WhatsApp', address: `+57300${suffix.slice(-7)}` }],
       });
-      expect(contact.ok(), `create contact answered ${contact.status()}`).toBe(true);
-      contactId = ((await contact.json()) as { contactId: string }).contactId;
 
       const agent = await provisionUserWithAgent(request, 'agent', suffix);
       created.push(agent);
       const supervisor = await provisionUserWithAgent(request, 'supervisor', suffix);
       created.push(supervisor);
 
-      // --- The agent starts a conversation from the contact search ---
+      // --- The agent finds the contact and is refused: its conversation is open, queued unowned ---
       const agentCreds = { tenantId: DEMO_ADMIN.tenantId, email: agent.email, password: PASSWORD };
       const agentPage = await authenticatedPage(browser, agentCreds);
-      let conversationId: string;
       try {
         await agentPage.goto('/agent');
         await waitForAppReady(agentPage);
         await skipAgentTour(agentPage);
-        await agentPage.getByTestId('new-conversation-btn').click();
 
-        const search = agentPage.waitForResponse(
-          (r) => r.url().includes('/api/v1/contacts?') && r.request().method() === 'GET' && r.ok(),
-        );
-        await agentPage.getByTestId('new-conv-contact-search').fill(`N16${suffix}`);
-        await search;
-        await agentPage.getByTestId(`new-conv-contact-option-${contactId}`).click();
-        await agentPage.getByTestId('new-conv-channel-select').click();
-        await agentPage.getByTestId('new-conv-channel-option-WebChat').click();
+        const refused = await startFromDialog(agentPage, search, contactId, `hello ${suffix}`);
+        expect(refused.status, 'a start on a contact with an open conversation').toBe(409);
+        expect(refused.body.error).toBe('conversation-open-elsewhere');
+        expect(idOf(refused.body.conversationId)).toBe(conversationId);
 
-        const createRequest = agentPage.waitForRequest(
-          (r) => new URL(r.url()).pathname === '/api/v1/conversations' && r.method() === 'POST',
-        );
-        const createResponse = agentPage.waitForResponse(
-          (r) =>
-            new URL(r.url()).pathname === '/api/v1/conversations' &&
-            r.request().method() === 'POST',
-        );
-        await agentPage.getByTestId('new-conv-submit-btn').click();
-
-        expect((await createRequest).postDataJSON()).toMatchObject({
-          contactId,
-          channel: 'WebChat',
-        });
-        const response = await createResponse;
-        expect(response.ok(), `create conversation answered ${response.status()}`).toBe(true);
-        conversationId = idOf(
-          ((await response.json()) as { conversationId: unknown }).conversationId,
-        );
-        expect(conversationId).toBeTruthy();
+        const error = agentPage.getByTestId('new-conv-error');
+        await expect(error).toHaveAttribute('data-error-code', 'conversation-open-elsewhere');
+        // An agent may not monitor, so the dialog offers no way to the other owner's conversation.
+        await expect(agentPage.getByTestId('new-conv-view-open-conversation')).toHaveCount(0);
       } finally {
         await agentPage.context().close();
       }
@@ -167,13 +181,9 @@ test.describe('Monitor takeover and contact search read Platform ids (N16)', () 
       // After the agent's page is closed, so its pagehide departure (`/agents/me/offline`) cannot
       // land after the agent goes Available.
       agentApi = await bearerApiContext(playwright, agentCreds);
-      routed = await activateForAgent(request, agentApi, {
-        conversationId,
-        sessionId,
-        agentId: agent.agentId,
-      });
+      routed = await activateForAgent(request, agentApi, visitor, agent.agentId);
 
-      // --- The supervisor opens that conversation's card and takes it over ---
+      // --- The supervisor sees the card, follows the refusal's link and takes the conversation over ---
       const supervisorPage = await authenticatedPage(browser, {
         tenantId: DEMO_ADMIN.tenantId,
         email: supervisor.email,
@@ -183,12 +193,37 @@ test.describe('Monitor takeover and contact search read Platform ids (N16)', () 
         await supervisorPage.goto('/operations/monitor');
         await waitForAppReady(supervisorPage);
         await supervisorPage.getByTestId('monitor-tab-digital').click();
-
         const card = supervisorPage.getByTestId(`digital-conv-card-${conversationId}`);
         await expect(card).toBeVisible({ timeout: 20_000 });
         await expect(supervisorPage.getByTestId('digital-conv-card-undefined')).toHaveCount(0);
-        await card.click();
-        await expect(supervisorPage.getByTestId('digital-conversation-detail')).toBeVisible();
+
+        // The first-run tour is an agent-role overlay; a supervisor does not meet it.
+        await supervisorPage.goto('/agent');
+        await waitForAppReady(supervisorPage);
+        const refused = await startFromDialog(
+          supervisorPage,
+          search,
+          contactId,
+          `may I? ${suffix}`,
+        );
+        expect(refused.status, "a start on the agent's open conversation").toBe(409);
+        expect(refused.body.error).toBe('conversation-open-elsewhere');
+        expect(idOf(refused.body.conversationId)).toBe(conversationId);
+        await expect(supervisorPage.getByTestId('new-conv-error')).toHaveAttribute(
+          'data-error-code',
+          'conversation-open-elsewhere',
+        );
+
+        await supervisorPage.getByTestId('new-conv-view-open-conversation').click();
+        await supervisorPage.waitForURL(
+          (url) =>
+            url.pathname === '/operations/monitor' &&
+            url.searchParams.get('tab') === 'digital' &&
+            url.searchParams.get('conversation') === conversationId,
+        );
+        await expect(supervisorPage.getByTestId('digital-conversation-detail')).toBeVisible({
+          timeout: 20_000,
+        });
 
         const takeover = supervisorPage.waitForResponse(
           (r) =>
@@ -210,7 +245,9 @@ test.describe('Monitor takeover and contact search read Platform ids (N16)', () 
       for (const ids of created.reverse()) {
         await api.deleteAgentWithUser({ agentId: ids.agentId, userId: ids.userId });
       }
-      if (contactId) await request.delete(`${API_BASE}/api/v1/contacts/${contactId}`);
+      if (visitor) {
+        await request.delete(`${API_BASE}/api/v1/contacts/${visitor.contactId}`).catch(() => {});
+      }
       await request.dispose();
     }
   });

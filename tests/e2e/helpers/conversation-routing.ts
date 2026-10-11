@@ -5,20 +5,20 @@ import { API_BASE } from './credentials';
 /**
  * Puts a conversation in an agent's hands the way Platform does it, for full-stack specs.
  *
- * A conversation created through `POST /api/v1/conversations` starts `Queued` with no owner, and
- * Platform (>= v2.26.0) moves an owner only along its state machine: `Queued → Offered → Active`.
- * A reassign or a takeover of a `Queued` conversation is answered "Cannot transition from Queued to
- * Active." (`ConversationSwitchboard.TransferToAgentAsync`), so a spec that needs an agent-owned
- * conversation has to let routing offer it first. No SQL: every step is a public endpoint.
+ * A WebChat session is a visitor: `POST /api/v1/webchat/sessions` (Platform >= v2.28.0) creates one
+ * contact carrying the visitor address `webchat-<guid>` and one conversation for it, `Queued` with no
+ * owner, and answers with their ids ({@link openWebChatSession}). Every message the visitor sends is
+ * attributed to that address and lands in that conversation — the session id is a transport handle,
+ * never a contact address. Platform moves an owner only along its state machine,
+ * `Queued → Offered → Active` (a takeover or reassign of a `Queued` conversation is answered "Cannot
+ * transition from Queued to Active."), so a spec that needs an agent-owned conversation lets routing
+ * offer the session's conversation first. No SQL: every step is a public endpoint.
  *
- *  1. The conversation's contact carries a WebChat address equal to a WebChat session id
- *     ({@link openWebChatSession}), and the conversation is created on the WebChat channel.
- *  2. The visitor's first message on that session (`POST /webchat/sessions/{id}/messages`) resolves
- *     the contact by that address, finds its open WebChat conversation and routes it to a queue
- *     (`WebChatInboundRouter` → `AssignToQueueAsync`): the owner becomes that queue.
- *  3. The agent joins the queue for WebChat and goes Available, so the distribution worker (2 s poll)
+ *  1. The visitor's first message on the session (`POST /webchat/sessions/{id}/messages`) is stored in
+ *     the session's conversation, which routing assigns to a queue: the owner becomes that queue.
+ *  2. The agent joins the queue for WebChat and goes Available, so the distribution worker (2 s poll)
  *     finds an eligible member and offers the conversation.
- *  4. A supervisor reassigns the offered conversation to the agent: `Offered → Active`, owned by the
+ *  3. A supervisor reassigns the offered conversation to the agent: `Offered → Active`, owned by the
  *     agent. The reassign does not depend on whom the worker chose, so another eligible agent of the
  *     tenant cannot make the spec flaky; and it is retried only while the 30 s offer timeout has put
  *     the conversation back in the queue for the worker's next pass.
@@ -51,19 +51,63 @@ export async function bearerApiContext(
   });
 }
 
+/** A WebChat visitor: the session and the contact and conversation Platform created for it. */
+export interface WebChatVisitor {
+  /** The transport handle: the visitor's REST and socket routes take it. */
+  sessionId: string;
+  /** The contact address every visitor message is attributed to (`webchat-<guid>`). */
+  visitorAddress: string;
+  /** The contact whose WebChat address is {@link visitorAddress}. */
+  contactId: string;
+  /** That contact's conversation, `Queued` with no owner until the visitor's first message routes it. */
+  conversationId: string;
+}
+
+interface WebChatSessionResponse {
+  sessionId?: unknown;
+  visitorAddress?: unknown;
+  contactId?: unknown;
+  conversationId?: unknown;
+}
+
 /**
- * Opens a WebChat visitor session and returns its id — the address the visitor's messages come from.
- *
- * Platform also creates an anonymous contact and an unowned conversation for the session; they are
- * not the ones the spec uses (the visitor's messages resolve the contact by the session id).
+ * Opens a WebChat visitor session and returns the visitor Platform (>= v2.28.0) created for it, read
+ * from the session response.
  */
 export async function openWebChatSession(
   api: APIRequestContext,
   tenantId: string,
-): Promise<string> {
+): Promise<WebChatVisitor> {
   const session = await api.post(`${API_BASE}/api/v1/webchat/sessions`, { data: { tenantId } });
   expect(session.status(), 'open webchat session').toBe(200);
-  return ((await session.json()) as { sessionId: string }).sessionId;
+  const body = (await session.json()) as WebChatSessionResponse;
+  const visitor: WebChatVisitor = {
+    sessionId: idOf(body.sessionId),
+    visitorAddress: idOf(body.visitorAddress),
+    contactId: idOf(body.contactId),
+    conversationId: idOf(body.conversationId),
+  };
+  expect(visitor.visitorAddress, 'the session names its visitor address').toMatch(/^webchat-/);
+  return visitor;
+}
+
+/**
+ * Names the visitor's contact (Platform creates it anonymous), so the console's contact search finds
+ * it, and optionally adds addresses on other channels. `PUT /contacts/{id}` keeps what it is not sent.
+ */
+export async function nameVisitorContact(
+  api: APIRequestContext,
+  visitor: WebChatVisitor,
+  update: {
+    firstName: string;
+    lastName: string;
+    addresses?: readonly { channel: string; address: string }[];
+  },
+): Promise<void> {
+  const response = await api.put(`${API_BASE}/api/v1/contacts/${visitor.contactId}`, {
+    data: update,
+  });
+  expect(response.status(), `name the visitor contact ${visitor.contactId}`).toBe(200);
 }
 
 interface ConversationView {
@@ -86,16 +130,17 @@ export interface RoutedConversation {
 }
 
 /**
- * Routes the conversation and gives it to the agent (steps 2–4 above). `api` is a supervisor-or-admin
- * context of the tenant; `agentApi` is the agent's own ({@link bearerApiContext}). On return the
- * conversation is `Active` and owned by `agentId`.
+ * Routes the visitor's conversation and gives it to the agent (steps 1–3 above). `api` is a
+ * supervisor-or-admin context of the tenant; `agentApi` is the agent's own ({@link bearerApiContext}).
+ * On return the session's conversation is `Active` and owned by `agentId`.
  */
 export async function activateForAgent(
   api: APIRequestContext,
   agentApi: APIRequestContext,
-  ids: { conversationId: string; sessionId: string; agentId: string },
+  visitor: WebChatVisitor,
+  agentId: string,
 ): Promise<RoutedConversation> {
-  const { conversationId, sessionId, agentId } = ids;
+  const { conversationId, sessionId } = visitor;
 
   const message = await api.post(`${API_BASE}/api/v1/webchat/sessions/${sessionId}/messages`, {
     data: { text: `hello from the e2e visitor ${sessionId}` },
