@@ -1307,7 +1307,13 @@
       "advisory": "El pico supera la banda licenciada. No se bloquea nada. Declare la banda alcanzada en su autodeclaración mensual (Verbara no la conoce automáticamente); luego la licencia se reemite con la nueva banda.",
       "export": "Exportar registro (JSON)",
       "loading": "Cargando agentes licenciados...",
-      "error": "No se pudieron cargar las cifras de agentes licenciados."
+      "error": "No se pudieron cargar las cifras de agentes licenciados.",
+      "breakdown_channel": "Canal",
+      "channel_direct": "Directo",
+      "channel_unknown": "Desconocido",
+      "partner_subtotals_title": "Participación de los Partners en el día pico",
+      "partner_subtotals_partner": "Partner",
+      "direct_subtotal": "Clientes directos"
     }
   },
   "skills": {
@@ -1998,7 +2004,8 @@
         "template_none": "Ninguna",
         "cancel": "Cancelar",
         "creating": "Creando...",
-        "create": "Crear"
+        "create": "Crear",
+        "plan_inherit": "Heredar el plan del Partner"
       },
       "edit_sheet": {
         "title": "Editar cliente",
@@ -2052,7 +2059,8 @@
       "nameRequired": "El nombre es obligatorio",
       "currencyRequired": "La moneda es obligatoria",
       "startDateRequired": "La fecha de inicio es obligatoria",
-      "atLeastOneRate": "Se requiere al menos una entrada de tarifa"
+      "atLeastOneRate": "Se requiere al menos una entrada de tarifa",
+      "currencyInvalid": "Ingresa un código de moneda ISO 4217, por ejemplo USD."
     },
     "leaveEmptyPlaceholder": "Dejar vacío para mantener el actual",
     "timezonePlaceholder": "America/Bogota",
@@ -2411,7 +2419,8 @@
         "days_one": "{{count}} día vencido",
         "days_other": "{{count}} días vencidos",
         "amount": "monto adeudado: {{amount}}",
-        "view_invoice": "Ver factura"
+        "view_invoice": "Ver factura",
+        "not_applicable": "La cobranza no aplica a este Cliente: el Partner {{partnerTenantId}} lo factura fuera de Verbara."
       },
       "edit_dialog": {
         "title": "Editar cuotas",
@@ -2453,7 +2462,8 @@
       "nameRequired": "El nombre es obligatorio",
       "currencyRequired": "La moneda es obligatoria",
       "startDateRequired": "La fecha de inicio es obligatoria",
-      "atLeastOneRate": "Se requiere al menos una entrada de tarifa"
+      "atLeastOneRate": "Se requiere al menos una entrada de tarifa",
+      "currencyInvalid": "Ingresa un código de moneda ISO 4217, por ejemplo USD."
     }
   },
   "cluster": {

@@ -47,6 +47,32 @@ function errorItemsOf(body: unknown): readonly ApiErrorItem[] | null {
   );
 }
 
+/** A scalar field of a refusal body, as {@link ApiError.facts} keeps it. */
+export type ApiErrorFact = string | number | boolean | null;
+
+/**
+ * The body's own scalar fields except `error` (design D3 of `partner-channel-pilot-fixes`): the
+ * facts a coded refusal carries (`requestedPlan`, `parentPlan`, `currency`, ...), for
+ * interpolation into the localized message. `error` is excluded: it is already `code`, and a prose
+ * `error` from an older body can never reach a message this way.
+ */
+function factsOf(body: unknown): Readonly<Record<string, ApiErrorFact>> {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) return {};
+  const facts: Record<string, ApiErrorFact> = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (key === 'error') continue;
+    if (
+      value === null ||
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      facts[key] = value;
+    }
+  }
+  return facts;
+}
+
 /** The message the client has always thrown for a refused request (kept for unmigrated callers). */
 function legacyMessageOf(body: unknown, status: number): string {
   const b = (typeof body === 'object' && body !== null ? body : {}) as {
@@ -80,6 +106,11 @@ export class ApiError extends Error {
    * example a start refusal's `conversationId`). Never rendered: messages come from a map.
    */
   readonly body: unknown;
+  /**
+   * The body's scalar fields other than `error` (string, number, boolean or null), for the values
+   * a localized message names. Only the fields a map's caller interpolates are ever rendered.
+   */
+  readonly facts: Readonly<Record<string, ApiErrorFact>>;
 
   constructor(status: number, body: unknown) {
     super(legacyMessageOf(body, status));
@@ -88,6 +119,7 @@ export class ApiError extends Error {
     this.code = machineCodeOf(body);
     this.errors = errorItemsOf(body);
     this.body = body;
+    this.facts = factsOf(body);
   }
 }
 

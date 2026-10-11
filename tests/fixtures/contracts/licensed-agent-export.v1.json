@@ -135,5 +135,27 @@
       "headHash": "lac1:dc5c209062c97c953fe68a15bee8634198e18c4b56c39e207119aae16365b39f",
       "licenseId": "lic-7f3c2a91"
     }
+  ],
+  "tenants": [
+    {
+      "tenantId": "platform",
+      "tenantType": "Platform",
+      "parentTenantId": null
+    },
+    {
+      "tenantId": "ten-acme",
+      "tenantType": "Customer",
+      "parentTenantId": "platform"
+    },
+    {
+      "tenantId": "ten-globex",
+      "tenantType": "Customer",
+      "parentTenantId": "ten-reseller"
+    },
+    {
+      "tenantId": "ten-reseller",
+      "tenantType": "Partner",
+      "parentTenantId": "platform"
+    }
   ]
 }

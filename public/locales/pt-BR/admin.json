@@ -1307,7 +1307,13 @@
       "advisory": "O pico está acima da faixa licenciada. Nada é bloqueado. Declare a faixa atingida na sua autodeclaração mensal (a Verbara não a conhece automaticamente); em seguida, a licença é reemitida na nova faixa.",
       "export": "Exportar registro (JSON)",
       "loading": "Carregando agentes licenciados...",
-      "error": "Não foi possível carregar os números de agentes licenciados."
+      "error": "Não foi possível carregar os números de agentes licenciados.",
+      "breakdown_channel": "Canal",
+      "channel_direct": "Direto",
+      "channel_unknown": "Desconhecido",
+      "partner_subtotals_title": "Participação dos Partners no dia de pico",
+      "partner_subtotals_partner": "Partner",
+      "direct_subtotal": "Clientes diretos"
     }
   },
   "skills": {
@@ -1998,7 +2004,8 @@
         "template_none": "Nenhum",
         "cancel": "Cancelar",
         "creating": "Criando...",
-        "create": "Criar"
+        "create": "Criar",
+        "plan_inherit": "Herdar o plano do Partner"
       },
       "edit_sheet": {
         "title": "Editar cliente",
@@ -2052,7 +2059,8 @@
       "nameRequired": "Nome é obrigatório",
       "currencyRequired": "Moeda é obrigatória",
       "startDateRequired": "Data de início obrigatória",
-      "atLeastOneRate": "Pelo menos uma entrada de tarifa é obrigatória"
+      "atLeastOneRate": "Pelo menos uma entrada de tarifa é obrigatória",
+      "currencyInvalid": "Informe um código de moeda ISO 4217, por exemplo USD."
     },
     "leaveEmptyPlaceholder": "Deixe vazio para manter o atual",
     "timezonePlaceholder": "America/Bogota",
@@ -2411,7 +2419,8 @@
         "days_one": "{{count}} dia em atraso",
         "days_other": "{{count}} dias em atraso",
         "amount": "valor em atraso: {{amount}}",
-        "view_invoice": "Ver fatura"
+        "view_invoice": "Ver fatura",
+        "not_applicable": "A cobrança não se aplica a este Cliente: o Partner {{partnerTenantId}} o fatura fora da Verbara."
       },
       "edit_dialog": {
         "title": "Editar cotas",
@@ -2453,7 +2462,8 @@
       "nameRequired": "Nome é obrigatório",
       "currencyRequired": "Moeda é obrigatória",
       "startDateRequired": "Data de início obrigatória",
-      "atLeastOneRate": "Pelo menos uma entrada de tarifa é obrigatória"
+      "atLeastOneRate": "Pelo menos uma entrada de tarifa é obrigatória",
+      "currencyInvalid": "Informe um código de moeda ISO 4217, por exemplo USD."
     }
   },
   "cluster": {

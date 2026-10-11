@@ -1307,7 +1307,13 @@
       "advisory": "The peak is above the licensed band. Nothing is blocked. Declare the band reached in your monthly self-declaration (Verbara does not learn it automatically); the license is then reissued at the new band.",
       "export": "Export ledger (JSON)",
       "loading": "Loading licensed agents...",
-      "error": "The licensed-agent figures could not be loaded."
+      "error": "The licensed-agent figures could not be loaded.",
+      "breakdown_channel": "Channel",
+      "channel_direct": "Direct",
+      "channel_unknown": "Unknown",
+      "partner_subtotals_title": "Partner share of the peak day",
+      "partner_subtotals_partner": "Partner",
+      "direct_subtotal": "Direct Customers"
     }
   },
   "skills": {
@@ -1998,7 +2004,8 @@
         "template_none": "None",
         "cancel": "Cancel",
         "creating": "Creating...",
-        "create": "Create"
+        "create": "Create",
+        "plan_inherit": "Inherit the Partner's plan"
       },
       "edit_sheet": {
         "title": "Edit customer",
@@ -2052,7 +2059,8 @@
       "nameRequired": "Name is required",
       "currencyRequired": "Currency is required",
       "startDateRequired": "Start date required",
-      "atLeastOneRate": "At least one rate entry is required"
+      "atLeastOneRate": "At least one rate entry is required",
+      "currencyInvalid": "Enter an ISO 4217 currency code, such as USD."
     },
     "leaveEmptyPlaceholder": "Leave empty to keep current",
     "timezonePlaceholder": "America/Bogota",
@@ -2411,7 +2419,8 @@
         "days_one": "{{count}} day overdue",
         "days_other": "{{count}} days overdue",
         "amount": "overdue amount: {{amount}}",
-        "view_invoice": "View Invoice"
+        "view_invoice": "View Invoice",
+        "not_applicable": "Dunning does not apply to this Customer: Partner {{partnerTenantId}} bills it outside Verbara."
       },
       "edit_dialog": {
         "title": "Edit quotas",
@@ -2453,7 +2462,8 @@
       "nameRequired": "Name is required",
       "currencyRequired": "Currency is required",
       "startDateRequired": "Start date required",
-      "atLeastOneRate": "At least one rate entry is required"
+      "atLeastOneRate": "At least one rate entry is required",
+      "currencyInvalid": "Enter an ISO 4217 currency code, such as USD."
     }
   },
   "cluster": {

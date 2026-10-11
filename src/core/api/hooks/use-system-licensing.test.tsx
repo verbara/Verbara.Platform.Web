@@ -8,6 +8,12 @@ import { setupServer } from 'msw/node';
 import type { components } from '@/core/api/generated/openapi';
 import { createWrapper } from '@/test/hook-test-utils';
 import {
+  type LicensedAgentDay,
+  type LicensedAgentDeploymentPeak,
+  type LicensedAgentExport,
+  type LicensedAgentExportTenant,
+  type LicensedAgentPartnerSubtotal,
+  type LicensedAgentTenantDay,
   fetchLicensedAgentExport,
   licensedAgentExportFileName,
   useLicenseStatus,
@@ -72,26 +78,34 @@ const PEAKS: Shape<Schemas['LicensedAgentPeaksResponse']> = {
   days: 'array',
   chainHeads: 'array',
 };
-const DEPLOYMENT: Shape<Schemas['LicensedAgentDeploymentPeakDto']> = {
+// Interim types until openapi.d.ts regenerates (partner-channel-pilot-fixes 3.1, design D4).
+const DEPLOYMENT: Shape<Required<LicensedAgentDeploymentPeak>> = {
   peakLicensedAgents: 'number',
   peakDay: 'string|null',
   overBand: 'boolean',
+  partnerSubtotals: 'array',
 };
-const DAY: Shape<Schemas['LicensedAgentDayDto']> = {
+const PARTNER_SUBTOTAL: Shape<LicensedAgentPartnerSubtotal> = {
+  partnerTenantId: 'string',
+  partnerTenantName: 'string',
+  licensedAgents: 'number',
+};
+const DAY: Shape<LicensedAgentDay> = {
   day: 'string',
   deploymentLicensedAgents: 'number',
   deploymentRowHash: 'string',
   tenants: 'array',
 };
-const TENANT_DAY: Shape<Schemas['LicensedAgentTenantDayDto']> = {
+const TENANT_DAY: Shape<Required<LicensedAgentTenantDay>> = {
   tenantId: 'string',
   tenantName: 'string',
+  parentTenantId: 'string|null',
   licensedAgents: 'number',
   revision: 'number',
   closedAt: 'string',
   rowHash: 'string',
 };
-const EXPORT: Shape<Schemas['LicensedAgentExportResponse']> = {
+const EXPORT: Shape<LicensedAgentExport> = {
   schemaVersion: 'number',
   hashScheme: 'string',
   generatedAt: 'string',
@@ -102,6 +116,12 @@ const EXPORT: Shape<Schemas['LicensedAgentExportResponse']> = {
   events: 'array',
   daily: 'array',
   chainHeads: 'array',
+  tenants: 'array',
+};
+const TENANT_MAP: Shape<LicensedAgentExportTenant> = {
+  tenantId: 'string',
+  tenantType: 'string|null',
+  parentTenantId: 'string|null',
 };
 const EVENT: Shape<Schemas['LicensedAgentExportEventDto']> = {
   tenantId: 'string|null',
@@ -174,6 +194,11 @@ describe('licensed-agent metering — verbatim-fixture guard', () => {
     expectShape(fixture, PEAKS, 'peaks');
     expectShape(fixture.license, LICENSE, 'peaks.license');
     expectShape(fixture.deployment, DEPLOYMENT, 'peaks.deployment');
+    expectRows(
+      (fixture.deployment as Record<string, unknown>).partnerSubtotals,
+      PARTNER_SUBTOTAL,
+      'peaks.deployment.partnerSubtotals',
+    );
     expectRows(fixture.days, DAY, 'peaks.days');
     for (const day of fixture.days as Array<Record<string, unknown>>) {
       expectRows(day.tenants, TENANT_DAY, `peaks.days.${String(day.day)}.tenants`);
@@ -188,6 +213,7 @@ describe('licensed-agent metering — verbatim-fixture guard', () => {
     expectRows(fixture.events, EVENT, 'export.events');
     expectRows(fixture.daily, DAILY, 'export.daily');
     expectRows(fixture.chainHeads, CHAIN_HEAD, 'export.chainHeads');
+    expectRows(fixture.tenants, TENANT_MAP, 'export.tenants');
   });
 
   it('StatusFixture_ShouldMatchGeneratedSchema_WhenCopiedFromHost', () => {

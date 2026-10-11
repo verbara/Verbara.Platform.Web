@@ -13,7 +13,14 @@
   "deployment": {
     "peakLicensedAgents": 47,
     "peakDay": "2026-09-17",
-    "overBand": false
+    "overBand": false,
+    "partnerSubtotals": [
+      {
+        "partnerTenantId": "ten-reseller",
+        "partnerTenantName": "Reseller One",
+        "licensedAgents": 15
+      }
+    ]
   },
   "days": [
     {
@@ -24,6 +31,7 @@
         {
           "tenantId": "ten-acme",
           "tenantName": "Acme Support",
+          "parentTenantId": "platform",
           "licensedAgents": 30,
           "revision": 0,
           "closedAt": "2026-09-17T00:05:12Z",
@@ -32,6 +40,7 @@
         {
           "tenantId": "ten-globex",
           "tenantName": "Globex Sales",
+          "parentTenantId": "ten-reseller",
           "licensedAgents": 14,
           "revision": 0,
           "closedAt": "2026-09-17T00:05:12Z",
@@ -47,6 +56,7 @@
         {
           "tenantId": "ten-acme",
           "tenantName": "Acme Support",
+          "parentTenantId": "platform",
           "licensedAgents": 32,
           "revision": 1,
           "closedAt": "2026-09-18T09:41:03Z",
@@ -55,6 +65,7 @@
         {
           "tenantId": "ten-globex",
           "tenantName": "Globex Sales",
+          "parentTenantId": "ten-reseller",
           "licensedAgents": 15,
           "revision": 0,
           "closedAt": "2026-09-18T00:05:09Z",
