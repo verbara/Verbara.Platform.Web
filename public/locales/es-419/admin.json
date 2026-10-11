@@ -1938,15 +1938,6 @@
       "confirm": "Suspender",
       "submitting": "Suspendiendo..."
     },
-    "dunning": {
-      "statusActive": "Cobranza activa",
-      "statusPaused": "Cobranza pausada",
-      "pauseTitle": "¿Pausar cobranza?",
-      "pauseBody": "Pausar cobranza detiene los flujos automatizados de cobro para este cliente. Indica un motivo para el registro de auditoría.",
-      "reasonLabel": "Motivo",
-      "reasonPlaceholder": "ej., Disputa del cliente en revisión",
-      "pauseConfirm": "Pausar cobranza"
-    },
     "revenue": {
       "title": "Ingresos",
       "description": "Sigue los ingresos y el margen entre todos tus clientes.",

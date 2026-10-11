@@ -5,6 +5,8 @@ import { useTenantStore } from '@/core/tenant/tenant-store';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { isApiError } from '@/core/api/api-error';
+import { toastPartnerChannelRefusal } from '@/core/api/partner-channel-refusals';
 
 // --- Types ---
 //
@@ -274,6 +276,9 @@ export function useDunningStatus(tenantId: string | undefined) {
         method: 'GET',
       }),
     enabled: !!tenantId,
+    // A 409 is an answer, not a failure: `dunning-partner-customer` says the Partner bills this
+    // Customer (design D6). Retrying it only delays the note; anything else keeps one retry.
+    retry: (failureCount, err) => !(isApiError(err) && err.status === 409) && failureCount < 1,
   });
 }
 
@@ -285,6 +290,7 @@ export interface DunningStatusUpdate {
 
 export function useUpdateDunningStatus(tenantId: string | undefined) {
   const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (update: DunningStatusUpdate) =>
       customFetch<void>({
@@ -302,7 +308,11 @@ export function useUpdateDunningStatus(tenantId: string | undefined) {
           : 'Dunning resumed',
       );
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['dunning-partner-customer'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
