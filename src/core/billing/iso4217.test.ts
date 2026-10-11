@@ -25,9 +25,21 @@ describe('ISO_4217_CODES', () => {
     for (const code of ISO_4217_CODES) expect(code).toMatch(/^[A-Z]{3}$/);
   });
 
-  it('should hold the 2025 List One revision this file names', () => {
-    expect(ISO_4217_CODES.size).toBe(176);
+  it('should hold exactly the host Iso4217.cs set of 164 codes', () => {
+    expect(ISO_4217_CODES.size).toBe(164);
     for (const code of ['XCG', 'ZWG', 'SLE', 'VED']) expect(ISO_4217_CODES.has(code)).toBe(true);
-    for (const code of ['ZWL', 'SLL', 'HRK', 'ANG']) expect(ISO_4217_CODES.has(code)).toBe(false);
+    for (const code of ['ZWL', 'SLL', 'HRK', 'ANG', 'BGN'])
+      expect(ISO_4217_CODES.has(code)).toBe(false);
   });
+
+  it.each(['USD', 'PEN', 'MXN', 'COP'])('should accept the settlement currency %s', (code) => {
+    expect(canonicalCurrency(code)).toBe(code);
+  });
+
+  it.each(['XAU', 'XDR', 'CUC', 'XAG', 'XPD', 'XPT', 'XSU', 'XUA', 'XBA', 'XBB', 'XBC', 'XBD'])(
+    'should refuse %s, which the host refuses',
+    (code) => {
+      expect(canonicalCurrency(code)).toBeNull();
+    },
+  );
 });

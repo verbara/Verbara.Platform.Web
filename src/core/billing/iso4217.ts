@@ -1,12 +1,15 @@
 /**
- * The active ISO 4217 alphabetic currency codes (design D10 of `partner-channel-pilot-fixes`).
+ * The ISO 4217 alphabetic currency codes a rate card may carry (design D10 of
+ * `partner-channel-pilot-fixes`).
  *
- * Source revision: ISO 4217 List One (SIX, maintenance agency) as current in 2025 — after the
- * introductions of ZWG (2024) and XCG (2025) and the withdrawals of HRK, ZWL, SLL and ANG. The
- * testing code XTS and the "no currency" code XXX are left out: neither can be a settlement
- * currency. The host's list is authoritative: a code this list accepts and the host refuses comes
- * back as the 400 `currency-invalid`, which the console maps, so a drift can only make the console
- * refuse early or the host refuse late, never save a bad code.
+ * Source of truth: the host's `Verbara.Platform/src/Verbara.Platform.Billing/Iso4217.cs`. This set
+ * must hold exactly the host's codes (164) — edit both together. It is ISO 4217 List One's currency
+ * and fund codes (XCG replaced ANG, ZWG replaced ZWL, SLE replaced SLL, BGN withdrawn, CUC gone).
+ * The non-currency codes of List One are left out, as the host leaves them out: the precious metals
+ * (XAU, XAG, XPD, XPT), the SDR and bond-market units (XDR, XSU, XUA, XBA-XBD), the testing code
+ * XTS and "no currency" XXX. Should the two drift anyway, the host's 400 `currency-invalid` is
+ * mapped, so a drift can only make the console refuse early or the host refuse late, never save a
+ * bad code.
  *
  * Static on purpose: `Intl.supportedValuesOf('currency')` depends on the browser's ICU data and
  * includes historic codes, so two browsers could disagree.
@@ -47,7 +50,6 @@ export const ISO_4217_CODES: ReadonlySet<string> = new Set([
   'COP',
   'COU',
   'CRC',
-  'CUC',
   'CUP',
   'CVE',
   'CZK',
@@ -169,21 +171,10 @@ export const ISO_4217_CODES: ReadonlySet<string> = new Set([
   'VUV',
   'WST',
   'XAF',
-  'XAG',
-  'XAU',
-  'XBA',
-  'XBB',
-  'XBC',
-  'XBD',
   'XCD',
   'XCG',
-  'XDR',
   'XOF',
-  'XPD',
   'XPF',
-  'XPT',
-  'XSU',
-  'XUA',
   'YER',
   'ZAR',
   'ZMW',
