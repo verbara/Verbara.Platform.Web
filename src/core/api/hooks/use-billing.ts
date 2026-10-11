@@ -125,7 +125,11 @@ export function useCreateRateCard() {
       qc.invalidateQueries({ queryKey: ['rate-cards', tenantId] });
       toast.success(t('toasts.billing.rateCardCreated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['currency-invalid'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
@@ -145,7 +149,11 @@ export function useUpdateRateCard() {
       qc.invalidateQueries({ queryKey: ['rate-cards', tenantId] });
       toast.success(t('toasts.billing.rateCardUpdated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['currency-invalid'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
