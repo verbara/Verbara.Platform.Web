@@ -87,17 +87,18 @@ with "inherit" gets `Starter`, as before, and the licence card shows no Partner 
   message naming the requested and the parent plan, keeps the form open with its input and shows no
   success message.
 - **Rate-card currencies are ISO 4217 codes.** Both rate-card forms accept only an active ISO 4217
-  code and send it trimmed and upper-cased (`usd` is sent as `USD`); `banana` or `XYZ` is refused
-  on the field. The host's `currency-invalid` (rate-card writes and Partner invoice generation) and
-  `currency-mismatch` (Partner invoice generation) refusals are shown in the user's language,
-  naming the codes, and the rate-card sheet stays open on a refused save.
+  currency or fund code — exactly the host's list, so `XAU` (gold), `XDR` (the SDR) and `CUC` are
+  refused too — and send it trimmed and upper-cased (`usd` is sent as `USD`); `banana` or `XYZ` is
+  refused on the field. The host's `currency-invalid` (rate-card writes and Partner invoice
+  generation) and `currency-mismatch` (Partner invoice generation) refusals are shown in the user's
+  language, naming the codes, and the rate-card sheet stays open on a refused save.
 - **The tenant create sheet offers only parents the host accepts.** A new Partner can hang only from
   the Platform tenant; a new Customer from the Platform tenant or a Partner. Switching the type to
   Partner clears a Partner parent.
-- **Dunning for a Partner's Customer is a note, not an error.** On the billing quotas page, the
-  host's 409 `dunning-partner-customer` shows "dunning does not apply: the Partner bills this
-  Customer" in place of the dunning banner; pausing or resuming it shows the refusal in the user's
-  language.
+- **Dunning for a Partner's Customer is a note, not an error.** On the host's billing quotas page,
+  the host's 409 `dunning-partner-customer` shows "dunning does not apply: the Partner bills this
+  Customer" in place of the dunning banner, with no error toast. The Partner portal no longer
+  offers dunning at all (see _Removed_).
 
 ### Removed
 
