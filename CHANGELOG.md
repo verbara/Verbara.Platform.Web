@@ -26,7 +26,8 @@ this release fixes the helper (see Changed).
 - **Connection test on the channel form.** "Test connection" runs the provider test and shows the
   result in place: on success, the WhatsApp number's verified name; on failure, a localized line for
   the code (`provider-rejected`, `provider-unreachable`, `channel-not-configured`, `not-testable`,
-  or a generic line for any other code) followed by the provider's own message.
+  or a generic line for any other code). When the provider rejects the configuration, its own
+  message follows.
 - **The webhook URL to give the provider.** For WhatsApp, Messenger and Instagram the channel form
   shows the tenant's webhook URL (`<console origin>/api/v1/webhooks/<tenant>/<channel>`) with a
   copy button. During an impersonation it names the impersonated tenant. The setup wizard's test
@@ -49,6 +50,8 @@ this release fixes the helper (see Changed).
   again.
 - **The digital monitor opens from a link.** `/operations/monitor?tab=digital&conversation=<id>`
   opens the digital tab with that conversation's detail. A takeover still asks for confirmation.
+  The tab lists only the first 25 conversations, so a linked conversation that closed or sits
+  further down shows a "not in this list" notice instead of its detail.
 
 ### Changed
 
