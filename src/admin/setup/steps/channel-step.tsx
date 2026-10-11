@@ -16,60 +16,17 @@ import {
   Video,
   MessageCircle,
 } from 'lucide-react';
-import type { UseFormRegister, FieldValues } from 'react-hook-form';
-import { Input } from '@/core/ui/input';
-import { Label } from '@/core/ui/label';
 import { Badge } from '@/core/ui/badge';
-import { FieldError } from '@/core/ui/field-error';
-import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import { ChannelTestButton } from '@/admin/channels/channel-test-button';
+import { CredentialField } from '@/admin/channels/credential-field';
 import {
   channelFields,
   buildSchema,
   buildDefaults,
+  buildCredentialUpdate,
   type FieldDef,
 } from '@/admin/channels/channel-fields';
 import type { SetupFormValues } from '../setup-wizard';
-
-interface ChannelConfigFieldProps {
-  readonly field: FieldDef;
-  readonly register: UseFormRegister<FieldValues>;
-  readonly error: { message?: string } | undefined;
-}
-
-function ChannelConfigField({ field, register, error }: ChannelConfigFieldProps) {
-  const { t } = useTranslation(['admin']);
-  const inputId = `channel-${field.key}`;
-  const a11y = useFieldA11y(error, inputId, { required: true });
-  const helpId = field.helpKey ? `${inputId}-help` : undefined;
-  const describedBy =
-    [helpId, a11y.inputProps['aria-describedby']].filter(Boolean).join(' ') || undefined;
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={inputId} required>
-        {field.labelKey ? t(field.labelKey) : field.label}
-      </Label>
-      <Input
-        id={inputId}
-        type={field.type}
-        data-channel-field={field.key}
-        {...a11y.inputProps}
-        aria-describedby={describedBy}
-        {...register(field.key)}
-      />
-      {field.helpKey && (
-        <p
-          id={helpId}
-          data-channel-field-help={field.key}
-          className="text-xs text-muted-foreground"
-        >
-          {t(field.helpKey)}
-        </p>
-      )}
-      <FieldError id={a11y.errorId} message={error?.message?.toString()} />
-    </div>
-  );
-}
 
 const CHANNELS = [
   { id: 'whatsapp', name: 'WhatsApp', icon: MessageSquare },
@@ -110,12 +67,10 @@ function ChannelConfigFields({
   // Sync local form values to wizard form's channelConfig
   useEffect(() => {
     const subscription = watch((values) => {
+      // Only the keys the admin filled: Platform keeps what is stored for a key it is not sent.
       const config: Record<string, string> = {};
-      for (const field of fields) {
-        const val = values[field.key];
-        if (typeof val === 'string') {
-          config[field.key] = val;
-        }
+      for (const [key, val] of Object.entries(buildCredentialUpdate(fields, values))) {
+        if (typeof val === 'string') config[key] = val;
       }
       wizardSetValue('channelConfig', config);
     });
@@ -129,11 +84,11 @@ function ChannelConfigFields({
       </h3>
 
       {fields.map((field) => (
-        <ChannelConfigField
+        <CredentialField
           key={field.key}
           field={field}
-          register={register}
-          error={errors[field.key]}
+          registration={register(field.key)}
+          error={errors[field.key] as { message?: string } | undefined}
         />
       ))}
 
