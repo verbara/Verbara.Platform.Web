@@ -9,6 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.23.0-web] - 2026-10-11
+
 **Requires Platform ≥ v2.28.0.** The channel form reads the redacted credential list
 (`{ key, isSet }`) and the coded connection test, and the new-conversation dialog sends the
 `initialMessage` and template fields and reads the start refusal codes, all of which Platform
@@ -22,9 +24,8 @@ Platform v2.28.0 because their routing helper gave the WebChat session id to a c
 this release fixes the helper (see Changed).
 
 The Partner-channel items below (the 409 refusals, the currency refusals, plan inheritance and the
-Partner share of the peak day) take effect against the first Platform release that carries
-`partner-channel-pilot-fixes`. Against an earlier Platform nothing regresses: a Customer created
-with "inherit" gets `Starter`, as before, and the licence card shows no Partner figures.
+Partner share of the peak day) take effect against Platform v2.28.0, which carries the
+Partner-channel pilot fixes.
 
 ### Added
 
@@ -32,31 +33,31 @@ with "inherit" gets `Starter`, as before, and the licence card shows no Partner 
   result in place: on success, the WhatsApp number's verified name; on failure, a localized line for
   the code (`provider-rejected`, `provider-unreachable`, `channel-not-configured`, `not-testable`,
   or a generic line for any other code). When the provider rejects the configuration, its own
-  message follows.
+  message follows. (#395)
 - **The webhook URL to give the provider.** For WhatsApp, Messenger and Instagram the channel form
   shows the tenant's webhook URL (`<console origin>/api/v1/webhooks/<tenant>/<channel>`) with a
   copy button. During an impersonation it names the impersonated tenant. The setup wizard's test
-  step shows the console's real address instead of `https://your-api.com`.
+  step shows the console's real address instead of `https://your-api.com`. (#395)
 - **More WhatsApp settings.** The form and the setup wizard list all seven keys Platform accepts:
   `AccessToken`, `PhoneNumberId`, `AppSecret` and `WebhookVerifyToken` (required), and `WabaId`,
   `ApiVersion` and the default queue for inbound conversations (optional, chosen from the tenant's
-  queues).
+  queues). (#395)
 - **Start a conversation with a message.** The agent's new-conversation dialog requires a first
   message and starts the conversation in the agent's own name; on success it opens that
   conversation, or the agent's existing open one with the contact. On WhatsApp, "Send a WhatsApp
   template" adds the template name and language (default `en_US`); the template is sent instead of
-  the text, and templates with parameters are not supported.
+  the text, and templates with parameters are not supported. (#395)
 - **Refused starts are explained in place.** Each refusal code Platform v2.28.0 returns is shown
   inside the dialog in the user's language, with the action it calls for:
   `whatsapp-template-required` opens the template fields; `conversation-not-sendable` offers to open
   the agent's own conversation; `conversation-open-elsewhere` links a supervisor (with
   `contacts:conversation:monitor`) to that conversation in the monitor, and never takes it over;
   `start-persist-failed` tells the agent the contact already got the message, so it must not be sent
-  again.
+  again. (#395)
 - **The digital monitor opens from a link.** `/operations/monitor?tab=digital&conversation=<id>`
   opens the digital tab with that conversation's detail. A takeover still asks for confirmation.
   The tab lists only the first 25 conversations, so a linked conversation that closed or sits
-  further down shows a "not in this list" notice instead of its detail.
+  further down shows a "not in this list" notice instead of its detail. (#395)
 - **Partner share of the peak day on the licence page.** Each tenant in the peak-day breakdown
   names its channel: its Partner's name, "direct", or "unknown" when the tenant no longer exists.
   Below it, the card lists each Partner's licensed agents on the peak day and the direct remainder
@@ -75,12 +76,12 @@ with "inherit" gets `Starter`, as before, and the licence card shows no Partner 
   v3.22.0-web saved, listed in their own section), can be removed, with undo until saving.
   `WebhookVerifyToken` is masked like the other secrets. The channel detail shows key names and
   badges, not values. `unknown-credential-key` and `invalid-channel` refusals are shown in the
-  user's language.
+  user's language. (#395)
 - **End-to-end specs route the WebChat visitor's own contact and conversation.** The
   `conversation-routing` helper reads `contactId` and `conversationId` from the WebChat session
   response instead of creating a contact addressed by the session id, which Platform v2.28.0 no
   longer resolves. `conversation-refusals` and `monitor-takeover-and-contact-search` pass against
-  Platform v2.28.0 again, and a new spec covers refused starts by code.
+  Platform v2.28.0 again, and a new spec covers refused starts by code. (#395)
 - **A plan above the parent's plan is refused as 409 and explained.** Partner customer create and
   Partner customer settings (until now 400) and host tenant settings (until now 200 without saving)
   answer 409 `plan-exceeds-parent`, as does host tenant create. The console shows a localized
