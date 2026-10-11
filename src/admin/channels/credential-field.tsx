@@ -29,12 +29,17 @@ export function CredentialStatusBadge({
   );
 }
 
-/** Marks a stored key for removal on save (sent as `null`), or takes the mark back. */
+/**
+ * Marks a stored key for removal on save (sent as `null`), or takes the mark back. The accessible
+ * name says which key ("Remove WABA ID" / "Keep WABA ID"), since every row has the same button; the
+ * changing name is the state, so there is no `aria-pressed` as well.
+ */
 export function CredentialRemoveButton({
   credentialKey,
+  label,
   removed,
   onToggle,
-}: Readonly<{ credentialKey: string; removed: boolean; onToggle: () => void }>) {
+}: Readonly<{ credentialKey: string; label: string; removed: boolean; onToggle: () => void }>) {
   const { t } = useTranslation(['admin']);
   return (
     <Button
@@ -42,7 +47,11 @@ export function CredentialRemoveButton({
       variant="ghost"
       size="xs"
       data-credential-remove={credentialKey}
-      aria-pressed={removed}
+      aria-label={
+        removed
+          ? t('admin:channels.credential.undoRemoveKey', { key: label })
+          : t('admin:channels.credential.removeKey', { key: label })
+      }
       onClick={onToggle}
     >
       {removed ? t('admin:channels.credential.undoRemove') : t('admin:channels.credential.remove')}
@@ -132,6 +141,7 @@ export function CredentialField({
           {removal && (
             <CredentialRemoveButton
               credentialKey={field.key}
+              label={label}
               removed={removal.removed}
               onToggle={removal.onToggle}
             />

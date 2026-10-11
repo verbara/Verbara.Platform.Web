@@ -91,6 +91,13 @@ export function NewConversationDialog({
     createMutation.reset();
   }
 
+  // A refusal belongs to the contact it was answered for: picking another one (or going back to
+  // the search) drops it, with its link to that contact's conversation.
+  function chooseContact(contact: Contact | null) {
+    setSelectedContact(contact);
+    createMutation.reset();
+  }
+
   function closeAndGo(path: string) {
     resetForm();
     onOpenChange(false);
@@ -146,7 +153,7 @@ export function NewConversationDialog({
                   type="button"
                   size="sm"
                   variant="ghost"
-                  onClick={() => setSelectedContact(null)}
+                  onClick={() => chooseContact(null)}
                   data-testid="new-conv-change-contact-btn"
                 >
                   {t('new_conversation.change')}
@@ -170,7 +177,7 @@ export function NewConversationDialog({
                             type="button"
                             className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
                             onClick={() => {
-                              setSelectedContact(c);
+                              chooseContact(c);
                               setContactSearch('');
                             }}
                             data-testid={`new-conv-contact-option-${c.id}`}

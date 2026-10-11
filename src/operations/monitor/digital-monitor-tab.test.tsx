@@ -120,4 +120,17 @@ describe('DigitalMonitorTab with Platform conversations', () => {
     expect(await screen.findByTestId('digital-conversation-detail')).toBeInTheDocument();
     expect(takeoverUrls).toHaveLength(0);
   });
+
+  it('DigitalMonitorTab_ShouldSayTheLinkedConversationIsNotListed_WhenItIsNotOnTheLoadedPage', async () => {
+    // The link names a conversation the first page does not carry (closed, or further down).
+    await renderTab('0000000000004000a000000000000000');
+
+    expect(await screen.findByTestId('digital-linked-conversation-missing')).toBeInTheDocument();
+    expect(screen.queryByTestId('digital-conversation-detail')).toBeNull();
+
+    // Picking a listed card replaces the notice with that conversation's detail.
+    fireEvent.click(await screen.findByTestId(`digital-conv-card-${CONVERSATION_ID}`));
+    expect(await screen.findByTestId('digital-conversation-detail')).toBeInTheDocument();
+    expect(screen.queryByTestId('digital-linked-conversation-missing')).toBeNull();
+  });
 });

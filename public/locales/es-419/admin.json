@@ -367,6 +367,8 @@
       "keepPlaceholder": "Guardada. Déjela en blanco para conservarla.",
       "remove": "Quitar",
       "undoRemove": "Conservar",
+      "removeKey": "Quitar {{key}}",
+      "undoRemoveKey": "Conservar {{key}}",
       "willBeRemoved": "Se quitará al guardar",
       "queueKeep": "Conservar la cola guardada",
       "queueNone": "Seleccione una cola"

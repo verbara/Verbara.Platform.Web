@@ -99,6 +99,7 @@ function LegacyCredentials({
               )}
               <CredentialRemoveButton
                 credentialKey={key}
+                label={key}
                 removed={removed.has(key)}
                 onToggle={() => onToggle(key)}
               />

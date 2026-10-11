@@ -367,6 +367,8 @@
       "keepPlaceholder": "Salva. Deixe em branco para mantê-la.",
       "remove": "Remover",
       "undoRemove": "Manter",
+      "removeKey": "Remover {{key}}",
+      "undoRemoveKey": "Manter {{key}}",
       "willBeRemoved": "Será removida ao salvar",
       "queueKeep": "Manter a fila salva",
       "queueNone": "Selecione uma fila"

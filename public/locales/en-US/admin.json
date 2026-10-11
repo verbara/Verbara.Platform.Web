@@ -367,6 +367,8 @@
       "keepPlaceholder": "Saved. Leave blank to keep it.",
       "remove": "Remove",
       "undoRemove": "Keep",
+      "removeKey": "Remove {{key}}",
+      "undoRemoveKey": "Keep {{key}}",
       "willBeRemoved": "Removed when you save",
       "queueKeep": "Keep the saved queue",
       "queueNone": "Select a queue"

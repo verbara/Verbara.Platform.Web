@@ -26,7 +26,9 @@ vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    // Interpolates only `key`, so a test can read which credential an accessible name names.
+    t: (key: string, opts?: Record<string, unknown>) =>
+      typeof opts?.key === 'string' ? `${key}[${opts.key}]` : key,
     i18n: { changeLanguage: vi.fn() },
   }),
 }));
@@ -245,6 +247,28 @@ describe('ChannelConfigForm', () => {
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
     expect(updateMutate.mock.calls[0][0].credentials).toEqual({});
+  });
+
+  it('remove_ShouldNameItsKeyInTheAccessibleName_WhenSeveralKeysCanBeRemoved', () => {
+    channelData = whatsapp({ ...CONFIGURED, WabaId: true }, [{ key: 'ApiToken', isSet: true }]);
+    render(<ChannelConfigForm open onOpenChange={vi.fn()} channelId="whatsapp" />);
+
+    const button = (key: string) =>
+      document.querySelector<HTMLElement>(`[data-credential-remove="${key}"]`)!;
+    const wabaLabel = channelFields.whatsapp.find((f) => f.key === 'WabaId')!.labelKey!;
+    expect(button('WabaId')).toHaveAccessibleName(
+      `admin:channels.credential.removeKey[${wabaLabel}]`,
+    );
+    expect(button('ApiToken')).toHaveAccessibleName(
+      'admin:channels.credential.removeKey[ApiToken]',
+    );
+    // One way to convey the state: the name changes, so there is no aria-pressed as well.
+    expect(button('ApiToken')).not.toHaveAttribute('aria-pressed');
+
+    fireEvent.click(button('ApiToken'));
+    expect(button('ApiToken')).toHaveAccessibleName(
+      'admin:channels.credential.undoRemoveKey[ApiToken]',
+    );
   });
 
   it('render_ShouldShowTheTenantWebhookUrl_WhenChannelIsWhatsApp', () => {

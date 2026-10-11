@@ -49,9 +49,20 @@ describe('ChannelTestButton', () => {
 
     expect(result.dataset.testOutcome).toBe('success');
     expect(screen.getByText('admin:channels.test.successNamed')).toBeTruthy();
-    expect(document.querySelector('[data-channel-test-verified-name]')?.textContent).toBe(
+    // The headline carries the name; it is not repeated in a second line.
+    expect(screen.getByText('admin:channels.test.successNamed')).toHaveAttribute(
+      'data-channel-test-verified-name',
       'Acme Support',
     );
+    expect(document.querySelectorAll('[data-channel-test-verified-name]')).toHaveLength(1);
+  });
+
+  it('result_ShouldShowTheGenericSuccess_WhenMetaReturnsNoName', async () => {
+    await runTest({ success: true, message: 'ok', verifiedName: null });
+
+    expect(screen.getByText('admin:channels.test.success')).toBeTruthy();
+    expect(document.querySelector('[data-channel-test-verified-name]')).toBeNull();
+    expect(document.querySelector('[data-channel-test-message]')).toBeNull();
   });
 
   it('result_ShouldShowTheProviderMessageAndCode_WhenMetaRejectsTheToken', async () => {
@@ -76,6 +87,9 @@ describe('ChannelTestButton', () => {
 
       expect(result.dataset.testCode).toBe(code);
       expect(screen.getByText(`admin:channels.test.codes.${code}`)).toBeTruthy();
+      // Platform's own (English) text is never shown: the localized line covers the code (ADR-0013).
+      expect(document.querySelector('[data-channel-test-message]')).toBeNull();
+      expect(screen.queryByText('server text')).toBeNull();
     },
   );
 
@@ -105,6 +119,8 @@ const FORM_KEYS = [
   'admin:channels.credential.keepPlaceholder',
   'admin:channels.credential.remove',
   'admin:channels.credential.undoRemove',
+  'admin:channels.credential.removeKey',
+  'admin:channels.credential.undoRemoveKey',
   'admin:channels.credential.willBeRemoved',
   'admin:channels.credential.queueKeep',
   'admin:channels.credential.queueNone',
@@ -120,5 +136,9 @@ describe.each(TEST_LOCALES)('channel form strings in %s', (lng) => {
     const i18n = await createLocaleI18n(lng);
     for (const key of FORM_KEYS) expect(i18n.exists(key), key).toBe(true);
     expect(i18n.t('admin:channels.test.successNamed', { name: 'Acme' })).toContain('Acme');
+    expect(i18n.t('admin:channels.credential.removeKey', { key: 'WabaId' })).toContain('WabaId');
+    expect(i18n.t('admin:channels.credential.undoRemoveKey', { key: 'WabaId' })).toContain(
+      'WabaId',
+    );
   });
 });

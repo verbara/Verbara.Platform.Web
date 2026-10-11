@@ -25,6 +25,17 @@ function testOutcomeKey(result: ChannelTestResult): string {
     : 'admin:channels.test.failed';
 }
 
+/**
+ * Whether the result's `message` is shown under the headline. Only `provider-rejected` carries the
+ * provider's own words (redacted and capped by Platform); for the other known codes `message` is
+ * Platform's fixed English text, which the localized headline already covers (ADR-0013). An unknown
+ * or missing code has no localized line, so its text is the only detail there is.
+ */
+function showsMessage(result: ChannelTestResult): boolean {
+  if (result.success || !result.message) return false;
+  return result.code === 'provider-rejected' || !result.code || !KNOWN_TEST_CODES.has(result.code);
+}
+
 function TestOutcome({ result }: Readonly<{ result: ChannelTestResult }>) {
   const { t } = useTranslation(['admin']);
   const Icon = result.success ? CircleCheckBig : CircleAlert;
@@ -42,14 +53,14 @@ function TestOutcome({ result }: Readonly<{ result: ChannelTestResult }>) {
         className={`mt-0.5 h-4 w-4 shrink-0 ${result.success ? 'text-green-600' : 'text-destructive'}`}
       />
       <div className="space-y-1">
-        <p>{t(testOutcomeKey(result), { name: result.verifiedName ?? '' })}</p>
-        {result.success && result.verifiedName && (
-          <p className="font-medium" data-channel-test-verified-name>
-            {result.verifiedName}
-          </p>
-        )}
-        {/* The provider's own words (Platform redacts the token and caps the length). */}
-        {!result.success && result.message && (
+        <p
+          data-channel-test-verified-name={
+            result.success && result.verifiedName ? result.verifiedName : undefined
+          }
+        >
+          {t(testOutcomeKey(result), { name: result.verifiedName ?? '' })}
+        </p>
+        {showsMessage(result) && (
           <p className="break-words text-xs text-muted-foreground" data-channel-test-message>
             {result.message}
           </p>
@@ -61,7 +72,8 @@ function TestOutcome({ result }: Readonly<{ result: ChannelTestResult }>) {
 
 /**
  * Runs `POST /admin/channels/{channel}/test` against what is saved for the tenant and shows the
- * server's outcome: the verified name on success, the code and the provider's message on failure.
+ * server's outcome: the verified name on success; on failure the code's localized line, plus the
+ * provider's own message when the provider rejected the configuration.
  */
 export function ChannelTestButton({ channelId }: ChannelTestButtonProps) {
   const { t } = useTranslation(['admin']);

@@ -331,6 +331,28 @@ describe('NewConversationDialog start (Platform 2.28.0)', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it('NewConversationDialog_ShouldClearTheRefusal_WhenTheAgentPicksAnotherContact', async () => {
+    startAnswer = {
+      status: 409,
+      body: { error: 'conversation-not-sendable', conversationId: 'own-conv', ownerKind: 'Agent' },
+    };
+    await renderDialog();
+    await pickContactAndType();
+    await submitAndAwaitRefusal('conversation-not-sendable');
+
+    // Same channel: only the contact changes, so the refusal (and its link to the previous
+    // contact's conversation) must not survive the switch.
+    fireEvent.click(screen.getByTestId('new-conv-change-contact-btn'));
+    expect(screen.queryByTestId('new-conv-error')).toBeNull();
+    expect(screen.queryByTestId('new-conv-open-conversation')).toBeNull();
+
+    fireEvent.change(screen.getByTestId('new-conv-contact-search'), { target: { value: 'Ana' } });
+    fireEvent.click(await screen.findByTestId(`new-conv-contact-option-${CONTACT_ID}`));
+    expect(screen.queryByTestId('new-conv-error')).toBeNull();
+    expect(screen.queryByTestId('new-conv-open-conversation')).toBeNull();
+    expect(createBodies).toHaveLength(1);
+  });
+
   it('NewConversationDialog_ShouldLinkToTheMonitorAndNeverTakeOver_WhenTheConversationIsOpenElsewhereAndTheCallerMayMonitor', async () => {
     useAuthStore.setState({ permissions: ['contacts:conversation:monitor'] });
     startAnswer = {
