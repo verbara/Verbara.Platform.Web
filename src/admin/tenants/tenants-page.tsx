@@ -83,6 +83,15 @@ const STATUS_HINT: Record<string, string> = {
   pendingdeletion: 'tenants.list.status_hint.pending_deletion',
 };
 
+/**
+ * The parents the host accepts for a new tenant of `type` (design D8): a Partner hangs from the
+ * Platform tenant only; a Customer from the Platform tenant or a Partner.
+ */
+function parentOptions(type: 'Customer' | 'Partner', tenants: readonly Tenant[]): Tenant[] {
+  const allowed = type === 'Partner' ? ['Platform'] : ['Platform', 'Partner'];
+  return tenants.filter((tenant) => allowed.includes(tenant.type));
+}
+
 function canSuspend(status: string): boolean {
   const s = status.toLowerCase();
   return s === 'active' || s === 'warning' || s === 'degraded';
@@ -404,16 +413,24 @@ export default function TenantsPage() {
               <Label htmlFor="type">{t('tenants.list.create_sheet.type')}</Label>
               <Select
                 value={watch('type') ?? 'Customer'}
-                onValueChange={(v) => setValue('type', v as 'Customer' | 'Partner')}
+                onValueChange={(v) => {
+                  const type = v as 'Customer' | 'Partner';
+                  setValue('type', type);
+                  // A parent the new type cannot hang from is cleared, never sent (D8).
+                  const parent = watch('parentTenantId');
+                  if (parent && !parentOptions(type, tenants).some((p) => p.tenantId === parent)) {
+                    setValue('parentTenantId', undefined);
+                  }
+                }}
               >
                 <SelectTrigger id="type" data-testid="tenants-form-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Customer">
+                  <SelectItem value="Customer" data-testid="tenants-form-type-option-Customer">
                     {t('tenants.list.create_sheet.type_customer')}
                   </SelectItem>
-                  <SelectItem value="Partner">
+                  <SelectItem value="Partner" data-testid="tenants-form-type-option-Partner">
                     {t('tenants.list.create_sheet.type_partner')}
                   </SelectItem>
                 </SelectContent>
@@ -431,13 +448,15 @@ export default function TenantsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">{t('tenants.list.create_sheet.parent_none')}</SelectItem>
-                  {tenants
-                    .filter((tenant) => tenant.type === 'Platform' || tenant.type === 'Partner')
-                    .map((tenant) => (
-                      <SelectItem key={tenant.tenantId} value={tenant.tenantId}>
-                        {tenant.name} ({tenant.type})
-                      </SelectItem>
-                    ))}
+                  {parentOptions(watch('type') ?? 'Customer', tenants).map((tenant) => (
+                    <SelectItem
+                      key={tenant.tenantId}
+                      value={tenant.tenantId}
+                      data-testid={`tenants-form-parent-option-${tenant.tenantId}`}
+                    >
+                      {tenant.name} ({tenant.type})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
