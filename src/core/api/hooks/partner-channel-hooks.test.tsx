@@ -8,11 +8,15 @@ import { toast } from 'sonner';
 import * as client from '@/core/api/client';
 import { ApiError } from '@/core/api/api-error';
 import {
+  useCreatePartnerCustomer,
+  useUpdateCustomerSettings,
   useCreatePartnerRateCard,
   useGeneratePartnerInvoice,
   useUpdatePartnerRateCard,
 } from './use-partner';
 import { useCreateRateCard, useUpdateRateCard, type CreateRateCardInput } from './use-billing';
+import { useCreateTenant } from './use-tenants';
+import { useUpdateTenantSettings } from '@/admin/tenants/use-tenant-settings';
 
 /**
  * The hooks on the partner-channel paths map the host's coded refusals (host change
@@ -54,6 +58,7 @@ const contract = (name: string) =>
     readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8'),
   ) as Record<string, unknown>;
 const currency = contract('rate-card-currency-refusals.json') as Record<string, Refusal>;
+const planCeiling = contract('plan-above-parent-409.json') as unknown as Refusal;
 
 function lastErrorToast(): { code: string | null; text: string } {
   const arg = vi.mocked(toast.error).mock.calls.at(-1)?.[0];
@@ -133,4 +138,47 @@ describe('currency refusals (P2)', () => {
 
     expect(shown).toEqual({ code: null, text: 'Rates are required' });
   });
+});
+
+describe('the 409 plan ceiling (P3)', () => {
+  const paths = [
+    [
+      'useCreatePartnerCustomer',
+      () => useCreatePartnerCustomer(),
+      { tenantId: 'pc1', name: 'Customer One', plan: 'Enterprise' },
+    ],
+    [
+      'useUpdateCustomerSettings',
+      () => useUpdateCustomerSettings(),
+      { id: 'pc1', platformName: 'X' },
+    ],
+    ['useUpdateTenantSettings', () => useUpdateTenantSettings('pc1'), { platformName: 'X' }],
+    ['useCreateTenant', () => useCreateTenant(), { tenantId: 'pc1', name: 'Customer One' }],
+  ] as const;
+
+  it.each(paths)(
+    '%s_ShouldToastPlanExceedsParentNamingBothPlans_WhenTheHostAnswers409',
+    async (_name, useHook, vars) => {
+      const shown = await runRejected(useHook as never, vars, planCeiling);
+
+      expect(shown.code).toBe('plan-exceeds-parent');
+      expect(shown.text).toContain('common:errors.partner_channel.plan_exceeds_parent');
+      expect(shown.text).toContain('common:errors.partner_channel.plans.Enterprise');
+      expect(shown.text).toContain('common:errors.partner_channel.plans.Pro');
+      expect(shown.text).not.toBe(planCeiling.body.error);
+      expect(toast.success).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(paths)(
+    '%s_ShouldKeepTheServerMessage_WhenAnotherRefusalAnswers',
+    async (_n, useHook, vars) => {
+      const shown = await runRejected(useHook as never, vars, {
+        status: 400,
+        body: { error: 'Tenant already exists' },
+      });
+
+      expect(shown).toEqual({ code: null, text: 'Tenant already exists' });
+    },
+  );
 });

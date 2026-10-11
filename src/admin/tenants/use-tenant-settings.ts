@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { toastPartnerChannelRefusal } from '@/core/api/partner-channel-refusals';
 
 // ─── Backend DTO mirrors ─────────────────────────────────────────────────────
 //
@@ -172,7 +173,11 @@ export function useUpdateTenantSettings(tenantId: string) {
       qc.invalidateQueries({ queryKey: ['tenant', tenantId] });
       toast.success(t('toasts.tenantSettings.saved'));
     },
-    onError: (err: Error) => toast.error(err.message ?? 'Failed to save settings'),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['plan-exceeds-parent'], t)) {
+        toast.error(err.message ?? 'Failed to save settings');
+      }
+    },
   });
 }
 

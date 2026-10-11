@@ -111,7 +111,11 @@ export function useCreatePartnerCustomer() {
       qc.invalidateQueries({ queryKey: ['partner-customers'] });
       toast.success(t('toasts.partner.customerCreated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['plan-exceeds-parent'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
@@ -209,7 +213,11 @@ export function useUpdateCustomerSettings() {
       qc.invalidateQueries({ queryKey: ['partner-customer-settings', vars.id] });
       toast.success(t('toasts.partner.customerSettingsUpdated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['plan-exceeds-parent'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
