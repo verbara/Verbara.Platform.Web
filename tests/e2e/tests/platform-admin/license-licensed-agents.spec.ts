@@ -121,4 +121,31 @@ test.describe('Licence page — tier and licensed agents', () => {
     await expect(page.getByTestId('license-key-input')).toBeEnabled();
     await expect(page.getByTestId('license-agents-export-button')).toBeEnabled();
   });
+
+  // partner-channel-pilot-fixes (P5). A separate test, so F15's run of the two tests above
+  // (the-console-follow-ups-after-v3-21-0-web task 2.8) still measures the shipped spec (design D12).
+  test("names each peak-day tenant's channel and lists the Partner share of the peak day", async ({
+    platformAdminPage: page,
+  }) => {
+    await stubLicensing(page, PEAKS);
+
+    await page.goto('/admin/license');
+
+    const globex = page.getByTestId('license-agents-tenant-channel-ten-globex');
+    await expect(globex).toHaveAttribute('data-channel', 'partner');
+    await expect(page.getByTestId('license-agents-tenant-channel-ten-acme')).toHaveAttribute(
+      'data-channel',
+      'direct',
+    );
+    const partners = page
+      .getByTestId('license-agents-partner-subtotals')
+      .locator('[data-partner-tenant-id]');
+    await expect(partners).toHaveCount(1);
+    await expect(partners.nth(0)).toHaveAttribute('data-partner-tenant-id', 'ten-reseller');
+    await expect(partners.nth(0)).toHaveAttribute('data-licensed-agents', '15');
+    await expect(page.getByTestId('license-agents-direct-subtotal')).toHaveAttribute(
+      'data-licensed-agents',
+      '32',
+    );
+  });
 });

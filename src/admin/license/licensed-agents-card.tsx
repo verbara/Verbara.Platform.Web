@@ -24,7 +24,12 @@ import {
 } from '@/core/api/hooks/use-system';
 
 import { isMonthInProgress, recentLicenseMonths, type LicenseMonth } from './license-months';
-import { peakDayTenants } from './peak-day-tenants';
+import {
+  directSubtotal,
+  partnerSubtotals,
+  peakDayTenants,
+  tenantChannel,
+} from './peak-day-tenants';
 
 export interface LicensedAgentsCardProps {
   /** The current day; injectable for tests. Defaults to now, in the browser's time zone. */
@@ -132,6 +137,7 @@ function LicensedAgentsFigures({ peaks, formatDay, formatNumber }: FiguresProps)
   const maxAgents = license.maxAgents;
   const declared = maxAgents != null && maxAgents > 0;
   const tenants = peakDayTenants(peaks);
+  const subtotals = partnerSubtotals(peaks);
 
   return (
     <div className="space-y-4">
@@ -213,26 +219,90 @@ function LicensedAgentsFigures({ peaks, formatDay, formatNumber }: FiguresProps)
                     <th className="py-1 text-left font-medium">
                       {t('admin:license.agents.breakdown_tenant')}
                     </th>
+                    <th className="py-1 text-left font-medium">
+                      {t('admin:license.agents.breakdown_channel')}
+                    </th>
                     <th className="py-1 text-right font-medium">
                       {t('admin:license.agents.breakdown_agents')}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {tenants.map((tenant) => (
+                  {tenants.map((tenant) => {
+                    const channel = tenantChannel(tenant, subtotals);
+                    return (
+                      <tr
+                        key={tenant.tenantId}
+                        className="border-t"
+                        data-tenant-id={tenant.tenantId}
+                        data-licensed-agents={tenant.licensedAgents}
+                      >
+                        <td className="py-1 text-foreground">{tenant.tenantName}</td>
+                        <td
+                          className="py-1 text-muted-foreground"
+                          data-testid={`license-agents-tenant-channel-${tenant.tenantId}`}
+                          data-channel={channel.kind}
+                        >
+                          {channel.kind === 'partner'
+                            ? channel.partnerName
+                            : t(`admin:license.agents.channel_${channel.kind}`)}
+                        </td>
+                        <td className="py-1 text-right font-mono">
+                          {formatNumber(tenant.licensedAgents)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {subtotals.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t('admin:license.agents.partner_subtotals_title')}
+              </p>
+              <table className="w-full text-sm">
+                <thead className="text-xs text-muted-foreground">
+                  <tr>
+                    <th className="py-1 text-left font-medium">
+                      {t('admin:license.agents.partner_subtotals_partner')}
+                    </th>
+                    <th className="py-1 text-right font-medium">
+                      {t('admin:license.agents.breakdown_agents')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody data-testid="license-agents-partner-subtotals">
+                  {subtotals.map((subtotal) => (
                     <tr
-                      key={tenant.tenantId}
+                      key={subtotal.partnerTenantId}
                       className="border-t"
-                      data-tenant-id={tenant.tenantId}
-                      data-licensed-agents={tenant.licensedAgents}
+                      data-partner-tenant-id={subtotal.partnerTenantId}
+                      data-licensed-agents={subtotal.licensedAgents}
                     >
-                      <td className="py-1 text-foreground">{tenant.tenantName}</td>
+                      <td className="py-1 text-foreground">{subtotal.partnerTenantName}</td>
                       <td className="py-1 text-right font-mono">
-                        {formatNumber(tenant.licensedAgents)}
+                        {formatNumber(subtotal.licensedAgents)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                  <tr
+                    className="border-t font-medium"
+                    data-testid="license-agents-direct-subtotal"
+                    data-licensed-agents={directSubtotal(peaks)}
+                  >
+                    <td className="py-1 text-foreground">
+                      {t('admin:license.agents.direct_subtotal')}
+                    </td>
+                    <td className="py-1 text-right font-mono">
+                      {formatNumber(directSubtotal(peaks))}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           )}

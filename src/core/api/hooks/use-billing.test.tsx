@@ -2,9 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { isValidElement, type ReactElement } from 'react';
+import { toast } from 'sonner';
 import * as client from '@/core/api/client';
+import { ApiError } from '@/core/api/api-error';
 
 vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
 vi.mock('@/core/tenant/tenant-store', () => ({
   useTenantStore: Object.assign(
     (selector: (s: { activeTenantId: string }) => string) =>
@@ -570,5 +577,77 @@ describe('useUpdateDunningStatus', () => {
       method: 'POST',
       data: undefined,
     });
+  });
+});
+
+const contract = (name: string) =>
+  JSON.parse(
+    readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8'),
+  ) as Record<string, unknown>;
+
+/** The `data-error-code` and text of the last error toast. */
+function lastErrorToast(): { code: string | null; text: string } {
+  const calls = vi.mocked(toast.error).mock.calls;
+  const arg = calls[calls.length - 1]?.[0];
+  if (!isValidElement(arg)) return { code: null, text: String(arg) };
+  const el = arg as ReactElement<{ 'data-error-code'?: string; children?: unknown }>;
+  return { code: el.props['data-error-code'] ?? null, text: String(el.props.children) };
+}
+
+describe("dunning on a Partner's Customer (partner-channel-pilot-fixes, design D6)", () => {
+  const refusal = contract('dunning-partner-customer-409.json') as {
+    status: number;
+    body: Record<string, unknown>;
+  };
+
+  it.each([true, false])(
+    'UpdateDunningStatus_ShouldToastTheCodedRefusal_WhenTheHostAnswers409 (paused=%s)',
+    async (paused) => {
+      vi.mocked(client.customFetch).mockRejectedValue(new ApiError(refusal.status, refusal.body));
+
+      const { result } = renderHook(() => useUpdateDunningStatus('pc1'), { wrapper });
+      act(() => {
+        result.current.mutate({ paused, reason: 'x' });
+      });
+
+      await waitFor(() => expect(result.current.isError).toBe(true));
+      const shown = lastErrorToast();
+      expect(shown.code).toBe('dunning-partner-customer');
+      expect(shown.text).toBe('common:errors.partner_channel.dunning_partner_customer');
+      expect(shown.text).not.toBe(refusal.body.error);
+      expect(toast.success).not.toHaveBeenCalled();
+    },
+  );
+
+  it('UpdateDunningStatus_ShouldKeepTheServerMessage_WhenTheRefusalIsAnotherOne', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(404, { error: 'Not found' }));
+
+    const { result } = renderHook(() => useUpdateDunningStatus('pc1'), { wrapper });
+    act(() => {
+      result.current.mutate({ paused: false });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(toast.error).toHaveBeenLastCalledWith('Not found');
+  });
+
+  it('DunningStatus_ShouldNotRetry_WhenTheHostAnswers409', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(refusal.status, refusal.body));
+
+    const { result } = renderHook(() => useDunningStatus('pc1'), { wrapper });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+    expect((result.current.error as ApiError).code).toBe('dunning-partner-customer');
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('DunningStatus_ShouldRetryOnce_WhenTheReadFailsOtherwise', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(500, {}));
+
+    const { result } = renderHook(() => useDunningStatus('pc1'), { wrapper });
+
+    await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
+    expect(client.customFetch).toHaveBeenCalledTimes(2);
   });
 });

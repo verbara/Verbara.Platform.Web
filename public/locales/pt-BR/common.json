@@ -230,6 +230,18 @@
       "channel_send_failed": "O provedor não aceitou a mensagem. Nada foi salvo; você pode tentar de novo.",
       "start_persist_failed": "O contato recebeu a mensagem, mas a conversa não pôde ser salva. Não envie de novo; avise o seu administrador.",
       "failed": "Não foi possível concluir a ação. Tente novamente."
+    },
+    "partner_channel": {
+      "plan_exceeds_parent": "O plano {{requestedPlan}} está acima do plano {{parentPlan}} do tenant pai. Escolha {{parentPlan}} ou um plano inferior.",
+      "dunning_partner_customer": "A cobrança não se aplica a este Cliente: o Partner dele o fatura fora da Verbara.",
+      "currency_invalid": "{{currency}} não é um código de moeda ISO 4217 válido.",
+      "currency_missing": "A tabela de preços não tem moeda. Informe um código ISO 4217, por exemplo USD.",
+      "currency_mismatch": "A tabela de preços do Partner está em {{partnerCurrency}}, mas esta implantação liquida em {{hostCurrency}}. Uma implantação liquida em uma única moeda.",
+      "plans": {
+        "Starter": "Starter",
+        "Pro": "Pro",
+        "Enterprise": "Enterprise"
+      }
     }
   },
   "agent_layout": {

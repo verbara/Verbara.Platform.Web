@@ -61,11 +61,33 @@ export function useSystemLicense() {
 export type LicenseStatusSnapshot = components['schemas']['LicenseStatusSnapshot'];
 
 /**
+ * A host before `partner-channel-pilot-fixes` omits the slice's fields (rolling upgrade, design
+ * D9): the generated schema with those keys optional, so a consumer reads them as absent.
+ */
+type FromOlderHost<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/** One Partner's share of the peak day: the sum of its children's `licensedAgents` on `peakDay`. */
+export type LicensedAgentPartnerSubtotal = components['schemas']['LicensedAgentPartnerSubtotalDto'];
+
+/**
  * `GET /api/v1/management/licensing/agents` — the licensed-agent peaks of a date range (host
  * contract fixture `licensed-agent-peaks.v1.json`). `deployment.peakDay` is null, and
  * `deployment.peakLicensedAgents` 0, while no day of the range is closed.
+ * `deployment.partnerSubtotals` and `days[].tenants[].parentTenantId` may be absent on a host
+ * before the partner-channel slice (design D9).
  */
-export type LicensedAgentPeaks = components['schemas']['LicensedAgentPeaksResponse'];
+export type LicensedAgentPeaks = Omit<
+  components['schemas']['LicensedAgentPeaksResponse'],
+  'deployment' | 'days'
+> & {
+  deployment: FromOlderHost<
+    components['schemas']['LicensedAgentDeploymentPeakDto'],
+    'partnerSubtotals'
+  >;
+  days: (Omit<components['schemas']['LicensedAgentDayDto'], 'tenants'> & {
+    tenants: FromOlderHost<components['schemas']['LicensedAgentTenantDayDto'], 'parentTenantId'>[];
+  })[];
+};
 
 /** An inclusive range of calendar days, both `YYYY-MM-DD`. */
 export interface LicensedAgentRange {

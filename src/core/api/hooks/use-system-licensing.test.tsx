@@ -76,6 +76,12 @@ const DEPLOYMENT: Shape<Schemas['LicensedAgentDeploymentPeakDto']> = {
   peakLicensedAgents: 'number',
   peakDay: 'string|null',
   overBand: 'boolean',
+  partnerSubtotals: 'array',
+};
+const PARTNER_SUBTOTAL: Shape<Schemas['LicensedAgentPartnerSubtotalDto']> = {
+  partnerTenantId: 'string',
+  partnerTenantName: 'string',
+  licensedAgents: 'number',
 };
 const DAY: Shape<Schemas['LicensedAgentDayDto']> = {
   day: 'string',
@@ -86,6 +92,7 @@ const DAY: Shape<Schemas['LicensedAgentDayDto']> = {
 const TENANT_DAY: Shape<Schemas['LicensedAgentTenantDayDto']> = {
   tenantId: 'string',
   tenantName: 'string',
+  parentTenantId: 'string|null',
   licensedAgents: 'number',
   revision: 'number',
   closedAt: 'string',
@@ -102,6 +109,12 @@ const EXPORT: Shape<Schemas['LicensedAgentExportResponse']> = {
   events: 'array',
   daily: 'array',
   chainHeads: 'array',
+  tenants: 'array',
+};
+const TENANT_MAP: Shape<Schemas['LicensedAgentExportTenantDto']> = {
+  tenantId: 'string',
+  tenantType: 'string|null',
+  parentTenantId: 'string|null',
 };
 const EVENT: Shape<Schemas['LicensedAgentExportEventDto']> = {
   tenantId: 'string|null',
@@ -174,6 +187,11 @@ describe('licensed-agent metering — verbatim-fixture guard', () => {
     expectShape(fixture, PEAKS, 'peaks');
     expectShape(fixture.license, LICENSE, 'peaks.license');
     expectShape(fixture.deployment, DEPLOYMENT, 'peaks.deployment');
+    expectRows(
+      (fixture.deployment as Record<string, unknown>).partnerSubtotals,
+      PARTNER_SUBTOTAL,
+      'peaks.deployment.partnerSubtotals',
+    );
     expectRows(fixture.days, DAY, 'peaks.days');
     for (const day of fixture.days as Array<Record<string, unknown>>) {
       expectRows(day.tenants, TENANT_DAY, `peaks.days.${String(day.day)}.tenants`);
@@ -188,6 +206,7 @@ describe('licensed-agent metering — verbatim-fixture guard', () => {
     expectRows(fixture.events, EVENT, 'export.events');
     expectRows(fixture.daily, DAILY, 'export.daily');
     expectRows(fixture.chainHeads, CHAIN_HEAD, 'export.chainHeads');
+    expectRows(fixture.tenants, TENANT_MAP, 'export.tenants');
   });
 
   it('StatusFixture_ShouldMatchGeneratedSchema_WhenCopiedFromHost', () => {

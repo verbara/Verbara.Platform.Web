@@ -3,17 +3,13 @@ import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { toastPartnerChannelRefusal } from '@/core/api/partner-channel-refusals';
 
 /** Narrowed literal unions retained for the request-side form/select (`CreateTenantInput.type`)
  *  and the hook tests. The server `MgmtTenantDto` widens `status`/`type` to `string`, so these are
  *  no longer part of the response `Tenant` type below — consumers already treat both as `string`. */
 export type TenantStatus =
-  | 'Active'
-  | 'Suspended'
-  | 'Deleted'
-  | 'Warning'
-  | 'Degraded'
-  | 'PendingDeletion';
+  'Active' | 'Suspended' | 'Deleted' | 'Warning' | 'Degraded' | 'PendingDeletion';
 
 export type TenantType = 'Platform' | 'Partner' | 'Customer';
 
@@ -79,7 +75,11 @@ export function useCreateTenant() {
       qc.invalidateQueries({ queryKey: ['tenants'] });
       toast.success(t('toasts.tenants.created'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['plan-exceeds-parent'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 

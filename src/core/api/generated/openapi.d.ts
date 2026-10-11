@@ -3747,12 +3747,14 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Conflict */
+        409: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PlanAboveParentRefusal'];
+          };
         };
       };
     };
@@ -3822,12 +3824,30 @@ export interface paths {
             'application/json': components['schemas']['MgmtTenantDto'];
           };
         };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
         /** @description Not Found */
         404: {
           headers: {
             [name: string]: unknown;
           };
           content?: never;
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PlanAboveParentRefusal'];
+          };
         };
       };
     };
@@ -12778,12 +12798,14 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Bad Request */
+        400: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CurrencyInvalidRefusal'];
+          };
         };
       };
     };
@@ -12825,6 +12847,15 @@ export interface paths {
           };
           content: {
             'application/json': components['schemas']['RateCardDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CurrencyInvalidRefusal'];
           };
         };
         /** @description Not Found */
@@ -13123,6 +13154,15 @@ export interface paths {
           };
           content?: never;
         };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DunningPartnerCustomerRefusal'];
+          };
+        };
       };
     };
     put?: never;
@@ -13169,6 +13209,15 @@ export interface paths {
           };
           content?: never;
         };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DunningPartnerCustomerRefusal'];
+          };
+        };
       };
     };
     delete?: never;
@@ -13212,6 +13261,15 @@ export interface paths {
             [name: string]: unknown;
           };
           content?: never;
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DunningPartnerCustomerRefusal'];
+          };
         };
       };
     };
@@ -14488,12 +14546,14 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Conflict */
+        409: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PlanAboveParentRefusal'];
+          };
         };
       };
     };
@@ -14644,12 +14704,14 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Conflict */
+        409: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PlanAboveParentRefusal'];
+          };
         };
       };
     };
@@ -14887,12 +14949,14 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Conflict */
+        409: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['PlanAboveParentRefusal'];
+          };
         };
       };
     };
@@ -14944,12 +15008,14 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Bad Request */
+        400: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CurrencyInvalidRefusal'];
+          };
         };
       };
     };
@@ -14989,6 +15055,15 @@ export interface paths {
           };
           content: {
             'application/json': components['schemas']['RateCardDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['CurrencyInvalidRefusal'];
           };
         };
         /** @description Not Found */
@@ -15096,12 +15171,14 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Bad Request */
+        400: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['CurrencyMismatchRefusal'];
+          };
         };
       };
     };
@@ -17685,6 +17762,17 @@ export interface components {
       /** @description The prompt body — the email message, SMS text, or voice TTS prompt. */
       body: string;
     };
+    /** @description 400 `currency-invalid`: a rate-card currency (received, or stored on a legacy row) that is not ISO 4217. */
+    CurrencyInvalidRefusal: {
+      error: string;
+      currency: null | string;
+    };
+    /** @description 400 `currency-mismatch`: the Partner card and the host base card are priced in different currencies. */
+    CurrencyMismatchRefusal: {
+      error: string;
+      partnerCurrency: string;
+      hostCurrency: string;
+    };
     CurrentIntervalDto: {
       /** Format: date-time */
       intervalStart: string;
@@ -17777,6 +17865,12 @@ export interface components {
       entryCount: number;
       /** Format: date-time */
       createdAt: string;
+    };
+    /** @description 409 `dunning-partner-customer`: a host dunning route aimed at a Customer whose parent is a Partner. */
+    DunningPartnerCustomerRefusal: {
+      error: string;
+      tenantId: string;
+      partnerTenantId: string;
     };
     DunningRecordDto: {
       dunningId: string;
@@ -18096,6 +18190,7 @@ export interface components {
       /** Format: date */
       peakDay: null | string;
       overBand: boolean;
+      partnerSubtotals: components['schemas']['LicensedAgentPartnerSubtotalDto'][];
     };
     LicensedAgentExportDailyDto: {
       tenantId: null | string;
@@ -18145,6 +18240,17 @@ export interface components {
       events: components['schemas']['LicensedAgentExportEventDto'][];
       daily: components['schemas']['LicensedAgentExportDailyDto'][];
       chainHeads: components['schemas']['LicensedAgentChainHeadDto'][];
+      tenants: components['schemas']['LicensedAgentExportTenantDto'][];
+    };
+    /**
+     * @description partner-channel-pilot-fixes (design D9): the export's tenant map, a snapshot as of `generatedAt` outside
+     *     every hashed row. string? LicensedAgentExportTenantDto.TenantType is `Platform`, `Partner` or `Customer`, or null (as is
+     *     string? LicensedAgentExportTenantDto.ParentTenantId) when the tenant row no longer exists.
+     */
+    LicensedAgentExportTenantDto: {
+      tenantId: string;
+      tenantType: null | string;
+      parentTenantId: null | string;
     };
     LicensedAgentLicenseDto: {
       licenseId: null | string;
@@ -18153,6 +18259,13 @@ export interface components {
       /** Format: int32 */
       maxAgents: null | number;
       maxAgentsAdvisory: boolean;
+    };
+    /** @description partner-channel-pilot-fixes (design D8): one Partner's share of the deployment's peak day. */
+    LicensedAgentPartnerSubtotalDto: {
+      partnerTenantId: string;
+      partnerTenantName: string;
+      /** Format: int32 */
+      licensedAgents: number;
     };
     LicensedAgentPeaksResponse: {
       /** Format: int32 */
@@ -18170,6 +18283,7 @@ export interface components {
     LicensedAgentTenantDayDto: {
       tenantId: string;
       tenantName: string;
+      parentTenantId: null | string;
       /** Format: int32 */
       licensedAgents: number;
       /** Format: int32 */
@@ -18805,6 +18919,13 @@ export interface components {
     PermissionGroupDto: {
       category: string;
       permissions: components['schemas']['PermissionDefinition'][];
+    };
+    /** @description 409 `plan-exceeds-parent`: a tenant plan above its parent tenant's plan. */
+    PlanAboveParentRefusal: {
+      error: string;
+      requestedPlan: string;
+      parentPlan: string;
+      parentTenantId: string;
     };
     /** @enum {unknown} */
     PlanFeature:

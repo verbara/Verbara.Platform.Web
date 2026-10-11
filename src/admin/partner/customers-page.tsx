@@ -10,13 +10,7 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/core/ui/select';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/core/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -44,6 +38,9 @@ import {
 } from '@/core/api/hooks/use-partner';
 
 const col = createColumnHelper<PartnerCustomer>();
+
+/** The plan choice that sends no `plan`: the Customer inherits its Partner's plan. */
+const INHERIT_PLAN = 'inherit';
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   Active: 'default',
@@ -74,7 +71,8 @@ export default function PartnerCustomersPage() {
   // Create form state
   const [formTenantId, setFormTenantId] = useState('');
   const [formName, setFormName] = useState('');
-  const [formPlan, setFormPlan] = useState<string>('Starter');
+  // `inherit` (the default) omits `plan`, so the host gives the Customer its Partner's plan (D7).
+  const [formPlan, setFormPlan] = useState<string>(INHERIT_PLAN);
   const [formTemplate, setFormTemplate] = useState<string>('none');
 
   // Edit form state
@@ -95,7 +93,7 @@ export default function PartnerCustomersPage() {
       {
         tenantId: formTenantId.trim(),
         name: formName.trim(),
-        plan: formPlan,
+        ...(formPlan === INHERIT_PLAN ? {} : { plan: formPlan }),
         template: formTemplate === 'none' ? undefined : formTemplate,
       },
       {
@@ -103,7 +101,7 @@ export default function PartnerCustomersPage() {
           setCreateOpen(false);
           setFormTenantId('');
           setFormName('');
-          setFormPlan('Starter');
+          setFormPlan(INHERIT_PLAN);
           setFormTemplate('none');
         },
       },
@@ -149,9 +147,7 @@ export default function PartnerCustomersPage() {
       col.accessor('plan', {
         header: () => t('partner.customers.columns.plan'),
         cell: (info) => (
-          <Badge variant={PLAN_VARIANT[info.getValue()] ?? 'outline'}>
-            {info.getValue()}
-          </Badge>
+          <Badge variant={PLAN_VARIANT[info.getValue()] ?? 'outline'}>{info.getValue()}</Badge>
         ),
       }),
       col.accessor('createdAt', {
@@ -229,21 +225,30 @@ export default function PartnerCustomersPage() {
 
   return (
     <div className="space-y-6" data-testid="partner-customers-page">
-      <PageHeader title={t('partner.customers.title')} description={t('partner.customers.description')}>
+      <PageHeader
+        title={t('partner.customers.title')}
+        description={t('partner.customers.description')}
+      >
         <Button onClick={() => setCreateOpen(true)} data-testid="create-customer">
           <Plus className="mr-1.5 h-4 w-4" />
           {t('partner.customers.add')}
         </Button>
       </PageHeader>
 
-      <DataTable data={customers} columns={columns} searchPlaceholder={t('partner.customers.search_placeholder')} />
+      <DataTable
+        data={customers}
+        columns={columns}
+        searchPlaceholder={t('partner.customers.search_placeholder')}
+      />
 
       {/* Create Customer Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('partner.customers.create_dialog.title')}</DialogTitle>
-            <DialogDescription>{t('partner.customers.create_dialog.description')}</DialogDescription>
+            <DialogDescription>
+              {t('partner.customers.create_dialog.description')}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-4">
             <div className="space-y-1.5">
@@ -268,13 +273,24 @@ export default function PartnerCustomersPage() {
             </div>
             <div className="space-y-1.5">
               <Label>{t('partner.customers.create_dialog.plan')}</Label>
-              <Select value={formPlan} onValueChange={(v) => setFormPlan(v ?? 'Starter')}>
+              <Select value={formPlan} onValueChange={(v) => setFormPlan(v ?? INHERIT_PLAN)}>
                 <SelectTrigger data-testid="customer-plan">
-                  <SelectValue />
+                  <SelectValue>
+                    {(value: string) =>
+                      value === INHERIT_PLAN
+                        ? t('partner.customers.create_dialog.plan_inherit')
+                        : value
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value={INHERIT_PLAN} data-testid="customer-plan-option-inherit">
+                    {t('partner.customers.create_dialog.plan_inherit')}
+                  </SelectItem>
                   {PARTNER_PLAN_OPTIONS.map((p) => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                    <SelectItem key={p} value={p} data-testid={`customer-plan-option-${p}`}>
+                      {p}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -286,29 +302,42 @@ export default function PartnerCustomersPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">{t('partner.customers.create_dialog.template_none')}</SelectItem>
+                  <SelectItem value="none">
+                    {t('partner.customers.create_dialog.template_none')}
+                  </SelectItem>
                   {PARTNER_TEMPLATE_OPTIONS.map((tmpl) => (
-                    <SelectItem key={tmpl} value={tmpl}>{tmpl}</SelectItem>
+                    <SelectItem key={tmpl} value={tmpl}>
+                      {tmpl}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>{t('partner.customers.create_dialog.cancel')}</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+              {t('partner.customers.create_dialog.cancel')}
+            </Button>
             <Button
               onClick={handleCreate}
               disabled={!formTenantId.trim() || !formName.trim() || createCustomer.isPending}
               data-testid="customer-submit"
             >
-              {createCustomer.isPending ? t('partner.customers.create_dialog.creating') : t('partner.customers.create_dialog.create')}
+              {createCustomer.isPending
+                ? t('partner.customers.create_dialog.creating')
+                : t('partner.customers.create_dialog.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit Customer Sheet */}
-      <Sheet open={!!editing} onOpenChange={(open) => { if (!open) setEditing(undefined); }}>
+      <Sheet
+        open={!!editing}
+        onOpenChange={(open) => {
+          if (!open) setEditing(undefined);
+        }}
+      >
         <SheetContent side="right" className="sm:max-w-md">
           <SheetHeader>
             <SheetTitle>{t('partner.customers.edit_sheet.title')}</SheetTitle>
@@ -326,7 +355,9 @@ export default function PartnerCustomersPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-channels">{t('partner.customers.edit_sheet.max_channels')}</Label>
+                <Label htmlFor="edit-channels">
+                  {t('partner.customers.edit_sheet.max_channels')}
+                </Label>
                 <Input
                   id="edit-channels"
                   type="number"
@@ -338,7 +369,9 @@ export default function PartnerCustomersPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-campaigns">{t('partner.customers.edit_sheet.max_campaigns')}</Label>
+                <Label htmlFor="edit-campaigns">
+                  {t('partner.customers.edit_sheet.max_campaigns')}
+                </Label>
                 <Input
                   id="edit-campaigns"
                   type="number"
@@ -352,13 +385,17 @@ export default function PartnerCustomersPage() {
             </div>
           )}
           <SheetFooter className="px-4">
-            <Button variant="outline" onClick={() => setEditing(undefined)}>{t('partner.customers.edit_sheet.cancel')}</Button>
+            <Button variant="outline" onClick={() => setEditing(undefined)}>
+              {t('partner.customers.edit_sheet.cancel')}
+            </Button>
             <Button
               onClick={handleEdit}
               disabled={updateCustomer.isPending}
               data-testid="edit-customer-submit"
             >
-              {updateCustomer.isPending ? t('partner.customers.edit_sheet.saving') : t('partner.customers.edit_sheet.save')}
+              {updateCustomer.isPending
+                ? t('partner.customers.edit_sheet.saving')
+                : t('partner.customers.edit_sheet.save')}
             </Button>
           </SheetFooter>
         </SheetContent>

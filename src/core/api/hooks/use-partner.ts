@@ -3,6 +3,7 @@ import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { toastPartnerChannelRefusal } from '@/core/api/partner-channel-refusals';
 import type { RateCard, CreateRateCardInput, Invoice, UsageSummary } from './use-billing';
 
 // --- Types ---
@@ -110,7 +111,11 @@ export function useCreatePartnerCustomer() {
       qc.invalidateQueries({ queryKey: ['partner-customers'] });
       toast.success(t('toasts.partner.customerCreated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['plan-exceeds-parent'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
@@ -208,7 +213,11 @@ export function useUpdateCustomerSettings() {
       qc.invalidateQueries({ queryKey: ['partner-customer-settings', vars.id] });
       toast.success(t('toasts.partner.customerSettingsUpdated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['plan-exceeds-parent'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
@@ -239,7 +248,11 @@ export function useCreatePartnerRateCard() {
       qc.invalidateQueries({ queryKey: ['partner-rate-cards'] });
       toast.success(t('toasts.partner.rateCardCreated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['currency-invalid'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
@@ -257,7 +270,11 @@ export function useUpdatePartnerRateCard() {
       qc.invalidateQueries({ queryKey: ['partner-rate-cards'] });
       toast.success(t('toasts.partner.rateCardUpdated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['currency-invalid'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 
@@ -314,7 +331,11 @@ export function useGeneratePartnerInvoice(customerId: string) {
       qc.invalidateQueries({ queryKey: ['partner-revenue-details'] });
       toast.success(t('toasts.partner.invoiceGenerated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (!toastPartnerChannelRefusal(err, ['currency-invalid', 'currency-mismatch'], t)) {
+        toast.error(err.message);
+      }
+    },
   });
 }
 

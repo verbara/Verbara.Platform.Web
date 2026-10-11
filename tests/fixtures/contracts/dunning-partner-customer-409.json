@@ -1,0 +1,8 @@
+{
+  "status": 409,
+  "body": {
+    "error": "dunning-partner-customer",
+    "tenantId": "pc1",
+    "partnerTenantId": "p1"
+  }
+}

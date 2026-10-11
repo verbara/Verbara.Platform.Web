@@ -1,0 +1,9 @@
+{
+  "status": 409,
+  "body": {
+    "error": "plan-exceeds-parent",
+    "requestedPlan": "Enterprise",
+    "parentPlan": "Pro",
+    "parentTenantId": "ten-reseller"
+  }
+}

@@ -22,6 +22,8 @@ vi.mock('@/core/api/hooks/use-billing', () => ({
   QUOTA_ACTIONS: ['Warn', 'SoftBlock', 'HardBlock'],
 }));
 
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+
 vi.mock('@/core/tenant/tenant-store', () => ({
   useTenantStore: (select: (s: { activeTenantId: string | null }) => unknown) =>
     select({ activeTenantId: 'ten-acme' }),
@@ -32,6 +34,10 @@ vi.mock('@/core/auth/auth-store', () => ({
     select({ tenantId: 'ten-acme' }),
 }));
 
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { toast } from 'sonner';
+import { ApiError } from '@/core/api/api-error';
 import { asMock } from '@/tests/utils/as-mock';
 import { useDunningStatus, useQuotaStatus, useUpdateQuota } from '@/core/api/hooks/use-billing';
 import QuotasPage from './quotas-page';
@@ -77,5 +83,57 @@ describe('QuotasPage', () => {
     expect((voice.firstElementChild as HTMLElement).className).toContain('bg-destructive');
     // The hint is on the active-agents row alone.
     expect(screen.getAllByTestId('quota-active-agents-hint')).toHaveLength(1);
+  });
+
+  describe("dunning on a Partner's Customer (P1, design D6)", () => {
+    const refusal = JSON.parse(
+      readFileSync(
+        resolve(process.cwd(), 'tests/fixtures/contracts/dunning-partner-customer-409.json'),
+        'utf-8',
+      ),
+    ) as { status: number; body: Record<string, unknown> };
+
+    it('DunningNote_ShouldReplaceTheBanner_WhenTheHostRefusesWithDunningPartnerCustomer', () => {
+      asMock(useDunningStatus).mockReturnValue({
+        data: undefined,
+        isError: true,
+        error: new ApiError(refusal.status, refusal.body),
+      });
+
+      render(<QuotasPage />, { wrapper });
+
+      const note = screen.getByTestId('dunning-not-applicable');
+      expect(note).toHaveAttribute('data-error-code', 'dunning-partner-customer');
+      expect(note.textContent).toBe('billing.quotas.dunning.not_applicable');
+      expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
+      expect(screen.getByTestId('quotas-page')).toBeInTheDocument();
+      // A fact to state, not a failure: no error toast accompanies the note.
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(toast.warning).not.toHaveBeenCalled();
+    });
+
+    it('DunningBanner_ShouldStay_WhenTheTenantIsADirectCustomer', () => {
+      asMock(useDunningStatus).mockReturnValue({
+        data: { isActive: true, daysOverdue: 3, overdueAmount: 0, phase: null },
+      });
+
+      render(<QuotasPage />, { wrapper });
+
+      expect(screen.getByTestId('dunning-banner')).toBeInTheDocument();
+      expect(screen.queryByTestId('dunning-not-applicable')).not.toBeInTheDocument();
+    });
+
+    it('DunningNote_ShouldNotRender_WhenTheReadFailsForAnotherReason', () => {
+      asMock(useDunningStatus).mockReturnValue({
+        data: undefined,
+        isError: true,
+        error: new ApiError(404, { error: 'not-found' }),
+      });
+
+      render(<QuotasPage />, { wrapper });
+
+      expect(screen.queryByTestId('dunning-not-applicable')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('dunning-banner')).not.toBeInTheDocument();
+    });
   });
 });

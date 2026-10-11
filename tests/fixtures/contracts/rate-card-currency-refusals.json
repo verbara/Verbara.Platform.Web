@@ -1,0 +1,17 @@
+{
+  "invalidCurrency": {
+    "status": 400,
+    "body": {
+      "error": "currency-invalid",
+      "currency": "banana"
+    }
+  },
+  "currencyMismatch": {
+    "status": 400,
+    "body": {
+      "error": "currency-mismatch",
+      "partnerCurrency": "PEN",
+      "hostCurrency": "USD"
+    }
+  }
+}

@@ -230,6 +230,18 @@
       "channel_send_failed": "The provider did not accept the message. Nothing was saved; you can try again.",
       "start_persist_failed": "The contact received the message, but the conversation could not be saved. Do not send it again; tell your administrator.",
       "failed": "The action could not be completed. Try again."
+    },
+    "partner_channel": {
+      "plan_exceeds_parent": "The {{requestedPlan}} plan is above the {{parentPlan}} plan of the parent tenant. Choose {{parentPlan}} or a lower plan.",
+      "dunning_partner_customer": "Dunning does not apply to this Customer: its Partner bills it outside Verbara.",
+      "currency_invalid": "{{currency}} is not a valid ISO 4217 currency code.",
+      "currency_missing": "The rate card has no currency. Set an ISO 4217 code such as USD.",
+      "currency_mismatch": "The Partner's rate card is in {{partnerCurrency}}, but this deployment settles in {{hostCurrency}}. A deployment settles in a single currency.",
+      "plans": {
+        "Starter": "Starter",
+        "Pro": "Pro",
+        "Enterprise": "Enterprise"
+      }
     }
   },
   "agent_layout": {

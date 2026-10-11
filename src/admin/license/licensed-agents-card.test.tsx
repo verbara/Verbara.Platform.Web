@@ -270,4 +270,94 @@ describe('LicensedAgentsCard', () => {
     expect(await screen.findByTestId('license-agents-error')).toBeInTheDocument();
     expect(screen.getByTestId('license-agents-export-button')).toBeEnabled();
   });
+
+  describe('Partner share of the peak day (P5, design D9)', () => {
+    it('Breakdown_ShouldNameEachTenantsChannel_WhenParentTenantIdIsServed', async () => {
+      servePeaks(peaksFixture());
+      renderCard();
+
+      const globex = await screen.findByTestId('license-agents-tenant-channel-ten-globex');
+      expect(globex).toHaveAttribute('data-channel', 'partner');
+      expect(globex).toHaveTextContent('Reseller One');
+      const acme = screen.getByTestId('license-agents-tenant-channel-ten-acme');
+      expect(acme).toHaveAttribute('data-channel', 'direct');
+      expect(acme).toHaveTextContent('admin:license.agents.channel_direct');
+    });
+
+    it('Breakdown_ShouldMarkTheTenantUnknown_WhenParentTenantIdIsNull', async () => {
+      servePeaks(
+        withPeaks((p) => {
+          const row = p.days[1]!.tenants[0]!;
+          row.tenantId = 'ten-gone';
+          row.parentTenantId = null;
+        }),
+      );
+      renderCard();
+
+      const gone = await screen.findByTestId('license-agents-tenant-channel-ten-gone');
+      expect(gone).toHaveAttribute('data-channel', 'unknown');
+      expect(gone).toHaveTextContent('admin:license.agents.channel_unknown');
+    });
+
+    it('Subtotals_ShouldListPartnersAndTheDirectRemainder_WhenPartnerSubtotalsIsNonEmpty', async () => {
+      servePeaks(peaksFixture());
+      renderCard();
+
+      const list = await screen.findByTestId('license-agents-partner-subtotals');
+      const rows = list.querySelectorAll('[data-partner-tenant-id]');
+      expect([...rows].map((r) => r.getAttribute('data-partner-tenant-id'))).toEqual([
+        'ten-reseller',
+      ]);
+      expect(within(rows[0] as HTMLElement).getByText('Reseller One')).toBeInTheDocument();
+      expect(rows[0]).toHaveAttribute('data-licensed-agents', '15');
+      const direct = screen.getByTestId('license-agents-direct-subtotal');
+      expect(direct).toHaveAttribute('data-licensed-agents', '32');
+      expect(direct).toHaveTextContent('32');
+    });
+
+    it('Subtotals_ShouldNotRender_WhenPartnerSubtotalsIsEmpty', async () => {
+      servePeaks(withPeaks((p) => (p.deployment.partnerSubtotals = [])));
+      renderCard();
+
+      expect(await screen.findByTestId('license-agents-tenant-breakdown')).toBeInTheDocument();
+      expect(screen.queryByTestId('license-agents-partner-subtotals')).toBeNull();
+      expect(screen.queryByTestId('license-agents-direct-subtotal')).toBeNull();
+    });
+
+    it('Subtotals_ShouldNotRender_WhenThePeakDayIsNull', async () => {
+      servePeaks(
+        withPeaks((p) => {
+          p.deployment = {
+            peakLicensedAgents: 0,
+            peakDay: null,
+            overBand: false,
+            partnerSubtotals: [],
+          };
+          p.days = [];
+        }),
+      );
+      renderCard();
+
+      expect(await screen.findByTestId('license-agents-empty')).toBeInTheDocument();
+      expect(screen.queryByTestId('license-agents-partner-subtotals')).toBeNull();
+      expect(screen.queryByTestId('license-agents-direct-subtotal')).toBeNull();
+    });
+
+    it('Render_ShouldNotThrow_WhenAnOlderHostServesNoPartnerFields', async () => {
+      servePeaks(
+        withPeaks((p) => {
+          delete p.deployment.partnerSubtotals;
+          for (const day of p.days) for (const t of day.tenants) delete t.parentTenantId;
+        }),
+      );
+      renderCard();
+
+      expect(await screen.findByTestId('license-agents-tenant-breakdown')).toBeInTheDocument();
+      expect(screen.getByTestId('license-agents-tenant-channel-ten-acme')).toHaveAttribute(
+        'data-channel',
+        'unknown',
+      );
+      expect(screen.queryByTestId('license-agents-partner-subtotals')).toBeNull();
+    });
+  });
 });

@@ -21,6 +21,11 @@ end-to-end specs `conversation-refusals` and `monitor-takeover-and-contact-searc
 Platform v2.28.0 because their routing helper gave the WebChat session id to a contact of its own;
 this release fixes the helper (see Changed).
 
+The Partner-channel items below (the 409 refusals, the currency refusals, plan inheritance and the
+Partner share of the peak day) take effect against the first Platform release that carries
+`partner-channel-pilot-fixes`. Against an earlier Platform nothing regresses: a Customer created
+with "inherit" gets `Starter`, as before, and the licence card shows no Partner figures.
+
 ### Added
 
 - **Connection test on the channel form.** "Test connection" runs the provider test and shows the
@@ -52,6 +57,14 @@ this release fixes the helper (see Changed).
   opens the digital tab with that conversation's detail. A takeover still asks for confirmation.
   The tab lists only the first 25 conversations, so a linked conversation that closed or sits
   further down shows a "not in this list" notice instead of its detail.
+- **Partner share of the peak day on the licence page.** Each tenant in the peak-day breakdown
+  names its channel: its Partner's name, "direct", or "unknown" when the tenant no longer exists.
+  Below it, the card lists each Partner's licensed agents on the peak day and the direct remainder
+  (the peak minus the Partner subtotals), the figure the monthly self-declaration needs. The export
+  still downloads byte for byte, its new `tenants[]` map included.
+- **A new Customer inherits the Partner's plan.** The Partner "create customer" form defaults to
+  "Inherit the Partner's plan" and then sends no plan, so the Customer gets its Partner's plan;
+  picking Starter, Pro or Enterprise still sends that plan.
 
 ### Changed
 
@@ -68,6 +81,30 @@ this release fixes the helper (see Changed).
   response instead of creating a contact addressed by the session id, which Platform v2.28.0 no
   longer resolves. `conversation-refusals` and `monitor-takeover-and-contact-search` pass against
   Platform v2.28.0 again, and a new spec covers refused starts by code.
+- **A plan above the parent's plan is refused as 409 and explained.** Partner customer create and
+  Partner customer settings (until now 400) and host tenant settings (until now 200 without saving)
+  answer 409 `plan-exceeds-parent`, as does host tenant create. The console shows a localized
+  message naming the requested and the parent plan, keeps the form open with its input and shows no
+  success message.
+- **Rate-card currencies are ISO 4217 codes.** Both rate-card forms accept only an active ISO 4217
+  currency or fund code — exactly the host's list, so `XAU` (gold), `XDR` (the SDR) and `CUC` are
+  refused too — and send it trimmed and upper-cased (`usd` is sent as `USD`); `banana` or `XYZ` is
+  refused on the field. The host's `currency-invalid` (rate-card writes and Partner invoice
+  generation) and `currency-mismatch` (Partner invoice generation) refusals are shown in the user's
+  language, naming the codes, and the rate-card sheet stays open on a refused save.
+- **The tenant create sheet offers only parents the host accepts.** A new Partner can hang only from
+  the Platform tenant; a new Customer from the Platform tenant or a Partner. Switching the type to
+  Partner clears a Partner parent.
+- **Dunning for a Partner's Customer is a note, not an error.** On the host's billing quotas page,
+  the host's 409 `dunning-partner-customer` shows "dunning does not apply: the Partner bills this
+  Customer" in place of the dunning banner, with no error toast. The Partner portal no longer
+  offers dunning at all (see _Removed_).
+
+### Removed
+
+- **The dunning toggle on the Partner customer detail page.** Every viewer of that page is a
+  Partner administrator, which the dunning routes refuse with 403, and the host never runs dunning
+  on a Customer a Partner bills. The toggle, its pause dialog and both dunning requests are gone.
 
 ## [3.22.0-web] - 2026-10-10
 

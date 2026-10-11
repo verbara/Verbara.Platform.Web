@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   ApiError,
   describeApiError,
@@ -77,6 +79,67 @@ const MAP: ApiErrorMap<Action> = {
   statuses: { 404: { code: 'not-found', key: 'errors.not_found' } },
   fallback: { code: 'failed', key: 'errors.failed' },
 };
+
+const contract = (name: string) =>
+  JSON.parse(
+    readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8'),
+  ) as Record<string, { status: number; body: Record<string, unknown> }> & {
+    status: number;
+    body: Record<string, unknown>;
+  };
+
+describe('ApiError facts (partner-channel-pilot-fixes, design D3)', () => {
+  const currency = contract('rate-card-currency-refusals.json');
+  const refusals = [
+    {
+      name: 'plan-above-parent-409.json',
+      ...contract('plan-above-parent-409.json'),
+      facts: { requestedPlan: 'Enterprise', parentPlan: 'Pro', parentTenantId: 'ten-reseller' },
+    },
+    {
+      name: 'dunning-partner-customer-409.json',
+      ...contract('dunning-partner-customer-409.json'),
+      facts: { tenantId: 'pc1', partnerTenantId: 'p1' },
+    },
+    { name: 'invalidCurrency', ...currency.invalidCurrency, facts: { currency: 'banana' } },
+    {
+      name: 'currencyMismatch',
+      ...currency.currencyMismatch,
+      facts: { partnerCurrency: 'PEN', hostCurrency: 'USD' },
+    },
+  ];
+
+  it.each(refusals)('should read the code and the facts of $name', ({ status, body, facts }) => {
+    const err = new ApiError(status, body);
+    expect(err.code).toBe(body.error);
+    expect(err.facts).toEqual(facts);
+    expect(Object.keys(err.facts)).not.toContain('error');
+  });
+
+  it('should keep a null fact and drop non-scalar fields', () => {
+    const err = new ApiError(400, {
+      error: 'currency-invalid',
+      currency: null,
+      nested: { a: 1 },
+      list: [1],
+      count: 2,
+      flag: false,
+    });
+    expect(err.facts).toEqual({ currency: null, count: 2, flag: false });
+  });
+
+  it('should never put a prose error into the code or the facts', () => {
+    const err = new ApiError(400, { error: 'Plan exceeds the parent plan', parentPlan: 'Pro' });
+    expect(err.code).toBeNull();
+    expect(err.facts).toEqual({ parentPlan: 'Pro' });
+  });
+
+  it('should have no facts when the body is not an object', () => {
+    expect(new ApiError(500, null).facts).toEqual({});
+    expect(new ApiError(500, 'oops').facts).toEqual({});
+    expect(new ApiError(500, [1, 2]).facts).toEqual({});
+  });
+});
 
 describe('describeApiError', () => {
   it('should choose the machine code first, whatever the action and status', () => {

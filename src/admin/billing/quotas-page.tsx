@@ -3,7 +3,7 @@ import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router';
-import { Pencil, ShieldAlert, ShieldCheck, ShieldX, TriangleAlert } from 'lucide-react';
+import { Info, Pencil, ShieldAlert, ShieldCheck, ShieldX, TriangleAlert } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/ui/page-header';
 import { UsageMeter } from '@/core/ui/usage-meter';
@@ -30,6 +30,7 @@ import {
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useFormatNumber } from '@/core/i18n/use-format';
+import { isApiError } from '@/core/api/api-error';
 
 const quotaSchema = z.object({
   maxConcurrentChannels: z.coerce.number().int().min(1),
@@ -105,7 +106,12 @@ export default function QuotasPage() {
   const authTenantId = useAuthStore((s) => s.tenantId);
   const tenantId = activeTenantId ?? authTenantId;
   const { data: status } = useQuotaStatus();
-  const { data: dunning } = useDunningStatus(tenantId ?? undefined);
+  const { data: dunning, error: dunningError } = useDunningStatus(tenantId ?? undefined);
+  // The host refuses dunning for a Customer its Partner bills: a fact to state, not an error (D6).
+  const dunningRefusal =
+    isApiError(dunningError) && dunningError.code === 'dunning-partner-customer'
+      ? dunningError
+      : null;
   const updateQuota = useUpdateQuota();
   const [editOpen, setEditOpen] = useState(false);
 
@@ -181,7 +187,23 @@ export default function QuotasPage() {
         </Button>
       </PageHeader>
 
-      {dunning?.isActive && (
+      {dunningRefusal && (
+        <div
+          className="flex items-start gap-3 rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground"
+          data-testid="dunning-not-applicable"
+          data-error-code="dunning-partner-customer"
+          role="status"
+        >
+          <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <p>
+            {t('billing.quotas.dunning.not_applicable', {
+              partnerTenantId: String(dunningRefusal.facts.partnerTenantId ?? ''),
+            })}
+          </p>
+        </div>
+      )}
+
+      {!dunningRefusal && dunning?.isActive && (
         <div
           className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-700 dark:bg-amber-950"
           data-testid="dunning-banner"

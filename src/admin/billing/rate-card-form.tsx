@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useForm, Controller, useFieldArray, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { canonicalCurrency } from '@/core/billing/iso4217';
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
@@ -35,7 +36,12 @@ const rateEntrySchema = z.object({
 
 const rateCardSchema = z.object({
   name: z.string().min(1, 'admin:billing.validation.nameRequired'),
-  currency: z.string().min(1, 'admin:billing.validation.currencyRequired'),
+  // ISO 4217 only, sent trimmed and upper-cased (design D10); the host's list stays authoritative.
+  currency: z
+    .string()
+    .min(1, 'admin:billing.validation.currencyRequired')
+    .refine((v) => canonicalCurrency(v) !== null, 'admin:billing.validation.currencyInvalid')
+    .transform((v) => canonicalCurrency(v) ?? v),
   effectiveFrom: z.string().min(1, 'admin:billing.validation.startDateRequired'),
   effectiveTo: z.string().optional(),
   isDefault: z.boolean(),
@@ -122,12 +128,14 @@ export function RateCardForm({ open, onOpenChange, mode, rateCard }: RateCardFor
       })),
     };
 
+    // Close only on success: a refused write (e.g. the host's 400 currency-invalid) keeps the
+    // sheet open with the user's input.
+    const close = { onSuccess: () => onOpenChange(false) };
     if (mode === 'edit' && rateCard) {
-      updateRateCard.mutate({ id: rateCard.rateCardId, ...payload });
+      updateRateCard.mutate({ id: rateCard.rateCardId, ...payload }, close);
     } else {
-      createRateCard.mutate(payload);
+      createRateCard.mutate(payload, close);
     }
-    onOpenChange(false);
   });
 
   return (

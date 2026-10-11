@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import type { TFunction } from 'i18next';
+import { partnerChannelCodeOf } from '@/core/api/partner-channel-refusals';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -13,6 +15,20 @@ import {
   type TenantSettingsDto,
   type UpdateTenantSettingsPayload,
 } from '@/admin/tenants/use-tenant-settings';
+
+/**
+ * Reports a refused save. The hook already showed the host's 409 `plan-exceeds-parent` as a
+ * localized, coded toast (partner-channel-pilot-fixes P3), so it is not shown a second time with
+ * the raw code; every other refusal keeps the message it always had.
+ */
+function reportSaveError(err: unknown, t: TFunction): void {
+  if (partnerChannelCodeOf(err, ['plan-exceeds-parent']) !== null) return;
+  toast.error(
+    err instanceof Error
+      ? err.message
+      : t('tenants.settings.toasts.error', 'Failed to save tenant settings'),
+  );
+}
 
 export type TenantSettingsSection = 'operational' | 'auth' | 'quotas' | 'retention';
 
@@ -232,11 +248,7 @@ function OperationalSection({ settings, update, t }: SectionProps) {
       await update.mutateAsync(payload);
       toast.success(t('tenants.settings.toasts.saved', 'Tenant settings saved'));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : t('tenants.settings.toasts.error', 'Failed to save tenant settings'),
-      );
+      reportSaveError(err, t);
     }
   }
 
@@ -449,11 +461,7 @@ function AuthSection({ settings, update, t }: SectionProps) {
       });
       toast.success(t('tenants.settings.toasts.saved', 'Tenant settings saved'));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : t('tenants.settings.toasts.error', 'Failed to save tenant settings'),
-      );
+      reportSaveError(err, t);
     }
   }
 
@@ -547,11 +555,7 @@ function QuotasSection({ settings, update, t }: SectionProps) {
       });
       toast.success(t('tenants.settings.toasts.saved', 'Tenant settings saved'));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : t('tenants.settings.toasts.error', 'Failed to save tenant settings'),
-      );
+      reportSaveError(err, t);
     }
   }
 
@@ -636,11 +640,7 @@ function RetentionSection({ settings, update, t }: SectionProps) {
       });
       toast.success(t('tenants.settings.toasts.saved', 'Tenant settings saved'));
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : t('tenants.settings.toasts.error', 'Failed to save tenant settings'),
-      );
+      reportSaveError(err, t);
     }
   }
 
