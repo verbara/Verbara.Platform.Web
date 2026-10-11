@@ -2,21 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import type {
-  CurrencyInvalidRefusal,
-  CurrencyMismatchRefusal,
-  DunningPartnerCustomerRefusal,
-  PlanAboveParentRefusal,
-} from './refusal-bodies';
+import type { components } from '@/core/api/generated/openapi';
 
 /**
  * Verbatim-fixture guard for the host's partner-channel refusals (host change
  * `partner-channel-pilot-fixes`, design D11). The copies in `tests/fixtures/contracts/` must match
- * the interim body types key for key and in JSON type, carry the machine code in `error` and no
+ * the generated refusal schemas key for key and in JSON type, carry the machine code in `error` and no
  * `code` key. The shape tables are typed `Record<keyof Body, Kind>`, so a renamed type field fails
  * type-checking and a drifted copy fails at run time.
  */
 
+type Schemas = components['schemas'];
 type Kind = 'string' | 'string|null';
 type Shape<T> = Record<keyof T, Kind>;
 
@@ -25,22 +21,22 @@ const readJson = (name: string) =>
     readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8'),
   ) as Record<string, unknown>;
 
-const PLAN_ABOVE_PARENT: Shape<PlanAboveParentRefusal> = {
+const PLAN_ABOVE_PARENT: Shape<Schemas['PlanAboveParentRefusal']> = {
   error: 'string',
   requestedPlan: 'string',
   parentPlan: 'string',
   parentTenantId: 'string',
 };
-const DUNNING_PARTNER_CUSTOMER: Shape<DunningPartnerCustomerRefusal> = {
+const DUNNING_PARTNER_CUSTOMER: Shape<Schemas['DunningPartnerCustomerRefusal']> = {
   error: 'string',
   tenantId: 'string',
   partnerTenantId: 'string',
 };
-const CURRENCY_INVALID: Shape<CurrencyInvalidRefusal> = {
+const CURRENCY_INVALID: Shape<Schemas['CurrencyInvalidRefusal']> = {
   error: 'string',
   currency: 'string|null',
 };
-const CURRENCY_MISMATCH: Shape<CurrencyMismatchRefusal> = {
+const CURRENCY_MISMATCH: Shape<Schemas['CurrencyMismatchRefusal']> = {
   error: 'string',
   partnerCurrency: 'string',
   hostCurrency: 'string',
@@ -73,7 +69,7 @@ function expectRefusal(
 }
 
 describe('partner-channel refusals — verbatim-fixture guard', () => {
-  it('PlanAboveParentFixture_ShouldMatchInterimType_WhenCopiedFromHost', () => {
+  it('PlanAboveParentFixture_ShouldMatchGeneratedSchema_WhenCopiedFromHost', () => {
     expectRefusal(
       readJson('plan-above-parent-409.json'),
       PLAN_ABOVE_PARENT,
@@ -83,7 +79,7 @@ describe('partner-channel refusals — verbatim-fixture guard', () => {
     );
   });
 
-  it('DunningPartnerCustomerFixture_ShouldMatchInterimType_WhenCopiedFromHost', () => {
+  it('DunningPartnerCustomerFixture_ShouldMatchGeneratedSchema_WhenCopiedFromHost', () => {
     expectRefusal(
       readJson('dunning-partner-customer-409.json'),
       DUNNING_PARTNER_CUSTOMER,
@@ -93,7 +89,7 @@ describe('partner-channel refusals — verbatim-fixture guard', () => {
     );
   });
 
-  it('CurrencyRefusalsFixture_ShouldMatchInterimTypes_WhenCopiedFromHost', () => {
+  it('CurrencyRefusalsFixture_ShouldMatchGeneratedSchemas_WhenCopiedFromHost', () => {
     const fixture = readJson('rate-card-currency-refusals.json');
     expect(Object.keys(fixture).sort()).toEqual(['currencyMismatch', 'invalidCurrency']);
     expectRefusal(

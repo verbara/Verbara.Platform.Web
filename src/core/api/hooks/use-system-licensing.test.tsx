@@ -8,12 +8,6 @@ import { setupServer } from 'msw/node';
 import type { components } from '@/core/api/generated/openapi';
 import { createWrapper } from '@/test/hook-test-utils';
 import {
-  type LicensedAgentDay,
-  type LicensedAgentDeploymentPeak,
-  type LicensedAgentExport,
-  type LicensedAgentExportTenant,
-  type LicensedAgentPartnerSubtotal,
-  type LicensedAgentTenantDay,
   fetchLicensedAgentExport,
   licensedAgentExportFileName,
   useLicenseStatus,
@@ -78,25 +72,24 @@ const PEAKS: Shape<Schemas['LicensedAgentPeaksResponse']> = {
   days: 'array',
   chainHeads: 'array',
 };
-// Interim types until openapi.d.ts regenerates (partner-channel-pilot-fixes 3.1, design D4).
-const DEPLOYMENT: Shape<Required<LicensedAgentDeploymentPeak>> = {
+const DEPLOYMENT: Shape<Schemas['LicensedAgentDeploymentPeakDto']> = {
   peakLicensedAgents: 'number',
   peakDay: 'string|null',
   overBand: 'boolean',
   partnerSubtotals: 'array',
 };
-const PARTNER_SUBTOTAL: Shape<LicensedAgentPartnerSubtotal> = {
+const PARTNER_SUBTOTAL: Shape<Schemas['LicensedAgentPartnerSubtotalDto']> = {
   partnerTenantId: 'string',
   partnerTenantName: 'string',
   licensedAgents: 'number',
 };
-const DAY: Shape<LicensedAgentDay> = {
+const DAY: Shape<Schemas['LicensedAgentDayDto']> = {
   day: 'string',
   deploymentLicensedAgents: 'number',
   deploymentRowHash: 'string',
   tenants: 'array',
 };
-const TENANT_DAY: Shape<Required<LicensedAgentTenantDay>> = {
+const TENANT_DAY: Shape<Schemas['LicensedAgentTenantDayDto']> = {
   tenantId: 'string',
   tenantName: 'string',
   parentTenantId: 'string|null',
@@ -105,7 +98,7 @@ const TENANT_DAY: Shape<Required<LicensedAgentTenantDay>> = {
   closedAt: 'string',
   rowHash: 'string',
 };
-const EXPORT: Shape<LicensedAgentExport> = {
+const EXPORT: Shape<Schemas['LicensedAgentExportResponse']> = {
   schemaVersion: 'number',
   hashScheme: 'string',
   generatedAt: 'string',
@@ -118,7 +111,7 @@ const EXPORT: Shape<LicensedAgentExport> = {
   chainHeads: 'array',
   tenants: 'array',
 };
-const TENANT_MAP: Shape<LicensedAgentExportTenant> = {
+const TENANT_MAP: Shape<Schemas['LicensedAgentExportTenantDto']> = {
   tenantId: 'string',
   tenantType: 'string|null',
   parentTenantId: 'string|null',
