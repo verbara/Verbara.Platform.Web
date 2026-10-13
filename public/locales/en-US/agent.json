@@ -205,7 +205,9 @@
     }
   },
   "typification": {
-    "no_schema": "No typification schema is configured for this conversation. Add notes if needed and close.",
+    "no_schema": "No typification schema is configured for this conversation. You can close it without typification.",
+    "close_without_schema": "Close conversation",
+    "load_failed": "The typification form could not be loaded. Close this panel and try again; the conversation cannot be closed from here until it loads.",
     "outcome": "Outcome",
     "refine": "Detail (level {{level}})",
     "select_outcome": "Select outcome...",

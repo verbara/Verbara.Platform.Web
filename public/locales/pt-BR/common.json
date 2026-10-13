@@ -229,6 +229,8 @@
       "whatsapp_template_required": "O contato não escreveu nas últimas 24 horas, então o WhatsApp só permite um modelo. Informe um modelo aprovado.",
       "channel_send_failed": "O provedor não aceitou a mensagem. Nada foi salvo; você pode tentar de novo.",
       "start_persist_failed": "O contato recebeu a mensagem, mas a conversa não pôde ser salva. Não envie de novo; avise o seu administrador.",
+      "typification_required": "Esta conversa precisa de uma tipificação antes de ser fechada. Preencha o formulário de pós-atendimento.",
+      "not_closable": "Esta conversa não pode ser fechada no estado atual.",
       "failed": "Não foi possível concluir a ação. Tente novamente."
     },
     "partner_channel": {

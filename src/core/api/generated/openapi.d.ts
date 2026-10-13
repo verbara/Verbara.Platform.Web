@@ -1370,6 +1370,15 @@ export interface paths {
           };
           content?: never;
         };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
       };
     };
     delete?: never;
@@ -1470,6 +1479,15 @@ export interface paths {
             [name: string]: unknown;
           };
           content?: never;
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -3747,6 +3765,15 @@ export interface paths {
         };
       };
       responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MgmtTenantDto'];
+          };
+        };
         /** @description Conflict */
         409: {
           headers: {
@@ -12798,6 +12825,15 @@ export interface paths {
         };
       };
       responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['RateCardDto'];
+          };
+        };
         /** @description Bad Request */
         400: {
           headers: {
@@ -14546,6 +14582,15 @@ export interface paths {
         };
       };
       responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TenantSettingsDto'];
+          };
+        };
         /** @description Conflict */
         409: {
           headers: {
@@ -14704,6 +14749,15 @@ export interface paths {
         };
       };
       responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PartnerCustomerDto'];
+          };
+        };
         /** @description Conflict */
         409: {
           headers: {
@@ -14949,6 +15003,15 @@ export interface paths {
         };
       };
       responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['TenantSettingsDto'];
+          };
+        };
         /** @description Conflict */
         409: {
           headers: {
@@ -15008,6 +15071,15 @@ export interface paths {
         };
       };
       responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['RateCardDto'];
+          };
+        };
         /** @description Bad Request */
         400: {
           headers: {
@@ -15171,6 +15243,15 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PartnerGenerateInvoiceResponse'];
+          };
+        };
         /** @description Bad Request */
         400: {
           headers: {
@@ -18855,6 +18936,10 @@ export interface components {
       /** Format: date-time */
       createdAt: string;
     };
+    PartnerGenerateInvoiceResponse: {
+      invoice: components['schemas']['InvoiceDto'];
+      revenue: components['schemas']['PartnerRevenueSnapshotDto'];
+    };
     /**
      * @description c2 (credit-ledger-lots) — operator partner-allocation grant body. Mints a CreditSource.Partner
      *     grant + lot for TenantId (whose parent MUST be a `Partner`) of Amount
@@ -18885,6 +18970,14 @@ export interface components {
       periodStart: string;
       /** Format: date-time */
       periodEnd: string;
+    };
+    PartnerRevenueSnapshotDto: {
+      /** Format: double */
+      grossAmount: number;
+      /** Format: double */
+      platformCost: number;
+      /** Format: double */
+      partnerMargin: number;
     };
     PartnerRevenueSummaryDto: {
       /** Format: double */

@@ -66,10 +66,26 @@ vi.mock('@/core/api/hooks/use-typification', async () => {
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
+// The no-schema panel's Close goes through `useCloseConversationAction` (its refusal handling has
+// its own tests); here it is a spy that records the options the form passes.
+const mockClose = vi.fn();
+const closeActionState: { isPending: boolean; options: { onClosed?: () => void } | undefined } = {
+  isPending: false,
+  options: undefined,
+};
+vi.mock('./use-close-conversation-action', () => ({
+  useCloseConversationAction: (_id: string, options?: { onClosed?: () => void }) => {
+    closeActionState.options = options;
+    return { close: mockClose, isPending: closeActionState.isPending };
+  },
+}));
+
 // PhoneInput lazy-imports the phone engine; stub it out for jsdom.
 vi.mock('@/core/i18n/phone-engine', () => ({}));
 
 import { DynamicTypificationForm } from './dynamic-typification-form';
+import { useConversationStore } from '@/agent/stores/conversation-store';
+import { ApiError } from '@/core/api/api-error';
 
 // --- Fixtures -------------------------------------------------------------
 
@@ -138,6 +154,9 @@ beforeEach(() => {
   mockSuggestionMutate.mockReset();
   suggestionState.data = undefined;
   suggestionState.isPending = false;
+  mockClose.mockReset();
+  closeActionState.isPending = false;
+  closeActionState.options = undefined;
 });
 
 afterEach(() => {
@@ -998,5 +1017,146 @@ describe('DynamicTypificationForm', () => {
     expect((screen.getByTestId('typification-node-0') as HTMLSelectElement).value).toBe('root');
     expect((screen.getByTestId('typification-node-1') as HTMLSelectElement).value).toBe('leafA');
     expect(screen.queryByTestId('typification-ai-suggestion')).toBeNull();
+  });
+});
+
+describe('DynamicTypificationForm without a bound schema', () => {
+  function setNoSchema() {
+    // GET /typification-form answers 404 when no schema is bound.
+    mockUseTypificationForm.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new ApiError(404, null),
+    });
+  }
+
+  function setFormLoadFailed(error: unknown) {
+    mockUseTypificationForm.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error,
+    });
+  }
+
+  function setConversation(state: string, channel: string) {
+    useConversationStore.setState({
+      conversations: {
+        'conv-1': {
+          id: 'conv-1',
+          contactId: 'contact-1',
+          contactName: 'Ana',
+          channel,
+          queueName: 'Support',
+          state: state as 'active',
+          lastMessage: '',
+          lastMessageAt: '2026-10-12T10:00:00Z',
+          unread: false,
+          assignedAt: '2026-10-12T10:00:00Z',
+        },
+      },
+    });
+  }
+
+  afterEach(() => {
+    useConversationStore.setState({ conversations: {} });
+  });
+
+  it.each(['active', 'on_hold', 'wrap_up'])(
+    'DynamicTypificationForm_ShouldCloseTheConversation_WhenTheAgentClosesA%sChatWithNoSchema',
+    (state) => {
+      setNoSchema();
+      setConversation(state, 'webchat');
+      const onCompleted = vi.fn();
+      render(<DynamicTypificationForm conversationId="conv-1" onCompleted={onCompleted} />);
+
+      expect(screen.getByTestId('typification-no-schema')).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('typification-close-conversation'));
+
+      expect(mockClose).toHaveBeenCalledTimes(1);
+      // The sheet closes only once Platform closed the conversation (the hook's onClosed).
+      expect(onCompleted).not.toHaveBeenCalled();
+      closeActionState.options?.onClosed?.();
+      expect(onCompleted).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('DynamicTypificationForm_ShouldOfferNoNotesBox_WhenNoSchemaIsBound', () => {
+    setNoSchema();
+    setConversation('active', 'webchat');
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    // `/close` takes no notes; a box whose text is thrown away is not offered.
+    expect(screen.queryByTestId('typification-notes')).toBeNull();
+    expect(screen.getByText('typification.no_schema')).toBeInTheDocument();
+  });
+
+  it('DynamicTypificationForm_ShouldCancelWithoutClosing_WhenTheAgentCancels', () => {
+    setNoSchema();
+    setConversation('active', 'webchat');
+    const onCompleted = vi.fn();
+    render(<DynamicTypificationForm conversationId="conv-1" onCompleted={onCompleted} />);
+
+    fireEvent.click(screen.getByTestId('typification-close'));
+
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+    expect(mockClose).not.toHaveBeenCalled();
+  });
+
+  it('DynamicTypificationForm_ShouldDisableClose_WhileTheCloseIsPending', () => {
+    setNoSchema();
+    setConversation('active', 'webchat');
+    closeActionState.isPending = true;
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    expect(screen.getByTestId('typification-close-conversation')).toBeDisabled();
+  });
+
+  it('DynamicTypificationForm_ShouldOfferNoClose_WhenAVoiceCallIsStillLive', () => {
+    setNoSchema();
+    setConversation('active', 'voice');
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    expect(screen.queryByTestId('typification-close-conversation')).toBeNull();
+    expect(screen.getByTestId('typification-close')).toBeInTheDocument();
+  });
+
+  it('DynamicTypificationForm_ShouldOfferClose_WhenAVoiceCallEndedInWrapUp', () => {
+    setNoSchema();
+    setConversation('wrap_up', 'voice');
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    expect(screen.getByTestId('typification-close-conversation')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['a 500', new ApiError(500, { error: 'boom' })],
+    ['a 503', new ApiError(503, null)],
+    ['a network failure', new TypeError('Failed to fetch')],
+  ])('DynamicTypificationForm_ShouldOfferNoClose_WhenTheFormLoadFailsWith %s', (_label, error) => {
+    // A failed GET says nothing about the schema, and /close from WrapUp does not re-check it:
+    // offering Close here would let a transient failure skip a typification the tenant demands.
+    setFormLoadFailed(error);
+    setConversation('wrap_up', 'webchat');
+    const onCompleted = vi.fn();
+    render(<DynamicTypificationForm conversationId="conv-1" onCompleted={onCompleted} />);
+
+    expect(screen.getByTestId('typification-load-error')).toBeInTheDocument();
+    expect(screen.queryByTestId('typification-no-schema')).toBeNull();
+    expect(screen.queryByTestId('typification-close-conversation')).toBeNull();
+    fireEvent.click(screen.getByTestId('typification-close'));
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+    expect(mockClose).not.toHaveBeenCalled();
+  });
+
+  it('DynamicTypificationForm_ShouldOfferNoClose_WhenTheFormHasNotLoadedYet', () => {
+    // A disabled query (sheet closed) has neither data nor an error: nothing is known yet.
+    mockUseTypificationForm.mockReturnValue({ data: undefined, isLoading: false, isError: false });
+    setConversation('wrap_up', 'webchat');
+    render(<DynamicTypificationForm conversationId="conv-1" />);
+
+    expect(screen.getByTestId('typification-loading')).toBeInTheDocument();
+    expect(screen.queryByTestId('typification-close-conversation')).toBeNull();
   });
 });

@@ -229,6 +229,8 @@
       "whatsapp_template_required": "El contacto no ha escrito en las últimas 24 horas, así que WhatsApp solo permite una plantilla. Indica una plantilla aprobada.",
       "channel_send_failed": "El proveedor no aceptó el mensaje. No se guardó nada; puedes intentarlo de nuevo.",
       "start_persist_failed": "El contacto recibió el mensaje, pero la conversación no se pudo guardar. No lo envíes de nuevo; avisa a tu administrador.",
+      "typification_required": "Esta conversación necesita una tipificación antes de cerrarse. Completa el formulario de post-atención.",
+      "not_closable": "Esta conversación no se puede cerrar en su estado actual.",
       "failed": "No se pudo completar la acción. Inténtalo de nuevo."
     },
     "partner_channel": {

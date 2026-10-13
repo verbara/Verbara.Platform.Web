@@ -229,6 +229,8 @@
       "whatsapp_template_required": "The contact has not written in the last 24 hours, so WhatsApp only allows a template. Name an approved template.",
       "channel_send_failed": "The provider did not accept the message. Nothing was saved; you can try again.",
       "start_persist_failed": "The contact received the message, but the conversation could not be saved. Do not send it again; tell your administrator.",
+      "typification_required": "This conversation needs a typification before it can be closed. Complete the wrap-up form.",
+      "not_closable": "This conversation cannot be closed in its current state.",
       "failed": "The action could not be completed. Try again."
     },
     "partner_channel": {

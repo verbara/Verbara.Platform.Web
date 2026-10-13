@@ -4,7 +4,10 @@ import esCommon from '../../../public/locales/es-419/common.json';
 import ptCommon from '../../../public/locales/pt-BR/common.json';
 import { ApiError, describeApiError, entriesOf } from './api-error';
 import {
+  CONVERSATION_NOT_CLOSABLE,
+  TYPIFICATION_REQUIRED,
   conversationRefusals,
+  refusalCodeOf,
   refusedFieldLabels,
   refusedFieldsOf,
   startRefusalOf,
@@ -47,6 +50,9 @@ describe('conversationRefusals', () => {
       [400, 'target-queue-not-found', 'transfer'],
       [400, 'target-agent-not-found', 'reassign'],
       [400, 'target-queue-not-found', 'reassign'],
+      [409, 'typification-required', 'close'],
+      [409, 'conversation-not-closable', 'close'],
+      [409, 'conversation-not-closable', 'typify'],
     ] as const)(
       'describeApiError_ShouldReportTheMachineCode_WhenPlatformAnswers%s %s on %s',
       (status, code, action) => {
@@ -125,6 +131,26 @@ describe('conversationRefusals', () => {
       expect(
         describeApiError(new TypeError('Failed to fetch'), conversationRefusals, 'send').code,
       ).toBe('conversation-failed');
+    });
+  });
+
+  describe('close refusals (Platform close-chat-without-typification-licence)', () => {
+    it('refusalCodeOf_ShouldReturnTheMachineCode_WhenTheErrorCarriesOne', () => {
+      expect(refusalCodeOf(new ApiError(409, { error: TYPIFICATION_REQUIRED }))).toBe(
+        'typification-required',
+      );
+      expect(refusalCodeOf(new ApiError(409, { error: CONVERSATION_NOT_CLOSABLE }))).toBe(
+        'conversation-not-closable',
+      );
+    });
+
+    it('refusalCodeOf_ShouldBeNull_WhenTheErrorHasNoMachineCode', () => {
+      expect(refusalCodeOf(new ApiError(409, { error: 'Cannot close.' }))).toBeNull();
+      expect(refusalCodeOf(new TypeError('Failed to fetch'))).toBeNull();
+    });
+
+    it('describeApiError_ShouldReportTheConflict_WhenCloseAnswers409WithoutACode', () => {
+      expect(codeFor(409, null, 'close')).toBe('conversation-conflict');
     });
   });
 
@@ -241,6 +267,8 @@ describe('conversationRefusals locale coverage', () => {
         'whatsapp-template-required',
         'channel-send-failed',
         'start-persist-failed',
+        'typification-required',
+        'conversation-not-closable',
       ]),
     );
   });

@@ -11,6 +11,8 @@ import { PhoneInput } from '@/core/ui/phone-input';
 import { Textarea } from '@/core/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { useConversationStore } from '@/agent/stores/conversation-store';
+import { isApiError } from '@/core/api/api-error';
+import { useCloseConversationAction } from './use-close-conversation-action';
 import {
   useTypificationForm,
   useTypify,
@@ -211,8 +213,12 @@ export function DynamicTypificationForm({
 }: DynamicTypificationFormProps) {
   const { t } = useTranslation('agent');
   const removeConversation = useConversationStore((s) => s.removeConversation);
+  const conversation = useConversationStore((s) => s.conversations[conversationId]);
+  // The no-schema panel's Close. On a 409 `typification-required` (a schema was bound after the form
+  // loaded) the hook refetches the form, which then renders the schema in place of this panel.
+  const closeAction = useCloseConversationAction(conversationId, { onClosed: onCompleted });
 
-  const { data: form, isLoading, isError } = useTypificationForm(conversationId, enabled);
+  const { data: form, isLoading, isError, error } = useTypificationForm(conversationId, enabled);
   const typify = useTypify();
   const suggestion = useTypificationSuggestion();
   const { mutate: requestSuggestion } = suggestion;
@@ -635,7 +641,9 @@ export function DynamicTypificationForm({
   }
 
   // --- Loading state -------------------------------------------------------
-  if (isLoading) {
+  // A disabled (sheet closed) query has neither data nor an error yet: nothing is known about the
+  // schema, so it renders as loading rather than as the no-schema panel and its Close.
+  if (isLoading || (!isError && form === undefined)) {
     return (
       <div
         className="flex flex-1 items-center justify-center py-10 text-muted-foreground"
@@ -646,23 +654,16 @@ export function DynamicTypificationForm({
     );
   }
 
-  // --- No schema bound (404 / missing) -> friendly state, typify disabled ---
-  if (isError || !schema) {
+  // --- Form failed to load (anything but a 404) -> Cancel only -------------
+  // Only a 404 means "no schema is bound". A 500, a network failure or a timeout says nothing about
+  // the schema, and Platform's `/close` from WrapUp does not re-check it, so offering Close here would
+  // let a failed GET skip a typification the tenant demands.
+  const noSchemaBound = isError ? isApiError(error) && error.status === 404 : !schema;
+  if (isError && !noSchemaBound) {
     return (
-      <div className="flex flex-col gap-4 px-4" data-testid="typification-no-schema">
-        <p className="text-sm text-muted-foreground">{t('typification.no_schema')}</p>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="wrapup-notes">{t('wrap_up.notes')}</Label>
-          <Textarea
-            id="wrapup-notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder={t('wrap_up.notes_placeholder')}
-            rows={4}
-            data-testid="typification-notes"
-          />
-        </div>
-        <div className="flex justify-end">
+      <div className="flex flex-col gap-4 px-4" data-testid="typification-load-error">
+        <p className="text-sm text-muted-foreground">{t('typification.load_failed')}</p>
+        <div className="flex justify-end gap-2">
           <Button
             onClick={() => onCompleted?.()}
             variant="outline"
@@ -670,6 +671,41 @@ export function DynamicTypificationForm({
           >
             {t('conversation.cancel')}
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- No schema bound (404 / null schema) -> close without typification ----
+  // Platform closes an agent-held chat (Active/OnHold/Consulting) or a WrapUp conversation without
+  // a typification when no schema is bound (`close-chat-without-typification-licence`). There is
+  // nothing to record here — `/close` takes no notes — so the panel offers only Close and Cancel.
+  // A live voice call is closed by the call itself (Platform answers 409), so it gets no Close.
+  if (noSchemaBound) {
+    const canClose = conversation?.channel !== 'voice' || conversation.state === 'wrap_up';
+    return (
+      <div className="flex flex-col gap-4 px-4" data-testid="typification-no-schema">
+        <p className="text-sm text-muted-foreground">{t('typification.no_schema')}</p>
+        <div className="flex justify-end gap-2">
+          <Button
+            onClick={() => onCompleted?.()}
+            variant="outline"
+            data-testid="typification-close"
+          >
+            {t('conversation.cancel')}
+          </Button>
+          {canClose && (
+            <Button
+              onClick={() => closeAction.close()}
+              disabled={closeAction.isPending}
+              data-testid="typification-close-conversation"
+            >
+              {closeAction.isPending && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" data-icon="inline-start" />
+              )}
+              {t('typification.close_without_schema')}
+            </Button>
+          )}
         </div>
       </div>
     );

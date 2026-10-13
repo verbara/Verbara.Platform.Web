@@ -19,6 +19,23 @@ export type ConversationAction =
   | 'reassign'
   | 'typify';
 
+/**
+ * `POST /close` on an agent-held chat whose tenant binds a published typification schema: nothing
+ * changed; the client opens the wrap-up sheet so the agent typifies (`POST /typify`) instead.
+ */
+export const TYPIFICATION_REQUIRED = 'typification-required';
+
+/**
+ * `POST /close` or `/typify` refused for the conversation's state (queued, offered, live voice,
+ * terminal, or a lost race): nothing changed; the client refetches the conversation.
+ */
+export const CONVERSATION_NOT_CLOSABLE = 'conversation-not-closable';
+
+/** The machine code of a refusal when it is an {@link ApiError} carrying one, else `null`. */
+export function refusalCodeOf(err: unknown): string | null {
+  return isApiError(err) ? err.code : null;
+}
+
 const conflict: ApiErrorEntry = {
   code: 'conversation-conflict',
   key: 'errors.conversation.conflict',
@@ -121,6 +138,15 @@ export const conversationRefusals: ApiErrorMap<ConversationAction> = {
     'start-persist-failed': {
       code: 'start-persist-failed',
       key: 'errors.conversation.start_persist_failed',
+    },
+    // Close and typify refusals (Platform `close-chat-without-typification-licence`, design D9).
+    [TYPIFICATION_REQUIRED]: {
+      code: TYPIFICATION_REQUIRED,
+      key: 'errors.conversation.typification_required',
+    },
+    [CONVERSATION_NOT_CLOSABLE]: {
+      code: CONVERSATION_NOT_CLOSABLE,
+      key: 'errors.conversation.not_closable',
     },
   },
   actions: {
