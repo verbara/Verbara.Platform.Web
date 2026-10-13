@@ -42,7 +42,6 @@
     "noSessions": "No active AI-assisted calls",
     "whisperPlaceholder": "Type whisper message...",
     "send": "Send Whisper",
-    "listening": "Listening",
     "no_digital_sessions": "No digital conversations",
     "select_to_monitor": "Select a conversation to monitor.",
     "linked_conversation_missing": "That conversation is not in this list. It may have closed, or be further down than the conversations shown here.",
@@ -54,7 +53,31 @@
     "takeover_dialog_title": "Takeover Conversation",
     "takeover_dialog_desc": "This will reassign the conversation to the supervisor and replace the current agent.",
     "close_dialog_title": "Close Conversation",
-    "close_dialog_desc": "Close this conversation as supervisor?"
+    "close_dialog_desc": "Close this conversation as supervisor?",
+    "listen": {
+      "listen": "Listen",
+      "stop": "Stop listening",
+      "in_browser": "In the browser",
+      "on_phone": "On my phone",
+      "dialing": "Connecting…",
+      "listening": "Listening",
+      "answer_phone": "Answer your phone and press 1 to start hearing the call.",
+      "click_to_hear": "Click to hear",
+      "no_conversation": "This call is not tracked as a conversation, so it cannot be listened to.",
+      "already_running": "Stop the running listen",
+      "browser_unavailable": {
+        "no_wss": "Browser listening is not configured on this deployment.",
+        "no_supervisor_endpoint": "Browser listening is not available for this account.",
+        "not_permitted": "You are not allowed to listen in the browser.",
+        "failed": "The browser could not connect for listening.",
+        "connecting": "The browser is still connecting for listening.",
+        "moved": "Listening moved to another window."
+      },
+      "moved": "Listening moved to another window",
+      "moved_reason": "Another window of this browser took the listening connection. Calls you listen to in the browser will play there.",
+      "listen_here": "Listen here"
+    },
+    "live_transcript": "Live transcript"
   },
   "stuck_work": {
     "title": "Stuck Work",

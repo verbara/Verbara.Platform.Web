@@ -1,5 +1,6 @@
 import { Web } from 'sip.js';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { deriveDomain } from './sip-domain';
 
 /**
  * Everything the in-browser softphone needs to REGISTER to Asterisk as the
@@ -24,14 +25,6 @@ let audioEl: HTMLAudioElement | null = null;
 
 export function isSoftphoneRunning(): boolean {
   return simpleUser !== null;
-}
-
-function deriveDomain(wssUrl: string): string {
-  try {
-    return new URL(wssUrl).hostname;
-  } catch {
-    return 'localhost';
-  }
 }
 
 /**

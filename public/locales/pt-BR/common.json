@@ -244,6 +244,24 @@
         "Pro": "Pro",
         "Enterprise": "Enterprise"
       }
+    },
+    "supervisor_listen": {
+      "not_permitted": "Você não tem permissão para ouvir chamadas.",
+      "invalid_destination": "Escolha se quer ouvir no navegador ou no seu telefone.",
+      "voice_unavailable": "A voz não está disponível nesta instalação.",
+      "not_leader": "A voz está indisponível por um momento. Tente novamente em instantes.",
+      "conversation_not_found": "Essa conversa não foi encontrada. Ela pode ter terminado.",
+      "no_voice_call": "Essa conversa não tem uma chamada de voz em andamento para ouvir.",
+      "already_listening": "Você já está ouvindo outra chamada. Encerre essa escuta primeiro.",
+      "no_supervisor_endpoint": "Ouvir no navegador não está disponível para esta conta. Use seu telefone.",
+      "no_listen_phone": "Você não tem um telefone de escuta. Peça a um administrador para configurá-lo.",
+      "no_trunk": "Não há um tronco de saída configurado para ligar para o seu telefone.",
+      "originate_failed": "Não foi possível fazer a chamada de escuta. Tente novamente.",
+      "listen_not_found": "Não há uma escuta ativa.",
+      "listen_failed": "Não foi possível concluir a escuta. Tente novamente.",
+      "listen_phone_invalid": "O número deve estar no formato internacional: um + seguido de 7 a 15 dígitos.",
+      "user_not_found": "Esse usuário não foi encontrado.",
+      "listen_phone_failed": "Não foi possível salvar o telefone de escuta. Tente novamente."
     }
   },
   "agent_layout": {
@@ -454,9 +472,7 @@
     "supervisor": {
       "whisperSent": "Sussurro enviado",
       "coachingNoteSent": "Nota de coaching enviada",
-      "startSupervisionFailed": "Falha ao iniciar supervisão",
-      "whisperFailed": "Falha no sussurro",
-      "stopSupervisionFailed": "Falha ao parar supervisão"
+      "whisperFailed": "Falha no sussurro"
     },
     "setup": {
       "channelEnabled": "Canal habilitado com sucesso",

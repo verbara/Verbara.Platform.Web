@@ -181,6 +181,16 @@
     "role_hint_lower": "Al guardar un rol inferior se cerrarán las sesiones del usuario; tendrá que iniciar sesión de nuevo.",
     "errors": {
       "user_changed": "Otra persona cambió este usuario. Tu cambio no se guardó; revisa los valores actuales e inténtalo de nuevo."
+    },
+    "listen_phone": {
+      "label": "Teléfono de escucha",
+      "none": "Ninguno",
+      "edit": "Editar",
+      "save": "Guardar",
+      "clear": "Borrar",
+      "cancel": "Cancelar",
+      "placeholder": "+573001234567",
+      "hint": "El número al que llama la escucha telefónica de un supervisor, en formato internacional."
     }
   },
   "agents": {

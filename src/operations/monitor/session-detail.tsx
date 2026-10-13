@@ -1,12 +1,18 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Headphones, Eye, Square } from 'lucide-react';
+import { Send, Headphones } from 'lucide-react';
 import { useAgentAiStore, flattenAiSessions } from '@/core/stores/agent-ai-store';
 import { Button } from '@/core/ui/button';
 import { useSupervisorActions } from '@/core/realtime';
+import { ListenControl } from './listen-control';
 
 interface SessionDetailProps {
   sessionId: string;
+  /**
+   * The row's `conversationId` from `GET /api/v1/supervisor/sessions/active` (design D3): the
+   * silent listen is keyed by it, never by the Agent Assist `sessionId`. `null` disables Listen.
+   */
+  conversationId: string | null;
 }
 
 const speakerColors: Record<string, string> = {
@@ -27,7 +33,7 @@ const alertSeverityColors: Record<string, string> = {
   Critical: 'border-red-400 bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200',
 };
 
-export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
+export function SessionDetail({ sessionId, conversationId }: Readonly<SessionDetailProps>) {
   const { t } = useTranslation('operations');
   // Agent-assist is now keyed per conversation (3B.1 Phase C); this supervisor monitor has no
   // per-conversation scoping, so it flattens across whatever sessions exist in this browser. See
@@ -37,9 +43,8 @@ export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
     () => flattenAiSessions(sessions),
     [sessions],
   );
-  const { startSupervision, whisper, stopSupervision } = useSupervisorActions(sessionId);
+  const { whisper } = useSupervisorActions(sessionId);
   const [whisperText, setWhisperText] = useState('');
-  const [supervising, setSupervising] = useState(false);
   const [sending, setSending] = useState(false);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
@@ -59,16 +64,6 @@ export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
     }
   }
 
-  async function handleStartSupervision() {
-    await startSupervision('Listen');
-    setSupervising(true);
-  }
-
-  async function handleStopSupervision() {
-    await stopSupervision();
-    setSupervising(false);
-  }
-
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -82,22 +77,12 @@ export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
   return (
     <div className="flex h-full flex-col gap-4 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
           <Headphones className="h-3.5 w-3.5" />
-          {t('monitor.listening')}
+          {t('monitor.live_transcript')}
         </span>
-        {supervising ? (
-          <Button size="sm" variant="destructive" onClick={handleStopSupervision}>
-            <Square className="mr-1.5 h-3.5 w-3.5" />
-            Stop
-          </Button>
-        ) : (
-          <Button size="sm" variant="outline" onClick={handleStartSupervision}>
-            <Eye className="mr-1.5 h-3.5 w-3.5" />
-            Supervise
-          </Button>
-        )}
+        <ListenControl conversationId={conversationId} />
       </div>
 
       {/* Compliance alerts */}
@@ -175,8 +160,14 @@ export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
           value={whisperText}
           onChange={(e) => setWhisperText(e.target.value)}
           onKeyDown={handleKeyDown}
+          data-testid="monitor-whisper-input"
         />
-        <Button size="sm" onClick={handleSend} disabled={!whisperText.trim() || sending}>
+        <Button
+          size="sm"
+          onClick={handleSend}
+          disabled={!whisperText.trim() || sending}
+          data-testid="monitor-whisper-send"
+        >
           <Send className="mr-1.5 h-3.5 w-3.5" />
           {t('monitor.send')}
         </Button>

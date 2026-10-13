@@ -24,6 +24,7 @@ import { PermissionButton } from '@/core/ui/permission-button';
 import { AuditTimeline } from '@/core/ui/audit-timeline';
 import { UserForm } from './user-form';
 import { UserStatusBadge } from './user-status-badge';
+import { UserListenPhone } from './user-listen-phone';
 import { normalizeUserRole, userRoleLabelKey } from './user-role';
 import { useUser, useUserEtag, useUpdateUser, useDeleteUser } from '@/core/api/hooks/use-users';
 import { useUserRoles, useAssignRole, useRemoveRole, useRoles } from '@/core/api/hooks/use-rbac';
@@ -184,6 +185,7 @@ export default function UserDetailPage() {
             {formatDateTime(lastLogin)}
           </InfoRow>
         )}
+        <UserListenPhone userId={user.id} />
       </div>
 
       {/* Roles section */}

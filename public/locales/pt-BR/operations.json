@@ -42,7 +42,6 @@
     "noSessions": "Nenhuma chamada ativa com assistencia de IA",
     "whisperPlaceholder": "Digite uma mensagem de sussurro...",
     "send": "Enviar sussurro",
-    "listening": "Ouvindo",
     "no_digital_sessions": "Sem conversas digitais",
     "select_to_monitor": "Selecione uma conversa para monitorar.",
     "linked_conversation_missing": "Essa conversa não está nesta lista. Ela pode ter sido encerrada ou estar além das conversas exibidas aqui.",
@@ -54,7 +53,31 @@
     "takeover_dialog_title": "Assumir conversa",
     "takeover_dialog_desc": "Isso reatribuirá a conversa ao supervisor e substituirá o agente atual.",
     "close_dialog_title": "Fechar conversa",
-    "close_dialog_desc": "Fechar esta conversa como supervisor?"
+    "close_dialog_desc": "Fechar esta conversa como supervisor?",
+    "listen": {
+      "listen": "Ouvir",
+      "stop": "Parar de ouvir",
+      "in_browser": "No navegador",
+      "on_phone": "No meu telefone",
+      "dialing": "Conectando…",
+      "listening": "Ouvindo",
+      "answer_phone": "Atenda seu telefone e pressione 1 para começar a ouvir a chamada.",
+      "click_to_hear": "Clique para ouvir",
+      "no_conversation": "Esta chamada não está registrada como conversa, então não pode ser ouvida.",
+      "already_running": "Encerrar a escuta em andamento",
+      "browser_unavailable": {
+        "no_wss": "Ouvir no navegador não está configurado nesta instalação.",
+        "no_supervisor_endpoint": "Ouvir no navegador não está disponível para esta conta.",
+        "not_permitted": "Você não tem permissão para ouvir no navegador.",
+        "failed": "O navegador não conseguiu se conectar para ouvir.",
+        "connecting": "O navegador ainda está se conectando para ouvir.",
+        "moved": "A escuta passou para outra janela."
+      },
+      "moved": "A escuta passou para outra janela",
+      "moved_reason": "Outra janela deste navegador assumiu a conexão de escuta. As chamadas que você ouvir no navegador tocarão lá.",
+      "listen_here": "Ouvir aqui"
+    },
+    "live_transcript": "Transcrição ao vivo"
   },
   "stuck_work": {
     "title": "Trabalho travado",

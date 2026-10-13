@@ -46,6 +46,8 @@ function answer(config: Parameters<typeof client.customFetch>[0]): unknown {
   const route = `${config.method} ${config.url}`;
   if (route === `GET ${USER_URL}`) return { ...stored };
   if (route === `GET ${USER_URL}/roles` || route === 'GET /api/v1/admin/roles') return [];
+  if (route === `GET ${USER_URL}/listen-phone`)
+    return { userId: 'u1', phoneNumber: '+573001234567' };
   if (route === `PUT ${USER_URL}`) {
     const body = config.data as { role?: string; status?: string };
     const ifMatch = config.headers?.['If-Match'];
@@ -400,5 +402,15 @@ describe('UserDetailPage concurrent edit (H14)', () => {
       expect(screen.getByTestId('user-detail-role')).toHaveAttribute('data-role', 'agent'),
     );
     expect(badge().status).toBe('active');
+  });
+});
+
+describe('UserDetailPage listen phone (supervisor-silent-listen, design D8)', () => {
+  it('UserDetailPage_ShouldShowTheUsersListenPhone_WhenTheDetailOpens', async () => {
+    seed('active');
+    await renderPage();
+    await waitFor(() =>
+      expect(screen.getByTestId('user-listen-phone-value')).toHaveTextContent('+573001234567'),
+    );
   });
 });

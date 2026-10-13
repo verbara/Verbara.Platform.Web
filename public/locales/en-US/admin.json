@@ -181,6 +181,16 @@
     "role_hint_lower": "Saving a lower role ends the user's sessions; they will have to sign in again.",
     "errors": {
       "user_changed": "Someone else changed this user. Your change was not saved; review the current values and try again."
+    },
+    "listen_phone": {
+      "label": "Listen phone",
+      "none": "None",
+      "edit": "Edit",
+      "save": "Save",
+      "clear": "Clear",
+      "cancel": "Cancel",
+      "placeholder": "+573001234567",
+      "hint": "The number a supervisor's phone listen rings, in international format."
     }
   },
   "agents": {

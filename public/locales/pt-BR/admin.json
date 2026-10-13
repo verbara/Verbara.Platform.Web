@@ -181,6 +181,16 @@
     "role_hint_lower": "Ao salvar uma função inferior, as sessões do usuário serão encerradas; ele terá que entrar novamente.",
     "errors": {
       "user_changed": "Outra pessoa alterou este usuário. Sua alteração não foi salva; revise os valores atuais e tente novamente."
+    },
+    "listen_phone": {
+      "label": "Telefone de escuta",
+      "none": "Nenhum",
+      "edit": "Editar",
+      "save": "Salvar",
+      "clear": "Limpar",
+      "cancel": "Cancelar",
+      "placeholder": "+573001234567",
+      "hint": "O número para o qual a escuta por telefone de um supervisor liga, em formato internacional."
     }
   },
   "agents": {

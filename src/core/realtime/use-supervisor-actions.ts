@@ -1,36 +1,19 @@
-import { useCallback } from 'react';
+import { createElement, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { invokeHub } from './platform-hub';
 
-export type SupervisionMode = 'Listen' | 'Whisper' | 'Barge';
-
 /**
- * Hub-backed supervisor actions for a specific conversation. Replaces the legacy
- * REST-based `useSendWhisper` mutation with a SignalR-invoked pipeline so
- * whispers, start, and stop supervision are delivered in-band with the presence
- * hub. Errors are surfaced through `sonner` toasts so callers don't have to wire
- * per-action error handlers.
+ * Hub-backed supervisor actions for a specific conversation: the text whisper only. A silent listen
+ * is not a hub action (`supervisor-silent-listen`, design D7): it starts and stops through the REST
+ * routes, so the hub's supervision start and stop methods are never invoked from the console.
  *
- * A failure always shows the action's translated message, never the error's own
- * text: that text is English (a `HubNotConnectedError` when the hub is down — a
- * call never starts the hub — or a server `HubException`), and would reach
- * ES-419 and PT-BR users untranslated.
+ * A failure always shows the action's translated message, never the error's own text: that text is
+ * English (a `HubNotConnectedError` when the hub is down — a call never starts the hub — or a server
+ * `HubException`), and would reach ES-419 and PT-BR users untranslated.
  */
 export function useSupervisorActions(conversationId: string | undefined) {
   const { t } = useTranslation('common');
-
-  const startSupervision = useCallback(
-    async (mode: SupervisionMode) => {
-      if (!conversationId) return;
-      try {
-        await invokeHub('StartSupervisionAsync', conversationId, mode);
-      } catch {
-        toast.error(t('toasts.supervisor.startSupervisionFailed'));
-      }
-    },
-    [conversationId, t],
-  );
 
   const whisper = useCallback(
     async (text: string) => {
@@ -39,7 +22,14 @@ export function useSupervisorActions(conversationId: string | undefined) {
       if (!payload) return;
       try {
         await invokeHub('WhisperToAgentAsync', conversationId, payload);
-        toast.success(t('toasts.supervisor.whisperSent'));
+        // `data-toast` is the locale-proof hook the E2E specs wait on.
+        toast.success(
+          createElement(
+            'span',
+            { 'data-toast': 'whisper-sent' },
+            t('toasts.supervisor.whisperSent'),
+          ),
+        );
       } catch {
         toast.error(t('toasts.supervisor.whisperFailed'));
       }
@@ -47,14 +37,5 @@ export function useSupervisorActions(conversationId: string | undefined) {
     [conversationId, t],
   );
 
-  const stopSupervision = useCallback(async () => {
-    if (!conversationId) return;
-    try {
-      await invokeHub('StopSupervisingAsync', conversationId);
-    } catch {
-      toast.error(t('toasts.supervisor.stopSupervisionFailed'));
-    }
-  }, [conversationId, t]);
-
-  return { startSupervision, whisper, stopSupervision };
+  return { whisper };
 }

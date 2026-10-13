@@ -23,6 +23,20 @@ shows the generic failure toast.
   the chat from Active, On hold or Wrap-up and closes the sheet. A live voice call gets no Close (the
   call ends it). The panel's notes box is gone: `/close` takes no notes, so whatever the agent typed
   there was discarded. The panel's copy no longer tells the agent to "add notes and close".
+- **Silent listen from the operations console (requires Platform ≥ v2.29.0).** A supervisor who
+  holds `contacts:conversation:monitor` gets a Listen control on a live voice call, in the voice
+  monitor (keyed by the row's `conversationId`, disabled with its reason when the call is not
+  tracked as a conversation) and in the conversation detail of a Voice conversation that is Active
+  or On hold. Listen offers two destinations: in the browser, through the receive-only listen user
+  agent, or on the supervisor's phone, which tells them to answer and press 1 and never shows the
+  number. The browser choice is shown unavailable with its reason when the listen user agent is not
+  registered. The control shows connecting and listening only from Platform's answer, follows the
+  listen until it ends, and stops it; a listen started elsewhere or before a reload is shown with
+  Stop listening when the monitor opens. Every refusal shows its localized message with
+  `data-error-code`, and "already listening" offers to stop the running listen.
+- **Listen phone in the admin user detail.** An administrator sets or clears the number a
+  supervisor's phone listen rings. The number is sent as typed, trimmed; a number that is not in
+  international format keeps the editor open with its localized message.
 
 ### Changed
 
@@ -35,6 +49,20 @@ shows the generic failure toast.
 - **Generated API types** regenerated from Platform #375's OpenAPI document: `/close` and `/typify`
   declare their 409 `ErrorResponse`; the same document also brings Partner-channel response types
   already on Platform `main`.
+- **Generated API types** regenerated from Platform #378's OpenAPI document: the silent-listen
+  routes and their schemas, and `ActiveSessionDto.conversationId`.
+- The supervisor's "Whisper sent" toast carries `data-toast="whisper-sent"`, and the whisper box
+  and its send button carry `data-testid` selectors, for locale-proof end-to-end checks.
+- **Supervision no longer uses the realtime hub (requires Platform ≥ v2.29.0).** The voice
+  monitor's "Supervise" and "Stop" buttons are gone: they invoked a hub method Platform never
+  implemented, showed "supervising" even when the call failed, sent the Agent Assist session id
+  where a conversation id was expected, and were hard-coded English. A silent listen over Platform's
+  REST routes replaces them. The hub keeps the supervisor's text whisper.
+- The voice monitor's transcript pill reads "Live transcript" instead of "Listening", so the word
+  "listen" names only the silent listen.
+- A supervisor who holds `contacts:conversation:monitor` now registers a receive-only listen user
+  agent while the operations shell is open, on deployments that expose `asteriskWssUrl`. It never
+  asks for the microphone, never places a call and rejects every call it did not start.
 
 ## [3.23.0-web] - 2026-10-11
 
