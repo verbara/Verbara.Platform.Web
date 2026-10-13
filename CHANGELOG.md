@@ -33,10 +33,10 @@ shows the generic failure toast.
   registered. The control shows connecting and listening only from Platform's answer, follows the
   listen until it ends, and stops it; a listen started elsewhere or before a reload is shown with
   Stop listening when the monitor opens. Every refusal shows its localized message with
-  `data-error-code`, and "already listening" offers to stop the running listen.
+  `data-error-code`, and "already listening" offers to stop the running listen. (#401)
 - **Listen phone in the admin user detail.** An administrator sets or clears the number a
   supervisor's phone listen rings. The number is sent as typed, trimmed; a number that is not in
-  international format keeps the editor open with its localized message.
+  international format keeps the editor open with its localized message. (#401)
 
 ### Changed
 
@@ -50,19 +50,19 @@ shows the generic failure toast.
   declare their 409 `ErrorResponse`; the same document also brings Partner-channel response types
   already on Platform `main`.
 - **Generated API types** regenerated from Platform #378's OpenAPI document: the silent-listen
-  routes and their schemas, and `ActiveSessionDto.conversationId`.
+  routes and their schemas, and `ActiveSessionDto.conversationId`. (#401)
 - The supervisor's "Whisper sent" toast carries `data-toast="whisper-sent"`, and the whisper box
-  and its send button carry `data-testid` selectors, for locale-proof end-to-end checks.
+  and its send button carry `data-testid` selectors, for locale-proof end-to-end checks. (#401)
 - **Supervision no longer uses the realtime hub (requires Platform ≥ v2.29.0).** The voice
   monitor's "Supervise" and "Stop" buttons are gone: they invoked a hub method Platform never
   implemented, showed "supervising" even when the call failed, sent the Agent Assist session id
   where a conversation id was expected, and were hard-coded English. A silent listen over Platform's
-  REST routes replaces them. The hub keeps the supervisor's text whisper.
+  REST routes replaces them. The hub keeps the supervisor's text whisper. (#401)
 - The voice monitor's transcript pill reads "Live transcript" instead of "Listening", so the word
-  "listen" names only the silent listen.
+  "listen" names only the silent listen. (#401)
 - A supervisor who holds `contacts:conversation:monitor` now registers a receive-only listen user
   agent while the operations shell is open, on deployments that expose `asteriskWssUrl`. It never
-  asks for the microphone, never places a call and rejects every call it did not start.
+  asks for the microphone, never places a call and rejects every call it did not start. (#401)
 
 ## [3.23.0-web] - 2026-10-11
 
