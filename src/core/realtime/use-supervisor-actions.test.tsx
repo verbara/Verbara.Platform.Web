@@ -68,32 +68,31 @@ describe('useSupervisorActions', () => {
     hubServer.reset();
   });
 
-  it.each([
-    ['startSupervision', 'toasts.supervisor.startSupervisionFailed'],
-    ['whisper', 'toasts.supervisor.whisperFailed'],
-    ['stopSupervision', 'toasts.supervisor.stopSupervisionFailed'],
-  ] as const)(
-    'SupervisorAction_ShouldToastTheTranslatedKeyAndNotConnect_WhenTheHubIsDisconnected (%s)',
-    async (action, key) => {
-      const { hub, actions } = await load();
-      await hub.startPlatformHub();
-      await hub.stopPlatformHub();
-      const { result } = renderHook(() => actions.useSupervisorActions('conv-1'));
+  it('UseSupervisorActions_ShouldExposeOnlyWhisper_WhenSilentListenMovedToRest', async () => {
+    const { actions } = await load();
+    const { result } = renderHook(() => actions.useSupervisorActions('conv-1'));
 
-      await act(async () => {
-        if (action === 'startSupervision') await result.current.startSupervision('Listen');
-        else if (action === 'whisper') await result.current.whisper('hold on');
-        else await result.current.stopSupervision();
-        await settle();
-      });
+    // A silent listen is not a hub action (spec realtime-connection-lifecycle, modified requirement).
+    expect(Object.keys(result.current)).toEqual(['whisper']);
+  });
 
-      expect(toast.error).toHaveBeenCalledTimes(1);
-      expect(toast.error).toHaveBeenCalledWith(key);
-      // No connection attempt after the stop: still the one negotiate from the start.
-      expect(hubServer.bearers).toEqual(['T1']);
-      expect(hubServer.invocations).toHaveLength(0);
-    },
-  );
+  it('Whisper_ShouldToastTheTranslatedKeyAndNotConnect_WhenTheHubIsDisconnected', async () => {
+    const { hub, actions } = await load();
+    await hub.startPlatformHub();
+    await hub.stopPlatformHub();
+    const { result } = renderHook(() => actions.useSupervisorActions('conv-1'));
+
+    await act(async () => {
+      await result.current.whisper('hold on');
+      await settle();
+    });
+
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith('toasts.supervisor.whisperFailed');
+    // No connection attempt after the stop: still the one negotiate from the start.
+    expect(hubServer.bearers).toEqual(['T1']);
+    expect(hubServer.invocations).toHaveLength(0);
+  });
 
   it('SupervisorAction_ShouldToastTheTranslatedKeyNotTheServerText_WhenTheServerRejectsTheCall', async () => {
     const { hub, actions } = await load();
@@ -103,19 +102,20 @@ describe('useSupervisorActions', () => {
 
     let pending: Promise<void> = Promise.resolve();
     act(() => {
-      pending = result.current.startSupervision('Barge');
+      pending = result.current.whisper('hold on');
     });
     await vi.waitFor(() => expect(hubServer.invocations).toHaveLength(1));
     const invocationId = hubServer.invocations[0]?.invocationId;
     hubServer.pushRaw(
-      JSON.stringify({ type: 3, invocationId, error: 'Supervisor is not allowed to barge.' }) + RS,
+      JSON.stringify({ type: 3, invocationId, error: 'Supervisor is not allowed to whisper.' }) +
+        RS,
     );
     await act(async () => {
       await pending;
     });
 
     expect(toast.error).toHaveBeenCalledTimes(1);
-    expect(toast.error).toHaveBeenCalledWith('toasts.supervisor.startSupervisionFailed');
+    expect(toast.error).toHaveBeenCalledWith('toasts.supervisor.whisperFailed');
   });
 
   it('Whisper_ShouldToastSuccess_WhenTheHubIsConnected', async () => {
@@ -132,5 +132,7 @@ describe('useSupervisorActions', () => {
     ]);
     expect(toast.success).toHaveBeenCalledWith('toasts.supervisor.whisperSent');
     expect(toast.error).not.toHaveBeenCalled();
+    expect(hubServer.invocations.map((i) => i.target)).not.toContain('StartSupervisionAsync');
+    expect(hubServer.invocations.map((i) => i.target)).not.toContain('StopSupervisingAsync');
   });
 });

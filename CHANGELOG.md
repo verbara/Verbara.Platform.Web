@@ -9,6 +9,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Supervision no longer uses the realtime hub (requires Platform ≥ v2.29.0).** The voice
+  monitor's "Supervise" and "Stop" buttons are gone: they invoked a hub method Platform never
+  implemented, showed "supervising" even when the call failed, sent the Agent Assist session id
+  where a conversation id was expected, and were hard-coded English. A silent listen over Platform's
+  REST routes replaces them. The hub keeps the supervisor's text whisper.
+- The voice monitor's transcript pill reads "Live transcript" instead of "Listening", so the word
+  "listen" names only the silent listen.
+- A supervisor who holds `contacts:conversation:monitor` now registers a receive-only listen user
+  agent while the operations shell is open, on deployments that expose `asteriskWssUrl`. It never
+  asks for the microphone, never places a call and rejects every call it did not start.
+
 ## [3.23.0-web] - 2026-10-11
 
 **Requires Platform ≥ v2.28.0.** The channel form reads the redacted credential list

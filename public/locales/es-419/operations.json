@@ -42,7 +42,6 @@
     "noSessions": "No hay llamadas activas con asistencia de IA",
     "whisperPlaceholder": "Escribe un mensaje de susurro...",
     "send": "Enviar susurro",
-    "listening": "Escuchando",
     "no_digital_sessions": "Sin conversaciones digitales",
     "select_to_monitor": "Selecciona una conversación para monitorear.",
     "linked_conversation_missing": "Esa conversación no está en esta lista. Puede que se haya cerrado o que esté más abajo de las conversaciones que se muestran aquí.",
@@ -54,7 +53,31 @@
     "takeover_dialog_title": "Tomar control de la conversación",
     "takeover_dialog_desc": "Esto reasignará la conversación al supervisor y desplazará al agente actual.",
     "close_dialog_title": "Cerrar conversación",
-    "close_dialog_desc": "¿Cerrar esta conversación como supervisor?"
+    "close_dialog_desc": "¿Cerrar esta conversación como supervisor?",
+    "listen": {
+      "listen": "Escuchar",
+      "stop": "Dejar de escuchar",
+      "in_browser": "En el navegador",
+      "on_phone": "En mi teléfono",
+      "dialing": "Conectando…",
+      "listening": "Escuchando",
+      "answer_phone": "Contesta tu teléfono y presiona 1 para empezar a oír la llamada.",
+      "click_to_hear": "Haz clic para oír",
+      "no_conversation": "Esta llamada no está registrada como conversación, así que no se puede escuchar.",
+      "already_running": "Detener la escucha en curso",
+      "browser_unavailable": {
+        "no_wss": "Escuchar en el navegador no está configurado en esta instalación.",
+        "no_supervisor_endpoint": "Escuchar en el navegador no está disponible para esta cuenta.",
+        "not_permitted": "No tienes permiso para escuchar en el navegador.",
+        "failed": "El navegador no pudo conectarse para escuchar.",
+        "connecting": "El navegador aún se está conectando para escuchar.",
+        "moved": "La escucha pasó a otra ventana."
+      },
+      "moved": "La escucha pasó a otra ventana",
+      "moved_reason": "Otra ventana de este navegador tomó la conexión de escucha. Las llamadas que escuches en el navegador sonarán allí.",
+      "listen_here": "Escuchar aquí"
+    },
+    "live_transcript": "Transcripción en vivo"
   },
   "stuck_work": {
     "title": "Trabajo atascado",

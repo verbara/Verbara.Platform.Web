@@ -242,6 +242,24 @@
         "Pro": "Pro",
         "Enterprise": "Enterprise"
       }
+    },
+    "supervisor_listen": {
+      "not_permitted": "You are not allowed to listen to calls.",
+      "invalid_destination": "Choose whether to listen in the browser or on your phone.",
+      "voice_unavailable": "Voice is not available on this deployment.",
+      "not_leader": "Voice is briefly unavailable. Try again in a moment.",
+      "conversation_not_found": "That conversation was not found. It may have ended.",
+      "no_voice_call": "That conversation has no live voice call to listen to.",
+      "already_listening": "You are already listening to another call. Stop that listen first.",
+      "no_supervisor_endpoint": "Listening in the browser is not available for this account. Use your phone instead.",
+      "no_listen_phone": "You have no listen phone. Ask an administrator to set your listen phone.",
+      "no_trunk": "No outbound trunk is configured to call your phone.",
+      "originate_failed": "Could not place the listen call. Try again.",
+      "listen_not_found": "There is no active listen.",
+      "listen_failed": "Could not complete the listen. Try again.",
+      "listen_phone_invalid": "The number must be in international format: a + and then 7 to 15 digits.",
+      "user_not_found": "That user was not found.",
+      "listen_phone_failed": "Could not save the listen phone. Try again."
     }
   },
   "agent_layout": {
@@ -452,9 +470,7 @@
     "supervisor": {
       "whisperSent": "Whisper sent",
       "coachingNoteSent": "Coaching note sent",
-      "startSupervisionFailed": "Failed to start supervision",
-      "whisperFailed": "Whisper failed",
-      "stopSupervisionFailed": "Failed to stop supervision"
+      "whisperFailed": "Whisper failed"
     },
     "setup": {
       "channelEnabled": "Channel enabled successfully",

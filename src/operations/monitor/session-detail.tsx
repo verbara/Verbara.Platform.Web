@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Headphones, Eye, Square } from 'lucide-react';
+import { Send, Headphones } from 'lucide-react';
 import { useAgentAiStore, flattenAiSessions } from '@/core/stores/agent-ai-store';
 import { Button } from '@/core/ui/button';
 import { useSupervisorActions } from '@/core/realtime';
@@ -37,9 +37,8 @@ export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
     () => flattenAiSessions(sessions),
     [sessions],
   );
-  const { startSupervision, whisper, stopSupervision } = useSupervisorActions(sessionId);
+  const { whisper } = useSupervisorActions(sessionId);
   const [whisperText, setWhisperText] = useState('');
-  const [supervising, setSupervising] = useState(false);
   const [sending, setSending] = useState(false);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
@@ -59,16 +58,6 @@ export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
     }
   }
 
-  async function handleStartSupervision() {
-    await startSupervision('Listen');
-    setSupervising(true);
-  }
-
-  async function handleStopSupervision() {
-    await stopSupervision();
-    setSupervising(false);
-  }
-
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -85,19 +74,8 @@ export function SessionDetail({ sessionId }: Readonly<SessionDetailProps>) {
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand">
           <Headphones className="h-3.5 w-3.5" />
-          {t('monitor.listening')}
+          {t('monitor.live_transcript')}
         </span>
-        {supervising ? (
-          <Button size="sm" variant="destructive" onClick={handleStopSupervision}>
-            <Square className="mr-1.5 h-3.5 w-3.5" />
-            Stop
-          </Button>
-        ) : (
-          <Button size="sm" variant="outline" onClick={handleStartSupervision}>
-            <Eye className="mr-1.5 h-3.5 w-3.5" />
-            Supervise
-          </Button>
-        )}
       </div>
 
       {/* Compliance alerts */}

@@ -242,6 +242,24 @@
         "Pro": "Pro",
         "Enterprise": "Enterprise"
       }
+    },
+    "supervisor_listen": {
+      "not_permitted": "No tienes permiso para escuchar llamadas.",
+      "invalid_destination": "Elige si escuchar en el navegador o en tu teléfono.",
+      "voice_unavailable": "La voz no está disponible en esta instalación.",
+      "not_leader": "La voz no está disponible por un momento. Inténtalo de nuevo en unos segundos.",
+      "conversation_not_found": "No se encontró esa conversación. Es posible que haya terminado.",
+      "no_voice_call": "Esa conversación no tiene una llamada de voz en curso para escuchar.",
+      "already_listening": "Ya estás escuchando otra llamada. Detén esa escucha primero.",
+      "no_supervisor_endpoint": "Escuchar en el navegador no está disponible para esta cuenta. Usa tu teléfono.",
+      "no_listen_phone": "No tienes un teléfono de escucha. Pide a un administrador que lo configure.",
+      "no_trunk": "No hay una troncal de salida configurada para llamar a tu teléfono.",
+      "originate_failed": "No se pudo realizar la llamada de escucha. Inténtalo de nuevo.",
+      "listen_not_found": "No hay una escucha activa.",
+      "listen_failed": "No se pudo completar la escucha. Inténtalo de nuevo.",
+      "listen_phone_invalid": "El número debe estar en formato internacional: un + y luego de 7 a 15 dígitos.",
+      "user_not_found": "No se encontró ese usuario.",
+      "listen_phone_failed": "No se pudo guardar el teléfono de escucha. Inténtalo de nuevo."
     }
   },
   "agent_layout": {
@@ -452,9 +470,7 @@
     "supervisor": {
       "whisperSent": "Susurro enviado",
       "coachingNoteSent": "Nota de coaching enviada",
-      "startSupervisionFailed": "Error al iniciar supervisión",
-      "whisperFailed": "Error al enviar susurro",
-      "stopSupervisionFailed": "Error al detener supervisión"
+      "whisperFailed": "Error al enviar susurro"
     },
     "setup": {
       "channelEnabled": "Canal habilitado correctamente",
