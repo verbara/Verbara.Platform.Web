@@ -69,7 +69,7 @@ shows the generic failure toast.
   the trunk (by its `trunkId`) has no address to call, and an admin must set the trunk's host. The
   message is localized in EN-US, ES-419 and PT-BR and carries `data-error-code="trunk-not-dialable"`.
   Click-to-dial and the voice transfer now report their failures by code; every other failure shows
-  the same text as before, under `data-error-code="dial-failed"` or `"voice-transfer-failed"`.
+  the same text as before, under `data-error-code="dial-failed"` or `"voice-transfer-failed"`. (#414)
 
 ## [3.23.0-web] - 2026-10-11
 
