@@ -1,5 +1,6 @@
 import { isApiError, type ApiErrorEntry, type ApiErrorMap } from './api-error';
 import type { components } from './generated/openapi';
+import { TRUNK_NOT_DIALABLE } from './voice-call-refusals';
 
 type SupervisorListenRefusal = components['schemas']['SupervisorListenRefusal'];
 
@@ -7,7 +8,8 @@ type SupervisorListenRefusal = components['schemas']['SupervisorListenRefusal'];
  * The silent-listen refusals (host change `supervisor-silent-listen`, design D7; design D5 here;
  * spec `conversation-action-feedback`). Each is identified by the machine code in the body's
  * `error`, read by {@link ApiError} into `err.code` (ADR-0013). The body's `conversationId` and
- * `listenId` are facts of the refusal, never shown as text.
+ * `listenId` are facts of the refusal, never shown as text. `trunkId` is shown only inside the
+ * `trunk-not-dialable` message, which shares its key with the click-to-dial and voice-transfer maps.
  */
 export type SupervisorListenCode =
   | 'not-permitted'
@@ -20,6 +22,7 @@ export type SupervisorListenCode =
   | 'no-supervisor-endpoint'
   | 'no-listen-phone'
   | 'no-trunk'
+  | 'trunk-not-dialable'
   | 'originate-failed'
   | 'listen-not-found';
 
@@ -39,6 +42,7 @@ const LISTEN_CODES: readonly SupervisorListenCode[] = [
   'no-supervisor-endpoint',
   'no-listen-phone',
   'no-trunk',
+  'trunk-not-dialable',
   'originate-failed',
   'listen-not-found',
 ];
@@ -50,7 +54,12 @@ const LISTEN_CODES: readonly SupervisorListenCode[] = [
  * caller before this map is consulted.
  */
 export const supervisorListenRefusals: ApiErrorMap = {
-  codes: Object.fromEntries(LISTEN_CODES.map((code) => [code, entry(code)])),
+  codes: Object.fromEntries(
+    LISTEN_CODES.map((code) => [
+      code,
+      code === TRUNK_NOT_DIALABLE.code ? TRUNK_NOT_DIALABLE : entry(code),
+    ]),
+  ),
   fallback: entry('listen-failed'),
 };
 

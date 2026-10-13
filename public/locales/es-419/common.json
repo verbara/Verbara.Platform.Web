@@ -262,6 +262,9 @@
       "listen_phone_invalid": "El número debe estar en formato internacional: un + y luego de 7 a 15 dígitos.",
       "user_not_found": "No se encontró ese usuario.",
       "listen_phone_failed": "No se pudo guardar el teléfono de escucha. Inténtalo de nuevo."
+    },
+    "voice": {
+      "trunk_not_dialable": "La troncal {{trunkId}} de este número no tiene una dirección a la cual llamar. Pide a un administrador que configure el host de la troncal."
     }
   },
   "agent_layout": {

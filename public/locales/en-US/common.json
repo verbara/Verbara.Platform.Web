@@ -262,6 +262,9 @@
       "listen_phone_invalid": "The number must be in international format: a + and then 7 to 15 digits.",
       "user_not_found": "That user was not found.",
       "listen_phone_failed": "Could not save the listen phone. Try again."
+    },
+    "voice": {
+      "trunk_not_dialable": "Trunk {{trunkId}} for this number has no address to call. Ask an admin to set the trunk's host."
     }
   },
   "agent_layout": {

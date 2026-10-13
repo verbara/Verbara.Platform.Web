@@ -2,6 +2,9 @@ import i18next, { type i18n } from 'i18next';
 import enAdmin from '../../public/locales/en-US/admin.json';
 import esAdmin from '../../public/locales/es-419/admin.json';
 import ptAdmin from '../../public/locales/pt-BR/admin.json';
+import enAgent from '../../public/locales/en-US/agent.json';
+import esAgent from '../../public/locales/es-419/agent.json';
+import ptAgent from '../../public/locales/pt-BR/agent.json';
 import enCommon from '../../public/locales/en-US/common.json';
 import esCommon from '../../public/locales/es-419/common.json';
 import ptCommon from '../../public/locales/pt-BR/common.json';
@@ -18,7 +21,7 @@ export const ADMIN_LOCALES: Record<TestLocale, typeof enAdmin> = {
 };
 
 /**
- * A real i18next instance loaded with the committed `admin` and `common` files of all three
+ * A real i18next instance loaded with the committed `admin`, `agent` and `common` files of all three
  * locales. There is no fallback language, so a key missing from the active locale renders as the
  * raw key and fails the assertion that reads it.
  */
@@ -28,11 +31,11 @@ export async function createLocaleI18n(lng: TestLocale): Promise<i18n> {
     lng,
     fallbackLng: false,
     resources: {
-      'en-US': { admin: enAdmin, common: enCommon },
-      'es-419': { admin: esAdmin, common: esCommon },
-      'pt-BR': { admin: ptAdmin, common: ptCommon },
+      'en-US': { admin: enAdmin, agent: enAgent, common: enCommon },
+      'es-419': { admin: esAdmin, agent: esAgent, common: esCommon },
+      'pt-BR': { admin: ptAdmin, agent: ptAgent, common: ptCommon },
     },
-    ns: ['admin', 'common'],
+    ns: ['admin', 'agent', 'common'],
     defaultNS: 'common',
     interpolation: { escapeValue: false },
     react: { useSuspense: false },

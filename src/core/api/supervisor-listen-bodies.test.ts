@@ -14,7 +14,7 @@ import type { components } from '@/core/api/generated/openapi';
  */
 
 type Schemas = components['schemas'];
-type Kind = 'string' | 'string|null';
+type Kind = 'string' | 'string|null' | 'number|null';
 type Shape<T> = Record<keyof T, Kind>;
 
 const MACHINE_CODE = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/;
@@ -49,10 +49,20 @@ const LISTEN_PHONE: Shape<Schemas['ListenPhoneDto']> = {
   userId: 'string',
   phoneNumber: 'string|null',
 };
-const LISTEN_REFUSAL: Shape<Schemas['SupervisorListenRefusal']> = {
+/**
+ * INTERIM (task 2.3 of `outbound-calls-reach-the-trunk` removes it): the host adds `trunkId`
+ * (integer|null) to `SupervisorListenRefusal`, but `openapi.d.ts` is regenerated only after the
+ * Platform side merges. Until then the column is typed locally; after the regeneration this is a
+ * plain `Shape<Schemas['SupervisorListenRefusal']>`.
+ */
+type InterimSupervisorListenRefusal = Schemas['SupervisorListenRefusal'] & {
+  trunkId?: number | null;
+};
+const LISTEN_REFUSAL: Shape<Required<InterimSupervisorListenRefusal>> = {
   error: 'string',
   conversationId: 'string|null',
   listenId: 'string|null',
+  trunkId: 'number|null',
 };
 const PHONE_REFUSAL: Shape<Schemas['ListenPhoneRefusal']> = {
   error: 'string',
