@@ -2,7 +2,12 @@
   "_comment": "Golden refusal bodies for the silent-listen routes (supervisor-silent-listen, design D7). Body convention (Platform ErrorResponse, read by Web's ApiError): `error` carries ONLY a kebab-case machine code, never prose and never a separate `code` field; the other members are typed fields of one sealed record whose first property is Error (precedent: ConversationStartRefusal, PartnerChannelRefusals), registered in ApiJsonContext. conversationId and listenId are string|null and ALWAYS written, never omitted: conversationId is the route's conversation id (null on current and endpoint, which have none), except already-listening, where it and listenId name the caller's EXISTING listen. Routes: start = POST /api/v1/supervisor/conversations/{id}/listen; stop = POST /api/v1/supervisor/conversations/{id}/listen/stop; current = GET /api/v1/supervisor/listen; endpoint = POST /api/v1/supervisor/listen-endpoint. A caller without the SupervisorPlus role gets the group's bare 403 before any of these. Precedence on start, first match wins: not-permitted, invalid-destination, voice-unavailable, not-leader, conversation-not-found, no-voice-call, already-listening, no-supervisor-endpoint | no-listen-phone, no-trunk, originate-failed. Each entry gives its HTTP status and the routes that can answer it. not-leader is 503 and retryable: this replica does not hold the voice AMI lease (API runs 1 replica; the only pod normally holds it). voice-unavailable is 503: telephony (AMI) is not configured on this host. originate-failed is 502: Asterisk refused or did not acknowledge the originate; nothing was left behind. Every child change's delta spec must cite these codes and field names VERBATIM (verbatim-fixture-citation rule, /xr:propagate).",
   "notPermitted": {
     "status": 403,
-    "routes": ["start", "stop", "current", "endpoint"],
+    "routes": [
+      "start",
+      "stop",
+      "current",
+      "endpoint"
+    ],
     "body": {
       "error": "not-permitted",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -11,7 +16,9 @@
   },
   "invalidDestination": {
     "status": 400,
-    "routes": ["start"],
+    "routes": [
+      "start"
+    ],
     "body": {
       "error": "invalid-destination",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -20,7 +27,11 @@
   },
   "voiceUnavailable": {
     "status": 503,
-    "routes": ["start", "stop", "current"],
+    "routes": [
+      "start",
+      "stop",
+      "current"
+    ],
     "body": {
       "error": "voice-unavailable",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -29,7 +40,11 @@
   },
   "notLeader": {
     "status": 503,
-    "routes": ["start", "stop", "current"],
+    "routes": [
+      "start",
+      "stop",
+      "current"
+    ],
     "body": {
       "error": "not-leader",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -38,7 +53,9 @@
   },
   "conversationNotFound": {
     "status": 404,
-    "routes": ["start"],
+    "routes": [
+      "start"
+    ],
     "body": {
       "error": "conversation-not-found",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -47,7 +64,9 @@
   },
   "noVoiceCall": {
     "status": 409,
-    "routes": ["start"],
+    "routes": [
+      "start"
+    ],
     "body": {
       "error": "no-voice-call",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -56,7 +75,9 @@
   },
   "alreadyListening": {
     "status": 409,
-    "routes": ["start"],
+    "routes": [
+      "start"
+    ],
     "body": {
       "error": "already-listening",
       "conversationId": "9a8b7c6d5e4f40312a1b2c3d4e5f6071",
@@ -65,7 +86,10 @@
   },
   "noSupervisorEndpoint": {
     "status": 409,
-    "routes": ["start", "endpoint"],
+    "routes": [
+      "start",
+      "endpoint"
+    ],
     "body": {
       "error": "no-supervisor-endpoint",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -75,7 +99,9 @@
   },
   "noListenPhone": {
     "status": 409,
-    "routes": ["start"],
+    "routes": [
+      "start"
+    ],
     "body": {
       "error": "no-listen-phone",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -84,7 +110,9 @@
   },
   "noTrunk": {
     "status": 409,
-    "routes": ["start"],
+    "routes": [
+      "start"
+    ],
     "body": {
       "error": "no-trunk",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -93,7 +121,9 @@
   },
   "originateFailed": {
     "status": 502,
-    "routes": ["start"],
+    "routes": [
+      "start"
+    ],
     "body": {
       "error": "originate-failed",
       "conversationId": "4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a",
@@ -102,7 +132,10 @@
   },
   "listenNotFound": {
     "status": 404,
-    "routes": ["stop", "current"],
+    "routes": [
+      "stop",
+      "current"
+    ],
     "body": {
       "error": "listen-not-found",
       "conversationId": null,

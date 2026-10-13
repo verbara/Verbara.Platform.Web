@@ -1,0 +1,3 @@
+# Contract fixtures are byte-identical copies of the host's golden files (cmp against
+# Verbara.Platform). Never reformat them: a reformatted copy is no longer the contract.
+tests/fixtures/contracts/
