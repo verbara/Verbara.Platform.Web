@@ -6,6 +6,7 @@ import type { components } from '@/core/api/generated/openapi';
 import { isApiError } from '@/core/api/api-error';
 import { toastApiError } from '@/core/api/toast-api-error';
 import { supervisorListenRefusals } from '@/core/api/supervisor-listen-refusals';
+import { trunkRefusalValues } from '@/core/api/voice-call-refusals';
 import { useListenStore } from '@/core/voice/listen-store';
 import { hangupListenLeg, subscribeListenLegEnded } from '@/core/voice/listen-agent';
 import type { ActiveSession } from './use-supervisor';
@@ -86,7 +87,7 @@ export function useStartListen() {
     },
     onError: (err) => {
       useListenStore.getState().clearPending();
-      toastApiError(err, supervisorListenRefusals, t);
+      toastApiError(err, supervisorListenRefusals, t, { values: trunkRefusalValues(err) });
     },
   });
 }

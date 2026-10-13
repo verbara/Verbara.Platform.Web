@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { User, Phone, Mail, Building2, Globe, MessageSquare, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
@@ -14,6 +13,8 @@ import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
 import { useVoiceDial } from '@/core/api/hooks/use-conversations';
+import { toastApiError } from '@/core/api/toast-api-error';
+import { trunkRefusalValues, voiceDialRefusals } from '@/core/api/voice-call-refusals';
 import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 function InfoRow({
@@ -173,10 +174,11 @@ export function ContactInfo() {
                   if (res.accepted && res.correlationId) {
                     startOutbound({ number: rawPhone, correlationId: res.correlationId });
                   } else {
-                    toast.error(t('voice.dial_failed', 'Could not place the call'));
+                    toastApiError(null, voiceDialRefusals, t);
                   }
                 },
-                onError: () => toast.error(t('voice.dial_failed', 'Could not place the call')),
+                onError: (err) =>
+                  toastApiError(err, voiceDialRefusals, t, { values: trunkRefusalValues(err) }),
               },
             );
           }}
