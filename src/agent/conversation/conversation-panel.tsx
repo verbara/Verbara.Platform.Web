@@ -25,7 +25,6 @@ import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
 import {
   useAcceptConversation,
   useRejectConversation,
-  useCloseConversation,
   useHoldConversation,
   useUnholdConversation,
 } from '@/core/api/hooks/use-conversations';
@@ -33,6 +32,7 @@ import { MessageThread } from './message-thread';
 import { ReplyComposer } from './reply-composer';
 import { TransferDialog } from './transfer-dialog';
 import { WrapUpDialog } from './wrap-up-dialog';
+import { useCloseConversationAction } from './use-close-conversation-action';
 import { SuggestionBanner } from './suggestion-banner';
 import { SentimentGauge } from './sentiment-gauge';
 import { ComplianceAlert } from './compliance-alert';
@@ -65,12 +65,15 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
 
   const acceptMutation = useAcceptConversation();
   const rejectMutation = useRejectConversation();
-  const closeMutation = useCloseConversation();
   const holdMutation = useHoldConversation();
   const unholdMutation = useUnholdConversation();
 
   const [transferOpen, setTransferOpen] = useState(false);
   const [wrapUpOpen, setWrapUpOpen] = useState(false);
+  // A 409 `typification-required` (the tenant binds a schema) opens the wrap-up sheet instead.
+  const closeAction = useCloseConversationAction(conversationId, {
+    onTypificationRequired: () => setWrapUpOpen(true),
+  });
   const [rejectOpen, setRejectOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
 
@@ -124,7 +127,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
   }
 
   function handleClose() {
-    closeMutation.mutate(conversation!.id);
+    closeAction.close();
     setCloseOpen(false);
   }
 
@@ -212,7 +215,13 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
                 <ClipboardCheck className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.wrap_up')}
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setCloseOpen(true)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setCloseOpen(true)}
+                disabled={closeAction.isPending}
+                data-testid="conversation-close-btn"
+              >
                 <X className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.close')}
               </Button>
@@ -220,7 +229,11 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
           )}
 
           {!isVoice && isWrapUp && (
-            <Button size="sm" onClick={() => setWrapUpOpen(true)}>
+            <Button
+              size="sm"
+              onClick={() => setWrapUpOpen(true)}
+              data-testid="conversation-complete-wrapup-btn"
+            >
               <ClipboardCheck className="h-3.5 w-3.5" data-icon="inline-start" />
               {t('conversation.complete_wrap_up')}
             </Button>
@@ -273,6 +286,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
         onConfirm={handleClose}
         confirmLabel={t('conversation.close')}
         variant="default"
+        data-testid="conversation-close-confirm"
       />
 
       <TransferDialog

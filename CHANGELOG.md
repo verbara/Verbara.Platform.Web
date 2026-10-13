@@ -9,6 +9,33 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Requires Platform with `close-chat-without-typification-licence` (Platform #375, v2.29.0).** The
+close action reads the 409 codes `typification-required` and `conversation-not-closable` that
+Platform adds to `POST /conversations/{id}/close` (and the latter to `/typify`), and the wrap-up
+sheet's no-schema panel posts `/close`, which Platform before that change refuses with a 400 from
+every agent-held state. Against an older Platform the panel's Close of an Active or On hold chat
+shows the generic failure toast.
+
+### Added
+
+- **Close a chat that has no typification schema.** When no schema is bound for the conversation,
+  the wrap-up sheet now offers "Close conversation" next to Cancel instead of a dead end; it closes
+  the chat from Active, On hold or Wrap-up and closes the sheet. A live voice call gets no Close (the
+  call ends it). The panel's notes box is gone: `/close` takes no notes, so whatever the agent typed
+  there was discarded. The panel's copy no longer tells the agent to "add notes and close".
+
+### Changed
+
+- **Close refusals by code.** A close answered `typification-required` (the tenant binds a
+  published schema) opens the wrap-up sheet for that conversation with a localized message; a close
+  answered `conversation-not-closable` shows its message, re-reads the conversation and updates the
+  panel to the state Platform holds. Both codes are localized in EN-US, ES-419 and PT-BR and carry
+  `data-error-code`. A closed conversation now leaves the inbox at once instead of waiting for the
+  state-change event.
+- **Generated API types** regenerated from Platform #375's OpenAPI document: `/close` and `/typify`
+  declare their 409 `ErrorResponse`; the same document also brings Partner-channel response types
+  already on Platform `main`.
+
 ## [3.23.0-web] - 2026-10-11
 
 **Requires Platform ≥ v2.28.0.** The channel form reads the redacted credential list

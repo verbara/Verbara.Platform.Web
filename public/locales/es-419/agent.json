@@ -205,7 +205,9 @@
     }
   },
   "typification": {
-    "no_schema": "No hay un esquema de tipificación configurado para esta conversación. Agrega notas si lo necesitas y cierra.",
+    "no_schema": "No hay un esquema de tipificación configurado para esta conversación. Puedes cerrarla sin tipificar.",
+    "close_without_schema": "Cerrar conversación",
+    "load_failed": "No se pudo cargar el formulario de tipificación. Cierra este panel e inténtalo de nuevo; la conversación no se puede cerrar desde aquí hasta que cargue.",
     "outcome": "Resultado",
     "refine": "Detalle (nivel {{level}})",
     "select_outcome": "Seleccionar resultado...",

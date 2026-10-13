@@ -5,7 +5,11 @@ import { mapPlatformMessage } from '@/core/api/platform-message';
 import { mapPlatformConversation } from '@/core/api/platform-conversation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { conversationRefusals } from '@/core/api/conversation-refusals';
+import {
+  CONVERSATION_NOT_CLOSABLE,
+  conversationRefusals,
+  refusalCodeOf,
+} from '@/core/api/conversation-refusals';
 import { toastApiError } from '@/core/api/toast-api-error';
 
 /**
@@ -250,7 +254,16 @@ export function useCloseConversation() {
       qc.invalidateQueries({ queryKey: ['conversations'] });
       toast.success(t('toasts.conversations.closed'));
     },
-    onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'close' }),
+    // Every refusal is toasted. `conversation-not-closable` means the console's view of the state is
+    // stale, so the conversation queries refetch; `typification-required` is the caller's to act on
+    // (the conversation panel opens the wrap-up sheet) — see `useCloseConversationAction`.
+    onError: (err: Error, id) => {
+      toastApiError(err, conversationRefusals, t, { action: 'close' });
+      if (refusalCodeOf(err) === CONVERSATION_NOT_CLOSABLE) {
+        qc.invalidateQueries({ queryKey: ['conversations'] });
+        qc.invalidateQueries({ queryKey: ['conversations', id] });
+      }
+    },
   });
 }
 
