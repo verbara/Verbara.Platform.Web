@@ -2211,6 +2211,93 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v{version}/admin/users/{id}/listen-phone': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** A user's listen phone (silent audio listen, phone destination) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ListenPhoneDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    /** Set or clear a user's listen phone (strict E.164) */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': null | components['schemas']['ListenPhoneRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ListenPhoneDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ListenPhoneRefusal'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v{version}/admin/queues': {
     parameters: {
       query?: never;
@@ -8962,6 +9049,284 @@ export interface paths {
             [name: string]: unknown;
           };
           content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/supervisor/listen-endpoint': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Provision the caller's receive-only listen endpoint (silent audio listen) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenEndpointDto'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/supervisor/conversations/{id}/listen': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Start a silent audio listen on a live voice conversation */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': null | components['schemas']['SupervisorListenStartRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Bad Gateway */
+        502: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Service Unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/supervisor/listen': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The caller's active silent audio listen */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenDto'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Service Unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/supervisor/conversations/{id}/listen/stop': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Stop the caller's silent audio listen on a conversation */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenStoppedDto'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
+        };
+        /** @description Service Unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['SupervisorListenRefusal'];
+          };
         };
       };
     };
@@ -16465,6 +16830,7 @@ export interface components {
       callerIdNum: null | string;
       /** Format: date-time */
       connectedAt: null | string;
+      conversationId: null | string;
     };
     AddCallerIdEntryRequest: {
       phoneNumber: string;
@@ -18424,6 +18790,20 @@ export interface components {
       /** Format: date-time */
       startedAt: string;
     };
+    /** @description A user's listen phone, as an administrator reads or sets it. */
+    ListenPhoneDto: {
+      userId: string;
+      phoneNumber: null | string;
+    };
+    /** @description 400 `listen-phone-invalid`: the listen phone is not strict E.164; string? ListenPhoneRefusal.PhoneNumber echoes the value received. */
+    ListenPhoneRefusal: {
+      error: string;
+      phoneNumber: null | string;
+    };
+    /** @description `PUT /admin/users/{id}/listen-phone` request; `null` clears the number. */
+    ListenPhoneRequest: {
+      phoneNumber: null | string;
+    };
     ListenRequest: {
       supervisorId: string;
     };
@@ -19547,6 +19927,53 @@ export interface components {
     };
     SupervisorCloseRequest: {
       reason: null | string;
+    };
+    /** @description The caller's listen: string SupervisorListenDto.State is `dialing` until the audio connects, then `listening`. */
+    SupervisorListenDto: {
+      listenId: string;
+      conversationId: string;
+      destination: string;
+      state: string;
+      /** Format: date-time */
+      startedAt: string;
+      /** Format: date-time */
+      listeningSince: null | string;
+    };
+    /**
+     * @description `POST /supervisor/listen-endpoint` answer, to the caller only: the SIP credentials of their receive-only listen
+     *     endpoint. The single place string SupervisorListenEndpointDto.SipPassword crosses HTTP.
+     */
+    SupervisorListenEndpointDto: {
+      endpointId: string;
+      authorizationUsername: string;
+      sipPassword: string;
+      displayName: string;
+      listenCallerName: string;
+    };
+    /**
+     * @description A refusal of a silent-listen route (start, stop, current or listen-endpoint). string? SupervisorListenRefusal.ConversationId is the
+     *     route's conversation id (null on the routes that have none), except string SupervisorListenRefusal.AlreadyListening, where it and
+     *     string? SupervisorListenRefusal.ListenId name the caller's existing listen.
+     */
+    SupervisorListenRefusal: {
+      error: string;
+      conversationId: null | string;
+      listenId: null | string;
+    };
+    /**
+     * @description `POST /supervisor/conversations/{id}/listen` request. string? SupervisorListenStartRequest.Destination is `endpoint` or
+     *     `phone`; the request never carries a number or a SIP address (an extra `phoneNumber` is ignored).
+     */
+    SupervisorListenStartRequest: {
+      destination: null | string;
+    };
+    /** @description `POST …/listen/stop` answer: the caller's listen ended by request (string SupervisorListenStoppedDto.EndReason = `stopped`). */
+    SupervisorListenStoppedDto: {
+      listenId: string;
+      conversationId: string;
+      /** Format: date-time */
+      stoppedAt: string;
+      endReason: string;
     };
     SurveyDto: {
       id: string;
