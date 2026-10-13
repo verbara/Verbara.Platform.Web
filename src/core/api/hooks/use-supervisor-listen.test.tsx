@@ -20,6 +20,11 @@ vi.mock('@/core/voice/listen-agent', () => ({
   subscribeListenLegEnded: () => () => undefined,
 }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock('react-i18next', async () => {
+  const { createLocaleI18n } = await import('@/test/locale-i18n');
+  const i18n = await createLocaleI18n('en-US');
+  return { useTranslation: () => ({ t: i18n.t.bind(i18n), i18n }) };
+});
 
 import {
   currentListenInterval,
@@ -68,6 +73,16 @@ function makeWrapper() {
     return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
   }
   return { qc, wrapper };
+}
+
+/** The text of the last error toast, as the user's DOM carries it. */
+function lastToastText(): string | null {
+  const content = vi.mocked(toast.error).mock.calls.at(-1)?.[0] as ReactNode;
+  if (content === undefined) return null;
+  const { container, unmount } = render(<div>{content}</div>);
+  const text = container.textContent;
+  unmount();
+  return text;
 }
 
 /** The `data-error-code` of the last error toast, as the user's DOM carries it. */
@@ -159,6 +174,24 @@ describe('useStartListen', () => {
       expect(lastToastCode()).toBe(entry.body.error);
     },
   );
+
+  it('UseStartListen_ShouldNameTheTrunk_WhenTheRouteRefusesTrunkNotDialable', async () => {
+    const entry = refusals.trunkNotDialable;
+    server.use(
+      http.post(`*/api/v1/supervisor/conversations/${CONV}/listen`, () =>
+        HttpResponse.json(entry.body, { status: entry.status }),
+      ),
+    );
+    const { wrapper } = makeWrapper();
+    const { result } = renderHook(() => useStartListen(), { wrapper });
+    act(() => result.current.mutate({ conversationId: CONV, destination: 'phone' }));
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(lastToastCode()).toBe('trunk-not-dialable');
+    const text = lastToastText();
+    expect(text).toContain('Trunk 4');
+    expect(text).not.toContain(CONV);
+    expect(text).not.toContain('trunk-not-dialable');
+  });
 
   it('UseStartListen_ShouldClearThePendingListenAndToastTheGenericFailure_WhenTheNetworkFails', async () => {
     server.use(

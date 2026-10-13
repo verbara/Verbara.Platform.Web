@@ -1,5 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ApiError } from '@/core/api/api-error';
 
 const { mutateMock, toastSuccessMock, toastErrorMock } = vi.hoisted(() => ({
   mutateMock: vi.fn(),
@@ -29,18 +33,34 @@ vi.mock('@/core/api/hooks/use-conversations', () => ({
   useVoiceTransfer: () => ({ mutate: mutateMock, isPending: false }),
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, defaultValue?: string) => defaultValue ?? key,
-    i18n: { changeLanguage: vi.fn() },
-  }),
-}));
+vi.mock('react-i18next', async () => {
+  const { createLocaleI18n } = await import('@/test/locale-i18n');
+  const i18n = await createLocaleI18n('en-US');
+  const t = i18n.getFixedT('en-US', 'agent');
+  return { useTranslation: () => ({ t, i18n }) };
+});
 
 vi.mock('sonner', () => ({
   toast: { success: toastSuccessMock, error: toastErrorMock },
 }));
 
 import { VoiceTransferDialog } from './voice-transfer-dialog';
+
+type Entry = { status: number; body: Record<string, unknown> };
+const transferTrunkNotDialable = (
+  JSON.parse(
+    readFileSync(
+      resolve(process.cwd(), 'tests/fixtures/contracts/voice-dial-transfer.v1.json'),
+      'utf-8',
+    ),
+  ) as Record<string, Entry>
+).transferTrunkNotDialable!;
+
+function renderedToast(): HTMLElement {
+  const content = toastErrorMock.mock.calls.at(-1)?.[0] as ReactElement;
+  render(<div data-testid="toast">{content}</div>);
+  return screen.getByTestId('toast').firstElementChild as HTMLElement;
+}
 
 describe('VoiceTransferDialog', () => {
   afterEach(() => {
@@ -153,5 +173,37 @@ describe('VoiceTransferDialog', () => {
     fireEvent.click(await screen.findByTestId('voice-transfer-item-q1'));
     fireEvent.click(screen.getByTestId('voice-transfer-submit'));
     await waitFor(() => expect(toastErrorMock).toHaveBeenCalled());
+  });
+
+  it('VoiceTransferDialog_ShouldToastTrunkNotDialableAndStayOpen_WhenTheTransferIsRefused', async () => {
+    mutateMock.mockImplementation((_vars: unknown, opts?: { onError?: (e: unknown) => void }) =>
+      opts?.onError?.(new ApiError(transferTrunkNotDialable.status, transferTrunkNotDialable.body)),
+    );
+    const onOpenChange = renderOpen();
+    fireEvent.click(await screen.findByTestId('voice-transfer-to-external'));
+    fireEvent.change(await screen.findByTestId('voice-transfer-external-number'), {
+      target: { value: '+15559998888' },
+    });
+    fireEvent.click(screen.getByTestId('voice-transfer-submit'));
+    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledTimes(1));
+    const el = renderedToast();
+    expect(el).toHaveAttribute('data-error-code', 'trunk-not-dialable');
+    expect(el.textContent).toContain('Trunk 5');
+    expect(el.textContent).not.toContain('trunk-not-dialable');
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(toastSuccessMock).not.toHaveBeenCalled();
+  });
+
+  it('VoiceTransferDialog_ShouldToastVoiceTransferFailed_WhenTheErrorIsAnythingElse', async () => {
+    mutateMock.mockImplementation((_vars: unknown, opts?: { onError?: (e: unknown) => void }) =>
+      opts?.onError?.(new ApiError(404, { error: 'conversation-not-found' })),
+    );
+    renderOpen();
+    fireEvent.click(await screen.findByTestId('voice-transfer-item-q1'));
+    fireEvent.click(screen.getByTestId('voice-transfer-submit'));
+    await waitFor(() => expect(toastErrorMock).toHaveBeenCalledTimes(1));
+    const el = renderedToast();
+    expect(el).toHaveAttribute('data-error-code', 'voice-transfer-failed');
+    expect(el.textContent).toBe('Could not transfer the call');
   });
 });

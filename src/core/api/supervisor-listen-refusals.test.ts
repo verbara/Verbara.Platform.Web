@@ -30,8 +30,8 @@ const phone = readJson('supervisor-listen-phone.v1.json') as {
 };
 
 describe('supervisorListenRefusals', () => {
-  it('SupervisorListenRefusals_ShouldCoverTwelveFixtureCodes_WhenReadFromTheFixtureCopy', () => {
-    expect(refusals).toHaveLength(12);
+  it('SupervisorListenRefusals_ShouldCoverThirteenFixtureCodes_WhenReadFromTheFixtureCopy', () => {
+    expect(refusals).toHaveLength(13);
   });
 
   it.each(refusals)(
@@ -46,6 +46,13 @@ describe('supervisorListenRefusals', () => {
       expect(supervisorListenRefusals.codes?.[code]).toBeDefined();
     },
   );
+
+  it('SupervisorListenRefusals_ShouldUseTheSharedVoiceKey_WhenTheCodeIsTrunkNotDialable', () => {
+    expect(supervisorListenRefusals.codes?.['trunk-not-dialable']).toEqual({
+      code: 'trunk-not-dialable',
+      key: 'common:errors.voice.trunk_not_dialable',
+    });
+  });
 
   it('SupervisorListenRefusals_ShouldGiveListenFailed_WhenTheCodeIsUnknown', () => {
     const err = new ApiError(418, {

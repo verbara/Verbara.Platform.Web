@@ -14,7 +14,7 @@ import type { components } from '@/core/api/generated/openapi';
  */
 
 type Schemas = components['schemas'];
-type Kind = 'string' | 'string|null';
+type Kind = 'string' | 'string|null' | 'number|null';
 type Shape<T> = Record<keyof T, Kind>;
 
 const MACHINE_CODE = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/;
@@ -53,6 +53,7 @@ const LISTEN_REFUSAL: Shape<Schemas['SupervisorListenRefusal']> = {
   error: 'string',
   conversationId: 'string|null',
   listenId: 'string|null',
+  trunkId: 'number|null',
 };
 const PHONE_REFUSAL: Shape<Schemas['ListenPhoneRefusal']> = {
   error: 'string',

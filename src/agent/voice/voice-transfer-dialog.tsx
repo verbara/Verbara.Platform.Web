@@ -15,6 +15,8 @@ import {
 import { useQueues } from '@/core/api/hooks/use-queues';
 import { useAgents } from '@/core/api/hooks/use-agents';
 import { useVoiceTransfer } from '@/core/api/hooks/use-conversations';
+import { toastApiError } from '@/core/api/toast-api-error';
+import { trunkRefusalValues, voiceTransferRefusals } from '@/core/api/voice-call-refusals';
 
 interface VoiceTransferDialogProps {
   open: boolean;
@@ -86,7 +88,8 @@ export function VoiceTransferDialog({
           toast.success(t('voice.transfer.success', 'Call transferred'));
           resetAndClose();
         },
-        onError: () => toast.error(t('voice.transfer.failed', 'Could not transfer the call')),
+        onError: (err) =>
+          toastApiError(err, voiceTransferRefusals, t, { values: trunkRefusalValues(err) }),
       },
     );
   }
