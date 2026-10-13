@@ -49,16 +49,7 @@ const LISTEN_PHONE: Shape<Schemas['ListenPhoneDto']> = {
   userId: 'string',
   phoneNumber: 'string|null',
 };
-/**
- * INTERIM (task 2.3 of `outbound-calls-reach-the-trunk` removes it): the host adds `trunkId`
- * (integer|null) to `SupervisorListenRefusal`, but `openapi.d.ts` is regenerated only after the
- * Platform side merges. Until then the column is typed locally; after the regeneration this is a
- * plain `Shape<Schemas['SupervisorListenRefusal']>`.
- */
-type InterimSupervisorListenRefusal = Schemas['SupervisorListenRefusal'] & {
-  trunkId?: number | null;
-};
-const LISTEN_REFUSAL: Shape<Required<InterimSupervisorListenRefusal>> = {
+const LISTEN_REFUSAL: Shape<Schemas['SupervisorListenRefusal']> = {
   error: 'string',
   conversationId: 'string|null',
   listenId: 'string|null',

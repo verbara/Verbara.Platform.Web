@@ -1753,6 +1753,15 @@ export interface paths {
           };
           content?: never;
         };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['VoiceTransferResponse'];
+          };
+        };
       };
     };
     delete?: never;
@@ -1794,6 +1803,15 @@ export interface paths {
         };
         /** @description Bad Request */
         400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['VoiceDialResponse'];
+          };
+        };
+        /** @description Conflict */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -19953,12 +19971,15 @@ export interface components {
     /**
      * @description A refusal of a silent-listen route (start, stop, current or listen-endpoint). string? SupervisorListenRefusal.ConversationId is the
      *     route's conversation id (null on the routes that have none), except string SupervisorListenRefusal.AlreadyListening, where it and
-     *     string? SupervisorListenRefusal.ListenId name the caller's existing listen.
+     *     string? SupervisorListenRefusal.ListenId name the caller's existing listen. long? SupervisorListenRefusal.TrunkId is the resolved trunk's id on
+     *     string SupervisorListenRefusal.TrunkNotDialable, null on every other refusal.
      */
     SupervisorListenRefusal: {
       error: string;
       conversationId: null | string;
       listenId: null | string;
+      /** Format: int64 */
+      trunkId?: null | number;
     };
     /**
      * @description `POST /supervisor/conversations/{id}/listen` request. string? SupervisorListenStartRequest.Destination is `endpoint` or
@@ -21004,21 +21025,31 @@ export interface components {
       toNumber: null | string;
       contactId: null | string;
     };
-    /** @description `CorrelationId` is the tracked outbound Conversation id on success; `Error` a stable code otherwise. */
+    /**
+     * @description `CorrelationId` is the tracked outbound Conversation id on success; `Error` a stable code otherwise.
+     *     `TrunkId` is always written: the resolved trunk's id on 409 `trunk-not-dialable`, null otherwise.
+     */
     VoiceDialResponse: {
       accepted: boolean;
-      correlationId: null | string;
-      error: null | string;
+      correlationId?: null | string;
+      error?: null | string;
+      /** Format: int64 */
+      trunkId: null | number;
     };
     /** @description Blind-transfer request: `Kind` = "queue"|"agent", `Target` = the queue/agent id. */
     VoiceTransferRequest: {
       kind: string;
       target: string;
     };
-    /** @description `Error` is a stable machine code (e.g. "channel-unknown", "not-owner") on failure. */
+    /**
+     * @description `Error` is a stable machine code (e.g. "channel-unknown", "not-owner") on failure. `TrunkId` is always
+     *     written: the resolved trunk's id on 409 `trunk-not-dialable`, null otherwise.
+     */
     VoiceTransferResponse: {
       accepted: boolean;
-      error: null | string;
+      error?: null | string;
+      /** Format: int64 */
+      trunkId: null | number;
     };
     WebChatMessageRequest: {
       text: string;
