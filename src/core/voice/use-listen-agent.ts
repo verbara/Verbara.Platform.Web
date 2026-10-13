@@ -9,8 +9,8 @@ import { useListenStore, type ListenUnavailableReason } from './listen-store';
 const MONITOR_PERMISSION = 'contacts:conversation:monitor';
 
 /**
- * Principals whose listen-endpoint route refused with 403 `not-permitted` or 409
- * `no-supervisor-endpoint`: the route is not called again for them (design D2). Module-level so a
+ * Principals whose listen-endpoint route refused with 403 `not-permitted` (or the role gate's bare
+ * 403) or 409 `no-supervisor-endpoint`: the route is not called again for them (design D2). Module-level so a
  * remount of the operations shell keeps the answer; a principal change asks again.
  */
 const refusedPrincipals = new Map<string, ListenUnavailableReason>();
@@ -32,6 +32,19 @@ function requestListenCredentials(): Promise<ListenCredentials> {
     url: '/api/v1/supervisor/listen-endpoint',
     method: 'POST',
   });
+}
+
+/**
+ * The refusals that make the browser destination unavailable for this principal: the route's own
+ * `not-permitted` and `no-supervisor-endpoint`, and a 403 with no machine code, which is the
+ * `/supervisor` group's role gate answering before the route runs (for example a role that holds
+ * `contacts:conversation:monitor` without the supervisor role). Anything else is a failure.
+ */
+function refusalReasonOf(err: unknown): ListenUnavailableReason | null {
+  if (!isApiError(err)) return null;
+  if (err.code === 'not-permitted' || err.code === 'no-supervisor-endpoint') return err.code;
+  if (err.status === 403 && err.code === null) return 'not-permitted';
+  return null;
 }
 
 function wssUrlOf(): string {
@@ -77,12 +90,10 @@ export function useListenAgent(): void {
       })
       .catch((err: unknown) => {
         if (!current) return;
-        if (
-          isApiError(err) &&
-          (err.code === 'not-permitted' || err.code === 'no-supervisor-endpoint')
-        ) {
-          refusedPrincipals.set(principal, err.code);
-          useListenStore.getState().setUnavailable(err.code);
+        const reason = refusalReasonOf(err);
+        if (reason) {
+          refusedPrincipals.set(principal, reason);
+          useListenStore.getState().setUnavailable(reason);
           return;
         }
         useListenStore.getState().setRegistration('failed');

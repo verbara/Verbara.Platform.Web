@@ -122,6 +122,30 @@ describe('useListenAgent', () => {
     },
   );
 
+  it.each([
+    ['no body', null],
+    ['a ProblemDetails body', { title: 'Forbidden', status: 403 }],
+    ['a prose error', { error: 'Forbidden' }],
+  ] as const)(
+    'UseListenAgent_ShouldSetNotPermittedAndNotRetry_WhenTheRoleGateAnswersABare403 with %s',
+    async (_name, body) => {
+      fetchMock.mockRejectedValue(new ApiError(403, body));
+      signIn();
+      const first = renderHook(() => useListenAgent());
+
+      await waitFor(() => expect(useListenStore.getState().registration).toBe('unavailable'));
+      expect(useListenStore.getState().unavailableReason).toBe('not-permitted');
+      expect(startMock).not.toHaveBeenCalled();
+
+      first.unmount();
+      renderHook(() => useListenAgent());
+      await act(async () => undefined);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(useListenStore.getState().registration).toBe('unavailable');
+    },
+  );
+
   it('UseListenAgent_ShouldSetFailed_WhenTheRouteFailsOtherwise', async () => {
     fetchMock.mockRejectedValue(new ApiError(500, null));
     signIn();

@@ -18,8 +18,8 @@ export interface SupervisorListen {
 
 /**
  * The listen user agent's registration (design D2). `unavailable`: the listen-endpoint route
- * refused (403 `not-permitted` or 409 `no-supervisor-endpoint`) and the browser is not offered for
- * this principal. `moved`: another window of this browser took the registration (design D1).
+ * refused (403 `not-permitted`, the role gate's bare 403, or 409 `no-supervisor-endpoint`) and the
+ * browser is not offered for this principal. `moved`: another window of this browser took the registration (design D1).
  */
 export type ListenRegistration =
   'offline' | 'connecting' | 'registered' | 'failed' | 'unavailable' | 'moved';
