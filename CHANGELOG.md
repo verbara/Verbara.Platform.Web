@@ -63,6 +63,13 @@ shows the generic failure toast.
 - A supervisor who holds `contacts:conversation:monitor` now registers a receive-only listen user
   agent while the operations shell is open, on deployments that expose `asteriskWssUrl`. It never
   asks for the microphone, never places a call and rejects every call it did not start. (#401)
+- **Calls over a trunk with no address to call name the trunk (requires Platform ≥ v2.29.0).**
+  Click-to-dial, the voice transfer to an external number and the silent listen on the
+  supervisor's phone show a localized message when Platform refuses with `trunk-not-dialable`:
+  the trunk (by its `trunkId`) has no address to call, and an admin must set the trunk's host. The
+  message is localized in EN-US, ES-419 and PT-BR and carries `data-error-code="trunk-not-dialable"`.
+  Click-to-dial and the voice transfer now report their failures by code; every other failure shows
+  the same text as before, under `data-error-code="dial-failed"` or `"voice-transfer-failed"`.
 
 ## [3.23.0-web] - 2026-10-11
 
