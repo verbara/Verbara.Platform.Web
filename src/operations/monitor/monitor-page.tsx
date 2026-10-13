@@ -4,10 +4,15 @@ import { useSearchParams } from 'react-router';
 import { PageHeader } from '@/core/ui/page-header';
 import { VirtualList } from '@/core/ui/virtual-list';
 import { useActiveSessions, useStartListening } from '@/core/api/hooks/use-supervisor';
+import {
+  conversationIdOfSession,
+  type ListenableSession,
+} from '@/core/api/hooks/use-supervisor-listen';
 import { SessionCard } from './session-card';
 import { SessionDetail } from './session-detail';
 import { DigitalMonitorTab } from './digital-monitor-tab';
 import { StuckWorkTab } from './stuck-work-tab';
+import { ActiveListenBar } from './listen-control';
 
 const SESSION_CARD_HEIGHT_PX = 96;
 
@@ -21,9 +26,11 @@ export default function MonitorPage() {
   const [tab, setTab] = useState<'voice' | 'digital' | 'stuck'>(
     linkedTab === 'digital' || linkedTab === 'stuck' ? linkedTab : 'voice',
   );
-  const { data: sessions = [] } = useActiveSessions();
+  const { data: sessions = [] } = useActiveSessions() as { data?: ListenableSession[] };
   const startListening = useStartListening();
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  const selectedSession = sessions.find((s) => s.sessionId === selectedSessionId) ?? null;
 
   // Auto-deselect if the selected session disappears from the live list.
   // Legitimate because the sessions array is an external (server-driven) source
@@ -88,6 +95,8 @@ export default function MonitorPage() {
         </button>
       </div>
 
+      {tab === 'voice' && <ActiveListenBar />}
+
       {tab === 'voice' && (
         <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
           {/* Left panel — session list */}
@@ -117,8 +126,11 @@ export default function MonitorPage() {
 
           {/* Right panel — session detail */}
           <div className="min-w-0 flex-1 overflow-hidden" data-testid="monitor-detail-panel">
-            {selectedSessionId ? (
-              <SessionDetail sessionId={selectedSessionId} />
+            {selectedSession ? (
+              <SessionDetail
+                sessionId={selectedSession.sessionId}
+                conversationId={conversationIdOfSession(selectedSession)}
+              />
             ) : (
               <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-border">
                 <p className="text-sm text-muted-foreground">

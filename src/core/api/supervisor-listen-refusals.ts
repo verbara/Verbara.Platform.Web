@@ -1,4 +1,7 @@
 import { isApiError, type ApiErrorEntry, type ApiErrorMap } from './api-error';
+import type { components } from './generated/openapi';
+
+type SupervisorListenRefusal = components['schemas']['SupervisorListenRefusal'];
 
 /**
  * The silent-listen refusals (host change `supervisor-silent-listen`, design D7; design D5 here;
@@ -64,7 +67,7 @@ export const listenPhoneRefusals: ApiErrorMap = {
 /** The existing listen an `already-listening` refusal names, from its facts; else `null`. */
 export function alreadyListeningOf(
   err: unknown,
-): { conversationId: string | null; listenId: string | null } | null {
+): Pick<SupervisorListenRefusal, 'conversationId' | 'listenId'> | null {
   if (!isApiError(err) || err.code !== 'already-listening') return null;
   const text = (v: unknown) => (typeof v === 'string' && v !== '' ? v : null);
   return { conversationId: text(err.facts.conversationId), listenId: text(err.facts.listenId) };

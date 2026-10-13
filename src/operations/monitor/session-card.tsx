@@ -43,6 +43,8 @@ export function SessionCard({ session, isSelected, onClick }: SessionCardProps) 
     <button
       type="button"
       onClick={onClick}
+      data-testid="session-card"
+      data-session-id={session.sessionId}
       className={`w-full rounded-lg border p-3 text-left transition-colors focus:outline-none ${
         isSelected
           ? 'border-brand bg-brand/5 dark:bg-brand/10'

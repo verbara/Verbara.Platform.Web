@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { customFetch } from '@/core/api/client';
+import { requestListenEndpoint } from '@/core/api/hooks/use-supervisor-listen';
 import { isApiError } from '@/core/api/api-error';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { getConfig } from '@/core/hooks/use-config';
-import { startListenAgent, stopListenAgent, type ListenCredentials } from './listen-agent';
+import { startListenAgent, stopListenAgent } from './listen-agent';
 import { useListenStore, type ListenUnavailableReason } from './listen-store';
 
 const MONITOR_PERMISSION = 'contacts:conversation:monitor';
@@ -18,20 +18,6 @@ const refusedPrincipals = new Map<string, ListenUnavailableReason>();
 /** Test seam: forget the refusals between cases. */
 export function __resetListenRefusalsForTests(): void {
   refusedPrincipals.clear();
-}
-
-/**
- * `POST /api/v1/supervisor/listen-endpoint`, no body.
- *
- * Interim until openapi.d.ts regenerates (supervisor-silent-listen): the call lives here, typed from
- * the fixture copy, until gate G2 lands `useListenEndpoint` in `src/core/api/hooks/use-supervisor-listen.ts`
- * on the generated `SupervisorListenEndpointDto` (task 2.5).
- */
-function requestListenCredentials(): Promise<ListenCredentials> {
-  return customFetch<ListenCredentials>({
-    url: '/api/v1/supervisor/listen-endpoint',
-    method: 'POST',
-  });
 }
 
 /**
@@ -83,7 +69,7 @@ export function useListenAgent(): void {
 
     let current = true;
     useListenStore.getState().setRegistration('connecting');
-    requestListenCredentials()
+    requestListenEndpoint()
       .then(async (credentials) => {
         if (!current) return;
         await startListenAgent(wssUrl, credentials);

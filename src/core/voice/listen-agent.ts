@@ -6,23 +6,15 @@ import {
   type Invitation,
   type SessionDescriptionHandlerModifier,
 } from 'sip.js';
+import type { components } from '@/core/api/generated/openapi';
 import { deriveDomain } from './sip-domain';
 import { useListenStore } from './listen-store';
 
 /**
  * The supervisor's listen credentials, field for field as `POST /api/v1/supervisor/listen-endpoint`
  * answers them (`supervisor-sip-credentials.v1.json`).
- *
- * Interim until openapi.d.ts regenerates (supervisor-silent-listen): typed locally from the fixture
- * copy; gate G2 swaps it for `components['schemas']['SupervisorListenEndpointDto']`.
  */
-export interface ListenCredentials {
-  endpointId: string;
-  authorizationUsername: string;
-  sipPassword: string;
-  displayName: string;
-  listenCallerName: string;
-}
+export type ListenCredentials = components['schemas']['SupervisorListenEndpointDto'];
 
 /**
  * The receive-only listen user agent (design D1 of `supervisor-silent-listen`). It is NOT the agent

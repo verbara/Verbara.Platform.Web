@@ -1,20 +1,11 @@
+import type { components } from '@/core/api/generated/openapi';
 import { create } from 'zustand';
 
 /**
  * A supervisor's active silent listen, field for field as the host's start and current routes
  * answer it (`supervisor-listen-start.v1.json`, entries `start` and `current`).
- *
- * Interim until openapi.d.ts regenerates (supervisor-silent-listen): typed locally from the fixture
- * copy; gate G2 swaps it for `components['schemas']['SupervisorListenDto']`.
  */
-export interface SupervisorListen {
-  listenId: string;
-  conversationId: string;
-  destination: 'endpoint' | 'phone';
-  state: 'dialing' | 'listening';
-  startedAt: string;
-  listeningSince: string | null;
-}
+export type SupervisorListen = components['schemas']['SupervisorListenDto'];
 
 /**
  * The listen user agent's registration (design D2). `unavailable`: the listen-endpoint route

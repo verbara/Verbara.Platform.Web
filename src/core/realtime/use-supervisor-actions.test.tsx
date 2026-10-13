@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, cleanup, render, renderHook } from '@testing-library/react';
+import type { ReactNode } from 'react';
 
 /**
  * Supervisor actions over the REAL hub (design D3, spec realtime-connection-lifecycle: "A
@@ -130,7 +131,12 @@ describe('useSupervisorActions', () => {
     expect(hubServer.invocations).toEqual([
       expect.objectContaining({ target: 'WhisperToAgentAsync', arguments: ['conv-1', 'hold on'] }),
     ]);
-    expect(toast.success).toHaveBeenCalledWith('toasts.supervisor.whisperSent');
+    // The toast carries a locale-proof hook for E2E (`data-toast="whisper-sent"`) around its text.
+    const { container } = render(
+      <div>{vi.mocked(toast.success).mock.calls.at(-1)?.[0] as ReactNode}</div>,
+    );
+    const shown = container.querySelector('[data-toast="whisper-sent"]');
+    expect(shown?.textContent).toBe('toasts.supervisor.whisperSent');
     expect(toast.error).not.toHaveBeenCalled();
     expect(hubServer.invocations.map((i) => i.target)).not.toContain('StartSupervisionAsync');
     expect(hubServer.invocations.map((i) => i.target)).not.toContain('StopSupervisingAsync');

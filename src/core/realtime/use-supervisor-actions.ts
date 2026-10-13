@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { createElement, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { invokeHub } from './platform-hub';
@@ -22,7 +22,14 @@ export function useSupervisorActions(conversationId: string | undefined) {
       if (!payload) return;
       try {
         await invokeHub('WhisperToAgentAsync', conversationId, payload);
-        toast.success(t('toasts.supervisor.whisperSent'));
+        // `data-toast` is the locale-proof hook the E2E specs wait on.
+        toast.success(
+          createElement(
+            'span',
+            { 'data-toast': 'whisper-sent' },
+            t('toasts.supervisor.whisperSent'),
+          ),
+        );
       } catch {
         toast.error(t('toasts.supervisor.whisperFailed'));
       }

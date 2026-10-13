@@ -5,7 +5,7 @@
  * an Invalid Date throws the same `RangeError: Invalid time value` the agent bubble did. Real hook,
  * real `customFetch`, msw answering as Platform v2.26.0, inside the Operations error boundary.
  */
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { I18nextProvider } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -123,6 +123,76 @@ describe('DigitalConversationDetail message history from Platform', () => {
         new Date(platformMessages[0]!.createdAt),
       );
       expect(screen.getByTestId('supervisor-message-time')).toHaveTextContent(expectedTime);
+    },
+  );
+});
+
+describe('DigitalConversationDetail silent listen (design D3)', () => {
+  const MONITOR = 'contacts:conversation:monitor';
+
+  async function renderDetail(c: SupervisorConversation) {
+    useAuthStore
+      .getState()
+      .setAuth(
+        'T',
+        Date.now() + 60_000,
+        { id: 'sup-1', email: 's@b.com', displayName: 'Sup', role: 'supervisor' },
+        'acme',
+        [MONITOR],
+        {},
+      );
+    server.use(
+      http.get(`/api/v1/supervisor/conversations/${c.id}/messages`, () => HttpResponse.json([])),
+      http.get('/api/v1/supervisor/listen', () =>
+        HttpResponse.json(
+          { error: 'listen-not-found', conversationId: null, listenId: null },
+          { status: 404 },
+        ),
+      ),
+    );
+    const i18n = await createOperationsI18n('en-US');
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <I18nextProvider i18n={i18n}>
+          <DigitalConversationDetail conversation={c} />
+        </I18nextProvider>
+      </QueryClientProvider>,
+    );
+  }
+
+  it.each(['active', 'on_hold'])(
+    'DigitalConversationDetail_ShouldShowListenKeyedByItsOwnId_WhenTheConversationIsALiveVoiceCall (%s)',
+    async (state) => {
+      await renderDetail({ ...conversation, channel: 'Voice', state });
+      const control = await screen.findByTestId('listen-control');
+      expect(control).toHaveAttribute('data-listen-state', 'idle');
+      const posted: string[] = [];
+      server.use(
+        http.post('/api/v1/supervisor/conversations/:id/listen', ({ params }) => {
+          posted.push(String(params.id));
+          return HttpResponse.json(
+            { error: 'no-voice-call', conversationId: String(params.id), listenId: null },
+            { status: 409 },
+          );
+        }),
+      );
+      fireEvent.click(screen.getByTestId('listen-start'));
+      fireEvent.click(await screen.findByTestId('listen-destination-phone'));
+      await waitFor(() => expect(posted).toEqual([CONVERSATION_ID]));
+      await waitFor(() => expect(control).toHaveAttribute('data-listen-state', 'idle'));
+    },
+  );
+
+  it.each([
+    ['WebChat', 'active'],
+    ['Voice', 'wrap_up'],
+  ])(
+    'DigitalConversationDetail_ShouldOfferNoListen_WhenTheConversationIsNotALiveVoiceCall (%s %s)',
+    async (channel, state) => {
+      await renderDetail({ ...conversation, channel, state });
+      await screen.findByTestId('digital-conversation-detail');
+      expect(screen.queryByTestId('listen-control')).toBeNull();
     },
   );
 });

@@ -12,6 +12,8 @@ import {
   type SupervisorConversation,
 } from '@/core/api/hooks/use-supervisor';
 import { useFormatDate } from '@/core/i18n/use-format';
+import { ListenControl } from './listen-control';
+import { canListenTo } from './listen-eligibility';
 
 interface DigitalConversationDetailProps {
   readonly conversation: SupervisorConversation;
@@ -51,7 +53,10 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
             {conversation.channel} · {conversation.queueName} · {conversation.state}
           </p>
         </div>
-        <div className="flex gap-1">
+        <div className="flex items-start gap-1">
+          {canListenTo(conversation.channel, conversation.state) && (
+            <ListenControl conversationId={conversation.id} />
+          )}
           <Button
             size="sm"
             variant="outline"
