@@ -1,7 +1,8 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { customFetch } from '@/core/api/client';
+import { describeMintRefusal } from '@/core/api/mint-refusal';
 import type { components } from '@/core/api/generated/openapi';
 
 /**
@@ -36,6 +37,7 @@ export interface RecoveryCodesPayload {
 }
 
 export function useRegenerateRecoveryCodes() {
+  const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (req: RegenerateRecoveryCodesRequest) =>
@@ -44,7 +46,11 @@ export function useRegenerateRecoveryCodes() {
         method: 'POST',
         data: req,
       }),
-    onSuccess: () => toast.success(t('toasts.auth.recoveryCodesRegenerated')),
-    onError: (err: Error) => toast.error(err.message),
+    onSuccess: () => {
+      // A recovery-code mint: `/users/me` may now report different recovery-code state (design D4).
+      qc.invalidateQueries({ queryKey: ['me'] });
+      toast.success(t('toasts.auth.recoveryCodesRegenerated'));
+    },
+    onError: (err: Error) => toast.error(describeMintRefusal(err, t) ?? err.message),
   });
 }

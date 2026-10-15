@@ -3,6 +3,7 @@ import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { describeMintRefusal } from '@/core/api/mint-refusal';
 
 // --- Types ---
 
@@ -160,13 +161,19 @@ export interface MfaSetupResponse {
 }
 
 export function useSetupMfa() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: () =>
       customFetch<MfaSetupResponse>({
         url: '/api/v1/auth/mfa/setup',
         method: 'POST',
       }),
-    onError: (err: Error) => toast.error(err.message),
+    // A recovery-code mint: `/users/me` may now report different recovery-code state (design D4).
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['me'] });
+    },
+    onError: (err: Error) => toast.error(describeMintRefusal(err, t) ?? err.message),
   });
 }
 
@@ -291,6 +298,7 @@ export interface RecoveryCodesResponse {
 }
 
 export function useRegenerateRecoveryCodes() {
+  const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (password: string) =>
@@ -299,8 +307,12 @@ export function useRegenerateRecoveryCodes() {
         method: 'POST',
         data: { password },
       }),
-    onSuccess: () => toast.success(t('toasts.auth.recoveryCodesRegenerated')),
-    onError: (err: Error) => toast.error(err.message),
+    onSuccess: () => {
+      // A recovery-code mint: `/users/me` may now report different recovery-code state (design D4).
+      qc.invalidateQueries({ queryKey: ['me'] });
+      toast.success(t('toasts.auth.recoveryCodesRegenerated'));
+    },
+    onError: (err: Error) => toast.error(describeMintRefusal(err, t) ?? err.message),
   });
 }
 
