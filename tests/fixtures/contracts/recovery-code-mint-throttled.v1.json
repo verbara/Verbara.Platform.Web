@@ -1,0 +1,21 @@
+{
+  "_comment": "EXISTING wire on main 1fabf392 (#407, harden-recovery-code-digest design D10, measured PLT-SEC-16; owning living spec `mfa-recovery-code-redemption`). One recovery-code mint per user per Mfa:RecoveryCodeMint:MinInterval (default 10 s, per replica), shared by the four mint routes. The refusal is checked AFTER each route's own credential checks. Frozen for the console: status 429 and a Retry-After header in whole seconds, >= 1. The `error` value is PROSE and illustrative (ApiError.code is null): never render it. Routes: mfaSetup = POST /api/v1/auth/mfa/setup; authRegenerate = POST /api/v1/auth/mfa/recovery-codes/regenerate; enrollVerify = POST /api/v1/profile/security/mfa/enroll/verify; profileRegenerate = POST /api/v1/profile/security/recovery-codes/regenerate. Nothing was minted by a refused request. All four routes are refused during an impersonation (ImpersonationGuardMiddleware.cs:43-52).",
+  "throttled": {
+    "_source": "src/Verbara.Platform.Api/Services/RecoveryCodeMintGate.cs:100-110 (Refuse: Retry-After = max(1, ceil(seconds)), TypedResults.Json ErrorResponse 429); called at src/Verbara.Platform.Api/Endpoints/AuthEndpoints.cs:907-908 (mfaSetup), :1046-1047 (authRegenerate), src/Verbara.Platform.Api/Endpoints/Profile/MfaEnrollEndpoints.cs:113-114 (enrollVerify), src/Verbara.Platform.Api/Endpoints/Profile/ProfileRecoveryCodesEndpoints.cs:92-93 (profileRegenerate)",
+    "status": 429,
+    "routes": [
+      "mfaSetup",
+      "authRegenerate",
+      "enrollVerify",
+      "profileRegenerate"
+    ],
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Retry-After": "7"
+    },
+    "body": {
+      "error": "Recovery codes were generated moments ago. Wait before generating them again."
+    },
+    "_note": "Retry-After is whole seconds, at least 1 (7 is an example). There is no retryAfter body field on this refusal; the `error` text is illustrative."
+  }
+}

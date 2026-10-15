@@ -4,6 +4,8 @@ import { server } from '@/test/msw-server';
 import { customFetch, customFetchWithHeaders } from './client';
 import { ApiError } from './api-error';
 import { PaymentRequiredError, usePaymentRequiredStore } from '@/core/licensing';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 vi.mock('@/core/auth/auth-store', () => ({
   useAuthStore: {
@@ -282,4 +284,50 @@ describe('customFetch refusals as ApiError (design D1)', () => {
     ).resolves.toEqual({ ok: true });
     expect(calls).toBe(2);
   });
+});
+
+describe('customFetch Retry-After on ApiError (sign-in-refusals-say-what-happened, design D3)', () => {
+  const throttled = (
+    JSON.parse(
+      readFileSync(
+        resolve(process.cwd(), 'tests/fixtures/contracts/recovery-code-mint-throttled.v1.json'),
+        'utf-8',
+      ),
+    ) as {
+      throttled: { status: number; headers: Record<string, string>; body: Record<string, unknown> };
+    }
+  ).throttled;
+
+  async function refusedWith(headers: Record<string, string>): Promise<unknown> {
+    server.use(
+      http.post('/api/v1/minted', () =>
+        HttpResponse.json(throttled.body, { status: throttled.status, headers }),
+      ),
+    );
+    return customFetch({ url: '/api/v1/minted', method: 'POST', data: {} }).catch(
+      (e: unknown) => e,
+    );
+  }
+
+  it('should carry the Retry-After seconds when a mint route answers 429 with the header', async () => {
+    const err = await refusedWith(throttled.headers);
+
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err).toMatchObject({ status: 429, code: null, retryAfterSeconds: 7 });
+  });
+
+  it('should carry null when a 429 has no Retry-After header', async () => {
+    const err = await refusedWith({ 'Content-Type': throttled.headers['Content-Type'] ?? '' });
+
+    expect(err).toMatchObject({ status: 429, retryAfterSeconds: null });
+  });
+
+  it.each(['0', '-1', 'abc', '1.5', 'Wed, 21 Oct 2026 07:28:00 GMT'])(
+    'should carry null when Retry-After is %j',
+    async (value) => {
+      const err = await refusedWith({ ...throttled.headers, 'Retry-After': value });
+
+      expect(err).toMatchObject({ status: 429, retryAfterSeconds: null });
+    },
+  );
 });

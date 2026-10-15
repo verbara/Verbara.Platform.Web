@@ -150,7 +150,13 @@
     "reset_invalid": "Este enlace de restablecimiento no es válido, expiró o ya se usó. Solicita uno nuevo.",
     "reset_failed": "No se pudo restablecer la contraseña. Inténtalo de nuevo.",
     "forgot_tenant": "Tenant",
-    "forgot_tenant_placeholder": "p. ej. demo"
+    "forgot_tenant_placeholder": "p. ej. demo",
+    "tenant_suspended": "El acceso de tu organización está suspendido. Contacta a tu administrador.",
+    "tenant_pending_deletion": "Tu organización está programada para eliminarse. Contacta a tu administrador.",
+    "mfa_challenge_exhausted": "Demasiados códigos incorrectos. Inicia sesión de nuevo.",
+    "mfa_server_error": "Ocurrió un error del servidor al verificar el código. Intenta nuevamente.",
+    "recovery_codes_throttled_seconds": "Los códigos de recuperación se acaban de generar. Espera {{seconds}} segundos e inténtalo de nuevo.",
+    "recovery_codes_throttled": "Los códigos de recuperación se acaban de generar. Espera un momento e inténtalo de nuevo."
   },
   "theme": {
     "label": "Tema",
@@ -276,6 +282,11 @@
     "read_only": "Solo lectura",
     "end": "Finalizar suplantación",
     "ended": "La suplantación finalizó. Volviste a tu propia sesión."
+  },
+  "recovery_codes_banner": {
+    "message": "Tus códigos de recuperación se generaron con un método anterior. Vuelve a generarlos para mantener tu cuenta segura.",
+    "regenerate": "Regenerar códigos de recuperación",
+    "dismiss": "Descartar"
   },
   "confirm_delete_dialog": {
     "title": "¿Eliminar {{entityType}}?",

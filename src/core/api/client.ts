@@ -6,7 +6,7 @@ import {
   isPaymentRequiredProblemDetails,
   usePaymentRequiredStore,
 } from '@/core/licensing';
-import { ApiError } from './api-error';
+import { ApiError, retryAfterSecondsOf } from './api-error';
 import {
   ImpersonationEndedError,
   endImpersonationLocally,
@@ -349,7 +349,12 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
     const body: unknown = await response.json().catch(() => null);
     // The status, Platform's machine code and the `errors` list survive; `message` keeps the
     // value callers have always read (design D1, ADR-0013).
-    throw new ApiError(response.status, body);
+    // `Retry-After` (whole seconds) travels with it for a throttled mint (design D3).
+    throw new ApiError(
+      response.status,
+      body,
+      retryAfterSecondsOf(response.headers.get('Retry-After')),
+    );
   }
 
   const data = (
