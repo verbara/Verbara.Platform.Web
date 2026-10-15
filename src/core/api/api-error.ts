@@ -111,8 +111,13 @@ export class ApiError extends Error {
    * a localized message names. Only the fields a map's caller interpolates are ever rendered.
    */
   readonly facts: Readonly<Record<string, ApiErrorFact>>;
+  /**
+   * The `Retry-After` response header as a positive whole number of seconds (a recovery-code mint
+   * 429 sends one), else `null`: absent, zero, negative, fractional or an HTTP-date.
+   */
+  readonly retryAfterSeconds: number | null;
 
-  constructor(status: number, body: unknown) {
+  constructor(status: number, body: unknown, retryAfterSeconds: number | null = null) {
     super(legacyMessageOf(body, status));
     this.name = 'ApiError';
     this.status = status;
@@ -120,7 +125,18 @@ export class ApiError extends Error {
     this.errors = errorItemsOf(body);
     this.body = body;
     this.facts = factsOf(body);
+    this.retryAfterSeconds = retryAfterSeconds;
   }
+}
+
+/**
+ * A `Retry-After` header value as whole seconds when it is a positive integer (`"7"`), else `null`.
+ * The HTTP-date form is not read: Platform sends seconds.
+ */
+export function retryAfterSecondsOf(value: string | null): number | null {
+  if (value === null || !/^\d+$/.test(value)) return null;
+  const seconds = Number(value);
+  return seconds > 0 && Number.isSafeInteger(seconds) ? seconds : null;
 }
 
 export function isApiError(err: unknown): err is ApiError {

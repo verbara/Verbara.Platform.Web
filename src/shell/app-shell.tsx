@@ -4,6 +4,7 @@ import { Rail } from './rail';
 import { CommandPalette } from './command-palette';
 import { useSSE } from '@/core/hooks/use-sse';
 import { ImpersonationBanner } from '@/core/auth/impersonation-banner';
+import { RecoveryCodesBanner } from '@/core/auth/recovery-codes-banner';
 import { SkipLink } from '@/core/ui/skip-link';
 import { SessionManager } from '@/core/session/session-manager';
 import { useRealtimeStore } from '@/core/stores/realtime-store';
@@ -22,6 +23,7 @@ export function AppShell() {
       <SkipLink targetId="main-content">{t('a11y.skipToMain')}</SkipLink>
       <SessionManager />
       <ImpersonationBanner />
+      <RecoveryCodesBanner />
       <div className="flex flex-1 overflow-hidden">
         <Rail />
         <main

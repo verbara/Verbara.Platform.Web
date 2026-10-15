@@ -150,7 +150,15 @@
     "reset_invalid": "Este link de redefinição é inválido, expirou ou já foi usado. Solicite um novo.",
     "reset_failed": "Não foi possível redefinir a senha. Tente novamente.",
     "forgot_tenant": "Tenant",
-    "forgot_tenant_placeholder": "ex.: demo"
+    "forgot_tenant_placeholder": "ex.: demo",
+    "tenant_suspended": "O acesso da sua organização está suspenso. Entre em contato com o administrador.",
+    "tenant_pending_deletion": "Sua organização está programada para exclusão. Entre em contato com o administrador.",
+    "mfa_challenge_exhausted": "Muitos códigos incorretos. Faça login novamente.",
+    "mfa_server_error": "Ocorreu um erro no servidor ao verificar o código. Tente novamente.",
+    "recovery_codes_throttled_seconds_one": "Os códigos de recuperação acabaram de ser gerados. Aguarde {{count}} segundo e tente novamente.",
+    "recovery_codes_throttled_seconds_many": "Os códigos de recuperação acabaram de ser gerados. Aguarde {{count}} segundos e tente novamente.",
+    "recovery_codes_throttled_seconds_other": "Os códigos de recuperação acabaram de ser gerados. Aguarde {{count}} segundos e tente novamente.",
+    "recovery_codes_throttled": "Os códigos de recuperação acabaram de ser gerados. Aguarde um momento e tente novamente."
   },
   "theme": {
     "label": "Tema",
@@ -276,6 +284,11 @@
     "read_only": "Somente leitura",
     "end": "Encerrar personificação",
     "ended": "A personificação foi encerrada. Você voltou à sua própria sessão."
+  },
+  "recovery_codes_banner": {
+    "message": "Seus códigos de recuperação foram gerados com um método antigo. Gere-os novamente para manter sua conta segura.",
+    "regenerate": "Gerar novos códigos de recuperação",
+    "dismiss": "Dispensar"
   },
   "confirm_delete_dialog": {
     "title": "Excluir {{entityType}}?",

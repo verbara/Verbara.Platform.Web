@@ -1,9 +1,14 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { useAuthStore } from '@/core/auth/auth-store';
-import type { SignInErrorCode } from './sign-in-refusal';
+import {
+  MFA_STEP_ERROR_KEYS,
+  mfaVerifyOutcome,
+  type MfaStepErrorCode,
+  type SignInErrorCode,
+} from './sign-in-refusal';
 
 interface LoginResponse {
   accessToken?: string;
@@ -19,12 +24,14 @@ interface LoginResponse {
 interface MfaVerifyProps {
   mfaToken: string;
   email: string;
+  /** The tenant the sign-in named, sent as `X-Tenant-Id`; none is sent when it named none. */
+  tenantId?: string;
   onSuccess: (data: LoginResponse) => void;
   onCancel: () => void;
   /**
    * The sign-in was refused for good: Platform answered 403 (the account, or its tenant, may not
-   * sign in) after consuming the challenge, so another code cannot succeed. The caller leaves the
-   * MFA step and shows the code on the sign-in form.
+   * sign in) or 423 (the account is locked), so another code cannot succeed. The caller leaves the
+   * MFA step, clears the pending challenge and shows the code on the sign-in form.
    */
   onRefused: (code: SignInErrorCode) => void;
 }
@@ -32,6 +39,7 @@ interface MfaVerifyProps {
 export function MfaVerify({
   mfaToken,
   email: _email,
+  tenantId,
   onSuccess,
   onCancel,
   onRefused,
@@ -40,12 +48,23 @@ export function MfaVerify({
   const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
   const [recoveryMode, setRecoveryMode] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState('');
-  const [error, setError] = useState('');
+  // A code, never display text: it picks the translation and is exposed as `data-error-code`.
+  const [errorCode, setErrorCode] = useState<MfaStepErrorCode | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  // The delayed return to sign-in after a spent challenge. Cancelled when the step unmounts, so it
+  // never fires into a later sign-in.
+  const returnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (returnTimerRef.current !== null) clearTimeout(returnTimerRef.current);
+    },
+    [],
+  );
 
   async function verifyCode(code: string) {
-    setError('');
+    setErrorCode(null);
     setLoading(true);
     try {
       const body = recoveryMode ? { mfaToken, recoveryCode: code } : { mfaToken, code };
@@ -53,47 +72,45 @@ export function MfaVerify({
       const res = await fetch('/api/v1/auth/mfa/verify', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(tenantId && { 'X-Tenant-Id': tenantId }),
+        },
         body: JSON.stringify(body),
       });
 
       if (!res.ok) {
-        // A 403 is final: the account (or its tenant) may not sign in, and Platform has already
-        // consumed the challenge, so asking for another code would only fail again.
-        if (res.status === 403) {
-          onRefused('account-inactive');
-          return;
-        }
-
-        // Sub C T0.3: distinguish rate-limit, expired token, and generic errors
-        if (res.status === 429) {
-          setError(t('auth.mfa_rate_limited'));
-          setDigits(Array(6).fill(''));
-          inputRefs.current[0]?.focus();
-          return;
-        }
-
-        // Read response body once (may be JSON or text) to look for expiry markers
-        let bodyText = '';
+        // The body is read once; `null` when it is absent or not JSON. Only its machine code is used.
+        let refusalBody: unknown = null;
         try {
-          bodyText = await res.text();
+          refusalBody = await res.json();
         } catch {
-          // ignore body read errors
+          refusalBody = null;
         }
 
-        const isExpired = res.status === 400 && /expired|CHALLENGE_EXPIRED/i.test(bodyText);
+        const outcome = mfaVerifyOutcome(res.status, refusalBody);
 
-        if (isExpired) {
-          setError(t('auth.mfa_challenge_expired'));
-          setDigits(Array(6).fill(''));
-          setTimeout(() => {
-            useAuthStore.getState().clearMfaPending();
+        // A 403 or 423 is final for the console. The account 403 (and the 423) spends the
+        // challenge; a tenant 403 leaves it live on the server, but a retry cannot succeed while
+        // the tenant is in that state. Either way the step closes and the sign-in form shows it.
+        if (outcome.kind === 'refused') {
+          onRefused(outcome.code);
+          return;
+        }
+
+        setErrorCode(outcome.code);
+        setDigits(Array(6).fill(''));
+        if (outcome.clearPending) {
+          // The challenge cannot succeed any more: let the user read why, then return to sign-in.
+          // Only this challenge is cleared: a newer one in the store is left alone.
+          if (returnTimerRef.current !== null) clearTimeout(returnTimerRef.current);
+          returnTimerRef.current = setTimeout(() => {
+            returnTimerRef.current = null;
+            const store = useAuthStore.getState();
+            if (store.mfaPending?.mfaToken === mfaToken) store.clearMfaPending();
           }, 3000);
           return;
         }
-
-        setError(t('auth.mfa_invalid_code'));
-        setDigits(Array(6).fill(''));
         inputRefs.current[0]?.focus();
         return;
       }
@@ -101,7 +118,7 @@ export function MfaVerify({
       const data = (await res.json()) as LoginResponse;
       onSuccess(data);
     } catch {
-      setError(t('auth.mfa_error'));
+      setErrorCode('mfa-error');
     } finally {
       setLoading(false);
     }
@@ -196,21 +213,34 @@ export function MfaVerify({
         </div>
       )}
 
-      {error && <p className="text-sm text-center text-red-600 dark:text-red-400">{error}</p>}
+      {errorCode && (
+        <p
+          className="text-sm text-center text-red-600 dark:text-red-400"
+          data-testid="login-mfa-error"
+          data-error-code={errorCode}
+        >
+          {t(MFA_STEP_ERROR_KEYS[errorCode])}
+        </p>
+      )}
 
       <div className="flex flex-col items-center gap-2 pt-2">
         <button
           type="button"
           onClick={() => {
             setRecoveryMode((v) => !v);
-            setError('');
+            setErrorCode(null);
           }}
           className="text-xs text-brand-dark hover:underline"
           data-testid="login-mfa-use-recovery"
         >
           {recoveryMode ? t('auth.mfa_use_code') : t('auth.mfa_use_recovery')}
         </button>
-        <button type="button" onClick={onCancel} className="text-xs text-slate-500 hover:underline">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-xs text-slate-500 hover:underline"
+          data-testid="login-mfa-cancel"
+        >
           {t('actions.cancel')}
         </button>
       </div>

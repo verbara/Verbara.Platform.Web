@@ -1,0 +1,20 @@
+{
+  "_comment": "Mirrors the Platform contract fixture `recovery-code-mint-throttled.v1.json` for the four recovery-code mint routes. A throttled mint is answered 429 with a Retry-After header in whole seconds, at least 1. The `error` value is prose and illustrative: never render it. Routes: mfaSetup = POST /api/v1/auth/mfa/setup; authRegenerate = POST /api/v1/auth/mfa/recovery-codes/regenerate; enrollVerify = POST /api/v1/profile/security/mfa/enroll/verify; profileRegenerate = POST /api/v1/profile/security/recovery-codes/regenerate.",
+  "throttled": {
+    "status": 429,
+    "routes": [
+      "mfaSetup",
+      "authRegenerate",
+      "enrollVerify",
+      "profileRegenerate"
+    ],
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Retry-After": "7"
+    },
+    "body": {
+      "error": "Recovery codes were generated moments ago. Wait before generating them again."
+    },
+    "_note": "Retry-After is whole seconds, at least 1 (7 is an example). There is no retryAfter body field on this refusal; the `error` text is illustrative."
+  }
+}

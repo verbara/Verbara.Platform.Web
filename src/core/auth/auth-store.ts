@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { queryClient } from '@/core/api/query-client';
 
 export interface UserProfile {
   id: string;
@@ -36,7 +37,12 @@ interface AuthState {
   permissions: string[];
   features: Features;
   rememberMe: boolean;
-  mfaPending: { mfaToken: string; email: string } | null;
+  /**
+   * A password or single sign-on sign-in waiting for its MFA code. `tenantId` is the tenant the
+   * sign-in named (sent as `X-Tenant-Id` on `/auth/login`, or the SSO fragment's `tenant_id`);
+   * absent when it named none, so the verify request sends none either.
+   */
+  mfaPending: { mfaToken: string; email: string; tenantId?: string } | null;
   impersonation: ImpersonationState | null;
   sessionIdleTimeoutMinutes: number | null;
 
@@ -49,7 +55,7 @@ interface AuthState {
     features: Features,
     sessionIdleTimeoutMinutes?: number | null,
   ) => void;
-  setMfaPending: (mfaToken: string, email: string) => void;
+  setMfaPending: (mfaToken: string, email: string, tenantId?: string | null) => void;
   clearMfaPending: () => void;
   setRememberMe: (value: boolean) => void;
   logout: () => void;
@@ -91,6 +97,19 @@ const LEGACY_SECRET_KEYS = [
   'impersonation',
 ] as const satisfies readonly (keyof AuthState)[];
 
+/**
+ * Drops the cached `/users/me` (`['me']`) once the store holds a different identity: an
+ * impersonation starting or ending swaps the token, so the cached user belongs to the other side.
+ * Reset (not invalidate) so no reader sees the previous user's data while the refetch runs; active
+ * readers refetch with the token just set. Every start and end path (the hooks, the banner's
+ * fallback, the request client's and the countdown's local end) goes through the store actions,
+ * so this is the one place that covers them all. `query-client` imports nothing from the app, so
+ * there is no import cycle.
+ */
+function resetCurrentUser(): void {
+  void queryClient.resetQueries({ queryKey: ['me'], exact: true });
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -130,7 +149,8 @@ export const useAuthStore = create<AuthState>()(
               ? state.sessionIdleTimeoutMinutes
               : sessionIdleTimeoutMinutes,
         })),
-      setMfaPending: (mfaToken, email) => set({ mfaPending: { mfaToken, email } }),
+      setMfaPending: (mfaToken, email, tenantId) =>
+        set({ mfaPending: { mfaToken, email, ...(tenantId && { tenantId }) } }),
       clearMfaPending: () => set({ mfaPending: null }),
       setRememberMe: (value) => set({ rememberMe: value }),
       logout: () =>
@@ -155,7 +175,7 @@ export const useAuthStore = create<AuthState>()(
         if (!expiry) return true;
         return Date.now() >= expiry - 30_000; // 30s buffer
       },
-      startImpersonation: (response, originalToken, originalTenantId) =>
+      startImpersonation: (response, originalToken, originalTenantId) => {
         set((state) => ({
           accessToken: response.accessToken,
           tokenExpiry: new Date(response.expiresAt).getTime(),
@@ -170,7 +190,9 @@ export const useAuthStore = create<AuthState>()(
             expiresAt: new Date(response.expiresAt).getTime(),
             readOnly: response.readOnly ?? false,
           },
-        })),
+        }));
+        resetCurrentUser();
+      },
       // The one way an impersonation ends in this tab, whatever ended it: the banner's End, its
       // expiry, or Platform refusing its token (design D3). Restores the operator's token, its expiry
       // and tenant; a no-op when no impersonation is active.
@@ -183,6 +205,7 @@ export const useAuthStore = create<AuthState>()(
             tenantId: imp.originalTenantId,
             impersonation: null,
           });
+          resetCurrentUser();
         }
       },
     }),

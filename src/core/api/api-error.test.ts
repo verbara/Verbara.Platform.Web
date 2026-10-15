@@ -47,6 +47,16 @@ describe('ApiError', () => {
     expect(err.name).toBe('ApiError');
   });
 
+  it('should carry null retryAfterSeconds when built with status and body only', () => {
+    const err = new ApiError(429, { error: 'Wait before generating them again.' });
+    expect(err.retryAfterSeconds).toBeNull();
+    expect(err.status).toBe(429);
+  });
+
+  it('should carry the retryAfterSeconds given as the third argument', () => {
+    expect(new ApiError(429, null, 7).retryAfterSeconds).toBe(7);
+  });
+
   // Platform's password-policy refusal is `ErrorDetailResponse(Error, Details)`: `details` on the wire.
   it('should keep the policy details list of strings of an ErrorDetailResponse', () => {
     const err = new ApiError(400, {

@@ -150,7 +150,15 @@
     "reset_invalid": "This reset link is invalid, expired or already used. Request a new one.",
     "reset_failed": "The password could not be reset. Try again.",
     "forgot_tenant": "Tenant",
-    "forgot_tenant_placeholder": "e.g. demo"
+    "forgot_tenant_placeholder": "e.g. demo",
+    "tenant_suspended": "Access for your organization is suspended. Contact your administrator.",
+    "tenant_pending_deletion": "Your organization is scheduled for deletion. Contact your administrator.",
+    "mfa_challenge_exhausted": "Too many incorrect codes. Please sign in again.",
+    "mfa_server_error": "A server error occurred while verifying the code. Please try again.",
+    "recovery_codes_throttled_seconds_one": "Recovery codes were just generated. Wait {{count}} second and try again.",
+    "recovery_codes_throttled_seconds_many": "Recovery codes were just generated. Wait {{count}} seconds and try again.",
+    "recovery_codes_throttled_seconds_other": "Recovery codes were just generated. Wait {{count}} seconds and try again.",
+    "recovery_codes_throttled": "Recovery codes were just generated. Wait a moment and try again."
   },
   "theme": {
     "label": "Theme",
@@ -276,6 +284,11 @@
     "read_only": "Read-Only",
     "end": "End Impersonation",
     "ended": "The impersonation ended. You are back in your own session."
+  },
+  "recovery_codes_banner": {
+    "message": "Your recovery codes were generated with an older method. Regenerate them to keep your account secure.",
+    "regenerate": "Regenerate recovery codes",
+    "dismiss": "Dismiss"
   },
   "confirm_delete_dialog": {
     "title": "Delete {{entityType}}?",

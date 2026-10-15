@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { customFetch } from '@/core/api/client';
+import { describeMintRefusal } from '@/core/api/mint-refusal';
 import type { components } from '@/core/api/generated/openapi';
 
 /**
@@ -54,6 +56,8 @@ export function useMfaEnrollInit() {
 }
 
 export function useMfaEnrollVerify() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (req: MfaEnrollVerifyRequest) =>
       customFetch<MfaEnrollVerifyResponse>({
@@ -61,7 +65,11 @@ export function useMfaEnrollVerify() {
         method: 'POST',
         data: req,
       }),
-    onError: (err: Error) => toast.error(err.message),
+    // A recovery-code mint: `/users/me` may now report different recovery-code state (design D4).
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['me'] });
+    },
+    onError: (err: Error) => toast.error(describeMintRefusal(err, t) ?? err.message),
   });
 }
 

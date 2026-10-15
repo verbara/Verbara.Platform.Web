@@ -36,6 +36,15 @@ interface LoginResponse {
   sessionIdleTimeoutMinutes?: number;
 }
 
+/** A refused sign-in's body, parsed once; `null` when it is absent or not JSON. */
+async function refusalBodyOf(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -80,7 +89,7 @@ export function LoginPage() {
     if (!challengeToken) return;
     // Clear the hash so the token does not stay in the address bar or get re-processed.
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    useAuthStore.getState().setMfaPending(challengeToken, '');
+    useAuthStore.getState().setMfaPending(challengeToken, '', params.get('tenant_id'));
   }, []);
 
   // Handle OIDC callback via URL fragment (#oidc_callback&access_token=...&...)
@@ -176,15 +185,15 @@ export function LoginPage() {
       });
 
       if (!res.ok) {
-        // The status decides; the body's English `error` text is never shown.
-        setErrorCode(passwordRefusalCode(res.status));
+        // The status and, on a 403, the body's machine code decide; body text is never shown.
+        setErrorCode(passwordRefusalCode(res.status, await refusalBodyOf(res)));
         return;
       }
 
       const data = (await res.json()) as LoginResponse;
 
       if (data.requiresMfa && data.mfaToken) {
-        useAuthStore.getState().setMfaPending(data.mfaToken, email);
+        useAuthStore.getState().setMfaPending(data.mfaToken, email, effectiveTenant);
         return;
       }
 
@@ -210,7 +219,7 @@ export function LoginPage() {
       });
 
       if (!res.ok) {
-        setErrorCode(apiKeyRefusalCode(res.status));
+        setErrorCode(apiKeyRefusalCode(res.status, await refusalBodyOf(res)));
         return;
       }
 
@@ -241,10 +250,11 @@ export function LoginPage() {
           <MfaVerify
             mfaToken={mfaPending.mfaToken}
             email={mfaPending.email}
+            tenantId={mfaPending.tenantId}
             onSuccess={completeLogin}
             onCancel={() => useAuthStore.getState().clearMfaPending()}
             onRefused={(code) => {
-              // Back to the sign-in form with the refusal: the challenge is spent.
+              // Back to the sign-in form with the refusal, which is final: a retry cannot succeed.
               setErrorCode(code);
               useAuthStore.getState().clearMfaPending();
             }}

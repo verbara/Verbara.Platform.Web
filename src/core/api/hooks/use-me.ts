@@ -38,6 +38,13 @@ export interface Me {
   oidcSubject: string | null;
   /** R5.2 E.2 — added to /users/me; older backends may omit it (treat as undefined). */
   mfaPolicy?: MfaPolicy;
+  /**
+   * `true` when the user's recovery codes were generated with an older method and should be
+   * regenerated. Wire shape frozen by Platform's `users-me-recovery-flag.v1.json` fixture. Declared
+   * here by hand because `GET /users/me` declares `content?: never` in `openapi.d.ts`, so there is no
+   * generated type to carry it. Older backends omit it: treat `undefined` as "nothing to do".
+   */
+  recoveryCodesNeedRegeneration?: boolean;
 }
 
 export function useMe() {
