@@ -5,7 +5,11 @@ import { isApiError } from './api-error';
 /** The `data-error-code` of a throttled recovery-code mint, identical in every locale. */
 export const RECOVERY_CODES_THROTTLED = 'recovery-codes-throttled';
 
-/** The locale keys of the throttled-mint message: with and without the `Retry-After` seconds. */
+/**
+ * The locale keys of the throttled-mint message: with and without the `Retry-After` seconds.
+ * `throttledSeconds` is an i18next plural base key: the locales carry its `_one`, `_many` and
+ * `_other` forms, selected by `count`.
+ */
 export const MINT_REFUSAL_KEYS = {
   throttledSeconds: 'auth.recovery_codes_throttled_seconds',
   throttled: 'auth.recovery_codes_throttled',
@@ -24,6 +28,6 @@ export function describeMintRefusal(err: unknown, t: TFunction): ReactNode | nul
   const text =
     err.retryAfterSeconds === null
       ? String(t(MINT_REFUSAL_KEYS.throttled))
-      : String(t(MINT_REFUSAL_KEYS.throttledSeconds, { seconds: err.retryAfterSeconds }));
+      : String(t(MINT_REFUSAL_KEYS.throttledSeconds, { count: err.retryAfterSeconds }));
   return <span data-error-code={RECOVERY_CODES_THROTTLED}>{text}</span>;
 }

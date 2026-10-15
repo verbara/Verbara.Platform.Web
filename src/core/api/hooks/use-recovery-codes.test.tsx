@@ -164,7 +164,7 @@ describe.each(MINT_CASES)('$name (POST $url)', ({ url, useMint, vars }) => {
 
     const { container, el } = renderedThrottleToast();
     expect(el).not.toBeNull();
-    expect(el?.textContent).toBe(i18n.t('auth.recovery_codes_throttled_seconds', { seconds: 7 }));
+    expect(el?.textContent).toBe(i18n.t('auth.recovery_codes_throttled_seconds', { count: 7 }));
     expect(el?.textContent).toContain('7');
     expect(container.textContent).not.toContain(THROTTLED.body.error);
   });

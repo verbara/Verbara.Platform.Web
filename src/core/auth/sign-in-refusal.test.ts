@@ -54,11 +54,20 @@ describe('sign-in-refusal', () => {
   // locales (spec "Every mapped code resolves in every locale").
   it.each(LOCALES)(
     'EveryMappedCode_ShouldResolveToANonEmptyString_InLocale %s',
-    (_locale, common) => {
-      const unresolved = MAPPED_KEYS.filter(({ key }) => {
+    (locale, common) => {
+      const resolves = (key: string) => {
         const value = lookup(common, key);
-        return typeof value !== 'string' || value.trim() === '';
-      });
+        return typeof value === 'string' && value.trim() !== '';
+      };
+      // A plural base key (no plain entry) resolves when every plural form i18next can select for
+      // this locale (Intl.PluralRules categories, e.g. `_many` in es-419 and pt-BR) is present.
+      const categories = new Intl.PluralRules(locale).resolvedOptions().pluralCategories;
+      const unresolved = MAPPED_KEYS.filter(
+        ({ key }) =>
+          !resolves(key) &&
+          (lookup(common, key) !== undefined ||
+            !categories.every((category) => resolves(`${key}_${category}`))),
+      );
       expect(unresolved).toEqual([]);
     },
   );

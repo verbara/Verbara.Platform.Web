@@ -155,7 +155,9 @@
     "tenant_pending_deletion": "Tu organización está programada para eliminarse. Contacta a tu administrador.",
     "mfa_challenge_exhausted": "Demasiados códigos incorrectos. Inicia sesión de nuevo.",
     "mfa_server_error": "Ocurrió un error del servidor al verificar el código. Intenta nuevamente.",
-    "recovery_codes_throttled_seconds": "Los códigos de recuperación se acaban de generar. Espera {{seconds}} segundos e inténtalo de nuevo.",
+    "recovery_codes_throttled_seconds_one": "Los códigos de recuperación se acaban de generar. Espera {{count}} segundo e inténtalo de nuevo.",
+    "recovery_codes_throttled_seconds_many": "Los códigos de recuperación se acaban de generar. Espera {{count}} segundos e inténtalo de nuevo.",
+    "recovery_codes_throttled_seconds_other": "Los códigos de recuperación se acaban de generar. Espera {{count}} segundos e inténtalo de nuevo.",
     "recovery_codes_throttled": "Los códigos de recuperación se acaban de generar. Espera un momento e inténtalo de nuevo."
   },
   "theme": {
