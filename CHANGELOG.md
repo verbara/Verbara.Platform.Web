@@ -80,7 +80,10 @@ shows the generic failure toast.
   The password and API-key forms, and the MFA step, show a tenant-suspended or a
   tenant-pending-deletion message, each telling the user to contact their administrator, when
   Platform refuses with `tenant-suspended` or `tenant-pending-deletion`; `login-error` carries the
-  matching `data-error-code`. A 403 without one of the sign-in codes still shows the
+  matching `data-error-code`. On the password form they appear whenever a tenant is given, typed or
+  taken from the subdomain; on the MFA step as well, because the verify request now carries the
+  tenant the sign-in used; on the API-key form only when the console is served on the tenant's
+  subdomain. A 403 without one of the sign-in codes still shows the
   account-not-active message, which is what an older Platform's answers keep showing. Both messages
   are localized in EN-US, ES-419 and PT-BR.
 - **The MFA step says what happened (requires Platform ≥ v2.29.0).** Each verify outcome is read by
