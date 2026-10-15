@@ -8,6 +8,7 @@ import { AppShell } from './app-shell';
 vi.mock('@/core/hooks/use-sse', () => ({ useSSE: vi.fn() }));
 vi.mock('@/core/session/session-manager', () => ({ SessionManager: () => null }));
 vi.mock('@/core/auth/impersonation-banner', () => ({ ImpersonationBanner: () => null }));
+vi.mock('@/core/auth/recovery-codes-banner', () => ({ RecoveryCodesBanner: () => null }));
 vi.mock('./rail', () => ({ Rail: () => null }));
 vi.mock('./command-palette', () => ({ CommandPalette: () => null }));
 
