@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
@@ -52,6 +52,16 @@ export function MfaVerify({
   const [errorCode, setErrorCode] = useState<MfaStepErrorCode | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  // The delayed return to sign-in after a spent challenge. Cancelled when the step unmounts, so it
+  // never fires into a later sign-in.
+  const returnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (returnTimerRef.current !== null) clearTimeout(returnTimerRef.current);
+    },
+    [],
+  );
 
   async function verifyCode(code: string) {
     setErrorCode(null);
@@ -92,8 +102,12 @@ export function MfaVerify({
         setDigits(Array(6).fill(''));
         if (outcome.clearPending) {
           // The challenge cannot succeed any more: let the user read why, then return to sign-in.
-          setTimeout(() => {
-            useAuthStore.getState().clearMfaPending();
+          // Only this challenge is cleared: a newer one in the store is left alone.
+          if (returnTimerRef.current !== null) clearTimeout(returnTimerRef.current);
+          returnTimerRef.current = setTimeout(() => {
+            returnTimerRef.current = null;
+            const store = useAuthStore.getState();
+            if (store.mfaPending?.mfaToken === mfaToken) store.clearMfaPending();
           }, 3000);
           return;
         }
@@ -221,7 +235,12 @@ export function MfaVerify({
         >
           {recoveryMode ? t('auth.mfa_use_code') : t('auth.mfa_use_recovery')}
         </button>
-        <button type="button" onClick={onCancel} className="text-xs text-slate-500 hover:underline">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-xs text-slate-500 hover:underline"
+          data-testid="login-mfa-cancel"
+        >
           {t('actions.cancel')}
         </button>
       </div>

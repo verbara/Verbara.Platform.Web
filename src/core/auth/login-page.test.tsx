@@ -726,6 +726,104 @@ describe('MfaVerify spent challenges (exhausted and expired)', () => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
     },
   );
+
+  // The same two fixture entries, for the delayed return to sign-in.
+  const SPENT_ANSWERS = [
+    [
+      'exhausted',
+      {
+        status: 401,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: { error: 'mfa-challenge-exhausted' },
+      },
+    ],
+    [
+      'expired',
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: { error: 'mfa-challenge-expired' },
+      },
+    ],
+  ] as const;
+
+  async function answerSpentChallenge(answer: FakeAnswer) {
+    answers['/api/v1/auth/mfa/verify'] = answer;
+    await renderLogin();
+    '123456'.split('').forEach((digit, i) => {
+      fireEvent.change(screen.getByTestId(`login-mfa-digit-${i}`), { target: { value: digit } });
+    });
+    await settleFake();
+  }
+
+  it.each(SPENT_ANSWERS)(
+    'MfaVerify_ShouldKeepTheNewChallenge_WhenTheUserCancelsAndSignsInAgainWithin3sOfThe %s answer',
+    async (_entry, answer) => {
+      await answerSpentChallenge(answer);
+
+      fireEvent.click(screen.getByTestId('login-mfa-cancel'));
+      answers['/api/v1/auth/login'] = {
+        status: 200,
+        body: { requiresMfa: true, mfaToken: 'mfa-challenge-2' },
+      };
+      fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'ana@demo.test' } });
+      fireEvent.change(screen.getByTestId('login-password'), {
+        target: { value: 'Correct-Horse-1' },
+      });
+      fireEvent.click(screen.getByTestId('login-submit'));
+      await settleFake();
+      const signedInAgain = useAuthStore.getState().mfaPending?.mfaToken;
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+      });
+
+      expect({
+        signedInAgain,
+        after: {
+          mfaStepOpen: screen.queryByTestId('login-mfa-section') !== null,
+          mfaToken: useAuthStore.getState().mfaPending?.mfaToken,
+        },
+      }).toEqual({
+        signedInAgain: 'mfa-challenge-2',
+        after: { mfaStepOpen: true, mfaToken: 'mfa-challenge-2' },
+      });
+    },
+  );
+
+  it.each(SPENT_ANSWERS)(
+    'MfaVerify_ShouldKeepANewerChallenge_WhenTheStoreHoldsADifferentTokenBefore3sAfterThe %s answer',
+    async (_entry, answer) => {
+      await answerSpentChallenge(answer);
+
+      act(() => {
+        useAuthStore.getState().setMfaPending('mfa-challenge-2', 'ana@demo.test');
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+      });
+
+      expect(useAuthStore.getState().mfaPending?.mfaToken).toBe('mfa-challenge-2');
+    },
+  );
+
+  it.each(SPENT_ANSWERS)(
+    'MfaVerify_ShouldLeaveNoPendingClear_WhenTheStepUnmountsWithin3sOfThe %s answer',
+    async (_entry, answer) => {
+      await answerSpentChallenge(answer);
+
+      cleanup();
+      const timersAfterUnmount = vi.getTimerCount();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+      });
+
+      expect({
+        timersAfterUnmount,
+        mfaPending: useAuthStore.getState().mfaPending,
+      }).toEqual({ timersAfterUnmount: 0, mfaPending: PENDING_CHALLENGE });
+    },
+  );
 });
 
 describe('LoginPage /login?reason= notice', () => {
