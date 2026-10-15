@@ -4,13 +4,24 @@
  *
  * The login page holds a *code*, never display text. The code picks the translation key and is
  * exposed as `data-error-code` / `data-notice-code`, identical in every locale. A refusal's code
- * comes from the HTTP status of the sign-in response and never from the body: Platform's
- * `ErrorResponse.error` is English prose, not a contract.
+ * comes from the HTTP status of the sign-in response and, on a 403, from the machine code in the
+ * body's `error`: since Platform v2.29.0 that code is a contract on `POST /api/v1/auth/login`,
+ * `/auth/mfa/verify` and `/auth/login/apikey` (design D1). Only codes on a closed allow-list are
+ * read; prose in a body is never shown, and a 403 without a known code reads as account-inactive,
+ * which is how an older Platform's answers are handled.
  */
+
+import { machineCodeOf } from '@/core/api/api-error';
 
 /** Why a sign-in on the login page did not complete. */
 export type SignInErrorCode =
-  'invalid-credentials' | 'account-inactive' | 'account-locked' | 'invalid-key' | 'sso-no-tenant';
+  | 'invalid-credentials'
+  | 'account-inactive'
+  | 'account-locked'
+  | 'invalid-key'
+  | 'sso-no-tenant'
+  | 'tenant-suspended'
+  | 'tenant-pending-deletion';
 
 /**
  * The `common` translation key of each code. A `Record`, so a new code fails the build until it
@@ -23,27 +34,45 @@ export const SIGN_IN_ERROR_KEYS: Readonly<Record<SignInErrorCode, string>> = {
   'account-locked': 'auth.account_locked',
   'invalid-key': 'auth.invalid_key',
   'sso-no-tenant': 'auth.sso_no_tenant',
+  'tenant-suspended': 'auth.tenant_suspended',
+  'tenant-pending-deletion': 'auth.tenant_pending_deletion',
 };
 
+/** The 403 codes a sign-in route may carry in `error` (Platform v2.29.0+), and nothing else. */
+const SIGN_IN_403_CODES: readonly SignInErrorCode[] = [
+  'account-inactive',
+  'tenant-suspended',
+  'tenant-pending-deletion',
+];
+
 /**
- * The code for a refused `POST /api/v1/auth/login`. The MFA step reports its own 403 as
- * `account-inactive` too, through `MfaVerify`'s `onRefused`.
- *
- * Platform v2.24.0 has two 403 producers on these anonymous endpoints: the account-status gate (a
- * `Suspended` or `Deactivated` account) and `TenantStatusMiddleware` (a `Suspended` or
- * `PendingDeletion` tenant). `auth.account_not_active` is worded to be true for both. Telling them
- * apart needs a machine-readable code on the body, which is a Platform change.
+ * The code for a 403 on a sign-in route: the body's `error` when it is one of the three sign-in
+ * codes (the account's own status, or the status of the tenant the request names), else
+ * `account-inactive`, whose message is true for either cause. `body` is the parsed body, `null`
+ * when it is absent or not JSON.
  */
-export function passwordRefusalCode(status: number): SignInErrorCode {
-  if (status === 403) return 'account-inactive';
+function forbiddenRefusalCode(body: unknown): SignInErrorCode {
+  const code = machineCodeOf(body);
+  return SIGN_IN_403_CODES.find((known) => known === code) ?? 'account-inactive';
+}
+
+/**
+ * The code for a refused `POST /api/v1/auth/login`, from its status and, on a 403, its parsed
+ * body (`null` when absent or not JSON).
+ */
+export function passwordRefusalCode(status: number, body: unknown): SignInErrorCode {
+  if (status === 403) return forbiddenRefusalCode(body);
   if (status === 423) return 'account-locked';
   // 401 (unknown email or wrong password) and any other failure keep the message shown before.
   return 'invalid-credentials';
 }
 
-/** The code for a refused `POST /api/v1/auth/login/apikey`: a 403 is the key owner's account. */
-export function apiKeyRefusalCode(status: number): SignInErrorCode {
-  return status === 403 ? 'account-inactive' : 'invalid-key';
+/**
+ * The code for a refused `POST /api/v1/auth/login/apikey`: a 403 is the key owner's account or its
+ * tenant, read as for the password form; any other failure is an invalid key.
+ */
+export function apiKeyRefusalCode(status: number, body: unknown): SignInErrorCode {
+  return status === 403 ? forbiddenRefusalCode(body) : 'invalid-key';
 }
 
 /** Why the console sent the user to `/login`, as the allow-listed `reason` query value. */

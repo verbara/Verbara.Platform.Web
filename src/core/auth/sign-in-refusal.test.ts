@@ -56,30 +56,80 @@ describe('sign-in-refusal', () => {
       'account-locked': 'auth.account_locked',
       'invalid-key': 'auth.invalid_key',
       'sso-no-tenant': 'auth.sso_no_tenant',
+      'tenant-suspended': 'auth.tenant_suspended',
+      'tenant-pending-deletion': 'auth.tenant_pending_deletion',
     });
     expect(LOGIN_NOTICE_KEYS).toEqual({ 'session-ended': 'auth.session_ended' });
   });
 
-  it.each([
-    [401, 'invalid-credentials'],
-    [403, 'account-inactive'],
-    [423, 'account-locked'],
-    [400, 'invalid-credentials'],
-    [404, 'invalid-credentials'],
-    [429, 'invalid-credentials'],
-    [500, 'invalid-credentials'],
-    [503, 'invalid-credentials'],
-  ] as const)('PasswordRefusalCode_ShouldMap %i To %s', (status, code) => {
-    expect(passwordRefusalCode(status)).toBe(code);
+  // Platform v2.29.0 403 bodies on `login` and `apiKeyLogin`, verbatim from the host fixture
+  // sign-in-refusal-codes.v1.json: `accountInactive.body`, `tenantSuspended.body`,
+  // `tenantPendingDeletion.body`.
+  const CODED_403_BODIES = [
+    [{ error: 'account-inactive' }, 'account-inactive'],
+    [{ error: 'tenant-suspended' }, 'tenant-suspended'],
+    [{ error: 'tenant-pending-deletion' }, 'tenant-pending-deletion'],
+  ] as const;
+
+  // A 403 the console cannot attribute reads as the account-not-active message, true for any cause.
+  const UNCODED_403_BODIES = [
+    // sign-in-refusal-codes.v1.json `tenantSuspended.previousBody` (a Platform before v2.29.0).
+    [
+      'prose from a Platform before v2.29.0',
+      { error: 'This tenant account has been suspended. Contact your administrator.' },
+    ],
+    ['an unknown machine code', { error: 'tenant-archived' }],
+    ['a code of another route', { error: 'mfa-challenge-exhausted' }],
+    ['an inherited object key', { error: 'constructor' }],
+    ['a differently cased code', { error: 'Tenant-Suspended' }],
+    ['a body without error', { title: 'Forbidden' }],
+    ['no body or a body that is not JSON', null],
+  ] as const;
+
+  describe('PasswordRefusalCode', () => {
+    it.each(CODED_403_BODIES)('ShouldMapA403With %o To %s', (body, code) => {
+      expect(passwordRefusalCode(403, body)).toBe(code);
+    });
+
+    it.each(UNCODED_403_BODIES)('ShouldReturnAccountInactive_ForA403With %s', (_case, body) => {
+      expect(passwordRefusalCode(403, body)).toBe('account-inactive');
+    });
+
+    it.each([
+      [401, null, 'invalid-credentials'],
+      [423, null, 'account-locked'],
+      [400, null, 'invalid-credentials'],
+      [404, null, 'invalid-credentials'],
+      [429, null, 'invalid-credentials'],
+      [500, null, 'invalid-credentials'],
+      [503, null, 'invalid-credentials'],
+      // A code is read on a 403 only: the same body on another status keeps the status mapping.
+      [401, { error: 'tenant-suspended' }, 'invalid-credentials'],
+      [423, { error: 'tenant-pending-deletion' }, 'account-locked'],
+      [500, { error: 'account-inactive' }, 'invalid-credentials'],
+    ] as const)('ShouldMap %i with body %o To %s', (status, body, code) => {
+      expect(passwordRefusalCode(status, body)).toBe(code);
+    });
   });
 
-  it.each([
-    [403, 'account-inactive'],
-    [401, 'invalid-key'],
-    [423, 'invalid-key'],
-    [500, 'invalid-key'],
-  ] as const)('ApiKeyRefusalCode_ShouldMap %i To %s', (status, code) => {
-    expect(apiKeyRefusalCode(status)).toBe(code);
+  describe('ApiKeyRefusalCode', () => {
+    it.each(CODED_403_BODIES)('ShouldMapA403With %o To %s', (body, code) => {
+      expect(apiKeyRefusalCode(403, body)).toBe(code);
+    });
+
+    it.each(UNCODED_403_BODIES)('ShouldReturnAccountInactive_ForA403With %s', (_case, body) => {
+      expect(apiKeyRefusalCode(403, body)).toBe('account-inactive');
+    });
+
+    it.each([
+      [401, null],
+      [423, null],
+      [500, null],
+      [401, { error: 'tenant-suspended' }],
+      [500, { error: 'account-inactive' }],
+    ] as const)('ShouldReturnInvalidKey_For %i with body %o', (status, body) => {
+      expect(apiKeyRefusalCode(status, body)).toBe('invalid-key');
+    });
   });
 
   it('LoginNoticeCode_ShouldReturnTheNotice_WhenTheReasonIsAllowListed', () => {

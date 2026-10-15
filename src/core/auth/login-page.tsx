@@ -36,6 +36,15 @@ interface LoginResponse {
   sessionIdleTimeoutMinutes?: number;
 }
 
+/** A refused sign-in's body, parsed once; `null` when it is absent or not JSON. */
+async function refusalBodyOf(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -176,8 +185,8 @@ export function LoginPage() {
       });
 
       if (!res.ok) {
-        // The status decides; the body's English `error` text is never shown.
-        setErrorCode(passwordRefusalCode(res.status));
+        // The status and, on a 403, the body's machine code decide; body text is never shown.
+        setErrorCode(passwordRefusalCode(res.status, await refusalBodyOf(res)));
         return;
       }
 
@@ -210,7 +219,7 @@ export function LoginPage() {
       });
 
       if (!res.ok) {
-        setErrorCode(apiKeyRefusalCode(res.status));
+        setErrorCode(apiKeyRefusalCode(res.status, await refusalBodyOf(res)));
         return;
       }
 

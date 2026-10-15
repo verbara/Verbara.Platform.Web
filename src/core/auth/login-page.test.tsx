@@ -2,7 +2,8 @@
  * The login page's refusal and notice handling (spec `sign-in-refusal-feedback`), rendered with the
  * real page, the real auth store and a real i18next instance loaded with the three committed
  * `common.json` files, so every assertion reads the text a user would see. `fetch` is stubbed per
- * test with real `Response` objects shaped like Platform v2.24.0's answers.
+ * test with real `Response` objects shaped like Platform's answers; the v2.29.0 sign-in 403s use the
+ * host fixture `sign-in-refusal-codes.v1.json` values verbatim.
  */
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -23,12 +24,42 @@ const COMMON: Record<Locale, typeof enCommon> = {
   'pt-BR': ptCommon,
 };
 
-/** Platform's `AccountStatusGate.Forbidden()` body, in English, whatever the console locale. */
+/**
+ * The account 403 body before Platform v2.29.0, English prose whatever the console locale
+ * (sign-in-refusal-codes.v1.json `accountInactive.previousBody`).
+ */
 const ACCOUNT_NOT_ACTIVE_BODY = { error: 'Account is not active.' };
+
+/** sign-in-refusal-codes.v1.json `accountInactive`: status, headers and body. */
+const ACCOUNT_INACTIVE_403 = {
+  status: 403,
+  headers: { 'Content-Type': 'application/json; charset=utf-8' },
+  body: { error: 'account-inactive' },
+};
+/** sign-in-refusal-codes.v1.json `tenantSuspended`: status, headers and body. */
+const TENANT_SUSPENDED_403 = {
+  status: 403,
+  headers: { 'Content-Type': 'application/json' },
+  body: { error: 'tenant-suspended' },
+};
+/** sign-in-refusal-codes.v1.json `tenantPendingDeletion`: status, headers and body. */
+const TENANT_PENDING_DELETION_403 = {
+  status: 403,
+  headers: { 'Content-Type': 'application/json' },
+  body: { error: 'tenant-pending-deletion' },
+};
+/** sign-in-refusal-codes.v1.json `tenantSuspended.previousBody` (a Platform before v2.29.0). */
+const TENANT_SUSPENDED_PREVIOUS_BODY = {
+  error: 'This tenant account has been suspended. Contact your administrator.',
+};
 
 interface FakeAnswer {
   status: number;
+  /** Serialized as JSON. */
   body?: unknown;
+  /** Sent as-is instead of `body`, for a body that is not JSON. */
+  rawBody?: string;
+  headers?: Record<string, string>;
 }
 
 let answers: Record<string, FakeAnswer | 'network-error'>;
@@ -37,9 +68,13 @@ const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
   const answer = answers[url];
   if (answer === undefined) throw new Error(`unexpected fetch ${url}`);
   if (answer === 'network-error') throw new TypeError('Failed to fetch');
+  if (answer.rawBody !== undefined) {
+    return new Response(answer.rawBody, { status: answer.status, headers: answer.headers ?? {} });
+  }
   return new Response(answer.body === undefined ? null : JSON.stringify(answer.body), {
     status: answer.status,
-    headers: answer.body === undefined ? {} : { 'Content-Type': 'application/json' },
+    headers:
+      answer.headers ?? (answer.body === undefined ? {} : { 'Content-Type': 'application/json' }),
   });
 });
 
@@ -103,6 +138,14 @@ async function submitPassword() {
   fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'ana@demo.test' } });
   fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'Correct-Horse-1' } });
   fireEvent.click(screen.getByTestId('login-submit'));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+  await settle();
+}
+
+async function submitApiKey() {
+  fireEvent.click(screen.getByTestId('login-apikey-toggle'));
+  fireEvent.change(screen.getByTestId('login-apikey-input'), { target: { value: 'vk_key' } });
+  fireEvent.click(screen.getByTestId('login-apikey-submit'));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   await settle();
 }
@@ -343,6 +386,109 @@ describe('LoginPage sign-in refusals', () => {
     expect(document.body.textContent).not.toContain('Cannot determine tenant for SSO login');
     expect(fetchMock).not.toHaveBeenCalled();
   });
+});
+
+/** The two sign-in forms, each with its route and its submit helper. */
+const SIGN_IN_FORMS = [
+  ['password', '/api/v1/auth/login', submitPassword],
+  ['api-key', '/api/v1/auth/login/apikey', submitApiKey],
+] as const;
+
+describe('LoginPage coded sign-in 403s (Platform v2.29.0)', () => {
+  const CODED = [
+    ['accountInactive', ACCOUNT_INACTIVE_403, 'account-inactive', 'account_not_active'],
+    ['tenantSuspended', TENANT_SUSPENDED_403, 'tenant-suspended', 'tenant_suspended'],
+    [
+      'tenantPendingDeletion',
+      TENANT_PENDING_DELETION_403,
+      'tenant-pending-deletion',
+      'tenant_pending_deletion',
+    ],
+  ] as const;
+
+  describe.each(SIGN_IN_FORMS)('the %s form', (_form, route, submit) => {
+    it.each(CODED)(
+      'ShouldShowTheCodesMessageWithItsCodeAndStoreNoToken_WhenTheApiAnswersThe %s fixture',
+      async (_entry, answer, code, key) => {
+        answers[route] = answer;
+        await renderLogin();
+
+        await submit();
+
+        expect({
+          error: loginError(),
+          accessToken: useAuthStore.getState().accessToken,
+          path: currentPath(),
+        }).toEqual({
+          error: { code, text: enCommon.auth[key] },
+          accessToken: null,
+          path: '/login',
+        });
+      },
+    );
+
+    it.each([
+      [
+        'prose from a Platform before v2.29.0',
+        { status: 403, body: TENANT_SUSPENDED_PREVIOUS_BODY },
+      ],
+      ['an unknown machine code', { status: 403, body: { error: 'tenant-archived' } }],
+      ['no body', { status: 403 }],
+      [
+        'a body that is not JSON',
+        {
+          status: 403,
+          rawBody: '<html>Forbidden</html>',
+          headers: { 'Content-Type': 'text/html' },
+        },
+      ],
+    ] as const)(
+      'ShouldShowAccountNotActiveAndStoreNoToken_WhenTheApiAnswersA403With %s',
+      async (_case, answer) => {
+        answers[route] = answer;
+        await renderLogin();
+
+        await submit();
+
+        expect({
+          error: loginError(),
+          accessToken: useAuthStore.getState().accessToken,
+          path: currentPath(),
+        }).toEqual({
+          error: { code: 'account-inactive', text: enCommon.auth.account_not_active },
+          accessToken: null,
+          path: '/login',
+        });
+        expect(pageHtml()).not.toContain(TENANT_SUSPENDED_PREVIOUS_BODY.error);
+      },
+    );
+  });
+
+  it.each(['en-US', 'es-419', 'pt-BR'] as const)(
+    'TenantRefusals_ShouldShowTheLocaleTextAndNeverMentionPayment_InLocale %s',
+    async (lng) => {
+      const shown: Record<string, string | null | undefined> = {};
+      for (const [answer, key] of [
+        [TENANT_SUSPENDED_403, 'tenant_suspended'],
+        [TENANT_PENDING_DELETION_403, 'tenant_pending_deletion'],
+      ] as const) {
+        answers = { '/api/v1/auth/login': answer };
+        fetchMock.mockClear();
+        await renderLogin({ lng });
+        await submitPassword();
+        shown[key] = loginError()?.text;
+        cleanup();
+      }
+
+      expect(shown).toEqual({
+        tenant_suspended: COMMON[lng].auth.tenant_suspended,
+        tenant_pending_deletion: COMMON[lng].auth.tenant_pending_deletion,
+      });
+      for (const text of Object.values(shown)) {
+        expect(text).not.toMatch(/pay|billing|bill|pago|factura|pagamento|cobran/i);
+      }
+    },
+  );
 });
 
 describe('MfaVerify paths that are not a refusal', () => {
