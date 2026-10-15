@@ -89,7 +89,7 @@ export function LoginPage() {
     if (!challengeToken) return;
     // Clear the hash so the token does not stay in the address bar or get re-processed.
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    useAuthStore.getState().setMfaPending(challengeToken, '');
+    useAuthStore.getState().setMfaPending(challengeToken, '', params.get('tenant_id'));
   }, []);
 
   // Handle OIDC callback via URL fragment (#oidc_callback&access_token=...&...)
@@ -193,7 +193,7 @@ export function LoginPage() {
       const data = (await res.json()) as LoginResponse;
 
       if (data.requiresMfa && data.mfaToken) {
-        useAuthStore.getState().setMfaPending(data.mfaToken, email);
+        useAuthStore.getState().setMfaPending(data.mfaToken, email, effectiveTenant);
         return;
       }
 
@@ -250,6 +250,7 @@ export function LoginPage() {
           <MfaVerify
             mfaToken={mfaPending.mfaToken}
             email={mfaPending.email}
+            tenantId={mfaPending.tenantId}
             onSuccess={completeLogin}
             onCancel={() => useAuthStore.getState().clearMfaPending()}
             onRefused={(code) => {

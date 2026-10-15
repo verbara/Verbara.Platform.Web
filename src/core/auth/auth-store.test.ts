@@ -98,6 +98,18 @@ describe('AuthStore', () => {
     expect(useAuthStore.getState().mfaPending).toBeNull();
   });
 
+  it('should_KeepTheSignInTenantInMfaPending_WhenOneIsGiven', () => {
+    useAuthStore.getState().setMfaPending('mfa-token-123', 'user@example.com', 'acme');
+    const withTenant = useAuthStore.getState().mfaPending;
+    useAuthStore.getState().setMfaPending('mfa-token-456', 'user@example.com', null);
+    const withoutTenant = useAuthStore.getState().mfaPending;
+
+    expect({ withTenant, withoutTenant }).toStrictEqual({
+      withTenant: { mfaToken: 'mfa-token-123', email: 'user@example.com', tenantId: 'acme' },
+      withoutTenant: { mfaToken: 'mfa-token-456', email: 'user@example.com' },
+    });
+  });
+
   it('should_ClearMfaPending_WhenSetAuthCalled', () => {
     useAuthStore.getState().setMfaPending('mfa-token-123', 'user@example.com');
     useAuthStore
@@ -198,7 +210,7 @@ describe('AuthStore', () => {
     });
 
     it('should_OmitMfaToken_WhenMfaPendingPersists', () => {
-      useAuthStore.getState().setMfaPending('mfa-token-123', 'user@example.com');
+      useAuthStore.getState().setMfaPending('mfa-token-123', 'user@example.com', 'acme');
 
       expect(readPersistedEntry()?.state).not.toHaveProperty('mfaPending');
       expect(sessionStorage.getItem(PERSIST_KEY)).not.toContain('mfa-token-123');

@@ -918,3 +918,76 @@ describe('LoginPage single sign-on MFA challenge', () => {
     });
   });
 });
+
+describe('MfaVerify sends the tenant the sign-in used', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/');
+  });
+
+  /** The `X-Tenant-Id` header of the verify request, or `null` when it was sent without one. */
+  function verifyTenantHeader(): string | null {
+    const call = fetchMock.mock.calls.find(([input]) => input === '/api/v1/auth/mfa/verify');
+    expect(call).toBeDefined();
+    const init = (call as unknown as [RequestInfo | URL, RequestInit | undefined])[1];
+    return new Headers(init?.headers).get('X-Tenant-Id');
+  }
+
+  async function passwordSignInThenMfa(tenant: string) {
+    vi.stubEnv('VITE_DEFAULT_TENANT_ID', '');
+    answers['/api/v1/auth/login'] = {
+      status: 200,
+      body: { requiresMfa: true, mfaToken: 'mfa-challenge-1' },
+    };
+    // sign-in-refusal-codes.v1.json `tenantSuspended` (its routes include `mfaVerify`).
+    answers['/api/v1/auth/mfa/verify'] = TENANT_SUSPENDED_403;
+    await renderLogin();
+    fireEvent.change(screen.getByTestId('login-tenant'), { target: { value: tenant } });
+    await submitPassword();
+    expect(screen.getByTestId('login-mfa-section')).toBeInTheDocument();
+    '123456'.split('').forEach((digit, i) => {
+      fireEvent.change(screen.getByTestId(`login-mfa-digit-${i}`), { target: { value: digit } });
+    });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await settle();
+  }
+
+  it('MfaVerify_ShouldSendTheTypedTenantAsXTenantId_WhenThePasswordSignInUsedOne', async () => {
+    await passwordSignInThenMfa('acme');
+
+    expect({ header: verifyTenantHeader(), error: loginError()?.code }).toEqual({
+      header: 'acme',
+      error: 'tenant-suspended',
+    });
+  });
+
+  it('MfaVerify_ShouldSendNoXTenantId_WhenThePasswordSignInSentNone', async () => {
+    await passwordSignInThenMfa('   ');
+
+    const [, loginInit] = fetchMock.mock.calls[0]!;
+    expect({
+      loginHeader: new Headers(loginInit?.headers).get('X-Tenant-Id'),
+      verifyHeader: verifyTenantHeader(),
+    }).toEqual({ loginHeader: null, verifyHeader: null });
+  });
+
+  it.each([
+    ['carries tenant_id', '&tenant_id=t1', 't1'],
+    ['carries no tenant_id', '', null],
+  ] as const)(
+    'SsoMfaChallenge_ShouldSendTheFragmentsTenantOnVerify_WhenTheFragment %s',
+    async (_case, tenantPart, expected) => {
+      answers['/api/v1/auth/mfa/verify'] = TENANT_SUSPENDED_403;
+      window.history.replaceState(
+        null,
+        '',
+        `/login#oidc_mfa_challenge&challenge_token=chal-1${tenantPart}`,
+      );
+      await renderLogin();
+      await screen.findByTestId('login-mfa-section');
+
+      await submitMfaCode();
+
+      expect(verifyTenantHeader()).toBe(expected);
+    },
+  );
+});

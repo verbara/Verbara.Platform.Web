@@ -24,6 +24,8 @@ interface LoginResponse {
 interface MfaVerifyProps {
   mfaToken: string;
   email: string;
+  /** The tenant the sign-in named, sent as `X-Tenant-Id`; none is sent when it named none. */
+  tenantId?: string;
   onSuccess: (data: LoginResponse) => void;
   onCancel: () => void;
   /**
@@ -37,6 +39,7 @@ interface MfaVerifyProps {
 export function MfaVerify({
   mfaToken,
   email: _email,
+  tenantId,
   onSuccess,
   onCancel,
   onRefused,
@@ -59,7 +62,10 @@ export function MfaVerify({
       const res = await fetch('/api/v1/auth/mfa/verify', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(tenantId && { 'X-Tenant-Id': tenantId }),
+        },
         body: JSON.stringify(body),
       });
 

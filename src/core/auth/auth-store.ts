@@ -36,7 +36,12 @@ interface AuthState {
   permissions: string[];
   features: Features;
   rememberMe: boolean;
-  mfaPending: { mfaToken: string; email: string } | null;
+  /**
+   * A password or single sign-on sign-in waiting for its MFA code. `tenantId` is the tenant the
+   * sign-in named (sent as `X-Tenant-Id` on `/auth/login`, or the SSO fragment's `tenant_id`);
+   * absent when it named none, so the verify request sends none either.
+   */
+  mfaPending: { mfaToken: string; email: string; tenantId?: string } | null;
   impersonation: ImpersonationState | null;
   sessionIdleTimeoutMinutes: number | null;
 
@@ -49,7 +54,7 @@ interface AuthState {
     features: Features,
     sessionIdleTimeoutMinutes?: number | null,
   ) => void;
-  setMfaPending: (mfaToken: string, email: string) => void;
+  setMfaPending: (mfaToken: string, email: string, tenantId?: string | null) => void;
   clearMfaPending: () => void;
   setRememberMe: (value: boolean) => void;
   logout: () => void;
@@ -130,7 +135,8 @@ export const useAuthStore = create<AuthState>()(
               ? state.sessionIdleTimeoutMinutes
               : sessionIdleTimeoutMinutes,
         })),
-      setMfaPending: (mfaToken, email) => set({ mfaPending: { mfaToken, email } }),
+      setMfaPending: (mfaToken, email, tenantId) =>
+        set({ mfaPending: { mfaToken, email, ...(tenantId && { tenantId }) } }),
       clearMfaPending: () => set({ mfaPending: null }),
       setRememberMe: (value) => set({ rememberMe: value }),
       logout: () =>
