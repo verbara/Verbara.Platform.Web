@@ -42,7 +42,7 @@ shows the generic failure toast.
   (`data-testid="recovery-codes-banner"`) that links to the recovery-code regenerate page. Dismissing
   it hides it for that user in that tenant on that browser, or for the rest of the session when
   browser storage is unavailable. It is never shown while impersonating. Against an older Platform
-  the field is absent and no banner appears.
+  the field is absent and no banner appears. (#415)
 
 ### Changed
 
@@ -85,7 +85,7 @@ shows the generic failure toast.
   tenant the sign-in used; on the API-key form only when the console is served on the tenant's
   subdomain. A 403 without one of the sign-in codes still shows the
   account-not-active message, which is what an older Platform's answers keep showing. Both messages
-  are localized in EN-US, ES-419 and PT-BR.
+  are localized in EN-US, ES-419 and PT-BR. (#415)
 - **The MFA step says what happened (requires Platform ≥ v2.29.0).** Each verify outcome is read by
   status and machine code, never by body text: used-up attempts show their own message and return
   to sign-in; a server error (500 or above) has its own message and keeps the code screen open for
@@ -93,13 +93,13 @@ shows the generic failure toast.
   and a 403 or a locked account (423) closes the step and shows the sign-in message. The step's
   message carries `data-testid="login-mfa-error"` with `data-error-code` (`challenge-exhausted`,
   `server-error`, `challenge-expired`, `invalid-code`, `rate-limited`, `mfa-error`). Against an
-  older Platform an outcome without its code falls back to today's message.
+  older Platform an outcome without its code falls back to today's message. (#415)
 - **A throttled recovery-code mint asks the user to wait (requires Platform ≥ v2.29.0).** When
   setting up MFA, completing enrolment or regenerating recovery codes is answered 429, the toast
   shows a localized wait-and-retry message with the `Retry-After` seconds, or without a number when
   the header is missing, under `data-error-code="recovery-codes-throttled"`, instead of the server's
   text. A successful mint now refreshes the signed-in user (`['me']`), so the regeneration banner
-  clears at once. An older Platform answers no 429 and nothing changes.
+  clears at once. An older Platform answers no 429 and nothing changes. (#415)
 
 ## [3.23.0-web] - 2026-10-11
 
