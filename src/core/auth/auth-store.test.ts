@@ -1,4 +1,6 @@
 import { useAuthStore } from './auth-store';
+import { endImpersonationLocally } from './end-impersonation-locally';
+import { queryClient } from '@/core/api/query-client';
 
 const PERSIST_KEY = 'verbara-auth';
 
@@ -382,6 +384,57 @@ describe('AuthStore', () => {
         .setAuth('operator-token', OPERATOR_EXPIRY, A_USER, 'tenant-2', [], {});
 
       expect(readPersistedEntry()?.state?.tenantId).toBe('tenant-2');
+    });
+
+    describe('cached current user (me)', () => {
+      afterEach(() => vi.restoreAllMocks());
+
+      /** Records the access token held at the moment `['me']` was reset, so a test can tell the
+       *  refetch it triggers runs as the identity the store now holds. */
+      function spyOnMeReset(): { tokens: (string | null)[] } {
+        const seen = { tokens: [] as (string | null)[] };
+        vi.spyOn(queryClient, 'resetQueries').mockImplementation(async (filters) => {
+          const key = (filters as { queryKey?: unknown } | undefined)?.queryKey;
+          if (JSON.stringify(key) === JSON.stringify(['me'])) {
+            seen.tokens.push(useAuthStore.getState().accessToken);
+          }
+        });
+        return seen;
+      }
+
+      it('should_ResetTheCachedMe_WhenAnImpersonationStarts', () => {
+        const seen = spyOnMeReset();
+
+        impersonateTenant9();
+
+        expect(seen.tokens).toEqual(['impersonated-token']);
+      });
+
+      it('should_ResetTheCachedMe_WhenTheImpersonationEnds', () => {
+        impersonateTenant9();
+        const seen = spyOnMeReset();
+
+        useAuthStore.getState().endImpersonation();
+
+        expect(seen.tokens).toEqual(['operator-token']);
+      });
+
+      it('should_ResetTheCachedMe_WhenTheImpersonationEndsLocally', () => {
+        impersonateTenant9();
+        const seen = spyOnMeReset();
+
+        expect(endImpersonationLocally()).toBe(true);
+
+        expect(seen.tokens).toEqual(['operator-token']);
+      });
+
+      it('should_NotResetTheCachedMe_WhenNoImpersonationIsActive', () => {
+        const seen = spyOnMeReset();
+
+        useAuthStore.getState().endImpersonation();
+
+        expect(seen.tokens).toEqual([]);
+      });
     });
   });
 });
