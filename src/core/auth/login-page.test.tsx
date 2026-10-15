@@ -204,7 +204,7 @@ describe('LoginPage sign-in refusals', () => {
     });
   });
 
-  it('MfaVerify_ShouldCloseTheStepClearTheChallengeAndShowAccountNotActive_WhenTheVerifyApiAnswers403', async () => {
+  it('MfaVerify_ShouldCloseTheStepClearTheChallengeAndShowAccountNotActive_WhenTheVerifyApiAnswersAnUncoded403', async () => {
     answers['/api/v1/auth/mfa/verify'] = { status: 403, body: ACCOUNT_NOT_ACTIVE_BODY };
     useAuthStore.getState().setMfaPending('mfa-challenge-1', 'ana@demo.test');
     await renderLogin();
@@ -491,22 +491,143 @@ describe('LoginPage coded sign-in 403s (Platform v2.29.0)', () => {
   );
 });
 
-describe('MfaVerify paths that are not a refusal', () => {
+/** The MFA step's message element, or `null` when none is shown. */
+function mfaError() {
+  const el = screen.queryByTestId('login-mfa-error');
+  return el === null ? null : { code: el.getAttribute('data-error-code'), text: el.textContent };
+}
+
+const PENDING_CHALLENGE = { mfaToken: 'mfa-challenge-1', email: 'ana@demo.test' };
+
+describe('MfaVerify final refusals (403 and 423)', () => {
   beforeEach(() => {
     useAuthStore.getState().setMfaPending('mfa-challenge-1', 'ana@demo.test');
   });
 
   it.each([
-    ['a wrong code (401)', { status: 401 }, enCommon.auth.mfa_invalid_code],
-    ['rate limiting (429)', { status: 429 }, enCommon.auth.mfa_rate_limited],
+    // mfa-verify-refusals.v1.json `accountInactive` / `tenantSuspended` / `tenantPendingDeletion`
+    // are $refs to sign-in-refusal-codes.v1.json; status, headers and body from there.
+    ['accountInactive', ACCOUNT_INACTIVE_403, 'account-inactive', 'account_not_active'],
+    ['tenantSuspended', TENANT_SUSPENDED_403, 'tenant-suspended', 'tenant_suspended'],
     [
-      'an expired challenge (400)',
-      { status: 400, body: { error: 'Invalid or expired challenge token' } },
-      enCommon.auth.mfa_challenge_expired,
+      'tenantPendingDeletion',
+      TENANT_PENDING_DELETION_403,
+      'tenant-pending-deletion',
+      'tenant_pending_deletion',
+    ],
+    // mfa-verify-refusals.v1.json `locked`: status, headers and body (prose, not read).
+    [
+      'locked',
+      {
+        status: 423,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: { error: 'Account is locked' },
+      },
+      'account-locked',
+      'account_locked',
     ],
   ] as const)(
-    'MfaVerify_ShouldStayOnTheStepWithItsExistingMessage_WhenTheVerifyApiAnswers %s',
-    async (_case, answer, message) => {
+    'MfaVerify_ShouldCloseTheStepClearTheChallengeAndShowTheSignInCode_WhenTheVerifyApiAnswersThe %s fixture',
+    async (_entry, answer, code, key) => {
+      answers['/api/v1/auth/mfa/verify'] = answer;
+      await renderLogin();
+
+      await submitMfaCode();
+
+      expect({
+        mfaStepOpen: screen.queryByTestId('login-mfa-section') !== null,
+        mfaPending: useAuthStore.getState().mfaPending,
+        error: loginError(),
+        accessToken: useAuthStore.getState().accessToken,
+        path: currentPath(),
+      }).toEqual({
+        mfaStepOpen: false,
+        mfaPending: null,
+        error: { code, text: enCommon.auth[key] },
+        accessToken: null,
+        path: '/login',
+      });
+    },
+  );
+});
+
+describe('MfaVerify step errors that keep the user on the code screen', () => {
+  beforeEach(() => {
+    useAuthStore.getState().setMfaPending('mfa-challenge-1', 'ana@demo.test');
+  });
+
+  it.each([
+    // mfa-verify-refusals.v1.json `wrongFactor`: status 401, no headers, body null.
+    [
+      'a wrong code (401, no body)',
+      { status: 401, headers: {} },
+      'invalid-code',
+      'mfa_invalid_code',
+    ],
+    [
+      'a 401 with a ProblemDetails body',
+      {
+        status: 401,
+        headers: { 'Content-Type': 'application/problem+json' },
+        body: { title: 'Unauthorized', status: 401, detail: 'Unauthorized access' },
+      },
+      'invalid-code',
+      'mfa_invalid_code',
+    ],
+    // mfa-verify-refusals.v1.json `rateLimited`: status, headers and body.
+    [
+      'rate limiting (429)',
+      {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '37' },
+        body: {
+          type: 'rate_limit_exceeded',
+          title: 'Too Many Requests',
+          status: 429,
+          detail: 'MFA verify rate limit exceeded',
+          retryAfter: 37,
+        },
+      },
+      'rate-limited',
+      'mfa_rate_limited',
+    ],
+    // mfa-verify-refusals.v1.json `serverError`: status, headers and body.
+    [
+      'a server error (500)',
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/problem+json' },
+        body: {
+          title: 'Internal Server Error',
+          status: 500,
+          detail: 'An unexpected error occurred. Quote the traceId when reporting it.',
+          instance: '/api/v1/auth/mfa/verify',
+          traceId: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+        },
+      },
+      'server-error',
+      'mfa_server_error',
+    ],
+    [
+      'a gateway error (503, not JSON)',
+      {
+        status: 503,
+        rawBody: '<html>Service Unavailable</html>',
+        headers: { 'Content-Type': 'text/html' },
+      },
+      'server-error',
+      'mfa_server_error',
+    ],
+    [
+      'a 400 whose prose mentions expiry but carries no expired code',
+      { status: 400, body: { error: 'Invalid or expired challenge token' } },
+      'mfa-error',
+      'mfa_error',
+    ],
+    ['a network failure', 'network-error', 'mfa-error', 'mfa_error'],
+  ] as const)(
+    'MfaVerify_ShouldStayOnTheStepWithItsCodedMessage_WhenTheVerifyApiAnswers %s',
+    async (_case, answer, code, key) => {
       answers['/api/v1/auth/mfa/verify'] = answer;
       await renderLogin();
 
@@ -514,15 +635,95 @@ describe('MfaVerify paths that are not a refusal', () => {
 
       expect({
         mfaStepOpen: screen.queryByTestId('login-mfa-section') !== null,
-        message: screen.queryByText(message) !== null,
+        mfaError: mfaError(),
         mfaPending: useAuthStore.getState().mfaPending,
         error: loginError(),
       }).toEqual({
         mfaStepOpen: true,
-        message: true,
-        mfaPending: { mfaToken: 'mfa-challenge-1', email: 'ana@demo.test' },
+        mfaError: { code, text: enCommon.auth[key] },
+        mfaPending: PENDING_CHALLENGE,
         error: null,
       });
+      expect(pageHtml()).not.toContain('Invalid or expired challenge token');
+      expect(pageHtml()).not.toContain('An unexpected error occurred');
+    },
+  );
+});
+
+describe('MfaVerify spent challenges (exhausted and expired)', () => {
+  beforeEach(() => {
+    // Only the timer APIs: the delayed clearMfaPending runs when the test advances the clock.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    useAuthStore.getState().setMfaPending('mfa-challenge-1', 'ana@demo.test');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** Runs the verify handler to the end under fake timers, without advancing the clock. */
+  async function settleFake() {
+    await act(async () => {
+      for (let i = 0; i < 5; i++) await vi.advanceTimersByTimeAsync(0);
+    });
+  }
+
+  it.each([
+    // mfa-verify-refusals.v1.json `exhausted`: status, headers and body.
+    [
+      'exhausted',
+      {
+        status: 401,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: { error: 'mfa-challenge-exhausted' },
+      },
+      'challenge-exhausted',
+      'mfa_challenge_exhausted',
+    ],
+    // mfa-verify-refusals.v1.json `expired`: status, headers and body.
+    [
+      'expired',
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: { error: 'mfa-challenge-expired' },
+      },
+      'challenge-expired',
+      'mfa_challenge_expired',
+    ],
+  ] as const)(
+    'MfaVerify_ShouldShowTheMessageThenClearTheChallengeAndReturnToSignIn_WhenTheVerifyApiAnswersThe %s fixture',
+    async (_entry, answer, code, key) => {
+      answers['/api/v1/auth/mfa/verify'] = answer;
+      await renderLogin();
+
+      '123456'.split('').forEach((digit, i) => {
+        fireEvent.change(screen.getByTestId(`login-mfa-digit-${i}`), { target: { value: digit } });
+      });
+      await settleFake();
+
+      const shown = {
+        mfaError: mfaError(),
+        mfaPending: useAuthStore.getState().mfaPending,
+      };
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+      });
+
+      expect({
+        shown,
+        after: {
+          mfaStepOpen: screen.queryByTestId('login-mfa-section') !== null,
+          signInForm: screen.queryByTestId('login-submit') !== null,
+          mfaPending: useAuthStore.getState().mfaPending,
+          accessToken: useAuthStore.getState().accessToken,
+        },
+      }).toEqual({
+        shown: { mfaError: { code, text: enCommon.auth[key] }, mfaPending: PENDING_CHALLENGE },
+        after: { mfaStepOpen: false, signInForm: true, mfaPending: null, accessToken: null },
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     },
   );
 });

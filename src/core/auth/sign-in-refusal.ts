@@ -75,6 +75,61 @@ export function apiKeyRefusalCode(status: number, body: unknown): SignInErrorCod
   return status === 403 ? forbiddenRefusalCode(body) : 'invalid-key';
 }
 
+/** Why the MFA step did not complete, when the user stays on it or goes back to sign in. */
+export type MfaStepErrorCode =
+  | 'invalid-code'
+  | 'challenge-exhausted'
+  | 'challenge-expired'
+  | 'rate-limited'
+  | 'server-error'
+  | 'mfa-error';
+
+/** The `common` translation key of each MFA-step code (a `Record`, so a new code needs a key). */
+export const MFA_STEP_ERROR_KEYS: Readonly<Record<MfaStepErrorCode, string>> = {
+  'invalid-code': 'auth.mfa_invalid_code',
+  'challenge-exhausted': 'auth.mfa_challenge_exhausted',
+  'challenge-expired': 'auth.mfa_challenge_expired',
+  'rate-limited': 'auth.mfa_rate_limited',
+  'server-error': 'auth.mfa_server_error',
+  'mfa-error': 'auth.mfa_error',
+};
+
+/**
+ * What a failed `POST /api/v1/auth/mfa/verify` means for the console: a final refusal that ends
+ * the MFA step and is shown on the sign-in form, or a step error shown on the code screen, which
+ * clears the pending challenge when the challenge can no longer succeed.
+ */
+export type MfaVerifyOutcome =
+  | { kind: 'refused'; code: SignInErrorCode }
+  | { kind: 'step'; code: MfaStepErrorCode; clearPending: boolean };
+
+function stepError(code: MfaStepErrorCode, clearPending = false): MfaVerifyOutcome {
+  return { kind: 'step', code, clearPending };
+}
+
+/**
+ * The outcome of a non-OK `POST /api/v1/auth/mfa/verify`, from its status and its parsed body
+ * (`null` when absent or not JSON), by status and machine code only, never by body text or body
+ * presence (design D2). A 401 is a wrong factor unless its code is `mfa-challenge-exhausted`:
+ * Platform can answer a 401 with a ProblemDetails body that is still a wrong factor.
+ */
+export function mfaVerifyOutcome(status: number, body: unknown): MfaVerifyOutcome {
+  if (status === 403) return { kind: 'refused', code: forbiddenRefusalCode(body) };
+  if (status === 423) return { kind: 'refused', code: 'account-locked' };
+  if (status >= 500) return stepError('server-error');
+  const code = machineCodeOf(body);
+  if (status === 401) {
+    return code === 'mfa-challenge-exhausted'
+      ? stepError('challenge-exhausted', true)
+      : stepError('invalid-code');
+  }
+  if (status === 400 && code === 'mfa-challenge-expired') {
+    return stepError('challenge-expired', true);
+  }
+  if (status === 429) return stepError('rate-limited');
+  return stepError('mfa-error');
+}
+
 /** Why the console sent the user to `/login`, as the allow-listed `reason` query value. */
 export type LoginNoticeCode = 'session-ended';
 

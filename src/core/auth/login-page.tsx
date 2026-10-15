@@ -253,7 +253,7 @@ export function LoginPage() {
             onSuccess={completeLogin}
             onCancel={() => useAuthStore.getState().clearMfaPending()}
             onRefused={(code) => {
-              // Back to the sign-in form with the refusal: the challenge is spent.
+              // Back to the sign-in form with the refusal, which is final: a retry cannot succeed.
               setErrorCode(code);
               useAuthStore.getState().clearMfaPending();
             }}

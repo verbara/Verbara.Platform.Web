@@ -4,9 +4,11 @@ import esCommon from '../../../public/locales/es-419/common.json';
 import ptCommon from '../../../public/locales/pt-BR/common.json';
 import {
   LOGIN_NOTICE_KEYS,
+  MFA_STEP_ERROR_KEYS,
   SIGN_IN_ERROR_KEYS,
   apiKeyRefusalCode,
   loginNoticeCode,
+  mfaVerifyOutcome,
   passwordRefusalCode,
   resetRefusalCode,
 } from './sign-in-refusal';
@@ -29,9 +31,13 @@ function lookup(tree: unknown, dottedKey: string): unknown {
     );
 }
 
-/** Every code the sign-in surfaces map to text: the refusal codes and the `/login` notices. */
+/**
+ * Every code the sign-in surfaces map to text: the refusal codes, the MFA-step codes and the
+ * `/login` notices.
+ */
 const MAPPED_KEYS = [
   ...Object.entries(SIGN_IN_ERROR_KEYS).map(([code, key]) => ({ map: 'error', code, key })),
+  ...Object.entries(MFA_STEP_ERROR_KEYS).map(([code, key]) => ({ map: 'mfa', code, key })),
   ...Object.entries(LOGIN_NOTICE_KEYS).map(([code, key]) => ({ map: 'notice', code, key })),
 ];
 
@@ -60,6 +66,14 @@ describe('sign-in-refusal', () => {
       'tenant-pending-deletion': 'auth.tenant_pending_deletion',
     });
     expect(LOGIN_NOTICE_KEYS).toEqual({ 'session-ended': 'auth.session_ended' });
+    expect(MFA_STEP_ERROR_KEYS).toEqual({
+      'invalid-code': 'auth.mfa_invalid_code',
+      'challenge-exhausted': 'auth.mfa_challenge_exhausted',
+      'challenge-expired': 'auth.mfa_challenge_expired',
+      'rate-limited': 'auth.mfa_rate_limited',
+      'server-error': 'auth.mfa_server_error',
+      'mfa-error': 'auth.mfa_error',
+    });
   });
 
   // Platform v2.29.0 403 bodies on `login` and `apiKeyLogin`, verbatim from the host fixture
@@ -129,6 +143,114 @@ describe('sign-in-refusal', () => {
       [500, { error: 'account-inactive' }],
     ] as const)('ShouldReturnInvalidKey_For %i with body %o', (status, body) => {
       expect(apiKeyRefusalCode(status, body)).toBe('invalid-key');
+    });
+  });
+
+  // `POST /api/v1/auth/mfa/verify`, one test per row of the spec table "The MFA verification step
+  // SHALL report what actually happened" and per 403 / 423 case of "MFA verification MUST treat an
+  // inactive-account refusal as final". Status and body are mfa-verify-refusals.v1.json values.
+  describe('MfaVerifyOutcome', () => {
+    it('ShouldReturnChallengeExhaustedAndClearThePendingChallenge_ForThe401ExhaustedCode', () => {
+      // mfa-verify-refusals.v1.json `exhausted.status`, `exhausted.body`
+      expect(mfaVerifyOutcome(401, { error: 'mfa-challenge-exhausted' })).toEqual({
+        kind: 'step',
+        code: 'challenge-exhausted',
+        clearPending: true,
+      });
+    });
+
+    it('ShouldReturnInvalidCodeAndKeepThePendingChallenge_ForA401WithNoBody', () => {
+      // mfa-verify-refusals.v1.json `wrongFactor.status`, `wrongFactor.body` (null)
+      expect(mfaVerifyOutcome(401, null)).toEqual({
+        kind: 'step',
+        code: 'invalid-code',
+        clearPending: false,
+      });
+    });
+
+    it('ShouldReturnInvalidCode_ForA401WithAProblemDetailsBody', () => {
+      const problem = { title: 'Unauthorized', status: 401, detail: 'Unauthorized access' };
+      expect(mfaVerifyOutcome(401, problem)).toEqual({
+        kind: 'step',
+        code: 'invalid-code',
+        clearPending: false,
+      });
+    });
+
+    it('ShouldReturnChallengeExpiredAndClearThePendingChallenge_ForThe400ExpiredCode', () => {
+      // mfa-verify-refusals.v1.json `expired.status`, `expired.body`
+      expect(mfaVerifyOutcome(400, { error: 'mfa-challenge-expired' })).toEqual({
+        kind: 'step',
+        code: 'challenge-expired',
+        clearPending: true,
+      });
+    });
+
+    it.each([
+      ['prose that mentions expiry', { error: 'Invalid or expired challenge token' }],
+      ['the old marker as prose', { error: 'CHALLENGE_EXPIRED' }],
+      ['another machine code', { error: 'mfa-challenge-exhausted' }],
+      ['no body', null],
+    ] as const)('ShouldReturnMfaError_ForA400With %s', (_case, body) => {
+      expect(mfaVerifyOutcome(400, body)).toEqual({
+        kind: 'step',
+        code: 'mfa-error',
+        clearPending: false,
+      });
+    });
+
+    it('ShouldReturnRateLimited_ForA429', () => {
+      // mfa-verify-refusals.v1.json `rateLimited.status`; its body is not read.
+      expect(mfaVerifyOutcome(429, null)).toEqual({
+        kind: 'step',
+        code: 'rate-limited',
+        clearPending: false,
+      });
+    });
+
+    it.each([
+      // mfa-verify-refusals.v1.json `serverError.status` and body (illustrative)
+      [500, { title: 'Internal Server Error', status: 500 }],
+      [502, null],
+      [503, null],
+      [504, { error: 'mfa-challenge-expired' }],
+    ] as const)('ShouldReturnServerError_ForA %i', (status, body) => {
+      expect(mfaVerifyOutcome(status, body)).toEqual({
+        kind: 'step',
+        code: 'server-error',
+        clearPending: false,
+      });
+    });
+
+    it.each([
+      [404, null],
+      [409, { error: 'conflict' }],
+      [422, null],
+    ] as const)('ShouldReturnMfaError_ForAnyOtherNonOkStatus %i', (status, body) => {
+      expect(mfaVerifyOutcome(status, body)).toEqual({
+        kind: 'step',
+        code: 'mfa-error',
+        clearPending: false,
+      });
+    });
+
+    it.each(CODED_403_BODIES)('ShouldReturnAFinalRefusal_ForA403With %o As %s', (body, code) => {
+      expect(mfaVerifyOutcome(403, body)).toEqual({ kind: 'refused', code });
+    });
+
+    it.each(UNCODED_403_BODIES)(
+      'ShouldReturnAFinalAccountInactiveRefusal_ForA403With %s',
+      (_case, body) => {
+        expect(mfaVerifyOutcome(403, body)).toEqual({ kind: 'refused', code: 'account-inactive' });
+      },
+    );
+
+    it('ShouldReturnAFinalAccountLockedRefusal_ForA423WhoseProseIsNotRead', () => {
+      // mfa-verify-refusals.v1.json `locked.status`, `locked.body`
+      expect(mfaVerifyOutcome(423, { error: 'Account is locked' })).toEqual({
+        kind: 'refused',
+        code: 'account-locked',
+      });
     });
   });
 
