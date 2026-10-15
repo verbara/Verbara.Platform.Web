@@ -5,6 +5,12 @@ import { isApiError } from './api-error';
 /** The `data-error-code` of a throttled recovery-code mint, identical in every locale. */
 export const RECOVERY_CODES_THROTTLED = 'recovery-codes-throttled';
 
+/** The locale keys of the throttled-mint message: with and without the `Retry-After` seconds. */
+export const MINT_REFUSAL_KEYS = {
+  throttledSeconds: 'auth.recovery_codes_throttled_seconds',
+  throttled: 'auth.recovery_codes_throttled',
+} as const;
+
 /**
  * What the console shows when Platform throttles a recovery-code mint (design D3 of
  * `sign-in-refusals-say-what-happened`): for a 429, a localized wait-and-retry message, naming the
@@ -17,7 +23,7 @@ export function describeMintRefusal(err: unknown, t: TFunction): ReactNode | nul
   if (!isApiError(err) || err.status !== 429) return null;
   const text =
     err.retryAfterSeconds === null
-      ? String(t('auth.recovery_codes_throttled'))
-      : String(t('auth.recovery_codes_throttled_seconds', { seconds: err.retryAfterSeconds }));
+      ? String(t(MINT_REFUSAL_KEYS.throttled))
+      : String(t(MINT_REFUSAL_KEYS.throttledSeconds, { seconds: err.retryAfterSeconds }));
   return <span data-error-code={RECOVERY_CODES_THROTTLED}>{text}</span>;
 }

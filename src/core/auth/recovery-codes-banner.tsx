@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { KeyRound, X } from 'lucide-react';
 import { useAuthStore } from './auth-store';
 import { useMe } from '@/core/api/hooks/use-me';
+import { RECOVERY_CODES_BANNER_KEYS } from './recovery-codes-banner-keys';
 
 const REGENERATE_PATH = '/profile/security/recovery-codes/regenerate';
 const STORAGE_PREFIX = 'verbara.recoveryCodesBanner.dismissed';
@@ -66,19 +67,19 @@ export function RecoveryCodesBanner() {
       className="flex items-center justify-center gap-3 bg-sky-600 px-4 py-2 text-sm font-medium text-white"
     >
       <KeyRound className="h-4 w-4" aria-hidden="true" />
-      <span>{t('recovery_codes_banner.message')}</span>
+      <span>{t(RECOVERY_CODES_BANNER_KEYS.message)}</span>
       <Link
         to={REGENERATE_PATH}
         data-testid="recovery-codes-banner-regenerate"
         className="rounded bg-sky-700 px-2 py-0.5 text-xs font-medium text-white underline-offset-2 hover:underline"
       >
-        {t('recovery_codes_banner.regenerate')}
+        {t(RECOVERY_CODES_BANNER_KEYS.regenerate)}
       </Link>
       <button
         type="button"
         onClick={handleDismiss}
         data-testid="recovery-codes-banner-dismiss"
-        aria-label={t('recovery_codes_banner.dismiss')}
+        aria-label={t(RECOVERY_CODES_BANNER_KEYS.dismiss)}
         className="ml-2 inline-flex items-center rounded p-0.5 text-white transition-colors hover:bg-sky-700"
       >
         <X className="h-3 w-3" aria-hidden="true" />

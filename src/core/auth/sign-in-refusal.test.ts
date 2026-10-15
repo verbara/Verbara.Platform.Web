@@ -12,6 +12,8 @@ import {
   passwordRefusalCode,
   resetRefusalCode,
 } from './sign-in-refusal';
+import { RECOVERY_CODES_BANNER_KEYS } from './recovery-codes-banner-keys';
+import { MINT_REFUSAL_KEYS } from '../api/mint-refusal';
 
 const LOCALES = [
   ['en-US', enCommon],
@@ -33,12 +35,18 @@ function lookup(tree: unknown, dottedKey: string): unknown {
 
 /**
  * Every code the sign-in surfaces map to text: the refusal codes, the MFA-step codes and the
- * `/login` notices.
+ * `/login` notices; plus the throttled recovery-code mint message and the regeneration banner.
  */
 const MAPPED_KEYS = [
   ...Object.entries(SIGN_IN_ERROR_KEYS).map(([code, key]) => ({ map: 'error', code, key })),
   ...Object.entries(MFA_STEP_ERROR_KEYS).map(([code, key]) => ({ map: 'mfa', code, key })),
   ...Object.entries(LOGIN_NOTICE_KEYS).map(([code, key]) => ({ map: 'notice', code, key })),
+  ...Object.entries(MINT_REFUSAL_KEYS).map(([code, key]) => ({ map: 'mint', code, key })),
+  ...Object.entries(RECOVERY_CODES_BANNER_KEYS).map(([code, key]) => ({
+    map: 'banner',
+    code,
+    key,
+  })),
 ];
 
 describe('sign-in-refusal', () => {
@@ -66,6 +74,15 @@ describe('sign-in-refusal', () => {
       'tenant-pending-deletion': 'auth.tenant_pending_deletion',
     });
     expect(LOGIN_NOTICE_KEYS).toEqual({ 'session-ended': 'auth.session_ended' });
+    expect(MINT_REFUSAL_KEYS).toEqual({
+      throttledSeconds: 'auth.recovery_codes_throttled_seconds',
+      throttled: 'auth.recovery_codes_throttled',
+    });
+    expect(RECOVERY_CODES_BANNER_KEYS).toEqual({
+      message: 'recovery_codes_banner.message',
+      regenerate: 'recovery_codes_banner.regenerate',
+      dismiss: 'recovery_codes_banner.dismiss',
+    });
     expect(MFA_STEP_ERROR_KEYS).toEqual({
       'invalid-code': 'auth.mfa_invalid_code',
       'challenge-exhausted': 'auth.mfa_challenge_exhausted',
