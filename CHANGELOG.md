@@ -13,7 +13,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Admin → Outbound routes: Save order now saves.** The console sent the new order with `POST`, but Platform maps
   `/api/v1/admin/routes/reorder` only for `PUT`, so every save got a 405 and the order never changed. The request now
-  uses `PUT`, as the OpenAPI document declares. Works with any Platform version that has the route.
+  uses `PUT`, as the OpenAPI document declares. Works with any Platform version that has the route. (#417)
 
 ## [3.24.0-web] - 2026-10-16
 
