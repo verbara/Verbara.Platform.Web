@@ -182,7 +182,7 @@ describe('useReorderRoutes', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(client.customFetch).toHaveBeenCalledWith({
       url: '/api/v1/admin/routes/reorder',
-      method: 'POST',
+      method: 'PUT',
       data: [3, 1, 2],
     });
   });

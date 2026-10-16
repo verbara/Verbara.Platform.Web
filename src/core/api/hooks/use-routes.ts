@@ -82,7 +82,7 @@ export function useReorderRoutes() {
   const { t } = useTranslation('common');
   return useMutation({
     mutationFn: (orderedIds: number[]) =>
-      customFetch<void>({ url: '/api/v1/admin/routes/reorder', method: 'POST', data: orderedIds }),
+      customFetch<void>({ url: '/api/v1/admin/routes/reorder', method: 'PUT', data: orderedIds }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['routes'] });
       toast.success(t('toasts.routes.reordered'));
