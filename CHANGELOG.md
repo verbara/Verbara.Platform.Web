@@ -83,10 +83,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   within 30 minutes of the visitor's last activity continues the same conversation instead of starting a new one
   on every page. When Platform no longer knows the stored session (it was idle too long, or Platform restarted),
   the widget gives up on it after a few socket attempts and starts a new one, instead of reconnecting forever. The
-  status shows "Online" only once the socket is open. If Platform refuses to create a session (for example its
-  per-address limit answers 429), the widget says the chat could not start and tries again, waiting longer each
-  time up to 30 seconds; the visitor can keep typing meanwhile. The SDK's `destroy()` forgets the visitor, so the
-  next visitor does not resume their session. (#426)
+  status shows "Online" only once Platform confirms the socket. If Platform refuses to create a session (for
+  example its per-address limit answers 429), the widget says the chat could not start and tries again, waiting
+  longer each time up to 30 seconds; the visitor can keep typing meanwhile. The SDK's `destroy()` forgets the
+  visitor, so the next visitor does not resume their session. (#426)
 
 ### Removed
 

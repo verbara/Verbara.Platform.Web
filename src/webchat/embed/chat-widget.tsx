@@ -86,6 +86,8 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   );
   // The session machinery lives in refs: one socket per widget, whatever React re-renders.
   const clientRef = useRef<WsClient | null>(null);
+  // The session the socket in clientRef belongs to (another tab may have stored a different one since).
+  const sessionIdRef = useRef<string | null>(null);
   const inFlightRef = useRef<Promise<void> | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const createFailuresRef = useRef(0);
@@ -151,26 +153,29 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     function connect(session: StoredSession, isNew: boolean): void {
       const queue = createOfflineQueue(tenantId);
       let openCount = 0;
-      // Closes in a row without an open in between. Platform refuses an unknown session before the upgrade,
-      // which the page sees only as a socket that closes unopened.
+      // Closes in a row without Platform confirming the socket in between. Platform refuses an unknown session
+      // before the upgrade, which the page sees only as a socket that closes unopened.
       let failures = 0;
       const client: WsClient = createWsClient({
         url: session.wsUrl,
-        onOpen: () => {
-          if (clientRef.current !== client) return;
-          openCount++;
-          failures = 0;
-          setStatus('online');
-          touchStoredSession(tenantId, session.sessionId);
-          for (const m of queue.drain()) {
-            client.send(messageFrame(m.text));
-          }
-          if (openCount > 1) {
-            breadcrumb('reconnected');
-          }
-        },
+        // An open socket is not yet a live session: Platform accepts the upgrade first and then attaches the
+        // session, closing with "Session expired" when it cannot. Its `connected` frame is the confirmation.
+        onOpen: () => {},
         onMessage: (frame: ServerFrame) => {
           if (clientRef.current !== client) return;
+          if (frame.type === 'connected') {
+            openCount++;
+            failures = 0;
+            setStatus('online');
+            touchStoredSession(tenantId, session.sessionId);
+            for (const m of queue.drain()) {
+              client.send(messageFrame(m.text));
+            }
+            if (openCount > 1) {
+              breadcrumb('reconnected');
+            }
+            return;
+          }
           // Platform sends `connected` on accept and `message` per agent reply; only a reply renders.
           const reply = readAgentMessage(frame);
           if (!reply) return;
@@ -206,6 +211,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         },
       });
       clientRef.current = client;
+      sessionIdRef.current = session.sessionId;
       client.connect();
 
       if (isNew && config.greeting) {
@@ -320,8 +326,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
       setMessages((prev) => [...prev, msg]);
       const ok = clientRef.current?.send(messageFrame(text)) ?? false;
       if (ok) {
-        const stored = loadStoredSession(config.tenantId, config.visitorId);
-        if (stored) touchStoredSession(config.tenantId, stored.sessionId);
+        if (sessionIdRef.current) touchStoredSession(config.tenantId, sessionIdRef.current);
       } else {
         queue.push({ id: msg.id, text, timestamp: msg.timestamp });
       }
@@ -331,7 +336,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         window.location.origin,
       );
     },
-    [config.tenantId, config.visitorId],
+    [config.tenantId],
   );
 
   if (!profile) {

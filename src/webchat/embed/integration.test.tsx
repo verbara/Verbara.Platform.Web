@@ -194,12 +194,13 @@ describe('Integration — full visitor flow', () => {
         await vi.advanceTimersByTimeAsync(0);
       });
 
-      // WS opens → online.
+      // WS opens and Platform confirms it → online.
       const ws = FakeWebSocket.last;
       if (!ws) throw new Error('WebSocket was not created');
       act(() => {
         ws.readyState = 1;
         ws.onopen?.(new Event('open'));
+        ws.onmessage?.(new MessageEvent('message', { data: frames.server.connected }));
       });
       expect(screen.getByText('Online')).toBeInTheDocument();
 
@@ -241,10 +242,12 @@ describe('Integration — full visitor flow', () => {
       return ws;
     }
 
+    // Platform accepts the socket, attaches the session and then confirms with `connected`.
     function open(ws: FakeWebSocket) {
       act(() => {
         ws.readyState = 1;
         ws.onopen?.(new Event('open'));
+        ws.onmessage?.(new MessageEvent('message', { data: frames.server.connected }));
       });
     }
 
@@ -389,10 +392,12 @@ describe('Session start and resume (#426)', () => {
     );
   }
 
+  // Platform accepts the socket, attaches the session and then confirms with `connected`.
   function open(ws: FakeWebSocket) {
     act(() => {
       ws.readyState = 1;
       ws.onopen?.(new Event('open'));
+      ws.onmessage?.(new MessageEvent('message', { data: frames.server.connected }));
     });
   }
 
@@ -490,6 +495,23 @@ describe('Session start and resume (#426)', () => {
     storeSession({ lastActiveAt: before });
     sendFromComposer('still here');
     expect(lastActive()).toBeGreaterThan(before);
+  });
+
+  // Another tab may have replaced the stored session; this tab's messages are not activity on that one.
+  it('LeavesOtherSessionIdle_WhenVisitorSendsOnOwnSocket', async () => {
+    const before = Date.now() - 60_000;
+    storeSession();
+    mount();
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    open(FakeWebSocket.all[0]!);
+
+    storeSession({ sessionId: 'other', lastActiveAt: before });
+    sendFromComposer('from this tab');
+
+    expect(JSON.parse(localStorage.getItem(SESSION_KEY) ?? '{}')).toMatchObject({
+      sessionId: 'other',
+      lastActiveAt: before,
+    });
   });
 
   it('KeepsSession_WhenSocketReopensBetweenDrops', async () => {
@@ -593,6 +615,36 @@ describe('Session start and resume (#426)', () => {
     expect(JSON.parse(localStorage.getItem(SESSION_KEY) ?? '{}')).toMatchObject({
       sessionId: 's1',
     });
+  });
+
+  // Platform accepts the upgrade before it attaches the session, so the browser sees the socket open and then
+  // the "Session expired" close, never `connected`. What was queued must reach the new session, not the dead one.
+  it('SendsQueuedTextToNewSession_WhenExpiredSocketOpensBeforeClosing', async () => {
+    storeSession();
+    localStorage.setItem(
+      'verbara-webchat-queue:t1',
+      JSON.stringify([{ id: 'q1', text: 'pending', timestamp: '2026-10-17T10:00:00Z' }]),
+    );
+    mount();
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    const stale = FakeWebSocket.all[0]!;
+
+    act(() => {
+      stale.readyState = 1;
+      stale.onopen?.(new Event('open'));
+    });
+    expect(screen.queryByText('Online')).not.toBeInTheDocument();
+    act(() => {
+      stale.readyState = 3;
+      stale.onclose?.(new CloseEvent('close', { code: 1008, reason: 'Session expired' }));
+    });
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(2));
+    const fresh = FakeWebSocket.all[1]!;
+    open(fresh);
+
+    expect(stale.sent).toEqual([]);
+    expect(fresh.sent).toEqual([JSON.stringify({ type: 'message', text: 'pending' })]);
   });
 
   it('CreatesSessionAfterBoundedAttempts_WhenStoredSessionSocketNeverOpens', async () => {
