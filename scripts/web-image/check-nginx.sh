@@ -173,7 +173,7 @@ check "W429: no sourcemaps under webchat/" "$([ "$maps" = 0 ] && echo 0 || echo 
 ws=$(curl -s -o /dev/null -D - --max-time 10 --http1.1 \
   -H 'Connection: Upgrade' -H 'Upgrade: websocket' -H 'Sec-WebSocket-Version: 13' \
   -H "Sec-WebSocket-Key: $(head -c 16 /dev/urandom | base64)" \
-  "http://127.0.0.1:$P/ws/webchat/$(rand)")
+  "http://127.0.0.1:$P/ws/webchat/$(rand)" || true)
 echo "W429 WebSocket handshake /ws/webchat/<id>: $(head -1 <<<"$ws" | tr -d '\r') X-Stub-Upstream=[$(header x-stub-upstream "$ws")] X-Stub-Upgrade=[$(header x-stub-upgrade "$ws")] X-Stub-Connection=[$(header x-stub-connection "$ws")]"
 check "W429: /ws/ reaches platform-api" "$([ "$(header x-stub-upstream "$ws")" = api ] && echo 0 || echo 1)" "$(head -1 <<<"$ws" | tr -d '\r')"
 check "W429: /ws/ forwards Upgrade: websocket" "$([ "$(header x-stub-upgrade "$ws")" = websocket ] && echo 0 || echo 1)" "[$(header x-stub-upgrade "$ws")]"

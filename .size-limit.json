@@ -14,7 +14,7 @@
     "name": "WebChat embed JS (gzip)",
     "path": "dist/webchat/embed/assets/*.js",
     "gzip": true,
-    "limit": "184 kB"
+    "limit": "175 kB"
   },
   {
     "name": "WebChat embed CSS (gzip)",
