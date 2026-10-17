@@ -41,7 +41,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   chat got a 405, which the widget hid. The session was always new, so there was never history to fetch; a returning
   visitor's history comes from the browser cache (the last 100 messages), and still does. Had the route existed, its
   empty answer would have replaced that cached history on screen. The request and `fetchHistory` are gone. History
-  that follows a visitor across browsers or devices is not built. (Platform #434)
+  that follows a visitor across browsers or devices is not built. (Platform #434, #425)
 
 ### Removed
 
