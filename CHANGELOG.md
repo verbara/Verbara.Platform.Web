@@ -24,6 +24,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **WebChat widget: the image now ships it, styled.** The Dockerfile ran only `npm run build`, and the widget's
+  output under `public/webchat/` is gitignored, so the image had no `/webchat/v1/verbara-webchat.js` and no
+  `/webchat/embed/` page. Even `npm run build:all` left it out on a clean tree, because it built the console (which
+  copies `public/` into `dist/`) before the widget. `build:all` now builds the widget first and the Dockerfile runs
+  it. The embed page also loaded no stylesheet, so every class in it did nothing; it now has its own Tailwind
+  stylesheet, scoped to the widget's files. The widget is built without sourcemaps. CI's `build` job runs the same
+  `build:all` and a new step (`scripts/check-widget-in-dist.py`) fails when `dist/` lacks the SDK bundle, the embed
+  page, its script or its stylesheet, or carries a sourcemap under `webchat/`; `.size-limit.json` adds budgets for
+  the SDK (12 kB gzip) and the embed's JS and CSS. The image's nginx now proxies `/ws/` (the widget's socket,
+  `/ws/webchat/{id}` on the Web host) to the API with WebSocket upgrades, which Kubernetes needs because the web
+  hostname routes wholesale to this image. Compose deployments route `/ws/` at Platform's gateway instead and need
+  a Platform version with its `/ws/` location (Platform #441). (#429)
+
 - **Admin → Outbound routes: Save order now saves.** The console sent the new order with `POST`, but Platform maps
   `/api/v1/admin/routes/reorder` only for `PUT`, so every save got a 405 and the order never changed. The request now
   uses `PUT`, as the OpenAPI document declares. Works with any Platform version that has the route. (#417)

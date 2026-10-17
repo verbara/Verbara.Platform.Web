@@ -20,6 +20,10 @@
 #            realtime upstream instead of a 405 from the static files, also with
 #            the Kubernetes-shaped default upstream (KUBERNETES_SERVICE_HOST set,
 #            namespace search domain, read-only root filesystem, uid 101).
+#   W429     the WebChat widget is in the image (the SDK bundle, the embed page,
+#            its stylesheet, no sourcemaps) and a WebSocket handshake to
+#            /ws/webchat/<id> reaches platform-api with its Upgrade and
+#            Connection headers instead of the console's index.html.
 # Every value is generated per run; never a real token. Everything the script
 # creates carries the suffix and is removed on exit. Exit 0 only if every check
 # passes.
@@ -155,6 +159,25 @@ k8s_upstream=$(docker exec "$WEBK8S" sh -c 'grep -o "set \$verbara_realtime [^;]
 echo "N20 (Kubernetes-shaped) rendered: $k8s_upstream"
 check "N20: Kubernetes default upstream is platform-realtime.<namespace search domain>" "$([ "$k8s_upstream" = "set \$verbara_realtime platform-realtime.$K8S_SEARCH:5030" ] && echo 0 || echo 1)" "$k8s_upstream"
 check "N20: negotiate reaches realtime with the Kubernetes default" "$([ "$(header x-stub-upstream "$negk")" = realtime ] && echo 0 || echo 1)" "$(head -1 <<<"$negk" | tr -d '\r')"
+
+# --- W429 -------------------------------------------------------------------
+sdk_status=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$P/webchat/v1/verbara-webchat.js")
+embed_page=$(curl -s "http://127.0.0.1:$P/webchat/embed/")
+embed_css=$(grep -o '/webchat/embed/assets/[^"]*\.css' <<<"$embed_page" | head -1 || true)
+css_status=$( [ -n "$embed_css" ] && curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$P$embed_css" || echo none)
+maps=$(docker exec "$WEB" sh -c 'find /usr/share/nginx/html/webchat -name "*.map" | wc -l' 2>/dev/null || echo error)
+echo "W429 GET /webchat/v1/verbara-webchat.js -> $sdk_status; embed stylesheet [$embed_css] -> $css_status; sourcemaps under webchat/: $maps"
+check "W429: SDK bundle served" "$([ "$sdk_status" = 200 ] && echo 0 || echo 1)" "$sdk_status"
+check "W429: embed page links a stylesheet that is served" "$([ "$css_status" = 200 ] && echo 0 || echo 1)" "[$embed_css] $css_status"
+check "W429: no sourcemaps under webchat/" "$([ "$maps" = 0 ] && echo 0 || echo 1)" "$maps"
+ws=$(curl -s -o /dev/null -D - --max-time 10 --http1.1 \
+  -H 'Connection: Upgrade' -H 'Upgrade: websocket' -H 'Sec-WebSocket-Version: 13' \
+  -H "Sec-WebSocket-Key: $(head -c 16 /dev/urandom | base64)" \
+  "http://127.0.0.1:$P/ws/webchat/$(rand)")
+echo "W429 WebSocket handshake /ws/webchat/<id>: $(head -1 <<<"$ws" | tr -d '\r') X-Stub-Upstream=[$(header x-stub-upstream "$ws")] X-Stub-Upgrade=[$(header x-stub-upgrade "$ws")] X-Stub-Connection=[$(header x-stub-connection "$ws")]"
+check "W429: /ws/ reaches platform-api" "$([ "$(header x-stub-upstream "$ws")" = api ] && echo 0 || echo 1)" "$(head -1 <<<"$ws" | tr -d '\r')"
+check "W429: /ws/ forwards Upgrade: websocket" "$([ "$(header x-stub-upgrade "$ws")" = websocket ] && echo 0 || echo 1)" "[$(header x-stub-upgrade "$ws")]"
+check "W429: /ws/ forwards Connection: upgrade" "$([ "$(header x-stub-connection "$ws" | tr A-Z a-z)" = upgrade ] && echo 0 || echo 1)" "[$(header x-stub-connection "$ws")]"
 
 # --- gateway path (optional) ------------------------------------------------
 if [ -n "${GATEWAY_CONF:-}" ]; then

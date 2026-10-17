@@ -4,7 +4,7 @@ name: CI
 # Runs on every PR + the merge queue (merge_group).
 #
 # Jobs (6 in parallel):
-#   - build     blocking - tsc -b && vite build
+#   - build     blocking - build:all (WebChat widget, then tsc -b && vite build) + widget-in-dist check
 #   - test      blocking - vitest run (1431 tests / 180 files)
 #   - coverage  blocking - vitest run --coverage (Track 2A ratchet floor)
 #   - i18n      blocking - locale parity check (ADR-0001)
@@ -74,8 +74,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (typecheck + production build)
-        run: npm run build
+      # The same build the Dockerfile runs: the WebChat widget into public/webchat/, then
+      # the console (tsc -b && vite build), whose public/ copy carries the widget into dist/.
+      - name: Build (widget + typecheck + production build)
+        run: npm run build:all
+
+      # The image serves dist/ as is, so a build that leaves the widget out (or ships its
+      # sourcemaps) fails here instead of in a deployed image (#429). Stdlib Python; its
+      # unit tests run in the coverage-scripts job's `unittest discover scripts/tests`.
+      - name: WebChat widget is in dist
+        run: python3 scripts/check-widget-in-dist.py dist
 
       # Bundle size budget (verbara-meta/ADR-0012 Ola 2 gate #10): fail if the
       # brotli'd app JS grows past .size-limit.json's ceiling (frozen 2026-07-20 at

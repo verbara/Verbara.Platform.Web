@@ -1,0 +1,26 @@
+/*
+ * The iframe page's stylesheet (#429). Without it every className in the embed is dead and
+ * the widget renders as unstyled HTML.
+ *
+ * source(none) + @source: scan only the widget's own files, stated here rather than left to
+ * automatic detection, which today starts at the embed build's vite root (this folder) and
+ * so yields the same stylesheet. Moving that root up would otherwise pull the console's
+ * classes in.
+ */
+@import 'tailwindcss' source(none);
+@source './';
+
+/*
+ * Theme tokens set at run time by theme-apply.ts from the host's init-config:
+ *   --vw-primary  read inline and through arbitrary values (bg-[var(--vw-primary,#0d9488)]);
+ *   --vw-font     the widget's font family, read here.
+ */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--vw-font, ui-sans-serif, system-ui, sans-serif);
+}

@@ -9,7 +9,9 @@ ENV VITE_DEFAULT_TENANT_ID=$VITE_DEFAULT_TENANT_ID
 COPY .npmrc package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+# build:all builds the WebChat widget into public/webchat/ first, so the console build
+# copies it into dist/ (#429). `npm run build` alone ships an image without the widget.
+RUN npm run build:all
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
