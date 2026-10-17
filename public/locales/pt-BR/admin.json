@@ -860,7 +860,9 @@
       "nameRequired": "Nome é obrigatório",
       "displayNameRequired": "Nome de exibição é obrigatório",
       "maxChannelsAtLeastOne": "Deve ser pelo menos 1",
-      "matchHostInvalid": "Informe um endereço IP ou intervalo CIDR válido"
+      "matchHostInvalid": "Informe um endereço IP ou intervalo CIDR válido",
+      "clientUriRequired": "A URI de cliente é obrigatória quando o tronco se registra com a operadora",
+      "sipUriInvalid": "Informe uma URI SIP que comece com sip: ou sips:"
     },
     "searchByNamePlaceholder": "Buscar trunk por nome...",
     "connectivity": {

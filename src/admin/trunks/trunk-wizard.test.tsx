@@ -172,6 +172,33 @@ describe('TrunkWizard', () => {
     expect(screen.queryByTestId('trunk-wizard-matchHost')).not.toBeInTheDocument();
   });
 
+  it('TrunkWizard_ShouldBlockNext_WhenRegisterModeHasNoClientUri', async () => {
+    // #385: Asterisk refuses a registration with an empty client URI, and the API now answers 400
+    // client-uri-required. The wizard keeps the operator on the field instead.
+    renderWizard();
+    fireEvent.click(screen.getByTestId('trunk-wizard-provider-voipms'));
+    fireEvent.click(screen.getByTestId('trunk-wizard-next'));
+    await screen.findByTestId('trunk-wizard-connection-step');
+
+    fireEvent.change(screen.getByTestId('trunk-wizard-name'), { target: { value: 'voipms-trunk' } });
+    fireEvent.change(screen.getByTestId('trunk-wizard-authUsername'), {
+      target: { value: 'acct100' },
+    });
+    fireEvent.change(screen.getByTestId('trunk-wizard-authPassword'), {
+      target: { value: 'secret' },
+    });
+    fireEvent.change(screen.getByTestId('trunk-wizard-registrationUri'), {
+      target: { value: 'sip:newyork.voip.ms' },
+    });
+    fireEvent.click(screen.getByTestId('trunk-wizard-next'));
+
+    await waitFor(() =>
+      expect(screen.getByText('trunks.validation.clientUriRequired')).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId('trunk-wizard-connection-step')).toBeInTheDocument();
+    expect(screen.queryByTestId('trunk-wizard-media-step')).not.toBeInTheDocument();
+  });
+
   it('TrunkWizard_ShouldShowAuthModeToggle_WhenGenericSelected', async () => {
     renderWizard();
     fireEvent.click(screen.getByTestId('trunk-wizard-provider-generic'));

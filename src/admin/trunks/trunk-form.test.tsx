@@ -150,6 +150,79 @@ describe('TrunkForm fields', () => {
     expect(createMutate).not.toHaveBeenCalled();
   });
 
+  it('TrunkForm_ShouldBlockSubmit_WhenRegistrationUriHasNoClientUri', async () => {
+    render(<TrunkForm open mode="create" onOpenChange={() => {}} />);
+
+    fireEvent.change(screen.getByTestId('trunk-form-name'), { target: { value: 'reg-trunk' } });
+    fireEvent.change(screen.getByTestId('trunk-form-displayName'), {
+      target: { value: 'Reg Trunk' },
+    });
+    fireEvent.change(screen.getByTestId('trunk-form-registrationUri'), {
+      target: { value: 'sip:carrier.example' },
+    });
+
+    fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
+
+    await waitFor(() =>
+      expect(screen.getByText('admin:trunks.validation.clientUriRequired')).toBeInTheDocument(),
+    );
+    expect(createMutate).not.toHaveBeenCalled();
+  });
+
+  it('TrunkForm_ShouldBlockSubmit_WhenRegistrationUriIsNotSip', async () => {
+    render(<TrunkForm open mode="create" onOpenChange={() => {}} />);
+
+    fireEvent.change(screen.getByTestId('trunk-form-name'), { target: { value: 'reg-trunk' } });
+    fireEvent.change(screen.getByTestId('trunk-form-displayName'), {
+      target: { value: 'Reg Trunk' },
+    });
+    fireEvent.change(screen.getByTestId('trunk-form-registrationUri'), {
+      target: { value: 'carrier.example' },
+    });
+    fireEvent.change(screen.getByTestId('trunk-form-clientUri'), {
+      target: { value: 'sip:acct@carrier.example' },
+    });
+
+    fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
+
+    await waitFor(() =>
+      expect(screen.getByText('admin:trunks.validation.sipUriInvalid')).toBeInTheDocument(),
+    );
+    expect(createMutate).not.toHaveBeenCalled();
+  });
+
+  it('TrunkForm_ShouldSaveOtherFields_WhenEditingALegacyRegistrationTrunk', async () => {
+    // Stored before the #385 rules: a registration URI with no client URI. The form echoes it; saving a rename
+    // must still go through (the API ignores an unchanged URI).
+    const legacy: TrunkSummary = { ...existingTrunk, clientUri: null };
+    render(<TrunkForm open mode="edit" onOpenChange={() => {}} trunk={legacy} />);
+
+    fireEvent.change(screen.getByTestId('trunk-form-displayName'), {
+      target: { value: 'Renamed Trunk' },
+    });
+    fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalled());
+    const arg = updateMutate.mock.calls[0][0] as Record<string, unknown>;
+    expect(arg.displayName).toBe('Renamed Trunk');
+    expect(arg.registrationUri).toBe('sip:reg@carrier.example.com');
+  });
+
+  it('TrunkForm_ShouldBlockSubmit_WhenEditingChangesTheRegistrationOfALegacyTrunk', async () => {
+    const legacy: TrunkSummary = { ...existingTrunk, clientUri: null };
+    render(<TrunkForm open mode="edit" onOpenChange={() => {}} trunk={legacy} />);
+
+    fireEvent.change(screen.getByTestId('trunk-form-registrationUri'), {
+      target: { value: 'sip:reg2@carrier.example.com' },
+    });
+    fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
+
+    await waitFor(() =>
+      expect(screen.getByText('admin:trunks.validation.clientUriRequired')).toBeInTheDocument(),
+    );
+    expect(updateMutate).not.toHaveBeenCalled();
+  });
+
   it('TrunkForm_ShouldNotPrefillAuthPassword_WhenEditing', () => {
     render(<TrunkForm open mode="edit" onOpenChange={() => {}} trunk={existingTrunk} />);
 
