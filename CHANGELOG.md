@@ -20,7 +20,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   export and retention run-now), and a route Platform changes after the committed OpenAPI snapshot was generated. This is the class of bug behind the
   route reorder 405 (#413) and the notification rules page (#418): the request compiled and its mocked tests
   passed, and only a real server refused it. The one call left over, the CDR transcript route, is frozen in
-  `console-api-routes-baseline.json`, which can only shrink. No change to the console itself.
+  `console-api-routes-baseline.json`, which can only shrink. No change to the console itself. (#423)
 
 ### Fixed
 
