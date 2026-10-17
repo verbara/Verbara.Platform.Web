@@ -1,0 +1,13 @@
+{
+  "_comment": "Console API routes the OpenAPI document does not declare (#413, #418). Checked by scripts/check-api-routes.py (npm run lint:api-routes): every customFetch/customFetchWithHeaders call and every raw fetch('/api/...') in src/ must name a path AND method that src/core/api/generated/openapi.d.ts declares, unless its exact (method, normalised path, file) is listed here. This list can only SHRINK: an entry that no longer occurs fails as stale. Never add a new call here; fix the call, or map the route in Platform and regenerate the types. Paths are normalised: each ${...} is {*}, the query string and a trailing slash are dropped. min_scanned_calls is a liveness floor (405 calls on 2026-10-16); below it the scan is mis-wired. Seeded 2026-10-16 with one entry.",
+  "min_scanned_calls": 350,
+  "entries": [
+    {
+      "method": "GET",
+      "path": "/api/v1/analytics/cdr/{*}/transcript",
+      "file": "src/core/api/hooks/use-analytics.ts",
+      "kind": "no-path",
+      "note": "Platform's AnalyticsEndpoints maps only /cdr and /cdr/{sessionId}, no transcript route; tracked by the open analytics-contract-residue change."
+    }
+  ]
+}

@@ -9,6 +9,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **CI: a console API call must name a route the OpenAPI document declares.** A new step in the required `lint`
+  job (`npm run lint:api-routes`, `scripts/check-api-routes.py`) reads every `customFetch` /
+  `customFetchWithHeaders` call and every raw `fetch('/api/...')` with a literal URL in `src/`. It fails when the
+  path is not in `src/core/api/generated/openapi.d.ts`, or is there without that method. A literal segment never
+  passes as a `{param}` (so `/notifications/rules` is not `/notifications/{id}`). Not covered: a URL or method
+  built in a variable (one `customFetch` today, plus the raw `fetch(url)` calls in the webchat transport, audit
+  export and retention run-now), and a route Platform changes after the committed OpenAPI snapshot was generated. This is the class of bug behind the
+  route reorder 405 (#413) and the notification rules page (#418): the request compiled and its mocked tests
+  passed, and only a real server refused it. The one call left over, the CDR transcript route, is frozen in
+  `console-api-routes-baseline.json`, which can only shrink. No change to the console itself.
+
 ### Fixed
 
 - **Admin → Outbound routes: Save order now saves.** The console sent the new order with `POST`, but Platform maps
@@ -28,7 +41,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Admin → Notification rules page.** The page and its `/api/v1/notification-rules` client are gone. Platform never
   mapped that route, and the permission the page required (`notifications:rule:configure`) does not exist in Platform,
   so no one could reach the page and every call would have failed. The notification center (the bell and the
-  `/notifications` endpoints) is unchanged. (#418)
+  `/notifications` endpoints) is unchanged. (#418, #422)
 
 ## [3.24.0-web] - 2026-10-16
 
