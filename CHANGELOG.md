@@ -42,7 +42,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - **Web image: the console and the widget demo page may be framed only by their own origin.** They now send
-  `Content-Security-Policy: frame-ancestors self` and `X-Frame-Options: SAMEORIGIN`. The WebChat frame under
+  `Content-Security-Policy: frame-ancestors 'self'` and `X-Frame-Options: SAMEORIGIN`. The WebChat frame under
   `/webchat/embed/` keeps `frame-ancestors *` so customer sites can embed it.
 
 - **WebChat SDK: a fixed SDK now reaches visitors who already loaded it.** The image served
