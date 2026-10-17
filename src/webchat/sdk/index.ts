@@ -1,7 +1,10 @@
 // SDK entrypoint — exposes VerbaraWebChat global.
 import { createWebChatApi } from './api';
+import { findSdkScriptSrc } from './embed-origin';
 
-const api = createWebChatApi();
+// Read while this script first runs: `document.currentScript` is null afterwards.
+const script = document.currentScript as HTMLScriptElement | null;
+const api = createWebChatApi({ scriptSrc: findSdkScriptSrc(document, script) });
 
 declare global {
   interface Window {
@@ -12,7 +15,6 @@ declare global {
 globalThis.window.VerbaraWebChat = api;
 
 // Auto-init from data-* attributes if present.
-const script = document.currentScript as HTMLScriptElement | null;
 if (script?.dataset['tenantId']) {
   const themeRaw = script.dataset['theme'];
   let theme: { primaryColor?: string; fontFamily?: string } | undefined;

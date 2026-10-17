@@ -24,6 +24,11 @@
 #            its stylesheet, no sourcemaps) and a WebSocket handshake to
 #            /ws/webchat/<id> reaches platform-api with its Upgrade and
 #            Connection headers instead of the console's index.html.
+#   W426     the widget can run on a site of another domain: the embed page
+#            sends a CSP with frame-ancestors * and no X-Frame-Options; the SDK
+#            is served as JavaScript with Cross-Origin-Resource-Policy:
+#            cross-origin; and neither location's headers reach the console's
+#            own pages (GET /).
 # Every value is generated per run; never a real token. Everything the script
 # creates carries the suffix and is removed on exit. Exit 0 only if every check
 # passes.
@@ -178,6 +183,25 @@ echo "W429 WebSocket handshake /ws/webchat/<id>: $(head -1 <<<"$ws" | tr -d '\r'
 check "W429: /ws/ reaches platform-api" "$([ "$(header x-stub-upstream "$ws")" = api ] && echo 0 || echo 1)" "$(head -1 <<<"$ws" | tr -d '\r')"
 check "W429: /ws/ forwards Upgrade: websocket" "$([ "$(header x-stub-upgrade "$ws")" = websocket ] && echo 0 || echo 1)" "[$(header x-stub-upgrade "$ws")]"
 check "W429: /ws/ forwards Connection: upgrade" "$([ "$(header x-stub-connection "$ws" | tr A-Z a-z)" = upgrade ] && echo 0 || echo 1)" "[$(header x-stub-connection "$ws")]"
+
+# --- W426 -------------------------------------------------------------------
+embed_h=$(curl -s -o /dev/null -D - "http://127.0.0.1:$P/webchat/embed/?tenantId=t1&hostOrigin=https%3A%2F%2Fshop.example.test")
+sdk_h=$(curl -s -o /dev/null -D - "http://127.0.0.1:$P/webchat/v1/verbara-webchat.js")
+root_h=$(curl -s -o /dev/null -D - "http://127.0.0.1:$P/")
+embed_csp=$(header content-security-policy "$embed_h")
+embed_xfo=$(header x-frame-options "$embed_h")
+root_csp=$(header content-security-policy "$root_h")
+echo "W426 /webchat/embed/: $(head -1 <<<"$embed_h" | tr -d '\r') CSP=[$embed_csp] X-Frame-Options=[$embed_xfo] CORP=[$(header cross-origin-resource-policy "$embed_h")]"
+echo "W426 /webchat/v1/verbara-webchat.js: Content-Type=[$(header content-type "$sdk_h")] CORP=[$(header cross-origin-resource-policy "$sdk_h")] X-Content-Type-Options=[$(header x-content-type-options "$sdk_h")]"
+echo "W426 /: CSP=[$root_csp] CORP=[$(header cross-origin-resource-policy "$root_h")]"
+check "W426: embed page served" "$(grep -q ' 200' <<<"$(head -1 <<<"$embed_h")" && echo 0 || echo 1)" "$(head -1 <<<"$embed_h" | tr -d '\r')"
+check "W426: embed CSP allows framing by any site" "$(grep -qE "(^|; *)frame-ancestors \*(;|$)" <<<"$embed_csp" && echo 0 || echo 1)" "[$embed_csp]"
+check "W426: embed CSP still limits its connections to its own origin" "$(grep -q "connect-src 'self' wss:" <<<"$embed_csp" && echo 0 || echo 1)" "[$embed_csp]"
+check "W426: embed sends no X-Frame-Options" "$([ -z "$embed_xfo" ] && echo 0 || echo 1)" "[$embed_xfo]"
+check "W426: SDK served as JavaScript" "$(grep -qi 'javascript' <<<"$(header content-type "$sdk_h")" && echo 0 || echo 1)" "[$(header content-type "$sdk_h")]"
+check "W426: SDK loadable from another origin (CORP cross-origin)" "$([ "$(header cross-origin-resource-policy "$sdk_h")" = cross-origin ] && echo 0 || echo 1)" "[$(header cross-origin-resource-policy "$sdk_h")]"
+check "W426: the embed's frame-ancestors does not reach /" "$(grep -q 'frame-ancestors \*' <<<"$root_csp" && echo 1 || echo 0)" "[$root_csp]"
+check "W426: the widget's CORP does not reach /" "$([ -z "$(header cross-origin-resource-policy "$root_h")" ] && echo 0 || echo 1)" "[$(header cross-origin-resource-policy "$root_h")]"
 
 # --- gateway path (optional) ------------------------------------------------
 if [ -n "${GATEWAY_CONF:-}" ]; then

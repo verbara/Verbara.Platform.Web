@@ -766,3 +766,36 @@ describe('Session start and resume (#426)', () => {
     expect(screen.getByText('Online')).toBeInTheDocument();
   });
 });
+
+// #426: the widget runs on a site of another domain. Its requests and its socket stay on the origin that served the
+// frame, whatever apiBase the host page passes, and the socket Platform names by path opens on that origin too.
+describe('Integration — embedded on a site of another domain', () => {
+  it('CreatesTheSessionAndOpensTheSocket_OnTheEmbedOrigin', async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ sessionId: 's1', wsUrl: '/ws/webchat/s1' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    globalThis.fetch = fetchMock as never;
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget
+          config={{
+            ...config,
+            apiBase: 'https://shop.example.com/api/v1',
+            visitor: { name: 'Jane', email: 'jane@x.com' },
+          }}
+          onUnreadChange={vi.fn()}
+        />
+      </I18nextProvider>,
+    );
+
+    await waitFor(() => expect(FakeWebSocket.last).not.toBeNull(), { timeout: 3000 });
+    const own = window.location.origin;
+    expect(String(fetchMock.mock.calls[0]![0])).toBe(`${own}/api/v1/webchat/sessions`);
+    expect(FakeWebSocket.last!.url).toBe(`${own.replace(/^http/, 'ws')}/ws/webchat/s1`);
+  });
+});

@@ -22,13 +22,23 @@ All `data-*` attributes on the script tag are passed to `VerbaraWebChat.init()`.
 ```javascript
 VerbaraWebChat.init({
   tenantId: 'YOUR_TENANT_ID',
-  apiBase: 'https://api.your-domain/api/v1',
+  // Optional. Defaults to the origin that served the SDK script.
+  apiBase: 'https://your-domain/api/v1',
   locale: 'auto',
   theme: { primaryColor: '#0d9488' },
   position: 'bottom-right',
   greeting: 'Hi! How can we help?',
 });
 ```
+
+## Embedding on another domain
+
+The widget runs on any site, whatever its domain. Its frame, its API calls and its socket all use the origin that
+served the SDK script (`https://your-domain` above), or the origin of `apiBase` when you pass one; never the origin
+of the page the tag sits on. Inside the frame, the session and the socket always stay on the frame's own origin.
+The frame talks over `postMessage` only with the page that embeds it: it learns that page's origin from
+`location.ancestorOrigins`, or, in browsers without it, from a `hostOrigin` parameter the SDK adds to the frame's
+address.
 
 ## Programmatic API
 
