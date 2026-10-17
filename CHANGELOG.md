@@ -59,7 +59,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   showed as an empty bubble. The widget now reads the blocks: text blocks, and the prompt of a quick-reply block,
   become the message text in order (the reply buttons are not shown), and image, video, audio and file blocks
   become attachments (only `http`/`https` links). Location blocks and block types the widget does not know are
-  skipped. Works with any Platform version that has the WebChat socket.
+  skipped. Works with any Platform version that has the WebChat socket. (#432)
 
 ### Removed
 
