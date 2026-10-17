@@ -21,7 +21,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   URI whenever there is a registration URI and check that both start with `sip:` or `sips:`. They show the problem on
   the field instead of the API's 400 (`client-uri-required` / `invalid-sip-uri`, Platform #429) as a toast. On edit,
   a URI left as stored is not re-checked, so a trunk saved before these rules stays editable. Works with any Platform
-  version; Platform #429 adds the same rules on the API side.
+  version; Platform #429 adds the same rules on the API side. (#420)
 
 ## [3.24.0-web] - 2026-10-16
 
