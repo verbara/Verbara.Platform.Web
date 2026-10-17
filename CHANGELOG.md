@@ -15,6 +15,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `/api/v1/admin/routes/reorder` only for `PUT`, so every save got a 405 and the order never changed. The request now
   uses `PUT`, as the OpenAPI document declares. Works with any Platform version that has the route. (#417)
 
+- **Admin → Trunks: a registration trunk now asks for its client URI.** The trunk wizard (register mode) and the edit
+  form let a registration URI be saved without a client URI, or with a bare host instead of a `sip:`/`sips:` URI.
+  Asterisk refuses such a registration, so the trunk saved and never registered. Both forms now require the client
+  URI whenever there is a registration URI and check that both start with `sip:` or `sips:`. They show the problem on
+  the field instead of the API's 400 (`client-uri-required` / `invalid-sip-uri`, Platform #429) as a toast. On edit,
+  a URI left as stored is not re-checked, so a trunk saved before these rules stays editable. Works with any Platform
+  version; Platform #429 adds the same rules on the API side.
+
 ## [3.24.0-web] - 2026-10-16
 
 **Requires Platform ≥ v2.29.0.** The chat close, the silent listen, the trunk refusal, the sign-in

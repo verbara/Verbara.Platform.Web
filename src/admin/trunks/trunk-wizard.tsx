@@ -20,6 +20,7 @@ import {
   type AuthMode,
   type ProviderId,
 } from './trunk-wizard-providers';
+import { registrationIssues } from './trunk-registration';
 
 // ── Validation regexes (mirror the flat trunk-form + did-route-form) ────────────
 const IPV4_CIDR =
@@ -320,13 +321,20 @@ function ConnectionStep() {
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="trunk-wizard-clientUri">{t('trunks.clientUri')}</Label>
+            <Label htmlFor="trunk-wizard-clientUri" required>
+              {t('trunks.clientUri')}
+            </Label>
             <Input
               id="trunk-wizard-clientUri"
               placeholder={t('trunks.form.client_uri_placeholder')}
               data-testid="trunk-wizard-clientUri"
               {...register('clientUri')}
             />
+            {errors.clientUri?.message && (
+              <p className="text-xs text-destructive" role="alert">
+                {t(errors.clientUri.message)}
+              </p>
+            )}
           </div>
         </>
       )}
@@ -756,6 +764,8 @@ function validateStep(stepKey: StepKey, v: TrunkWizardValues): FieldError[] {
           field: 'registrationUri',
           message: 'trunks.wizard.validation.registrationUriRequired',
         });
+      // Same rules as the trunk API (#385): sip:/sips: URIs, and a client URI whenever there is a registration.
+      for (const issue of registrationIssues(v.registrationUri, v.clientUri)) errs.push(issue);
     }
   }
   if (stepKey === 'outbound' && v.addOutboundRoute) {

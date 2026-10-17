@@ -26,6 +26,7 @@ import {
   type TrunkWriteFields,
 } from '@/core/api/hooks/use-trunks';
 import { CodecSelector } from '@/core/voice/codec-selector';
+import { registrationIssues, type StoredRegistration } from './trunk-registration';
 
 const TRUNK_TYPES = ['SIP', 'PJSIP', 'IAX2', 'DAHDI'] as const;
 
@@ -43,7 +44,7 @@ function isValidHostOrCidr(value: string): boolean {
   return value.includes(':') && IPV6_CIDR.test(value);
 }
 
-const trunkSchema = z.object({
+const baseTrunkSchema = z.object({
   name: z.string().min(1, 'admin:trunks.validation.nameRequired'),
   displayName: z.string().min(1, 'admin:trunks.validation.displayNameRequired'),
   type: z.enum(['SIP', 'PJSIP', 'IAX2', 'DAHDI']),
@@ -62,7 +63,19 @@ const trunkSchema = z.object({
   context: z.string().optional(),
 });
 
-export type TrunkFormValues = z.infer<typeof trunkSchema>;
+/**
+ * The registration rules of the trunk API (#385), checked against the stored values on edit so a trunk saved
+ * before them stays editable when the form echoes its stored URIs.
+ */
+function makeTrunkSchema(stored?: StoredRegistration) {
+  return baseTrunkSchema.superRefine((v, ctx) => {
+    for (const issue of registrationIssues(v.registrationUri, v.clientUri, stored)) {
+      ctx.addIssue({ code: 'custom', path: [issue.field], message: `admin:${issue.message}` });
+    }
+  });
+}
+
+export type TrunkFormValues = z.infer<typeof baseTrunkSchema>;
 
 interface TrunkFormProps {
   open: boolean;
@@ -108,7 +121,9 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<TrunkFormValues>({
-    resolver: zodResolver(trunkSchema) as Resolver<TrunkFormValues>,
+    resolver: zodResolver(
+      makeTrunkSchema(mode === 'edit' && trunk ? trunk : undefined),
+    ) as Resolver<TrunkFormValues>,
     defaultValues: EMPTY_DEFAULTS,
   });
 
@@ -116,6 +131,8 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
   const displayNameA11y = useFieldA11y(errors.displayName, 'trunk-displayName', { required: true });
   const maxChannelsA11y = useFieldA11y(errors.maxChannels, 'trunk-maxChannels', { required: true });
   const matchHostA11y = useFieldA11y(errors.matchHost, 'trunk-matchHost');
+  const registrationUriA11y = useFieldA11y(errors.registrationUri, 'trunk-registrationUri');
+  const clientUriA11y = useFieldA11y(errors.clientUri, 'trunk-clientUri');
 
   useEffect(() => {
     if (open) {
@@ -330,7 +347,14 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               id="trunk-registrationUri"
               placeholder={t('trunks.form.registration_uri_placeholder')}
               data-testid="trunk-form-registrationUri"
+              {...registrationUriA11y.inputProps}
               {...register('registrationUri')}
+            />
+            <FieldError
+              id={registrationUriA11y.errorId}
+              message={
+                errors.registrationUri?.message ? t(errors.registrationUri.message) : undefined
+              }
             />
           </div>
 
@@ -341,7 +365,12 @@ export function TrunkForm({ open, onOpenChange, mode, trunk }: TrunkFormProps) {
               id="trunk-clientUri"
               placeholder={t('trunks.form.client_uri_placeholder')}
               data-testid="trunk-form-clientUri"
+              {...clientUriA11y.inputProps}
               {...register('clientUri')}
+            />
+            <FieldError
+              id={clientUriA11y.errorId}
+              message={errors.clientUri?.message ? t(errors.clientUri.message) : undefined}
             />
           </div>
 

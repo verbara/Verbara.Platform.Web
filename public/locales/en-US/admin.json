@@ -860,7 +860,9 @@
       "nameRequired": "Name is required",
       "displayNameRequired": "Display name is required",
       "maxChannelsAtLeastOne": "Must be at least 1",
-      "matchHostInvalid": "Enter a valid IP address or CIDR range"
+      "matchHostInvalid": "Enter a valid IP address or CIDR range",
+      "clientUriRequired": "A client URI is required when the trunk registers with its carrier",
+      "sipUriInvalid": "Enter a SIP URI that starts with sip: or sips:"
     },
     "searchByNamePlaceholder": "Search trunk by name...",
     "connectivity": {
