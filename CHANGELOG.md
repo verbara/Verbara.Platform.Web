@@ -43,6 +43,24 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   empty answer would have replaced that cached history on screen. The request and `fetchHistory` are gone. History
   that follows a visitor across browsers or devices is not built. (Platform #434, #425)
 
+- **WebChat widget: the pre-chat form submits again.** The SDK loads the widget in a sandboxed iframe whose
+  `sandbox` lacked `allow-forms`, so the browser blocked the pre-chat form ("Blocked form submission … the
+  'allow-forms' permission is not set"). No visitor got a session and no message was sent. The sandbox now
+  includes `allow-forms`; its other permissions are unchanged. Sites that embed the SDK pick it up with the new
+  SDK build. (#428)
+
+- **WebChat widget: visitor messages reach Platform.** The widget sent each message as `{"type":"message","body":…}`,
+  but Platform reads the text from `text`, so it saw an empty message and dropped it, both for a message typed
+  online and for one queued offline and sent on reconnect. The widget now sends `{"type":"message","text":…}`, the
+  shape Platform's own tests and its older widget use. (#430)
+
+- **WebChat widget: agent replies show their text.** Platform sends each agent reply as
+  `{"type":"message","data":{"blocks":[…]}}`, but the widget read a `body` field that is not there, so every reply
+  showed as an empty bubble. The widget now reads the blocks: text blocks, and the prompt of a quick-reply block,
+  become the message text in order (the reply buttons are not shown), and image, video, audio and file blocks
+  become attachments (only `http`/`https` links). Location blocks and block types the widget does not know are
+  skipped. Works with any Platform version that has the WebChat socket.
+
 ### Removed
 
 - **Admin → Notification rules page.** The page and its `/api/v1/notification-rules` client are gone. Platform never

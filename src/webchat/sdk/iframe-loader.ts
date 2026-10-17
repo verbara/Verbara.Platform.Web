@@ -20,7 +20,8 @@ export function createIframeLoader(config: IframeLoaderConfig): IframeLoaderHand
     if (iframe) return iframe;
     iframe = document.createElement('iframe');
     iframe.dataset['verbaraWebchatIframe'] = '';
-    iframe.setAttribute('sandbox', 'allow-scripts allow-popups allow-same-origin');
+    // allow-forms: the pre-chat form submits inside this frame; without it the browser blocks the submit (#428).
+    iframe.setAttribute('sandbox', 'allow-scripts allow-popups allow-same-origin allow-forms');
     iframe.title = 'Chat widget';
     iframe.src = config.src;
     iframe.style.position = 'fixed';

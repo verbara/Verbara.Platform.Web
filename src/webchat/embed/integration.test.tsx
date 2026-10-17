@@ -17,6 +17,7 @@ import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
 import i18n from 'i18next';
 import { ChatWidget, type InitConfigPayload } from './chat-widget';
+import frames from './transport/__fixtures__/ws-frames.json';
 
 class FakeWebSocket {
   static last: FakeWebSocket | null = null;
@@ -206,7 +207,7 @@ describe('Integration — full visitor flow', () => {
       await act(async () => {
         ws.onmessage?.(
           new MessageEvent('message', {
-            data: JSON.stringify({ type: 'message', body: 'hi', id: 'm1' }),
+            data: frames.server.agentTextReply,
           }),
         );
         await vi.advanceTimersByTimeAsync(0);
@@ -215,5 +216,130 @@ describe('Integration — full visitor flow', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+  // The wire contract with Platform. The frames come verbatim from measurements and from Platform's own test
+  // (transport/__fixtures__/ws-frames.json); never edit them to make a test pass.
+  describe('Platform WebSocket contract', () => {
+    async function startChat(onUnreadChange = vi.fn()) {
+      render(
+        <I18nextProvider i18n={i18n}>
+          <ChatWidget config={config} onUnreadChange={onUnreadChange} />
+        </I18nextProvider>,
+      );
+      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Jane' } });
+      fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'jane@x.com' } });
+      fireEvent.click(screen.getByRole('button', { name: /start chat/i }));
+      await waitFor(() => expect(FakeWebSocket.last).not.toBeNull(), { timeout: 3000 });
+      const ws = FakeWebSocket.last;
+      if (!ws) throw new Error('WebSocket was not created');
+      return ws;
+    }
+
+    function open(ws: FakeWebSocket) {
+      act(() => {
+        ws.readyState = 1;
+        ws.onopen?.(new Event('open'));
+      });
+    }
+
+    function receive(ws: FakeWebSocket, data: string) {
+      act(() => {
+        ws.onmessage?.(new MessageEvent('message', { data }));
+      });
+    }
+
+    function sendFromComposer(text: string) {
+      const ta = screen.getByPlaceholderText(/type/i) as HTMLTextAreaElement;
+      fireEvent.change(ta, { target: { value: text } });
+      fireEvent.keyDown(ta, { key: 'Enter' });
+    }
+
+    const visitorFrameKeys = Object.keys(JSON.parse(frames.client.visitorMessage) as object).sort();
+
+    // Regression: Platform sends {"type":"message","data":{"blocks":[...]}}; the widget read `body`, so every
+    // agent reply rendered as an empty bubble.
+    it('RendersAgentReplyText_WhenPlatformSendsMessageFrame', async () => {
+      const onUnreadChange = vi.fn();
+      const ws = await startChat(onUnreadChange);
+      open(ws);
+
+      receive(ws, frames.server.agentTextReply);
+
+      expect(await screen.findByText('agent reply wcl71c00d.c2.1.1.')).toBeInTheDocument();
+      expect(onUnreadChange).toHaveBeenCalledWith(1);
+    });
+
+    it('RendersImageAndFileBlocks_AsAttachments_WhenAgentSendsMedia', async () => {
+      const ws = await startChat();
+      open(ws);
+
+      // Shape derived from Platform MessageBlock.cs (ImageBlock / FileBlock), not measured.
+      receive(
+        ws,
+        JSON.stringify({
+          type: 'message',
+          data: {
+            blocks: [
+              { $type: 'text', text: 'here you go', type: 0 },
+              {
+                $type: 'image',
+                url: 'https://cdn.example/p.png',
+                caption: 'the plan',
+                mimeType: 'image/png',
+                type: 1,
+              },
+              {
+                $type: 'file',
+                url: 'https://cdn.example/r.pdf',
+                fileName: 'report.pdf',
+                mimeType: 'application/pdf',
+                sizeBytes: 10,
+                type: 4,
+              },
+            ],
+          },
+        }),
+      );
+
+      expect(await screen.findByText('here you go')).toBeInTheDocument();
+      expect(screen.getByAltText('the plan')).toHaveAttribute('src', 'https://cdn.example/p.png');
+      expect(screen.getByText(/report\.pdf/)).toBeInTheDocument();
+    });
+
+    it('AddsNoMessage_WhenPlatformConfirmsConnection', async () => {
+      const onUnreadChange = vi.fn();
+      const ws = await startChat(onUnreadChange);
+      open(ws);
+      const before = document.querySelectorAll('.rounded-2xl').length;
+
+      receive(ws, frames.server.connected);
+
+      expect(document.querySelectorAll('.rounded-2xl')).toHaveLength(before);
+      expect(onUnreadChange).not.toHaveBeenCalled();
+    });
+
+    // Regression (#430): the widget sent {type:'message', body}; Platform reads WebChatClientMessage(Type, Text),
+    // so the text arrived null and Platform dropped the message.
+    it('SendsTextFrame_WhenVisitorSendsMessage', async () => {
+      const ws = await startChat();
+      open(ws);
+
+      sendFromComposer('hola por socket');
+
+      expect(ws.sent).toHaveLength(1);
+      const sent = JSON.parse(ws.sent[0] ?? '{}') as Record<string, unknown>;
+      expect(Object.keys(sent).sort()).toEqual(visitorFrameKeys);
+      expect(ws.sent[0]).toBe(frames.client.visitorMessage);
+    });
+
+    it('SendsTextFrame_WhenOfflineQueueDrainsOnOpen', async () => {
+      const ws = await startChat();
+      sendFromComposer('hola por socket');
+      expect(ws.sent).toHaveLength(0);
+
+      open(ws);
+
+      expect(ws.sent).toEqual([frames.client.visitorMessage]);
+    });
   });
 });

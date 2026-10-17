@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createWsClient } from './ws-client';
+import frames from './__fixtures__/ws-frames.json';
 
 class FakeWebSocket {
   static instances: FakeWebSocket[] = [];
@@ -64,10 +65,8 @@ describe('ws-client', () => {
     });
     client.connect();
     FakeWebSocket.instances[0]?.simulateOpen();
-    client.send({ type: 'message', body: 'hi' });
-    expect(FakeWebSocket.instances[0]?.sentMessages).toContain(
-      JSON.stringify({ type: 'message', body: 'hi' }),
-    );
+    client.send({ type: 'message', text: 'hola por socket' });
+    expect(FakeWebSocket.instances[0]?.sentMessages).toEqual([frames.client.visitorMessage]);
     client.disconnect();
   });
 
@@ -76,8 +75,20 @@ describe('ws-client', () => {
     const client = createWsClient({ url: 'wss://x', onOpen: vi.fn(), onMessage, onClose: vi.fn() });
     client.connect();
     FakeWebSocket.instances[0]?.simulateOpen();
-    FakeWebSocket.instances[0]?.simulateMessage(JSON.stringify({ type: 'message', body: 'hi' }));
-    expect(onMessage).toHaveBeenCalledWith({ type: 'message', body: 'hi' });
+    FakeWebSocket.instances[0]?.simulateMessage(frames.server.agentTextReply);
+    expect(onMessage).toHaveBeenCalledWith(JSON.parse(frames.server.agentTextReply));
+    client.disconnect();
+  });
+
+  it('OnMessage_IgnoresFrames_WhenJsonIsNotATypedObject', () => {
+    const onMessage = vi.fn();
+    const client = createWsClient({ url: 'wss://x', onOpen: vi.fn(), onMessage, onClose: vi.fn() });
+    client.connect();
+    FakeWebSocket.instances[0]?.simulateOpen();
+    for (const data of ['not json', 'null', '"message"', '[1]', '{"data":{}}', '{"type":3}']) {
+      FakeWebSocket.instances[0]?.simulateMessage(data);
+    }
+    expect(onMessage).not.toHaveBeenCalled();
     client.disconnect();
   });
 
