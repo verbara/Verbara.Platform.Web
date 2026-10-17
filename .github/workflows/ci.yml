@@ -9,7 +9,8 @@ name: CI
 #   - coverage  blocking - vitest run --coverage (Track 2A ratchet floor)
 #   - i18n      blocking - locale parity check (ADR-0001)
 #   - audit     blocking - npm audit --audit-level=high
-#   - lint      blocking - eslint (0 errors enforced since Track 3A)
+#   - lint      blocking - eslint (0 errors enforced since Track 3A), generated-types
+#               ratchet, console API routes vs the OpenAPI document
 #
 # Branch protection on main requires: build, test, coverage, i18n, audit, lint
 
@@ -316,3 +317,16 @@ jobs:
       # which only shrinks. Pure Node, no deps.
       - name: Generated-types adoption ratchet
         run: npm run lint:generated-types
+
+      # Console API routes vs the OpenAPI document (#413, #418): fail when a
+      # customFetch / raw fetch('/api/...') call names a path, or a method on a path,
+      # that src/core/api/generated/openapi.d.ts does not declare. Residue is frozen
+      # in console-api-routes-baseline.json, which only shrinks. Stdlib Python, no deps;
+      # its unit tests run in the coverage-scripts job's `unittest discover scripts/tests`.
+      - name: Setup Python
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.13'
+
+      - name: Console API routes exist in the OpenAPI document
+        run: npm run lint:api-routes
