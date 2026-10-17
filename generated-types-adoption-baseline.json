@@ -25,7 +25,6 @@
     "src/core/api/hooks/use-media.ts",
     "src/core/api/hooks/use-me.ts",
     "src/core/api/hooks/use-mfa-users.ts",
-    "src/core/api/hooks/use-notification-rules.ts",
     "src/core/api/hooks/use-onboarding.ts",
     "src/core/api/hooks/use-queue-members.ts",
     "src/core/api/hooks/use-rbac.ts",

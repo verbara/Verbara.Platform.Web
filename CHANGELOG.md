@@ -23,6 +23,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a URI left as stored is not re-checked, so a trunk saved before these rules stays editable. Works with any Platform
   version; Platform #429 adds the same rules on the API side. (#420)
 
+### Removed
+
+- **Admin → Notification rules page.** The page and its `/api/v1/notification-rules` client are gone. Platform never
+  mapped that route, and the permission the page required (`notifications:rule:configure`) does not exist in Platform,
+  so no one could reach the page and every call would have failed. The notification center (the bell and the
+  `/notifications` endpoints) is unchanged. (#418)
+
 ## [3.24.0-web] - 2026-10-16
 
 **Requires Platform ≥ v2.29.0.** The chat close, the silent listen, the trunk refusal, the sign-in
