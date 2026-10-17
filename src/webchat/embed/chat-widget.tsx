@@ -5,8 +5,16 @@ import { Composer } from './composer';
 import { CsatPanel } from './csat-panel';
 import { MessageList } from './message-list';
 import { StatusBanner, type Status } from './status-banner';
-import { createSession, type ChatMessage } from './transport/session-api';
+import { createSession, CreateSessionError, type ChatMessage } from './transport/session-api';
 import { createWsClient, type WsClient } from './transport/ws-client';
+import {
+  MAX_ATTACH_ATTEMPTS,
+  clearStoredSession,
+  loadStoredSession,
+  saveStoredSession,
+  touchStoredSession,
+  type StoredSession,
+} from './transport/session-store';
 import { messageFrame, readAgentMessage, type ServerFrame } from './transport/ws-protocol';
 import { createOfflineQueue } from './transport/offline-queue';
 import { loadCachedMessages, saveCachedMessages } from './message-cache';
@@ -46,12 +54,27 @@ interface Props {
   readonly onUnreadChange: (n: number) => void;
 }
 
+/** The close reason Platform gives a socket whose session it no longer knows (WebChatEndpoints.HandleWebSocket). */
+const SESSION_EXPIRED_REASON = 'Session expired';
+
+/** Delay before the next try after a refused session create: doubling from 2 s, at most 30 s, never sooner than
+ * Platform's `Retry-After` (its session limit is per tenant and address, one-minute windows). */
+function createRetryDelayMs(failures: number, err: unknown): number {
+  const backoff = Math.min(2_000 * 2 ** failures, 30_000);
+  const hinted = err instanceof CreateSessionError ? (err.retryAfterMs ?? 0) : 0;
+  return Math.min(Math.max(backoff, hinted), 60_000);
+}
+
+function absoluteWsUrl(wsUrl: string): string {
+  return wsUrl.startsWith('ws') ? wsUrl : `${location.origin.replace(/^http/, 'ws')}${wsUrl}`;
+}
+
 export function ChatWidget({ config, onUnreadChange }: Props) {
   const { t } = useTranslation('webchat');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<Status>('connecting');
-  // Mirror `status` into a ref so long-lived WS callbacks (created once via the
-  // memoized handlePreChatSubmit) read the *current* status instead of the value
+  // Mirror `status` into a ref so long-lived WS callbacks (created once per socket
+  // by ensureSession) read the *current* status instead of the value
   // captured at callback-creation time — fixes a stale closure that prevented
   // recovery from the 'timeout' state on an incoming message.
   const statusRef = useRef<Status>(status);
@@ -61,7 +84,17 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const [profile, setProfile] = useState<{ name?: string; email?: string } | null>(
     config.visitor?.name && config.visitor?.email ? config.visitor : null,
   );
-  const [wsClient, setWsClient] = useState<WsClient | null>(null);
+  // The session machinery lives in refs: one socket per widget, whatever React re-renders.
+  const clientRef = useRef<WsClient | null>(null);
+  const inFlightRef = useRef<Promise<void> | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const createFailuresRef = useRef(0);
+  const mountedRef = useRef(false);
+  const profileRef = useRef(profile);
+  const onUnreadChangeRef = useRef(onUnreadChange);
+  useEffect(() => {
+    onUnreadChangeRef.current = onUnreadChange;
+  }, [onUnreadChange]);
   const [soundOn, setSoundOn] = useState(() => loadSoundPreference());
   const [csatDismissed, setCsatDismissed] = useState(false);
   const apiBase = config.apiBase ?? '/api/v1';
@@ -107,82 +140,172 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     return () => clearInterval(interval);
   }, [profile, status, TIMEOUT_MS]);
 
+  /**
+   * Gives the visitor a live session (#426): resumes the stored one when Platform can still know it, else creates
+   * one. Runs at most once at a time; a second call while one is running (React StrictMode runs effects twice)
+   * joins it. A stored session whose socket Platform refuses is dropped and replaced by a new one.
+   */
+  const ensureSession = useCallback((): Promise<void> => {
+    const { tenantId, visitorId } = config;
+
+    function connect(session: StoredSession, isNew: boolean): void {
+      const queue = createOfflineQueue(tenantId);
+      let openCount = 0;
+      // Closes in a row without an open in between. Platform refuses an unknown session before the upgrade,
+      // which the page sees only as a socket that closes unopened.
+      let failures = 0;
+      const client: WsClient = createWsClient({
+        url: session.wsUrl,
+        onOpen: () => {
+          if (clientRef.current !== client) return;
+          openCount++;
+          failures = 0;
+          setStatus('online');
+          touchStoredSession(tenantId, session.sessionId);
+          for (const m of queue.drain()) {
+            client.send(messageFrame(m.text));
+          }
+          if (openCount > 1) {
+            breadcrumb('reconnected');
+          }
+        },
+        onMessage: (frame: ServerFrame) => {
+          if (clientRef.current !== client) return;
+          // Platform sends `connected` on accept and `message` per agent reply; only a reply renders.
+          const reply = readAgentMessage(frame);
+          if (!reply) return;
+          // Platform's frame carries no id or timestamp, so the widget stamps its own.
+          const incoming: ChatMessage = {
+            id: crypto.randomUUID(),
+            text: reply.text,
+            from: 'agent',
+            timestamp: new Date().toISOString(),
+            ...(reply.attachments ? { attachments: reply.attachments } : {}),
+          };
+          setMessages((prev) => [...prev, incoming]);
+          onUnreadChangeRef.current(1);
+          playNotificationSound();
+          lastAgentActivityRef.current = Date.now();
+          breadcrumb('message-received');
+          if (statusRef.current === 'timeout') setStatus('online');
+        },
+        onClose: (reason) => {
+          if (clientRef.current !== client) return;
+          failures++;
+          if (reason === SESSION_EXPIRED_REASON || failures >= MAX_ATTACH_ATTEMPTS) {
+            // A dead session: stop reconnecting to it and start a new one.
+            clientRef.current = null;
+            client.disconnect();
+            clearStoredSession(tenantId, session.sessionId);
+            breadcrumb('session-abandoned', { sessionId: session.sessionId, reason });
+            setStatus('connecting');
+            void start();
+            return;
+          }
+          setStatus('reconnecting');
+        },
+      });
+      clientRef.current = client;
+      client.connect();
+
+      if (isNew && config.greeting) {
+        const greeting: ChatMessage = {
+          id: 'greeting',
+          text: config.greeting,
+          from: 'agent',
+          timestamp: new Date().toISOString(),
+        };
+        setMessages((prev) => (prev.some((m) => m.id === 'greeting') ? prev : [...prev, greeting]));
+      }
+    }
+
+    async function run(): Promise<void> {
+      // Let a StrictMode remount run its cleanup and setup before deciding anything.
+      await Promise.resolve();
+      if (!mountedRef.current || clientRef.current) return;
+
+      const stored = loadStoredSession(tenantId, visitorId);
+      if (stored) {
+        breadcrumb('session-resumed', { sessionId: stored.sessionId });
+        connect(stored, false);
+        return;
+      }
+
+      try {
+        const created = await createSession({
+          apiBase,
+          tenantId,
+          visitorId,
+          profile: profileRef.current ?? {},
+          pageContext: config.pageContext,
+        });
+        if (!mountedRef.current) return;
+        createFailuresRef.current = 0;
+        const now = Date.now();
+        const session: StoredSession = {
+          sessionId: created.sessionId,
+          wsUrl: absoluteWsUrl(created.wsUrl),
+          visitorId,
+          createdAt: now,
+          lastActiveAt: now,
+        };
+        saveStoredSession(tenantId, session);
+        breadcrumb('session-created', { sessionId: session.sessionId });
+        setStatus('connecting');
+        connect(session, true);
+      } catch (err) {
+        if (!mountedRef.current) return;
+        // Visible, but the composer stays usable: what the visitor types waits in the queue for the session.
+        setStatus('error');
+        const delay = createRetryDelayMs(createFailuresRef.current, err);
+        createFailuresRef.current++;
+        retryTimerRef.current = setTimeout(() => {
+          retryTimerRef.current = null;
+          void start();
+        }, delay);
+      }
+    }
+
+    function start(): Promise<void> {
+      if (inFlightRef.current) return inFlightRef.current;
+      const running = run().finally(() => {
+        if (inFlightRef.current === running) inFlightRef.current = null;
+      });
+      inFlightRef.current = running;
+      return running;
+    }
+
+    return start();
+  }, [apiBase, config]);
+
+  // The widget mounts when the visitor first opens the bubble. A visitor the site identifies, or one who filled
+  // the form on an earlier page, has a profile already and gets their session now.
+  useEffect(() => {
+    mountedRef.current = true;
+    if (profileRef.current) void ensureSession();
+    return () => {
+      mountedRef.current = false;
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+      const client = clientRef.current;
+      clientRef.current = null;
+      client?.disconnect();
+    };
+  }, [ensureSession]);
+
   const handlePreChatSubmit = useCallback(
     async (values: { name: string; email: string }) => {
+      profileRef.current = values;
       setProfile(values);
       window.parent.postMessage(
         { source: 'verbara-webchat-iframe', type: 'visitor-updated', payload: values },
         window.location.origin,
       );
-      try {
-        const session = await createSession({
-          apiBase,
-          tenantId: config.tenantId,
-          visitorId: config.visitorId,
-          profile: values,
-          pageContext: config.pageContext,
-        });
-        breadcrumb('session-created', { sessionId: session.sessionId });
-        setStatus('online');
-        const wsUrl = session.wsUrl.startsWith('ws')
-          ? session.wsUrl
-          : `${location.origin.replace(/^http/, 'ws')}${session.wsUrl}`;
-        const queue = createOfflineQueue(config.tenantId);
-        let openCount = 0;
-        let client: WsClient | null = null;
-        client = createWsClient({
-          url: wsUrl,
-          onOpen: () => {
-            openCount++;
-            setStatus('online');
-            const queued = queue.drain();
-            for (const m of queued) {
-              client?.send(messageFrame(m.text));
-            }
-            if (openCount > 1) {
-              breadcrumb('reconnected');
-            }
-          },
-          onMessage: (frame: ServerFrame) => {
-            // Platform sends `connected` on accept and `message` per agent reply; only a reply renders.
-            const reply = readAgentMessage(frame);
-            if (!reply) return;
-            // Platform's frame carries no id or timestamp, so the widget stamps its own.
-            const incoming: ChatMessage = {
-              id: crypto.randomUUID(),
-              text: reply.text,
-              from: 'agent',
-              timestamp: new Date().toISOString(),
-              ...(reply.attachments ? { attachments: reply.attachments } : {}),
-            };
-            setMessages((prev) => [...prev, incoming]);
-            onUnreadChange(1);
-            playNotificationSound();
-            lastAgentActivityRef.current = Date.now();
-            breadcrumb('message-received');
-            if (statusRef.current === 'timeout') setStatus('online');
-          },
-          onClose: () => setStatus('reconnecting'),
-        });
-        client.connect();
-        setWsClient(client);
-
-        if (config.greeting) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: 'greeting',
-              text: config.greeting!,
-              from: 'agent',
-              timestamp: new Date().toISOString(),
-            },
-          ]);
-        }
-      } catch {
-        setStatus('offline');
-      }
+      await ensureSession();
     },
-    [apiBase, config, onUnreadChange],
+    [ensureSession],
   );
 
   const handleSend = useCallback(
@@ -195,8 +318,11 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, msg]);
-      const ok = wsClient?.send(messageFrame(text)) ?? false;
-      if (!ok) {
+      const ok = clientRef.current?.send(messageFrame(text)) ?? false;
+      if (ok) {
+        const stored = loadStoredSession(config.tenantId, config.visitorId);
+        if (stored) touchStoredSession(config.tenantId, stored.sessionId);
+      } else {
         queue.push({ id: msg.id, text, timestamp: msg.timestamp });
       }
       breadcrumb('message-sent');
@@ -205,10 +331,8 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         window.location.origin,
       );
     },
-    [wsClient, config.tenantId],
+    [config.tenantId, config.visitorId],
   );
-
-  useEffect(() => () => wsClient?.disconnect(), [wsClient]);
 
   if (!profile) {
     return <PreChatForm defaultValues={config.visitor} onSubmit={handlePreChatSubmit} />;

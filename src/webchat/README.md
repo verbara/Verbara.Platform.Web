@@ -70,12 +70,21 @@ Override via `theme` config; the SDK injects them as inline styles into the ifra
 
 ## Privacy
 
-The widget uses `localStorage` (not cookies) to persist visitor identity across sessions. Two keys per tenant:
+The widget uses `localStorage` (not cookies) to persist visitor identity across sessions. Two keys per tenant, in
+the site's own storage (the SDK):
 
 - `verbara-webchat-visitor:<tenantId>` — visitor UUID
 - `verbara-webchat-profile:<tenantId>` — name + email
 
-A "Reset" button in the widget settings clears both keys.
+`VerbaraWebChat.destroy()` clears both keys.
+
+Inside the widget's frame, in its own storage:
+
+- `verbara-webchat-session:<tenantId>` — the current session (id, socket URL, visitor UUID, last activity), so a
+  reload or the next page within 30 minutes resumes it. It belongs to the visitor UUID above: after `destroy()` the
+  next visitor gets a new UUID and does not resume it.
+- `verbara-webchat-messages:<tenantId>` — the last 100 messages shown
+- `verbara-webchat-queue:<tenantId>` — messages typed while the socket was not open, sent when it opens
 
 ## Mobile
 

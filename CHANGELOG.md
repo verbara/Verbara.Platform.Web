@@ -74,6 +74,20 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   become attachments (only `http`/`https` links). Location blocks and block types the widget does not know are
   skipped. Works with any Platform version that has the WebChat socket. (#432)
 
+- **WebChat widget: a returning visitor, or one the site identifies, gets a session.** The widget created a session
+  and opened its socket only when the visitor submitted the pre-chat form. A visitor whose name and email were
+  already known (passed by the site in `visitor`, or saved from the form on an earlier page) never saw the form, so
+  no session was created and every message waited in the browser's offline queue. The widget now starts the
+  session as soon as it opens with a known visitor, and sends the queued messages, in order, once the socket opens.
+  It also keeps the session in the browser: opening the widget again, on a reload or another page of the site,
+  within 30 minutes of the visitor's last activity continues the same conversation instead of starting a new one
+  on every page. When Platform no longer knows the stored session (it was idle too long, or Platform restarted),
+  the widget gives up on it after a few socket attempts and starts a new one, instead of reconnecting forever. The
+  status shows "Online" only once the socket is open. If Platform refuses to create a session (for example its
+  per-address limit answers 429), the widget says the chat could not start and tries again, waiting longer each
+  time up to 30 seconds; the visitor can keep typing meanwhile. The SDK's `destroy()` forgets the visitor, so the
+  next visitor does not resume their session. (#426)
+
 ### Removed
 
 - **Admin → Notification rules page.** The page and its `/api/v1/notification-rules` client are gone. Platform never

@@ -39,8 +39,26 @@ export async function createSession(input: CreateSessionInput): Promise<CreateSe
     }),
   });
   if (!res.ok) {
-    throw new Error(`createSession failed with ${res.status}`);
+    throw new CreateSessionError(res.status, retryAfterMs(res.headers.get('Retry-After')));
   }
   const data = (await res.json()) as CreateSessionResult;
   return data;
+}
+
+/** A refused session create. Platform answers 429 with `Retry-After` when the tenant+address limit is spent. */
+export class CreateSessionError extends Error {
+  constructor(
+    readonly status: number,
+    readonly retryAfterMs: number | undefined,
+  ) {
+    super(`createSession failed with ${status}`);
+    this.name = 'CreateSessionError';
+  }
+}
+
+/** `Retry-After` in seconds (the form Platform sends), as milliseconds. */
+function retryAfterMs(header: string | null): number | undefined {
+  if (!header) return undefined;
+  const seconds = Number(header);
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : undefined;
 }

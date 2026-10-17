@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createSession } from './session-api';
+import { createSession, CreateSessionError } from './session-api';
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -38,5 +38,19 @@ describe('session-api', () => {
         pageContext: { url: '', title: '', referrer: '' },
       }),
     ).rejects.toThrow();
+  });
+  it('CreateSession_ThrowsWithStatusAndRetryAfter_WhenRateLimited', async () => {
+    globalThis.fetch = vi.fn(
+      async () => new Response('{}', { status: 429, headers: { 'Retry-After': '42' } }),
+    ) as never;
+    const error = await createSession({
+      apiBase: '/api/v1',
+      tenantId: 't1',
+      visitorId: 'v1',
+      profile: {},
+      pageContext: { url: '', title: '', referrer: '' },
+    }).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(CreateSessionError);
+    expect(error).toMatchObject({ status: 429, retryAfterMs: 42_000 });
   });
 });
