@@ -29,6 +29,8 @@
 #            is served as JavaScript with Cross-Origin-Resource-Policy:
 #            cross-origin; and neither location's headers reach the console's
 #            own pages (GET /).
+#   W433     the SDK, whose address never changes, is cached for minutes and
+#            revalidated, never for a year as immutable.
 # Every value is generated per run; never a real token. Everything the script
 # creates carries the suffix and is removed on exit. Exit 0 only if every check
 # passes.
@@ -200,6 +202,8 @@ check "W426: embed CSP still limits its connections to its own origin" "$(grep -
 check "W426: embed sends no X-Frame-Options" "$([ -z "$embed_xfo" ] && echo 0 || echo 1)" "[$embed_xfo]"
 check "W426: SDK served as JavaScript" "$(grep -qi 'javascript' <<<"$(header content-type "$sdk_h")" && echo 0 || echo 1)" "[$(header content-type "$sdk_h")]"
 check "W426: SDK loadable from another origin (CORP cross-origin)" "$([ "$(header cross-origin-resource-policy "$sdk_h")" = cross-origin ] && echo 0 || echo 1)" "[$(header cross-origin-resource-policy "$sdk_h")]"
+sdk_cc=$(header cache-control "$sdk_h")
+check "W433: SDK cached briefly and revalidated, not immutable" "$(grep -q 'max-age=300' <<<"$sdk_cc" && grep -q must-revalidate <<<"$sdk_cc" && ! grep -q immutable <<<"$sdk_cc" && echo 0 || echo 1)" "[$sdk_cc]"
 check "W426: the embed's frame-ancestors does not reach /" "$(grep -q 'frame-ancestors \*' <<<"$root_csp" && echo 1 || echo 0)" "[$root_csp]"
 check "W426: the widget's CORP does not reach /" "$([ -z "$(header cross-origin-resource-policy "$root_h")" ] && echo 0 || echo 1)" "[$(header cross-origin-resource-policy "$root_h")]"
 
