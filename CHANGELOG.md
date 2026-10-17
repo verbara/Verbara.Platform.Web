@@ -36,6 +36,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a URI left as stored is not re-checked, so a trunk saved before these rules stays editable. Works with any Platform
   version; Platform #429 adds the same rules on the API side. (#420)
 
+- **WebChat widget: no more history request after a chat starts.** Right after creating a session, the widget asked
+  for that session's messages with `GET /webchat/sessions/{id}/messages`. Platform maps no such route, so every new
+  chat got a 405, which the widget hid. The session was always new, so there was never history to fetch; a returning
+  visitor's history comes from the browser cache (the last 100 messages), and still does. Had the route existed, its
+  empty answer would have replaced that cached history on screen. The request and `fetchHistory` are gone. History
+  that follows a visitor across browsers or devices is not built. (Platform #434)
+
 ### Removed
 
 - **Admin → Notification rules page.** The page and its `/api/v1/notification-rules` client are gone. Platform never

@@ -5,7 +5,7 @@ import { Composer } from './composer';
 import { CsatPanel } from './csat-panel';
 import { MessageList } from './message-list';
 import { StatusBanner, type Status } from './status-banner';
-import { createSession, fetchHistory, type ChatMessage } from './transport/session-api';
+import { createSession, type ChatMessage } from './transport/session-api';
 import { createWsClient, type WsClient, type WsMessage } from './transport/ws-client';
 import { createOfflineQueue } from './transport/offline-queue';
 import { parseAttachments } from './transport/parse-attachments';
@@ -61,7 +61,6 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const [profile, setProfile] = useState<{ name?: string; email?: string } | null>(
     config.visitor?.name && config.visitor?.email ? config.visitor : null,
   );
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [wsClient, setWsClient] = useState<WsClient | null>(null);
   const [soundOn, setSoundOn] = useState(() => loadSoundPreference());
   const [csatDismissed, setCsatDismissed] = useState(false);
@@ -95,15 +94,6 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   }, [messages, profile, config.tenantId]);
 
   useEffect(() => {
-    if (!sessionId) return;
-    fetchHistory({ apiBase, sessionId })
-      .then((history) => setMessages(history))
-      .catch(() => {
-        /* graceful */
-      });
-  }, [sessionId, apiBase]);
-
-  useEffect(() => {
     if (!profile) return;
     const interval = setInterval(() => {
       if (
@@ -132,7 +122,6 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
           profile: values,
           pageContext: config.pageContext,
         });
-        setSessionId(session.sessionId);
         breadcrumb('session-created', { sessionId: session.sessionId });
         setStatus('online');
         const wsUrl = session.wsUrl.startsWith('ws')
