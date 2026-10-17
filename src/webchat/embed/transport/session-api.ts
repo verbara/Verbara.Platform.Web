@@ -44,15 +44,3 @@ export async function createSession(input: CreateSessionInput): Promise<CreateSe
   const data = (await res.json()) as CreateSessionResult;
   return data;
 }
-
-export async function fetchHistory(input: {
-  apiBase: string;
-  sessionId: string;
-}): Promise<ChatMessage[]> {
-  const url = `${input.apiBase.replace(/\/$/, '')}/webchat/sessions/${encodeURIComponent(input.sessionId)}/messages`;
-  const res = await fetch(url);
-  if (res.status === 404) return [];
-  if (!res.ok) throw new Error(`fetchHistory failed with ${res.status}`);
-  const data = (await res.json()) as ChatMessage[];
-  return Array.isArray(data) ? data : [];
-}

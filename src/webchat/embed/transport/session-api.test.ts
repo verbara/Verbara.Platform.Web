@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createSession, fetchHistory } from './session-api';
+import { createSession } from './session-api';
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -38,29 +38,5 @@ describe('session-api', () => {
         pageContext: { url: '', title: '', referrer: '' },
       }),
     ).rejects.toThrow();
-  });
-
-  it('FetchHistory_ReturnsArray_OnSuccess', async () => {
-    globalThis.fetch = vi.fn(
-      async () =>
-        new Response(
-          JSON.stringify([
-            { id: 'm1', text: 'hi', from: 'agent', timestamp: '2026-05-09T10:00:00Z' },
-          ]),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          },
-        ),
-    ) as never;
-    const result = await fetchHistory({ apiBase: '/api/v1', sessionId: 's1' });
-    expect(result).toHaveLength(1);
-    expect(result[0]?.text).toBe('hi');
-  });
-
-  it('FetchHistory_Returns404_AsEmpty', async () => {
-    globalThis.fetch = vi.fn(async () => new Response('not found', { status: 404 })) as never;
-    const result = await fetchHistory({ apiBase: '/api/v1', sessionId: 's1' });
-    expect(result).toEqual([]);
   });
 });

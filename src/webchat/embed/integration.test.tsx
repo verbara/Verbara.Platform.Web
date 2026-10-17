@@ -121,6 +121,49 @@ describe('Integration — full visitor flow', () => {
     await waitFor(() => expect(screen.getByText('hello')).toBeInTheDocument());
   });
 
+  // Regression (Platform #434): a returning visitor's history comes from the browser cache. The widget used to
+  // ask the server for the history of the session it had just created, which is always empty; Platform maps no
+  // such GET, so it got a 405 and swallowed it. Had the route existed, the empty answer would have replaced the
+  // cached history. The widget now reads only the cache and makes no GET for messages.
+  it('KeepsCachedHistory_AndMakesNoHistoryRequest_WhenSessionStarts', async () => {
+    localStorage.setItem(
+      'verbara-webchat-messages:t1',
+      JSON.stringify([
+        { id: 'c1', text: 'cached reply', from: 'agent', timestamp: '2026-10-16T10:00:00Z' },
+      ]),
+    );
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if ((init?.method ?? 'GET') === 'GET') {
+        return new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      return new Response(JSON.stringify({ sessionId: 's1', wsUrl: 'wss://x/ws/y' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    globalThis.fetch = fetchMock as never;
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget config={config} onUnreadChange={vi.fn()} />
+      </I18nextProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Jane' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'jane@x.com' } });
+    fireEvent.click(screen.getByRole('button', { name: /start chat/i }));
+
+    await waitFor(() => expect(FakeWebSocket.last).not.toBeNull(), { timeout: 3000 });
+    // Let any request the session start would trigger settle before asserting.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByText('cached reply')).toBeInTheDocument();
+    const methods = fetchMock.mock.calls.map(([, init]) => init?.method ?? 'GET');
+    expect(methods).toEqual(['POST']);
+  });
+
   // Regression: the WS onMessage callback is created once (memoized
   // handlePreChatSubmit) and used to read `status`. Reading the captured value
   // left the widget stuck on 'timeout' forever because the closure never saw
