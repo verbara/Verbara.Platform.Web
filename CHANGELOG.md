@@ -9,6 +9,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.25.0-web] - 2026-10-18
+
+**Requires Platform ≥ v2.30.0 for WebChat.** The widget reaches visitors only through the bundled gateway's
+`/ws/` location, and a tenant without an active WebChat channel gets the widget's "chat not available" state from
+the `404` that Platform v2.30.0 returns. Behind the gateway of Platform v2.29.0 the widget loads but cannot hold a
+conversation.
+The registration-trunk form's client-URI rule matches the `client-uri-required` refusal Platform v2.30.0 adds.
+Upgrade the console together with the API.
+
 ### Added
 
 - **CI: a console API call must name a route the OpenAPI document declares.** A new step in the required `lint`
@@ -43,7 +52,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Web image: the console and the widget demo page may be framed only by their own origin.** They now send
   `Content-Security-Policy: frame-ancestors 'self'` and `X-Frame-Options: SAMEORIGIN`. The WebChat frame under
-  `/webchat/embed/` keeps `frame-ancestors *` so customer sites can embed it.
+  `/webchat/embed/` keeps `frame-ancestors *` so customer sites can embed it. (#444)
 
 - **WebChat SDK: a fixed SDK now reaches visitors who already loaded it.** The image served
   `/webchat/v1/verbara-webchat.js` as cacheable for a year and `immutable`, under an address that never changes (the
