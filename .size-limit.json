@@ -3,5 +3,23 @@
     "name": "App JS — all chunks (brotli)",
     "path": "dist/assets/*.js",
     "limit": "1.45 MB"
+  },
+  {
+    "name": "WebChat SDK — verbara-webchat.js (gzip)",
+    "path": "dist/webchat/v1/verbara-webchat.js",
+    "gzip": true,
+    "limit": "12 kB"
+  },
+  {
+    "name": "WebChat embed JS (gzip)",
+    "path": "dist/webchat/embed/assets/*.js",
+    "gzip": true,
+    "limit": "175 kB"
+  },
+  {
+    "name": "WebChat embed CSS (gzip)",
+    "path": "dist/webchat/embed/assets/*.css",
+    "gzip": true,
+    "limit": "5 kB"
   }
 ]

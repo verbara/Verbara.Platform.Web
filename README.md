@@ -96,6 +96,7 @@ The dev server expects the Platform backend running on `localhost:5000`. See the
 | ----------------------- | ------------------------------------------------------- |
 | `npm run dev`           | Vite dev server with HMR                                |
 | `npm run build`         | Production build (`tsc -b && vite build`)               |
+| `npm run build:all`     | WebChat widget, then the console (what the image ships) |
 | `npm run preview`       | Preview the production build locally                    |
 | `npm run test`          | Run unit tests (Vitest, excludes `tests/e2e/**`)        |
 | `npm run test:watch`    | Vitest in watch mode                                    |

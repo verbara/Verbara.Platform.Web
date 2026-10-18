@@ -15,7 +15,9 @@ export default defineConfig({
   build: {
     target: 'es2020',
     minify: true,
-    sourcemap: 'hidden',
+    // No sourcemaps: this output is copied into dist/ and served as is, and nothing uploads
+    // the widget's maps anywhere (scripts/check-widget-in-dist.py fails on a *.map under webchat/).
+    sourcemap: false,
     outDir: resolve(__dirname, 'public/webchat/embed'),
     emptyOutDir: true,
     rollupOptions: {

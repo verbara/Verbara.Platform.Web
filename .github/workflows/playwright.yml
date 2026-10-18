@@ -52,8 +52,8 @@ jobs:
       - name: Install Playwright browsers (chromium only)
         run: npx playwright install --with-deps chromium
 
-      - name: Build production bundle
-        run: npm run build
+      - name: Build production bundle (WebChat widget + console, as the image does)
+        run: npm run build:all
 
       - name: Run Playwright tests
         run: npx playwright test -c tests/e2e/playwright.config.ts

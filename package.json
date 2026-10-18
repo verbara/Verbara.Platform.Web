@@ -28,7 +28,7 @@
     "build:webchat-sdk": "vite build --config vite.webchat-sdk.config.ts",
     "build:webchat-embed": "vite build --config vite.webchat-embed.config.ts",
     "build:webchat": "npm run build:webchat-sdk && npm run build:webchat-embed",
-    "build:all": "npm run build && npm run build:webchat",
+    "build:all": "npm run build:webchat && npm run build",
     "dev:webchat-demo": "vite preview --port 4173 --outDir public/webchat/embed"
   },
   "lint-staged": {

@@ -1,4 +1,5 @@
 import { StrictMode } from 'react';
+import './index.css';
 import { createRoot } from 'react-dom/client';
 import { initWebchatI18n } from './i18n-init';
 import { initWebchatSentry } from './sentry-init';
