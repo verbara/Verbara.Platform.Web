@@ -20,6 +20,7 @@ import { createOfflineQueue } from './transport/offline-queue';
 import { loadCachedMessages, saveCachedMessages } from './message-cache';
 import { playNotificationSound, loadSoundPreference, setSoundEnabled } from './notifications';
 import { breadcrumb } from './sentry-breadcrumbs';
+import { embedApiBase, embedWsUrl, postToHost } from './origins';
 
 /**
  * Server-issued CSAT survey context threaded through the embed session config.
@@ -65,10 +66,6 @@ function createRetryDelayMs(failures: number, err: unknown): number {
   return Math.min(Math.max(backoff, hinted), 60_000);
 }
 
-function absoluteWsUrl(wsUrl: string): string {
-  return wsUrl.startsWith('ws') ? wsUrl : `${location.origin.replace(/^http/, 'ws')}${wsUrl}`;
-}
-
 export function ChatWidget({ config, onUnreadChange }: Props) {
   const { t } = useTranslation('webchat');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -99,7 +96,8 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   }, [onUnreadChange]);
   const [soundOn, setSoundOn] = useState(() => loadSoundPreference());
   const [csatDismissed, setCsatDismissed] = useState(false);
-  const apiBase = config.apiBase ?? '/api/v1';
+  // The API and the socket stay on this frame's own origin, whatever the host page passes (#426).
+  const apiBase = embedApiBase(config.apiBase, location.origin);
 
   const TIMEOUT_MS = 5 * 60 * 1000;
   const lastAgentActivityRef = useRef<number | null>(null);
@@ -250,7 +248,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         const now = Date.now();
         const session: StoredSession = {
           sessionId: created.sessionId,
-          wsUrl: absoluteWsUrl(created.wsUrl),
+          wsUrl: embedWsUrl(created.wsUrl, location.origin),
           visitorId,
           createdAt: now,
           lastActiveAt: now,
@@ -305,10 +303,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     async (values: { name: string; email: string }) => {
       profileRef.current = values;
       setProfile(values);
-      window.parent.postMessage(
-        { source: 'verbara-webchat-iframe', type: 'visitor-updated', payload: values },
-        window.location.origin,
-      );
+      postToHost('visitor-updated', values);
       await ensureSession();
     },
     [ensureSession],
@@ -331,10 +326,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         queue.push({ id: msg.id, text, timestamp: msg.timestamp });
       }
       breadcrumb('message-sent');
-      window.parent.postMessage(
-        { source: 'verbara-webchat-iframe', type: 'message-sent', payload: { text } },
-        window.location.origin,
-      );
+      postToHost('message-sent', { text });
     },
     [config.tenantId],
   );

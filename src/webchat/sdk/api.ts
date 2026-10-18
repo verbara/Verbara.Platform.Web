@@ -1,6 +1,7 @@
 import { createBubble, type BubbleHandle } from './bubble';
 import { createIframeLoader, type IframeLoaderHandle } from './iframe-loader';
 import { createPostMessageBridge, type BridgeHandle } from './postmessage-bridge';
+import { buildEmbedUrl, resolveEmbedOrigin } from './embed-origin';
 import {
   getOrCreateVisitorId,
   getVisitorProfile,
@@ -44,6 +45,8 @@ interface InternalState {
   bubble: BubbleHandle | null;
   iframe: IframeLoaderHandle | null;
   bridge: BridgeHandle | null;
+  /** Origin of the widget's frame, its API and its socket; every message to the frame targets it. */
+  embedOrigin: string | null;
   isOpen: boolean;
   unreadCount: number;
   handlers: Map<EventName, Set<Handler>>;
@@ -61,12 +64,18 @@ export interface WebChatApi {
   destroy(): void;
 }
 
-export function createWebChatApi(): WebChatApi {
+export interface WebChatApiOptions {
+  /** URL the SDK script was loaded from; the frame is loaded from its origin, not the host page's (#426). */
+  scriptSrc?: string | null;
+}
+
+export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
   const state: InternalState = {
     config: null,
     bubble: null,
     iframe: null,
     bridge: null,
+    embedOrigin: null,
     isOpen: false,
     unreadCount: 0,
     handlers: new Map(),
@@ -80,13 +89,11 @@ export function createWebChatApi(): WebChatApi {
 
   function ensureIframeBridge() {
     if (state.bridge) return;
-    if (!state.config || !state.iframe) return;
-    const apiBase = state.config.apiBase ?? '/';
-    const targetOrigin = new URL(apiBase, globalThis.location.href).origin;
+    if (!state.config || !state.iframe || !state.embedOrigin) return;
     state.bridge = createPostMessageBridge({
       target: () => state.iframe?.getIframe()?.contentWindow ?? null,
-      targetOrigin,
-      expectedSourceOrigin: targetOrigin,
+      targetOrigin: state.embedOrigin,
+      expectedSourceOrigin: state.embedOrigin,
       side: 'host',
     });
     state.bridge.on('ready', () => {
@@ -150,12 +157,17 @@ export function createWebChatApi(): WebChatApi {
       onToggle: toggleOpen,
     });
 
-    const apiBase = config.apiBase ?? '/';
-    const embedUrl = new URL('webchat/embed/', new URL(apiBase, globalThis.location.href));
-    embedUrl.searchParams.set('tenantId', config.tenantId);
-    if (config.locale) embedUrl.searchParams.set('locale', config.locale);
+    state.embedOrigin = resolveEmbedOrigin({
+      scriptSrc: options.scriptSrc,
+      apiBase: config.apiBase,
+      pageHref: globalThis.location.href,
+    });
     state.iframe = createIframeLoader({
-      src: embedUrl.toString(),
+      src: buildEmbedUrl(state.embedOrigin, {
+        tenantId: config.tenantId,
+        locale: config.locale,
+        hostOrigin: globalThis.location.origin,
+      }),
       position: config.position ?? 'bottom-right',
     });
   }
@@ -210,6 +222,7 @@ export function createWebChatApi(): WebChatApi {
     state.bridge = null;
     state.iframe = null;
     state.bubble = null;
+    state.embedOrigin = null;
     state.config = null;
     state.handlers.clear();
     state.outboundQueue.length = 0;

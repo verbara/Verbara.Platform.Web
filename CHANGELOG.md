@@ -24,6 +24,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **WebChat widget: it now works when embedded on a site on another domain.** The SDK loaded the widget's frame,
+  and pointed its messages, at the origin of the page it was placed on, so on a customer's own site (for example
+  `https://shop.example.com` with the script from `https://chat.example.com/webchat/v1/verbara-webchat.js`) the
+  frame, its API calls and its socket went to the customer's site and the widget never started. The SDK now takes
+  that origin from its own script address (or from `apiBase`, resolved against the script), loads the frame from
+  it, and talks to the frame on that origin only. Inside the frame, the session request and the socket always use
+  the frame's own origin, whatever `apiBase` the page passes, and messages go to and are accepted from the host
+  page's origin only (`location.ancestorOrigins`, or a `hostOrigin` parameter the SDK adds to the frame's address
+  in browsers without it). The image's nginx lets any site frame `/webchat/embed/` (`frame-ancestors *`, no
+  `X-Frame-Options`) and serves the SDK with `Cross-Origin-Resource-Policy: cross-origin`.
+  (#426)
+
 - **WebChat widget: the image now ships it, styled.** The Dockerfile ran only `npm run build`, and the widget's
   output under `public/webchat/` is gitignored, so the image had no `/webchat/v1/verbara-webchat.js` and no
   `/webchat/embed/` page. Even `npm run build:all` left it out on a clean tree, because it built the console (which

@@ -5,16 +5,19 @@ import { setupKeyboardShortcuts } from './a11y';
 import { createPostMessageBridge } from '@/webchat/sdk/postmessage-bridge';
 import { applyTheme } from './theme-apply';
 import { breadcrumb } from './sentry-breadcrumbs';
+import { postToHost, resolveHostOrigin } from './origins';
 
 export function App() {
   const [config, setConfig] = useState<InitConfigPayload | null>(null);
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
+    // Pinned once: the host page's origin is the only one this frame posts to or listens to (#426).
+    const hostOrigin = resolveHostOrigin(window.location);
     const bridge = createPostMessageBridge({
       target: () => window.parent,
-      targetOrigin: window.location.origin,
-      expectedSourceOrigin: window.location.origin,
+      targetOrigin: hostOrigin,
+      expectedSourceOrigin: hostOrigin,
       side: 'iframe',
     });
     bridge.send('ready');
@@ -59,10 +62,7 @@ export function App() {
       setUnread(next);
       flashUnread(next);
       playNotificationSound();
-      window.parent.postMessage(
-        { source: 'verbara-webchat-iframe', type: 'unread', payload: next },
-        window.location.origin,
-      );
+      postToHost('unread', next);
     }
   }
 
