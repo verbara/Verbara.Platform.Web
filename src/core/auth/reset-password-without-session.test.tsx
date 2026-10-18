@@ -149,5 +149,7 @@ describe('ResetPasswordPage without a session', () => {
     expect(resetBodies[0]).toEqual({ token: 'ab+cd/ef+gh==', newPassword: NEW_PASSWORD });
     await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
     expect(assignedHref).toBeNull();
-  });
+    // It imports the whole app router, every route and module, which under coverage instrumentation on a busy
+    // runner sits right at the 5 s default (5016 ms in CI, Web #436); the steps themselves are fast.
+  }, 20_000);
 });
