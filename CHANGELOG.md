@@ -26,25 +26,25 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Admin → Channels → WebChat: the only setting is the default queue.** The form now offers one optional field,
   `defaultQueueId` (the queue new WebChat conversations go to), the same queue picker WhatsApp has. Enabling WebChat
-  needs no keys, in the channel form and in the setup wizard alike.
+  needs no keys, in the channel form and in the setup wizard alike. (#442)
 
 - **Admin → WebChat: the page says who can use the snippet, and when chats cannot start.** A sentence under the
   snippet states that any website that includes it can start chats for the tenant. When the tenant's WebChat
-  channel is off or not configured, the page shows a warning that points to Admin → Channels, where it is enabled.
+  channel is off or not configured, the page shows a warning that points to Admin → Channels, where it is enabled. (#442)
 
 - **WebChat widget: a tenant without an active WebChat channel gets a clear "chat not available" state.** When
   Platform answers the session request with 404, the widget says the chat is not available, disables the composer
   and makes no further attempts in that page load. Text the visitor typed while the widget was starting is not kept
   for a later session, and the message says it was not sent. Other failures keep retrying with the existing
   backoff, as before. WebChat sessions require the tenant's WebChat channel to be active; enable it in
-  Admin → Channels.
+  Admin → Channels. (#442, Platform #447)
 
 ### Fixed
 
 - **WebChat SDK: a fixed SDK now reaches visitors who already loaded it.** The image served
   `/webchat/v1/verbara-webchat.js` as cacheable for a year and `immutable`, under an address that never changes (the
   snippet customers paste), so a browser that had loaded it kept that copy and never asked again. It is now cached
-  for 5 minutes and revalidated (`public, max-age=300, must-revalidate`); the file is about 3 kB. (#433)
+  for 5 minutes and revalidated (`public, max-age=300, must-revalidate`); the file is about 3 kB. (#433, #441)
 
 - **WebChat widget: it now works when embedded on a site on another domain.** The SDK loaded the widget's frame,
   and pointed its messages, at the origin of the page it was placed on, so on a customer's own site (for example
@@ -56,7 +56,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   page's origin only (`location.ancestorOrigins`, or a `hostOrigin` parameter the SDK adds to the frame's address
   in browsers without it). The image's nginx lets any site frame `/webchat/embed/` (`frame-ancestors *`, no
   `X-Frame-Options`) and serves the SDK with `Cross-Origin-Resource-Policy: cross-origin`.
-  (#426)
+  (#426, #440)
 
 - **WebChat widget: the image now ships it, styled.** The Dockerfile ran only `npm run build`, and the widget's
   output under `public/webchat/` is gitignored, so the image had no `/webchat/v1/verbara-webchat.js` and no
@@ -69,7 +69,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the SDK (12 kB gzip) and the embed's JS and CSS. The image's nginx now proxies `/ws/` (the widget's socket,
   `/ws/webchat/{id}` on the Web host) to the API with WebSocket upgrades, which Kubernetes needs because the web
   hostname routes wholesale to this image. Compose deployments route `/ws/` at Platform's gateway instead and need
-  a Platform version with its `/ws/` location (Platform #441). (#429)
+  a Platform version with its `/ws/` location (Platform #441). (#429, #437)
 
 - **Admin → Outbound routes: Save order now saves.** The console sent the new order with `POST`, but Platform maps
   `/api/v1/admin/routes/reorder` only for `PUT`, so every save got a 405 and the order never changed. The request now
@@ -94,19 +94,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `sandbox` lacked `allow-forms`, so the browser blocked the pre-chat form ("Blocked form submission … the
   'allow-forms' permission is not set"). No visitor got a session and no message was sent. The sandbox now
   includes `allow-forms`; its other permissions are unchanged. Sites that embed the SDK pick it up with the new
-  SDK build. (#428)
+  SDK build. (#428, #436)
 
 - **WebChat widget: visitor messages reach Platform.** The widget sent each message as `{"type":"message","body":…}`,
   but Platform reads the text from `text`, so it saw an empty message and dropped it, both for a message typed
   online and for one queued offline and sent on reconnect. The widget now sends `{"type":"message","text":…}`, the
-  shape Platform's own tests and its older widget use. (#430)
+  shape Platform's own tests and its older widget use. (#430, #436)
 
 - **WebChat widget: agent replies show their text.** Platform sends each agent reply as
   `{"type":"message","data":{"blocks":[…]}}`, but the widget read a `body` field that is not there, so every reply
   showed as an empty bubble. The widget now reads the blocks: text blocks, and the prompt of a quick-reply block,
   become the message text in order (the reply buttons are not shown), and image, video, audio and file blocks
   become attachments (only `http`/`https` links). Location blocks and block types the widget does not know are
-  skipped. Works with any Platform version that has the WebChat socket. (#432)
+  skipped. Works with any Platform version that has the WebChat socket. (#432, #436)
 
 - **WebChat widget: a returning visitor, or one the site identifies, gets a session.** The widget created a session
   and opened its socket only when the visitor submitted the pre-chat form. A visitor whose name and email were
@@ -120,7 +120,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   status shows "Online" only once Platform confirms the socket. If Platform refuses to create a session (for
   example its per-address limit answers 429), the widget says the chat could not start and tries again, waiting
   longer each time up to 30 seconds; the visitor can keep typing meanwhile. The SDK's `destroy()` forgets the
-  visitor, so the next visitor does not resume their session. (#426)
+  visitor, so the next visitor does not resume their session. (#426, #439)
 
 ### Removed
 
@@ -130,7 +130,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `/notifications` endpoints) is unchanged. (#418, #422)
 
 - **Admin → Channels → WebChat: the Widget Key and Allowed Origins fields.** WebChat needs no keys. A tenant that
-  saved them sees them in the form's legacy section as stored keys, each with **Remove**.
+  saved them sees them in the form's legacy section as stored keys, each with **Remove**. (#442)
 
 ## [3.24.0-web] - 2026-10-16
 
