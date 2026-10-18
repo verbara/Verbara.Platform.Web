@@ -76,7 +76,10 @@ beforeAll(async () => {
               timeout: 'Timeout',
             },
             messages: { newMessage: 'New' },
-            errors: { sessionFailed: 'Could not start chat' },
+            errors: {
+              sessionFailed: 'Could not start chat',
+              unavailable: 'Chat is not available',
+            },
           },
         },
       },
@@ -699,6 +702,74 @@ describe('Session start and resume (#426)', () => {
     expect(sessionPosts()).toBe(2);
     expect(FakeWebSocket.all).toHaveLength(1);
     expect(screen.getByText('Connecting')).toBeInTheDocument();
+  });
+
+  // Platform answers 404 when the tenant has no active WebChat channel: no later try can succeed in this page load.
+  it('ShowsUnavailableAndStopsTrying_WhenTenantHasNoActiveWebChat', async () => {
+    vi.useFakeTimers();
+    globalThis.fetch = vi.fn(async () => new Response('', { status: 404 })) as never;
+
+    mount();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(screen.getByText('Chat is not available')).toBeInTheDocument();
+    expect(screen.queryByText('Could not start chat')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/type/i)).toBeDisabled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6 * 60_000);
+    });
+
+    expect(sessionPosts()).toBe(1);
+    expect(FakeWebSocket.all).toHaveLength(0);
+    // The idle timer does not replace the terminal state (nor re-enable the composer).
+    expect(screen.getByText('Chat is not available')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/type/i)).toBeDisabled();
+  });
+
+  // The host page can post init-config again (a new config object restarts the session effect).
+  it('StaysUnavailable_WhenHostPostsConfigAgain', async () => {
+    globalThis.fetch = vi.fn(async () => new Response('', { status: 404 })) as never;
+
+    const { rerender } = mount();
+    await settle();
+    expect(screen.getByText('Chat is not available')).toBeInTheDocument();
+
+    rerender(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget config={{ ...identified }} onUnreadChange={vi.fn()} />
+      </I18nextProvider>,
+    );
+    await settle();
+
+    expect(sessionPosts()).toBe(1);
+    expect(screen.getByText('Chat is not available')).toBeInTheDocument();
+  });
+
+  it('DropsQueuedText_WhenChatTurnsOutUnavailable', async () => {
+    let answer: (r: Response) => void = () => {};
+    globalThis.fetch = vi.fn(
+      () =>
+        new Promise<Response>((resolve) => {
+          answer = resolve;
+        }),
+    ) as never;
+
+    mount();
+    await settle();
+    sendFromComposer('hola');
+    expect(localStorage.getItem('verbara-webchat-queue:t1')).not.toBeNull();
+
+    await act(async () => {
+      answer(new Response('', { status: 404 }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByText('Chat is not available')).toBeInTheDocument();
+    expect(localStorage.getItem('verbara-webchat-queue:t1')).toBeNull();
+    expect(sessionPosts()).toBe(1);
   });
 
   it('StartsOneSession_WhenStrictModeRunsEffectsTwice', async () => {

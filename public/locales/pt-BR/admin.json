@@ -369,6 +369,12 @@
         "help": "Opcional. A fila para a qual as novas conversas do WhatsApp são encaminhadas."
       }
     },
+    "webchat": {
+      "defaultQueueId": {
+        "label": "Fila padrão",
+        "help": "Opcional. A fila para a qual as novas conversas de WebChat são encaminhadas."
+      }
+    },
     "credential": {
       "set": "Configurada",
       "notSet": "Não configurada",
@@ -2643,7 +2649,10 @@
     "configuration": "Configuração",
     "api_url": "URL da API",
     "ws_url": "URL do WebSocket",
-    "live_preview": "Visualização ao vivo"
+    "live_preview": "Visualização ao vivo",
+    "snippet_scope": "Qualquer site que inclua este trecho pode iniciar chats para este tenant.",
+    "channel_inactive": "Os visitantes ainda não podem iniciar chats: o canal WebChat está desativado ou não configurado para este tenant. Ative-o em Admin → Canais.",
+    "open_channels": "Abrir Canais"
   },
   "caller-id-pools": {
     "title": "Pools de Caller ID",

@@ -5,7 +5,12 @@ import { Composer } from './composer';
 import { CsatPanel } from './csat-panel';
 import { MessageList } from './message-list';
 import { StatusBanner, type Status } from './status-banner';
-import { createSession, CreateSessionError, type ChatMessage } from './transport/session-api';
+import {
+  createSession,
+  CreateSessionError,
+  isChatUnavailable,
+  type ChatMessage,
+} from './transport/session-api';
 import { createWsClient, type WsClient } from './transport/ws-client';
 import {
   MAX_ATTACH_ATTEMPTS,
@@ -88,6 +93,8 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const inFlightRef = useRef<Promise<void> | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const createFailuresRef = useRef(0);
+  // Set when Platform says the tenant has no active WebChat channel: no further session is tried in this page load.
+  const unavailableRef = useRef(false);
   const mountedRef = useRef(false);
   const profileRef = useRef(profile);
   const onUnreadChangeRef = useRef(onUnreadChange);
@@ -131,7 +138,8 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     const interval = setInterval(() => {
       if (
         Date.now() - (lastAgentActivityRef.current ?? Date.now()) > TIMEOUT_MS &&
-        status !== 'timeout'
+        status !== 'timeout' &&
+        status !== 'unavailable'
       ) {
         setStatus('timeout');
         breadcrumb('timeout');
@@ -226,7 +234,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     async function run(): Promise<void> {
       // Let a StrictMode remount run its cleanup and setup before deciding anything.
       await Promise.resolve();
-      if (!mountedRef.current || clientRef.current) return;
+      if (!mountedRef.current || clientRef.current || unavailableRef.current) return;
 
       const stored = loadStoredSession(tenantId, visitorId);
       if (stored) {
@@ -259,6 +267,14 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         connect(session, true);
       } catch (err) {
         if (!mountedRef.current) return;
+        if (isChatUnavailable(err)) {
+          // Terminal: what the visitor typed cannot be delivered, so it is not kept for a later session.
+          unavailableRef.current = true;
+          createOfflineQueue(tenantId).clear();
+          breadcrumb('session-unavailable');
+          setStatus('unavailable');
+          return;
+        }
         // Visible, but the composer stays usable: what the visitor types waits in the queue for the session.
         setStatus('error');
         const delay = createRetryDelayMs(createFailuresRef.current, err);
@@ -364,7 +380,11 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
           />
         </div>
       ) : (
-        <Composer disabled={status === 'offline'} onSend={handleSend} shouldFocus />
+        <Composer
+          disabled={status === 'offline' || status === 'unavailable'}
+          onSend={handleSend}
+          shouldFocus
+        />
       )}
     </div>
   );

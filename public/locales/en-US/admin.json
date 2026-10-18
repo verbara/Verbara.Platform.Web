@@ -369,6 +369,12 @@
         "help": "Optional. The queue new WhatsApp conversations are routed to."
       }
     },
+    "webchat": {
+      "defaultQueueId": {
+        "label": "Default queue",
+        "help": "Optional. The queue new WebChat conversations are routed to."
+      }
+    },
     "credential": {
       "set": "Set",
       "notSet": "Not set",
@@ -2643,7 +2649,10 @@
     "configuration": "Configuration",
     "api_url": "API URL",
     "ws_url": "WebSocket URL",
-    "live_preview": "Live preview"
+    "live_preview": "Live preview",
+    "snippet_scope": "Any website that includes this snippet can start chats for this tenant.",
+    "channel_inactive": "Visitors cannot start chats yet: the WebChat channel is off or not configured for this tenant. Enable it in Admin → Channels.",
+    "open_channels": "Open Channels"
   },
   "caller-id-pools": {
     "title": "Caller ID Pools",

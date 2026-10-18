@@ -1,5 +1,7 @@
-import { ExternalLink, MessageCircle } from 'lucide-react';
+import { ExternalLink, MessageCircle, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
+import { useChannel } from '@/core/api/hooks/use-channels';
 import { Badge } from '@/core/ui/badge';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
@@ -11,6 +13,10 @@ export default function WebChatPage() {
   const apiBase = window.location.origin;
   const activeTenantId = useTenantStore((s) => s.activeTenantId);
   const tenantId = activeTenantId ?? 'YOUR_TENANT_ID';
+  // Platform starts a WebChat session only while the tenant's WebChat channel is active. A channel that was never
+  // configured comes back with isActive false. No answer (loading, error) is not a reason to warn.
+  const { data: channel } = useChannel('webchat');
+  const channelOff = channel !== undefined && !channel.isActive;
 
   const snippet = `<!-- Verbara WebChat Widget -->
 <script
@@ -33,6 +39,25 @@ export default function WebChatPage() {
         </div>
       </div>
 
+      {channelOff && (
+        <div
+          role="status"
+          data-webchat-channel-warning
+          className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:border-amber-700 dark:bg-amber-950"
+        >
+          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="flex-1 text-amber-900 dark:text-amber-100">
+            {t('webchat.channel_inactive')}
+          </p>
+          <Link
+            to="/admin/channels"
+            className="shrink-0 text-xs font-medium text-amber-700 underline hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100"
+          >
+            {t('webchat.open_channels')}
+          </Link>
+        </div>
+      )}
+
       <div className="rounded-lg border bg-card p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-medium">{t('webchat.embed_snippet')}</h2>
@@ -54,6 +79,9 @@ export default function WebChatPage() {
             <CopyButton value={snippet} variant="outline" />
           </div>
         </div>
+        <p className="text-sm text-muted-foreground" data-webchat-snippet-scope>
+          {t('webchat.snippet_scope')}
+        </p>
         <div className="flex justify-end">
           <a
             href={previewUrl}

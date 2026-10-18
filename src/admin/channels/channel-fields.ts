@@ -88,9 +88,17 @@ export const channelFields: Record<string, FieldDef[]> = {
     { key: 'SmtpPassword', label: 'SMTP Password', type: 'password' },
     { key: 'FromAddress', label: 'From Address', type: 'text' },
   ],
+  // Platform reads only the default queue for WebChat; a Widget Key or Allowed Origins saved by an older
+  // console shows up as a legacy key the admin can remove.
   webchat: [
-    { key: 'WidgetKey', label: 'Widget Key', type: 'text' },
-    { key: 'AllowedOrigins', label: 'Allowed Origins', type: 'text' },
+    {
+      key: 'defaultQueueId',
+      label: 'Default queue',
+      type: 'queue',
+      labelKey: 'admin:channels.webchat.defaultQueueId.label',
+      helpKey: 'admin:channels.webchat.defaultQueueId.help',
+      optional: true,
+    },
   ],
   voice: [
     { key: 'TrunkHost', label: 'SIP Trunk Host', type: 'text' },

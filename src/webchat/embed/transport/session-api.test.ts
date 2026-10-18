@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createSession, CreateSessionError } from './session-api';
+import { createSession, CreateSessionError, isChatUnavailable } from './session-api';
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -52,5 +52,25 @@ describe('session-api', () => {
     }).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(CreateSessionError);
     expect(error).toMatchObject({ status: 429, retryAfterMs: 42_000 });
+    expect(isChatUnavailable(error)).toBe(false);
+  });
+
+  it('CreateSession_ThrowsChatUnavailable_WhenTenantHasNoActiveWebChat', async () => {
+    globalThis.fetch = vi.fn(async () => new Response('', { status: 404 })) as never;
+    const error = await createSession({
+      apiBase: '/api/v1',
+      tenantId: 't1',
+      visitorId: 'v1',
+      profile: {},
+      pageContext: { url: '', title: '', referrer: '' },
+    }).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(CreateSessionError);
+    expect(error).toMatchObject({ status: 404 });
+    expect(isChatUnavailable(error)).toBe(true);
+  });
+
+  it('IsChatUnavailable_ShouldBeFalse_WhenFailureIsNotASessionRefusal', () => {
+    expect(isChatUnavailable(new TypeError('Failed to fetch'))).toBe(false);
+    expect(isChatUnavailable(new CreateSessionError(503, undefined))).toBe(false);
   });
 });

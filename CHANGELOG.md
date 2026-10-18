@@ -22,6 +22,23 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   passed, and only a real server refused it. The one call left over, the CDR transcript route, is frozen in
   `console-api-routes-baseline.json`, which can only shrink. No change to the console itself. (#423)
 
+### Changed
+
+- **Admin → Channels → WebChat: the only setting is the default queue.** The form now offers one optional field,
+  `defaultQueueId` (the queue new WebChat conversations go to), the same queue picker WhatsApp has. Enabling WebChat
+  needs no keys, in the channel form and in the setup wizard alike.
+
+- **Admin → WebChat: the page says who can use the snippet, and when chats cannot start.** A sentence under the
+  snippet states that any website that includes it can start chats for the tenant. When the tenant's WebChat
+  channel is off or not configured, the page shows a warning that points to Admin → Channels, where it is enabled.
+
+- **WebChat widget: a tenant without an active WebChat channel gets a clear "chat not available" state.** When
+  Platform answers the session request with 404, the widget says the chat is not available, disables the composer
+  and makes no further attempts in that page load. Text the visitor typed while the widget was starting is not kept
+  for a later session, and the message says it was not sent. Other failures keep retrying with the existing
+  backoff, as before. WebChat sessions require the tenant's WebChat channel to be active; enable it in
+  Admin → Channels.
+
 ### Fixed
 
 - **WebChat widget: it now works when embedded on a site on another domain.** The SDK loaded the widget's frame,
@@ -106,6 +123,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   mapped that route, and the permission the page required (`notifications:rule:configure`) does not exist in Platform,
   so no one could reach the page and every call would have failed. The notification center (the bell and the
   `/notifications` endpoints) is unchanged. (#418, #422)
+
+- **Admin → Channels → WebChat: the Widget Key and Allowed Origins fields.** WebChat needs no keys. A tenant that
+  saved them sees them in the form's legacy section as stored keys, each with **Remove**.
 
 ## [3.24.0-web] - 2026-10-16
 
