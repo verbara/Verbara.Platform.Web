@@ -31,6 +31,9 @@
 #            own pages (GET /).
 #   W433     the SDK, whose address never changes, is cached for minutes and
 #            revalidated, never for a year as immutable.
+#   CFA      the console (/ and a deep console route) and the widget demo page
+#            are framed only by their own origin: CSP frame-ancestors 'self'
+#            and X-Frame-Options SAMEORIGIN.
 # Every value is generated per run; never a real token. Everything the script
 # creates carries the suffix and is removed on exit. Exit 0 only if every check
 # passes.
@@ -206,6 +209,16 @@ sdk_cc=$(header cache-control "$sdk_h")
 check "W433: SDK cached briefly and revalidated, not immutable" "$(grep -q 'max-age=300' <<<"$sdk_cc" && grep -q must-revalidate <<<"$sdk_cc" && ! grep -q immutable <<<"$sdk_cc" && echo 0 || echo 1)" "[$sdk_cc]"
 check "W426: the embed's frame-ancestors does not reach /" "$(grep -q 'frame-ancestors \*' <<<"$root_csp" && echo 1 || echo 0)" "[$root_csp]"
 check "W426: the widget's CORP does not reach /" "$([ -z "$(header cross-origin-resource-policy "$root_h")" ] && echo 0 || echo 1)" "[$(header cross-origin-resource-policy "$root_h")]"
+
+# --- CFA --------------------------------------------------------------------
+for route in / /admin/users /webchat/demo.html; do
+  h=$(curl -s -o /dev/null -D - "http://127.0.0.1:$P$route")
+  csp=$(header content-security-policy "$h")
+  xfo=$(header x-frame-options "$h")
+  echo "CFA $route: CSP=[$csp] X-Frame-Options=[$xfo]"
+  check "CFA: $route framed only by its own origin (frame-ancestors 'self')" "$(grep -q "frame-ancestors 'self'" <<<"$csp" && echo 0 || echo 1)" "[$csp]"
+  check "CFA: $route sends X-Frame-Options SAMEORIGIN" "$([ "$(tr a-z A-Z <<<"$xfo")" = SAMEORIGIN ] && echo 0 || echo 1)" "[$xfo]"
+done
 
 # --- gateway path (optional) ------------------------------------------------
 if [ -n "${GATEWAY_CONF:-}" ]; then
