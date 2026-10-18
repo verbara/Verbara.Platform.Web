@@ -41,6 +41,7 @@
   },
   "errors": {
     "sessionFailed": "Não foi possível iniciar o chat. Por favor tente novamente.",
+    "unavailable": "O chat não está disponível no momento. As mensagens digitadas aqui não foram enviadas.",
     "transportFailed": "Conexão perdida. Tentando reconectar.",
     "fileTooLarge": "O arquivo é muito grande para exibir ({{size}})."
   },

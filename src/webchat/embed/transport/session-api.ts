@@ -56,6 +56,14 @@ export class CreateSessionError extends Error {
   }
 }
 
+/**
+ * Platform answers 404 when the tenant has no active WebChat channel (or does not exist). That does not change
+ * within a page load, so the widget stops trying instead of retrying.
+ */
+export function isChatUnavailable(err: unknown): boolean {
+  return err instanceof CreateSessionError && err.status === 404;
+}
+
 /** `Retry-After` in seconds (the form Platform sends), as milliseconds. */
 function retryAfterMs(header: string | null): number | undefined {
   if (!header) return undefined;

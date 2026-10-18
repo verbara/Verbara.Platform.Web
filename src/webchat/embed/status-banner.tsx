@@ -1,14 +1,29 @@
 import { useTranslation } from 'react-i18next';
 
-/** `error`: the widget could not start a session and is retrying; the visitor can still type (#426). */
+/**
+ * `error`: the widget could not start a session and is retrying; the visitor can still type (#426).
+ * `unavailable`: the tenant's WebChat channel is off; the widget stops and the visitor cannot type.
+ */
 export type Status =
-  'connecting' | 'online' | 'offline' | 'reconnecting' | 'typing' | 'timeout' | 'error';
+  | 'connecting'
+  | 'online'
+  | 'offline'
+  | 'reconnecting'
+  | 'typing'
+  | 'timeout'
+  | 'error'
+  | 'unavailable';
 
 export function StatusBanner({ status }: { status: Status }) {
   const { t } = useTranslation('webchat');
-  const message = status === 'error' ? t('errors.sessionFailed') : t(`status.${status}`);
-  const tone =
+  const message =
     status === 'error'
+      ? t('errors.sessionFailed')
+      : status === 'unavailable'
+        ? t('errors.unavailable')
+        : t(`status.${status}`);
+  const tone =
+    status === 'error' || status === 'unavailable'
       ? 'bg-red-50 text-red-800 border-red-200'
       : status === 'online'
         ? 'bg-green-50 text-green-800 border-green-200'

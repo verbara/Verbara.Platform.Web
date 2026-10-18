@@ -96,6 +96,21 @@ describe('channelFields', () => {
   });
 });
 
+describe('channelFields — WebChat', () => {
+  it('channelFields_ShouldOfferOnlyTheOptionalDefaultQueue_WhenChannelIsWebChat', () => {
+    expect(channelFields.webchat).toEqual([
+      {
+        key: 'defaultQueueId',
+        label: 'Default queue',
+        type: 'queue',
+        labelKey: 'admin:channels.webchat.defaultQueueId.label',
+        helpKey: 'admin:channels.webchat.defaultQueueId.help',
+        optional: true,
+      },
+    ]);
+  });
+});
+
 describe('buildCredentialUpdate', () => {
   it('buildCredentialUpdate_ShouldOmitBlanksAndSendNullForRemovals', () => {
     expect(
@@ -269,6 +284,49 @@ describe('ChannelConfigForm', () => {
     expect(button('ApiToken')).toHaveAccessibleName(
       'admin:channels.credential.undoRemoveKey[ApiToken]',
     );
+  });
+
+  // WebChat once asked for a Widget Key and Allowed Origins that nothing reads; a tenant that saved them sees
+  // them as old keys it can remove.
+  it('legacy_ShouldListSavedWidgetKeyAndAllowedOrigins_WhenChannelIsWebChat', async () => {
+    channelData = {
+      channel: 'WebChat',
+      isActive: true,
+      isConfigured: true,
+      credentials: [
+        { key: 'AllowedOrigins', isSet: true },
+        { key: 'WidgetKey', isSet: true },
+      ],
+    };
+    render(<ChannelConfigForm open onOpenChange={vi.fn()} channelId="webchat" />);
+
+    const keys = [...document.querySelectorAll<HTMLElement>('[data-channel-field]')].map(
+      (i) => i.dataset.channelField,
+    );
+    expect(keys).toEqual(['defaultQueueId']);
+    const legacy = document.querySelector<HTMLElement>('[data-legacy-credentials]')!;
+    const rows = [...legacy.querySelectorAll<HTMLElement>('[data-legacy-credential]')];
+    expect(rows.map((r) => r.dataset.legacyCredential)).toEqual(['AllowedOrigins', 'WidgetKey']);
+
+    fireEvent.click(legacy.querySelector('[data-credential-remove="WidgetKey"]')!);
+    fireEvent.click(legacy.querySelector('[data-credential-remove="AllowedOrigins"]')!);
+    save();
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    expect(updateMutate.mock.calls[0][0].credentials).toEqual({
+      WidgetKey: null,
+      AllowedOrigins: null,
+    });
+  });
+
+  it('submit_ShouldSaveWithNoKeys_WhenWebChatIsOnlySwitchedOn', async () => {
+    channelData = { channel: 'WebChat', isActive: false, isConfigured: false, credentials: [] };
+    render(<ChannelConfigForm open onOpenChange={vi.fn()} channelId="webchat" />);
+
+    save();
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    expect(updateMutate.mock.calls[0][0].credentials).toEqual({});
   });
 
   it('render_ShouldShowTheTenantWebhookUrl_WhenChannelIsWhatsApp', () => {

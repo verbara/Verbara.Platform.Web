@@ -49,10 +49,6 @@ const FIRST_AGENT = {
   email: 'maria@verbara.local',
   displayName: 'María González',
 };
-const WEBCHAT_CONFIG = {
-  displayName: 'Chat del sitio web',
-  allowedOrigins: 'http://localhost',
-};
 
 async function captureStep(page: import('@playwright/test').Page, stepId: string): Promise<void> {
   const target = path.join(screenshotsDir, `step-${stepId}.png`);
@@ -171,10 +167,7 @@ test.describe('SMB Owner — Día 1: Setup inicial + WebChat', () => {
         .getByRole('button', { name: /WebChat\b/i })
         .first()
         .click();
-      // Config fields appear with id=`channel-<key>` (keys from
-      // channel-fields.ts: WidgetKey + AllowedOrigins for WebChat).
-      await page.locator('#channel-WidgetKey').fill('demo-key-day1');
-      await page.locator('#channel-AllowedOrigins').fill(WEBCHAT_CONFIG.allowedOrigins);
+      // WebChat needs no keys: its only setting (the default queue) is optional.
       await captureStep(page, '09-wizard-channel-webchat');
       // ADR-0026 Phase A.2 fix: TenantChannelConfig is now registered in
       // ApiJsonContext, so GET /api/v1/admin/channels/webchat returns 200

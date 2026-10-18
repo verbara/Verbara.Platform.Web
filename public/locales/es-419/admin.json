@@ -369,6 +369,12 @@
         "help": "Opcional. La cola a la que se enrutan las nuevas conversaciones de WhatsApp."
       }
     },
+    "webchat": {
+      "defaultQueueId": {
+        "label": "Cola predeterminada",
+        "help": "Opcional. La cola a la que se enrutan las nuevas conversaciones de WebChat."
+      }
+    },
     "credential": {
       "set": "Configurada",
       "notSet": "Sin configurar",
@@ -2643,7 +2649,10 @@
     "configuration": "Configuración",
     "api_url": "URL de API",
     "ws_url": "URL de WebSocket",
-    "live_preview": "Vista previa"
+    "live_preview": "Vista previa",
+    "snippet_scope": "Cualquier sitio web que incluya este fragmento puede iniciar chats para este tenant.",
+    "channel_inactive": "Los visitantes todavía no pueden iniciar chats: el canal WebChat está desactivado o sin configurar para este tenant. Actívalo en Admin → Canales.",
+    "open_channels": "Abrir Canales"
   },
   "caller-id-pools": {
     "title": "Grupos de Caller ID",

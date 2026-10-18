@@ -196,17 +196,15 @@ validar el flujo end-to-end en < 5 min.
 | Campo | Valor sugerido |
 |---|---|
 | **Channel** | `WebChat` (recomendado) |
-| **Display name** | `Chat del sitio web` |
-| **Allowed origins** | `http://localhost,https://tu-sitio.com` |
+
+WebChat no pide claves: su único ajuste, la cola predeterminada, es
+opcional.
 
 {{step:09-wizard-channel-webchat}}
 
-> ⚠️ **`allowedOrigins` no acepta `*`.** El backend valida el header
-> `Origin:` de cada sesión WebSocket contra esta lista — permitir `*`
-> desactivaría el control CORS y un atacante podría iniciar sesiones desde
-> cualquier dominio. Para pruebas locales agregá `http://localhost`
-> explícitamente; para producción usá el dominio real del sitio del
-> cliente (sin wildcards).
+> ℹ️ Cualquier sitio web que incluya el snippet del widget puede iniciar
+> chats para tu tenant. Los visitantes solo pueden iniciar chats mientras
+> el canal WebChat esté activo (Admin → Canales).
 
 Click **Habilitar canal y continuar / Next**.
 
