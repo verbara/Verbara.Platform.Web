@@ -24,6 +24,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **WebChat SDK: a fixed SDK now reaches visitors who already loaded it.** The image served
+  `/webchat/v1/verbara-webchat.js` as cacheable for a year and `immutable`, under an address that never changes (the
+  snippet customers paste), so a browser that had loaded it kept that copy and never asked again. It is now cached
+  for 5 minutes and revalidated (`public, max-age=300, must-revalidate`); the file is about 3 kB. (#433)
+
 - **WebChat widget: it now works when embedded on a site on another domain.** The SDK loaded the widget's frame,
   and pointed its messages, at the origin of the page it was placed on, so on a customer's own site (for example
   `https://shop.example.com` with the script from `https://chat.example.com/webchat/v1/verbara-webchat.js`) the
