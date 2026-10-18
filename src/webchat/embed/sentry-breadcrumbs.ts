@@ -7,6 +7,8 @@ type BreadcrumbType =
   | 'message-received'
   | 'reconnected'
   | 'session-created'
+  | 'session-resumed'
+  | 'session-abandoned'
   | 'timeout';
 
 export function breadcrumb(type: BreadcrumbType, data?: Record<string, unknown>): void {
