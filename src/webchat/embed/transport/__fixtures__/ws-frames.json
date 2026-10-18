@@ -1,0 +1,15 @@
+{
+  "_source": {
+    "server.agentTextReply": "Measured. verbara-lab platform/webchat-identity, run 2026-10-13-7cf814c3, raw/cells.jsonl, arm candidate, cell c2-agent-reply-reaches-visitor, i=1, field \"frame\" (card PLT-CH-05). The frame Platform's WebSocketWebChatTransport sends when an agent replies.",
+    "server.connected": "Measured. verbara-lab web/webchat-returning-visitor, run 2026-10-17-b01eefae, trials/c1-04/network.json, websockets[0].framesReceived[0].payload (card WEB-CH-01). Platform sends it once when the socket is accepted (WebChatEndpoints).",
+    "client.visitorMessage": "Platform's own contract test: Verbara.Platform tests/Verbara.Platform.Api.Tests/WebChatVisitorIdentityTests.cs, VisitorSocketMessage_ShouldReuseSessionContact_WhenSentOverWebSocket. Platform reads it as WebChatClientMessage(Type, Text).",
+    "rule": "Values are copied verbatim as JSON strings. Never edit them to make a test pass: re-measure instead."
+  },
+  "server": {
+    "agentTextReply": "{\"type\":\"message\",\"data\":{\"blocks\":[{\"$type\":\"text\",\"text\":\"agent reply wcl71c00d.c2.1.1.\",\"type\":0}]}}",
+    "connected": "{\"type\":\"connected\"}"
+  },
+  "client": {
+    "visitorMessage": "{\"type\":\"message\",\"text\":\"hola por socket\"}"
+  }
+}

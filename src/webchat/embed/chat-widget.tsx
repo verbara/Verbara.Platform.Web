@@ -6,9 +6,9 @@ import { CsatPanel } from './csat-panel';
 import { MessageList } from './message-list';
 import { StatusBanner, type Status } from './status-banner';
 import { createSession, type ChatMessage } from './transport/session-api';
-import { createWsClient, type WsClient, type WsMessage } from './transport/ws-client';
+import { createWsClient, type WsClient } from './transport/ws-client';
+import { messageFrame, readAgentMessage, type ServerFrame } from './transport/ws-protocol';
 import { createOfflineQueue } from './transport/offline-queue';
-import { parseAttachments } from './transport/parse-attachments';
 import { loadCachedMessages, saveCachedMessages } from './message-cache';
 import { playNotificationSound, loadSoundPreference, setSoundEnabled } from './notifications';
 import { breadcrumb } from './sentry-breadcrumbs';
@@ -137,32 +137,30 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
             setStatus('online');
             const queued = queue.drain();
             for (const m of queued) {
-              client?.send({ type: 'message', body: m.text, id: m.id });
+              client?.send(messageFrame(m.text));
             }
             if (openCount > 1) {
               breadcrumb('reconnected');
             }
           },
-          onMessage: (msg: WsMessage) => {
-            if (msg.type === 'message') {
-              const attachments = parseAttachments(msg.attachments);
-              const incoming: ChatMessage = {
-                id: String(msg.id ?? crypto.randomUUID()),
-                text: String(msg.body ?? ''),
-                from: 'agent',
-                timestamp: String(msg.timestamp ?? new Date().toISOString()),
-                ...(attachments ? { attachments } : {}),
-              };
-              setMessages((prev) => [...prev, incoming]);
-              onUnreadChange(1);
-              playNotificationSound();
-              lastAgentActivityRef.current = Date.now();
-              breadcrumb('message-received');
-              if (statusRef.current === 'timeout') setStatus('online');
-            } else if (msg.type === 'typing') {
-              setStatus('typing');
-              setTimeout(() => setStatus('online'), 2000);
-            }
+          onMessage: (frame: ServerFrame) => {
+            // Platform sends `connected` on accept and `message` per agent reply; only a reply renders.
+            const reply = readAgentMessage(frame);
+            if (!reply) return;
+            // Platform's frame carries no id or timestamp, so the widget stamps its own.
+            const incoming: ChatMessage = {
+              id: crypto.randomUUID(),
+              text: reply.text,
+              from: 'agent',
+              timestamp: new Date().toISOString(),
+              ...(reply.attachments ? { attachments: reply.attachments } : {}),
+            };
+            setMessages((prev) => [...prev, incoming]);
+            onUnreadChange(1);
+            playNotificationSound();
+            lastAgentActivityRef.current = Date.now();
+            breadcrumb('message-received');
+            if (statusRef.current === 'timeout') setStatus('online');
           },
           onClose: () => setStatus('reconnecting'),
         });
@@ -197,7 +195,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, msg]);
-      const ok = wsClient?.send({ type: 'message', body: text }) ?? false;
+      const ok = wsClient?.send(messageFrame(text)) ?? false;
       if (!ok) {
         queue.push({ id: msg.id, text, timestamp: msg.timestamp });
       }

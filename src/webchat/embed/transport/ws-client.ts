@@ -1,13 +1,9 @@
-export interface WsMessage {
-  type: string;
-  body?: unknown;
-  [key: string]: unknown;
-}
+import { isServerFrame, type ClientFrame, type ServerFrame } from './ws-protocol';
 
 export interface WsClientConfig {
   url: string;
   onOpen: () => void;
-  onMessage: (msg: WsMessage) => void;
+  onMessage: (frame: ServerFrame) => void;
   onClose: (reason: string) => void;
   maxBackoffMs?: number;
 }
@@ -15,7 +11,7 @@ export interface WsClientConfig {
 export interface WsClient {
   connect(): void;
   disconnect(): void;
-  send(msg: WsMessage): boolean;
+  send(frame: ClientFrame): boolean;
   isConnected(): boolean;
 }
 
@@ -51,8 +47,8 @@ export function createWsClient(config: WsClientConfig): WsClient {
     };
     ws.onmessage = (e) => {
       try {
-        const data = JSON.parse(String(e.data)) as WsMessage;
-        config.onMessage(data);
+        const data: unknown = JSON.parse(String(e.data));
+        if (isServerFrame(data)) config.onMessage(data);
       } catch {
         // Ignore non-JSON frames
       }
@@ -79,9 +75,9 @@ export function createWsClient(config: WsClientConfig): WsClient {
       ws?.close();
       ws = null;
     },
-    send(msg) {
+    send(frame) {
       if (!ws || ws.readyState !== 1) return false;
-      ws.send(JSON.stringify(msg));
+      ws.send(JSON.stringify(frame));
       return true;
     },
     isConnected() {
