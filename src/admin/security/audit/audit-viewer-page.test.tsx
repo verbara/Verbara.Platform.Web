@@ -113,6 +113,7 @@ describe('AuditViewerPage', () => {
     // viewport to render any rows. Mock here so the existing assertions on
     // [data-testid="audit-row-action-*"] still find the rows.
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(600);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600);
     mockUseExport.mockReturnValue({ mutate: vi.fn(), isPending: false });
   });
 

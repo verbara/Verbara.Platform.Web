@@ -75,6 +75,7 @@ vi.mock('./new-conversation-dialog', () => ({ NewConversationDialog: () => <div 
 describe('InboxPanel', () => {
   beforeEach(() => {
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
   });
 
   afterEach(() => {

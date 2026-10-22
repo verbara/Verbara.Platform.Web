@@ -38,6 +38,7 @@ const columns: ColumnDef<Row>[] = [
 describe('DataTable virtualized mode', () => {
   beforeEach(() => {
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
   });
 
   afterEach(() => {

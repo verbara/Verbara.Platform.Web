@@ -89,7 +89,9 @@ beforeEach(() => {
   useAuthStore.getState().logout();
   useConversationStore.setState({ messages: {} });
   vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
   vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(600);
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(600);
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
   server.use(
     http.get(`/api/v1/conversations/${CONVERSATION_ID}/messages`, () => {
