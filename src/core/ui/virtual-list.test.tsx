@@ -4,17 +4,19 @@ import { VirtualList } from './virtual-list';
 
 describe('VirtualList', () => {
   /**
-   * jsdom does not implement layout, so offsetHeight always returns 0.
-   * The TanStack virtualizer reads offsetHeight from the scroll element via
-   * observeElementRect (virtual-core/dist/esm/index.js:3) to determine the
-   * visible viewport height. With height=0, it renders 0 rows.
+   * jsdom does not implement layout, so offsetHeight and clientHeight always return 0.
+   * Since virtual-core 3.19 the TanStack virtualizer reads the viewport from the
+   * scroll element's clientWidth/clientHeight (getRect, used by observeElementRect);
+   * 3.18 read offsetWidth/offsetHeight. It still measures rows with offsetHeight
+   * (measureElement). With height=0, it renders 0 rows.
    *
-   * Fix: mock offsetHeight on HTMLElement.prototype to return 400 so the
-   * virtualizer calculates a real viewport and renders visible + overscan rows.
-   * This mirrors the 400px container height used in the render tree.
+   * Fix: mock both offsetHeight and clientHeight on HTMLElement.prototype to return
+   * 400 so the virtualizer calculates a real viewport and renders visible + overscan
+   * rows. This mirrors the 400px container height used in the render tree.
    */
   beforeEach(() => {
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
   });
 
   afterEach(() => {

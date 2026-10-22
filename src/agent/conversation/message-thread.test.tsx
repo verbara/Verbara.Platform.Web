@@ -46,6 +46,7 @@ vi.mock('./system-event', () => ({
 describe('MessageThread', () => {
   beforeEach(() => {
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
   });
 
   afterEach(() => {
