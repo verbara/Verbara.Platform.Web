@@ -9,6 +9,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.25.2-web] - 2026-10-23
+
+**v3.25.1-web was tagged but never published.** Its release run (39976755769) timed out three times in the
+`linux/arm64` image build, in the `npm ci` that runs under QEMU emulation, so no image and no GitHub Release exist
+for it. 3.25.2-web carries the same changes, which are listed under [3.25.1-web] below. Nothing else changed in
+the product.
+
+### Changed — CI
+
+- **The release job's image build may now take 45 minutes instead of 25.** The `timeout-minutes` of the
+  multi-arch build step in `release.yml` goes from 25 to 45. A tag runs the `release.yml` of the commit it points
+  at, so this reaches v3.25.2-web and later tags, not v3.25.1-web.
+
 ## [3.25.1-web] - 2026-10-23
 
 ### Fixed

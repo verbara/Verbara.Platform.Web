@@ -99,7 +99,8 @@ jobs:
         # The linux/arm64 layer builds under QEMU emulation on the amd64 runner,
         # which has hung indefinitely (~1h stuck buildx) on past releases. Fail fast
         # so the run is cancellable + auto-rerunnable instead of stalling the release.
-        timeout-minutes: 25
+        # 25 -> 45: v3.25.1-web's arm64 npm ci hit 25 min on all 3 attempts of run 39976755769.
+        timeout-minutes: 45
         uses: docker/build-push-action@v7
         with:
           context: .
