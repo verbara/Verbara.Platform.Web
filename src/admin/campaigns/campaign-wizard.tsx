@@ -188,6 +188,7 @@ export default function CampaignWizard() {
           <button
             key={key}
             type="button"
+            data-testid={`campaign-wizard-step-${key}`}
             onClick={() => void goToStep(idx)}
             className={`flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors ${
               idx === step
@@ -215,7 +216,12 @@ export default function CampaignWizard() {
             </Button>
 
             <div className="flex gap-2">
-              <Button variant="outline" disabled={isPending} onClick={handleSaveDraft}>
+              <Button
+                variant="outline"
+                data-testid="campaign-wizard-save-draft"
+                disabled={isPending}
+                onClick={handleSaveDraft}
+              >
                 <Save className="mr-1.5 h-4 w-4" />
                 {createCampaign.isPending
                   ? t('admin:campaigns.saving')
@@ -228,7 +234,7 @@ export default function CampaignWizard() {
                   {isPending ? t('admin:campaigns.launching') : t('admin:campaigns.launch')}
                 </Button>
               ) : (
-                <Button onClick={() => void goToStep(step + 1)}>
+                <Button data-testid="campaign-wizard-next" onClick={() => void goToStep(step + 1)}>
                   {t('admin:campaigns.next')}
                   <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
