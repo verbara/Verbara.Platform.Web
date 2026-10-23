@@ -45,8 +45,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Dependencies
 
 - **npm pins swept forward — 12 dependency merges since `v3.25.0-web`, recorded here as one movement.** Runtime:
-  `react` / `react-dom` 19.3.0 → 19.3.1, `@base-ui/react` 1.8.0 → 1.9.0, **`dompurify` 3.4.16 → 3.4.17** (the
-  sanitizer in front of rendered channel content; `npm audit` had started rating 3.4.16 critical),
+  `react` / `react-dom` 19.3.0 → 19.3.1, `@base-ui/react` 1.8.0 → 1.9.0, `dompurify` 3.4.16 → 3.4.17,
   `react-hook-form` 7.89.0 → 7.90.0, `zod` 4.6.5 → 4.6.7, `@tanstack/react-query` 5.104.1 → 5.104.3,
   `@tanstack/react-virtual` 3.14.14 → 3.14.21 (`virtual-core` 3.19, #458), and `i18next` 26.4.3 → 26.4.7 with
   `react-i18next` and `i18next-http-backend` (#446, #450, #451, #453, #455). Dev/toolchain only, never in the
