@@ -48,8 +48,11 @@ import {
   useCreateDispositionCode,
   useUpdateDispositionCode,
   useDeleteDispositionCode,
+  isCampaignStatus,
 } from '@/core/api/hooks/use-campaigns';
 import type { DispositionCode } from '@/core/api/hooks/use-campaigns';
+import { useQueues } from '@/core/api/hooks/use-queues';
+import { FieldError } from '@/core/ui/field-error';
 import type { CampaignStatus } from './campaign-list-page';
 import { CallbacksTab } from './callbacks-tab';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
@@ -79,6 +82,7 @@ const STATUS_VARIANT: Record<CampaignStatus, 'default' | 'secondary' | 'outline'
     active: 'default',
     paused: 'outline',
     completed: 'secondary',
+    archived: 'secondary',
   };
 
 function InfoRow({
@@ -97,6 +101,62 @@ function InfoRow({
         <p className="text-xs text-muted-foreground">{label}</p>
         <div className="mt-0.5 text-sm">{children}</div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The edit mode's target-queue choice (design D4): the tenant's queues by `name`, the value the
+ * update body sends as `targetQueueName`. A saved queue that is not in the list stays offered,
+ * labelled as such, so a save that does not touch it sends it back unchanged.
+ */
+function CampaignQueueSelect({
+  value,
+  savedQueueName,
+  required,
+  error,
+  onChange,
+}: {
+  value: string;
+  savedQueueName: string;
+  required: boolean;
+  error?: string;
+  onChange: (queueName: string) => void;
+}) {
+  const { t } = useTranslation(['admin']);
+  const { data: queues } = useQueues();
+  const savedIsUnlisted =
+    savedQueueName !== '' && !(queues ?? []).some((q) => q.name === savedQueueName);
+  const errorId = 'campaign-edit-queue-error';
+
+  return (
+    <div className="space-y-1">
+      <select
+        data-testid="campaign-edit-queue"
+        aria-label={t('admin:campaigns.detail.queue')}
+        aria-required={required ? true : undefined}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        <option value="">{t('admin:campaigns.basic_step.queue_placeholder')}</option>
+        {savedIsUnlisted && (
+          <option value={savedQueueName} data-queue-name={savedQueueName}>
+            {/* Until the list loads, the saved name is all that is known about it. */}
+            {queues
+              ? t('admin:campaigns.detail.queue_unlisted', { name: savedQueueName })
+              : savedQueueName}
+          </option>
+        )}
+        {queues?.map((q) => (
+          <option key={q.id} value={q.name} data-queue-name={q.name}>
+            {q.name}
+          </option>
+        ))}
+      </select>
+      <FieldError id={errorId} testId="campaign-edit-queue-error" message={error} />
     </div>
   );
 }
@@ -291,6 +351,8 @@ export default function CampaignDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editQueueName, setEditQueueName] = useState('');
+  const [editQueueError, setEditQueueError] = useState(false);
   const [dispoDialogOpen, setDispoDialogOpen] = useState(false);
   const [editingDispo, setEditingDispo] = useState<DispositionCode | null>(null);
   const [deletingDispoId, setDeletingDispoId] = useState<number | null>(null);
@@ -321,6 +383,27 @@ export default function CampaignDetailPage() {
   }
 
   const status = campaign.status;
+  // An agentless campaign has no target queue by design (host design D11, point 4).
+  const isAgentless = campaign.mode.toLowerCase() === 'robot';
+
+  const handleSaveEdit = () => {
+    if (editQueueName === '' && !isAgentless) {
+      setEditQueueError(true);
+      return;
+    }
+    updateCampaign.mutate(
+      {
+        id: campaignIdNum,
+        name: editName,
+        description: editDescription,
+        // Absent means unchanged: an agentless campaign saved with no queue keeps none.
+        ...(editQueueName === '' ? {} : { targetQueueName: editQueueName }),
+      },
+      {
+        onSuccess: () => setIsEditing(false),
+      },
+    );
+  };
 
   const handleDeleteCampaign = () => {
     deleteCampaign.mutate(campaignIdNum, {
@@ -421,7 +504,14 @@ export default function CampaignDetailPage() {
             ) : (
               <h2 className="font-heading text-xl font-semibold">{campaign.name}</h2>
             )}
-            <Badge variant={STATUS_VARIANT[status]}>{t(`admin:campaigns.status_${status}`)}</Badge>
+            {/* A status outside the five known ones shows as it came, outlined (design D3). */}
+            {isCampaignStatus(status) ? (
+              <Badge variant={STATUS_VARIANT[status]}>
+                {t(`admin:campaigns.status_${status}`)}
+              </Badge>
+            ) : (
+              <Badge variant="outline">{status}</Badge>
+            )}
           </div>
           <PermissionGuard requires="campaigns:campaign:edit">
             {isEditing ? (
@@ -429,18 +519,7 @@ export default function CampaignDetailPage() {
                 <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
                   {t('admin:campaigns.detail.cancel_btn')}
                 </Button>
-                <Button
-                  size="sm"
-                  disabled={updateCampaign.isPending}
-                  onClick={() => {
-                    updateCampaign.mutate(
-                      { id: campaignIdNum, name: editName, description: editDescription },
-                      {
-                        onSuccess: () => setIsEditing(false),
-                      },
-                    );
-                  }}
-                >
+                <Button size="sm" disabled={updateCampaign.isPending} onClick={handleSaveEdit}>
                   {updateCampaign.isPending
                     ? t('admin:campaigns.detail.saving_btn')
                     : t('admin:campaigns.detail.save_btn')}
@@ -453,6 +532,8 @@ export default function CampaignDetailPage() {
                 onClick={() => {
                   setEditName(campaign.name);
                   setEditDescription(campaign.description ?? '');
+                  setEditQueueName(campaign.queueName ?? '');
+                  setEditQueueError(false);
                   setIsEditing(true);
                 }}
               >
@@ -494,7 +575,20 @@ export default function CampaignDetailPage() {
           {t('admin:campaigns.detail.basic')}
         </p>
         <InfoRow icon={Settings} label={t('admin:campaigns.detail.queue')}>
-          {campaign.queueName}
+          {isEditing ? (
+            <CampaignQueueSelect
+              value={editQueueName}
+              savedQueueName={campaign.queueName ?? ''}
+              required={!isAgentless}
+              error={editQueueError ? t('admin:campaigns.validation.queueRequired') : undefined}
+              onChange={(queueName) => {
+                setEditQueueName(queueName);
+                setEditQueueError(false);
+              }}
+            />
+          ) : (
+            campaign.queueName
+          )}
         </InfoRow>
         {campaign.teamName && (
           <InfoRow icon={Users} label={t('admin:campaigns.detail.team')}>
