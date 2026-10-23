@@ -4,10 +4,40 @@ import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+/**
+ * The campaign statuses the console knows, lowercase. Platform writes the enum name, PascalCase
+ * (`"Draft"`, `"Active"`, `"Archived"`); the read hooks below normalize it once, at this boundary
+ * (design D3, dialer-places-calls-end-to-end), so the pages keep comparing lowercase.
+ */
+const CAMPAIGN_STATUSES = ['draft', 'active', 'paused', 'completed', 'archived'] as const;
+
+export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
+
+/**
+ * A status as the hooks return it: a known {@link CampaignStatus}, or a value outside the five,
+ * passed through unchanged (its raw text), which the pages render with no lifecycle action.
+ */
+export type CampaignSummaryStatus = CampaignStatus | (string & {});
+
+export function isCampaignStatus(value: string): value is CampaignStatus {
+  return (CAMPAIGN_STATUSES as readonly string[]).includes(value);
+}
+
+/** Lower-cases a known status (`"Archived"` → `"archived"`); any other value passes through. */
+export function normalizeCampaignStatus(status: string): CampaignSummaryStatus {
+  if (typeof status !== 'string') return status;
+  const lower = status.toLowerCase();
+  return isCampaignStatus(lower) ? lower : status;
+}
+
+function withNormalizedStatus<T extends { status: string }>(campaign: T): T {
+  return { ...campaign, status: normalizeCampaignStatus(campaign.status) };
+}
+
 export interface CampaignSummary {
   id: number;
   name: string;
-  status: 'draft' | 'active' | 'paused' | 'completed';
+  status: CampaignSummaryStatus;
   queueName: string;
   mode: string;
   totalContacts: number;
@@ -43,6 +73,37 @@ export interface CampaignDetail extends CampaignSummary {
  * structural consumers keep working unchanged.
  */
 export type ScheduleDay = components['schemas']['ScheduleDayDto'];
+
+type CreateCampaignRequest = components['schemas']['CreateCampaignRequest'];
+
+/**
+ * The members a create body always carries (design D2). The non-nullable numbers and `dncEnabled`
+ * are required because an absent one binds its default (`0`, `false`) on Platform.
+ */
+type CreateCampaignRequiredMember =
+  | 'name'
+  | 'mode'
+  | 'targetQueueName'
+  | 'timezone'
+  | 'schedule'
+  | 'holidays'
+  | 'maxConcurrentCalls'
+  | 'dncEnabled'
+  | 'maxAttemptsPerContact'
+  | 'retryIntervalMinutes'
+  | 'timeBetweenAttemptsMinutes';
+
+/**
+ * `POST /api/v1/admin/campaigns` body, from the generated `CreateCampaignRequest`: the members
+ * above required, every other one optional. Built as an object literal, it lets TypeScript's
+ * excess-property check reject a member the request lacks (`queueId`, `status`, ...) and a
+ * numeric `teamId`.
+ */
+export type CreateCampaignBody = Pick<CreateCampaignRequest, CreateCampaignRequiredMember> &
+  Partial<Omit<CreateCampaignRequest, CreateCampaignRequiredMember>>;
+
+/** `PUT /api/v1/admin/campaigns/{id}` body, from the generated `UpdateCampaignRequest`. */
+export type UpdateCampaignBody = Partial<components['schemas']['UpdateCampaignRequest']>;
 
 export interface ContactList {
   id: number;
@@ -103,7 +164,7 @@ export function useCampaigns(page = 1, pageSize = 100) {
         method: 'GET',
         params: { page: String(page), pageSize: String(pageSize) },
       });
-      return result.items;
+      return result.items.map(withNormalizedStatus);
     },
   });
 }
@@ -111,8 +172,10 @@ export function useCampaigns(page = 1, pageSize = 100) {
 export function useCampaign(id: number) {
   return useQuery({
     queryKey: ['campaign', id],
-    queryFn: () =>
-      customFetch<CampaignDetail>({ url: `/api/v1/admin/campaigns/${id}`, method: 'GET' }),
+    queryFn: async () =>
+      withNormalizedStatus(
+        await customFetch<CampaignDetail>({ url: `/api/v1/admin/campaigns/${id}`, method: 'GET' }),
+      ),
     enabled: !!id,
   });
 }
@@ -165,8 +228,14 @@ export function useCreateCampaign() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: (data: Partial<Omit<CampaignDetail, 'id' | 'createdAt'>>) =>
-      customFetch<CampaignDetail>({ url: '/api/v1/admin/campaigns', method: 'POST', data }),
+    mutationFn: async (data: CreateCampaignBody) =>
+      withNormalizedStatus(
+        await customFetch<CampaignSummary>({
+          url: '/api/v1/admin/campaigns',
+          method: 'POST',
+          data,
+        }),
+      ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       toast.success(t('toasts.campaigns.created'));
@@ -179,15 +248,14 @@ export function useUpdateCampaign() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({
-      id,
-      ...data
-    }: { id: number } & Partial<Omit<CampaignDetail, 'id' | 'createdAt'>>) =>
-      customFetch<CampaignDetail>({
-        url: `/api/v1/admin/campaigns/${id}`,
-        method: 'PUT',
-        data,
-      }),
+    mutationFn: async ({ id, ...data }: { id: number } & UpdateCampaignBody) =>
+      withNormalizedStatus(
+        await customFetch<CampaignDetail>({
+          url: `/api/v1/admin/campaigns/${id}`,
+          method: 'PUT',
+          data,
+        }),
+      ),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['campaigns'] });
       qc.invalidateQueries({ queryKey: ['campaign', variables.id] });

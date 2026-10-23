@@ -14,10 +14,11 @@ import {
   useStartCampaign,
   usePauseCampaign,
   useStopCampaign,
+  type CampaignStatus,
   type CampaignSummary,
 } from '@/core/api/hooks/use-campaigns';
 
-export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed';
+export type { CampaignStatus };
 export type DialingMode = 'preview' | 'progressive' | 'predictive' | 'power' | 'agentless';
 
 const STATUS_VARIANT: Record<CampaignStatus, 'default' | 'secondary' | 'outline'> = {
