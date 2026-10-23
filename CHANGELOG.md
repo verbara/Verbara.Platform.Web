@@ -9,6 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.25.1-web] - 2026-10-23
+
 ### Fixed
 
 - **Admin → Campaigns: a campaign created or edited in the console now names its target queue.** The wizard and the
@@ -38,7 +40,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Limits: the queue selects list the first 100 queues (a saved queue beyond them is kept when the campaign is
   edited), and the wizard's team select the first 100 teams. The wizard's DNC list, caller-id pool and holiday
   calendar choices stay on screen but are not sent: no campaign field carries them, and Platform never stored them.
-  (#N)
+  (#459)
+
+### Dependencies
+
+- **npm pins swept forward — 12 dependency merges since `v3.25.0-web`, recorded here as one movement.** Runtime:
+  `react` / `react-dom` 19.3.0 → 19.3.1, `@base-ui/react` 1.8.0 → 1.9.0, `dompurify` 3.4.16 → 3.4.17,
+  `react-hook-form` 7.89.0 → 7.90.0, `zod` 4.6.5 → 4.6.7, `@tanstack/react-query` 5.104.1 → 5.104.3,
+  `@tanstack/react-virtual` 3.14.14 → 3.14.21 (`virtual-core` 3.19, #458), and `i18next` 26.4.3 → 26.4.7 with
+  `react-i18next` and `i18next-http-backend` (#446, #450, #451, #453, #455). Dev/toolchain only, never in the
+  bundle: `vitest` and `@vitest/coverage-v8` 4.1.11 → 4.1.12, `typescript-eslint`, `@playwright/test` 1.63.0 →
+  1.64.0, `allure-playwright`, `hono` in the `npm-security` group, and `github/codeql-action`
+  (#448, #449, #452, #454, #456, #457). No product source changed with them; #458 also mocks the `client*` element
+  sizes in the virtualized test suites, which `virtual-core` 3.19 reads.
 
 ## [3.25.0-web] - 2026-10-18
 
