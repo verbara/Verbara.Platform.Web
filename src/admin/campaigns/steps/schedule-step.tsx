@@ -118,6 +118,7 @@ export default function ScheduleStep() {
           </Label>
           <Input
             id="campaignStart"
+            data-testid="campaign-wizard-start-date"
             type="date"
             {...campaignStartA11y.inputProps}
             {...register('campaignStart')}

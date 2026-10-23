@@ -230,7 +230,14 @@ function allowedTypes(member: string): string[] {
   return NULLABLE.has(member) ? [base, 'null'] : [base];
 }
 
-describe('CampaignWizard create body', () => {
+/**
+ * A case that fills every step (five steps, three base-ui selects) takes about 1 s alone and the
+ * same-body case, which does it three times, about 2 s; under the whole suite's parallel load the
+ * same-body case passed the 5 s default. The budget is for that load, not for a slower wizard.
+ */
+const FILL_EVERY_STEP_TIMEOUT = { timeout: 20_000 };
+
+describe('CampaignWizard create body', FILL_EVERY_STEP_TIMEOUT, () => {
   it.each<SaveStep>(['basic', 'schedule', 'contacts'])(
     'CampaignWizard_ShouldSendTheCreateRequestMembersOnly_WhenTheDraftIsSavedFromThe_%s_Step',
     async (step) => {
@@ -349,7 +356,7 @@ describe('CampaignWizard schedule step', () => {
   });
 });
 
-describe('CampaignWizard create response', () => {
+describe('CampaignWizard create response', FILL_EVERY_STEP_TIMEOUT, () => {
   it('CampaignWizard_ShouldOpenTheCreatedCampaign_WhenPlatformAnswers201WithASummary', async () => {
     const sent = await saveDraftFrom('contacts');
 

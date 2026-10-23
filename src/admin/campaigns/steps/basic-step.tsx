@@ -19,7 +19,9 @@ export default function BasicStep() {
   const { data: teams } = useTeams();
 
   const nameA11y = useFieldA11y(errors.name, 'name', { required: true });
-  const queueIdA11y = useFieldA11y(errors.queueId, 'queueId', { required: true });
+  const targetQueueNameA11y = useFieldA11y(errors.targetQueueName, 'targetQueueName', {
+    required: true,
+  });
 
   return (
     <div className="space-y-5">
@@ -29,6 +31,7 @@ export default function BasicStep() {
         </Label>
         <Input
           id="name"
+          data-testid="campaign-wizard-name"
           placeholder={t('campaigns.basic_step.name_placeholder')}
           {...nameA11y.inputProps}
           {...register('name')}
@@ -51,25 +54,27 @@ export default function BasicStep() {
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="queueId" required>
+          <Label htmlFor="targetQueueName" required>
             {t('campaigns.basic_step.queue')}
           </Label>
           <select
-            id="queueId"
+            id="targetQueueName"
+            data-testid="campaign-wizard-queue"
             className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-            {...queueIdA11y.inputProps}
-            {...register('queueId')}
+            {...targetQueueNameA11y.inputProps}
+            {...register('targetQueueName')}
           >
             <option value="">{t('campaigns.basic_step.queue_placeholder')}</option>
             {queues?.map((q) => (
-              <option key={q.id} value={q.id}>
+              <option key={q.id} value={q.name} data-queue-name={q.name}>
                 {q.name}
               </option>
             ))}
           </select>
           <FieldError
-            id={queueIdA11y.errorId}
-            message={errors.queueId ? t(errors.queueId.message ?? '') : undefined}
+            id={targetQueueNameA11y.errorId}
+            testId="campaign-wizard-queue-error"
+            message={errors.targetQueueName ? t(errors.targetQueueName.message ?? '') : undefined}
           />
         </div>
 
