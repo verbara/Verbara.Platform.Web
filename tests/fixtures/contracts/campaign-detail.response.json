@@ -1,0 +1,27 @@
+{
+  "id": 11,
+  "name": "Q4 renewals",
+  "description": "Renewal reminders for expiring contracts",
+  "status": "Draft",
+  "mode": "Progressive",
+  "queueName": "sales",
+  "maxConcurrentCalls": 10,
+  "powerRatio": 1,
+  "targetAbandonRate": 0.03,
+  "timezone": "America/Bogota",
+  "campaignStart": "2026-11-02T13:00:00.0000000+00:00",
+  "campaignEnd": "2026-11-30T23:00:00.0000000+00:00",
+  "schedule": [
+    { "day": "Monday", "enabled": true, "start": "09:00", "end": "18:00" },
+    { "day": "Saturday", "enabled": false, "start": "09:00", "end": "18:00" }
+  ],
+  "holidays": ["2026-11-16"],
+  "dncEnabled": true,
+  "maxAttemptsPerContact": 3,
+  "retryIntervalMinutes": 60,
+  "timeBetweenAttemptsMinutes": 30,
+  "complianceNotes": "Consent collected at signup",
+  "totalContacts": 0,
+  "contactsDialed": 0,
+  "createdAt": "2026-10-22T14:03:11.1234567+00:00"
+}

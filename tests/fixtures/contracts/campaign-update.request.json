@@ -1,0 +1,19 @@
+{
+  "name": "Q4 renewals",
+  "description": "Renewal reminders for expiring contracts",
+  "targetQueueName": "sales",
+  "teamId": null,
+  "maxConcurrentCalls": null,
+  "powerRatio": null,
+  "targetAbandonRate": null,
+  "timezone": null,
+  "campaignStart": null,
+  "campaignEnd": null,
+  "schedule": null,
+  "holidays": null,
+  "dncEnabled": null,
+  "maxAttemptsPerContact": null,
+  "retryIntervalMinutes": null,
+  "timeBetweenAttemptsMinutes": null,
+  "complianceNotes": null
+}
