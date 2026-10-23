@@ -9,6 +9,37 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Admin → Campaigns: a campaign created or edited in the console now names its target queue.** The wizard and the
+  campaign's edit form send the chosen queue's name as `targetQueueName`. Before this, the wizard sent the queue's id
+  as `queueId`, a field the campaign API does not have and ignored, so every campaign created in the console was
+  stored with no queue, and the edit form had no way to set one. Once the dialer places calls (Pro v2.20.0-pro with
+  the Platform release of the dialer change, Platform #436), every answered call of a campaign with no queue is hung
+  up. The edit form now has a queue select, preselected with the campaign's saved queue (a saved queue the list does
+  not show appears as "not in the queue list"), and it refuses to save without a queue, except for an agentless
+  (`Robot`) campaign. A campaign the console created before this release has no queue until it is edited and one is
+  chosen.
+
+  The wizard no longer lets a campaign be saved or launched without a queue: Next, a jump to a later step, Save Draft
+  and Launch all check the form and, on an error, show the first step that has one. Save Draft now sends every
+  step's values whichever step it is pressed on. Before, a Save Draft from the basic step dropped the other steps'
+  values, and one from the dialing or schedule step sent nothing. Choosing a team no longer fails the create (the
+  team's id was sent as a number where the API expects a string). A campaign created in the console now keeps the
+  global DNC check on (`dncEnabled: true`); the console used to leave it off. Campaigns the console created before
+  this release keep it off; the edit form does not show the setting, and the API turns it on
+  (`PUT /api/v1/admin/campaigns/{id}` with `dncEnabled: true`).
+
+  The status badge and the Start, Pause, Resume and Stop actions now work, in the campaign list and the campaign
+  page. Platform sends the status as `Draft`, `Active`, `Paused`, `Completed` or `Archived`, and the console
+  compared it in lowercase, so no action button showed and the badge showed a missing translation key. `Archived`
+  has its own badge, and a status the console does not know is shown as sent, with no actions.
+
+  Limits: the queue selects list the first 100 queues (a saved queue beyond them is kept when the campaign is
+  edited), and the wizard's team select the first 100 teams. The wizard's DNC list, caller-id pool and holiday
+  calendar choices stay on screen but are not sent: no campaign field carries them, and Platform never stored them.
+  (#N)
+
 ## [3.25.0-web] - 2026-10-18
 
 **Requires Platform ≥ v2.30.0 for WebChat.** The widget reaches visitors only through the bundled gateway's

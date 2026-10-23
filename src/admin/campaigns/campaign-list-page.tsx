@@ -14,10 +14,12 @@ import {
   useStartCampaign,
   usePauseCampaign,
   useStopCampaign,
+  isCampaignStatus,
+  type CampaignStatus,
   type CampaignSummary,
 } from '@/core/api/hooks/use-campaigns';
 
-export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed';
+export type { CampaignStatus };
 export type DialingMode = 'preview' | 'progressive' | 'predictive' | 'power' | 'agentless';
 
 const STATUS_VARIANT: Record<CampaignStatus, 'default' | 'secondary' | 'outline'> = {
@@ -25,6 +27,7 @@ const STATUS_VARIANT: Record<CampaignStatus, 'default' | 'secondary' | 'outline'
   active: 'default',
   paused: 'outline',
   completed: 'secondary',
+  archived: 'secondary',
 };
 
 const columnHelper = createColumnHelper<CampaignSummary>();
@@ -51,8 +54,11 @@ export default function CampaignListPage() {
         header: () => t('admin:campaigns.status'),
         cell: (info) => {
           const status = info.row.original.status;
-          return (
+          // A status outside the five known ones shows as it came, outlined (design D3).
+          return isCampaignStatus(status) ? (
             <Badge variant={STATUS_VARIANT[status]}>{t(`admin:campaigns.status_${status}`)}</Badge>
+          ) : (
+            <Badge variant="outline">{status}</Badge>
           );
         },
       }),

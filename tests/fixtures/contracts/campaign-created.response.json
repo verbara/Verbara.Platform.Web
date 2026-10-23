@@ -1,0 +1,9 @@
+{
+  "id": 11,
+  "name": "Q4 renewals",
+  "status": "Draft",
+  "queueName": "sales",
+  "mode": "Progressive",
+  "totalContacts": 0,
+  "contactsDialed": 0
+}

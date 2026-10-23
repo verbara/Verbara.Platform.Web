@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "id": 11,
+      "name": "Q4 renewals",
+      "status": "Active",
+      "queueName": "sales",
+      "mode": "Progressive",
+      "totalContacts": 0,
+      "contactsDialed": 0
+    },
+    {
+      "id": 12,
+      "name": "Reminder robot",
+      "status": "Draft",
+      "queueName": "",
+      "mode": "Robot",
+      "totalContacts": 0,
+      "contactsDialed": 0
+    }
+  ],
+  "totalCount": 2,
+  "page": 1,
+  "pageSize": 100,
+  "totalPages": 1,
+  "hasNextPage": false,
+  "hasPreviousPage": false
+}

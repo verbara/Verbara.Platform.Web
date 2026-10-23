@@ -24,4 +24,9 @@ describe('FieldError', () => {
     expect(p.className).toContain('extra');
     expect(p.className).toContain('text-destructive');
   });
+
+  it('Renders_DataTestId_WhenTestIdIsGiven', () => {
+    const { container } = render(<FieldError id="x" message="oops" testId="x-error" />);
+    expect((container.firstChild as HTMLElement).getAttribute('data-testid')).toBe('x-error');
+  });
 });

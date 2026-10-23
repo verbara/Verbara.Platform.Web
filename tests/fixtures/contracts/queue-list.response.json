@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "id": "q-1",
+      "name": "sales",
+      "isActive": true,
+      "wrapUp": { "defaultWrapUpSeconds": 30, "forceWrapUp": false },
+      "requiredSkills": [],
+      "autoAnswerDefault": false,
+      "createdAt": "2026-09-01T12:00:00+00:00"
+    }
+  ],
+  "totalCount": 1,
+  "page": 1,
+  "pageSize": 100,
+  "totalPages": 1,
+  "hasNextPage": false,
+  "hasPreviousPage": false
+}

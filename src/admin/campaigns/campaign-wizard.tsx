@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useForm, FormProvider } from 'react-hook-form';
+import type { FieldErrors } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, ArrowRight, Save, Rocket } from 'lucide-react';
@@ -13,81 +14,32 @@ import {
   useCreateContactList,
   useImportContacts,
 } from '@/core/api/hooks/use-campaigns';
-import type { ContactImportRow, CampaignDetail } from '@/core/api/hooks/use-campaigns';
+import {
+  STEP_FIELDS,
+  STEP_KEYS,
+  buildCreateCampaignBody,
+  campaignFormSchema,
+  firstStepWithError,
+  type CampaignFormValues,
+  type StepKey,
+} from './campaign-form';
 import BasicStep from './steps/basic-step';
 import DialingStep from './steps/dialing-step';
 import ScheduleStep from './steps/schedule-step';
 import ComplianceStep from './steps/compliance-step';
 import ContactsStep from './steps/contacts-step';
 
-const STEP_KEYS = ['basic', 'dialing', 'schedule', 'compliance', 'contacts'] as const;
-type StepKey = (typeof STEP_KEYS)[number];
-
-const stepSchemas: Partial<Record<StepKey, z.ZodType>> = {
-  basic: z.object({
-    name: z.string().min(2, 'admin:campaigns.validation.nameMinLength'),
-    queueId: z.string().min(1, 'admin:campaigns.validation.queueRequired'),
-  }),
-  dialing: z.object({
-    dialingMode: z.string().min(1, 'admin:campaigns.validation.dialingModeRequired'),
-    maxChannels: z.coerce.number().int().positive('admin:campaigns.validation.maxChannelsPositive'),
-  }),
-  schedule: z.object({
-    timezone: z.string().min(1, 'admin:campaigns.validation.timezoneRequired'),
-    startDate: z.string().min(1, 'admin:campaigns.validation.startDateRequired'),
-  }),
-};
-
-export type DialingMode = 'preview' | 'progressive' | 'predictive' | 'power' | 'agentless';
-export type PacingStrategy = 'fixed' | 'adaptive' | 'timeBased';
-
-export interface ScheduleDay {
-  day: string;
-  enabled: boolean;
-  start: string;
-  end: string;
-}
-
-export interface CampaignFormValues {
-  // Basic
-  name: string;
-  description: string;
-  queueId: string;
-  teamId: string;
-  // Dialing
-  mode: DialingMode;
-  pacingStrategy: PacingStrategy;
-  pacingRatio: number;
-  pacingTargetWait: number;
-  maxChannels: number;
-  callerIdPoolId: number | null;
-  useGlobalDefaults: boolean;
-  // Schedule
-  schedule: ScheduleDay[];
-  timezone: string;
-  holidays: string[];
-  holidayCalendarId: number | null;
-  campaignStart: string;
-  campaignEnd: string;
-  // Compliance
-  dncListId: number | null;
-  maxAttempts: number;
-  retryIntervalMinutes: number;
-  timeBetweenAttempts: number;
-  complianceNotes: string;
-  // Contacts
-  contactFile: string;
-  columnMapping: Record<string, string>;
-  // Parsed contact rows (populated by contacts step)
-  parsedContacts: ContactImportRow[];
-}
+// The form's types, schema, step fields and body builder live in `campaign-form.ts`, so this module
+// exports the component only (react-refresh/only-export-components). The steps import the types
+// from here.
+export type { CampaignFormValues, DialingMode, PacingStrategy, ScheduleDay } from './campaign-form';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const DEFAULT_VALUES: CampaignFormValues = {
   name: '',
   description: '',
-  queueId: '',
+  targetQueueName: '',
   teamId: '',
   mode: 'preview',
   pacingStrategy: 'fixed',
@@ -136,12 +88,16 @@ export default function CampaignWizard() {
   const importContacts = useImportContacts();
 
   const currentStepKey = STEP_KEYS[step] ?? STEP_KEYS[0];
-  const currentSchema = stepSchemas[currentStepKey];
   const methods = useForm<CampaignFormValues>({
     defaultValues: DEFAULT_VALUES,
-    resolver: currentSchema
-      ? zodResolver(currentSchema as z.ZodType<CampaignFormValues, CampaignFormValues>)
-      : undefined,
+    // `raw: true` hands the submit callback the whole form, never a parse output stripped to the
+    // schema's keys. The raw overload types the resolver over the schema's input, which names six
+    // fields, hence the cast through `unknown` (design D7).
+    resolver: zodResolver(
+      campaignFormSchema as unknown as z.ZodType<CampaignFormValues, CampaignFormValues>,
+      undefined,
+      { raw: true },
+    ),
   });
 
   const StepComponent = STEP_COMPONENTS[currentStepKey];
@@ -154,40 +110,28 @@ export default function CampaignWizard() {
     createContactList.isPending ||
     importContacts.isPending;
 
-  const buildApiPayload = (
-    formData: CampaignFormValues,
-    status: 'draft' | 'active',
-  ): Partial<Omit<CampaignDetail, 'id' | 'createdAt'>> => {
-    const payload: Record<string, unknown> = {
-      name: formData.name,
-      description: formData.description || undefined,
-      queueId: formData.queueId ? Number(formData.queueId) : undefined,
-      teamId: formData.teamId ? Number(formData.teamId) : undefined,
-      status,
-      mode: formData.mode,
-      maxConcurrentCalls: formData.maxChannels,
-      timezone: formData.timezone,
-      schedule: formData.schedule,
-      holidays: formData.holidays,
-      campaignStart: formData.campaignStart || undefined,
-      campaignEnd: formData.campaignEnd || undefined,
-      holidayCalendarId: formData.holidayCalendarId ?? undefined,
-      callerIdPoolId: formData.callerIdPoolId ?? undefined,
-      dncListId: formData.dncListId ?? undefined,
-      maxAttemptsPerContact: formData.maxAttempts,
-      retryIntervalMinutes: formData.retryIntervalMinutes,
-      timeBetweenAttemptsMinutes: formData.timeBetweenAttempts,
-      complianceNotes: formData.complianceNotes || undefined,
-    };
+  /** Shows the first step holding an error, where its message renders; stays put if none does. */
+  const showFirstStepWithError = (errors: FieldErrors<CampaignFormValues>) => {
+    const index = firstStepWithError((field) => Boolean(errors[field]));
+    if (index !== undefined) setStep(index);
+  };
 
-    if (formData.mode === 'power') {
-      payload.powerRatio = formData.pacingRatio;
+  /**
+   * Moves to `target`. A later step first validates the fields of every step before it; on failure
+   * the wizard shows the first step with an error instead. An earlier step moves without validating.
+   */
+  const goToStep = async (target: number) => {
+    if (target <= step) {
+      setStep(target);
+      return;
     }
-    if (formData.mode === 'predictive') {
-      payload.targetAbandonRate = formData.pacingTargetWait;
+    const fields = STEP_KEYS.slice(0, target).flatMap((key) => STEP_FIELDS[key]);
+    if (await methods.trigger(fields)) {
+      setStep(target);
+      return;
     }
-
-    return payload;
+    const index = firstStepWithError((field) => methods.getFieldState(field).invalid);
+    if (index !== undefined) setStep(index);
   };
 
   const importContactsAfterCreate = (campaignId: number, formData: CampaignFormValues) => {
@@ -213,18 +157,16 @@ export default function CampaignWizard() {
   };
 
   const handleSaveDraft = methods.handleSubmit((formData) => {
-    const payload = buildApiPayload(formData, 'draft');
-    createCampaign.mutate(payload, {
+    createCampaign.mutate(buildCreateCampaignBody(formData), {
       onSuccess: (result) => {
         importContactsAfterCreate(result.id, formData);
         navigate(`/admin/campaigns/${result.id}`);
       },
     });
-  });
+  }, showFirstStepWithError);
 
   const handleLaunch = methods.handleSubmit((formData) => {
-    const payload = buildApiPayload(formData, 'draft');
-    createCampaign.mutate(payload, {
+    createCampaign.mutate(buildCreateCampaignBody(formData), {
       onSuccess: (result) => {
         importContactsAfterCreate(result.id, formData);
         startCampaign.mutate(result.id, {
@@ -234,7 +176,7 @@ export default function CampaignWizard() {
         });
       },
     });
-  });
+  }, showFirstStepWithError);
 
   return (
     <div className="space-y-6">
@@ -246,7 +188,8 @@ export default function CampaignWizard() {
           <button
             key={key}
             type="button"
-            onClick={() => setStep(idx)}
+            data-testid={`campaign-wizard-step-${key}`}
+            onClick={() => void goToStep(idx)}
             className={`flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors ${
               idx === step
                 ? 'bg-primary text-primary-foreground'
@@ -273,7 +216,12 @@ export default function CampaignWizard() {
             </Button>
 
             <div className="flex gap-2">
-              <Button variant="outline" disabled={isPending} onClick={handleSaveDraft}>
+              <Button
+                variant="outline"
+                data-testid="campaign-wizard-save-draft"
+                disabled={isPending}
+                onClick={handleSaveDraft}
+              >
                 <Save className="mr-1.5 h-4 w-4" />
                 {createCampaign.isPending
                   ? t('admin:campaigns.saving')
@@ -286,7 +234,7 @@ export default function CampaignWizard() {
                   {isPending ? t('admin:campaigns.launching') : t('admin:campaigns.launch')}
                 </Button>
               ) : (
-                <Button onClick={() => setStep((s) => s + 1)}>
+                <Button data-testid="campaign-wizard-next" onClick={() => void goToStep(step + 1)}>
                   {t('admin:campaigns.next')}
                   <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>

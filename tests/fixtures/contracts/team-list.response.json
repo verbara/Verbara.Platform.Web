@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "id": "7",
+      "name": "Outbound",
+      "memberCount": 0,
+      "createdAt": "2026-09-01T12:00:00+00:00"
+    }
+  ],
+  "totalCount": 1,
+  "page": 1,
+  "pageSize": 100,
+  "totalPages": 1,
+  "hasNextPage": false,
+  "hasPreviousPage": false
+}

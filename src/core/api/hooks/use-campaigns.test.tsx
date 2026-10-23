@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -23,8 +25,6 @@ import {
   useDeleteDispositionCode,
   useCallbacks,
   useCreateCallback,
-  type CampaignSummary,
-  type CampaignDetail,
   type CampaignMetrics,
   type ContactList,
   type DispositionCode,
@@ -37,28 +37,22 @@ function wrapper({ children }: { children: React.ReactNode }) {
   return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 }
 
-const sampleCampaign: CampaignSummary = {
-  id: 1,
-  name: 'Test Campaign',
-  status: 'active',
-  queueName: 'Sales',
-  mode: 'predictive',
-  totalContacts: 500,
-  contactsDialed: 120,
-};
+/**
+ * Platform's campaign responses as the host change's fixtures record them
+ * (`tests/fixtures/contracts/`, dialer-places-calls-end-to-end): `status` is the enum name,
+ * PascalCase (`Active`, `Draft`).
+ */
+function fixture<T>(name: string): T {
+  return JSON.parse(
+    readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8'),
+  ) as T;
+}
 
-const sampleDetail: CampaignDetail = {
-  ...sampleCampaign,
-  maxConcurrentCalls: 10,
-  timezone: 'America/New_York',
-  schedule: [{ day: 'Monday', enabled: true, start: '09:00', end: '17:00' }],
-  holidays: [],
-  dncEnabled: true,
-  maxAttemptsPerContact: 3,
-  retryIntervalMinutes: 30,
-  timeBetweenAttemptsMinutes: 60,
-  createdAt: '2026-01-01T00:00:00Z',
-};
+type CampaignItem = { id: number; status: string } & Record<string, unknown>;
+const campaignList = fixture<{ items: CampaignItem[] } & Record<string, unknown>>(
+  'campaign-list.response.json',
+);
+const campaignDetail = fixture<CampaignItem>('campaign-detail.response.json');
 
 const sampleMetrics: CampaignMetrics = {
   campaignId: 1,
@@ -100,33 +94,66 @@ describe('use-campaigns', () => {
 
   describe('useCampaigns', () => {
     it('should fetch campaigns when called', async () => {
-      vi.mocked(client.customFetch).mockResolvedValue({
-        items: [sampleCampaign],
-        totalCount: 1,
-        page: 1,
-        pageSize: 100,
-      });
+      vi.mocked(client.customFetch).mockResolvedValue(campaignList);
       const { result } = renderHook(() => useCampaigns(), { wrapper });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(result.current.data).toEqual([sampleCampaign]);
+      expect(result.current.data?.map((c) => c.id)).toEqual([11, 12]);
       expect(client.customFetch).toHaveBeenCalledWith({
         url: '/api/v1/admin/campaigns',
         method: 'GET',
         params: { page: '1', pageSize: '100' },
       });
     });
+
+    it('useCampaigns_ShouldReturnStatusLowercase_WhenPlatformSendsTheEnumName', async () => {
+      vi.mocked(client.customFetch).mockResolvedValue(campaignList);
+      const { result } = renderHook(() => useCampaigns(), { wrapper });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.map((c) => c.status)).toEqual(['active', 'draft']);
+      expect(result.current.data?.[0]).toEqual({ ...campaignList.items[0], status: 'active' });
+    });
+
+    it('useCampaigns_ShouldReturnArchivedLowercase_AndPassAnUnknownStatusThrough', async () => {
+      vi.mocked(client.customFetch).mockResolvedValue({
+        ...campaignList,
+        items: [
+          { ...campaignList.items[0], status: 'Archived' },
+          { ...campaignList.items[1], status: 'Suspended' },
+        ],
+      });
+      const { result } = renderHook(() => useCampaigns(), { wrapper });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.map((c) => c.status)).toEqual(['archived', 'Suspended']);
+    });
   });
 
   describe('useCampaign', () => {
     it('should fetch campaign detail when called', async () => {
-      vi.mocked(client.customFetch).mockResolvedValue(sampleDetail);
-      const { result } = renderHook(() => useCampaign(1), { wrapper });
+      vi.mocked(client.customFetch).mockResolvedValue(campaignDetail);
+      const { result } = renderHook(() => useCampaign(11), { wrapper });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(result.current.data).toEqual(sampleDetail);
+      expect(result.current.data?.id).toBe(11);
       expect(client.customFetch).toHaveBeenCalledWith({
-        url: '/api/v1/admin/campaigns/1',
+        url: '/api/v1/admin/campaigns/11',
         method: 'GET',
       });
+    });
+
+    it('useCampaign_ShouldReturnStatusLowercase_WhenPlatformSendsTheEnumName', async () => {
+      vi.mocked(client.customFetch).mockResolvedValue(campaignDetail);
+      const { result } = renderHook(() => useCampaign(11), { wrapper });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data).toEqual({ ...campaignDetail, status: 'draft' });
+    });
+
+    it.each([
+      ['Archived', 'archived'],
+      ['Suspended', 'Suspended'],
+    ])('useCampaign_ShouldReturn_%s_As_%s', async (sent, read) => {
+      vi.mocked(client.customFetch).mockResolvedValue({ ...campaignDetail, status: sent });
+      const { result } = renderHook(() => useCampaign(11), { wrapper });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.status).toBe(read);
     });
 
     it('should not fetch when id is 0', () => {
@@ -204,7 +231,7 @@ describe('use-campaigns', () => {
 
   describe('useCreateCampaign', () => {
     it('should call correct endpoint when mutating', async () => {
-      vi.mocked(client.customFetch).mockResolvedValue(sampleDetail);
+      vi.mocked(client.customFetch).mockResolvedValue(campaignDetail);
       const { result } = renderHook(() => useCreateCampaign(), { wrapper });
       act(() => {
         result.current.mutate({ name: 'New Campaign', mode: 'predictive' });
@@ -220,7 +247,7 @@ describe('use-campaigns', () => {
 
   describe('useUpdateCampaign', () => {
     it('should call correct endpoint when mutating', async () => {
-      vi.mocked(client.customFetch).mockResolvedValue(sampleDetail);
+      vi.mocked(client.customFetch).mockResolvedValue(campaignDetail);
       const { result } = renderHook(() => useUpdateCampaign(), { wrapper });
       act(() => {
         result.current.mutate({ id: 1, name: 'Updated Campaign' });
