@@ -17,6 +17,8 @@ test.describe('DNC Lists', () => {
     const name = `E2E DNC ${Date.now()}`;
 
     await page.getByTestId('dnc-lists-create-btn').click();
+    // A tenant administrator creates Tenant-scope lists only; Global is not offered.
+    await expect(page.getByTestId('dnc-form-scope')).toHaveAttribute('data-scope', 'tenant');
     await page.getByTestId('dnc-form-name').fill(name);
     await page.getByTestId('dnc-form-submit').click();
     await page.waitForTimeout(600);

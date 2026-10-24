@@ -9,7 +9,6 @@ import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { PageHeader } from '@/core/ui/page-header';
 import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/core/ui/data-table';
@@ -21,6 +20,8 @@ import {
   useCreateDncList,
   useUpdateDncList,
   useDeleteDncList,
+  dncScopeKey,
+  TENANT_DNC_SCOPE,
   type DncListSummary,
 } from '@/core/api/hooks/use-dnc-lists';
 import { useFormatDate, useFormatNumber } from '@/core/i18n/use-format';
@@ -35,7 +36,9 @@ export default function DncListsPage() {
   const [deletingList, setDeletingList] = useState<DncListSummary | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingList, setEditingList] = useState<DncListSummary | null>(null);
-  const [formData, setFormData] = useState({ name: '', scope: 'global' });
+  // The form edits the name only: a new list is always Tenant-scope, and an existing list keeps the
+  // scope it has (a Global list is the host operator's; Platform refuses `Global` from this route).
+  const [formData, setFormData] = useState({ name: '' });
   const deleteDncList = useDeleteDncList();
   const createDnc = useCreateDncList();
   const updateDnc = useUpdateDncList();
@@ -51,11 +54,14 @@ export default function DncListsPage() {
       }),
       columnHelper.accessor('scope', {
         header: () => t('dnc-lists.columns.scope'),
-        cell: (info) => (
-          <Badge variant={info.getValue() === 'global' ? 'default' : 'secondary'}>
-            {t(`dnc-lists.scope.${info.getValue()}`)}
-          </Badge>
-        ),
+        cell: (info) => {
+          const scope = dncScopeKey(info.getValue());
+          return (
+            <Badge variant={scope === 'global' ? 'default' : 'secondary'} data-scope={scope}>
+              {t(`dnc-lists.scope.${scope}`)}
+            </Badge>
+          );
+        },
       }),
       columnHelper.accessor('entryCount', {
         header: () => t('dnc-lists.columns.entries'),
@@ -75,11 +81,12 @@ export default function DncListsPage() {
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0"
+                data-testid={`edit-dnc-${info.row.original.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   const list = info.row.original;
                   setEditingList(list);
-                  setFormData({ name: list.name, scope: list.scope });
+                  setFormData({ name: list.name });
                   setFormOpen(true);
                 }}
               >
@@ -105,6 +112,7 @@ export default function DncListsPage() {
     [t, formatNumber, formatDateShort],
   );
 
+  const formScope = editingList ? dncScopeKey(editingList.scope) : 'tenant';
   const isEmpty = !isLoading && lists.length === 0;
 
   let content;
@@ -133,7 +141,7 @@ export default function DncListsPage() {
           size="sm"
           onClick={() => {
             setEditingList(null);
-            setFormData({ name: '', scope: 'global' });
+            setFormData({ name: '' });
             setFormOpen(true);
           }}
         >
@@ -178,19 +186,17 @@ export default function DncListsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="dnc-scope">{t('dnc-lists.form.scope')}</Label>
-              <Select
-                value={formData.scope}
-                onValueChange={(v) => setFormData((f) => ({ ...f, scope: v ?? f.scope }))}
-              >
-                <SelectTrigger id="dnc-scope">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="global">{t('dnc-lists.scope.global')}</SelectItem>
-                  <SelectItem value="campaign">{t('dnc-lists.scope.campaign')}</SelectItem>
-                </SelectContent>
-              </Select>
+              <span className="text-sm font-medium leading-none">{t('dnc-lists.form.scope')}</span>
+              <div data-testid="dnc-form-scope" data-scope={formScope}>
+                <Badge variant={formScope === 'global' ? 'default' : 'secondary'}>
+                  {t(`dnc-lists.scope.${formScope}`)}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground" data-testid="dnc-form-scope-hint">
+                {formScope === 'global'
+                  ? t('dnc-lists.form.scope_global_hint')
+                  : t('dnc-lists.form.scope_tenant_hint')}
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -203,11 +209,14 @@ export default function DncListsPage() {
               onClick={() => {
                 if (editingList) {
                   updateDnc.mutate(
-                    { id: editingList.id, ...formData },
+                    { id: editingList.id, name: formData.name },
                     { onSuccess: () => setFormOpen(false) },
                   );
                 } else {
-                  createDnc.mutate(formData, { onSuccess: () => setFormOpen(false) });
+                  createDnc.mutate(
+                    { name: formData.name, scope: TENANT_DNC_SCOPE },
+                    { onSuccess: () => setFormOpen(false) },
+                  );
                 }
               }}
             >
