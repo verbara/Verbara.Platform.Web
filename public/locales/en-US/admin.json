@@ -2795,18 +2795,24 @@
       "created": "Created"
     },
     "scope": {
-      "global": "Global",
-      "campaign": "Campaign"
+      "tenant": "Organization",
+      "global": "Global"
     },
     "form": {
       "create_title": "Create DNC List",
       "edit_title": "Edit DNC List",
       "name": "Name",
       "scope": "Scope",
+      "scope_tenant_hint": "Applies to your organization's campaigns.",
+      "scope_global_hint": "Applies to every organization. Only the platform operator can change it.",
       "cancel": "Cancel",
       "saving": "Saving...",
       "create": "Create",
       "update": "Update"
+    },
+    "errors": {
+      "scope_refused": "This DNC list can't be saved here. Only lists for your organization can be created or changed; platform-wide lists are managed by the platform operator.",
+      "save_failed": "The DNC list could not be saved. Try again."
     },
     "entity_type": "DNC List",
     "detail": {

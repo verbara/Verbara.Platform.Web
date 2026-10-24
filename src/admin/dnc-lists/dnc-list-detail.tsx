@@ -15,6 +15,7 @@ import {
   useRemoveDncEntry,
   useImportDncEntries,
   useCheckDncNumber,
+  dncScopeKey,
   type DncEntry,
 } from '@/core/api/hooks/use-dnc-lists';
 import { useFormatDate } from '@/core/i18n/use-format';
@@ -151,7 +152,10 @@ export default function DncListDetail() {
         <div>
           <h2 className="font-heading text-xl font-semibold">{list.name}</h2>
           <p className="mt-0.5 text-sm text-muted-foreground capitalize">
-            {t('dnc-lists.detail.scope_summary', { scope: list.scope, count: list.entryCount })}
+            {t('dnc-lists.detail.scope_summary', {
+              scope: t(`dnc-lists.scope.${dncScopeKey(list.scope)}`),
+              count: list.entryCount,
+            })}
           </p>
         </div>
         <PermissionButton

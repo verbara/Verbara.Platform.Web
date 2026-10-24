@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import * as client from '@/core/api/client';
+import { ApiError, entriesOf } from '@/core/api/api-error';
+import { TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
 import {
   useDncLists,
   useDncList,
@@ -13,21 +16,25 @@ import {
   useRemoveDncEntry,
   useImportDncEntries,
   useCheckDncNumber,
+  DNC_LIST_SAVE_ERRORS,
   type DncListSummary,
   type DncEntry,
 } from './use-dnc-lists';
 
 vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 function wrapper({ children }: { children: React.ReactNode }) {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  const qc = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+  });
   return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 }
 
 const sampleList: DncListSummary = {
   id: 1,
   name: 'Federal DNC',
-  scope: 'global',
+  scope: 'Global',
   entryCount: 500,
   createdAt: '2026-01-01T00:00:00Z',
 };
@@ -99,13 +106,13 @@ describe('use-dnc-lists', () => {
       vi.mocked(client.customFetch).mockResolvedValue(sampleList);
       const { result } = renderHook(() => useCreateDncList(), { wrapper });
       act(() => {
-        result.current.mutate({ name: 'New List', scope: 'campaign' });
+        result.current.mutate({ name: 'New List', scope: 'Tenant' });
       });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(client.customFetch).toHaveBeenCalledWith({
         url: '/api/v1/admin/dnc-lists',
         method: 'POST',
-        data: { name: 'New List', scope: 'campaign' },
+        data: { name: 'New List', scope: 'Tenant' },
       });
     });
   });
@@ -213,5 +220,61 @@ describe('use-dnc-lists', () => {
         method: 'GET',
       });
     });
+  });
+});
+
+/** Platform v2.31.1: a tenant administrator's POST/PUT naming `scope: "Global"` answers 403. */
+const globalScopeRefusal = new ApiError(403, {
+  error: 'Only the host operator can create or update a Global-scope DNC list.',
+});
+
+function shownErrorCode(): string | undefined {
+  const shown = vi.mocked(toast.error).mock.calls[0]?.[0] as
+    React.ReactElement<{ 'data-error-code': string }> | undefined;
+  return shown?.props['data-error-code'];
+}
+
+describe('DNC list save refusals', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('CreateDncList_ShouldShowTheLocalizedScopeRefusal_WhenPlatformAnswers403', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(globalScopeRefusal);
+    const { result } = renderHook(() => useCreateDncList(), { wrapper });
+    act(() => {
+      result.current.mutate({ name: 'New List', scope: 'Tenant' });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(shownErrorCode()).toBe('dnc-list-scope-refused');
+  });
+
+  it('UpdateDncList_ShouldShowTheLocalizedScopeRefusal_WhenPlatformAnswers403', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(globalScopeRefusal);
+    const { result } = renderHook(() => useUpdateDncList(), { wrapper });
+    act(() => {
+      result.current.mutate({ id: 2, name: 'Renamed' });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(shownErrorCode()).toBe('dnc-list-scope-refused');
+  });
+
+  it('CreateDncList_ShouldNeverShowTheServerText_WhenPlatformRefuses', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(globalScopeRefusal);
+    const { result } = renderHook(() => useCreateDncList(), { wrapper });
+    act(() => {
+      result.current.mutate({ name: 'New List', scope: 'Tenant' });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(toast.error).not.toHaveBeenCalledWith(globalScopeRefusal.message);
+  });
+});
+
+describe.each(TEST_LOCALES)('DNC list save refusals in %s', (lng) => {
+  it('DncListSaveErrors_ShouldResolveEveryEntryToATranslation', async () => {
+    const i18n = await createLocaleI18n(lng);
+    for (const entry of entriesOf(DNC_LIST_SAVE_ERRORS)) {
+      expect(i18n.exists(entry.key), entry.key).toBe(true);
+    }
   });
 });

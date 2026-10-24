@@ -2795,18 +2795,24 @@
       "created": "Criada"
     },
     "scope": {
-      "global": "Global",
-      "campaign": "Campanha"
+      "tenant": "Organização",
+      "global": "Global"
     },
     "form": {
       "create_title": "Criar lista DNC",
       "edit_title": "Editar lista DNC",
       "name": "Nome",
       "scope": "Escopo",
+      "scope_tenant_hint": "Aplica-se às campanhas da sua organização.",
+      "scope_global_hint": "Aplica-se a todas as organizações. Somente o operador da plataforma pode alterá-la.",
       "cancel": "Cancelar",
       "saving": "Salvando...",
       "create": "Criar",
       "update": "Atualizar"
+    },
+    "errors": {
+      "scope_refused": "Não é possível salvar esta lista DNC aqui. Só é possível criar ou alterar listas da sua organização; as listas de toda a plataforma são gerenciadas pelo operador da plataforma.",
+      "save_failed": "Não foi possível salvar a lista DNC. Tente novamente."
     },
     "entity_type": "lista DNC",
     "detail": {
