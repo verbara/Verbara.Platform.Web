@@ -9,6 +9,37 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+Pairs with Platform v2.32.0 (the do-not-call switch needs it); release after Platform v2.32.0 is tagged.
+
+### Added
+
+- **Campaigns → disposition codes: "Adds to do-not-call list".** The disposition dialog has a switch, sent as
+  `addsToDnc` on create and update and read back from the code; a call an agent types with such a code adds the
+  number to the tenant's do-not-call list and is not called again, nor given a callback or a retry. The dispositions
+  table marks these codes. A code from an older Platform, with no `addsToDnc`, reads as off. The update body now
+  carries only the members Platform's update request has (no `code`, which can no longer be edited), and `isSuccess`
+  follows the category: `true` for Success on create, and on update only when the category changed.
+
+### Changed
+
+- **Campaigns → disposition codes: the category offers Platform's four categories** — Success, Failure, Retry and
+  System result — and an edited code preselects its stored category, shown with the same labels in the table. The
+  former Callback, No answer, Busy, DNC and Other items go: Platform stored each of them as System result and none
+  could be read back into an option.
+
+### Fixed
+
+- **Operations → Campaign monitor: an active campaign no longer breaks the page (Web #460).** The monitor reads
+  Platform's campaign status (`"Active"`) like every other campaign page, shows every status with a localized label,
+  and shows a status it does not know as it came, with no action. The status filters work, and the live
+  `campaign.status_changed` and `campaign.metrics_updated` events now reach the card they name: they update its
+  status and its five metrics only, keeping its key and name.
+- **Campaigns → new predictive campaign: the target abandon rate is asked for in percent and sent as a rate
+  (Web #461).** The dialing step asks for "Target abandon rate (%)" (default 3, 0.1 to 10) for every predictive
+  campaign and sends it as `targetAbandonRate` = percent / 100; a value outside the range is refused on the field.
+  It used to send its "Target Wait (seconds)" value (default 15) as the abandon rate; that input is gone. The
+  campaign detail page shows the rate as a percentage (`0.03` reads 3 %, not 0.03 %).
+
 ## [3.25.3-web] - 2026-10-24
 
 Patch release, paired with Platform v2.31.1: the DNC list form creates tenant lists, which v2.31.1 requires.

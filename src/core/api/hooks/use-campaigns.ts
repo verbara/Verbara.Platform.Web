@@ -115,6 +115,13 @@ export interface ContactList {
   createdAt: string;
 }
 
+/**
+ * A campaign disposition code as `GET /api/v1/admin/campaigns/{id}/dispositions` returns it
+ * (`DispositionCodeDto`; host fixtures `disposition-code.response.json` and
+ * `disposition-code.target.response.json`). `category` is the enum name (`"Failure"`); read it
+ * through {@link normalizeDispositionCategory}. `addsToDnc` exists from Platform v2.32.0; a code read
+ * without it does not add to the do-not-call list.
+ */
 export interface DispositionCode {
   id: number;
   code: string;
@@ -122,16 +129,53 @@ export interface DispositionCode {
   category: string;
   isSuccess: boolean;
   triggerRetry: boolean;
-  retryDelayMinutes?: number;
+  retryDelayMinutes?: number | null;
   triggerCallback: boolean;
+  addsToDnc?: boolean;
   isActive: boolean;
   sortOrder: number;
 }
 
+/**
+ * Platform's four disposition categories, lowercase, as the console sends them (design D4).
+ * Platform returns the enum name (`Success|Failure|Retry|SystemResult`) and parses a request
+ * lower-cased, anything else as `SystemResult`.
+ */
+export const DISPOSITION_CATEGORIES = ['success', 'failure', 'retry', 'systemresult'] as const;
+
+export type DispositionCategory = (typeof DISPOSITION_CATEGORIES)[number];
+
+/** A stored category as the console's lowercase one; anything outside the four is `systemresult`, as Platform stores it. */
+export function normalizeDispositionCategory(
+  category: string | null | undefined,
+): DispositionCategory {
+  const lower = (category ?? '').toLowerCase();
+  return (DISPOSITION_CATEGORIES as readonly string[]).includes(lower)
+    ? (lower as DispositionCategory)
+    : 'systemresult';
+}
+
+/**
+ * `POST /api/v1/admin/campaigns/{id}/dispositions` body: the generated `CreateDispositionCodeRequest`,
+ * whose `addsToDnc` (absent = `false`) matches host fixture `disposition-code-create.target.request.json`.
+ */
+export type CreateDispositionCodeBody = components['schemas']['CreateDispositionCodeRequest'];
+
+/**
+ * `PUT /api/v1/admin/campaigns/{id}/dispositions/{codeId}` body: the generated
+ * `UpdateDispositionCodeRequest` (every member nullable, `null` meaning unchanged; no `code`), whose
+ * `addsToDnc` matches host fixture `disposition-code-update.target.request.json`.
+ */
+export type UpdateDispositionCodeBody = components['schemas']['UpdateDispositionCodeRequest'];
+
+/**
+ * An item of `GET /api/v1/operations/campaigns/metrics` (`CampaignMetricsDto`; host fixture
+ * `campaign-metrics-list.response.json`). `connectRate` and `abandonRate` are fractions in `[0, 1]`.
+ */
 export interface CampaignMetrics {
   campaignId: number;
   campaignName: string;
-  status: string;
+  status: CampaignSummaryStatus;
   contactsDialed: number;
   contactsRemaining: number;
   connectRate: number;
@@ -189,14 +233,17 @@ export function useCampaignMetrics(id: number) {
   });
 }
 
+/** The Operations monitor's campaigns, their `status` normalized like every other campaign read (Web #460). */
 export function useActiveCampaignMetrics() {
   return useQuery({
     queryKey: ['active-campaign-metrics'],
-    queryFn: () =>
-      customFetch<CampaignMetrics[]>({
-        url: '/api/v1/operations/campaigns/metrics',
-        method: 'GET',
-      }),
+    queryFn: async () =>
+      (
+        await customFetch<CampaignMetrics[]>({
+          url: '/api/v1/operations/campaigns/metrics',
+          method: 'GET',
+        })
+      ).map(withNormalizedStatus),
   });
 }
 
@@ -390,10 +437,7 @@ export function useCreateDispositionCode() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({
-      campaignId,
-      ...data
-    }: { campaignId: number } & Partial<Omit<DispositionCode, 'id'>>) =>
+    mutationFn: ({ campaignId, ...data }: { campaignId: number } & CreateDispositionCodeBody) =>
       customFetch<DispositionCode>({
         url: `/api/v1/admin/campaigns/${campaignId}/dispositions`,
         method: 'POST',
@@ -415,7 +459,7 @@ export function useUpdateDispositionCode() {
       campaignId,
       codeId,
       ...data
-    }: { campaignId: number; codeId: number } & Partial<Omit<DispositionCode, 'id'>>) =>
+    }: { campaignId: number; codeId: number } & UpdateDispositionCodeBody) =>
       customFetch<DispositionCode>({
         url: `/api/v1/admin/campaigns/${campaignId}/dispositions/${codeId}`,
         method: 'PUT',

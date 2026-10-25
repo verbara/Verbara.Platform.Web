@@ -118,7 +118,12 @@
     "stop": "Parar",
     "active": "Ativas",
     "paused": "Pausadas",
-    "all": "Todas"
+    "all": "Todas",
+    "status_draft": "Rascunho",
+    "status_active": "Ativa",
+    "status_paused": "Pausada",
+    "status_completed": "Concluída",
+    "status_archived": "Arquivada"
   },
   "csat": {
     "title": "Satisfação do cliente (CSAT)",

@@ -1,0 +1,11 @@
+{
+  "id": 5,
+  "code": "CALLBACK",
+  "label": "Call back later",
+  "category": "Retry",
+  "isSuccess": false,
+  "triggerRetry": false,
+  "triggerCallback": true,
+  "isActive": true,
+  "sortOrder": 3
+}

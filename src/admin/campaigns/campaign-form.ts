@@ -8,6 +8,11 @@ import { z } from 'zod';
 import type { ContactImportRow, CreateCampaignBody } from '@/core/api/hooks/use-campaigns';
 
 export const STEP_KEYS = ['basic', 'dialing', 'schedule', 'compliance', 'contacts'] as const;
+
+/** The predictive target abandon rate the dialing step asks for, in percent (design D3; Web #461). */
+export const ABANDON_RATE_PERCENT_DEFAULT = 3;
+export const ABANDON_RATE_PERCENT_MIN = 0.1;
+export const ABANDON_RATE_PERCENT_MAX = 10;
 export type StepKey = (typeof STEP_KEYS)[number];
 
 /**
@@ -15,14 +20,38 @@ export type StepKey = (typeof STEP_KEYS)[number];
  * forward move (over the fields of {@link STEP_FIELDS} up to the target) and every submission, so a
  * missing queue is caught on every path, whichever step the administrator is on.
  */
-export const campaignFormSchema = z.object({
-  name: z.string().min(2, 'admin:campaigns.validation.nameMinLength'),
-  targetQueueName: z.string().min(1, 'admin:campaigns.validation.queueRequired'),
-  mode: z.string().min(1, 'admin:campaigns.validation.dialingModeRequired'),
-  maxChannels: z.coerce.number().int().positive('admin:campaigns.validation.maxChannelsPositive'),
-  timezone: z.string().min(1, 'admin:campaigns.validation.timezoneRequired'),
-  campaignStart: z.string().min(1, 'admin:campaigns.validation.startDateRequired'),
-});
+export const campaignFormSchema = z
+  .object({
+    name: z.string().min(2, 'admin:campaigns.validation.nameMinLength'),
+    targetQueueName: z.string().min(1, 'admin:campaigns.validation.queueRequired'),
+    mode: z.string().min(1, 'admin:campaigns.validation.dialingModeRequired'),
+    maxChannels: z.coerce.number().int().positive('admin:campaigns.validation.maxChannelsPositive'),
+    // An emptied number input arrives as `NaN` (`valueAsNumber`); it is accepted here and refused
+    // below only for a predictive campaign, so it never holds a draft of another mode (design D3).
+    targetAbandonRatePercent: z.number().or(z.nan()),
+    timezone: z.string().min(1, 'admin:campaigns.validation.timezoneRequired'),
+    campaignStart: z.string().min(1, 'admin:campaigns.validation.startDateRequired'),
+  })
+  .superRefine(
+    (values, ctx) => {
+      if (values.mode !== 'predictive') return;
+      const percent = values.targetAbandonRatePercent;
+      if (
+        !Number.isFinite(percent) ||
+        percent < ABANDON_RATE_PERCENT_MIN ||
+        percent > ABANDON_RATE_PERCENT_MAX
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['targetAbandonRatePercent'],
+          message: 'admin:campaigns.validation.abandonRateRange',
+        });
+      }
+    },
+    // Runs whatever else failed (a missing start date, say), so a forward move or a save always
+    // sees the rate.
+    { when: () => true },
+  );
 
 export type DialingMode = 'preview' | 'progressive' | 'predictive' | 'power' | 'agentless';
 export type PacingStrategy = 'fixed' | 'adaptive' | 'timeBased';
@@ -46,7 +75,11 @@ export interface CampaignFormValues {
   mode: DialingMode;
   pacingStrategy: PacingStrategy;
   pacingRatio: number;
-  pacingTargetWait: number;
+  /**
+   * The predictive target abandon rate in percent (3 is 3 %), sent as the rate `targetAbandonRate`
+   * (percent / 100). Asked for and validated only when `mode` is predictive.
+   */
+  targetAbandonRatePercent: number;
   maxChannels: number;
   callerIdPoolId: number | null;
   useGlobalDefaults: boolean;
@@ -76,7 +109,7 @@ export type ValidatedField = keyof z.infer<typeof campaignFormSchema>;
 /** Each step's validated fields, in the order the steps appear (design D7). */
 export const STEP_FIELDS: Record<StepKey, readonly ValidatedField[]> = {
   basic: ['name', 'targetQueueName'],
-  dialing: ['mode', 'maxChannels'],
+  dialing: ['mode', 'maxChannels', 'targetAbandonRatePercent'],
   schedule: ['timezone', 'campaignStart'],
   compliance: [],
   contacts: [],
@@ -104,7 +137,8 @@ export function buildCreateCampaignBody(values: CampaignFormValues): CreateCampa
     teamId: values.teamId || undefined,
     maxConcurrentCalls: values.maxChannels,
     powerRatio: values.mode === 'power' ? values.pacingRatio : undefined,
-    targetAbandonRate: values.mode === 'predictive' ? values.pacingTargetWait : undefined,
+    targetAbandonRate:
+      values.mode === 'predictive' ? toAbandonRate(values.targetAbandonRatePercent) : undefined,
     timezone: values.timezone,
     campaignStart: values.campaignStart || undefined,
     campaignEnd: values.campaignEnd || undefined,
@@ -116,4 +150,9 @@ export function buildCreateCampaignBody(values: CampaignFormValues): CreateCampa
     timeBetweenAttemptsMinutes: values.timeBetweenAttempts,
     complianceNotes: values.complianceNotes || undefined,
   };
+}
+
+/** A percent as the rate `targetAbandonRate` carries (3 → 0.03), rounded to 4 decimals against float noise. */
+export function toAbandonRate(percent: number): number {
+  return Math.round(percent * 100) / 10_000;
 }
