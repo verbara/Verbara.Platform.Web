@@ -9,6 +9,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.25.3-web] - 2026-10-24
+
+Patch release, paired with Platform v2.31.1: the DNC list form creates tenant lists, which v2.31.1 requires.
+
 ### Fixed
 
 - **Admin → DNC Lists: a list created in the console is now scoped to the tenant.** The create form sends
@@ -16,7 +20,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   refuses on this route (a Global list applies to every tenant and is the host operator's). Editing a list sends its
   name only, so a Global list keeps its scope and is never sent back as Global; its scope is still shown, read-only.
   A refused save now shows a localized message instead of the server's text. The scope badge and the list page's
-  scope label read Platform's `Tenant`/`Global` names (the form's old `campaign` option was not a Platform scope).
+  scope label read Platform's `Tenant`/`Global` names (the form's old `campaign` option was not a Platform scope). (#466)
 
 ## [3.25.2-web] - 2026-10-23
 
