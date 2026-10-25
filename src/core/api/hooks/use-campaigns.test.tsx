@@ -25,7 +25,11 @@ import {
   useDeleteDispositionCode,
   useCallbacks,
   useCreateCallback,
+  DISPOSITION_CATEGORIES,
+  normalizeDispositionCategory,
   type CampaignMetrics,
+  type CreateDispositionCodeBody,
+  type UpdateDispositionCodeBody,
   type ContactList,
   type DispositionCode,
 } from './use-campaigns';
@@ -53,6 +57,12 @@ const campaignList = fixture<{ items: CampaignItem[] } & Record<string, unknown>
   'campaign-list.response.json',
 );
 const campaignDetail = fixture<CampaignItem>('campaign-detail.response.json');
+const dispositionCreateRequest = fixture<CreateDispositionCodeBody>(
+  'disposition-code-create.target.request.json',
+);
+const dispositionUpdateRequest = fixture<UpdateDispositionCodeBody>(
+  'disposition-code-update.target.request.json',
+);
 
 const sampleMetrics: CampaignMetrics = {
   campaignId: 1,
@@ -143,7 +153,10 @@ describe('use-campaigns', () => {
       vi.mocked(client.customFetch).mockResolvedValue(campaignDetail);
       const { result } = renderHook(() => useCampaign(11), { wrapper });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(result.current.data).toEqual({ ...campaignDetail, status: 'draft' });
+      expect(result.current.data).toEqual({
+        ...campaignDetail,
+        status: campaignDetail.status.toLowerCase(),
+      });
     });
 
     it.each([
@@ -190,6 +203,16 @@ describe('use-campaigns', () => {
         url: '/api/v1/operations/campaigns/metrics',
         method: 'GET',
       });
+    });
+
+    it('UseActiveCampaignMetrics_ShouldReturnStatusLowercase_WhenPlatformSendsTheEnumName', async () => {
+      const metricsList = fixture<CampaignMetrics[]>('campaign-metrics-list.response.json');
+      vi.mocked(client.customFetch).mockResolvedValue(metricsList);
+      const { result } = renderHook(() => useActiveCampaignMetrics(), { wrapper });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data).toEqual(
+        metricsList.map((m) => ({ ...m, status: m.status.toLowerCase() })),
+      );
     });
   });
 
@@ -380,13 +403,13 @@ describe('use-campaigns', () => {
       vi.mocked(client.customFetch).mockResolvedValue(sampleDisposition);
       const { result } = renderHook(() => useCreateDispositionCode(), { wrapper });
       act(() => {
-        result.current.mutate({ campaignId: 1, code: 'SALE', label: 'Sale' });
+        result.current.mutate({ campaignId: 1, ...dispositionCreateRequest });
       });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(client.customFetch).toHaveBeenCalledWith({
         url: '/api/v1/admin/campaigns/1/dispositions',
         method: 'POST',
-        data: { code: 'SALE', label: 'Sale' },
+        data: dispositionCreateRequest,
       });
     });
   });
@@ -396,13 +419,13 @@ describe('use-campaigns', () => {
       vi.mocked(client.customFetch).mockResolvedValue(sampleDisposition);
       const { result } = renderHook(() => useUpdateDispositionCode(), { wrapper });
       act(() => {
-        result.current.mutate({ campaignId: 1, codeId: 5, label: 'Updated Label' });
+        result.current.mutate({ campaignId: 1, codeId: 5, ...dispositionUpdateRequest });
       });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(client.customFetch).toHaveBeenCalledWith({
         url: '/api/v1/admin/campaigns/1/dispositions/5',
         method: 'PUT',
-        data: { label: 'Updated Label' },
+        data: dispositionUpdateRequest,
       });
     });
   });
@@ -465,5 +488,27 @@ describe('use-campaigns', () => {
         },
       });
     });
+  });
+});
+
+describe('normalizeDispositionCategory', () => {
+  it.each([
+    ['Success', 'success'],
+    ['Failure', 'failure'],
+    ['Retry', 'retry'],
+    ['SystemResult', 'systemresult'],
+    ['systemresult', 'systemresult'],
+    ['Callback', 'systemresult'],
+    ['', 'systemresult'],
+    [null, 'systemresult'],
+  ] as const)(
+    'NormalizeDispositionCategory_ShouldReturn_%s_As_%s_WhenPlatformSendsIt',
+    (stored, expected) => {
+      expect(normalizeDispositionCategory(stored)).toBe(expected);
+    },
+  );
+
+  it('DispositionCategories_ShouldBeExactlyPlatformsFour_WhenListed', () => {
+    expect(DISPOSITION_CATEGORIES).toEqual(['success', 'failure', 'retry', 'systemresult']);
   });
 });
