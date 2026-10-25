@@ -6,14 +6,35 @@ import { toast } from 'sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { refreshAccessToken } from '@/core/api/client';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
-import {
-  useCampaignMetricsStore,
-  type CampaignStatus,
-} from '@/operations/stores/campaign-metrics-store';
+import { useCampaignMetricsStore } from '@/operations/stores/campaign-metrics-store';
+import { normalizeCampaignStatus } from '@/core/api/hooks/use-campaigns';
 import { useAgentAiStore } from '@/core/stores/agent-ai-store';
 import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
 type SseEventHandler = (data: unknown) => void;
+
+/**
+ * `campaign.status_changed` (`CampaignStatusChangedEvent`; host fixture
+ * `campaign-status-changed.event.json`). Not in Platform's OpenAPI document, so typed here by hand
+ * (design D2); the envelope members (`tenantId`, `type`, `timestamp`, `metadata`, `eventType`) are
+ * never read.
+ */
+interface CampaignStatusChangedPayload {
+  campaignId: number;
+  campaignName: string;
+  oldStatus: string;
+  newStatus: string;
+}
+
+/** `campaign.metrics_updated` (`CampaignMetricsUpdatedEvent`; host fixture `campaign-metrics-updated.event.json`). */
+interface CampaignMetricsUpdatedPayload {
+  campaignId: number;
+  contactsDialed: number;
+  contactsRemaining: number;
+  connectRate: number;
+  abandonRate: number;
+  activeCalls: number;
+}
 const handlers: Record<string, SseEventHandler[]> = {};
 
 /**
@@ -190,8 +211,10 @@ export function useSSE() {
 
     source.addEventListener('campaign.status_changed', (e) => {
       try {
-        const data = JSON.parse(e.data) as { campaignId: string; newStatus: CampaignStatus };
-        useCampaignMetricsStore.getState().updateStatus(data.campaignId, data.newStatus);
+        const data = JSON.parse(e.data) as CampaignStatusChangedPayload;
+        useCampaignMetricsStore
+          .getState()
+          .updateStatus(String(data.campaignId), normalizeCampaignStatus(data.newStatus));
         handlers['campaign.status_changed']?.forEach((h) => h(data));
       } catch {
         // ignore
@@ -200,8 +223,17 @@ export function useSSE() {
 
     source.addEventListener('campaign.metrics_updated', (e) => {
       try {
-        const data: { campaignId: string } & Record<string, unknown> = JSON.parse(e.data);
-        useCampaignMetricsStore.getState().updateMetrics(data.campaignId, data);
+        const data = JSON.parse(e.data) as CampaignMetricsUpdatedPayload;
+        // Only the metric members: the event's envelope and its numeric `campaignId` never reach the
+        // stored campaign, whose key, name, status and pacing stay (design D2).
+        const { contactsDialed, contactsRemaining, connectRate, abandonRate, activeCalls } = data;
+        useCampaignMetricsStore.getState().updateMetrics(String(data.campaignId), {
+          contactsDialed,
+          contactsRemaining,
+          connectRate,
+          abandonRate,
+          activeCalls,
+        });
         handlers['campaign.metrics_updated']?.forEach((h) => h(data));
       } catch {
         // ignore

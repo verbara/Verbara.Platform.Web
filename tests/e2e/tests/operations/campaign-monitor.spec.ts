@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { test, expect } from '../../fixtures/auth.fixture';
 
 test.describe('Campaign Monitor', () => {
@@ -33,5 +35,56 @@ test.describe('Campaign Monitor', () => {
     await page.getByTestId('sidebar-link-campaigns').click();
     await expect(page).toHaveURL(/\/operations\/campaigns/);
     await expect(page.getByTestId('campaign-monitor-page')).toBeVisible();
+  });
+});
+
+/**
+ * Web #460 (Platform change dialer-honours-dnc-callbacks-and-agent-dispositions, spec
+ * `operations-campaign-monitor`): the monitor renders a campaign whose `status` is the enum name.
+ * `GET /api/v1/operations/campaigns/metrics` is answered with the host fixture
+ * `campaign-metrics-list.response.json` verbatim (`campaignId` 11, `status` `"Active"`) plus one
+ * `"Paused"` item, so the spec needs a running campaign on no tenant; the sign-in is real.
+ */
+test.describe('Campaign Monitor with Platform enum statuses', () => {
+  const metricsList = JSON.parse(
+    readFileSync(
+      resolve(process.cwd(), 'tests/fixtures/contracts/campaign-metrics-list.response.json'),
+      'utf-8',
+    ),
+  ) as Record<string, unknown>[];
+
+  test.beforeEach(async ({ demoAdminPage: page }) => {
+    await page.route('**/api/v1/operations/campaigns/metrics', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          ...metricsList,
+          { ...metricsList[0], campaignId: 12, campaignName: 'Paused one', status: 'Paused' },
+        ]),
+      }),
+    );
+    await page.goto('/operations/campaigns');
+  });
+
+  test('should render an Active campaign with Pause and Stop', async ({ demoAdminPage: page }) => {
+    const card = page.getByTestId('campaign-card-11');
+    await expect(card).toBeVisible();
+    await expect(card.getByTestId('campaign-card-status')).toBeVisible();
+    await expect(card.getByTestId('campaign-card-pause')).toBeVisible();
+    await expect(card.getByTestId('campaign-card-stop')).toBeVisible();
+    await expect(card.getByTestId('campaign-card-resume')).toHaveCount(0);
+  });
+
+  test('should keep only the Paused campaign under the Paused filter', async ({
+    demoAdminPage: page,
+  }) => {
+    await expect(page.getByTestId('campaign-card-12')).toBeVisible();
+    await page.getByTestId('campaign-monitor-filter-paused').click();
+    await expect(page.getByTestId('campaign-card-11')).toHaveCount(0);
+    await expect(page.getByTestId('campaign-card-12')).toBeVisible();
+    await expect(
+      page.getByTestId('campaign-card-12').getByTestId('campaign-card-resume'),
+    ).toBeVisible();
   });
 });

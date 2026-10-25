@@ -2,7 +2,10 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
-import { useCampaignMetricsStore, type CampaignStatus } from '@/operations/stores/campaign-metrics-store';
+import {
+  useCampaignMetricsStore,
+  type CampaignMetrics,
+} from '@/operations/stores/campaign-metrics-store';
 import {
   useActiveCampaignMetrics,
   usePauseCampaign,
@@ -12,15 +15,16 @@ import {
 } from '@/core/api/hooks/use-campaigns';
 import { CampaignCard } from './campaign-card';
 
-type FilterValue = 'all' | CampaignStatus;
+type FilterValue = 'all' | 'active' | 'paused';
 
 const filterOptions: FilterValue[] = ['all', 'active', 'paused'];
 
-function toStoreCampaign(api: ApiCampaignMetrics) {
+/** The hook's item, `status` already normalized, keyed by its `campaignId` as a string (design D1). */
+function toStoreCampaign(api: ApiCampaignMetrics): CampaignMetrics {
   return {
     campaignId: String(api.campaignId),
     campaignName: api.campaignName,
-    status: (api.status as CampaignStatus) ?? 'active',
+    status: api.status,
     contactsRemaining: api.contactsRemaining,
     contactsDialed: api.contactsDialed,
     connectRate: api.connectRate,
@@ -92,7 +96,10 @@ export default function CampaignMonitorPage() {
       </div>
 
       {/* Campaign grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="campaign-monitor-cards">
+      <div
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        data-testid="campaign-monitor-cards"
+      >
         {filtered.map((campaign) => (
           <CampaignCard
             key={campaign.campaignId}
