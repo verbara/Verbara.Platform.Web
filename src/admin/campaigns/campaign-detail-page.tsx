@@ -49,8 +49,10 @@ import {
   useUpdateDispositionCode,
   useDeleteDispositionCode,
   isCampaignStatus,
+  normalizeDispositionCategory,
+  DISPOSITION_CATEGORIES,
 } from '@/core/api/hooks/use-campaigns';
-import type { DispositionCode } from '@/core/api/hooks/use-campaigns';
+import type { DispositionCategory, DispositionCode } from '@/core/api/hooks/use-campaigns';
 import { useQueues } from '@/core/api/hooks/use-queues';
 import { FieldError } from '@/core/ui/field-error';
 import type { CampaignStatus } from './campaign-list-page';
@@ -61,10 +63,11 @@ import { useFormatNumber } from '@/core/i18n/use-format';
 interface DispositionFormState {
   code: string;
   label: string;
-  category: string;
+  category: DispositionCategory;
   triggerRetry: boolean;
   retryDelayMinutes: number;
   triggerCallback: boolean;
+  addsToDnc: boolean;
 }
 
 const DEFAULT_DISPO_FORM: DispositionFormState = {
@@ -74,7 +77,30 @@ const DEFAULT_DISPO_FORM: DispositionFormState = {
   triggerRetry: false,
   retryDelayMinutes: 60,
   triggerCallback: false,
+  addsToDnc: false,
 };
+
+/** The label key of each of Platform's four disposition categories (design D4). */
+const DISPOSITION_CATEGORY_LABEL: Record<DispositionCategory, string> = {
+  success: 'admin:campaigns.dispositions.cat_success',
+  failure: 'admin:campaigns.dispositions.cat_failure',
+  retry: 'admin:campaigns.dispositions.cat_retry',
+  systemresult: 'admin:campaigns.dispositions.cat_system_result',
+};
+
+/** The dialog's starting values: the opened code's stored ones, or the defaults for a new code. */
+function dispositionFormFrom(editing: DispositionCode | null): DispositionFormState {
+  if (!editing) return DEFAULT_DISPO_FORM;
+  return {
+    code: editing.code,
+    label: editing.label,
+    category: normalizeDispositionCategory(editing.category),
+    triggerRetry: editing.triggerRetry,
+    retryDelayMinutes: editing.retryDelayMinutes ?? 60,
+    triggerCallback: editing.triggerCallback,
+    addsToDnc: editing.addsToDnc ?? false,
+  };
+}
 
 const STATUS_VARIANT: Record<CampaignStatus, 'default' | 'secondary' | 'outline' | 'destructive'> =
   {
@@ -179,20 +205,17 @@ interface DispositionDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * The disposition add/edit dialog (design D4). The page mounts it only while open, keyed by the code,
+ * so its state is seeded from the opened code on every opening and a cancel discards the edits.
+ */
 function DispositionDialog({ campaignId, editing, open, onOpenChange }: DispositionDialogProps) {
   const { t } = useTranslation(['admin']);
-  const [form, setForm] = useState<DispositionFormState>(
-    editing
-      ? {
-          code: editing.code,
-          label: editing.label,
-          category: editing.category,
-          triggerRetry: editing.triggerRetry,
-          retryDelayMinutes: editing.retryDelayMinutes ?? 60,
-          triggerCallback: editing.triggerCallback,
-        }
-      : DEFAULT_DISPO_FORM,
-  );
+  const [form, setForm] = useState<DispositionFormState>(() => dispositionFormFrom(editing));
+  const categoryItems = DISPOSITION_CATEGORIES.map((value) => ({
+    value,
+    label: t(DISPOSITION_CATEGORY_LABEL[value]),
+  }));
 
   const createCode = useCreateDispositionCode();
   const updateCode = useUpdateDispositionCode();
@@ -201,20 +224,41 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
 
   const handleSave = () => {
     if (!form.code.trim() || !form.label.trim()) return;
+    const retryDelayMinutes = form.triggerRetry ? form.retryDelayMinutes : null;
     if (editing) {
+      // `UpdateDispositionCodeRequest` has no `code`; `null` leaves a member unchanged. `isSuccess` is
+      // derived only when the category changed, so a label edit never rewrites a stored flag.
+      const categoryChanged = form.category !== normalizeDispositionCategory(editing.category);
       updateCode.mutate(
-        { campaignId, codeId: editing.id, ...form },
+        {
+          campaignId,
+          codeId: editing.id,
+          label: form.label,
+          category: form.category,
+          isSuccess: categoryChanged ? form.category === 'success' : null,
+          triggerRetry: form.triggerRetry,
+          retryDelayMinutes,
+          triggerCallback: form.triggerCallback,
+          addsToDnc: form.addsToDnc,
+          isActive: null,
+          sortOrder: null,
+        },
         { onSuccess: () => onOpenChange(false) },
       );
     } else {
       createCode.mutate(
-        { campaignId, ...form },
         {
-          onSuccess: () => {
-            onOpenChange(false);
-            setForm(DEFAULT_DISPO_FORM);
-          },
+          campaignId,
+          code: form.code,
+          label: form.label,
+          category: form.category,
+          isSuccess: form.category === 'success',
+          triggerRetry: form.triggerRetry,
+          retryDelayMinutes,
+          triggerCallback: form.triggerCallback,
+          addsToDnc: form.addsToDnc,
         },
+        { onSuccess: () => onOpenChange(false) },
       );
     }
   };
@@ -236,6 +280,7 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
               <Input
                 id="dispo-code"
                 value={form.code}
+                disabled={editing !== null}
                 onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
                 placeholder={t('admin:campaigns.dispositions.field_code_placeholder')}
               />
@@ -244,6 +289,7 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
               <Label htmlFor="dispo-label">{t('admin:campaigns.dispositions.field_label')}</Label>
               <Input
                 id="dispo-label"
+                data-testid="disposition-label"
                 value={form.label}
                 onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
                 placeholder={t('admin:campaigns.dispositions.field_label_placeholder')}
@@ -256,28 +302,24 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
               {t('admin:campaigns.dispositions.field_category')}
             </Label>
             <Select
+              items={categoryItems}
               value={form.category}
-              onValueChange={(v) => setForm((f) => ({ ...f, category: v ?? f.category }))}
+              onValueChange={(v) =>
+                setForm((f) => ({
+                  ...f,
+                  category: v ? normalizeDispositionCategory(v) : f.category,
+                }))
+              }
             >
-              <SelectTrigger id="dispo-category">
+              <SelectTrigger id="dispo-category" data-testid="disposition-category">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="success">
-                  {t('admin:campaigns.dispositions.cat_success')}
-                </SelectItem>
-                <SelectItem value="failure">
-                  {t('admin:campaigns.dispositions.cat_failure')}
-                </SelectItem>
-                <SelectItem value="callback">
-                  {t('admin:campaigns.dispositions.cat_callback')}
-                </SelectItem>
-                <SelectItem value="no_answer">
-                  {t('admin:campaigns.dispositions.cat_no_answer')}
-                </SelectItem>
-                <SelectItem value="busy">{t('admin:campaigns.dispositions.cat_busy')}</SelectItem>
-                <SelectItem value="dnc">{t('admin:campaigns.dispositions.cat_dnc')}</SelectItem>
-                <SelectItem value="other">{t('admin:campaigns.dispositions.cat_other')}</SelectItem>
+                {categoryItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -320,12 +362,36 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
               </Label>
             </div>
           </div>
+
+          {/* Do-not-call (host D6): an agent's typification with this code adds the number to the
+              tenant's DNC list and retires the contact. */}
+          <div className="flex items-start justify-between gap-3 rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="dispo-adds-to-dnc" className="cursor-pointer">
+                {t('admin:campaigns.dispositions.field_adds_to_dnc')}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t('admin:campaigns.dispositions.field_adds_to_dnc_help')}
+              </p>
+            </div>
+            <Switch
+              id="dispo-adds-to-dnc"
+              data-testid="disposition-dnc-switch"
+              checked={form.addsToDnc}
+              onCheckedChange={(checked) => setForm((f) => ({ ...f, addsToDnc: checked }))}
+            />
+          </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            data-testid="disposition-dialog-cancel"
+            onClick={() => onOpenChange(false)}
+          >
             {t('admin:campaigns.dispositions.dialog_cancel')}
           </Button>
           <Button
+            data-testid="disposition-dialog-save"
             onClick={handleSave}
             disabled={isPending || !form.code.trim() || !form.label.trim()}
           >
@@ -344,7 +410,8 @@ function DispositionDialog({ campaignId, editing, open, onOpenChange }: Disposit
 export default function CampaignDetailPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
   const { t } = useTranslation(['admin']);
-  const { formatNumber } = useFormatNumber();
+  // `targetAbandonRate` is a rate in [0, 1] (0.03 is 3 %), rendered as a percentage (design D3).
+  const { formatNumber, formatPercent } = useFormatNumber();
   const navigate = useNavigate();
   const [stopOpen, setStopOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -611,7 +678,7 @@ export default function CampaignDetailPage() {
         )}
         {campaign.targetAbandonRate !== undefined && (
           <InfoRow icon={Timer} label={t('admin:campaigns.detail.target_abandon_rate')}>
-            {campaign.targetAbandonRate}%
+            {formatPercent(campaign.targetAbandonRate)}
           </InfoRow>
         )}
 
@@ -722,6 +789,9 @@ export default function CampaignDetailPage() {
                     {t('admin:campaigns.dispositions.col_callback')}
                   </th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
+                    {t('admin:campaigns.dispositions.col_dnc')}
+                  </th>
+                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                     {t('admin:campaigns.dispositions.col_active')}
                   </th>
                   <th className="px-3 py-2" aria-label={t('common:table.col_actions')} />
@@ -729,12 +799,16 @@ export default function CampaignDetailPage() {
               </thead>
               <tbody>
                 {dispositions.map((d) => (
-                  <tr key={d.id} className="border-t hover:bg-muted/30">
+                  <tr
+                    key={d.id}
+                    className="border-t hover:bg-muted/30"
+                    data-testid={`disposition-row-${d.id}`}
+                  >
                     <td className="px-3 py-2 font-mono text-xs font-medium">{d.code}</td>
                     <td className="px-3 py-2">{d.label}</td>
                     <td className="px-3 py-2">
-                      <Badge variant="outline" className="capitalize">
-                        {d.category}
+                      <Badge variant="outline" data-testid="disposition-row-category">
+                        {t(DISPOSITION_CATEGORY_LABEL[normalizeDispositionCategory(d.category)])}
                       </Badge>
                     </td>
                     <td className="px-3 py-2 text-center">
@@ -753,6 +827,14 @@ export default function CampaignDetailPage() {
                     </td>
                     <td className="px-3 py-2 text-center">
                       <Switch
+                        checked={d.addsToDnc ?? false}
+                        disabled
+                        data-testid="disposition-row-dnc"
+                        aria-label={t('admin:campaigns.dispositions.aria_adds_to_dnc')}
+                      />
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      <Switch
                         checked={d.isActive}
                         disabled
                         aria-label={t('admin:campaigns.dispositions.aria_is_active')}
@@ -764,6 +846,7 @@ export default function CampaignDetailPage() {
                           size="sm"
                           variant="ghost"
                           className="h-7 px-2 text-xs"
+                          data-testid="disposition-row-edit"
                           onClick={() => handleOpenEditDispo(d)}
                         >
                           {t('admin:campaigns.dispositions.row_edit')}
@@ -864,12 +947,15 @@ export default function CampaignDetailPage() {
       />
 
       {/* Disposition add/edit dialog */}
-      <DispositionDialog
-        campaignId={campaignIdNum}
-        editing={editingDispo}
-        open={dispoDialogOpen}
-        onOpenChange={setDispoDialogOpen}
-      />
+      {dispoDialogOpen && (
+        <DispositionDialog
+          key={editingDispo?.id ?? 'new'}
+          campaignId={campaignIdNum}
+          editing={editingDispo}
+          open={dispoDialogOpen}
+          onOpenChange={setDispoDialogOpen}
+        />
+      )}
 
       {/* Disposition delete confirmation */}
       <ConfirmDialog
