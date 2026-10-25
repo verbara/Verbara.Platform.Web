@@ -14,7 +14,7 @@ import { MemoryRouter, Route, Routes, useParams } from 'react-router';
 import { I18nextProvider } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as client from '@/core/api/client';
-import { ADMIN_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
+import { ADMIN_LOCALES, TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
 import CampaignWizard from './campaign-wizard';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -364,3 +364,204 @@ describe('CampaignWizard create response', FILL_EVERY_STEP_TIMEOUT, () => {
     expect(await screen.findByTestId('detail-marker')).toHaveTextContent('11');
   });
 });
+
+/**
+ * The predictive target abandon rate (spec `campaign-console`, design D3; Web #461). The dialing step
+ * asks for a percentage (default 3, 0.1–10) whatever the pacing strategy, and the body carries it as
+ * the rate `targetAbandonRate` (percent / 100), the member `campaign-create.request.json` names
+ * (`0.03`). Rendered in each locale, driven through the wizard's `data-testid`s and the locale's own
+ * labels, so the field message is asserted where the administrator reads it.
+ */
+describe.each(TEST_LOCALES)('CampaignWizard target abandon rate in %s', (lng) => {
+  const c = ADMIN_LOCALES[lng].campaigns as typeof en;
+  const dialing = c.dialing_step as typeof en.dialing_step & Record<string, string>;
+  const validation = c.validation as typeof en.validation & Record<string, string>;
+
+  async function renderIn() {
+    const i18n = await createLocaleI18n(lng);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <I18nextProvider i18n={i18n}>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={['/admin/campaigns/new']}>
+            <Routes>
+              <Route path="/admin/campaigns/new" element={<CampaignWizard />} />
+              <Route path="/admin/campaigns/:campaignId" element={<DetailMarker />} />
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </I18nextProvider>,
+    );
+    await screen.findByRole('option', { name: 'sales' });
+  }
+
+  function fillBasicIn() {
+    fireEvent.change(screen.getByLabelText(new RegExp(`^${c.basic_step.name}`)), {
+      target: { value: 'Q4 renewals' },
+    });
+    const select = screen.getByLabelText(new RegExp(`^${c.basic_step.queue}`)) as HTMLSelectElement;
+    const sales = within(select).getByRole('option', { name: 'sales' }) as HTMLOptionElement;
+    fireEvent.change(select, { target: { value: sales.value } });
+  }
+
+  const next = () => fireEvent.click(screen.getByTestId('campaign-wizard-next'));
+  const header = (step: string) =>
+    fireEvent.click(screen.getByTestId(`campaign-wizard-step-${step}`));
+  const saveDraft = () => fireEvent.click(screen.getByTestId('campaign-wizard-save-draft'));
+  const onDialingStep = () => screen.queryByText(c.dialing_step.mode_label) !== null;
+  const rateInput = () =>
+    dialing.target_abandon_rate
+      ? screen.queryByLabelText(new RegExp(`^${escapeRegExp(dialing.target_abandon_rate)}`))
+      : null;
+  const rateError = () => screen.queryByTestId('campaign-wizard-abandon-rate-error');
+
+  function chooseRadio(label: string) {
+    fireEvent.click(screen.getByRole('radio', { name: new RegExp(`^${escapeRegExp(label)}`) }));
+  }
+
+  function setRate(value: string) {
+    const input = rateInput();
+    expect(input, 'the target abandon rate field').not.toBeNull();
+    fireEvent.change(input!, { target: { value } });
+  }
+
+  /** From the basic step to the dialing step, with mode `mode` chosen there. */
+  async function toDialing(mode: 'predictive' | 'progressive') {
+    await renderIn();
+    fillBasicIn();
+    next();
+    await waitFor(() => expect(onDialingStep()).toBe(true));
+    chooseRadio(c.dialing_step.modes[mode]);
+  }
+
+  /** From the dialing step to the schedule step, with a start date, then saves the draft there. */
+  async function saveFromSchedule() {
+    next();
+    const start = await screen.findByLabelText(new RegExp(`^${c.schedule_step.start_date}`));
+    fireEvent.change(start, { target: { value: '2026-11-02' } });
+    saveDraft();
+    await waitFor(() => expect(posts.length).toBeGreaterThan(0), { timeout: 2000 }).catch(() => {});
+  }
+
+  async function expectRefusedOnTheField() {
+    await waitFor(() => expect(rateError()).not.toBeNull()).catch(() => {});
+    expect.soft(onDialingStep(), 'the dialing step is shown').toBe(true);
+    expect
+      .soft(rateError()?.textContent, 'the localized range message')
+      .toBe(validation.abandonRateRange ?? 'abandonRateRange');
+    expect.soft(posts, 'no POST is sent').toHaveLength(0);
+  }
+
+  it('CampaignWizard_ShouldSendTheDefaultRateAs0Point03_WhenAPredictiveDraftIsSaved', async () => {
+    await toDialing('predictive');
+    await saveFromSchedule();
+
+    expect(posts).toHaveLength(1);
+    expect(posts[0]!.targetAbandonRate).toBe(0.03);
+  });
+
+  it('CampaignWizard_ShouldSendTheEnteredRate_WhenThePacingStrategyIsFixed', async () => {
+    await toDialing('predictive');
+    chooseRadio(c.dialing_step.pacings.fixed);
+    setRate('2.5');
+    expect(document.getElementById('pacingTargetWait'), 'no target wait input').toBeNull();
+    await saveFromSchedule();
+
+    expect(posts).toHaveLength(1);
+    expect(posts[0]!.targetAbandonRate).toBe(0.025);
+  });
+
+  it('CampaignWizard_ShouldAskForTheRateAndNoTargetWait_WhenThePacingStrategyIsAdaptive', async () => {
+    await toDialing('predictive');
+    chooseRadio(c.dialing_step.pacings.adaptive);
+
+    expect.soft(rateInput(), 'the rate is asked for').not.toBeNull();
+    expect.soft(document.getElementById('pacingTargetWait'), 'no target wait input').toBeNull();
+  });
+
+  it('CampaignWizard_ShouldSendNoRate_WhenTheModeIsProgressive', async () => {
+    await toDialing('progressive');
+    expect.soft(rateInput(), 'no rate is asked for').toBeNull();
+    await saveFromSchedule();
+
+    expect(posts).toHaveLength(1);
+    expect(posts[0]).not.toHaveProperty('targetAbandonRate');
+  });
+
+  it('CampaignWizard_ShouldRefuseToSaveAndShowTheFieldMessage_WhenThePredictiveAbandonRateIsBelowTheMinimum', async () => {
+    await toDialing('predictive');
+    setRate('0.05');
+    saveDraft();
+
+    await expectRefusedOnTheField();
+  });
+
+  it('CampaignWizard_ShouldRefuseToSaveAndShowTheFieldMessage_WhenThePredictiveAbandonRateIsAboveTheMaximum', async () => {
+    await toDialing('predictive');
+    setRate('10.1');
+    saveDraft();
+
+    await expectRefusedOnTheField();
+  });
+
+  it('CampaignWizard_ShouldRefuseToSaveAndShowTheFieldMessage_WhenThePredictiveAbandonRateIsEmpty', async () => {
+    await toDialing('predictive');
+    setRate('');
+    saveDraft();
+
+    await expectRefusedOnTheField();
+  });
+
+  it('CampaignWizard_ShouldRefuseToMoveOn_WhenNextIsPressedWithAnInvalidAbandonRate', async () => {
+    await toDialing('predictive');
+    setRate('0.05');
+    next();
+
+    await expectRefusedOnTheField();
+  });
+
+  // The contacts step cannot hold an invalid rate: every forward move validates the dialing step
+  // (design D7 of dialer-places-calls-end-to-end). The earlier step a draft can be saved from with
+  // one is the basic step, reached backwards from the dialing step without validating.
+  it('CampaignWizard_ShouldShowTheDialingStep_WhenTheDraftIsSavedFromAnEarlierStepWithAnInvalidAbandonRate', async () => {
+    await toDialing('predictive');
+    setRate('0.05');
+    header('basic');
+    await waitFor(() => expect(onDialingStep()).toBe(false));
+    saveDraft();
+
+    await expectRefusedOnTheField();
+  });
+
+  it('CampaignWizard_ShouldAcceptTheBoundaryRates_WhenTheRateIs0Point1Or10', async () => {
+    const sent: unknown[] = [];
+    for (const [percent, rate] of [
+      ['0.1', 0.001],
+      ['10', 0.1],
+    ] as const) {
+      posts = [];
+      await toDialing('predictive');
+      setRate(percent);
+      await saveFromSchedule();
+      expect(posts, `a POST is sent for ${percent} %`).toHaveLength(1);
+      sent.push(posts[0]!.targetAbandonRate);
+      expect.soft(posts[0]!.targetAbandonRate).toBe(rate);
+      cleanup();
+    }
+    expect(sent).toEqual([0.001, 0.1]);
+  });
+
+  it('CampaignWizard_ShouldIgnoreTheAbandonRate_WhenTheModeIsProgressive', async () => {
+    await toDialing('predictive');
+    setRate('0.05');
+    chooseRadio(c.dialing_step.modes.progressive);
+    await saveFromSchedule();
+
+    expect(posts, 'the progressive draft is not held by the rate').toHaveLength(1);
+    expect(posts[0]).not.toHaveProperty('targetAbandonRate');
+  });
+});
+
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}

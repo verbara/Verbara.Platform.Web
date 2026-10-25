@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCallerIdPools } from '@/core/api/hooks/use-caller-id-pools';
 import { useDialerSettings } from '@/core/api/hooks/use-dialer-settings';
 import type { CampaignFormValues, DialingMode, PacingStrategy } from '../campaign-wizard';
+import { ABANDON_RATE_PERCENT_MAX, ABANDON_RATE_PERCENT_MIN } from '../campaign-form';
 
 const DIALING_MODE_VALUES: DialingMode[] = [
   'preview',
@@ -36,6 +37,11 @@ export default function DialingStep() {
   const { data: globalSettings } = useDialerSettings();
 
   const maxChannelsA11y = useFieldA11y(errors.maxChannels, 'maxChannels', { required: true });
+  const abandonRateA11y = useFieldA11y(
+    errors.targetAbandonRatePercent,
+    'targetAbandonRatePercent',
+    { required: true },
+  );
 
   return (
     <div className="space-y-6">
@@ -89,6 +95,35 @@ export default function DialingStep() {
         </div>
       </fieldset>
 
+      {/* Predictive target abandon rate (design D3): asked for whatever the pacing strategy and
+          whether or not the global defaults apply, sent as a rate (percent / 100). */}
+      {selectedMode === 'predictive' && (
+        <div className="space-y-1.5 sm:max-w-xs">
+          <Label htmlFor="targetAbandonRatePercent" required>
+            {t('campaigns.dialing_step.target_abandon_rate')}
+          </Label>
+          <Input
+            id="targetAbandonRatePercent"
+            data-testid="campaign-wizard-abandon-rate"
+            type="number"
+            min={ABANDON_RATE_PERCENT_MIN}
+            max={ABANDON_RATE_PERCENT_MAX}
+            step={0.1}
+            {...abandonRateA11y.inputProps}
+            {...register('targetAbandonRatePercent', { valueAsNumber: true })}
+          />
+          <FieldError
+            id={abandonRateA11y.errorId}
+            testId="campaign-wizard-abandon-rate-error"
+            message={
+              errors.targetAbandonRatePercent
+                ? t(errors.targetAbandonRatePercent.message ?? '')
+                : undefined
+            }
+          />
+        </div>
+      )}
+
       {/* Global Defaults Toggle */}
       <div className="flex items-center justify-between rounded-lg border p-4">
         <div>
@@ -138,19 +173,6 @@ export default function DialingStep() {
                 min={1}
                 max={10}
                 {...register('pacingRatio', { valueAsNumber: true })}
-              />
-            </div>
-          )}
-
-          {selectedPacing === 'adaptive' && (
-            <div className="space-y-1.5">
-              <Label htmlFor="pacingTargetWait">{t('campaigns.dialing_step.target_wait')}</Label>
-              <Input
-                id="pacingTargetWait"
-                type="number"
-                min={1}
-                max={120}
-                {...register('pacingTargetWait', { valueAsNumber: true })}
               />
             </div>
           )}

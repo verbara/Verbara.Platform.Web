@@ -15,6 +15,7 @@ import {
   useImportContacts,
 } from '@/core/api/hooks/use-campaigns';
 import {
+  ABANDON_RATE_PERCENT_DEFAULT,
   STEP_FIELDS,
   STEP_KEYS,
   buildCreateCampaignBody,
@@ -44,7 +45,7 @@ const DEFAULT_VALUES: CampaignFormValues = {
   mode: 'preview',
   pacingStrategy: 'fixed',
   pacingRatio: 2,
-  pacingTargetWait: 15,
+  targetAbandonRatePercent: ABANDON_RATE_PERCENT_DEFAULT,
   maxChannels: 10,
   callerIdPoolId: null,
   useGlobalDefaults: true,
