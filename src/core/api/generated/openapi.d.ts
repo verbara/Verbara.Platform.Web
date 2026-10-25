@@ -772,7 +772,7 @@ export interface paths {
     put?: never;
     /**
      * Regenerates the user's recovery codes after a fresh TOTP step-up.
-     *     Returns the plaintext codes ONCE; stores SHA-256 + per-user salt hashes.
+     *     Returns the plaintext codes ONCE; stores their Argon2id digests.
      */
     post: {
       parameters: {
@@ -1762,6 +1762,15 @@ export interface paths {
             'application/json': components['schemas']['VoiceTransferResponse'];
           };
         };
+        /** @description Service Unavailable */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['VoiceTransferResponse'];
+          };
+        };
       };
     };
     delete?: never;
@@ -1812,6 +1821,15 @@ export interface paths {
         };
         /** @description Conflict */
         409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['VoiceDialResponse'];
+          };
+        };
+        /** @description Service Unavailable */
+        503: {
           headers: {
             [name: string]: unknown;
           };
@@ -5098,6 +5116,15 @@ export interface paths {
             'application/json': components['schemas']['CampaignDetailDto'];
           };
         };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
         /** @description Not Found */
         404: {
           headers: {
@@ -5741,8 +5768,15 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5798,12 +5832,23 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['DncListDto'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -5873,6 +5918,15 @@ export interface paths {
             'application/json': components['schemas']['DncListDto'];
           };
         };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
         /** @description Not Found */
         404: {
           headers: {
@@ -5938,6 +5992,13 @@ export interface paths {
             'application/json': components['schemas']['DncEntryDto'][];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     put?: never;
@@ -5956,8 +6017,17 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncEntryDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5993,8 +6063,15 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description OK */
-        200: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -6045,6 +6122,13 @@ export interface paths {
             'application/json': string;
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     delete?: never;
@@ -6080,6 +6164,404 @@ export interface paths {
           content: {
             'application/json': components['schemas']['DncCheckResultDto'];
           };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/management/dnc-lists': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncListDto'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateDncListRequest'];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncListDto'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/management/dnc-lists/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncListDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpdateDncListRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncListDto'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    post?: never;
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/management/dnc-lists/{id}/entries': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          offset?: number;
+          limit?: number;
+        };
+        header?: never;
+        path: {
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncEntryDto'][];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['AddDncEntryRequest'];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncEntryDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/management/dnc-lists/{id}/entries/{phone}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: number;
+          phone: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/management/dnc-lists/{id}/import': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncImportResultDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': string;
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/management/dnc-lists/{id}/check/{phone}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: number;
+          phone: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DncCheckResultDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -13061,6 +13543,15 @@ export interface paths {
             'application/json': components['schemas']['UserRoleAssignment'][];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['UserRoleAssignmentRefusal'];
+          };
+        };
       };
     };
     post?: never;
@@ -17802,7 +18293,7 @@ export interface components {
       campaignEnd: null | string;
       schedule: components['schemas']['ScheduleDayDto'][];
       holidays: string[];
-      dncEnabled: boolean;
+      dncEnabled: null | boolean;
       /** Format: int32 */
       maxAttemptsPerContact: number;
       /** Format: int32 */
@@ -17866,6 +18357,7 @@ export interface components {
       /** Format: int32 */
       retryDelayMinutes: null | number;
       triggerCallback: boolean;
+      addsToDnc?: null | boolean;
     };
     CreateDncListRequest: {
       name: string;
@@ -18277,6 +18769,9 @@ export interface components {
       /** Format: double */
       abandonRatePercent: number;
     };
+    /** @enum {unknown} */
+    DialerDispositionState:
+      'None' | 'Applied' | 'AlreadyApplied' | 'AwaitingOutcome' | 'UnknownCall' | 'Pending' | null;
     DidRouteDto: {
       id: string;
       did: string;
@@ -18298,6 +18793,7 @@ export interface components {
       /** Format: int32 */
       retryDelayMinutes: null | number;
       triggerCallback: boolean;
+      addsToDnc: boolean;
       isActive: boolean;
       /** Format: int32 */
       sortOrder: number;
@@ -19979,7 +20475,7 @@ export interface components {
       conversationId: null | string;
       listenId: null | string;
       /** Format: int64 */
-      trunkId?: null | number;
+      trunkId: null | number;
     };
     /**
      * @description `POST /supervisor/conversations/{id}/listen` request. string? SupervisorListenStartRequest.Destination is `endpoint` or
@@ -20373,6 +20869,7 @@ export interface components {
       duration?: string;
       /** Format: date-time */
       completedAt?: string;
+      dialerDisposition?: null | components['schemas']['DialerDispositionState'];
       /**
        * @description Identifier of the AI actor that autonomously stamped this disposition (e.g.
        *     `verbara:ai:autonomous-worker`), set only when SubmissionSource TypificationSubmission.Source is
@@ -20626,6 +21123,7 @@ export interface components {
       isActive: null | boolean;
       /** Format: int32 */
       sortOrder: null | number;
+      addsToDnc?: null | boolean;
     };
     UpdateDncListRequest: {
       name: null | string;
@@ -21009,6 +21507,11 @@ export interface components {
       assignedAt: string;
       assignedBy?: null | string;
     };
+    /** @description 404 `user-not-found`: no user with string UserRoleAssignmentRefusal.UserId exists in the caller's tenant; nothing was assigned. */
+    UserRoleAssignmentRefusal: {
+      error: string;
+      userId: string;
+    };
     /** @enum {unknown} */
     UserStatus: 'Active' | 'Suspended' | 'Deactivated' | null;
     /**
@@ -21026,7 +21529,8 @@ export interface components {
       contactId: null | string;
     };
     /**
-     * @description `CorrelationId` is the tracked outbound Conversation id on success; `Error` a stable code otherwise.
+     * @description `CorrelationId` is the tracked outbound Conversation id on success; `Error` a stable code otherwise
+     *     (`voice-unavailable` on 503).
      *     `TrunkId` is always written: the resolved trunk's id on 409 `trunk-not-dialable`, null otherwise.
      */
     VoiceDialResponse: {
@@ -21042,8 +21546,8 @@ export interface components {
       target: string;
     };
     /**
-     * @description `Error` is a stable machine code (e.g. "channel-unknown", "not-owner") on failure. `TrunkId` is always
-     *     written: the resolved trunk's id on 409 `trunk-not-dialable`, null otherwise.
+     * @description `Error` is a stable machine code (e.g. "channel-unknown", "not-owner", "voice-unavailable" on 503) on failure.
+     *     `TrunkId` is always written: the resolved trunk's id on 409 `trunk-not-dialable`, null otherwise.
      */
     VoiceTransferResponse: {
       accepted: boolean;

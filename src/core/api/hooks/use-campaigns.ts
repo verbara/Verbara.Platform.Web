@@ -156,23 +156,17 @@ export function normalizeDispositionCategory(
 }
 
 /**
- * `POST /api/v1/admin/campaigns/{id}/dispositions` body: the generated `CreateDispositionCodeRequest`
- * plus `addsToDnc` (boolean), the member host fixture `disposition-code-create.target.request.json`
- * adds in Platform v2.32.0. The intersection is redundant once `openapi.d.ts` is regenerated from
- * Platform v2.32.0's document (task B.4).
+ * `POST /api/v1/admin/campaigns/{id}/dispositions` body: the generated `CreateDispositionCodeRequest`,
+ * whose `addsToDnc` (absent = `false`) matches host fixture `disposition-code-create.target.request.json`.
  */
-export type CreateDispositionCodeBody = components['schemas']['CreateDispositionCodeRequest'] & {
-  addsToDnc: boolean;
-};
+export type CreateDispositionCodeBody = components['schemas']['CreateDispositionCodeRequest'];
 
 /**
  * `PUT /api/v1/admin/campaigns/{id}/dispositions/{codeId}` body: the generated
- * `UpdateDispositionCodeRequest` (every member nullable, `null` meaning unchanged; no `code`) plus
- * `addsToDnc` (boolean|null) from host fixture `disposition-code-update.target.request.json`.
+ * `UpdateDispositionCodeRequest` (every member nullable, `null` meaning unchanged; no `code`), whose
+ * `addsToDnc` matches host fixture `disposition-code-update.target.request.json`.
  */
-export type UpdateDispositionCodeBody = components['schemas']['UpdateDispositionCodeRequest'] & {
-  addsToDnc: boolean | null;
-};
+export type UpdateDispositionCodeBody = components['schemas']['UpdateDispositionCodeRequest'];
 
 /**
  * An item of `GET /api/v1/operations/campaigns/metrics` (`CampaignMetricsDto`; host fixture

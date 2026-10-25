@@ -8,6 +8,6 @@
   "activeCalls": 0,
   "type": "campaign.metrics_updated",
   "timestamp": "2026-10-24T15:00:05.0000000+00:00",
-  "metadata": { "tenantId": "acme", "timestamp": "2026-10-24T15:00:05.0000000+00:00" },
+  "metadata": { "tenantId": "acme", "occurredAt": "2026-10-24T15:00:05.0000000+00:00" },
   "eventType": "campaign.metrics_updated"
 }
