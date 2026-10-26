@@ -1,6 +1,6 @@
 # Verbara Web
 
-> Frontend for **Verbara**, self-hosted open-core contact-center software.
+> Frontend for **Verbara**. Verbara is omnichannel contact-center software, licensed for each company to install and operate on its own infrastructure.
 > Repository rebranded to **Verbara** (ADR-0006).
 >
 > **Visibility status:** This repository is **public**. The Apache 2.0 license has been chosen (ADR-0006); all triggers in ADR-0007 were met and the repo transitioned to public. Tier 0 (Community) self-host and the Tier 0.5 Developer self-issue portal are available.
@@ -182,6 +182,6 @@ This is the open-source UI of **Verbara**, self-hosted open-core contact-center 
 | **Verbara Platform**              | Apache 2.0     | Backend application — the full self-hosted contact-center software                            |
 | **Verbara Sdk Pro**               | Commercial     | Enterprise overlays (multi-tenant, analytics, cluster, licensing)                             |
 
-**Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See ADR-0006 for the full rationale (license decision + 5-tier commercial model).
+**Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See ADR-0006 for the full rationale (license decision).
 
 **Trademark note:** "Asterisk" is a registered trademark of Sangoma Technologies/Digium. Verbara integrates with Asterisk PBX but is an independent project.

@@ -3404,11 +3404,11 @@
         "modelRequired": "Model is required"
       },
       "aiSource": {
-        "label": "Use Verbara-managed AI",
+        "label": "Use platform-provided AI",
         "byo": "Bring your own provider",
-        "managed": "Verbara-managed",
-        "managedNote": "Verbara provides the language model. No key or provider setup is needed; usage draws from your included credit allowance.",
-        "unavailableHint": "Verbara-managed AI is not available on your current plan."
+        "managed": "Platform-provided",
+        "managedNote": "The platform operator provides the language model. No key or provider setup is needed; usage draws from your included credit allowance.",
+        "unavailableHint": "Platform-provided AI is not available on your current plan."
       }
     },
     "aiCredits": {

@@ -27,7 +27,7 @@ export default function LlmConfigPage() {
   const isConfigured = config !== null;
 
   // `platformLlmAvailable` is present in BOTH GET branches (empty + config) so
-  // the form can offer the Verbara-managed toggle without a second request.
+  // the form can offer the platform-provided toggle without a second request.
   const platformLlmAvailable = config?.platformLlmAvailable ?? data?.platformLlmAvailable ?? false;
 
   // `key` remounts the form when switching configured ↔ empty so RHF re-seeds

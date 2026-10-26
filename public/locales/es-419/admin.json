@@ -3404,11 +3404,11 @@
         "modelRequired": "El modelo es obligatorio"
       },
       "aiSource": {
-        "label": "Usar IA administrada por Verbara",
+        "label": "Usar IA provista por la plataforma",
         "byo": "Usar tu propio proveedor",
-        "managed": "Administrada por Verbara",
-        "managedNote": "Verbara proporciona el modelo de lenguaje. No necesitas configurar una clave ni un proveedor; el uso se descuenta de tu asignación de créditos incluida.",
-        "unavailableHint": "La IA administrada por Verbara no está disponible en tu plan actual."
+        "managed": "Provista por la plataforma",
+        "managedNote": "El operador de la plataforma proporciona el modelo de lenguaje. No necesitas configurar una clave ni un proveedor; el uso se descuenta de tu asignación de créditos incluida.",
+        "unavailableHint": "La IA provista por la plataforma no está disponible en tu plan actual."
       }
     },
     "aiCredits": {

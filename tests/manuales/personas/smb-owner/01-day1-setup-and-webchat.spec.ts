@@ -92,8 +92,8 @@ test.describe('SMB Owner — Día 1: Setup inicial + WebChat', () => {
       await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
       // Tenant input visibility is data-dependent. On localhost the form
       // initializes `showTenant=true` and the input is already visible.
-      // On a SaaS deployment with `customer.verbara.io`, the subdomain
-      // pre-fills the tenant and `showTenant=false`. Force the input
+      // On a deployment that resolves the tenant from a subdomain such as
+      // `customer.example.com`, the subdomain pre-fills the tenant and `showTenant=false`. Force the input
       // visible via `waitFor`; if it never appears, click the toggle.
       const tenantInput = page.getByTestId('login-tenant');
       try {
