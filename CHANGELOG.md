@@ -9,7 +9,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Pairs with Platform v2.32.0 (the do-not-call switch needs it); release after Platform v2.32.0 is tagged.
+## [3.26.0-web] - 2026-10-25
+
+The console side of the dialer hardening train; **requires Platform ≥ v2.32.0**. Disposition codes gain an "Adds to
+do-not-call list" switch and Platform's four categories, the campaign monitor no longer breaks on an active campaign,
+and a new predictive campaign asks for its target abandon rate in percent and sends it as a rate, which Platform
+v2.32.0 requires. Against an older Platform the do-not-call switch is ignored. (#470)
 
 ### Added
 
@@ -18,14 +23,14 @@ Pairs with Platform v2.32.0 (the do-not-call switch needs it); release after Pla
   number to the tenant's do-not-call list and is not called again, nor given a callback or a retry. The dispositions
   table marks these codes. A code from an older Platform, with no `addsToDnc`, reads as off. The update body now
   carries only the members Platform's update request has (no `code`, which can no longer be edited), and `isSuccess`
-  follows the category: `true` for Success on create, and on update only when the category changed.
+  follows the category: `true` for Success on create, and on update only when the category changed. (#470)
 
 ### Changed
 
 - **Campaigns → disposition codes: the category offers Platform's four categories** — Success, Failure, Retry and
   System result — and an edited code preselects its stored category, shown with the same labels in the table. The
   former Callback, No answer, Busy, DNC and Other items go: Platform stored each of them as System result and none
-  could be read back into an option.
+  could be read back into an option. (#470)
 
 ### Fixed
 
@@ -33,12 +38,17 @@ Pairs with Platform v2.32.0 (the do-not-call switch needs it); release after Pla
   Platform's campaign status (`"Active"`) like every other campaign page, shows every status with a localized label,
   and shows a status it does not know as it came, with no action. The status filters work, and the live
   `campaign.status_changed` and `campaign.metrics_updated` events now reach the card they name: they update its
-  status and its five metrics only, keeping its key and name.
+  status and its five metrics only, keeping its key and name. (#470)
 - **Campaigns → new predictive campaign: the target abandon rate is asked for in percent and sent as a rate
   (Web #461).** The dialing step asks for "Target abandon rate (%)" (default 3, 0.1 to 10) for every predictive
   campaign and sends it as `targetAbandonRate` = percent / 100; a value outside the range is refused on the field.
   It used to send its "Target Wait (seconds)" value (default 15) as the abandon rate; that input is gone. The
-  campaign detail page shows the rate as a percentage (`0.03` reads 3 %, not 0.03 %).
+  campaign detail page shows the rate as a percentage (`0.03` reads 3 %, not 0.03 %). (#470)
+
+### Dependencies
+
+- **Two `npm-security` group merges, dev/toolchain only, never in the bundle:** `fast-uri` 3.1.7 → 3.1.9 (#468) and
+  `undici` 7.30.0 → 7.30.1 (#469), both transitive lockfile moves. No product source changed with them.
 
 ## [3.25.3-web] - 2026-10-24
 
