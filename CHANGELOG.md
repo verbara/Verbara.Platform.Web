@@ -9,6 +9,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **AI typification settings no longer present Verbara as running a service.** The AI-source toggle now reads
+  "Use platform-provided AI" and says "The platform operator provides the language model" (es-419 «IA provista por la
+  plataforma», pt-BR «IA fornecida pela plataforma»): the `PlatformManaged` source uses the provider and key that the
+  operator of the deployment configures. Values only — no i18n key, API field or behaviour changes. Related source
+  comments and the smb-owner persona specs drop "Verbara-hosted"/"SaaS" wording, and `README.md` carries the canonical
+  sentence: Verbara is omnichannel contact-center software, licensed for each company to install and operate on its
+  own infrastructure (verbara-meta/PDR-0006).
+
 ## [3.26.0-web] - 2026-10-25
 
 The console side of the dialer hardening train; **requires Platform ≥ v2.32.0**. Disposition codes gain an "Adds to

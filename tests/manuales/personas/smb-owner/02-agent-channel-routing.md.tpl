@@ -54,7 +54,7 @@ ejemplo `DocumentationDemo2026!`). El tenant es `platform`.
 {{step:01-login-form}}
 
 > **Tip:** El input `Tenant ID` puede aparecer oculto si tu deployment está
-> en un subdominio `customer.verbara.io` que pre-llena el tenant. En local
+> en un subdominio `customer.example.com` que pre-llena el tenant. En local
 > el input se muestra siempre; si no aparece, click en el toggle "Cambiar
 > de tenant".
 

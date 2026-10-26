@@ -15,7 +15,7 @@ export function resolveDefaultTenant(): string | null {
   const envTenant = import.meta.env.VITE_DEFAULT_TENANT_ID as string | undefined;
   if (envTenant) return envTenant;
 
-  // 2. Subdomain extraction (multi-tenant SaaS)
+  // 2. Subdomain extraction (multi-tenant deployment, tenant per subdomain)
   const host = window.location.hostname;
   if (isIpAddress(host)) return null;
   const parts = host.split('.');

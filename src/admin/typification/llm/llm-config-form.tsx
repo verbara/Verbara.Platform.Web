@@ -38,8 +38,9 @@ import {
 interface LlmConfigFormProps {
   /** The currently-stored masked config, or `null` when none is configured. */
   config: TenantLlmConfig | null;
-  /** Whether the Verbara-managed (PlatformManaged) LLM is offered for this
-   *  tenant's plan. When false the managed toggle is disabled. */
+  /** Whether the platform-provided (PlatformManaged) LLM, configured by the
+   *  deployment operator, is offered for this tenant's plan. When false the
+   *  managed toggle is disabled. */
   platformLlmAvailable: boolean;
 }
 
@@ -72,8 +73,8 @@ export function LlmConfigForm({ config, platformLlmAvailable }: Readonly<LlmConf
   const { t } = useTranslation(['admin']);
   const upsert = useUpsertTenantLlmConfig();
 
-  // AI source toggle: Byo (bring-your-own provider) ↔ PlatformManaged (Verbara
-  // hosts the LLM). Seed from the stored config; default to Byo. When managed,
+  // AI source toggle: Byo (bring-your-own provider) ↔ PlatformManaged (the
+  // deployment operator configures the LLM). Seed from the stored config; default to Byo. When managed,
   // the BYO provider/model/key sections are hidden and the BYO schema is
   // bypassed so its required fields can't block a managed submit.
   const [aiSource, setAiSource] = useState<AiSource>(config?.aiSource ?? 'Byo');
@@ -216,7 +217,7 @@ export function LlmConfigForm({ config, platformLlmAvailable }: Readonly<LlmConf
         </p>
       </div>
 
-      {/* AI source: Byo ↔ PlatformManaged (Verbara-hosted). Disabled when the
+      {/* AI source: Byo ↔ PlatformManaged (platform-provided). Disabled when the
           tenant's plan doesn't offer the managed LLM. */}
       <div className="flex items-center justify-between rounded-md border p-3">
         <div>
