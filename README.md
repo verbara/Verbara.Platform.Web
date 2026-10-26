@@ -1,11 +1,11 @@
 # Verbara Web
 
-> Frontend for the **Verbara** open-core contact-center platform.
+> Frontend for **Verbara**, self-hosted open-core contact-center software.
 > Repository rebranded to **Verbara** (ADR-0006).
 >
 > **Visibility status:** This repository is **public**. The Apache 2.0 license has been chosen (ADR-0006); all triggers in ADR-0007 were met and the repo transitioned to public. Tier 0 (Community) self-host and the Tier 0.5 Developer self-issue portal are available.
 
-React 19 frontend for the Verbara omnichannel contact-center platform. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
+React 19 frontend for Verbara, self-hosted omnichannel contact-center software. Admin configuration, real-time operations monitoring, historical analytics, and an agent workspace.
 
 **Version:** 3.11.0-web — see [`CLAUDE.md`](CLAUDE.md) for the project overview and conventions.
 
@@ -173,13 +173,13 @@ For security disclosure use `security@verbara.io`. For commercial licensing inqu
 
 This repository is licensed under the **[Apache License 2.0](LICENSE)**. See [`NOTICE`](NOTICE) for attributions.
 
-This is the open-source UI of the **Verbara** open-core contact-center stack:
+This is the open-source UI of **Verbara**, self-hosted open-core contact-center software:
 
 | Repository                        | License        | Role                                                                                          |
 | --------------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
 | **Verbara Sdk**                   | MIT            | Telephony primitives (AMI / AGI / ARI / Live API / Sessions / Voice AI) — community attractor |
 | **Verbara Web** (this repository) | **Apache 2.0** | Frontend UI (admin / agent / analytics / operations)                                          |
-| **Verbara Platform**              | Apache 2.0     | Backend application — full contact-center engine                                              |
+| **Verbara Platform**              | Apache 2.0     | Backend application — the full self-hosted contact-center software                            |
 | **Verbara Sdk Pro**               | Commercial     | Enterprise overlays (multi-tenant, analytics, cluster, licensing)                             |
 
 **Why Apache 2.0 + commercial Pro:** the engineering moat is the runtime ECDSA license-key validation in Pro, not source-license restrictions. Apache maximizes adoption and trial-to-Pro conversion. See ADR-0006 for the full rationale (license decision + 5-tier commercial model).
