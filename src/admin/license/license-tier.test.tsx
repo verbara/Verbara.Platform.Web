@@ -14,15 +14,21 @@ import { useTierLabel } from './use-tier-label';
 /**
  * The licence tier is read from `LicenseStatusSnapshot.tier`, with the real committed locale
  * files: a known tier is localized, an unknown future value renders raw, a missing tier (or
- * `isLoaded` false) is "Unlicensed", and the licensee is never shown as the tier.
+ * `isLoaded` false) is "Unlicensed", and the licensee is never shown as the tier. The labelled
+ * tiers are exactly the host fixture's `_allowedTierValues`; a retired name sent by an older
+ * Platform (verbara-meta/PDR-0006) renders as received.
  */
 
-const STATUS = JSON.parse(
+const STATUS_FIXTURE = JSON.parse(
   readFileSync(
-    resolve(process.cwd(), 'tests/fixtures/contracts/license-status-snapshot.v1.json'),
+    resolve(process.cwd(), 'tests/fixtures/contracts/license-status-snapshot.v2.json'),
     'utf-8',
   ),
-) as LicenseStatusSnapshot;
+) as LicenseStatusSnapshot & { _allowedTierValues: string[] };
+
+const STATUS: LicenseStatusSnapshot = STATUS_FIXTURE;
+
+const RETIRED_TIERS = ['SaaSBusiness', 'SaaSEnterprise'] as const;
 
 const LICENSE: LicenseInfo = {
   isValid: true,
@@ -55,6 +61,20 @@ describe('licence tier label', () => {
       ADMIN_LOCALES[lng].license.tiers.SelfHostBusiness,
     );
   });
+
+  it.each(TEST_LOCALES)('TierLabels_ShouldMatchHostTierSet_WhenLocalesLoad (%s)', (lng) => {
+    const keys = Object.keys(ADMIN_LOCALES[lng].license.tiers).sort();
+    expect(keys).toEqual([...STATUS_FIXTURE._allowedTierValues].sort());
+  });
+
+  it.each(TEST_LOCALES.flatMap((lng) => RETIRED_TIERS.map((tier) => [lng, tier] as const)))(
+    'TierLabel_ShouldRenderRetiredTierRaw_WhenAnOlderPlatformSendsIt (%s, %s)',
+    async (lng, tier) => {
+      const retired = { ...STATUS, tier } as unknown as LicenseStatusSnapshot;
+      await renderIn(lng, <TierProbe status={retired} />);
+      expect(screen.getByTestId('tier').textContent).toBe(tier);
+    },
+  );
 
   it('TierLabel_ShouldRenderRaw_WhenTierIsUnknown', async () => {
     const future = { ...STATUS, tier: 'FutureTier' } as unknown as LicenseStatusSnapshot;
@@ -101,6 +121,17 @@ describe('system page licence card', () => {
       }
     }
   });
+});
+
+describe('system page licence card, retired tier', () => {
+  it.each(TEST_LOCALES)(
+    'LicenseCard_ShouldShowRetiredTierRaw_WhenAnOlderPlatformSendsSaaSBusiness (%s)',
+    async (lng) => {
+      const retired = { ...STATUS, tier: 'SaaSBusiness' } as unknown as LicenseStatusSnapshot;
+      await renderIn(lng, <LicenseCard license={LICENSE} status={retired} />);
+      expect(screen.getByTestId('license-tier-value').textContent).toBe('SaaSBusiness');
+    },
+  );
 });
 
 describe('licensed-agent copy', () => {
