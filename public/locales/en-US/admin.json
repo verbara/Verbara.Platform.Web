@@ -1303,8 +1303,6 @@
       "Developer": "Developer",
       "SelfHostStartup": "Self-host Startup",
       "SelfHostBusiness": "Self-host Business",
-      "SaaSBusiness": "SaaS Business",
-      "SaaSEnterprise": "SaaS Enterprise",
       "WhiteLabel": "White label"
     },
     "card": {
