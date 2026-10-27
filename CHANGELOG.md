@@ -18,6 +18,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   comments and the smb-owner persona specs drop "Verbara-hosted"/"SaaS" wording, and `README.md` carries the canonical
   sentence: Verbara is omnichannel contact-center software, licensed for each company to install and operate on its
   own infrastructure (verbara-meta/PDR-0006).
+- **Licence page and system page: the retired hosted tiers are gone.** The licence tier labels and the generated
+  `LicenseTier` type drop `SaaSBusiness` and `SaaSEnterprise` (verbara-meta/PDR-0006); the console names exactly
+  `None`, `Developer`, `SelfHostStartup`, `SelfHostBusiness` and `WhiteLabel`. A tier name the console does not know,
+  including a retired one sent by an older Platform, is shown as received. The API types are regenerated from the
+  Platform document that retires tiers 4 and 5, which also carries Wave 1's reworded `aiSource` descriptions.
 
 ## [3.26.0-web] - 2026-10-25
 

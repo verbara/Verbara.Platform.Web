@@ -54,7 +54,7 @@ export function useSystemLicense() {
 
 /**
  * `GET /api/v1/management/system/license/status` — the Pro `LicenseStatusSnapshot`, served
- * verbatim (host contract fixture `license-status-snapshot.v1.json`). It carries the licence
+ * verbatim (host contract fixture `license-status-snapshot.v2.json`). It carries the licence
  * `tier`, which `LicenseInfoDto` does not; `licensee` is the licensee name, never the tier.
  * `maxAgents` is the advisory licensed-agent band (null or 0 = not declared).
  */

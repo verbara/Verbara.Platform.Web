@@ -97,7 +97,7 @@ describe('LicensePage', () => {
     vi.resetAllMocks();
     mockUseUpdate.mockReturnValue({ mutate: vi.fn(), isPending: false });
     mockUseStatus.mockReturnValue({
-      data: fixture<LicenseStatusSnapshot>('license-status-snapshot.v1.json'),
+      data: fixture<LicenseStatusSnapshot>('license-status-snapshot.v2.json'),
     });
     mockUsePeaks.mockReturnValue({
       data: fixture<LicensedAgentPeaks>('licensed-agent-peaks.v1.json'),
@@ -258,6 +258,40 @@ describe('LicensePage', () => {
     expect(tier.textContent).not.toContain('Example Contact Ltd');
   });
 
+  it('TierCard_ShouldIgnoreThePeaksLicenceTier_WhenStatusAndPeaksDisagree', () => {
+    mockUseLicense.mockReturnValue({ data: baseLicense(), isLoading: false });
+    const peaks = fixture<LicensedAgentPeaks>('licensed-agent-peaks.v1.json');
+    peaks.license = {
+      ...fixture<LicensedAgentPeaks['license']>('licensed-agent-license-block.v2.json'),
+      tier: 'Developer',
+    };
+    mockUsePeaks.mockReturnValue({ data: peaks, isLoading: false, isError: false });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    const tier = screen.getByTestId('license-tier-value');
+    expect(tier.textContent).toContain('admin:license.tiers.SelfHostBusiness');
+    expect(tier.textContent).not.toContain('Developer');
+  });
+
+  it('TierCard_ShouldRenderWithoutError_WhenAnOlderPlatformSendsARetiredTier', () => {
+    mockUseLicense.mockReturnValue({ data: baseLicense(), isLoading: false });
+    mockUseStatus.mockReturnValue({
+      data: {
+        ...fixture<LicenseStatusSnapshot>('license-status-snapshot.v2.json'),
+        tier: 'SaaSBusiness',
+      } as unknown as LicenseStatusSnapshot,
+    });
+
+    render(<LicensePage />, { wrapper: makeWrapper() });
+
+    // The i18n mock echoes the options, so the raw fallback is visible as the defaultValue.
+    expect(screen.getByTestId('license-tier-value').textContent).toContain(
+      '"defaultValue":"SaaSBusiness"',
+    );
+    expect(screen.getByTestId('license-agents-card')).toBeDefined();
+  });
+
   it('TierCard_ShouldShowUnlicensed_WhenStatusIsNotLoaded', () => {
     mockUseLicense.mockReturnValue({ data: baseLicense(), isLoading: false });
     mockUseStatus.mockReturnValue({ data: { isLoaded: false, tier: 'Developer' } });
@@ -280,7 +314,7 @@ describe('LicensePage', () => {
     mockUseLicense.mockReturnValue({ data: baseLicense(), isLoading: false });
     mockUseStatus.mockReturnValue({
       data: {
-        ...fixture<LicenseStatusSnapshot>('license-status-snapshot.v1.json'),
+        ...fixture<LicenseStatusSnapshot>('license-status-snapshot.v2.json'),
         tier: 'Developer',
       },
     });
