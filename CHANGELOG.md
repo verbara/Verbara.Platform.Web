@@ -9,6 +9,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.27.0-web] - 2026-10-27
+
+Verbara as self-hosted software only — the console drops the hosted tiers and the hosted-AI wording
+(verbara-meta/PDR-0006); **requires Platform ≥ v2.33.0** for the five-tier `LicenseTier` types. The licence page and
+the system page name exactly the five self-hosted tiers, and a retired tier name sent by an older Platform is shown as
+received. The AI typification settings say the platform operator provides the language model, and the README
+describes Verbara as software each company installs and operates on its own infrastructure. (#473, #485, #486)
+
 ### Changed
 
 - **AI typification settings no longer present Verbara as running a service.** The AI-source toggle now reads
@@ -17,12 +25,22 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   operator of the deployment configures. Values only — no i18n key, API field or behaviour changes. Related source
   comments and the smb-owner persona specs drop "Verbara-hosted"/"SaaS" wording, and `README.md` carries the canonical
   sentence: Verbara is omnichannel contact-center software, licensed for each company to install and operate on its
-  own infrastructure (verbara-meta/PDR-0006).
+  own infrastructure (verbara-meta/PDR-0006). (#473, #485)
 - **Licence page and system page: the retired hosted tiers are gone.** The licence tier labels and the generated
   `LicenseTier` type drop `SaaSBusiness` and `SaaSEnterprise` (verbara-meta/PDR-0006); the console names exactly
   `None`, `Developer`, `SelfHostStartup`, `SelfHostBusiness` and `WhiteLabel`. A tier name the console does not know,
   including a retired one sent by an older Platform, is shown as received. The API types are regenerated from the
-  Platform document that retires tiers 4 and 5, which also carries Wave 1's reworded `aiSource` descriptions.
+  Platform document that retires tiers 4 and 5, which also carries Wave 1's reworded `aiSource` descriptions. (#486)
+
+### Dependencies
+
+- **npm pins swept forward — 11 Dependabot merges since `v3.26.0-web`, recorded here as one movement.** Runtime:
+  `@tanstack/react-query` 5.104.3 → 5.104.5 and `@tanstack/react-virtual` 3.14.21 → 3.14.22 (#474), `i18next`
+  26.4.7 → 26.5.2 with `i18next-http-backend` 4.0.3 → 4.0.4 and `react-i18next` 17.0.19 → 17.1.0 (#477),
+  `@hookform/resolvers` 5.9.1 → 5.9.2 (#478), `lucide-react` 1.42.0 → 1.59.0 (#481), `react-is` 19.3.0 → 19.3.1
+  (#483) and `jspdf-autotable` 5.0.8 → 5.0.9 (#484). Dev/toolchain only, never in the bundle: `vite` 8.3.4 → 8.3.5
+  (#475), `eslint` 10.12.0 → 10.13.0 (#476), `@playwright/test` 1.64.0 → 1.64.1 (#479), `@axe-core/playwright`
+  4.13.0 → 4.14.0 (#480) and `github/codeql-action` 4.38.3 → 4.39.0 (#482). No product source changed with them.
 
 ## [3.26.0-web] - 2026-10-25
 
