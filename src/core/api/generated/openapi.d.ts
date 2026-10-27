@@ -17593,7 +17593,7 @@ export interface components {
     /**
      * @description Ownership discriminator for a tenant's Typification LLM provider — distinct
      *     from ProviderType (the provider *family*). `Byo` uses the
-     *     tenant's own encrypted key; `PlatformManaged` uses Verbara's operator
+     *     tenant's own encrypted key; `PlatformManaged` uses the deployment operator's
      *     key (host-bound `PlatformLlmOptions`), metered + billed in AI Credits.
      * @enum {unknown}
      */
@@ -19287,14 +19287,7 @@ export interface components {
       licensee?: null | string;
     };
     /** @enum {unknown} */
-    LicenseTier:
-      | 'None'
-      | 'Developer'
-      | 'SelfHostStartup'
-      | 'SelfHostBusiness'
-      | 'SaaSBusiness'
-      | 'SaaSEnterprise'
-      | 'WhiteLabel';
+    LicenseTier: 'None' | 'Developer' | 'SelfHostStartup' | 'SelfHostBusiness' | 'WhiteLabel';
     /** @enum {unknown} */
     LicenseValidationResult:
       'Valid' | 'Invalid' | 'Expired' | 'GracePeriod' | 'MissingFeature' | 'UnauthorizedImage';
@@ -20614,7 +20607,7 @@ export interface components {
       settings: components['schemas']['ProviderSettings'];
       /** @description Whether AI is enabled for this tenant. */
       enabled: boolean;
-      /** @description BYO (tenant key) vs platform-managed (Verbara operator key, metered in AI Credits). */
+      /** @description BYO (tenant key) vs platform-managed (the deployment operator's key, metered in AI Credits). */
       aiSource: components['schemas']['AiSource'];
       /** @description Whether the tenant's plan entitles it to the platform-managed LLM (`PlanFeature.PlatformLlm`). */
       platformLlmAvailable: boolean;
@@ -21439,7 +21432,7 @@ export interface components {
       /** @description Whether AI is enabled for this tenant. */
       enabled: boolean;
       /**
-       * @description BYO (tenant key, default) vs platform-managed (Verbara operator key, metered in AI Credits).
+       * @description BYO (tenant key, default) vs platform-managed (the deployment operator's key, metered in AI Credits).
        *     Defaulted to AiSource.Byo so existing BYO callers stay source-compatible.
        *     AiSource.PlatformManaged requires the `PlanFeature.PlatformLlm` entitlement.
        */
