@@ -1327,6 +1327,25 @@ describe('LoginPage sign-in brand (spec console-tenant-branding)', () => {
     });
   });
 
+  it('SignInBrand_ShouldKeepTheHostBrandAndRequestNothing_WhenAFieldCommitFollowsAHostBrand', async () => {
+    // Design D3 step 1: "The host's brand is final: later field commits make no request."
+    onHost('acme.platform.example');
+    brandingAnswers[BY_HOST] = { status: 200, body: { displayName: 'Acme' } };
+    brandingAnswers[byTenant('globex')] = { status: 200, body: { displayName: 'Globex' } };
+    await renderLogin();
+    await settle();
+    const afterHost = signInBrand();
+
+    commitTenant('globex');
+    await settle();
+
+    expect({ afterHost, afterCommit: signInBrand(), byTenant: byTenantRequests() }).toEqual({
+      afterHost: { name: 'Acme', source: 'host', logo: null },
+      afterCommit: { name: 'Acme', source: 'host', logo: null },
+      byTenant: [],
+    });
+  });
+
   it('SignInBrand_ShouldFallBackToTheTenantBrand_WhenNoRowCarriesTheHostLabel', async () => {
     // "A host label no row carries falls back to the tenant"
     onHost('acme.platform.example');

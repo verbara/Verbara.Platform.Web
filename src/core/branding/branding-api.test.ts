@@ -11,6 +11,8 @@ import {
   setBrandingFetch,
   type BrandingFetch,
 } from './branding-api';
+import { useAuthStore } from '@/core/auth/auth-store';
+import { useTenantStore } from '@/core/tenant/tenant-store';
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -27,6 +29,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  useAuthStore.setState({ accessToken: null, tenantId: null });
+  useTenantStore.setState({ activeTenantId: null });
   resetBrandingFetch();
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -111,14 +115,21 @@ describe('fetchBrandingByTenant', () => {
     await expect(pending).resolves.toEqual({ status: 'failed' });
   });
 
-  it('fetchBrandingByTenant_ShouldSendNoTokenOrTenantHeader_WhenItRequests', async () => {
+  it('fetchBranding_ShouldSendNoTokenOrTenantHeader_WhenTheUserIsSignedIn', async () => {
+    // Signed in, so a regression that adds the headers only when there is a session is caught.
+    useAuthStore.setState({ accessToken: 'signed-in-token', tenantId: 'acme' });
+    useTenantStore.getState().setActiveTenant('acme');
     brandingFetchMock.mockResolvedValue(json(404, null));
 
     await fetchBrandingByTenant('acme');
+    await fetchBrandingBySubdomain('acme');
 
-    const headers = new Headers(brandingFetchMock.mock.calls[0]?.[1]?.headers);
-    expect(headers.has('Authorization')).toBe(false);
-    expect(headers.has('X-Tenant-Id')).toBe(false);
+    expect(brandingFetchMock).toHaveBeenCalledTimes(2);
+    for (const [, init] of brandingFetchMock.mock.calls) {
+      const headers = new Headers(init.headers);
+      expect(headers.has('Authorization')).toBe(false);
+      expect(headers.has('X-Tenant-Id')).toBe(false);
+    }
   });
 
   it('fetchBrandingByTenant_ShouldNeverCallTheGlobalFetch_WhenASeamIsInstalled', async () => {
