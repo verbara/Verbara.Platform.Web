@@ -13,6 +13,7 @@ import i18next from 'i18next';
 import enCommon from '../../../public/locales/en-US/common.json';
 import esCommon from '../../../public/locales/es-419/common.json';
 import ptCommon from '../../../public/locales/pt-BR/common.json';
+import { setBrandingFetch } from '@/core/branding';
 import { useAuthStore } from './auth-store';
 import { LoginPage } from './login-page';
 
@@ -77,6 +78,11 @@ const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
       answer.headers ?? (answer.body === undefined ? {} : { 'Content-Type': 'application/json' }),
   });
 });
+
+/** Branding requests' own seam (design D8): 404 unless a case answers otherwise. */
+const brandingFetchMock = vi.fn<(input: string, init: RequestInit) => Promise<Response>>(
+  async () => new Response(null, { status: 404 }),
+);
 
 async function createI18n(lng: Locale) {
   const instance = i18next.createInstance();
@@ -176,6 +182,9 @@ beforeEach(() => {
   answers = {};
   fetchMock.mockClear();
   vi.stubGlobal('fetch', fetchMock);
+  brandingFetchMock.mockClear();
+  setBrandingFetch(brandingFetchMock);
+  vi.stubEnv('VITE_DEFAULT_TENANT_ID', '');
   useAuthStore.getState().logout();
 });
 
