@@ -4,7 +4,7 @@
  * An IP address is never a tenant: its first "label" is an octet.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { resolveDefaultTenant } from './resolve-tenant';
+import { hostTenantLabel, resolveDefaultTenant } from './resolve-tenant';
 
 function onHost(hostname: string, defaultTenant = '') {
   vi.stubEnv('VITE_DEFAULT_TENANT_ID', defaultTenant);
@@ -96,5 +96,50 @@ describe('resolveDefaultTenant', () => {
     onHost('acme.platform.example.');
 
     expect(resolveDefaultTenant()).toBe('acme');
+  });
+});
+
+/**
+ * The host label alone (design D1 of `licensee-branding-in-the-console`): the same normalised first
+ * label `resolveDefaultTenant` falls back to, without the build-time default, so the sign-in page can
+ * look the host's brand up by subdomain even on a build that pre-fills a tenant.
+ */
+describe('hostTenantLabel', () => {
+  it.each([
+    '10.0.0.5',
+    '[::ffff:10.0.0.5]',
+    '127.0.0.1.',
+    'localhost',
+    'example.com',
+    'www.example.com',
+    'api.example.com',
+    'WWW.example.com',
+    'API.example.com',
+    'Localhost.example.com',
+    'acme-corp.lan.',
+  ])('hostTenantLabel_ShouldReturnNull_WhenTheHostCarriesNoTenantLabel %s', (hostname) => {
+    onHost(hostname);
+
+    expect(hostTenantLabel()).toBeNull();
+  });
+
+  it.each(['acme.platform.example', 'acme.platform.example.', 'ACME.Platform.Example'])(
+    'hostTenantLabel_ShouldReturnTheNormalisedFirstLabel_WhenTheHostHasThreeOrMoreLabels %s',
+    (hostname) => {
+      onHost(hostname);
+
+      expect(hostTenantLabel()).toBe('acme');
+    },
+  );
+
+  it('hostTenantLabel_ShouldIgnoreTheBuiltInDefault_WhenOneIsSet', () => {
+    onHost('acme.platform.example', 'globex');
+
+    expect(hostTenantLabel()).toBe('acme');
+    expect(resolveDefaultTenant()).toBe('globex');
+
+    onHost('10.0.0.5', 'globex');
+
+    expect(hostTenantLabel()).toBeNull();
   });
 });
