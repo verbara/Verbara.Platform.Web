@@ -4,9 +4,9 @@
  * a style injection are dropped").
  */
 import { describe, expect, it } from 'vitest';
-import { parsePublicBranding, type PublicBranding } from './public-branding';
+import { parsePublicBranding, type PublicBrandingDto } from './public-branding';
 
-const EMPTY: PublicBranding = {
+const EMPTY: PublicBrandingDto = {
   displayName: null,
   logoUrl: null,
   faviconUrl: null,
@@ -40,13 +40,20 @@ describe('parsePublicBranding', () => {
     },
   );
 
-  /** The Platform omits a field with no value (`WhenWritingNull`), so `{}` is an all-default brand. */
-  it('parsePublicBranding_ShouldReadAMissingKeyAsUnset_WhenTheBodyOmitsFields', () => {
-    expect(parsePublicBranding({})).toEqual(EMPTY);
-    expect(parsePublicBranding({ displayName: 'Acme' })).toEqual({
-      ...EMPTY,
-      displayName: 'Acme',
-    });
+  /**
+   * The generated `PublicBrandingDto` lists all eight fields as required, but the Platform omits a
+   * field with no value (`WhenWritingNull`): a missing key reads exactly like `null`.
+   */
+  it('parsePublicBranding_ShouldReadEveryFieldAsNull_WhenTheBodyIsAnEmptyObject', () => {
+    const parsed: PublicBrandingDto | null = parsePublicBranding({});
+
+    expect(parsed).toEqual(EMPTY);
+  });
+
+  it('parsePublicBranding_ShouldReadTheOmittedFieldsAsNull_WhenTheBodyCarriesOnlyTheDisplayName', () => {
+    const parsed: PublicBrandingDto | null = parsePublicBranding({ displayName: 'Acme' });
+
+    expect(parsed).toEqual({ ...EMPTY, displayName: 'Acme' });
   });
 
   it('parsePublicBranding_ShouldDropAField_WhenItIsNotAString', () => {

@@ -2,11 +2,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { useBrandingStore, type PublicBranding } from '@/core/branding';
+import { useBrandingStore, type PublicBrandingDto } from '@/core/branding';
 import { useDocumentTitle } from './use-document-title';
 
 /** A brand that sets only what the case names; every other field is unset. */
-function brand(fields: Partial<PublicBranding>): PublicBranding {
+function brand(fields: Partial<PublicBrandingDto>): PublicBrandingDto {
   return {
     displayName: null,
     logoUrl: null,
@@ -21,7 +21,7 @@ function brand(fields: Partial<PublicBranding>): PublicBranding {
 }
 
 /** Paints a tenant brand straight into the store, as a resolved signed-in lookup would. */
-function paintBrand(fields: Partial<PublicBranding>) {
+function paintBrand(fields: Partial<PublicBrandingDto>) {
   act(() => {
     useBrandingStore.setState({ brand: brand(fields), source: 'tenant', key: 'acme' });
   });

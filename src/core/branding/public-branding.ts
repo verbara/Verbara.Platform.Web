@@ -1,23 +1,15 @@
+import type { components } from '@/core/api/generated/openapi';
+
 /**
- * The 200 body of `GET /api/v1/branding/{tenantId}` and `GET /api/v1/branding/by-subdomain/{subdomain}`.
+ * The 200 body of `GET /api/v1/branding/{tenantId}` and `GET /api/v1/branding/by-subdomain/{subdomain}`,
+ * as Platform's OpenAPI document declares it (design D6 of `licensee-branding-in-the-console`).
  *
- * A local mirror of Platform's `PublicBrandingDto` (`BrandingEndpoints.cs`), declared here because
- * the OpenAPI types Web generates today come from a Platform release that declares no 200 body for
- * either route (design D6 of `licensee-branding-in-the-console`). Task 3.6 of that change replaces it
- * with the generated `components['schemas']['PublicBrandingDto']` once a Platform release carries
- * `public-branding-inherits-from-parent`. The Platform omits a field with no value, so a missing key
- * reads as `null`.
+ * The schema lists all eight fields as required, but the Platform's JSON writer omits a field with no
+ * value (`WhenWritingNull`), so a real body may lack any of them and an all-blank brand answers `{}`.
+ * `parsePublicBranding` therefore reads a missing key exactly like `null`, and only its output, never
+ * a raw response body, has this type.
  */
-export interface PublicBranding {
-  readonly displayName: string | null;
-  readonly logoUrl: string | null;
-  readonly faviconUrl: string | null;
-  readonly primaryColor: string | null;
-  readonly secondaryColor: string | null;
-  readonly accentColor: string | null;
-  readonly locale: string | null;
-  readonly timezone: string | null;
-}
+export type PublicBrandingDto = components['schemas']['PublicBrandingDto'];
 
 /**
  * A hex colour of 3, 4, 6 or 8 digits. Narrower than the widget's `ALLOWED_COLOR`, because the value
@@ -52,7 +44,7 @@ function safeColor(value: unknown): string | null {
  * safety rules of design D5 drop an unsafe logo, favicon or colour. The display name is kept as is;
  * it is only ever rendered as a React text node. A body that is not an object is `null`, a failure.
  */
-export function parsePublicBranding(json: unknown): PublicBranding | null {
+export function parsePublicBranding(json: unknown): PublicBrandingDto | null {
   if (typeof json !== 'object' || json === null || Array.isArray(json)) return null;
   const body = json as Record<string, unknown>;
   return {

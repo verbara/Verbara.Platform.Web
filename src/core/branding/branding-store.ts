@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { fetchBrandingBySubdomain, fetchBrandingByTenant } from './branding-api';
 import { applyBrandTheme, resetBrandTheme } from './brand-theme';
-import type { PublicBranding } from './public-branding';
+import type { PublicBrandingDto } from './public-branding';
 
 /** Which brand is painted: the Verbara defaults, the host label's, or a tenant's. */
 export type BrandSource = 'default' | 'host' | 'tenant';
@@ -14,7 +14,7 @@ export type HostLookup = 'pending' | 'found' | 'not-found' | 'failed';
 
 interface BrandingState {
   /** The painted brand, or `null` for the Verbara defaults. */
-  readonly brand: PublicBranding | null;
+  readonly brand: PublicBrandingDto | null;
   readonly source: BrandSource;
   /** The host label or tenant id whose brand is painted; `null` on the defaults. */
   readonly key: string | null;
@@ -63,7 +63,7 @@ const DEFAULTS = {
 
 export const useBrandingStore = create<BrandingState>()((set, get) => {
   /** The one place a brand is committed, so the theme layer always follows the store. */
-  function paint(brand: PublicBranding | null, source: BrandSource, key: string | null): void {
+  function paint(brand: PublicBrandingDto | null, source: BrandSource, key: string | null): void {
     set(brand ? { brand, source, key } : { brand: null, source: 'default', key: null });
     applyBrandTheme(brand);
   }

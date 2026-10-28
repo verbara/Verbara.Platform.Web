@@ -9,9 +9,9 @@ import {
   brandForeground,
   resetBrandTheme,
 } from './brand-theme';
-import type { PublicBranding } from './public-branding';
+import type { PublicBrandingDto } from './public-branding';
 
-function brand(fields: Partial<PublicBranding>): PublicBranding {
+function brand(fields: Partial<PublicBrandingDto>): PublicBrandingDto {
   return {
     displayName: null,
     logoUrl: null,

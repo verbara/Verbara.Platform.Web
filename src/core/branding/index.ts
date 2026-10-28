@@ -14,4 +14,4 @@ export {
   resetBrandTheme,
 } from './brand-theme';
 export { useBrandingStore, type BrandSource, type HostLookup } from './branding-store';
-export { parsePublicBranding, type PublicBranding } from './public-branding';
+export { parsePublicBranding, type PublicBrandingDto } from './public-branding';
