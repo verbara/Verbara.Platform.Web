@@ -6,6 +6,7 @@ import { createPostMessageBridge } from '@/webchat/sdk/postmessage-bridge';
 import { applyTheme } from './theme-apply';
 import { breadcrumb } from './sentry-breadcrumbs';
 import { postToHost, resolveHostOrigin } from './origins';
+import { WidgetFrame } from './widget-frame';
 
 export function App() {
   const [config, setConfig] = useState<InitConfigPayload | null>(null);
@@ -70,14 +71,20 @@ export function App() {
     return (
       // The testid marks that the app mounted and the postMessage bridge is listening. A host
       // that posts `init-config` before this exists loses it — postMessage has no buffering.
-      <div
-        className="flex h-screen items-center justify-center text-sm text-gray-500"
-        data-testid="webchat-embed-loading"
-      >
-        Loading…
-      </div>
+      <WidgetFrame>
+        <div
+          className="flex h-full items-center justify-center text-sm text-gray-500"
+          data-testid="webchat-embed-loading"
+        >
+          Loading…
+        </div>
+      </WidgetFrame>
     );
   }
 
-  return <ChatWidget config={config} onUnreadChange={handleUnread} />;
+  return (
+    <WidgetFrame>
+      <ChatWidget config={config} onUnreadChange={handleUnread} />
+    </WidgetFrame>
+  );
 }

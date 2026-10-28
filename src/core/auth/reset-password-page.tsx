@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -85,6 +86,7 @@ function PasswordStrength({ password, policy }: { password: string; policy: Pass
 
 export function ResetPasswordPage() {
   const { t } = useTranslation();
+  useDocumentTitle(t('title.reset_password'));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // Platform 2.24.x mailed the Base64 token unencoded, and the query parser reads its '+' as a

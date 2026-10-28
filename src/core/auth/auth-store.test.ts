@@ -1,6 +1,7 @@
 import { useAuthStore } from './auth-store';
 import { endImpersonationLocally } from './end-impersonation-locally';
 import { queryClient } from '@/core/api/query-client';
+import { setBrandingFetch, useBrandingStore } from '@/core/branding';
 
 const PERSIST_KEY = 'verbara-auth';
 
@@ -182,6 +183,30 @@ describe('AuthStore', () => {
         {},
       );
     expect(useAuthStore.getState().sessionIdleTimeoutMinutes).toBe(45);
+  });
+
+  it('logout_ShouldRestoreTheVerbaraBrand_WhenNoShellIsMountedToSeeIt', async () => {
+    // The user menu signs out and navigates to /login without a reload, unmounting the shell's
+    // BrandingSync; the brand must not depend on it (licensee-branding-in-the-console, design D2).
+    setBrandingFetch(
+      async () =>
+        new Response(JSON.stringify({ displayName: 'Acme', primaryColor: '#336699' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    await useBrandingStore.getState().lookupTenant('acme');
+    expect(useBrandingStore.getState()).toMatchObject({ source: 'tenant', key: 'acme' });
+    expect(document.documentElement.style.getPropertyValue('--color-brand')).toBe('#336699');
+
+    useAuthStore.getState().logout();
+
+    expect(useBrandingStore.getState()).toMatchObject({
+      brand: null,
+      source: 'default',
+      key: null,
+    });
+    expect(document.documentElement.style.getPropertyValue('--color-brand')).toBe('');
   });
 
   describe('persistence', () => {

@@ -13,6 +13,9 @@ checks every console API call against them.
 What is scanned (src/**/*.ts|tsx, excluding src/core/api/generated/ and *.test.*):
   * customFetch({ url, method }) and customFetchWithHeaders({ url, method }) — the
     client wrappers in src/core/api/client.ts that nearly every hook uses;
+  * brandingRequest({ url, method }) — the anonymous branding module's request function
+    in src/core/branding/ (no token, no tenant header), which sends through a fetch seam
+    the raw-fetch rule below cannot see;
   * fetch(<literal>, { method }) whose literal URL starts with /api/ — the few raw
     calls (login, refresh, media upload, retention, agent departure). A raw fetch
     without a `method` is a GET.
@@ -61,7 +64,7 @@ SRC_DIR = "src"
 GENERATED_DIR = "src/core/api/generated"
 OPENAPI_FILE = "src/core/api/generated/openapi.d.ts"
 BASELINE_FILE = "console-api-routes-baseline.json"
-WRAPPERS = ("customFetch", "customFetchWithHeaders")
+WRAPPERS = ("customFetch", "customFetchWithHeaders", "brandingRequest")
 HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
 PLACEHOLDER = "\x00"
 PLACEHOLDER_TEXT = "{*}"

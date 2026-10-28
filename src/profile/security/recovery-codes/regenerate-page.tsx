@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { useNavigate } from 'react-router';
 import { TriangleAlert, Check, Download, RefreshCw } from 'lucide-react';
 
@@ -26,6 +27,7 @@ type WizardStep = 'warning' | 'codes';
  */
 export default function RegeneratePage() {
   const { t } = useTranslation(['admin', 'common']);
+  useDocumentTitle(t('admin:profile_security.recovery_codes.regenerate.title'));
   const navigate = useNavigate();
 
   const [step, setStep] = useState<WizardStep>('warning');

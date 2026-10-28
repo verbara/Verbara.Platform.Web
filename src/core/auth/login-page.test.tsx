@@ -13,6 +13,7 @@ import i18next from 'i18next';
 import enCommon from '../../../public/locales/en-US/common.json';
 import esCommon from '../../../public/locales/es-419/common.json';
 import ptCommon from '../../../public/locales/pt-BR/common.json';
+import { setBrandingFetch, useBrandingStore } from '@/core/branding';
 import { useAuthStore } from './auth-store';
 import { LoginPage } from './login-page';
 
@@ -77,6 +78,11 @@ const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
       answer.headers ?? (answer.body === undefined ? {} : { 'Content-Type': 'application/json' }),
   });
 });
+
+/** Branding requests' own seam (design D8): 404 unless a case answers otherwise. */
+const brandingFetchMock = vi.fn<(input: string, init: RequestInit) => Promise<Response>>(
+  async () => new Response(null, { status: 404 }),
+);
 
 async function createI18n(lng: Locale) {
   const instance = i18next.createInstance();
@@ -176,6 +182,9 @@ beforeEach(() => {
   answers = {};
   fetchMock.mockClear();
   vi.stubGlobal('fetch', fetchMock);
+  brandingFetchMock.mockClear();
+  setBrandingFetch(brandingFetchMock);
+  vi.stubEnv('VITE_DEFAULT_TENANT_ID', '');
   useAuthStore.getState().logout();
 });
 
@@ -184,6 +193,17 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   useAuthStore.getState().logout();
+});
+
+// Spec `console-verbara-attribution`, "The sign-in page carries the suffix" (design D5).
+describe('LoginPage tab title', () => {
+  it('Title_ShouldReadSignInWithTheVerbaraSuffix_WhenNoTenantBrandIsResolved', async () => {
+    const previous = document.title;
+    await renderLogin();
+    expect(document.title).toBe('Sign in · Verbara');
+    cleanup();
+    expect(document.title).toBe(previous);
+  });
 });
 
 describe('LoginPage sign-in refusals', () => {
@@ -1195,4 +1215,477 @@ describe('MfaVerify sends the tenant the sign-in used', () => {
       expect(verifyTenantHeader()).toBe(expected);
     },
   );
+});
+
+/**
+ * The sign-in brand (spec `console-tenant-branding`, design D3 and D5). Every case stubs and reads
+ * the branding seam (`brandingFetchMock`), never the page's `fetch` stub: per URL, an answer, a
+ * network error, or a deferred answer the case releases when it chooses.
+ */
+describe('LoginPage sign-in brand (spec console-tenant-branding)', () => {
+  type BrandingAnswer = { status: number; body?: unknown } | 'network-error' | Deferred;
+
+  interface Deferred {
+    readonly kind: 'deferred';
+    readonly promise: Promise<Response>;
+    resolve: (answer: { status: number; body?: unknown }) => void;
+    fail: () => void;
+  }
+
+  let brandingAnswers: Record<string, BrandingAnswer>;
+
+  function toResponse({ status, body }: { status: number; body?: unknown }): Response {
+    return body === undefined
+      ? new Response(null, { status })
+      : new Response(JSON.stringify(body), {
+          status,
+          headers: { 'Content-Type': 'application/json' },
+        });
+  }
+
+  function deferred(): Deferred {
+    let resolve!: Deferred['resolve'];
+    let fail!: Deferred['fail'];
+    const promise = new Promise<Response>((res, rej) => {
+      resolve = (answer) => res(toResponse(answer));
+      fail = () => rej(new TypeError('Failed to fetch'));
+    });
+    return { kind: 'deferred', promise, resolve, fail };
+  }
+
+  beforeEach(() => {
+    brandingAnswers = {};
+    brandingFetchMock.mockImplementation(async (input) => {
+      const answer = brandingAnswers[input] ?? { status: 404 };
+      if (answer === 'network-error') throw new TypeError('Failed to fetch');
+      if ('kind' in answer) return answer.promise;
+      return toResponse(answer);
+    });
+  });
+
+  afterEach(() => {
+    brandingFetchMock.mockImplementation(async () => new Response(null, { status: 404 }));
+    window.history.replaceState(null, '', '/');
+  });
+
+  function onHost(hostname: string) {
+    vi.stubGlobal('location', { ...window.location, hostname });
+  }
+
+  const BY_HOST = '/api/v1/branding/by-subdomain/acme';
+  const byTenant = (tenant: string) => `/api/v1/branding/${tenant}`;
+
+  /** The branding requests made by tenant id, in order (the host lookup excluded). */
+  function byTenantRequests(): string[] {
+    return brandingFetchMock.mock.calls
+      .map(([input]) => input)
+      .filter((url) => url.startsWith('/api/v1/branding/') && !url.startsWith(BY_HOST));
+  }
+
+  /** The heading and logo as a user sees them. */
+  function signInBrand() {
+    const heading = screen.getByTestId('login-brand-name');
+    const logo = screen.queryByTestId('login-brand-logo');
+    return {
+      name: heading.textContent,
+      source: heading.getAttribute('data-brand-source'),
+      logo: logo === null ? null : { src: logo.getAttribute('src'), alt: logo.getAttribute('alt') },
+    };
+  }
+
+  /** Open the tenant field when it is collapsed, enter a value and leave the field. */
+  function commitTenant(value: string) {
+    if (screen.queryByTestId('login-tenant') === null) {
+      fireEvent.click(screen.getByTestId('login-tenant-toggle'));
+    }
+    const input = screen.getByTestId('login-tenant');
+    fireEvent.change(input, { target: { value } });
+    fireEvent.blur(input);
+  }
+
+  async function release(
+    hold: Deferred,
+    answer: { status: number; body?: unknown } | 'network-error',
+  ) {
+    await act(async () => {
+      if (answer === 'network-error') hold.fail();
+      else hold.resolve(answer);
+    });
+    await settle();
+  }
+
+  it('SignInBrand_ShouldShowTheHostBrandAndRequestNoTenant_WhenTheSubdomainHasABrand', async () => {
+    // "A white-label subdomain is found by host"
+    onHost('acme.platform.example');
+    brandingAnswers[BY_HOST] = { status: 200, body: { displayName: 'Acme' } };
+    await renderLogin();
+    await settle();
+
+    expect({ brand: signInBrand(), byTenant: byTenantRequests() }).toEqual({
+      brand: { name: 'Acme', source: 'host', logo: null },
+      byTenant: [],
+    });
+  });
+
+  it('SignInBrand_ShouldKeepTheHostBrandAndRequestNothing_WhenAFieldCommitFollowsAHostBrand', async () => {
+    // Design D3 step 1: "The host's brand is final: later field commits make no request."
+    onHost('acme.platform.example');
+    brandingAnswers[BY_HOST] = { status: 200, body: { displayName: 'Acme' } };
+    brandingAnswers[byTenant('globex')] = { status: 200, body: { displayName: 'Globex' } };
+    await renderLogin();
+    await settle();
+    const afterHost = signInBrand();
+
+    commitTenant('globex');
+    await settle();
+
+    expect({ afterHost, afterCommit: signInBrand(), byTenant: byTenantRequests() }).toEqual({
+      afterHost: { name: 'Acme', source: 'host', logo: null },
+      afterCommit: { name: 'Acme', source: 'host', logo: null },
+      byTenant: [],
+    });
+  });
+
+  it('SignInBrand_ShouldFallBackToTheTenantBrand_WhenNoRowCarriesTheHostLabel', async () => {
+    // "A host label no row carries falls back to the tenant"
+    onHost('acme.platform.example');
+    brandingAnswers[byTenant('acme')] = { status: 200, body: { displayName: 'Acme Corp' } };
+    await renderLogin();
+    await settle();
+
+    expect({ brand: signInBrand(), byTenant: byTenantRequests() }).toEqual({
+      brand: { name: 'Acme Corp', source: 'tenant', logo: null },
+      byTenant: [byTenant('acme')],
+    });
+  });
+
+  it('SignInBrand_ShouldDropAFieldCommit_WhenTheHostAnswersLaterWithABrand', async () => {
+    // "A field commit before the host answers is dropped when the host finds a brand"
+    onHost('acme.platform.example');
+    const hold = deferred();
+    brandingAnswers[BY_HOST] = hold;
+    await renderLogin();
+
+    commitTenant('globex');
+    await settle();
+    const beforeHost = byTenantRequests();
+    await release(hold, { status: 200, body: { displayName: 'Acme' } });
+
+    expect({ beforeHost, brand: signInBrand(), afterHost: byTenantRequests() }).toEqual({
+      beforeHost: [],
+      brand: { name: 'Acme', source: 'host', logo: null },
+      afterHost: [],
+    });
+  });
+
+  it.each([
+    ['a 404', { status: 404 }],
+    ['a network error', 'network-error'],
+  ] as const)(
+    'SignInBrand_ShouldSendOnlyTheLatestFieldCommit_WhenTheHostAnswersLaterWith %s',
+    async (_case, hostAnswer) => {
+      // "A field commit before the host answers is sent when the host finds none"
+      onHost('acme.platform.example');
+      const hold = deferred();
+      brandingAnswers[BY_HOST] = hold;
+      brandingAnswers[byTenant('globex')] = { status: 200, body: { displayName: 'Globex' } };
+      await renderLogin();
+
+      commitTenant('initech');
+      commitTenant('globex');
+      await settle();
+      const beforeHost = byTenantRequests();
+      await release(hold, hostAnswer);
+
+      expect({ beforeHost, brand: signInBrand(), afterHost: byTenantRequests() }).toEqual({
+        beforeHost: [],
+        brand: { name: 'Globex', source: 'tenant', logo: null },
+        afterHost: [byTenant('globex')],
+      });
+    },
+  );
+
+  it('SignInBrand_ShouldRequestNothingUntilATenantIsEntered_WhenTheConsoleIsReachedByIp', async () => {
+    // "A console reached by IP is branded once a tenant is entered"
+    onHost('192.168.1.50');
+    brandingAnswers[byTenant('acme')] = { status: 200, body: { displayName: 'Acme' } };
+    await renderLogin();
+    await settle();
+    const beforeBlur = { requests: brandingFetchMock.mock.calls.length, brand: signInBrand() };
+
+    commitTenant('acme');
+    await settle();
+
+    expect({ beforeBlur, afterBlur: signInBrand() }).toEqual({
+      beforeBlur: { requests: 0, brand: { name: 'Verbara', source: 'default', logo: null } },
+      afterBlur: { name: 'Acme', source: 'tenant', logo: null },
+    });
+  });
+
+  it('SignInBrand_ShouldShowTheLatestValuesBrand_WhenAnEarlierValuesAnswerArrivesLast', async () => {
+    // "A late answer for an earlier value is dropped"
+    onHost('192.168.1.50');
+    const acme = deferred();
+    brandingAnswers[byTenant('acme')] = acme;
+    brandingAnswers[byTenant('globex')] = { status: 200, body: { displayName: 'Globex' } };
+    await renderLogin();
+
+    commitTenant('acme');
+    commitTenant('globex');
+    await settle();
+    await release(acme, { status: 200, body: { displayName: 'Acme' } });
+
+    expect(signInBrand()).toEqual({ name: 'Globex', source: 'tenant', logo: null });
+  });
+
+  it('SignInBrand_ShouldLeaveThePageUnbrandedAndTheLoginUnchanged_WhenEveryLookupFails', async () => {
+    // "A failed lookup leaves the sign-in page unbranded and usable"
+    onHost('acme.platform.example');
+    brandingAnswers[BY_HOST] = 'network-error';
+    brandingAnswers[byTenant('acme')] = 'network-error';
+    answers['/api/v1/auth/login'] = {
+      status: 200,
+      body: {
+        accessToken: 'access-1',
+        tenantId: 'acme',
+        user: { id: 'u1', email: 'ana@demo.test', displayName: 'Ana', role: 'agent' },
+      },
+    };
+    await renderLogin();
+    await settle();
+    const beforeSignIn = {
+      brand: signInBrand(),
+      error: loginError(),
+      lookups: brandingFetchMock.mock.calls.map(([input]) => input),
+    };
+
+    await submitPassword();
+
+    const [input, init] = fetchMock.mock.calls[0]!;
+    expect({
+      beforeSignIn,
+      request: {
+        input,
+        method: init?.method,
+        headers: Object.fromEntries(new Headers(init?.headers)),
+        body: JSON.parse(String(init?.body)) as unknown,
+      },
+      path: currentPath(),
+    }).toEqual({
+      beforeSignIn: {
+        brand: { name: 'Verbara', source: 'default', logo: null },
+        error: null,
+        lookups: [BY_HOST, byTenant('acme')],
+      },
+      request: {
+        input: '/api/v1/auth/login',
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-tenant-id': 'acme' },
+        body: { tenantId: 'acme', email: 'ana@demo.test', password: 'Correct-Horse-1' },
+      },
+      path: '/agent',
+    });
+  });
+
+  it('SignInBrand_ShouldShowTheNameAndLogo_WhenTheBrandSetsBoth', async () => {
+    // "Name and logo replace the Verbara heading"
+    onHost('192.168.1.50');
+    brandingAnswers[byTenant('acme')] = {
+      status: 200,
+      body: { displayName: 'Acme', logoUrl: 'https://cdn.example/acme.png' },
+    };
+    await renderLogin();
+
+    commitTenant('acme');
+    await settle();
+
+    expect(signInBrand()).toEqual({
+      name: 'Acme',
+      source: 'tenant',
+      logo: { src: 'https://cdn.example/acme.png', alt: 'Acme' },
+    });
+  });
+
+  it('SignInBrand_ShouldKeepTheVerbaraHeading_WhenTheBrandSetsOnlyColours', async () => {
+    // "A brand with only colours keeps the Verbara heading"
+    onHost('192.168.1.50');
+    brandingAnswers[byTenant('acme')] = { status: 200, body: { primaryColor: '#336699' } };
+    await renderLogin();
+
+    commitTenant('acme');
+    await settle();
+
+    expect(signInBrand()).toEqual({ name: 'Verbara', source: 'tenant', logo: null });
+  });
+
+  it('SignInBrand_ShouldMakeNoBrandingRequest_WhenTheFormIsSubmitted', async () => {
+    onHost('192.168.1.50');
+    answers['/api/v1/auth/login'] = { status: 401 };
+    await renderLogin();
+    commitTenant('acme');
+    await settle();
+    const beforeSubmit = brandingFetchMock.mock.calls.length;
+
+    await submitPassword();
+
+    expect({ beforeSubmit, afterSubmit: brandingFetchMock.mock.calls.length }).toEqual({
+      beforeSubmit: 1,
+      afterSubmit: 1,
+    });
+  });
+
+  // Render-level safety cases (spec "Blank brand values keep the defaults" and "A script address
+  // and a style injection are dropped"; spec audit round 3, F1).
+  it('SignInBrand_ShouldRenderTheDisplayNameAsLiteralText_WhenItHoldsMarkup', async () => {
+    onHost('192.168.1.50');
+    brandingAnswers[byTenant('acme')] = { status: 200, body: { displayName: '<b>Acme</b>' } };
+    await renderLogin();
+
+    commitTenant('acme');
+    await settle();
+
+    const heading = screen.getByTestId('login-brand-name');
+    expect({ text: heading.textContent, injected: heading.querySelector('b') }).toEqual({
+      text: '<b>Acme</b>',
+      injected: null,
+    });
+  });
+
+  it('SignInBrand_ShouldShowNoLogo_WhenTheLogoIsAScriptAddress', async () => {
+    onHost('192.168.1.50');
+    brandingAnswers[byTenant('acme')] = {
+      status: 200,
+      body: { displayName: 'Acme', logoUrl: 'javascript:alert(1)' },
+    };
+    await renderLogin();
+
+    commitTenant('acme');
+    await settle();
+
+    expect(signInBrand()).toEqual({ name: 'Acme', source: 'tenant', logo: null });
+  });
+
+  it.each([
+    ['empty', ''],
+    ['whitespace only', '   '],
+  ])(
+    'SignInBrand_ShouldKeepTheVerbaraHeadingAndNoLogo_WhenTheNameAndLogoAre %s',
+    async (_case, blank) => {
+      onHost('192.168.1.50');
+      brandingAnswers[byTenant('acme')] = {
+        status: 200,
+        body: { displayName: blank, logoUrl: blank },
+      };
+      await renderLogin();
+
+      commitTenant('acme');
+      await settle();
+
+      expect(signInBrand()).toEqual({ name: 'Verbara', source: 'tenant', logo: null });
+    },
+  );
+
+  // "A sign-in lookup that answers after sign-in is dropped" (design D2 chain generation, D3
+  // "Sign-in ends the chain"; spec audit round 2, F1). The signed-in brand is committed through the
+  // store's by-tenant lookup, the call D4's `BrandingSync` makes.
+  describe('a host answer held past sign-in', () => {
+    const SIGNED_IN = { displayName: 'Tenant T' };
+
+    /**
+     * Render with a `from` of `/login`, so the successful sign-in navigates to the same route and
+     * the page stays mounted: only `completeLogin` ending the chain can drop the host answer.
+     */
+    async function renderLoginThatStaysMounted() {
+      const i18n = await createI18n('en-US');
+      render(
+        <I18nextProvider i18n={i18n}>
+          <MemoryRouter
+            initialEntries={[{ pathname: '/login', state: { from: { pathname: '/login' } } }]}
+          >
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+            </Routes>
+            <LocationProbe />
+          </MemoryRouter>
+        </I18nextProvider>,
+      );
+    }
+
+    async function signIn() {
+      answers['/api/v1/auth/login'] = {
+        status: 200,
+        body: {
+          accessToken: 'access-1',
+          tenantId: 't',
+          user: { id: 'u1', email: 'ana@demo.test', displayName: 'Ana', role: 'agent' },
+        },
+      };
+      await submitPassword();
+      expect(useAuthStore.getState().accessToken).toBe('access-1');
+    }
+
+    async function commitSignedInBrand() {
+      brandingAnswers[byTenant('t')] = { status: 200, body: SIGNED_IN };
+      await act(() => useBrandingStore.getState().lookupTenant('t'));
+    }
+
+    function storedBrand() {
+      const { brand, source, key } = useBrandingStore.getState();
+      return { name: brand?.displayName ?? null, source, key };
+    }
+
+    const RELEASES = [
+      ['a brand', { status: 200, body: { displayName: 'Acme' } }],
+      ['a 404', { status: 404 }],
+      ['a network error', 'network-error'],
+    ] as const;
+
+    it.each(RELEASES)(
+      'SignInBrand_ShouldKeepTheSignedInBrand_WhenTheHostAnswersAfterSignInWith %s',
+      async (_case, hostAnswer) => {
+        onHost('acme.platform.example');
+        const hold = deferred();
+        brandingAnswers[BY_HOST] = hold;
+        await renderLoginThatStaysMounted();
+
+        await signIn();
+        await commitSignedInBrand();
+        const beforeRelease = byTenantRequests();
+        await release(hold, hostAnswer);
+
+        expect({
+          mounted: screen.queryByTestId('login-brand-name') !== null,
+          stored: storedBrand(),
+          requestsAfterRelease: byTenantRequests().slice(beforeRelease.length),
+        }).toEqual({
+          mounted: true,
+          stored: { name: 'Tenant T', source: 'tenant', key: 't' },
+          requestsAfterRelease: [],
+        });
+      },
+    );
+
+    it.each(RELEASES)(
+      'SignInBrand_ShouldKeepTheSignedInBrand_WhenTheHostAnswersAfterThePageUnmountsWith %s',
+      async (_case, hostAnswer) => {
+        onHost('acme.platform.example');
+        const hold = deferred();
+        brandingAnswers[BY_HOST] = hold;
+        await renderLogin();
+
+        cleanup();
+        await commitSignedInBrand();
+        const beforeRelease = byTenantRequests();
+        await release(hold, hostAnswer);
+
+        expect({
+          stored: storedBrand(),
+          requestsAfterRelease: byTenantRequests().slice(beforeRelease.length),
+        }).toEqual({
+          stored: { name: 'Tenant T', source: 'tenant', key: 't' },
+          requestsAfterRelease: [],
+        });
+      },
+    );
+  });
 });

@@ -286,17 +286,24 @@ export interface FetchResult<T> {
   readonly headers: Headers;
 }
 
+/**
+ * The tenant an authenticated request names in `X-Tenant-Id`, or `null` for none. During an
+ * impersonation every request names the impersonated tenant, whatever the tenant store holds (H17,
+ * design D4): Platform refuses a header that differs from the impersonation token's `tid`. The
+ * tenant store is never touched by an impersonation, so once it ends, by any path, the header is
+ * again the one it was before the start. The console's brand follows the same tenant
+ * (`licensee-branding-in-the-console`, design D4).
+ */
+export function requestTenantId(): string | null {
+  const { impersonation, tenantId } = useAuthStore.getState();
+  if (impersonation?.active === true) return impersonation.targetTenantId;
+  return useTenantStore.getState().activeTenantId ?? tenantId;
+}
+
 async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<T>> {
   const { accessToken, impersonation } = useAuthStore.getState();
-  const { activeTenantId } = useTenantStore.getState();
-  // During an impersonation every request names the impersonated tenant, whatever the tenant store
-  // holds (H17, design D4): Platform refuses a header that differs from the impersonation token's
-  // `tid`. The tenant store is never touched by an impersonation, so once it ends, by any path, the
-  // header is again the one it was before the start.
   const sentDuringImpersonation = impersonation?.active === true;
-  const tenantId = sentDuringImpersonation
-    ? impersonation.targetTenantId
-    : (activeTenantId ?? useAuthStore.getState().tenantId);
+  const tenantId = requestTenantId();
 
   const url = new URL(config.url, window.location.origin);
   if (config.params) {

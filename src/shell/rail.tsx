@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RailIcon } from './rail-icon';
 import { NotificationBell } from './notification-bell';
@@ -6,7 +7,47 @@ import { useAuthStore } from '@/core/auth/auth-store';
 import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
 import { TenantBadge } from '@/core/ui/tenant-badge';
+import { useBrandingStore } from '@/core/branding';
 import { Settings, Activity, ChartColumn, MessageSquare, Hexagon, Command } from 'lucide-react';
+
+/**
+ * The rail's brand mark (design D5 of `licensee-branding-in-the-console`): the tenant's logo, else
+ * the first letter of its display name, else the Verbara `Hexagon`, labelled with the display name.
+ * The name is only ever a text node or an attribute; the logo was checked by `parsePublicBranding`.
+ */
+function BrandMark() {
+  const brand = useBrandingStore((s) => s.brand);
+  const name = brand?.displayName ?? null;
+  const logo = brand?.logoUrl ?? null;
+  // The logo address that failed to load, so a broken image falls back until the logo changes.
+  const [failedLogo, setFailedLogo] = useState<string | null>(null);
+  const initial = name === null ? null : Array.from(name.trim())[0]?.toUpperCase();
+
+  return (
+    <div
+      className="mb-6 flex h-8 w-8 items-center justify-center text-brand"
+      data-testid="rail-brand-mark"
+      role={name === null ? undefined : 'img'}
+      aria-label={name ?? undefined}
+      title={name ?? undefined}
+    >
+      {logo !== null && logo !== failedLogo ? (
+        <img
+          src={logo}
+          alt=""
+          onError={() => setFailedLogo(logo)}
+          className="max-h-8 max-w-8 object-contain"
+        />
+      ) : initial ? (
+        <span className="text-lg font-bold leading-none" aria-hidden="true">
+          {initial}
+        </span>
+      ) : (
+        <Hexagon className="h-6 w-6" />
+      )}
+    </div>
+  );
+}
 
 export function Rail() {
   const { t } = useTranslation();
@@ -33,9 +74,7 @@ export function Rail() {
 
   return (
     <nav data-print="hide" className="flex h-full w-12 flex-col items-center bg-rail-bg py-3">
-      <div className="mb-6 text-brand">
-        <Hexagon className="h-6 w-6" />
-      </div>
+      <BrandMark />
 
       <div className="flex flex-1 flex-col items-center gap-1">
         {showAdmin && <RailIcon to="/admin" icon={Settings} label={t('nav.admin')} />}

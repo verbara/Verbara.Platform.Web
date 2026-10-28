@@ -63,6 +63,26 @@ export interface paths {
     };
     post?: never;
   };
+  '/api/v{version}/branding/{tenantId}': {
+    get: {
+      parameters: {
+        path: {
+          tenantId: string;
+        };
+      };
+    };
+    put?: never;
+  };
+  '/api/v{version}/branding/by-subdomain/{subdomain}': {
+    get: {
+      parameters: {
+        path: {
+          subdomain: string;
+        };
+      };
+    };
+    put?: never;
+  };
   '/api/v{version}/analytics/current-interval': {
     get: {
       parameters: {
@@ -231,6 +251,38 @@ class CheckApiRoutesTests(unittest.TestCase):
         self._assert_pass(result)
         self.assertIn("1 call(s) checked", result.stdout)
         self.assertIn("1 unresolved", result.stdout)
+
+    # The anonymous branding module's request function (licensee-branding-in-the-console,
+    # design D2): it is not customFetch, so the guard sees its calls only because it is a
+    # registered wrapper. Unregistered it would scan 0 calls and fail the liveness floor.
+    _BRANDING = ("export const bySubdomain = (label: string) =>\n"
+                 "  brandingRequest({ url: `/api/v1/branding/by-subdomain/${encodeURIComponent(label)}`, "
+                 "method: 'GET' });\n"
+                 "export const byTenant = (tenant: string) =>\n"
+                 "  brandingRequest({ url: `/api/v1/branding/${encodeURIComponent(tenant)}`, "
+                 "method: 'GET' });\n")
+
+    def test_check_ShouldCountBrandingRequest_WhenBothBrandingRoutesAreDeclared(self):
+        self._src("core/branding/branding-api.ts", self._BRANDING)
+        self._baseline([], min_calls=2)
+        result = self._run()
+        self._assert_pass(result)
+        self.assertIn("API routes: 2 call(s) checked", result.stdout)
+
+    def test_check_ShouldFail_WhenBrandingRequestNamesAnUndeclaredPath(self):
+        self._src("core/branding/branding-api.ts",
+                  "export const bySubdomain = (label: string) =>\n"
+                  "  brandingRequest({ url: `/api/v1/branding/by-subdomian/${label}`, method: 'GET' });\n")
+        self._assert_fail(self._run(), "no-path: GET /api/v1/branding/by-subdomian/{*}")
+
+    def test_check_ShouldNotCountBrandingRequestDefinition_WhenDeclaredAsFunction(self):
+        self._src("core/branding/branding-api.ts",
+                  "function brandingRequest(config: { url: string; method: 'GET' }) {\n"
+                  "  return brandingFetch(config.url, { method: config.method });\n"
+                  "}\n")
+        result = self._run()
+        self._assert_pass(result)
+        self.assertIn("API routes: 0 call(s) checked", result.stdout)
 
 
 if __name__ == "__main__":

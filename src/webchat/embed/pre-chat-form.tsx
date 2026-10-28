@@ -38,6 +38,7 @@ export function PreChatForm({ defaultValues, onSubmit }: PreChatFormProps) {
       onSubmit={handleSubmit((data) => onSubmit(data))}
       noValidate
       className="flex flex-col gap-4 p-4"
+      data-testid="webchat-pre-chat-form"
     >
       <div>
         <h2 className="text-lg font-semibold">{t('preChat.title')}</h2>

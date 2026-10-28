@@ -9,6 +9,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The sign-in page and the console carry the tenant's brand.** Both show the tenant's name, logo, favicon and
+  primary colour, read from the anonymous `GET /api/v1/branding/{tenantId}` route: the sign-in page for the tenant
+  it resolves (from the host, or from the tenant field once it is left), the signed-in console for the requests'
+  tenant. A tenant with no branding keeps the Verbara defaults, and a value that
+  fails the safety rules is dropped.
+- **The webchat widget shows "Powered by Verbara".** Every widget state (loading, pre-chat form, conversation and
+  survey) is framed with the line, which stays inside the widget's viewport while the content above it scrolls.
+- **Every page title ends in ` · Verbara`.** The tab title is the page's title, then the tenant's display name when
+  there is one, then the ` · Verbara` suffix; the sign-in, forgot-password, reset-password, unauthorized, setup and
+  profile-security pages gain their own titles.
+- **A Customer without its own branding row is branded from its Partner** only with a Platform that carries
+  `public-branding-inherits-from-parent`; with an older Platform such a Customer keeps the Verbara defaults.
+
 ## [3.27.1-web] - 2026-10-28
 
 The sign-in tenant guess follows the server's host rules (Platform/ADR-0038); **requires Platform ≥ v2.33.0**, as

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -25,6 +26,7 @@ function initialTenant(state: unknown): string {
 
 export function ForgotPasswordPage() {
   const { t } = useTranslation();
+  useDocumentTitle(t('title.forgot_password'));
   const navigate = useNavigate();
   const location = useLocation();
   // Always shown and always sent (H16): Platform falls back to the host's first label when the body
