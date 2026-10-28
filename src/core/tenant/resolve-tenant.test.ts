@@ -35,8 +35,17 @@ describe('resolveDefaultTenant', () => {
     expect(resolveDefaultTenant()).toBe('console');
   });
 
+  /**
+   * Contract pin (spec `console-host-tenant-guess`, "The build-time default wins over any host"):
+   * passes before the fix too. It covers an IP host and a host whose first label would otherwise be
+   * taken as a tenant.
+   */
   it('resolveDefaultTenant_ShouldReturnTheBuiltInDefault_WhenOneIsSetWhateverTheHost', () => {
     onHost('10.0.0.5', 'acme');
+
+    expect(resolveDefaultTenant()).toBe('acme');
+
+    onHost('other.platform.example', 'acme');
 
     expect(resolveDefaultTenant()).toBe('acme');
   });
@@ -49,4 +58,43 @@ describe('resolveDefaultTenant', () => {
       expect(resolveDefaultTenant()).toBeNull();
     },
   );
+
+  // Regression cases for spec `console-host-tenant-guess` (Platform/ADR-0038 §1 row 3 mirrored on
+  // the console). A browser canonicalises IPv4 and lowercases the host, but keeps the trailing dot
+  // of a non-IP host, so (a) is the browser-reachable defect; (b) and (c) pin parity with the server
+  // against a caller that does not read `location.hostname`.
+
+  /** (a) "A trailing-dot two-label host is the same host": `acme-corp.lan.` is two labels, not three. */
+  it('resolveDefaultTenant_ShouldReturnNull_WhenATwoLabelHostEndsInATrailingDot', () => {
+    onHost('acme-corp.lan.');
+
+    expect(resolveDefaultTenant()).toBeNull();
+  });
+
+  /** (b) "An uppercase reserved label pre-fills nothing": the reserved labels match in any case. */
+  it.each(['WWW.example.com', 'API.example.com', 'Localhost.example.com'])(
+    'resolveDefaultTenant_ShouldReturnNull_WhenTheReservedFirstLabelIsNotLowercase %s',
+    (hostname) => {
+      onHost(hostname);
+
+      expect(resolveDefaultTenant()).toBeNull();
+    },
+  );
+
+  /** (c) "A trailing-dot IPv4 host pre-fills nothing": the trailing dot does not hide the IP. */
+  it('resolveDefaultTenant_ShouldReturnNull_WhenTheHostIsAnIPv4AddressWithATrailingDot', () => {
+    onHost('127.0.0.1.');
+
+    expect(resolveDefaultTenant()).toBeNull();
+  });
+
+  /**
+   * (d) "A real tenant subdomain still pre-fills its tenant", with the trailing dot. Passes before
+   * the fix too: it guards the normalisation against trimming more than the one trailing dot.
+   */
+  it('resolveDefaultTenant_ShouldReturnTheFirstLabel_WhenAThreeLabelHostEndsInATrailingDot', () => {
+    onHost('acme.platform.example.');
+
+    expect(resolveDefaultTenant()).toBe('acme');
+  });
 });
