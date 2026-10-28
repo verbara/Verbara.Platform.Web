@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { queryClient } from '@/core/api/query-client';
+import { useBrandingStore } from '@/core/branding';
 
 export interface UserProfile {
   id: string;
@@ -153,7 +154,12 @@ export const useAuthStore = create<AuthState>()(
         set({ mfaPending: { mfaToken, email, ...(tenantId && { tenantId }) } }),
       clearMfaPending: () => set({ mfaPending: null }),
       setRememberMe: (value) => set({ rememberMe: value }),
-      logout: () =>
+      // Every sign-out path (the user menu, the session manager, the request client, the realtime
+      // bootstrap) goes through here, so the brand returns to the Verbara defaults here too
+      // (`licensee-branding-in-the-console`, design D2: "Sign-out calls it"). Keying it on the
+      // requests' tenant becoming `null` missed the user menu: `logout()` leaves the tenant store's
+      // active tenant set and navigates without a reload, so the sign-in page kept the old brand.
+      logout: () => {
         set({
           accessToken: null,
           tokenExpiry: null,
@@ -164,7 +170,9 @@ export const useAuthStore = create<AuthState>()(
           mfaPending: null,
           impersonation: null,
           sessionIdleTimeoutMinutes: null,
-        }),
+        });
+        useBrandingStore.getState().reset();
+      },
       hasPermission: (permission) => get().permissions.includes(permission),
       // "There is a session worth restoring." With credentials no longer persisted, the rehydrated
       // `user` is the only discriminator between a fresh browser and a reloaded authenticated tab.

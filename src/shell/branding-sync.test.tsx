@@ -216,7 +216,10 @@ describe('BrandingSync in the signed-in console', () => {
         primaryColor: '#336699',
       },
     };
+    // Seeded the way `completeLogin` does: the auth store's tenant and the tenant store's active
+    // tenant. `logout()` leaves the tenant store as it is, so the requests' tenant stays `acme`.
     useAuthStore.setState({ tenantId: 'acme' });
+    useTenantStore.getState().setActiveTenant('acme');
     renderShell();
     await waitFor(() => expect(document.title).toBe('Admin · Acme · Verbara'));
 
