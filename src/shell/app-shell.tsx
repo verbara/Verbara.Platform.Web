@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Rail } from './rail';
+import { BrandingSync } from './branding-sync';
 import { CommandPalette } from './command-palette';
 import { useSSE } from '@/core/hooks/use-sse';
 import { ImpersonationBanner } from '@/core/auth/impersonation-banner';
@@ -22,6 +23,7 @@ export function AppShell() {
     >
       <SkipLink targetId="main-content">{t('a11y.skipToMain')}</SkipLink>
       <SessionManager />
+      <BrandingSync />
       <ImpersonationBanner />
       <RecoveryCodesBanner />
       <div className="flex flex-1 overflow-hidden">
