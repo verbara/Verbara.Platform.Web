@@ -9,6 +9,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.27.1-web] - 2026-10-28
+
+The sign-in tenant guess follows the server's host rules (Platform/ADR-0038); **requires Platform ≥ v2.33.0**, as
+3.27.0-web did. A console opened at a host with a trailing dot or an upper-case reserved label no longer pre-fills a
+phantom tenant. (#489)
+
 ### Fixed
 
 - **The sign-in tenant guess follows the server's host rules.** The console now lowercases its host and drops one
