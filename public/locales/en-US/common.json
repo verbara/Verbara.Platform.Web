@@ -12,6 +12,13 @@
   "app": {
     "name": "Verbara"
   },
+  "title": {
+    "sign_in": "Sign in",
+    "forgot_password": "Forgot password",
+    "reset_password": "Reset password",
+    "unauthorized": "Unauthorized",
+    "setup": "Platform Setup"
+  },
   "copy": "Copy",
   "copied": "Copied",
   "notAvailable": {
