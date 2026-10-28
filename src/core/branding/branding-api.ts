@@ -1,4 +1,4 @@
-import { parsePublicBranding, type PublicBranding } from './public-branding';
+import { parsePublicBranding, type PublicBrandingDto } from './public-branding';
 
 /**
  * The anonymous branding requests (design D2 of `licensee-branding-in-the-console`). They do not go
@@ -12,7 +12,7 @@ export type BrandingFetch = (input: string, init: RequestInit) => Promise<Respon
 
 /** The outcome of one lookup. `not-found` is a 404 only; anything else that is not a brand fails. */
 export type BrandingResult =
-  | { readonly status: 'found'; readonly brand: PublicBranding }
+  | { readonly status: 'found'; readonly brand: PublicBrandingDto }
   | { readonly status: 'not-found' }
   | { readonly status: 'failed' };
 

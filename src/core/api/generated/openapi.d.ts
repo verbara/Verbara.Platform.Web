@@ -16349,6 +16349,15 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
+          content: {
+            'application/json': components['schemas']['PublicBrandingDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
           content?: never;
         };
       };
@@ -16381,6 +16390,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PublicBrandingDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -19982,6 +20000,16 @@ export interface components {
      * @enum {unknown}
      */
     ProviderType: 'OpenAiCompatible' | 'AzureOpenAi' | 'Anthropic';
+    PublicBrandingDto: {
+      displayName: null | string;
+      logoUrl: null | string;
+      faviconUrl: null | string;
+      primaryColor: null | string;
+      secondaryColor: null | string;
+      accentColor: null | string;
+      locale: null | string;
+      timezone: null | string;
+    };
     PublishErrorDto: {
       field: string;
       message: string;

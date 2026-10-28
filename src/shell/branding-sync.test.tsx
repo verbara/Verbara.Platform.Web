@@ -137,6 +137,35 @@ describe('BrandingSync in the signed-in console', () => {
     expect(document.title).toBe('Admin · Verbara');
   });
 
+  /** The Platform omits a field with no value (`WhenWritingNull`), so an all-blank brand is `{}`. */
+  it('Console_ShouldKeepEveryDefault_WhenTheBrandBodyIsAnEmptyObject', async () => {
+    bodies = { acme: {} };
+    useAuthStore.setState({ tenantId: 'acme' });
+
+    renderShell();
+
+    await waitFor(() => expect(useBrandingStore.getState().brand).not.toBeNull());
+    expect(mark()).not.toHaveAttribute('aria-label');
+    expect(mark().querySelector('img')).toBeNull();
+    expect(mark().querySelector('svg')).not.toBeNull();
+    expectDefaultIcon();
+    expectNoBrandProperties();
+    expect(document.title).toBe('Admin · Verbara');
+  });
+
+  it('Console_ShouldShowOnlyTheName_WhenTheBrandBodyCarriesOnlyTheDisplayName', async () => {
+    bodies = { acme: { displayName: 'Acme' } };
+    useAuthStore.setState({ tenantId: 'acme' });
+
+    renderShell();
+
+    await waitFor(() => expect(mark()).toHaveAttribute('aria-label', 'Acme'));
+    expect(mark().querySelector('img')).toBeNull();
+    expectDefaultIcon();
+    expectNoBrandProperties();
+    expect(document.title).toBe('Admin · Acme · Verbara');
+  });
+
   it('Console_ShouldShowTheImpersonatedTenantsBrand_WhenAnImpersonationStartsAndEnds', async () => {
     bodies = { h: { displayName: 'Holding' }, c: { displayName: 'Customer' } };
     useAuthStore.setState({ tenantId: 'h' });

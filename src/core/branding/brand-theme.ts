@@ -1,4 +1,4 @@
-import type { PublicBranding } from './public-branding';
+import type { PublicBrandingDto } from './public-branding';
 
 /**
  * The theme layer (design D5 of `licensee-branding-in-the-console`): the brand's favicon on
@@ -78,7 +78,7 @@ export function resetBrandTheme(): void {
  * Paint a brand: the fields it sets replace the defaults, the others keep them. The values were
  * already checked by `parsePublicBranding` (design D5 safety rules).
  */
-export function applyBrandTheme(brand: PublicBranding | null): void {
+export function applyBrandTheme(brand: PublicBrandingDto | null): void {
   if (typeof document === 'undefined') return;
   resetBrandTheme();
   if (!brand) return;
