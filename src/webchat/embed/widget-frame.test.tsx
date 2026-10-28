@@ -1,3 +1,5 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 vi.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: ({ count }: { count: number }) => ({
     getVirtualItems: () =>
@@ -8,7 +10,6 @@ vi.mock('@tanstack/react-virtual', () => ({
   }),
 }));
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, cleanup } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import i18next, { type i18n } from 'i18next';
