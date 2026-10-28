@@ -141,6 +141,29 @@ describe('customFetch', () => {
     expect(tenantHeader).toBe('tenant-1');
   });
 
+  /**
+   * Contract pin, passes before the fix (spec `console-host-tenant-guess`, "Requests after sign-in
+   * ignore the host"): on a host whose first label the sign-in page would guess (`verbara`), an
+   * authenticated request still names the signed-in store's tenant.
+   */
+  it('should include the store tenant as X-Tenant-Id whatever the host the console is served on', async () => {
+    let tenantHeader: string | null = null;
+    server.use(
+      http.get('/api/v1/test', ({ request }) => {
+        tenantHeader = request.headers.get('X-Tenant-Id');
+        return HttpResponse.json({});
+      }),
+    );
+    vi.stubGlobal('location', { ...window.location, hostname: 'verbara.acme-corp.lan' });
+
+    try {
+      await customFetch({ url: '/api/v1/test', method: 'GET' });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(tenantHeader).toBe('tenant-1');
+  });
+
   it('should attempt refresh on 401 and retry', async () => {
     let callCount = 0;
     server.use(

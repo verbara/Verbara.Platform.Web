@@ -9,6 +9,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The sign-in tenant guess follows the server's host rules.** The console now lowercases its host and drops one
+  trailing dot before guessing a tenant from it, so a two-label host typed with a trailing dot (`acme-corp.lan.`) no
+  longer pre-fills a phantom tenant (`acme-corp`) and `www` / `api` / `localhost` are reserved in any case — the same
+  rules Platform/ADR-0038 applies on the server. A host that yields no guess shows the tenant field open and empty, as
+  an IP host already did. No caller, API or i18n change.
+
 ## [3.27.0-web] - 2026-10-27
 
 Verbara as self-hosted software only — the console drops the hosted tiers and the hosted-AI wording

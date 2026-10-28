@@ -923,6 +923,113 @@ describe('LoginPage tenant field', () => {
   });
 });
 
+describe('LoginPage host tenant guess (spec console-host-tenant-guess)', () => {
+  function onHost(hostname: string) {
+    vi.stubEnv('VITE_DEFAULT_TENANT_ID', '');
+    vi.stubGlobal('location', { ...window.location, hostname });
+  }
+
+  /** The tenant field as the user sees it: the toggle's text and the input, when it is rendered. */
+  function tenantField() {
+    const input = screen.queryByTestId('login-tenant') as HTMLInputElement | null;
+    return {
+      toggle: screen.getByTestId('login-tenant-toggle').textContent,
+      rendered: input !== null,
+      value: input?.value ?? null,
+    };
+  }
+
+  /** The tenant the login request named, in its body and in its `X-Tenant-Id` header. */
+  function loginRequestTenant() {
+    const call = fetchMock.mock.calls.find(([input]) => input === '/api/v1/auth/login');
+    expect(call).toBeDefined();
+    const init = (call as unknown as [RequestInfo | URL, RequestInit | undefined])[1];
+    return {
+      body: (JSON.parse(String(init?.body)) as { tenantId: string | null }).tenantId,
+      header: new Headers(init?.headers).get('X-Tenant-Id'),
+    };
+  }
+
+  /**
+   * Regression case (task 1.2), "A trailing-dot two-label host is the same host": the browser keeps
+   * the trailing dot of `acme-corp.lan.`, and the empty last label must not make it a three-label
+   * host. Fails before the fix: the field is collapsed and pre-filled with `acme-corp`.
+   */
+  it('TenantField_ShouldBeOpenAndEmpty_WhenATwoLabelHostEndsInATrailingDotAndNoDefaultIsBuiltIn', async () => {
+    onHost('acme-corp.lan.');
+    await renderLogin();
+
+    expect(tenantField()).toEqual({ toggle: enCommon.auth.tenant, rendered: true, value: '' });
+  });
+
+  /**
+   * Contract pin, passes before the fix: "A LAN IPv4 address pre-fills nothing" on the spec's own
+   * address (the `10.0.0.5` case above is the same rule).
+   */
+  it('TenantField_ShouldBeOpenAndEmpty_WhenTheHostIsALanIPv4AddressAndNoDefaultIsBuiltIn', async () => {
+    onHost('192.168.1.50');
+    await renderLogin();
+
+    expect(tenantField()).toEqual({ toggle: enCommon.auth.tenant, rendered: true, value: '' });
+  });
+
+  /**
+   * Contract pin, passes before the fix: "A real tenant subdomain still pre-fills its tenant", with
+   * and without the trailing dot. The field stays collapsed and its toggle names the guess.
+   */
+  it.each(['acme.platform.example', 'acme.platform.example.'])(
+    'TenantField_ShouldBePrefilledWithTheSubdomain_WhenTheHostIsATenantSubdomain %s',
+    async (hostname) => {
+      onHost(hostname);
+      await renderLogin();
+
+      expect(tenantField()).toEqual({
+        toggle: `${enCommon.auth.tenant}: acme`,
+        rendered: false,
+        value: null,
+      });
+    },
+  );
+
+  /**
+   * Contract pin, passes before the fix: "No guess leaves the choice to the user". On an IP host the
+   * typed tenant is what the login request names, in the body and in `X-Tenant-Id`.
+   */
+  it('EmailLogin_ShouldSendTheTypedTenantInBodyAndHeader_WhenTheHostYieldsNoGuess', async () => {
+    answers['/api/v1/auth/login'] = { status: 401 };
+    onHost('10.0.0.5');
+    await renderLogin();
+
+    fireEvent.change(screen.getByTestId('login-tenant'), { target: { value: 'acme' } });
+    await submitPassword();
+
+    expect(loginRequestTenant()).toEqual({ body: 'acme', header: 'acme' });
+  });
+
+  /**
+   * Contract pin, passes before the fix: "A phantom guess on an internal hostname can be corrected"
+   * (the dotted non-IP residual of Platform/ADR-0038). The guess is shown on the toggle, and the
+   * user's correction is what the login request names.
+   */
+  it('EmailLogin_ShouldSendTheCorrectedTenant_WhenTheUserReplacesAPhantomHostGuess', async () => {
+    answers['/api/v1/auth/login'] = { status: 401 };
+    onHost('verbara.acme-corp.lan');
+    await renderLogin();
+
+    const toggleText = screen.getByTestId('login-tenant-toggle').textContent;
+    fireEvent.click(screen.getByTestId('login-tenant-toggle'));
+    const guessed = (screen.getByTestId('login-tenant') as HTMLInputElement).value;
+    fireEvent.change(screen.getByTestId('login-tenant'), { target: { value: 'acme' } });
+    await submitPassword();
+
+    expect({ toggleText, guessed, request: loginRequestTenant() }).toEqual({
+      toggleText: expect.stringContaining('verbara') as unknown,
+      guessed: 'verbara',
+      request: { body: 'acme', header: 'acme' },
+    });
+  });
+});
+
 describe('LoginPage single sign-on MFA challenge', () => {
   afterEach(() => {
     window.history.replaceState(null, '', '/');
