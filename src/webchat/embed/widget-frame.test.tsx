@@ -16,6 +16,7 @@ import enWebchat from '../../../public/locales/en-US/webchat.json';
 import esWebchat from '../../../public/locales/es-419/webchat.json';
 import ptWebchat from '../../../public/locales/pt-BR/webchat.json';
 import { App } from './app';
+import { WidgetFrame } from './widget-frame';
 import type { InitConfigPayload } from './chat-widget';
 
 // The "Powered by Verbara" line (console-verbara-attribution, design D7). jsdom does no layout, so the
@@ -134,7 +135,7 @@ describe('WidgetFrame — the line stays inside the widget viewport', () => {
     expect(root.lastElementChild).toBe(footer);
     expect(footer).toHaveClass('shrink-0');
     expect(content).not.toBe(footer);
-    expect(content).toHaveClass('flex-1', 'min-h-0');
+    expect(content).toHaveClass('flex', 'flex-col', 'flex-1', 'min-h-0', 'overflow-y-auto');
     expect(content).toContainElement(screen.getByTestId('webchat-embed-loading'));
   });
 
@@ -195,6 +196,39 @@ describe('WidgetFrame — the line in each locale', () => {
   it.each(LOCALES)('App_ShouldShowPoweredByVerbara_WhenTheLocaleIs %s', async (lng) => {
     await renderApp(lng);
     expect(FILES[lng].branding.poweredBy).toBe('Powered by Verbara');
-    expect(poweredBy()).toHaveTextContent(FILES[lng].branding.poweredBy);
+    expect(poweredBy()).toHaveTextContent(/^Powered by Verbara$/);
+  });
+});
+
+describe('WidgetFrame — no locale bundle rewords the line', () => {
+  // "No runtime input removes the attribution": the widget loads its bundle over HTTP at runtime, so a
+  // missing bundle must not show a raw key and an edited one must not reword the line.
+  async function renderFrameWith(webchat: Record<string, unknown>) {
+    const instance = i18next.createInstance();
+    await instance.init({
+      lng: 'en-US',
+      fallbackLng: false,
+      resources: { 'en-US': { webchat } },
+      ns: ['webchat'],
+      defaultNS: 'webchat',
+      react: { useSuspense: false },
+    });
+    render(
+      <I18nextProvider i18n={instance}>
+        <WidgetFrame>
+          <div />
+        </WidgetFrame>
+      </I18nextProvider>,
+    );
+  }
+
+  it('WidgetFrame_ShouldShowPoweredByVerbara_WhenNoLocaleBundleIsLoaded', async () => {
+    await renderFrameWith({});
+    expect(poweredBy()).toHaveTextContent(/^Powered by Verbara$/);
+  });
+
+  it('WidgetFrame_ShouldShowPoweredByVerbara_WhenTheBundleRewordsTheLine', async () => {
+    await renderFrameWith({ branding: { poweredBy: 'Powered by Acme' } });
+    expect(poweredBy()).toHaveTextContent(/^Powered by Verbara$/);
   });
 });
