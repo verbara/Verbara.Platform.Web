@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { LogOut, Monitor } from 'lucide-react';
 
 import { Button } from '@/core/ui/button';
@@ -23,6 +24,7 @@ import { useFormatDate } from '@/core/i18n/use-format';
  */
 export default function UserSessionsPage() {
   const { t } = useTranslation(['admin', 'common']);
+  useDocumentTitle(t('admin:profile_security.sessions.title'));
   const { formatDateTime } = useFormatDate();
   const { data: sessions, isLoading, isError } = useUserSessions();
   const revoke = useRevokeUserSession();

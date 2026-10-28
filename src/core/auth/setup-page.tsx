@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,6 +46,7 @@ type SetupFormValues = z.infer<typeof setupSchema>;
 export default function SetupPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
+  useDocumentTitle(t('title.setup'));
   const setup = useSetup();
   const [apiKeyResponse, setApiKeyResponse] = useState<SetupResponse | null>(null);
   const [copied, setCopied] = useState(false);

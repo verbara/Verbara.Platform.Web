@@ -195,6 +195,17 @@ afterEach(() => {
   useAuthStore.getState().logout();
 });
 
+// Spec `console-verbara-attribution`, "The sign-in page carries the suffix" (design D5).
+describe('LoginPage tab title', () => {
+  it('Title_ShouldReadSignInWithTheVerbaraSuffix_WhenNoTenantBrandIsResolved', async () => {
+    const previous = document.title;
+    await renderLogin();
+    expect(document.title).toBe('Sign in · Verbara');
+    cleanup();
+    expect(document.title).toBe(previous);
+  });
+});
+
 describe('LoginPage sign-in refusals', () => {
   it('EmailLogin_ShouldShowAccountNotActiveWithItsCodeAndStoreNoToken_WhenTheLoginApiAnswers403', async () => {
     answers['/api/v1/auth/login'] = { status: 403, body: ACCOUNT_NOT_ACTIVE_BODY };

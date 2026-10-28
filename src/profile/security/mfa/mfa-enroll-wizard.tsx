@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { useNavigate } from 'react-router';
 import { QRCodeSVG } from 'qrcode.react';
 import { Check, Download, Shield, ShieldCheck, Smartphone } from 'lucide-react';
@@ -32,6 +33,7 @@ type WizardStep = 'qr' | 'verify' | 'codes';
  */
 export default function MfaEnrollWizard() {
   const { t } = useTranslation(['admin', 'common']);
+  useDocumentTitle(t('admin:profile_security.mfa.enroll.title'));
   const navigate = useNavigate();
 
   const [step, setStep] = useState<WizardStep>('qr');
@@ -143,9 +145,7 @@ function Stepper({ current }: Readonly<{ current: WizardStep }>) {
             >
               {i + 1}
             </span>
-            <span className="text-sm">
-              {t(`admin:profile_security.mfa.enroll.steps.${s}`)}
-            </span>
+            <span className="text-sm">{t(`admin:profile_security.mfa.enroll.steps.${s}`)}</span>
             {i < steps.length - 1 && <span className="mx-2 text-muted-foreground">→</span>}
           </li>
         );

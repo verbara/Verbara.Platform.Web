@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { useAuthStore } from './auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { resolveDefaultTenant } from '../tenant/resolve-tenant';
@@ -47,6 +48,7 @@ async function refusalBodyOf(res: Response): Promise<unknown> {
 
 export function LoginPage() {
   const { t } = useTranslation();
+  useDocumentTitle(t('title.sign_in'));
   const navigate = useNavigate();
   const location = useLocation();
   const [tenant, setTenant] = useState(resolveDefaultTenant() ?? '');

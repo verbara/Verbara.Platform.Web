@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { Button } from '@/core/ui/button';
 
 export default function UnauthorizedPage() {
   const { t } = useTranslation();
+  useDocumentTitle(t('title.unauthorized'));
   const navigate = useNavigate();
 
   return (
