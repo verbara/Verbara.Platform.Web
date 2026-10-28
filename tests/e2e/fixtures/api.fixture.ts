@@ -26,6 +26,7 @@ export class ApiHelper {
     type?: number;
     maxConcurrentChannels?: number;
     maxActiveCampaigns?: number;
+    metadata?: Record<string, string>;
   }) {
     const response = await this.request.post(`${API_BASE}/api/v1/management/tenants`, {
       data: { type: 2, maxConcurrentChannels: 100, maxActiveCampaigns: 10, ...data },

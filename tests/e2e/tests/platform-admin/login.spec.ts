@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { test as authTest } from '../../fixtures/auth.fixture';
 import { ApiHelper } from '../../fixtures/api.fixture';
 import { PLATFORM_ADMIN, DEMO_ADMIN } from '../../helpers/credentials';
+import { createBrandTenant, removeBrandTenant, type BrandTenant } from '../../helpers/brand-tenant';
 
 /**
  * Signs in through the form, always supplying the tenant.
@@ -85,6 +86,54 @@ test.describe('Login', () => {
 
     await page.reload();
     await expect(page).not.toHaveURL(/\/login/);
+  });
+});
+
+/**
+ * The sign-in brand (OpenSpec change `licensee-branding-in-the-console`, design D3/D5). The tenant is a
+ * disposable one; `platform` and `demo` are never branded here, and `afterAll` proves they are untouched.
+ */
+test.describe('Login - tenant brand', () => {
+  // The title is a translation; pin the locale so the exact assertion is not locale-dependent.
+  test.use({ locale: 'en-US' });
+
+  let tenant: BrandTenant | undefined;
+
+  test.beforeAll(async ({ playwright }) => {
+    tenant = await createBrandTenant(playwright);
+  });
+
+  test.afterAll(async () => {
+    await removeBrandTenant(tenant);
+  });
+
+  test('SignIn_ShouldCarryTheVerbaraSuffixAndTheDefaultBrand_WhenTheHostResolvesNoBrand', async ({
+    page,
+  }) => {
+    await page.goto('/login');
+
+    await expect(page).toHaveTitle('Sign in · Verbara');
+    await expect(page.getByTestId('login-brand-name')).toHaveAttribute(
+      'data-brand-source',
+      'default',
+    );
+  });
+
+  test('SignIn_ShouldShowTheTenantBrand_WhenTheTenantFieldIsCommitted', async ({ page }) => {
+    if (!tenant) throw new Error('beforeAll did not create the brand tenant');
+    await page.goto('/login');
+
+    // The field starts collapsed on `platform` (VITE_DEFAULT_TENANT_ID); a commit is the blur.
+    await page.getByTestId('login-tenant-toggle').click();
+    const field = page.getByTestId('login-tenant');
+    await field.fill(tenant.tenantId);
+    await field.blur();
+
+    const heading = page.getByTestId('login-brand-name');
+    await expect(heading).toHaveAttribute('data-brand-source', 'tenant');
+    await expect(heading).toHaveText(tenant.displayName);
+    await expect(page.getByTestId('login-brand-logo')).toHaveAttribute('src', tenant.logoUrl);
+    await expect(page).toHaveTitle(`Sign in · ${tenant.displayName} · Verbara`);
   });
 });
 

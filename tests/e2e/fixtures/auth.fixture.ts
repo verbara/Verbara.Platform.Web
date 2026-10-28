@@ -15,9 +15,10 @@ type AuthFixtures = {
  * Builds a bearer-authenticated API context for the given credentials.
  *
  * Pure API context — no browser involved, so a bearer header is the right mechanism here and there
- * is no storage to seed.
+ * is no storage to seed. Exported for `beforeAll`/`afterAll` hooks, which cannot use the test-scoped
+ * `authenticatedApiContext` and build the same context from the worker-scoped `playwright` fixture.
  */
-async function apiContextFor(
+export async function apiContextFor(
   playwright: { request: { newContext: (o?: object) => Promise<APIRequestContext> } },
   creds: Credentials,
 ): Promise<{ ctx: APIRequestContext; login: APIRequestContext }> {
