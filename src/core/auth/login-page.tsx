@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { useAuthStore } from './auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
-import { resolveDefaultTenant } from '../tenant/resolve-tenant';
+import { hostTenantLabel, resolveDefaultTenant } from '../tenant/resolve-tenant';
+import { useBrandingStore } from '@/core/branding';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
@@ -60,6 +61,15 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showTenant, setShowTenant] = useState(!resolveDefaultTenant());
+  // The tenant field's latest value, and the last value the brand was looked up (or queued) for:
+  // read from the mount chain and the field's blur, never during render.
+  const tenantRef = useRef(tenant);
+  const committedTenant = useRef(tenant.trim());
+
+  const brand = useBrandingStore((s) => s.brand);
+  const brandSource = useBrandingStore((s) => s.source);
+  // The logo address that failed to load, so a broken image hides itself until the logo changes.
+  const [failedLogo, setFailedLogo] = useState<string | null>(null);
 
   const emailA11y = useFieldA11y(undefined, 'login-email', { required: true });
   const passwordA11y = useFieldA11y(undefined, 'login-password', { required: true });
@@ -77,6 +87,29 @@ export function LoginPage() {
     supervisor: '/operations',
     agent: '/agent',
   };
+
+  // The brand before sign-in (design D3 of `licensee-branding-in-the-console`): the host label as a
+  // subdomain first; on its 404, failure or timeout, the queued field commit, else the field's value.
+  // A host brand is final. Unmounting ends the chain, so an answer still in flight is dropped
+  // (`stale`) with no commit and no fallback request.
+  useEffect(() => {
+    const branding = useBrandingStore.getState();
+    const label = hostTenantLabel();
+    void (async () => {
+      if (label === null) {
+        branding.markNoHost();
+      } else {
+        const outcome = await branding.lookupHost(label);
+        if (outcome === 'found' || outcome === 'stale') return;
+      }
+      const queued = branding.takeQueued();
+      const value = queued ?? tenantRef.current.trim();
+      if (queued === null && value === '') return;
+      committedTenant.current = value;
+      void branding.lookupTenant(value);
+    })();
+    return () => useBrandingStore.getState().advanceGeneration();
+  }, []);
 
   // A single sign-on for a user with MFA enrolled ends at
   // `#oidc_mfa_challenge&challenge_token=…&tenant_id=…` (H22, design D14). Platform stored the
@@ -146,6 +179,9 @@ export function LoginPage() {
 
   function completeLogin(data: LoginResponse) {
     if (!data.accessToken || !data.user || !data.tenantId) return;
+
+    // Sign-in ends the sign-in page's brand chain before the signed-in brand takes over (design D3).
+    useBrandingStore.getState().advanceGeneration();
 
     const expiry = data.expiresAt ? new Date(data.expiresAt).getTime() : Date.now() + 900000;
     useAuthStore
@@ -234,6 +270,21 @@ export function LoginPage() {
     }
   }
 
+  // The tenant field's blur is its only brand commit (design D3 step 3): queued while the host lookup
+  // is pending (the latest replaces an earlier one), nothing once the host found a brand, else a
+  // lookup, which an empty value turns into the defaults. Submit makes no branding request.
+  function commitTenant(raw: string) {
+    const value = raw.trim();
+    const branding = useBrandingStore.getState();
+    if (value === committedTenant.current || branding.host === 'found') return;
+    committedTenant.current = value;
+    if (branding.host === 'pending') {
+      branding.queueCommit(value);
+      return;
+    }
+    void branding.lookupTenant(value);
+  }
+
   function handleSsoLogin() {
     const effectiveTenant = tenant.trim() || resolveDefaultTenant();
     if (!effectiveTenant) {
@@ -273,7 +324,22 @@ export function LoginPage() {
       </div>
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">{t('app.name')}</h1>
+          {brand?.logoUrl && brand.logoUrl !== failedLogo && (
+            <img
+              src={brand.logoUrl}
+              alt={brand.displayName ?? ''}
+              onError={() => setFailedLogo(brand.logoUrl)}
+              className="mx-auto h-12 max-w-[12rem] object-contain"
+              data-testid="login-brand-logo"
+            />
+          )}
+          <h1
+            className="text-2xl font-bold text-slate-900 dark:text-slate-50"
+            data-testid="login-brand-name"
+            data-brand-source={brandSource}
+          >
+            {brand?.displayName ?? t('app.name')}
+          </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">{t('auth.sign_in')}</p>
         </div>
 
@@ -318,7 +384,11 @@ export function LoginPage() {
                   type="text"
                   placeholder={t('auth.tenant_placeholder')}
                   value={tenant}
-                  onChange={(e) => setTenant(e.target.value)}
+                  onChange={(e) => {
+                    setTenant(e.target.value);
+                    tenantRef.current = e.target.value;
+                  }}
+                  onBlur={(e) => commitTenant(e.target.value)}
                   data-testid="login-tenant"
                 />
               </div>
