@@ -51,7 +51,22 @@ export default defineConfig({
               name: 'vendor-react',
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router)[\\/]/,
             },
-            { name: 'vendor-charts', test: /[\\/]node_modules[\\/]recharts[\\/]/ },
+            // Shared by vendor-ui and vendor-i18n, and a dependency of recharts and
+            // @xyflow/react. Without a group of its own it sticks to the first heavy
+            // group that reaches it, and that chunk enters the first load (ADR-0014).
+            {
+              name: 'vendor-sync-store',
+              test: /[\\/]node_modules[\\/]use-sync-external-store[\\/]/,
+            },
+            // includeDependenciesRecursively: false on vendor-charts and vendor-pdf keeps
+            // them out of the first load: the default also captures what they import,
+            // shared code included, and every route then downloads charts and PDF
+            // (ADR-0014).
+            {
+              name: 'vendor-charts',
+              test: /[\\/]node_modules[\\/]recharts[\\/]/,
+              includeDependenciesRecursively: false,
+            },
             { name: 'vendor-grid', test: /[\\/]node_modules[\\/]ag-grid/ },
             { name: 'vendor-flow', test: /[\\/]node_modules[\\/]@xyflow[\\/]/ },
             {
@@ -75,9 +90,13 @@ export default defineConfig({
             },
             { name: 'vendor-dnd', test: /[\\/]node_modules[\\/]@dnd-kit[\\/]/ },
             { name: 'vendor-realtime', test: /[\\/]node_modules[\\/]@microsoft[\\/]signalr[\\/]/ },
+            // With the flag off this list must name what jspdf and html2canvas import.
+            // One left out lands in a chunk that imports vendor-pdf back, and that cycle
+            // throws at module init, on the first PDF export and not on any route load.
             {
               name: 'vendor-pdf',
-              test: /[\\/]node_modules[\\/](jspdf|jspdf-autotable|html2canvas|raf|css-line-break|text-segmentation|fflate|atob)[\\/]/,
+              test: /[\\/]node_modules[\\/](jspdf|jspdf-autotable|html2canvas|raf|css-line-break|text-segmentation|fflate|atob|fast-png|iobuffer|pako|performance-now|@babel[\\/]runtime)[\\/]/,
+              includeDependenciesRecursively: false,
             },
             {
               name: 'vendor-phone',

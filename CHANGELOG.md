@@ -24,6 +24,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **A Customer without its own branding row is branded from its Partner** only with a Platform that carries
   `public-branding-inherits-from-parent`; with an older Platform such a Customer keeps the Verbara defaults.
 
+### Changed
+
+- **Opening a conversation no longer downloads the chart and PDF libraries.** A bundler default had pulled
+  `vendor-charts` and `vendor-pdf` into the entry, so every route paid for them and `/agent/conversation/:id` weighed
+  770,806 B gzip-9. It now weighs 471,210 B, 38.9 % less; charts load with the pages that draw them, and PDF on export.
+  CI's `build` job gains `scripts/check-agent-closure-in-dist.py` (`Verbara.Platform.Web/ADR-0014`): it reads the
+  source maps of that route's static closure and fails on a module from `src/admin`, `src/analytics` or
+  `src/operations`, on the libraries behind `vendor-(charts|pdf|grid|flow)`, past 500,000 B gzip-9, or when it cannot
+  measure. No API, route or deployment change.
+
 ## [3.27.1-web] - 2026-10-28
 
 The sign-in tenant guess follows the server's host rules (Platform/ADR-0038); **requires Platform ≥ v2.33.0**, as
