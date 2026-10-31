@@ -64,7 +64,7 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right" align="end" className="w-48">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>{user?.displayName ?? 'User'}</DropdownMenuLabel>
+          <DropdownMenuLabel>{user?.displayName || t('auth.user_fallback')}</DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuSub>

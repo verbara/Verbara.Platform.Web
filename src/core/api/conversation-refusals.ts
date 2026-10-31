@@ -105,6 +105,10 @@ export const conversationRefusals: ApiErrorMap<ConversationAction> = {
       code: 'target-queue-not-found',
       key: 'errors.conversation.target_queue_not_found',
     },
+    'transfer-note-too-long': {
+      code: 'transfer-note-too-long',
+      key: 'errors.conversation.transfer_note_too_long',
+    },
     // Start refusals (Platform 2.28.0 `ConversationStartRefusal`, spec agent-started-conversations).
     'unknown-channel': { code: 'unknown-channel', key: 'errors.conversation.unknown_channel' },
     'contact-has-no-address': {

@@ -63,7 +63,7 @@ export default function MfaEnrollWizard() {
 
   async function handleComplete() {
     await complete.mutateAsync();
-    navigate('/admin/profile/security');
+    navigate('/profile/security');
   }
 
   function downloadCodes() {

@@ -1,25 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Paperclip, Send, X, FileIcon } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
 import { useDraftStore } from '@/agent/stores/draft-store';
 import { useConversationStore, type Message } from '@/agent/stores/conversation-store';
 import { useSendMessage } from '@/core/api/hooks/use-conversations';
-import { useUploadMedia } from '@/core/api/hooks/use-media';
 import { CannedResponses } from './canned-responses';
-
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
-
-interface FileAttachment {
-  file: File;
-  preview: string | null;
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 interface ReplyComposerProps {
   conversationId: string;
@@ -31,14 +17,11 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
   const setDraft = useDraftStore((s) => s.setDraft);
   const clearDraft = useDraftStore((s) => s.clearDraft);
   const [text, setText] = useState(() => useDraftStore.getState().drafts[conversationId] ?? '');
-  const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [cannedOpen, setCannedOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const addMessage = useConversationStore((s) => s.addMessage);
   const sendMessageMutation = useSendMessage();
-  const uploadMedia = useUploadMedia();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -110,51 +93,25 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
     textareaRef.current?.focus();
   }, []);
 
-  const handleSend = useCallback(async () => {
+  const handleSend = useCallback(() => {
     const trimmed = text.trim();
-    if (!trimmed && attachments.length === 0) return;
-
-    let mediaId: string | undefined;
-
-    if (attachments.length > 0 && attachments[0]) {
-      try {
-        const result = await uploadMedia.mutateAsync(attachments[0].file);
-        mediaId = result.id;
-      } catch {
-        // toast already shown by onError in useUploadMedia
-        return;
-      }
-    }
+    if (!trimmed) return;
 
     const message: Message = {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       conversationId,
       sender: 'agent',
-      senderName: 'You',
+      senderName: t('composer.you'),
       text: trimmed,
       timestamp: new Date().toISOString(),
-      type:
-        attachments.length > 0 && attachments[0]!.file.type.startsWith('image/')
-          ? 'image'
-          : trimmed
-            ? 'text'
-            : 'file',
+      type: 'text',
       status: 'sending',
-      metadata:
-        attachments.length > 0
-          ? {
-              fileName: attachments[0]!.file.name,
-              fileSize: formatFileSize(attachments[0]!.file.size),
-              mediaId,
-            }
-          : undefined,
     };
 
     // Optimistically add to store
     addMessage(conversationId, message);
     setText('');
     clearDraft(conversationId);
-    setAttachments([]);
     textareaRef.current?.focus();
 
     // Reset textarea height
@@ -164,7 +121,7 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
 
     // Send to API
     sendMessageMutation.mutate({ conversationId, text: trimmed });
-  }, [text, attachments, conversationId, addMessage, clearDraft, sendMessageMutation, uploadMedia]);
+  }, [t, text, conversationId, addMessage, clearDraft, sendMessageMutation]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -180,74 +137,10 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
     [handleSend, cannedOpen],
   );
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const newAttachments: FileAttachment[] = [];
-    for (const file of Array.from(files)) {
-      if (file.size > MAX_FILE_SIZE) {
-        // Skip files over 25MB — in production this would show a toast
-        continue;
-      }
-      const isImage = file.type.startsWith('image/');
-      const preview = isImage ? URL.createObjectURL(file) : null;
-      newAttachments.push({ file, preview });
-    }
-    setAttachments((prev) => [...prev, ...newAttachments]);
-
-    // Reset input so the same file can be re-selected
-    e.target.value = '';
-  }, []);
-
-  const removeAttachment = useCallback((index: number) => {
-    setAttachments((prev) => {
-      const removed = prev[index];
-      if (removed?.preview) URL.revokeObjectURL(removed.preview);
-      return prev.filter((_, i) => i !== index);
-    });
-  }, []);
-
-  const canSend = (text.trim().length > 0 || attachments.length > 0) && !uploadMedia.isPending;
+  const canSend = text.trim().length > 0;
 
   return (
     <div className="shrink-0 border-t border-slate-200 px-4 py-3 dark:border-slate-700">
-      {/* File previews */}
-      {attachments.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-2">
-          {attachments.map((att, idx) => (
-            <div
-              key={`${att.file.name}-${idx}`}
-              className="group relative flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700/50"
-            >
-              {att.preview ? (
-                <img
-                  src={att.preview}
-                  alt={att.file.name}
-                  className="h-10 w-10 rounded object-cover"
-                />
-              ) : (
-                <FileIcon className="h-5 w-5 shrink-0 text-slate-500" />
-              )}
-              <div className="flex flex-col">
-                <span className="max-w-32 truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-                  {att.file.name}
-                </span>
-                <span className="text-[10px] text-slate-500">{formatFileSize(att.file.size)}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => removeAttachment(idx)}
-                className="ml-1 rounded-full p-0.5 text-slate-500 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-600 dark:hover:text-slate-200"
-                aria-label={t('composer.remove_attachment', { name: att.file.name })}
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Composer area */}
       <div className="relative flex items-end gap-2">
         {/* Canned responses dropdown */}
@@ -256,35 +149,6 @@ export function ReplyComposer({ conversationId, contactName }: ReplyComposerProp
           onSelect={handleCannedSelect}
           onClose={handleCannedClose}
           contactName={contactName}
-        />
-
-        {/* Attach file button */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mb-1.5 shrink-0 rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
-                  aria-label={t('composer.attach_file')}
-                />
-              }
-            >
-              <Paperclip className="h-4.5 w-4.5" />
-            </TooltipTrigger>
-            <TooltipContent side="top">{t('composer.attach_file')}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={handleFileSelect}
-          aria-hidden="true"
-          tabIndex={-1}
         />
 
         {/* Textarea */}

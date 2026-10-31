@@ -7,6 +7,7 @@ import { ForgotPasswordPage } from '@/core/auth/forgot-password-page';
 import { ResetPasswordPage } from '@/core/auth/reset-password-page';
 import { PermissionGuard } from '@/core/auth/permission-guard';
 import UnauthorizedPage from '@/pages/unauthorized';
+import { AgentIndexPrompt } from '@/pages/agent/agent-index-prompt';
 import { RouteErrorBoundary } from '@/core/ui/route-error-boundary';
 
 const AdminLayout = lazy(() => import('@/pages/admin/admin-layout'));
@@ -1152,11 +1153,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-slate-500">Select a conversation to begin.</p>
-              </div>
-            ),
+            element: <AgentIndexPrompt />,
           },
           {
             path: 'conversation/:id',

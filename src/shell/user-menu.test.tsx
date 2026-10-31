@@ -73,4 +73,40 @@ describe('UserMenu', () => {
 
     expect(item).toHaveAttribute('data-testid', 'user-menu-security');
   });
+
+  it.each([
+    ['es-419', 'an empty name', '', 'Usuario'],
+    ['pt-BR', 'an empty name', '', 'Usuário'],
+    ['es-419', 'a null name', null, 'Usuario'],
+  ] as const)(
+    'label_ShouldComeFromTheLocaleFile_WhenIn %s With %s',
+    async (locale, _case, displayName, label) => {
+      useAuthStore.getState().setAuth(
+        'token',
+        Date.now() + 60_000,
+        // A null is outside the store's type and inside what the old `??` guarded.
+        {
+          id: 'u-1',
+          email: 'agent@example.test',
+          displayName: displayName as string,
+          role: 'agent',
+        },
+        'tenant-1',
+        [],
+        {},
+      );
+      const i18n = await createLocaleI18n(locale);
+      render(
+        <I18nextProvider i18n={i18n}>
+          <MemoryRouter initialEntries={['/agent']}>
+            <UserMenu />
+          </MemoryRouter>
+        </I18nextProvider>,
+      );
+
+      fireEvent.click(screen.getByTestId('user-menu-trigger'));
+
+      expect(await screen.findByText(label)).toBeInTheDocument();
+    },
+  );
 });

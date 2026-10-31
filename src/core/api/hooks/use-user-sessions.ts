@@ -8,7 +8,7 @@ import { customFetch } from '@/core/api/client';
  * page at `/profile/security/sessions` (R5.2 PA.2).
  *
  * The legacy `useMySessions` / `useRevokeSession` in `use-auth-admin.ts`
- * remain in place for the in-place security card on `/admin/profile/security`;
+ * remain in place for the in-place security card on `/profile/security`;
  * this surface is dedicated to the standalone wizard route.
  */
 

@@ -5,6 +5,9 @@
     "filter_waiting": "Waiting",
     "filter_wrapup": "Wrap-up",
     "empty": "No conversations. All caught up!",
+    "empty_active": "No active conversations",
+    "empty_waiting": "Nothing waiting",
+    "empty_wrapup": "No wrap-ups pending",
     "new_conversation": "New conversation assigned",
     "announceNew": "New conversation from {{name}}",
     "unknownContact": "Unknown contact",
@@ -39,10 +42,6 @@
     "no_results": "No results found",
     "note_label": "Note",
     "note_placeholder": "Note for the receiving agent...",
-    "cold": "Direct transfer",
-    "cold_description": "Transfer immediately without consulting",
-    "warm": "Consult first",
-    "warm_description": "Speak with the target before transferring",
     "success": "Conversation transferred successfully"
   },
   "wrap_up": {
@@ -61,6 +60,8 @@
     }
   },
   "context": {
+    "contact_heading": "Contact",
+    "edit": "Edit",
     "contact_info": "Contact information",
     "history": "History",
     "notes": "Notes",
@@ -111,10 +112,12 @@
     "loading": "Loading..."
   },
   "composer": {
-    "attach_file": "Attach file",
     "send": "Send",
     "send_shortcut": "Ctrl+Enter",
-    "remove_attachment": "Remove {{name}}"
+    "you": "You"
+  },
+  "supervision_banner": {
+    "observing": "Supervisor is observing this conversation ({{mode}})."
   },
   "messages": {
     "image_alt": "Image",
@@ -124,6 +127,7 @@
     "title": "New Conversation",
     "contact": "Contact",
     "channel": "Channel",
+    "no_channels": "No channels are available to start a conversation.",
     "initial_message": "Initial Message",
     "message_placeholder": "Type a message...",
     "search_placeholder": "Search contacts (min 2 characters)...",

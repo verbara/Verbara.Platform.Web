@@ -104,6 +104,7 @@
   "auth": {
     "login": "Entrar",
     "logout": "Sair",
+    "user_fallback": "Usuário",
     "sign_in": "Entre na sua conta",
     "sign_in_sso": "Entrar com SSO",
     "email": "E-mail",
@@ -231,6 +232,7 @@
       "not_offered_to_you": "Esta conversa foi oferecida a outro agente.",
       "target_agent_not_found": "O agente selecionado não existe mais.",
       "target_queue_not_found": "A fila selecionada não existe mais.",
+      "transfer_note_too_long": "A nota é muito longa. Use no máximo 1.000 caracteres.",
       "conversation_not_found": "Esta conversa não existe mais.",
       "contact_not_found": "Este contato não existe mais.",
       "conflict": "A conversa não pode mudar no estado atual.",
@@ -281,6 +283,19 @@
     "voice": {
       "trunk_not_dialable": "O tronco {{trunkId}} deste número não tem um endereço para chamar. Peça a um administrador que configure o host do tronco."
     }
+  },
+  "channels": {
+    "voice": "Voz",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "webchat": "Chat web",
+    "email": "E-mail",
+    "messenger": "Messenger",
+    "instagram": "Instagram",
+    "telegram": "Telegram",
+    "twitter": "Twitter",
+    "video": "Vídeo",
+    "rcs": "RCS"
   },
   "agent_layout": {
     "toggle_context": "Alternar painel de contexto (Ctrl+I)",
@@ -546,6 +561,10 @@
       "removed": "Entrada IP removida"
     },
     "sse": {
+      "conversation_from": "Nova conversa de {{name}}",
+      "conversation_offered": "Nova conversa oferecida por {{channel}}",
+      "open": "Abrir",
+      "view": "Ver",
       "connectionLost": "Conexão em tempo real perdida. Atualize a página para reconectar."
     },
     "dialerSettings": {

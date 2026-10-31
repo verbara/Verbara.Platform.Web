@@ -64,7 +64,7 @@ test.describe('Profile — MFA enroll wizard (R5.2 PA.2)', () => {
     await page.getByTestId('recovery-regenerate-done').click();
 
     // ─── Cleanup — disable MFA via legacy security page ────────────────
-    await page.goto('/admin/profile/security');
+    await page.goto('/profile/security');
     await page.getByTestId('security-mfa-disable').click();
     await page.getByTestId('security-mfa-disable-password').fill(PLATFORM_ADMIN.password);
     await page.getByTestId('security-mfa-disable-confirm').click();

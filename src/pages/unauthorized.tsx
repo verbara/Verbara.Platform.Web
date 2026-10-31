@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '@/core/auth/auth-store';
+import { roleDefaultRoute } from '@/core/auth/role-default-route';
 import { useDocumentTitle } from '@/core/hooks/use-document-title';
 import { Button } from '@/core/ui/button';
 
@@ -7,6 +9,7 @@ export default function UnauthorizedPage() {
   const { t } = useTranslation();
   useDocumentTitle(t('title.unauthorized'));
   const navigate = useNavigate();
+  const role = useAuthStore((s) => s.user?.role);
 
   return (
     <div
@@ -18,7 +21,9 @@ export default function UnauthorizedPage() {
           {t('errors.unauthorized_title')}
         </h1>
         <p className="text-slate-500 dark:text-slate-400">{t('errors.unauthorized_description')}</p>
-        <Button onClick={() => navigate('/')}>{t('errors.go_home')}</Button>
+        <Button data-testid="unauthorized-go-home" onClick={() => navigate(roleDefaultRoute(role))}>
+          {t('errors.go_home')}
+        </Button>
       </div>
     </div>
   );

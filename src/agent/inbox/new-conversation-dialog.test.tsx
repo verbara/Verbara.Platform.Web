@@ -9,7 +9,12 @@
  * Platform 2.28.0 (agent-started conversations): a start sends `initialMessage` (the queued path
  * without one is deprecated), WhatsApp may name a template, a refusal is a `ConversationStartRefusal`
  * whose machine code the dialog shows inline with `data-error-code`, and a 201 opens the conversation.
+ *
+ * Change `agent-console-contract-debt`: the channels come from `GET /api/v1/channels/available`, never
+ * from a fixed list, and only a read that stands offers anything. A refresh that fails takes the
+ * cached list away with it.
  */
+import { useState } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-router';
@@ -19,9 +24,22 @@ import i18next from 'i18next';
 import type { components } from '@/core/api/generated/openapi';
 import { server } from '@/test/msw-server';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { createLocaleI18n, type TestLocale } from '@/test/locale-i18n';
+import {
+  availableChannels,
+  channelTypeValues,
+  everyChannelListed,
+  messengerChannels,
+  noAvailableChannels,
+  smsThenWebChatChannels,
+  webChatOnlyChannels,
+  whatsAppOnlyChannels,
+} from '@/tests/utils/contract-doubles';
 import { NewConversationDialog } from './new-conversation-dialog';
 import enAgent from '../../../public/locales/en-US/agent.json';
 import enCommon from '../../../public/locales/en-US/common.json';
+import esAgent from '../../../public/locales/es-419/agent.json';
+import esCommon from '../../../public/locales/es-419/common.json';
 
 const CONTACT_ID = '1a2b3c4d5e6f4a7b8c9d0e1f2a3b4c5d';
 
@@ -75,8 +93,13 @@ function createdConversation(id = CONVERSATION_ID): components['schemas']['Conve
 
 type StartAnswer = { status: number; body: unknown };
 
+/** What the channels route answers; the promise holds it open, to observe a read in flight. */
+type ChannelsAnswer = { status: number; body: unknown; hold?: Promise<void> };
+
 let createBodies: unknown[] = [];
 let startAnswer: StartAnswer;
+let channelsAnswer: ChannelsAnswer;
+let channelReads = 0;
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
@@ -85,7 +108,15 @@ beforeEach(() => {
   useAuthStore.getState().logout();
   createBodies = [];
   startAnswer = { status: 201, body: createdConversation() };
+  channelsAnswer = { status: 200, body: availableChannels };
+  channelReads = 0;
   server.use(
+    http.get('/api/v1/channels/available', async () => {
+      channelReads += 1;
+      const { status, body, hold } = channelsAnswer;
+      await hold;
+      return HttpResponse.json(body as object, { status });
+    }),
     http.get('/api/v1/contacts', () =>
       HttpResponse.json({ items: [platformContact], totalCount: 1, page: 1, pageSize: 20 }),
     ),
@@ -138,9 +169,104 @@ async function renderDialog(onOpenChange: (open: boolean) => void = () => undefi
 }
 
 async function pickContactAndType(message = 'Hola Ana') {
+  await fillContactAndMessage(message);
+  // The start needs a channel, and the list answers on its own request.
+  await waitFor(() => expect(channelTrigger()).toBeEnabled());
+}
+
+async function fillContactAndMessage(message = 'Hola Ana') {
   const form = screen.getByTestId('new-conversation-form');
   fireEvent.click(await within(form).findByText('Ana Pérez'));
   fireEvent.change(screen.getByTestId('new-conv-message-input'), { target: { value: message } });
+}
+
+function channelTrigger() {
+  return screen.getByTestId('new-conv-channel-select');
+}
+
+/** The text the closed channel field shows, without its icon. */
+function selectedChannelText() {
+  return channelTrigger().querySelector('[data-slot="select-value"]')?.textContent;
+}
+
+async function offeredChannels() {
+  fireEvent.click(channelTrigger());
+  const options = await screen.findAllByRole('option');
+  return options.map((o) => ({ testId: o.getAttribute('data-testid'), label: o.textContent }));
+}
+
+/** A press starts on the option, as a real click does: base-ui ignores any other click. */
+async function pickChannel(channel: string) {
+  fireEvent.click(channelTrigger());
+  await chooseOpenOption(channel);
+}
+
+async function chooseOpenOption(channel: string) {
+  const option = await screen.findByTestId(`new-conv-channel-option-${channel}`);
+  fireEvent.pointerDown(option);
+  fireEvent.click(option);
+  await waitFor(() => expect(screen.queryAllByRole('option')).toHaveLength(0));
+}
+
+function ReopenableDialog({ startOpen }: Readonly<{ startOpen: boolean }>) {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <>
+      <button type="button" data-testid="reopen" onClick={() => setOpen(true)} />
+      <NewConversationDialog open={open} onOpenChange={setOpen} />
+    </>
+  );
+}
+
+/** Mounts the dialog behind a real open state, with the client at hand to refresh the list. */
+async function renderReopenable({
+  lng = 'en-US',
+  startOpen = true,
+}: { lng?: TestLocale; startOpen?: boolean } = {}) {
+  const i18n = await createLocaleI18n(lng);
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  render(
+    <QueryClientProvider client={queryClient}>
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter initialEntries={['/agent']}>
+          <Routes>
+            <Route path="/agent" element={<ReopenableDialog startOpen={startOpen} />} />
+            <Route path="/agent/conversation/:id" element={<OpenedConversation />} />
+          </Routes>
+        </MemoryRouter>
+      </I18nextProvider>
+    </QueryClientProvider>,
+  );
+  return queryClient;
+}
+
+async function searchContact() {
+  fireEvent.change(await screen.findByTestId('new-conv-contact-search'), {
+    target: { value: 'Ana' },
+  });
+}
+
+function closeDialog() {
+  fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+}
+
+function reopenDialog() {
+  fireEvent.click(screen.getByTestId('reopen'));
+}
+
+function refreshChannels(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({ queryKey: ['available-channels'] });
+}
+
+/** A held answer, released by the test. */
+function deferred() {
+  let release: () => void = () => undefined;
+  const hold = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  return { hold, release };
 }
 
 async function submitAndAwaitRefusal(code: string): Promise<HTMLElement> {
@@ -393,5 +519,258 @@ describe('NewConversationDialog start (Platform 2.28.0)', () => {
 
     expect(screen.queryByTestId('new-conv-view-open-conversation')).toBeNull();
     expect(screen.queryByTestId('new-conv-open-conversation')).toBeNull();
+  });
+});
+
+describe('NewConversationDialog channels (agent-console-contract-debt)', () => {
+  it('Channels_ShouldOfferAndSelectTheOnlyListedChannel_WhenTheListHoldsWebChatAlone', async () => {
+    channelsAnswer = { status: 200, body: webChatOnlyChannels };
+    await renderReopenable();
+
+    await waitFor(() => expect(selectedChannelText()).toBe(enCommon.channels.webchat));
+    expect(await offeredChannels()).toEqual([
+      { testId: 'new-conv-channel-option-WebChat', label: enCommon.channels.webchat },
+    ]);
+  });
+
+  it('Channels_ShouldOfferAChannelUnderItsLabel_WhenTheServerStartsListingIt', async () => {
+    channelsAnswer = { status: 200, body: messengerChannels };
+    await renderReopenable();
+
+    await waitFor(() => expect(selectedChannelText()).toBe(enCommon.channels.messenger));
+    expect(screen.queryByTestId('new-conv-no-channels')).toBeNull();
+  });
+
+  it('Channels_ShouldNotReadTheList_UntilTheDialogOpens', async () => {
+    await renderReopenable({ startOpen: false });
+
+    await new Promise((r) => setTimeout(r, 20));
+    expect(channelReads).toBe(0);
+
+    reopenDialog();
+    await waitFor(() => expect(channelReads).toBe(1));
+  });
+
+  it('Channels_ShouldKeepTheServerOrderAndSendTheWireValue_WhenTheAgentStartsOnTheSecond', async () => {
+    await renderReopenable();
+    await searchContact();
+    await pickContactAndType();
+
+    expect((await offeredChannels()).map((o) => o.testId)).toEqual([
+      'new-conv-channel-option-WhatsApp',
+      'new-conv-channel-option-WebChat',
+    ]);
+    await chooseOpenOption('WebChat');
+    fireEvent.click(screen.getByTestId('new-conv-submit-btn'));
+
+    await waitFor(() => expect(createBodies).toHaveLength(1));
+    expect(createBodies[0]).toEqual({
+      contactId: CONTACT_ID,
+      channel: 'WebChat',
+      initialMessage: 'Hola Ana',
+    });
+  });
+
+  it('Channels_ShouldLabelEveryChannelValue_WhenTheConsoleIsInSpanish', async () => {
+    channelsAnswer = { status: 200, body: everyChannelListed };
+    await renderReopenable({ lng: 'es-419' });
+    await waitFor(() => expect(channelTrigger()).toBeEnabled());
+
+    expect(await offeredChannels()).toEqual(
+      channelTypeValues.map((value) => ({
+        testId: `new-conv-channel-option-${value}`,
+        label: esCommon.channels[value.toLowerCase() as keyof typeof esCommon.channels],
+      })),
+    );
+  });
+
+  it('Channels_ShouldSelectTheFirstListedAndHideTheTemplate_WhenWhatsAppIsNotFirst', async () => {
+    channelsAnswer = { status: 200, body: smsThenWebChatChannels };
+    await renderReopenable();
+
+    await waitFor(() => expect(selectedChannelText()).toBe(enCommon.channels.sms));
+    expect(screen.queryByTestId('new-conv-template-toggle')).toBeNull();
+  });
+
+  it('Channels_ShouldShowTheTemplateOnlyWhileWhatsAppIsSelected_WhenTheAgentSwitches', async () => {
+    await renderReopenable();
+    await screen.findByTestId('new-conv-template-toggle');
+
+    await pickChannel('WebChat');
+    expect(screen.queryByTestId('new-conv-template-toggle')).toBeNull();
+
+    await pickChannel('WhatsApp');
+    expect(screen.getByTestId('new-conv-template-toggle')).toBeInTheDocument();
+  });
+
+  it('Channels_ShouldDropThePick_WhenTheDialogClosesAndReopens', async () => {
+    await renderReopenable();
+    await waitFor(() => expect(channelTrigger()).toBeEnabled());
+    await pickChannel('WebChat');
+    expect(selectedChannelText()).toBe(enCommon.channels.webchat);
+
+    closeDialog();
+    await waitFor(() => expect(screen.queryByTestId('new-conversation-form')).toBeNull());
+    reopenDialog();
+
+    await waitFor(() => expect(selectedChannelText()).toBe(enCommon.channels.whatsapp));
+  });
+
+  it('Channels_ShouldShowTheNoticeInTheAgentsLanguageAndDisableTheStart_WhenTheListIsEmpty', async () => {
+    channelsAnswer = { status: 200, body: noAvailableChannels };
+    await renderReopenable({ lng: 'es-419' });
+    await searchContact();
+    await fillContactAndMessage();
+
+    const notice = await screen.findByTestId('new-conv-no-channels');
+    expect(notice.textContent).toBe(esAgent.new_conversation.no_channels);
+    expect(screen.getByTestId('new-conv-submit-btn')).toBeDisabled();
+    expect(channelTrigger()).toBeDisabled();
+    fireEvent.submit(screen.getByTestId('new-conversation-form'));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(createBodies).toHaveLength(0);
+  });
+
+  it('Channels_ShouldKeepTheStartDisabledWithNoNotice_WhileTheListLoads', async () => {
+    const { hold, release } = deferred();
+    channelsAnswer = { status: 200, body: availableChannels, hold };
+    await renderReopenable();
+    await searchContact();
+    await fillContactAndMessage();
+    await waitFor(() => expect(channelReads).toBe(1));
+
+    expect(screen.getByTestId('new-conv-submit-btn')).toBeDisabled();
+    expect(screen.queryByTestId('new-conv-no-channels')).toBeNull();
+
+    release();
+    await waitFor(() => expect(screen.getByTestId('new-conv-submit-btn')).toBeEnabled());
+    expect(screen.queryByTestId('new-conv-no-channels')).toBeNull();
+  });
+
+  it.each([
+    [401, null],
+    [409, { title: 'TenantTypeMismatchProblem' }],
+    [500, null],
+  ] as const)(
+    'Channels_ShouldShowTheNoticeAndOfferNoFixedChannel_WhenTheReadAnswers%s',
+    async (status, body) => {
+      channelsAnswer = { status, body };
+      server.use(http.post('/api/v1/auth/refresh', () => new HttpResponse(null, { status: 401 })));
+      await renderReopenable();
+      await searchContact();
+      await fillContactAndMessage();
+
+      expect(await screen.findByTestId('new-conv-no-channels')).toBeInTheDocument();
+      expect(screen.getByTestId('new-conv-submit-btn')).toBeDisabled();
+      expect(channelTrigger()).toBeDisabled();
+      expect(selectedChannelText()).toBe('');
+      expect(screen.queryByTestId('new-conv-template-toggle')).toBeNull();
+    },
+  );
+
+  it('Channels_ShouldReadAgain_WhenTheDialogReopensAfterAFailedFirstRead', async () => {
+    channelsAnswer = { status: 500, body: null };
+    await renderReopenable();
+    await screen.findByTestId('new-conv-no-channels');
+
+    closeDialog();
+    await waitFor(() => expect(screen.queryByTestId('new-conversation-form')).toBeNull());
+    channelsAnswer = { status: 200, body: webChatOnlyChannels };
+    reopenDialog();
+
+    await waitFor(() => expect(selectedChannelText()).toBe(enCommon.channels.webchat));
+    expect(screen.queryByTestId('new-conv-no-channels')).toBeNull();
+  });
+});
+
+/**
+ * Audit-carry F1. TanStack keeps the last good `data` through a failed refetch, with `status` at
+ * `error`, so a list read from `data` alone would go on offering what the server stopped answering
+ * for. The rule the dialog follows:
+ *  - a refresh in flight changes nothing: the cached list stays offered and the pick stands;
+ *  - a refresh that fails is a failed read: nothing is offered, the notice shows and the start is
+ *    disabled, even over a cached list, until a later read succeeds;
+ *  - the pick survives both, and applies again if a later read still lists it;
+ *  - a read that stops listing the pick moves the selection to the first listed channel.
+ */
+describe('NewConversationDialog channels through a refresh (audit-carry F1)', () => {
+  it('Refresh_ShouldShowTheNoticeAndDisableTheStart_WhenItFailsOverACachedList', async () => {
+    const queryClient = await renderReopenable();
+    await searchContact();
+    await pickContactAndType();
+    expect(screen.getByTestId('new-conv-submit-btn')).toBeEnabled();
+    expect(queryClient.getQueryData(['available-channels'])).toEqual(availableChannels);
+
+    channelsAnswer = { status: 500, body: null };
+    await refreshChannels(queryClient);
+
+    expect(await screen.findByTestId('new-conv-no-channels')).toBeInTheDocument();
+    expect(screen.getByTestId('new-conv-submit-btn')).toBeDisabled();
+    expect(channelTrigger()).toBeDisabled();
+    expect(queryClient.getQueryData(['available-channels'])).toEqual(availableChannels);
+  });
+
+  it('Refresh_ShouldShowTheNotice_WhenItFailsAsTheDialogReopensOverACachedList', async () => {
+    await renderReopenable();
+    await waitFor(() => expect(channelTrigger()).toBeEnabled());
+    closeDialog();
+    await waitFor(() => expect(screen.queryByTestId('new-conversation-form')).toBeNull());
+
+    channelsAnswer = { status: 500, body: null };
+    reopenDialog();
+
+    expect(await screen.findByTestId('new-conv-no-channels')).toBeInTheDocument();
+    expect(screen.getByTestId('new-conv-submit-btn')).toBeDisabled();
+  });
+
+  it('Refresh_ShouldRestoreThePick_WhenALaterReadStillListsIt', async () => {
+    const queryClient = await renderReopenable();
+    await waitFor(() => expect(channelTrigger()).toBeEnabled());
+    await pickChannel('WebChat');
+
+    channelsAnswer = { status: 500, body: null };
+    await refreshChannels(queryClient);
+    await screen.findByTestId('new-conv-no-channels');
+
+    channelsAnswer = { status: 200, body: availableChannels };
+    await refreshChannels(queryClient);
+
+    await waitFor(() => expect(selectedChannelText()).toBe(enCommon.channels.webchat));
+    expect(screen.queryByTestId('new-conv-no-channels')).toBeNull();
+  });
+
+  it('Refresh_ShouldKeepTheListAndThePick_WhileItIsInFlight', async () => {
+    const queryClient = await renderReopenable();
+    await searchContact();
+    await pickContactAndType();
+    await pickChannel('WebChat');
+
+    const { hold, release } = deferred();
+    channelsAnswer = { status: 200, body: availableChannels, hold };
+    const refreshed = refreshChannels(queryClient);
+    await waitFor(() => expect(channelReads).toBe(2));
+
+    expect(selectedChannelText()).toBe(enCommon.channels.webchat);
+    expect(screen.getByTestId('new-conv-submit-btn')).toBeEnabled();
+    expect(screen.queryByTestId('new-conv-no-channels')).toBeNull();
+
+    release();
+    await refreshed;
+  });
+
+  it('Refresh_ShouldMoveToTheFirstListedAndDropTheRefusal_WhenItStopsListingThePick', async () => {
+    startAnswer = { status: 409, body: { error: 'channel-not-available' } };
+    const queryClient = await renderReopenable();
+    await searchContact();
+    await pickContactAndType();
+    await pickChannel('WebChat');
+    await submitAndAwaitRefusal('channel-not-available');
+
+    channelsAnswer = { status: 200, body: whatsAppOnlyChannels };
+    await refreshChannels(queryClient);
+
+    await waitFor(() => expect(selectedChannelText()).toBe(enCommon.channels.whatsapp));
+    expect(screen.queryByTestId('new-conv-error')).toBeNull();
+    expect(screen.getByTestId('new-conv-submit-btn')).toBeEnabled();
   });
 });

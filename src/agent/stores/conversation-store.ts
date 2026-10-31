@@ -273,14 +273,17 @@ export function initConversationSSE() {
       text: string;
       timestamp: string;
     };
+    // A `System` message is an internal row, as `mapPlatformMessage` makes it from history: both
+    // members move together, because the thread chooses a bubble by `type`, not by `sender`.
+    const isSystem = event.sender === 'System';
     store.addMessage(event.conversationId, {
       id: event.messageId,
       conversationId: event.conversationId,
-      sender: event.sender === 'agent' ? 'agent' : 'customer',
+      sender: isSystem ? 'system' : event.sender === 'agent' ? 'agent' : 'customer',
       senderName: event.sender,
       text: event.text,
       timestamp: event.timestamp,
-      type: 'text',
+      type: isSystem ? 'system' : 'text',
     });
   });
 

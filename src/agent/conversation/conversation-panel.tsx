@@ -207,7 +207,12 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
                   {t('conversation.hold')}
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={() => setTransferOpen(true)}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setTransferOpen(true)}
+                data-testid="conversation-transfer-btn"
+              >
                 <ArrowRightLeft className="h-3.5 w-3.5" data-icon="inline-start" />
                 {t('conversation.transfer')}
               </Button>

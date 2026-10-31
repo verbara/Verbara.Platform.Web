@@ -170,7 +170,10 @@ export function useTransferConversation() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string; targetQueueId?: string; targetAgentId?: string }) =>
+    mutationFn: ({
+      id,
+      ...data
+    }: { id: string } & Partial<components['schemas']['TransferRequest']>) =>
       customFetch<void>({
         url: `/api/v1/conversations/${id}/transfer`,
         method: 'POST',

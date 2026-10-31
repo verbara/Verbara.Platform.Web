@@ -5,6 +5,9 @@
     "filter_waiting": "Em espera",
     "filter_wrapup": "Pós-atendimento",
     "empty": "Sem conversas. Tudo em dia!",
+    "empty_active": "Sem conversas ativas",
+    "empty_waiting": "Nada em espera",
+    "empty_wrapup": "Sem pós-atendimentos pendentes",
     "new_conversation": "Nova conversa atribuída",
     "announceNew": "Nova conversa de {{name}}",
     "unknownContact": "Contato desconhecido",
@@ -39,10 +42,6 @@
     "no_results": "Sem resultados",
     "note_label": "Nota",
     "note_placeholder": "Nota para o agente receptor...",
-    "cold": "Transferência direta",
-    "cold_description": "Transferir imediatamente sem consultar",
-    "warm": "Consultar antes",
-    "warm_description": "Falar com o destino antes de transferir",
     "success": "Conversa transferida com sucesso"
   },
   "wrap_up": {
@@ -61,6 +60,8 @@
     }
   },
   "context": {
+    "contact_heading": "Contato",
+    "edit": "Editar",
     "contact_info": "Informações do cliente",
     "history": "Histórico",
     "notes": "Notas",
@@ -111,10 +112,12 @@
     "loading": "Carregando..."
   },
   "composer": {
-    "attach_file": "Anexar arquivo",
     "send": "Enviar",
     "send_shortcut": "Ctrl+Enter",
-    "remove_attachment": "Remover {{name}}"
+    "you": "Você"
+  },
+  "supervision_banner": {
+    "observing": "Um supervisor está observando esta conversa ({{mode}})."
   },
   "messages": {
     "image_alt": "Imagem",
@@ -124,6 +127,7 @@
     "title": "Nova conversa",
     "contact": "Contato",
     "channel": "Canal",
+    "no_channels": "Não há canais disponíveis para iniciar uma conversa.",
     "initial_message": "Mensagem inicial",
     "message_placeholder": "Digite uma mensagem...",
     "search_placeholder": "Buscar contatos (mín. 2 caracteres)...",
