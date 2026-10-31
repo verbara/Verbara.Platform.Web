@@ -48,7 +48,7 @@ import {
   isAutoAnswerEffective,
   autoAnswerCall,
 } from './softphone-manager';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 
 const baseConfig = {
   wssUrl: 'wss://pbx.lab:8089/ws',

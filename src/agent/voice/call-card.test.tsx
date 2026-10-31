@@ -48,7 +48,7 @@ vi.mock('./voice-transfer-dialog', () => ({
 }));
 
 import { CallCard } from './call-card';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 
 describe('CallCard', () => {
   // CallCard uses useNavigate (the "Open conversation" affordance) — it is mounted within the

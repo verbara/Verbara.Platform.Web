@@ -224,7 +224,7 @@ import {
   type ListenCredentials,
 } from './listen-agent';
 import { useListenStore } from './listen-store';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 
 const creds = (
   JSON.parse(

@@ -11,27 +11,50 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 // shared infra in @/core / @/lib. A cross-domain import (admin↔agent↔analytics↔
 // operations) is a layering leak; the audit found 14, all remediated by moving the
 // shared primitives + the SSE-fed AI store into @/core.
+//
+// The last block extends the gate to shared code: src/core and src/shell import no
+// domain at all, test files included. The base rule also flags `import type`, so a
+// type-only edge is an error here too. A shared import of a domain would pull that
+// domain into the agent console's first load (Verbara.Platform.Web/ADR-0014), so a
+// domain reaches shared code by subscribing or registering at runtime instead. The
+// `**/<domain>` also catches a relative import that climbs into a domain. The rule
+// cannot see a dynamic import(), vi.mock() or `typeof import()`; none of those enters
+// a static closure.
 const DOMAINS = ['admin', 'agent', 'analytics', 'operations'];
-const domainIsolation = DOMAINS.map((domain) => ({
-  files: [`src/${domain}/**/*.{ts,tsx}`],
-  rules: {
-    'no-restricted-imports': [
-      'error',
-      {
-        patterns: [
-          {
-            group: DOMAINS.filter((other) => other !== domain).flatMap((other) => [
-              `@/${other}`,
-              `@/${other}/**`,
-            ]),
-            message:
-              'Web domains stay isolated (ADR-0012 gate #4): admin/agent/analytics/operations must not import each other. Put shared UI in @/core/ui, shared state in @/core/stores, shared infra in @/core.',
-          },
-        ],
-      },
-    ],
+const forbidDomains = (domains, message) => ({
+  'no-restricted-imports': [
+    'error',
+    {
+      patterns: [
+        {
+          group: domains.flatMap((domain) => [
+            `@/${domain}`,
+            `@/${domain}/**`,
+            `**/${domain}`,
+            `**/${domain}/**`,
+          ]),
+          message,
+        },
+      ],
+    },
+  ],
+});
+const domainIsolation = [
+  ...DOMAINS.map((domain) => ({
+    files: [`src/${domain}/**/*.{ts,tsx}`],
+    rules: forbidDomains(
+      DOMAINS.filter((other) => other !== domain),
+      'Web domains stay isolated (ADR-0012 gate #4): admin/agent/analytics/operations must not import each other. Put shared UI in @/core/ui, shared state in @/core/stores, shared infra in @/core.',
+    ),
+  })),
+  {
+    files: ['src/core/**/*.{ts,tsx}', 'src/shell/**/*.{ts,tsx}'],
+    rules: forbidDomains(
+      DOMAINS,
+      'Shared code stays independent of the feature domains (verbara-meta/ADR-0012 gate #4, Verbara.Platform.Web/ADR-0014): src/core and src/shell must not import admin/agent/analytics/operations, types and tests included. Move what is shared into @/core, or have the domain subscribe or register at runtime.',
+    ),
   },
-}));
+];
 
 export default defineConfig([
   globalIgnores(['dist', 'coverage']),

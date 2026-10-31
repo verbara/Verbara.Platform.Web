@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { QueueMetrics } from '@/operations/stores/queue-metrics-store';
+import type { QueueMetrics } from '@/core/api/hooks/use-queue-metrics';
 import { useLiveState } from '@/core/api/hooks/use-analytics';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/core/ui/tooltip';
 

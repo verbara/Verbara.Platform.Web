@@ -13,7 +13,7 @@ import {
   ArrowRightLeft,
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import {
   answerCall,

@@ -51,7 +51,7 @@ vi.mock('@/agent/stores/conversation-store', () => ({
     select({ selectedId: 'conv-1', conversations: { 'conv-1': { contactId: 'contact-1' } } }),
 }));
 
-vi.mock('@/agent/stores/voice-call-store', () => ({
+vi.mock('@/core/stores/voice-call-store', () => ({
   useVoiceCallStore: (select: (s: unknown) => unknown) =>
     select({ registration: 'registered', phase: 'idle', startOutbound: startOutboundMock }),
 }));

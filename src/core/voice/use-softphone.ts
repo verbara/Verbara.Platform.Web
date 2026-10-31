@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAgentMe } from '@/core/api/hooks/use-agents';
 import { getConfig } from '@/core/hooks/use-config';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import {
   startSoftphone,
   stopSoftphone,

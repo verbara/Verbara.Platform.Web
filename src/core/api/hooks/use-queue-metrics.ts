@@ -1,7 +1,31 @@
 import { useQuery } from '@tanstack/react-query';
 import { customFetchWithHeaders } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
-import type { QueueMetrics } from '@/operations/stores/queue-metrics-store';
+
+/**
+ * One queue's live metrics, the domain shape {@link useQueueMetrics} returns. It lives here,
+ * not in the wallboard's store, so `src/core` does not depend on `src/operations`.
+ */
+export interface QueueMetrics {
+  queueId: string;
+  queueName: string;
+  /**
+   * Calls currently waiting in the queue. `null` when the Pro.Analytics.Live
+   * provider is unavailable (unregistered) or has no snapshot for this queue
+   * yet (R5.1 Task H). UI renders an em-dash placeholder with a "Metrics
+   * unavailable" tooltip when null.
+   */
+  waiting: number | null;
+  /**
+   * Average wait time (seconds) for the current interval. `null` under the
+   * same conditions as {@link waiting} above.
+   */
+  avgWaitSeconds: number | null;
+  slaPercent: number;
+  agentsAvailable: number;
+  agentsBusy: number;
+  agentsAway: number;
+}
 
 /**
  * Shape returned by {@link useQueueMetrics}. `isMetricsAvailable` mirrors the
@@ -20,9 +44,9 @@ export interface QueueMetricsResult {
  * Server response is the named `QueueMetricsDto[]` schema (openapi-response-adoption,
  * Platform/ADR-0035). The numeric fields are now single-typed (`number` / `null | number`)
  * on the regenerated document (openapi-numeric-schema-truth, Platform/ADR-0036 strips the
- * spurious AOT `string` arm at the source), so the store's {@link QueueMetrics} domain type
- * and its consumers (`queue-metrics-store.computeGlobals`, `queue-card.tsx`) read them
- * directly — no boundary coercion. This mapper only projects the DTO onto the store shape.
+ * spurious AOT `string` arm at the source), so the {@link QueueMetrics} domain type and its
+ * consumers (the wallboard store's `computeGlobals`, `queue-card.tsx`) read them
+ * directly — no boundary coercion. This mapper only projects the DTO onto that shape.
  */
 function toQueueMetrics(dto: components['schemas']['QueueMetricsDto']): QueueMetrics {
   return {

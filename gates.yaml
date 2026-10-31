@@ -41,8 +41,10 @@ gates:
     status: present
     impl: >-
       eslint.config.js `domainIsolation` block — no-restricted-imports forbids cross-imports
-      among src/{admin,agent,analytics,operations} (ADR-0012 Ola 2 gate #4). Enforced by the
-      blocking `lint` job.
+      among src/{admin,agent,analytics,operations} (ADR-0012 Ola 2 gate #4), and forbids all
+      four domains in src/core and src/shell, by alias or relative path, type-only imports
+      and tests included; a dynamic import() or vi.mock() is not seen
+      (Verbara.Platform.Web/ADR-0014). Enforced by the blocking `lint` job.
 
   - id: G5
     class: content-invariants

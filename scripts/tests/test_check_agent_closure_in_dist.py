@@ -34,8 +34,7 @@ _EXTRA = "assets/extra-Qq77Rr88.js"
 _EXTRA_NEXT = "assets/extra-next-Ss99Tt00.js"
 _PADDING = "assets/padding-Uu11Vv22.js"
 
-_PENDING = "src/operations/stores/campaign-metrics-store.ts"
-_ENTRY_SOURCES = ["src/main.tsx", "src/core/hooks/use-sse.ts", _PENDING, "node_modules/react/index.js"]
+_ENTRY_SOURCES = ["src/main.tsx", "src/core/hooks/use-sse.ts", "node_modules/react/index.js"]
 _CLEAN_SOURCES = ["src/core/ui/extra.tsx"]
 
 _ENTRY_CLOSURE = (_ENTRY, _RUNTIME, _SHARED)
@@ -70,6 +69,7 @@ _FORBIDDEN_MODULES = [
     "src/admin/flows/node-palette.tsx",
     "src/analytics/cdr/cdr-page.tsx",
     "src/operations/monitor/monitor-page.tsx",
+    "src/operations/stores/campaign-metrics-store.ts",
     "node_modules/recharts/es6/index.js",
     "node_modules/jspdf/dist/jspdf.es.min.js",
     "node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.mjs",
@@ -421,8 +421,7 @@ class FailClosedTests(_DistFixture):
 
     def test_main_ShouldFail_WhenTheBuildHasNoSourceMaps(self):
         self._remove_all_maps()
-        result = self._assert_fails("cannot read the origin")
-        self.assertNotIn("PENDING_PR2", result.stdout)
+        self._assert_fails("cannot read the origin")
 
     def test_main_ShouldFailNamingTheChunk_WhenOneMapIsMissing(self):
         for chunk in (_ENTRY, _SHARED, _AGENT_LAYOUT, _CONVERSATION_VIEW):
@@ -470,39 +469,6 @@ class FailClosedTests(_DistFixture):
     def test_main_ShouldPass_WhenAChunkOutsideTheClosureHasNoMap(self):
         self._remove(f"{_LAZY_CHARTS}.map")
         self._assert_passes()
-
-
-class PendingPr2Tests(_DistFixture):
-    def test_main_ShouldPassNamingTheException_WhenThePendingModuleIsInTheClosure(self):
-        self.assertIn(f"ok   PENDING_PR2 {_PENDING} in {_ENTRY}", self._assert_passes().stdout)
-
-    def test_main_ShouldPass_WhenThePendingModuleMovesToAnotherClosureChunk(self):
-        self._chunk(_ENTRY, ["src/main.tsx"], _ENTRY_BODY)
-        self._chunk(_EXTRA, [_PENDING])
-        self._link(_AGENT_LAYOUT, _EXTRA)
-        self.assertIn(f"ok   PENDING_PR2 {_PENDING} in {_EXTRA}", self._assert_passes().stdout)
-
-    def test_main_ShouldFail_WhenThePendingModuleLeavesTheClosure(self):
-        self._chunk(_ENTRY, ["src/main.tsx"], _ENTRY_BODY)
-        self._assert_fails(f"FAIL PENDING_PR2 entry {_PENDING} is no longer in the closure")
-
-    def test_main_ShouldFail_WhenThePendingModuleIsOnlyInALazyChunk(self):
-        self._chunk(_ENTRY, ["src/main.tsx"], _ENTRY_BODY)
-        self._chunk(_LAZY_CHARTS, [_PENDING])
-        self._assert_fails("PENDING_PR2 entry")
-
-    def test_main_ShouldFail_WhenAnotherOperationsModuleIsInTheClosure(self):
-        for module in (
-            "src/operations/stores/agent-states-store.ts",
-            "src/operations/stores/campaign-metrics-store.tsx",
-            "src/operations/stores/campaign-metrics-store.test.ts",
-            "src/operations/stores/campaign-metrics-store.ts/child.ts",
-            "src/operations/campaign-metrics-store.ts",
-            "apps/console/src/operations/stores/campaign-metrics-store.ts",
-        ):
-            with self.subTest(module=module):
-                self._chunk(_ENTRY, [*_ENTRY_SOURCES, module], _ENTRY_BODY)
-                self._assert_fails(f"{_ENTRY}: forbidden module {module}")
 
 
 class ReportTests(_DistFixture):

@@ -13,9 +13,13 @@ import {
   useCreatePartnerRateCard,
   useGeneratePartnerInvoice,
   useUpdatePartnerRateCard,
-} from './use-partner';
-import { useCreateRateCard, useUpdateRateCard, type CreateRateCardInput } from './use-billing';
-import { useCreateTenant } from './use-tenants';
+} from '@/core/api/hooks/use-partner';
+import {
+  useCreateRateCard,
+  useUpdateRateCard,
+  type CreateRateCardInput,
+} from '@/core/api/hooks/use-billing';
+import { useCreateTenant } from '@/core/api/hooks/use-tenants';
 import { useUpdateTenantSettings } from '@/admin/tenants/use-tenant-settings';
 
 /**

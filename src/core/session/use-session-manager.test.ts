@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSessionManager, type SessionManagerOptions } from './use-session-manager';
 import { COUNTDOWN_SECONDS, REFRESH_LEAD_MS, warningAtMs } from './idle-config';
 import type { SessionMessage } from './session-channel';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
-import { useConversationStore, type Conversation } from '@/agent/stores/conversation-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { registerActiveWorkSource, type ActiveWorkSource } from './active-work-registry';
 
 /**
  * A controllable stand-in for {@link SessionChannel} that lets a test inspect
@@ -36,19 +36,24 @@ class FakeChannel {
   }
 }
 
-function makeConversation(overrides: Partial<Conversation> = {}): Conversation {
+/** An active-work source a test drives by hand, as a domain store would. */
+function makeFakeSource() {
+  let active = false;
+  const listeners = new Set<() => void>();
+  const source: ActiveWorkSource = {
+    isActive: () => active,
+    subscribe: (onBecameActive) => {
+      listeners.add(onBecameActive);
+      return () => listeners.delete(onBecameActive);
+    },
+  };
   return {
-    id: 'c1',
-    contactId: '',
-    contactName: 'Caller',
-    channel: 'chat',
-    queueName: 'support',
-    state: 'active',
-    lastMessage: '',
-    lastMessageAt: new Date().toISOString(),
-    unread: false,
-    assignedAt: new Date().toISOString(),
-    ...overrides,
+    source,
+    setActive(next: boolean) {
+      const became = next && !active;
+      active = next;
+      if (became) for (const listener of listeners) listener();
+    },
   };
 }
 
@@ -74,14 +79,23 @@ function setup(overrides: Partial<SessionManagerOptions> = {}) {
 const WARNING_AT = warningAtMs(2); // 2 minutes → 60_000 ms (idleMs 120_000 - WARNING_BEFORE_MS 60_000)
 
 describe('useSessionManager', () => {
+  let unregisterSources: (() => void)[] = [];
+
+  function registerFakeSource() {
+    const fake = makeFakeSource();
+    unregisterSources.push(registerActiveWorkSource(fake.source));
+    return fake;
+  }
+
   beforeEach(() => {
     vi.useFakeTimers();
     useVoiceCallStore.getState().reset();
-    useConversationStore.setState({ conversations: {} });
     useAuthStore.setState({ accessToken: null, tokenExpiry: null });
   });
 
   afterEach(() => {
+    for (const unregister of unregisterSources) unregister();
+    unregisterSources = [];
     vi.runOnlyPendingTimers();
     vi.useRealTimers();
     vi.clearAllMocks();
@@ -141,13 +155,12 @@ describe('useSessionManager', () => {
     expect(onLogout).not.toHaveBeenCalled();
   });
 
-  it('ActiveConversation_ShouldCountAsActivity_WhenDeadlinePassed', () => {
+  it('ActiveWork_ShouldCountAsActivity_WhenDeadlinePassed', () => {
+    const fake = registerFakeSource();
     const { result, onLogout } = setup();
 
     act(() => {
-      useConversationStore.setState({
-        conversations: { c1: makeConversation({ state: 'active' }) },
-      });
+      fake.setActive(true);
     });
 
     act(() => {
@@ -155,6 +168,71 @@ describe('useSessionManager', () => {
     });
     expect(result.current.warningOpen).toBe(false);
     expect(onLogout).not.toHaveBeenCalled();
+  });
+
+  it('ActiveWork_ShouldSuppressWarning_WhenSourceRegisteredAfterTheEffectRan', () => {
+    const { result, onLogout } = setup();
+    const fake = registerFakeSource();
+
+    // Already active, so no transition reaches the session: only the deadline's read can see it.
+    fake.setActive(true);
+
+    act(() => {
+      vi.advanceTimersByTime(WARNING_AT + 5_000);
+    });
+    expect(result.current.warningOpen).toBe(false);
+    expect(onLogout).not.toHaveBeenCalled();
+  });
+
+  it('ActiveWork_ShouldRestartTheIdleCountdown_WhenSourceRegisteredAfterTheEffectRan', () => {
+    const { result, channel } = setup();
+    act(() => {
+      vi.advanceTimersByTime(WARNING_AT - 1_000);
+    });
+    const fake = registerFakeSource();
+
+    act(() => {
+      fake.setActive(true);
+    });
+    expect(channel.posted).toContain('activity');
+
+    // The work ends, so only the restarted clock can keep the warning away past the old deadline.
+    fake.setActive(false);
+    act(() => {
+      vi.advanceTimersByTime(1_500);
+    });
+    expect(result.current.warningOpen).toBe(false);
+
+    act(() => {
+      vi.advanceTimersByTime(WARNING_AT);
+    });
+    expect(result.current.warningOpen).toBe(true);
+  });
+
+  it('ActiveWork_ShouldCloseTheWarning_WhenLateSourceBecomesActiveDuringIt', () => {
+    const { result } = setup();
+    act(() => {
+      vi.advanceTimersByTime(WARNING_AT);
+    });
+    expect(result.current.warningOpen).toBe(true);
+    const fake = registerFakeSource();
+
+    act(() => {
+      fake.setActive(true);
+    });
+
+    expect(result.current.warningOpen).toBe(false);
+  });
+
+  it('ActiveWork_ShouldStopReachingTheSession_WhenTheHookUnmounted', () => {
+    const fake = registerFakeSource();
+    const { unmount } = setup();
+
+    unmount();
+    fake.setActive(true);
+
+    // A listener left behind would re-arm the idle timer of an unmounted hook.
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it('SuppressWarning_ShouldNeverOpen_WhenPredicateTrue', () => {

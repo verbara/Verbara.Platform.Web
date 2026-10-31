@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
 import { useVoiceDial } from '@/core/api/hooks/use-conversations';
 import { toastApiError } from '@/core/api/toast-api-error';

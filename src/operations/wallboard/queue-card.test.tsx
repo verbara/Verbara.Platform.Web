@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { QueueCard } from './queue-card';
-import type { QueueMetrics } from '@/operations/stores/queue-metrics-store';
+import type { QueueMetrics } from '@/core/api/hooks/use-queue-metrics';
 
 // Stub react-i18next so the component renders without the HTTP backend.
 // Returns the requested key with a small translation table for the values

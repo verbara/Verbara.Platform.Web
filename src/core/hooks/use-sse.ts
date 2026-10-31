@@ -4,37 +4,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { useHasPermission } from '@/core/auth/use-has-permission';
 import { refreshAccessToken } from '@/core/api/client';
-import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
-import { useCampaignMetricsStore } from '@/operations/stores/campaign-metrics-store';
-import { normalizeCampaignStatus } from '@/core/api/hooks/use-campaigns';
+import { useAgentMe } from '@/core/api/hooks/use-agents';
+import { useAgentAlertsStore } from '@/core/stores/agent-alerts-store';
 import { useAgentAiStore } from '@/core/stores/agent-ai-store';
 import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
 type SseEventHandler = (data: unknown) => void;
 
-/**
- * `campaign.status_changed` (`CampaignStatusChangedEvent`; host fixture
- * `campaign-status-changed.event.json`). Not in Platform's OpenAPI document, so typed here by hand
- * (design D2); the envelope members (`tenantId`, `type`, `timestamp`, `metadata`, `eventType`) are
- * never read.
- */
-interface CampaignStatusChangedPayload {
-  campaignId: number;
-  campaignName: string;
-  oldStatus: string;
-  newStatus: string;
-}
-
-/** `campaign.metrics_updated` (`CampaignMetricsUpdatedEvent`; host fixture `campaign-metrics-updated.event.json`). */
-interface CampaignMetricsUpdatedPayload {
-  campaignId: number;
-  contactsDialed: number;
-  contactsRemaining: number;
-  connectRate: number;
-  abandonRate: number;
-  activeCalls: number;
-}
 const handlers: Record<string, SseEventHandler[]> = {};
 
 /**
@@ -59,6 +37,11 @@ export function useSSE() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const queryClient = useQueryClient();
   const { t } = useTranslation('common');
+  // The runtime's own observer of the agent's identity (design D5): the handlers below read it from
+  // the query cache, and this hook runs on every route, so the rail badge counts outside `/agent`
+  // from a fresh session on and the entry never ages out. It does not lift the softphone or the
+  // heartbeat, which stay in the agent layout.
+  useAgentMe({ enabled: useHasPermission('contacts:conversation:handle') });
   const navigate = useNavigate();
   const sourceRef = useRef<EventSource | null>(null);
   const reconnectAttemptRef = useRef(0);
@@ -70,8 +53,8 @@ export function useSSE() {
   const connect = useCallback(() => {
     if (!accessToken || sourceRef.current) return;
 
-    // The logged-in agent's AgentId (NOT the user id) — populated in the query
-    // cache by useAgentMe() on the agent surfaces; undefined for non-agent users.
+    // The logged-in agent's AgentId (NOT the user id) — populated in the query cache by the
+    // observer above, on every route; undefined for non-agent users and until it loads.
     const currentAgentId = () => resolveAgentId(queryClient.getQueryData(['agent-me']));
 
     const url = `/api/v1/events/stream?token=${encodeURIComponent(accessToken)}`;
@@ -211,10 +194,7 @@ export function useSSE() {
 
     source.addEventListener('campaign.status_changed', (e) => {
       try {
-        const data = JSON.parse(e.data) as CampaignStatusChangedPayload;
-        useCampaignMetricsStore
-          .getState()
-          .updateStatus(String(data.campaignId), normalizeCampaignStatus(data.newStatus));
+        const data = JSON.parse(e.data);
         handlers['campaign.status_changed']?.forEach((h) => h(data));
       } catch {
         // ignore
@@ -223,17 +203,7 @@ export function useSSE() {
 
     source.addEventListener('campaign.metrics_updated', (e) => {
       try {
-        const data = JSON.parse(e.data) as CampaignMetricsUpdatedPayload;
-        // Only the metric members: the event's envelope and its numeric `campaignId` never reach the
-        // stored campaign, whose key, name, status and pacing stay (design D2).
-        const { contactsDialed, contactsRemaining, connectRate, abandonRate, activeCalls } = data;
-        useCampaignMetricsStore.getState().updateMetrics(String(data.campaignId), {
-          contactsDialed,
-          contactsRemaining,
-          connectRate,
-          abandonRate,
-          activeCalls,
-        });
+        const data = JSON.parse(e.data);
         handlers['campaign.metrics_updated']?.forEach((h) => h(data));
       } catch {
         // ignore

@@ -2,13 +2,13 @@
  * Activity-aware idle / session manager hook.
  *
  * Mounted once (in the app shell) it watches for user activity — DOM input,
- * live voice calls, and active conversations — and drives the idle-timeout
- * lifecycle:
+ * live voice calls, and the active-work sources domains register — and drives
+ * the idle-timeout lifecycle:
  *
  *  1. Arms an idle timer relative to the last activity. When the *warning*
  *     threshold (`warningAtMs`) is crossed it either re-arms (if the agent is
- *     still meaningfully busy — a live call, an active conversation, or an
- *     external suppression predicate) or opens the warning modal and starts a
+ *     still meaningfully busy — a live call, active work from a registered
+ *     source, or an external suppression predicate) or opens the warning modal and starts a
  *     1-second countdown. When the countdown hits zero the session is torn down
  *     via `onLogout` and the logout is broadcast to sibling tabs.
  *  2. Proactively refreshes the access token a fixed lead time before it
@@ -35,15 +35,12 @@ import {
   warningAtMs,
 } from './idle-config';
 import { SessionChannel } from './session-channel';
+import { isAnyWorkActive, subscribeToActiveWork } from './active-work-registry';
 import { useAuthStore } from '@/core/auth/auth-store';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
-import { useConversationStore } from '@/agent/stores/conversation-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 
 /** DOM events that count as user activity. All registered `{ passive: true }`. */
 const ACTIVITY_EVENTS = ['mousemove', 'keydown', 'pointerdown', 'scroll', 'touchstart'] as const;
-
-/** Conversation states that mean the agent is actively handling work. */
-const ACTIVE_CONVERSATION_STATES = new Set(['active', 'on_hold', 'consulting']);
 
 export interface SessionManagerOptions {
   /**
@@ -87,15 +84,6 @@ export interface SessionManagerResult {
 function isVoiceCallActive(): boolean {
   const phase = useVoiceCallStore.getState().phase;
   return phase === 'ringing' || phase === 'active';
-}
-
-/** True when any conversation is in an actively-handled state. */
-function isConversationActive(): boolean {
-  const conversations = useConversationStore.getState().conversations;
-  for (const conv of Object.values(conversations)) {
-    if (ACTIVE_CONVERSATION_STATES.has(conv.state)) return true;
-  }
-  return false;
 }
 
 export function useSessionManager(opts: SessionManagerOptions): SessionManagerResult {
@@ -215,12 +203,12 @@ export function useSessionManager(opts: SessionManagerOptions): SessionManagerRe
     const minutes = resolveMinutes();
     idleTimerRef.current = setTimeout(() => {
       // The warning threshold fired. If the agent is still busy (external
-      // suppression, a live call, or an active conversation) treat it as
-      // activity and re-arm rather than nagging them.
+      // suppression, a live call, or active work from a registered source)
+      // treat it as activity and re-arm rather than nagging them.
       const suppressed =
         (optsRef.current.shouldSuppressWarning?.() ?? false) ||
         isVoiceCallActive() ||
-        isConversationActive();
+        isAnyWorkActive();
       if (suppressed) {
         markActivity(false);
         return;
@@ -286,22 +274,14 @@ export function useSessionManager(opts: SessionManagerOptions): SessionManagerRe
       if (becameActive) markActivity(true);
     });
 
-    const unsubConv = useConversationStore.subscribe((state, prev) => {
-      const nowActive = Object.values(state.conversations).some((c) =>
-        ACTIVE_CONVERSATION_STATES.has(c.state),
-      );
-      const wasActive = Object.values(prev.conversations).some((c) =>
-        ACTIVE_CONVERSATION_STATES.has(c.state),
-      );
-      if (nowActive && !wasActive) markActivity(true);
-    });
+    const unsubWork = subscribeToActiveWork(() => markActivity(true));
 
     return () => {
       for (const evt of ACTIVITY_EVENTS) {
         globalThis.removeEventListener(evt, onActivity);
       }
       unsubVoice();
-      unsubConv();
+      unsubWork();
       clearIdleTimer();
       clearCountdown();
     };

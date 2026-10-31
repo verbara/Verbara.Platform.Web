@@ -1,5 +1,5 @@
 import { Web } from 'sip.js';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { deriveDomain } from './sip-domain';
 
 /**

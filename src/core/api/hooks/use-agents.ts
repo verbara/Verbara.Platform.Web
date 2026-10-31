@@ -124,10 +124,11 @@ export function useAgent(id: string | undefined) {
   });
 }
 
-export function useAgentMe() {
+export function useAgentMe({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['agent-me'],
     queryFn: () => customFetch<Agent>({ url: '/api/v1/agents/me', method: 'GET' }),
+    enabled,
   });
 }
 
