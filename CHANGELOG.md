@@ -43,6 +43,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and replaces what it shows. CI's `lint` job now fails when `src/core` or `src/shell` statically imports a feature
   domain, by alias or relative path, type imports and tests included; a dynamic `import()` or a `vi.mock` is not seen. No API, route or deployment change.
 
+### Fixed
+
+- **Every console user can reach their own security page.** The user menu sent everyone to `/admin/security`, which an
+  Agent cannot open, so an Agent had no way to change its password. The page now lives at `/profile/security`, which
+  needs a session and no permission, and the menu goes there. `/admin/security` keeps rendering the same page under its
+  admin guard. No API change.
+
 ## [3.27.1-web] - 2026-10-28
 
 The sign-in tenant guess follows the server's host rules (Platform/ADR-0038); **requires Platform ≥ v2.33.0**, as

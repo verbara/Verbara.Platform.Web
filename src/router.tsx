@@ -62,7 +62,7 @@ const TenantsPage = lazy(() => import('@/admin/tenants/tenants-page'));
 const TenantDetailPage = lazy(() => import('@/admin/tenants/tenant-detail-page'));
 const RolesPage = lazy(() => import('@/admin/roles/roles-page'));
 const RoleDetailPage = lazy(() => import('@/admin/roles/role-detail-page'));
-const SecurityPage = lazy(() => import('@/admin/profile/security-page'));
+const SecurityPage = lazy(() => import('@/profile/security/security-page'));
 // R5.2 Phase 0 placeholders — implemented by Phase A/B/C subagents.
 const MfaAdminPage = lazy(() => import('@/admin/security/mfa/mfa-admin-page'));
 const AuditViewerPage = lazy(() => import('@/admin/security/audit/audit-viewer-page'));
@@ -1103,6 +1103,15 @@ export const router = createBrowserRouter([
       // them with the standard AuthGuard, so they require an authenticated
       // session but no extra permission. Phase A/B/C subagents replace
       // each with the real component.
+      {
+        path: 'profile/security',
+        errorElement: <RouteErrorBoundary />,
+        element: (
+          <LazyLoad>
+            <SecurityPage />
+          </LazyLoad>
+        ),
+      },
       {
         path: 'profile/security/mfa/enroll',
         errorElement: <RouteErrorBoundary />,

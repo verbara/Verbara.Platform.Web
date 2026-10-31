@@ -106,11 +106,18 @@ export function UserMenu() {
             ))}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        <DropdownMenuItem onClick={() => navigate('/admin/security')}>
+        <DropdownMenuItem
+          data-testid="user-menu-security"
+          onClick={() => navigate('/profile/security')}
+        >
           <Lock className="mr-2 h-4 w-4" /> {t('admin:sidebar.security')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem data-testid="user-menu-logout" onClick={handleLogout} className="text-critical">
+        <DropdownMenuItem
+          data-testid="user-menu-logout"
+          onClick={handleLogout}
+          className="text-critical"
+        >
           <LogOut className="mr-2 h-4 w-4" /> {t('auth.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>

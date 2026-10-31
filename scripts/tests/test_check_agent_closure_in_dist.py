@@ -197,6 +197,11 @@ class ForbiddenModuleTests(_DistFixture):
                 self._chunk(_EXTRA, [module])
                 self._assert_fails(f"FAIL {_EXTRA}: forbidden module {module}")
 
+    def test_main_ShouldFail_WhenTheSecurityPageEntersTheClosure(self):
+        self._link(_AGENT_LAYOUT, _EXTRA)
+        self._chunk(_EXTRA, ["src/profile/security/security-page.tsx"])
+        self._assert_fails(f"{_EXTRA}: forbidden module src/profile/security/security-page.tsx")
+
     def test_main_ShouldGroupAVendorPackage_WhenItBringsManyModules(self):
         self._link(_AGENT_LAYOUT, _EXTRA)
         self._chunk(_EXTRA, [f"node_modules/recharts/es6/m{i}.js" for i in range(4)])
