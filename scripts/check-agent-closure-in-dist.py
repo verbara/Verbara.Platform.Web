@@ -9,8 +9,8 @@ vendor-charts and vendor-pdf in its entry, and a global size budget let it throu
 The closure is the entry script of dist/index.html plus the agent-layout-* and
 conversation-view-* chunks, following static imports only. Over it:
 
-  * no module from src/admin, src/analytics or src/operations, nor from recharts,
-    jspdf, jspdf-autotable, html2canvas, ag-grid* or @xyflow, read from each
+  * no module from src/admin, src/analytics, src/operations or src/profile, nor from
+    recharts, jspdf, jspdf-autotable, html2canvas, ag-grid* or @xyflow, read from each
     chunk's source map, because a module bundled into the entry has no file name;
   * no chunk named vendor-(charts|pdf|grid|flow)-*, a second, independent signal;
   * at most 500,000 B: the closure plus the entry stylesheet, each file gzipped alone
@@ -45,7 +45,7 @@ ROUTES = (
     ("operations", ("operations-layout",)),
 )
 
-FORBIDDEN_DOMAIN = re.compile(r"(?:^|/)src/(admin|analytics|operations)/")
+FORBIDDEN_DOMAIN = re.compile(r"(?:^|/)src/(admin|analytics|operations|profile)/")
 FORBIDDEN_VENDOR = re.compile(
     r"(?:^|/)node_modules/(recharts|jspdf|jspdf-autotable|html2canvas|ag-grid[^/]*|@xyflow)/"
 )
