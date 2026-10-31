@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
-import { useSSE } from './use-sse';
+import { useSSE } from '@/core/hooks/use-sse';
 import { useAuthStore } from '@/core/auth/auth-store';
 import {
   useCampaignMetricsStore,

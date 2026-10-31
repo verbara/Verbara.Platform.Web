@@ -36,12 +36,6 @@ from html.parser import HTMLParser
 
 BUDGET_BYTES = 500_000
 
-# One self-expiring exception, exact path only: core/hooks/use-sse.ts imports this store
-# until PR2 of agent-shell-in-app inverts the edge. Every other src/operations module
-# still fails, and an entry no longer found in the closure fails too, so it cannot be
-# left behind.
-PENDING_PR2 = {"src/operations/stores/campaign-metrics-store.ts"}
-
 # The first row is the route the checks guard; its stems are the closure roots.
 ROUTES = (
     ("/agent/conversation/:id", ("agent-layout", "conversation-view")),
@@ -152,34 +146,23 @@ def _forbidden_group(module):
     return f"src/{domain.group(1)}/" if domain else None
 
 
-def _check_origins(dist, closure, failures, found):
-    modules = {}
-    complete = True
+def _check_origins(dist, closure, failures):
     for rel in sorted(closure):
         if FORBIDDEN_CHUNK.match(posixpath.basename(rel)):
             failures.append(f"{rel}: forbidden chunk name in the /agent closure")
         origins = _origins(dist, rel, failures)
         if origins is None:
-            complete = False
             continue
         hits = {}
         for module in origins:
-            modules.setdefault(module, rel)
             group = _forbidden_group(module)
-            if group and module not in PENDING_PR2:
+            if group:
                 hits.setdefault(group, []).append(module)
         for group, listed in sorted(hits.items()):
             if group.startswith("node_modules/") and len(listed) > 1:
                 listed = [f"{listed[0]} and {len(listed) - 1} more from {group}"]
             for module in listed:
                 failures.append(f"{rel}: forbidden module {module}")
-
-    if complete:
-        for entry in sorted(PENDING_PR2):
-            if entry in modules:
-                found.append(f"PENDING_PR2 {entry} in {modules[entry]}")
-            else:
-                failures.append(f"PENDING_PR2 entry {entry} is no longer in the closure: delete it")
 
 
 @functools.lru_cache(maxsize=None)
@@ -220,7 +203,7 @@ def check(dist, report=False):
     measurable = not failures
     if measurable:
         found.append(f"closure: {len(closure)} chunks from {len(entry) + len(ROUTES[0][1])} roots")
-    _check_origins(dist, closure, failures, found)
+    _check_origins(dist, closure, failures)
 
     if measurable:
         total = _measure(dist, closure, stylesheets)

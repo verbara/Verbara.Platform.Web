@@ -3,7 +3,7 @@ import { Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { initConversationSSE } from '@/agent/stores/conversation-store';
-import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
+import { useAgentAlertsStore } from '@/core/stores/agent-alerts-store';
 import { useSoftphone } from '@/core/voice/use-softphone';
 import { useAgentHeartbeat } from '@/core/presence/use-agent-heartbeat';
 import { useAgentDeparture } from '@/core/presence/agent-departure';

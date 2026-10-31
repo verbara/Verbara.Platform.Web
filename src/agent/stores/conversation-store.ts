@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { onSseEvent } from '@/core/hooks/use-sse';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
+import {
+  registerActiveWorkSource,
+  type ActiveWorkSource,
+} from '@/core/session/active-work-registry';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useAgentAiStore } from '@/core/stores/agent-ai-store';
 
 export interface Conversation {
@@ -173,11 +177,38 @@ export function selectFilteredConversations(
     .sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''));
 }
 
+/** Conversation states that mean the agent is actively handling work. */
+const ACTIVE_CONVERSATION_STATES = new Set<Conversation['state']>([
+  'active',
+  'on_hold',
+  'consulting',
+]);
+
+function hasActiveConversation(conversations: Record<string, Conversation>): boolean {
+  return Object.values(conversations).some((c) => ACTIVE_CONVERSATION_STATES.has(c.state));
+}
+
+/** Keeps the session alive while a conversation is actively handled. */
+export const conversationActiveWorkSource: ActiveWorkSource = {
+  isActive: () => hasActiveConversation(useConversationStore.getState().conversations),
+  subscribe: (onBecameActive) =>
+    useConversationStore.subscribe((state, prev) => {
+      if (
+        hasActiveConversation(state.conversations) &&
+        !hasActiveConversation(prev.conversations)
+      ) {
+        onBecameActive();
+      }
+    }),
+};
+
 let sseInitialized = false;
 
 export function initConversationSSE() {
   if (sseInitialized) return;
   sseInitialized = true;
+
+  registerActiveWorkSource(conversationActiveWorkSource);
 
   const store = useConversationStore.getState();
 

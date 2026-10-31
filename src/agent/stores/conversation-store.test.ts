@@ -5,7 +5,7 @@ import {
   Conversation,
   Message,
 } from './conversation-store';
-import { useVoiceCallStore } from './voice-call-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 
 const makeConversation = (overrides: Partial<Conversation> = {}): Conversation => ({
   id: 'conv-1',

@@ -65,6 +65,10 @@ export function SessionManager() {
   }, []);
 
   const shouldSuppressWarning = useCallback(() => {
+    // The console runtime keeps `['agent-me']` on every route for the rail badge. An aux state
+    // only excuses the idle timeout inside the agent console; everywhere else it still applies.
+    const { pathname } = window.location;
+    if (pathname !== '/agent' && !pathname.startsWith('/agent/')) return false;
     const agent = queryClient.getQueryData<Agent>(['agent-me']);
     if (!agent) return false;
     // `/agents/me` returns PascalCase `AgentState` enum names (e.g. "DND"), so

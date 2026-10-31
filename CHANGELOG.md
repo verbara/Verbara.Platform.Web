@@ -32,7 +32,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   CI's `build` job gains `scripts/check-agent-closure-in-dist.py` (`Verbara.Platform.Web/ADR-0014`): it reads the
   source maps of that route's static closure and fails on a module from `src/admin`, `src/analytics` or
   `src/operations`, on the libraries behind `vendor-(charts|pdf|grid|flow)`, past 500,000 B gzip-9, or when it cannot
-  measure. No API, route or deployment change.
+  measure. No API, route or deployment change. (#494)
+- **The rail's agent alert badge counts on every route, and the campaign monitor reads the API on every entry.** The
+  badge used to depend on what a visit to `/agent` had left in memory. The console now loads the agent's identity on
+  every route for a user with `contacts:conversation:handle`, so an agent who starts on `/operations`, or stays away
+  from `/agent`, still sees the count; those users now send `GET /api/v1/agents/me` outside `/agent`, and anyone else
+  does not send it from there. The same agent also gets the new-conversation toast outside `/agent`, and an idle sign-out
+  outside `/agent` now sets a routable agent offline. An aux state such as Break excuses the idle timeout only inside
+  `/agent`. Reopening the monitor within 30 s used to show the old snapshot; it now reads the API
+  and replaces what it shows. CI's `lint` job now fails when `src/core` or `src/shell` statically imports a feature
+  domain, by alias or relative path, type imports and tests included; a dynamic `import()` or a `vi.mock` is not seen. No API, route or deployment change.
 
 ## [3.27.1-web] - 2026-10-28
 

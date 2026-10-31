@@ -7,12 +7,13 @@
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import { I18nextProvider } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as client from '@/core/api/client';
+import { queryClient as appQueryClient } from '@/core/api/query-client';
 import { useCampaignMetricsStore } from '@/operations/stores/campaign-metrics-store';
 import {
   OPERATIONS_LOCALES,
@@ -57,10 +58,12 @@ beforeEach(() => {
   });
 });
 
-async function renderPage(lng: TestLocale = 'en-US') {
+async function renderPage(
+  lng: TestLocale = 'en-US',
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   const i18n = await createLocaleI18n(lng);
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(
+  return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
@@ -85,7 +88,41 @@ function actions(el: HTMLElement, lng: TestLocale = 'en-US') {
 
 const en = OPERATIONS_LOCALES['en-US'].campaigns;
 
+/** The GETs of the monitor's list so far. */
+function metricsReads() {
+  return vi
+    .mocked(client.customFetch)
+    .mock.calls.filter(([config]) => config.url === '/api/v1/operations/campaigns/metrics').length;
+}
+
 describe('CampaignMonitorPage', () => {
+  it('CampaignMonitorPage_ShouldReadTheApiAgainAndReplaceTheSnapshot_WhenReopenedInsideTheStaleTime', async () => {
+    // The production defaults: renderPage's own client has no staleTime, so its data is always stale
+    // and a reopen refetches with or without the hook's refetchOnMount.
+    const productionQueries = appQueryClient.getDefaultOptions().queries;
+    expect(productionQueries?.staleTime).toBe(30_000);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { ...productionQueries, retry: false } },
+    });
+
+    const first = await renderPage('en-US', queryClient);
+    await card(activeItem.campaignId);
+    expect(metricsReads()).toBe(1);
+    first.unmount();
+
+    served = [{ ...activeItem, status: 'Paused' }];
+    await renderPage('en-US', queryClient);
+
+    await waitFor(() => expect(metricsReads()).toBe(2));
+    await waitFor(() =>
+      expect(
+        within(screen.getByTestId(`campaign-card-${activeItem.campaignId}`)).getByTestId(
+          'campaign-card-status',
+        ),
+      ).toHaveTextContent(en.status_paused),
+    );
+  });
+
   it('CampaignMonitorPage_ShouldRenderTheActiveCardWithPauseAndStop_WhenPlatformSendsTheEnumName', async () => {
     await renderPage();
 

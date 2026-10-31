@@ -233,7 +233,12 @@ export function useCampaignMetrics(id: number) {
   });
 }
 
-/** The Operations monitor's campaigns, their `status` normalized like every other campaign read (Web #460). */
+/**
+ * The Operations monitor's campaigns, their `status` normalized like every other campaign read
+ * (Web #460). Every entry reads the API (`refetchOnMount: 'always'`): the page re-seeds its store
+ * from this query, the events of a closed monitor reach nothing, and nothing invalidates this key,
+ * so a reopen inside `staleTime` would otherwise show the old snapshot for as long as it stays open.
+ */
 export function useActiveCampaignMetrics() {
   return useQuery({
     queryKey: ['active-campaign-metrics'],
@@ -244,6 +249,7 @@ export function useActiveCampaignMetrics() {
           method: 'GET',
         })
       ).map(withNormalizedStatus),
+    refetchOnMount: 'always',
   });
 }
 

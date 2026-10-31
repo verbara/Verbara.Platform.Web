@@ -156,6 +156,14 @@ describe('useAgentMe', () => {
     const { result } = renderHook(() => useAgentMe(), { wrapper });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
+
+  it('should send no request when enabled is false', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(sampleAgent);
+    const { result } = renderHook(() => useAgentMe({ enabled: false }), { wrapper });
+    await act(async () => {});
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(client.customFetch).not.toHaveBeenCalled();
+  });
 });
 
 describe('useCreateAgent', () => {

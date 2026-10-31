@@ -4,7 +4,7 @@ import { RailIcon } from './rail-icon';
 import { NotificationBell } from './notification-bell';
 import { UserMenu } from './user-menu';
 import { useAuthStore } from '@/core/auth/auth-store';
-import { useAgentAlertsStore } from '@/agent/stores/agent-alerts-store';
+import { useAgentAlertsStore } from '@/core/stores/agent-alerts-store';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/core/ui/tooltip';
 import { TenantBadge } from '@/core/ui/tenant-badge';
 import { useBrandingStore } from '@/core/branding';

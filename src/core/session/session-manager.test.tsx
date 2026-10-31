@@ -7,8 +7,7 @@ import { SessionChannel } from './session-channel';
 import { warningAtMs, COUNTDOWN_SECONDS } from './idle-config';
 import * as client from '@/core/api/client';
 import { useAuthStore } from '@/core/auth/auth-store';
-import { useVoiceCallStore } from '@/agent/stores/voice-call-store';
-import { useConversationStore } from '@/agent/stores/conversation-store';
+import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import type { Agent } from '@/core/api/hooks/use-agents';
 
 // customFetch is the teardown PUT; refreshAccessToken is the proactive refresh.
@@ -66,11 +65,11 @@ describe('SessionManager', () => {
   let logoutSpy: ReturnType<typeof vi.spyOn>;
   let originalHref: PropertyDescriptor | undefined;
   let assignedHref: string | null;
+  let pathname: string;
 
   beforeEach(() => {
     vi.clearAllMocks();
     useVoiceCallStore.getState().reset();
-    useConversationStore.setState({ conversations: {} });
     // Authenticated session with a 2-minute idle window; far-future token expiry
     // so the proactive-refresh timer never fires during the idle advance.
     useAuthStore.setState({
@@ -84,11 +83,15 @@ describe('SessionManager', () => {
 
     // Stub window.location.href so the redirect is observable, not a navigation.
     assignedHref = null;
+    pathname = '/agent/inbox';
     originalHref = Object.getOwnPropertyDescriptor(window, 'location');
     Object.defineProperty(window, 'location', {
       configurable: true,
       value: {
         ...window.location,
+        get pathname() {
+          return pathname;
+        },
         set href(v: string) {
           assignedHref = v;
         },
@@ -159,6 +162,21 @@ describe('SessionManager', () => {
     expect(logoutSpy).not.toHaveBeenCalled();
     expect(assignedHref).toBeNull();
   });
+
+  it.each(['/operations', '/admin/queues', '/agents'])(
+    'IdleWarning_ShouldAppear_WhenDeliberateAuxStateOutsideTheAgentConsole (%s)',
+    (route) => {
+      vi.useFakeTimers();
+      pathname = route;
+      renderManager(makeAgent('DND'));
+
+      act(() => {
+        vi.advanceTimersByTime(WARNING_AT + 1);
+      });
+
+      expect(document.querySelector('[role="alertdialog"], [role="dialog"]')).not.toBeNull();
+    },
+  );
 
   it('RemoteLogout_ShouldLogoutWithoutTeardownPut_WhenLogoutMessageReceived', async () => {
     // Real timers here: BroadcastChannel delivery is event-loop driven.

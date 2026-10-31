@@ -8,8 +8,7 @@ vi.mock('@/core/api/client', () => ({
 }));
 
 import { customFetchWithHeaders } from '@/core/api/client';
-import { useQueueMetrics } from './use-queue-metrics';
-import type { QueueMetrics } from '@/operations/stores/queue-metrics-store';
+import { useQueueMetrics, type QueueMetrics } from './use-queue-metrics';
 
 const mockFetch = customFetchWithHeaders as ReturnType<typeof vi.fn>;
 
