@@ -22,6 +22,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/ui/tabs';
 import { Separator } from '@/core/ui/separator';
 import { useQueues } from '@/core/api/hooks/use-queues';
+import { WRAP_UP_MAX_SECONDS, isWrapUpSecondsAccepted } from './wrap-up-seconds';
 
 // NOTE: The form previously included "Schedule" (per-day hours) and
 // "Disposition codes" tabs and a timezone selector. Those fields were
@@ -43,7 +44,9 @@ const queueSchema = z.object({
   overflowQueueId: z.string().optional(),
   overflowAfterSeconds: z.string(),
   requiredSkills: z.array(z.object({ name: z.string().min(1) })),
-  defaultWrapUpSeconds: z.string(),
+  defaultWrapUpSeconds: z
+    .string()
+    .refine(isWrapUpSecondsAccepted, 'admin:queues.validation.wrapUpSecondsRange'),
   forceWrapUp: z.boolean(),
   // 3B.2b — default auto-answer for calls delivered from this queue (agents inherit unless overridden).
   autoAnswerDefault: z.boolean(),
@@ -62,6 +65,7 @@ interface QueueFormProps {
 export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }: QueueFormProps) {
   const { t } = useTranslation(['admin']);
   const [skillInput, setSkillInput] = useState('');
+  const [activeTab, setActiveTab] = useState('general');
   const { data: allQueues = [] } = useQueues();
 
   const defaults: QueueFormValues = {
@@ -92,6 +96,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
   });
 
   const nameA11y = useFieldA11y(errors.name, 'queue-name', { required: true });
+  const wrapUpA11y = useFieldA11y(errors.defaultWrapUpSeconds, 'queue-wrap-up-seconds');
 
   const {
     fields: skillFields,
@@ -105,6 +110,7 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
         reset(defaults);
         setSkillInput('');
       }
+      setActiveTab('general');
       onOpenChange(nextOpen);
     },
     // defaults is reconstructed each render but its contents come from
@@ -113,10 +119,18 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
     [reset, onOpenChange],
   );
 
-  const handleFormSubmit = handleSubmit((values) => {
-    onSubmit?.(values);
-    onOpenChange(false);
-  });
+  const handleFormSubmit = handleSubmit(
+    (values) => {
+      onSubmit?.(values);
+      setActiveTab('general');
+      onOpenChange(false);
+    },
+    // A refused field can sit on a tab that is not showing: open the tab that holds it.
+    (invalid) => {
+      if (invalid.name) setActiveTab('general');
+      else if (invalid.defaultWrapUpSeconds) setActiveTab('wrapup');
+    },
+  );
 
   const handleAddSkill = () => {
     const trimmed = skillInput.trim();
@@ -155,10 +169,11 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
         </SheetHeader>
 
         <form
+          noValidate
           onSubmit={handleFormSubmit}
           className="flex flex-1 flex-col gap-4 overflow-y-auto px-4"
         >
-          <Tabs defaultValue="general">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full">
               <TabsTrigger value="general">{t('admin:queues.general')}</TabsTrigger>
               <TabsTrigger value="sla">{t('admin:queues.sla')}</TabsTrigger>
@@ -329,10 +344,23 @@ export function QueueForm({ open, onOpenChange, mode, defaultValues, onSubmit }:
                 <Label htmlFor="defaultWrapUpSeconds">{t('admin:queues.wrapUpSeconds')}</Label>
                 <Input
                   id="defaultWrapUpSeconds"
+                  data-testid="queue-form-wrap-up-seconds"
                   type="number"
-                  min={1}
+                  min={0}
+                  max={WRAP_UP_MAX_SECONDS}
+                  step={1}
                   placeholder="30"
+                  {...wrapUpA11y.inputProps}
                   {...register('defaultWrapUpSeconds')}
+                />
+                <FieldError
+                  id={wrapUpA11y.errorId}
+                  testId="queue-form-wrap-up-seconds-error"
+                  message={
+                    errors.defaultWrapUpSeconds?.message
+                      ? t(errors.defaultWrapUpSeconds.message)
+                      : undefined
+                  }
                 />
               </div>
 

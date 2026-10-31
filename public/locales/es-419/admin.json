@@ -304,7 +304,8 @@
     "createDescription": "Agregar una nueva cola.",
     "editDescription": "Actualizar configuración de cola.",
     "validation": {
-      "nameRequired": "El nombre es obligatorio"
+      "nameRequired": "El nombre es obligatorio",
+      "wrapUpSecondsRange": "Ingresa un número entero de 0 a 600"
     },
     "namePlaceholder": "Soporte",
     "autoAnswerDefault": "Auto-respuesta por defecto"

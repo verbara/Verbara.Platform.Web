@@ -304,7 +304,8 @@
     "createDescription": "Add a new queue.",
     "editDescription": "Update queue configuration.",
     "validation": {
-      "nameRequired": "Name is required"
+      "nameRequired": "Name is required",
+      "wrapUpSecondsRange": "Enter a whole number from 0 to 600"
     },
     "namePlaceholder": "Support",
     "autoAnswerDefault": "Auto-answer by default"

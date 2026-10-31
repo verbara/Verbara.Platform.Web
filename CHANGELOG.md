@@ -42,6 +42,10 @@ phantom tenant. (#489)
 
 ### Fixed
 
+- **The queue form carries the API's wrap-up range.** The wrap-up time accepts a whole number from `0` to `600`, and
+  a value outside it shows an error on the Wrap-up tab, which opens, instead of a failed save: since Platform
+  `v2.36.0` the API answers 400 to it. `0` is now sent as `0` (it used to become `30`); an empty field still sends
+  `30`. A queue already stored outside the range must be given a value in range before it saves.
 - **The sign-in tenant guess follows the server's host rules.** The console now lowercases its host and drops one
   trailing dot before guessing a tenant from it, so a two-label host typed with a trailing dot (`acme-corp.lan.`) no
   longer pre-fills a phantom tenant (`acme-corp`) and `www` / `api` / `localhost` are reserved in any case — the same

@@ -10,6 +10,7 @@ import { EmptyState } from '@/admin/shared/empty-state';
 import { DataTable } from '@/core/ui/data-table';
 import { QueueForm } from './queue-form';
 import { useQueues, useCreateQueue, type Queue } from '@/core/api/hooks/use-queues';
+import { wrapUpSecondsToApi } from './wrap-up-seconds';
 
 export type { Queue } from '@/core/api/hooks/use-queues';
 
@@ -116,7 +117,7 @@ export default function QueuesPage() {
                 }
               : undefined,
             wrapUp: {
-              defaultWrapUpSeconds: Number(values.defaultWrapUpSeconds) || 30,
+              defaultWrapUpSeconds: wrapUpSecondsToApi(values.defaultWrapUpSeconds),
               forceWrapUp: values.forceWrapUp,
             },
             requiredSkills: values.requiredSkills.map((s) => s.name),

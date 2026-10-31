@@ -304,7 +304,8 @@
     "createDescription": "Adicionar uma nova fila.",
     "editDescription": "Atualizar configuração da fila.",
     "validation": {
-      "nameRequired": "Nome é obrigatório"
+      "nameRequired": "Nome é obrigatório",
+      "wrapUpSecondsRange": "Informe um número inteiro de 0 a 600"
     },
     "namePlaceholder": "Suporte",
     "autoAnswerDefault": "Resposta automática por padrão"

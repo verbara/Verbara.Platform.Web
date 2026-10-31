@@ -32,6 +32,7 @@ import {
   useQueueMembers,
   useRemoveQueueMember,
 } from '@/core/api/hooks/use-queue-members';
+import { wrapUpSecondsToApi } from './wrap-up-seconds';
 
 function InfoRow({
   icon: Icon,
@@ -447,7 +448,7 @@ export default function QueueDetailPage() {
                 }
               : undefined,
             wrapUp: {
-              defaultWrapUpSeconds: Number(values.defaultWrapUpSeconds) || 30,
+              defaultWrapUpSeconds: wrapUpSecondsToApi(values.defaultWrapUpSeconds),
               forceWrapUp: values.forceWrapUp,
             },
             requiredSkills: values.requiredSkills.map((s) => s.name),
