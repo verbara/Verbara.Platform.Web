@@ -1,0 +1,29 @@
+{
+  "_comment": "DELETE /api/v1/auth/sessions/{tokenId} (AuthEndpoints.cs:61, RevokeOwnSession :1150). Body convention for the refusal: Platform ErrorResponse { error }, read by status + machine code, never server prose. ONE outcome is new: revoking the session the refresh_token cookie names is refused with 400 session-is-current and revokes nothing. Today the route has no such check and revokes it (AuthEndpoints.cs:1160-1166); the profile twin refuses it with prose (ProfileSessionsEndpoints.cs:71-73), which is what the browser never reached. Precedence: 401 -> session-is-current (400) -> 404 -> 204. The success status changes from 200 to 204 (contract choice C4, spec audit F1 of the Web child, 2026-11-01). Impersonation is refused before the handler, unchanged (ImpersonationGuardMiddleware.cs:62). Every child change's delta spec must cite these codes VERBATIM.",
+  "route": "DELETE /api/v1/auth/sessions/{tokenId}",
+  "revoked": {
+    "status": 204,
+    "new": true,
+    "body": null,
+    "_note": "Results.NoContent(), was Results.Ok() with an empty body (AuthEndpoints.cs:1166): an empty 200 is rejected by the console's client, which skips parsing only for 204 (Web client.ts:351, :368), so every successful revoke from /profile/security reported a failure. 204 is what the profile twin answers (ProfileSessionsEndpoints.cs:102-104)."
+  },
+  "sessionIsCurrent": {
+    "status": 400,
+    "new": true,
+    "body": {
+      "error": "session-is-current"
+    },
+    "_note": "tokenId equals the token id the refresh_token cookie names; nothing is revoked. Sign-out is the way to end the current session."
+  },
+  "notFound": {
+    "status": 404,
+    "new": false,
+    "body": null,
+    "_note": "no active session of the caller has that tokenId, unchanged"
+  },
+  "unauthenticated": {
+    "status": 401,
+    "new": false,
+    "body": null
+  }
+}

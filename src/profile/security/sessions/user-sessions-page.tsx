@@ -7,33 +7,40 @@ import { Button } from '@/core/ui/button';
 import { Badge } from '@/core/ui/badge';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { PageHeader } from '@/core/ui/page-header';
-import {
-  useUserSessions,
-  useRevokeUserSession,
-  type UserSessionDto,
-} from '@/core/api/hooks/use-user-sessions';
+import { useMySessions, useRevokeSession, type UserSession } from '@/core/api/hooks/use-auth-admin';
 import { useFormatDate } from '@/core/i18n/use-format';
+import { parseUserAgent } from './session-device';
 
 /**
- * End-user active sessions page at `/profile/security/sessions` (R5.2 PA.2).
+ * End-user active sessions page at `/profile/security/sessions` (spec `own-session-console`).
  *
- * Lists every active refresh-token-backed session for the calling user and
- * exposes a "revoke" action for non-current sessions. Revoking the current
- * session is intentionally blocked at the API; the wizard pre-disables the
- * action to make this obvious in the UX.
+ * Lists the caller's sessions from `GET /api/v1/auth/sessions`, the route the `refresh_token`
+ * cookie reaches, so `isCurrentSession` marks this browser's row; revokes another one with
+ * `DELETE /api/v1/auth/sessions/{tokenId}`. It shares its hooks and cache entry with the
+ * `/profile/security` card. The current session's action is disabled; the API refuses it too.
  */
 export default function UserSessionsPage() {
   const { t } = useTranslation(['admin', 'common']);
   useDocumentTitle(t('admin:profile_security.sessions.title'));
   const { formatDateTime } = useFormatDate();
-  const { data: sessions, isLoading, isError } = useUserSessions();
-  const revoke = useRevokeUserSession();
+  const { data: sessions, isLoading, isError } = useMySessions();
+  const revoke = useRevokeSession();
 
-  const [confirmTarget, setConfirmTarget] = useState<UserSessionDto | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<UserSession | null>(null);
+
+  function deviceLabel(userAgent: string | null): string {
+    const device = parseUserAgent(userAgent);
+    return device
+      ? t('admin:profile_security.sessions.device_label', {
+          browser: device.browser,
+          os: device.os,
+        })
+      : t('admin:profile_security.sessions.device_unknown');
+  }
 
   function handleRevoke() {
     if (!confirmTarget) return;
-    revoke.mutate(confirmTarget.sessionId, {
+    revoke.mutate(confirmTarget.tokenId, {
       onSuccess: () => setConfirmTarget(null),
     });
   }
@@ -64,7 +71,7 @@ export default function UserSessionsPage() {
         </div>
       )}
 
-      {sessions && sessions.length === 0 && (
+      {!isError && sessions && sessions.length === 0 && (
         <div
           className="rounded-md border bg-card p-6 text-sm text-muted-foreground"
           data-testid="user-sessions-empty"
@@ -73,7 +80,7 @@ export default function UserSessionsPage() {
         </div>
       )}
 
-      {sessions && sessions.length > 0 && (
+      {!isError && sessions && sessions.length > 0 && (
         <div
           className="overflow-hidden rounded-lg border bg-card"
           data-testid="user-sessions-table"
@@ -99,15 +106,15 @@ export default function UserSessionsPage() {
             <tbody>
               {sessions.map((s) => (
                 <tr
-                  key={s.sessionId}
+                  key={s.tokenId}
                   className="border-t"
-                  data-testid={`user-session-row-${s.sessionId}`}
+                  data-testid={`user-session-row-${s.tokenId}`}
                   data-current={s.isCurrentSession ? 'true' : 'false'}
                 >
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-2">
                       <Monitor className="h-4 w-4 text-muted-foreground" />
-                      <span>{s.device}</span>
+                      <span>{deviceLabel(s.userAgent)}</span>
                       {s.isCurrentSession && (
                         <Badge variant="default" data-testid="user-session-current-badge">
                           {t('admin:profile_security.sessions.current')}
@@ -115,16 +122,16 @@ export default function UserSessionsPage() {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-2 font-mono text-xs">{s.ipAddress}</td>
+                  <td className="px-4 py-2 font-mono text-xs">{s.ipAddress ?? '—'}</td>
                   <td className="px-4 py-2 text-xs">{formatDate(s.createdAt)}</td>
-                  <td className="px-4 py-2 text-xs">{formatDate(s.lastActivity)}</td>
+                  <td className="px-4 py-2 text-xs">{formatDate(s.lastActivityAt)}</td>
                   <td className="px-4 py-2 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
                       disabled={s.isCurrentSession}
                       onClick={() => setConfirmTarget(s)}
-                      data-testid={`user-session-revoke-${s.sessionId}`}
+                      data-testid={`user-session-revoke-${s.tokenId}`}
                     >
                       <LogOut className="mr-1.5 h-3.5 w-3.5" />
                       {t('common:actions.revoke')}
@@ -141,7 +148,7 @@ export default function UserSessionsPage() {
         open={confirmTarget !== null}
         onOpenChange={(open) => !open && setConfirmTarget(null)}
         onConfirm={handleRevoke}
-        entityName={confirmTarget?.device ?? ''}
+        entityName={confirmTarget ? deviceLabel(confirmTarget.userAgent) : ''}
         entityType={t('admin:profile_security.sessions.entity_type')}
         isPending={revoke.isPending}
       />

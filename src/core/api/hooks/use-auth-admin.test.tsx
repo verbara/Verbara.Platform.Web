@@ -18,6 +18,7 @@ import {
   useConfirmMfa,
   useDisableMfa,
   useChangePassword,
+  useRevokeOtherSessions,
   useRevokeSession,
   usePasswordPolicy,
 } from './use-auth-admin';
@@ -292,5 +293,164 @@ describe.each(MINT_CASES)('$name (POST $url)', ({ url, useMint, vars }) => {
     });
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['me'] });
+  });
+});
+
+// --- Own-session revoke: DELETE /api/v1/auth/sessions/{tokenId} (host fixture own-session-revoke.v1.json) ---
+
+/** The fixture's non-current row (`own-sessions.v1.json`, second entry). */
+const OTHER_TOKEN_ID = '8c2d4e6f-1a3b-4c5d-8e9f-0a1b2c3d4e5f';
+const REVOKE_URL = `*/api/v1/auth/sessions/${OTHER_TOKEN_ID}`;
+
+/** Renders the last error toast's content. */
+function renderedErrorToast(): HTMLElement {
+  const content = vi.mocked(toast.error).mock.calls.at(-1)?.[0] as ReactElement | string;
+  const { container } = render(<div>{content}</div>);
+  return container;
+}
+
+describe('useRevokeOtherSessions (POST /api/v1/auth/sessions/revoke-others) through the real client', () => {
+  it('useRevokeOtherSessions_ShouldConfirmAndRefresh_WhenTheRouteAnswersTheFixtureStatus', async () => {
+    vi.clearAllMocks();
+    const actual = await vi.importActual<typeof import('@/core/api/client')>('@/core/api/client');
+    vi.mocked(client.customFetch).mockImplementation(actual.customFetch);
+    const contract = JSON.parse(
+      readFileSync(
+        resolve(process.cwd(), 'tests/fixtures/contracts/own-session-revoke-others.v1.json'),
+        'utf-8',
+      ),
+    ) as { revoked: { status: number } };
+    mintServer.use(
+      http.post(
+        '*/api/v1/auth/sessions/revoke-others',
+        () => new HttpResponse(null, { status: contract.revoked.status }),
+      ),
+    );
+    const { i18n, qc, wrapper } = await createMintWrapper();
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+    const { result } = renderHook(() => useRevokeOtherSessions(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('toasts.auth.allOtherSessionsSignedOut'));
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['auth', 'sessions', 'me'] });
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+});
+
+describe('useRevokeSession (DELETE /api/v1/auth/sessions/{tokenId}) through the real client', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const actual = await vi.importActual<typeof import('@/core/api/client')>('@/core/api/client');
+    vi.mocked(client.customFetch).mockImplementation(actual.customFetch);
+  });
+
+  async function revoke(wrapper: (p: { children: ReactNode }) => ReactElement) {
+    const onError = vi.fn();
+    const { result } = renderHook(() => useRevokeSession(), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync(OTHER_TOKEN_ID, { onError }).catch(() => undefined);
+    });
+    return onError;
+  }
+
+  it('useRevokeSession_ShouldConfirmAndRefresh_WhenTheRouteAnswers204', async () => {
+    mintServer.use(http.delete(REVOKE_URL, () => new HttpResponse(null, { status: 204 })));
+    const { i18n, qc, wrapper } = await createMintWrapper();
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+
+    const onError = await revoke(wrapper);
+
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('toasts.auth.sessionRevoked'));
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['auth', 'sessions', 'me'] });
+    expect(onError).not.toHaveBeenCalled();
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('useRevokeSession_ShouldLandInOnError_WhenTheRouteAnswersAnEmpty200', async () => {
+    // Control (design D-6): today's auth route answers an empty 200, which `customFetch` parses and
+    // rejects; this is why the host moved the success status to 204.
+    mintServer.use(http.delete(REVOKE_URL, () => new HttpResponse(null, { status: 200 })));
+    const { wrapper } = await createMintWrapper();
+
+    const onError = await revoke(wrapper);
+
+    expect(onError).toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('useRevokeSession_ShouldToastTheSessionIsCurrentKey_WhenRefusedWith400', async () => {
+    mintServer.use(
+      http.delete(REVOKE_URL, () =>
+        HttpResponse.json({ error: 'session-is-current' }, { status: 400 }),
+      ),
+    );
+    const { i18n, qc, wrapper } = await createMintWrapper();
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+
+    await revoke(wrapper);
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    const container = renderedErrorToast();
+    const el = container.querySelector<HTMLElement>('[data-error-code="session-is-current"]');
+    expect(el).not.toBeNull();
+    expect(el?.textContent).toBe(i18n.t('errors.own_session.session_is_current'));
+    // `err.message` is the body's `error`, the code itself: never rendered as the text.
+    expect(container.textContent).not.toBe('session-is-current');
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['auth', 'sessions', 'me'] });
+  });
+
+  it('useRevokeSession_ShouldToastTheNotFoundKey_WhenRefusedWith404', async () => {
+    mintServer.use(http.delete(REVOKE_URL, () => new HttpResponse(null, { status: 404 })));
+    const { i18n, qc, wrapper } = await createMintWrapper();
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+
+    await revoke(wrapper);
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    const container = renderedErrorToast();
+    const el = container.querySelector<HTMLElement>('[data-error-code="session-not-found"]');
+    expect(el).not.toBeNull();
+    expect(el?.textContent).toBe(i18n.t('errors.own_session.not_found'));
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['auth', 'sessions', 'me'] });
+  });
+
+  it('useRevokeSession_ShouldToastTheRevokeFailedKey_WhenAnyOtherFailure', async () => {
+    mintServer.use(
+      http.delete(REVOKE_URL, () =>
+        HttpResponse.json({ error: 'Something broke on the server.' }, { status: 500 }),
+      ),
+    );
+    const { i18n, qc, wrapper } = await createMintWrapper();
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+
+    await revoke(wrapper);
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    const container = renderedErrorToast();
+    const el = container.querySelector<HTMLElement>('[data-error-code="session-revoke-failed"]');
+    expect(el).not.toBeNull();
+    expect(el?.textContent).toBe(i18n.t('errors.own_session.revoke_failed'));
+    expect(container.textContent).not.toContain('Something broke on the server.');
+    expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: ['auth', 'sessions', 'me'] });
+  });
+
+  it('useRevokeSession_ShouldShowNoSessionIsCurrentMessage_WhenRefusedWith401', async () => {
+    // The client's own 401 handling runs (refresh once, then sign-out); the hook adds nothing.
+    mintServer.use(
+      http.delete(REVOKE_URL, () => new HttpResponse(null, { status: 401 })),
+      http.post('*/api/v1/auth/refresh', () => new HttpResponse(null, { status: 401 })),
+    );
+    const { i18n, wrapper } = await createMintWrapper();
+
+    await revoke(wrapper);
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    const container = renderedErrorToast();
+    expect(container.querySelector('[data-error-code="session-is-current"]')).toBeNull();
+    expect(container.textContent).not.toContain(i18n.t('errors.own_session.session_is_current'));
+    expect(container.querySelector('[data-error-code="session-revoke-failed"]')).not.toBeNull();
   });
 });

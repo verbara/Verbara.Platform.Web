@@ -1,0 +1,34 @@
+{
+  "_comment": "GET /api/v1/auth/sessions (AuthEndpoints.cs:60, GetOwnSessions :1125), the signed-in account's own active sessions. Body: a JSON array of UserSessionDto (AuthEndpoints.cs:1440), camelCase. ONE field is new: lastActivityAt. Every other field is unchanged. isCurrentSession is true on the row whose token id the refresh_token cookie names (TryGetCurrentTokenIdAsync, AuthEndpoints.cs:1192); the cookie reaches this route because RefreshTokenCookie.Path is /api/v1/auth (RefreshTokenCookie.cs:9). With no cookie (an API client), every row is false. Every child change's delta spec must cite these field names VERBATIM (verbatim-fixture-citation rule, /xr:propagate). Both serializers drop null members by default (ApiJsonContext.cs:723-726 and Program.cs:1454, WhenWritingNull), so userAgent and ipAddress carry JsonIgnoreCondition.Never and every row has all seven keys (C5, spec audit F1 of the host, 2026-11-01).",
+  "route": "GET /api/v1/auth/sessions",
+  "status": 200,
+  "fields": {
+    "tokenId": "string, unchanged",
+    "userAgent": "string|null, unchanged type; a null is written as null, never omitted (contract choice C5)",
+    "ipAddress": "string|null, unchanged type; a null is written as null, never omitted (contract choice C5)",
+    "createdAt": "ISO-8601 date-time, unchanged",
+    "expiresAt": "ISO-8601 date-time, unchanged",
+    "isCurrentSession": "boolean, unchanged",
+    "lastActivityAt": "ISO-8601 date-time, NEW, never null: RefreshToken.LastActivityAt (Identity/RefreshToken.cs:11), or createdAt when it holds the default value, as the profile twin maps it today (ProfileSessionsEndpoints.cs:52)"
+  },
+  "body": [
+    {
+      "tokenId": "3f9a1c2e-7b4d-4e8a-9c1f-2a6b8d0e4f11",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36",
+      "ipAddress": "203.0.113.24",
+      "createdAt": "2026-11-01T08:12:00+00:00",
+      "expiresAt": "2026-11-08T08:12:00+00:00",
+      "isCurrentSession": true,
+      "lastActivityAt": "2026-11-01T10:40:00+00:00"
+    },
+    {
+      "tokenId": "8c2d4e6f-1a3b-4c5d-8e9f-0a1b2c3d4e5f",
+      "userAgent": null,
+      "ipAddress": null,
+      "createdAt": "2026-10-30T19:05:00+00:00",
+      "expiresAt": "2026-11-06T19:05:00+00:00",
+      "isCurrentSession": false,
+      "lastActivityAt": "2026-10-30T19:05:00+00:00"
+    }
+  ]
+}
