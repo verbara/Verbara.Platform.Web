@@ -9,6 +9,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Every agent-console surface names a channel in the agent's language.** The contact search result in the
+  new-conversation dialog, the badge in the conversation header and the contact's past conversations showed the raw
+  value, such as `webchat`, or an English table of their own. They now use the same localized label as the rest of the
+  console, and a value with no label still shows as it came.
+
 ## [3.29.0-web] - 2026-11-01
 
 The agent console uses what the server now offers: transfers carry the note and read real targets, the new-conversation
