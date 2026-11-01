@@ -9,33 +9,39 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.29.0-web] - 2026-11-01
+
+The agent console uses what the server now offers: transfers carry the note and read real targets, the new-conversation
+dialog shows only the tenant's channels, and the agent's fixed text is localized. **Requires Platform ≥ v2.37.0**: an older
+Platform has none of the routes these controls read, so upgrade Platform first.
+
 ### Fixed
 
 - **A transfer note over the limit is reported from its code.** Platform's `transfer-note-too-long` refusal shows a
-  localized message in the three locales, not the generic failure.
+  localized message in the three locales, not the generic failure. (#498)
 - **An Agent can transfer a conversation to a real target.** Both transfer dialogs read
   `GET /api/v1/transfer-targets/queues` and `/agents`, which an Agent may call, instead of the admin routes that answered
   it with an empty list. They search on the server, read only while open, disable a `Busy` agent and show the state in the
-  agent's language.
+  agent's language. (#498)
 - **A transfer note reaches the next agent.** The digital dialog sends the note it always asked for, trimmed and up to
-  1000 characters. The warm and cold switch, which changed nothing, is gone.
+  1000 characters. The warm and cold switch, which changed nothing, is gone. (#498)
 - **The new-conversation dialog offers only the channels the tenant can start on.** The fixed list, which promised channels
   no connector serves, is gone: the dialog reads `GET /api/v1/channels/available`, selects the first listed channel and shows
   each one under a localized label. With an empty list or a failed read, a failed refresh included, it shows a notice and
-  the start stays disabled. Needs a Platform that carries the route.
+  the start stays disabled. Needs a Platform that carries the route. (#498)
 - **A live system message is no longer shown as the customer's.** A `conversation.message` with `sender` `System` renders
-  as the same system row the history gives it.
+  as the same system row the history gives it. (#498)
 - **The reply composer no longer offers an attachment it cannot deliver.** A sent message carries text only and the upload
   route is closed to an Agent, so the attachment button and its upload are gone. The thread keeps rendering received media,
-  and the media diagnostic page keeps its upload.
+  and the media diagnostic page keeps its upload. (#498)
 - **The security pages stop leading to a dead address, and "go home" stops looping.** Finishing a second-factor enrolment
   and leaving the recovery-code page went to `/admin/profile/security`, which no route serves; both now return to
   `/profile/security`. "Go home" on `/unauthorized` goes to the default route of the user's role, the one sign-in uses,
-  instead of `/`, which sent an Agent through `/admin` and back to `/unauthorized`. No API change.
+  instead of `/`, which sent an Agent through `/admin` and back to `/unauthorized`. No API change. (#498)
 - **The agent console's fixed text follows the agent's language.** The empty inbox, the `/agent` prompt, the supervision
   banner, the assigned and offered toasts with their actions, the action of a critical notification, the contact panel's
   heading, edit action and channel names, the label on the agent's own sent message and the user menu's fallback now come
-  from the locale files in en-US, es-419 and pt-BR. A notification's title and body stay as the server wrote them.
+  from the locale files in en-US, es-419 and pt-BR. A notification's title and body stay as the server wrote them. (#498)
 
 ## [3.28.0-web] - 2026-10-31
 
