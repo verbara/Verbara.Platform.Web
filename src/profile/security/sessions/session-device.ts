@@ -1,4 +1,4 @@
-/** A session's device as read from its `userAgent` (design D-3): product names, never translated. */
+/** A session's device as read from its `userAgent` (design D-3): product names, or the English fallbacks `Browser` and `Unknown OS` when none is recognized. */
 export interface SessionDevice {
   readonly browser: string;
   readonly os: string;

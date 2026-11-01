@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import enCommon from '../../../public/locales/en-US/common.json';
 import esCommon from '../../../public/locales/es-419/common.json';
@@ -6,7 +8,28 @@ import { ApiError, describeApiError, entriesOf } from './api-error';
 import { ownSessionRefusals, SESSION_IS_CURRENT } from './own-session-refusals';
 
 /** Host fixture `own-session-revoke.v1.json`: the refusals of `DELETE /api/v1/auth/sessions/{tokenId}`. */
+const CONTRACT = JSON.parse(
+  readFileSync(
+    resolve(process.cwd(), 'tests/fixtures/contracts/own-session-revoke.v1.json'),
+    'utf-8',
+  ),
+) as {
+  sessionIsCurrent: { status: number; body: { error: string } };
+  notFound: { status: number; body: null };
+};
+
 describe('ownSessionRefusals', () => {
+  it('describeApiError_ShouldMapEachRefusalOfTheContractFixture_WhenTheFixtureIsRead', () => {
+    const current = CONTRACT.sessionIsCurrent;
+    expect(
+      describeApiError(new ApiError(current.status, current.body), ownSessionRefusals).key,
+    ).toBe('errors.own_session.session_is_current');
+    const missing = CONTRACT.notFound;
+    expect(
+      describeApiError(new ApiError(missing.status, missing.body), ownSessionRefusals).key,
+    ).toBe('errors.own_session.not_found');
+  });
+
   it('describeApiError_ShouldReportSessionIsCurrent_WhenTheRouteAnswers400WithTheCode', () => {
     expect(
       describeApiError(new ApiError(400, { error: 'session-is-current' }), ownSessionRefusals),

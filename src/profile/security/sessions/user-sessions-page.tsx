@@ -71,7 +71,7 @@ export default function UserSessionsPage() {
         </div>
       )}
 
-      {sessions && sessions.length === 0 && (
+      {!isError && sessions && sessions.length === 0 && (
         <div
           className="rounded-md border bg-card p-6 text-sm text-muted-foreground"
           data-testid="user-sessions-empty"
@@ -80,7 +80,7 @@ export default function UserSessionsPage() {
         </div>
       )}
 
-      {sessions && sessions.length > 0 && (
+      {!isError && sessions && sessions.length > 0 && (
         <div
           className="overflow-hidden rounded-lg border bg-card"
           data-testid="user-sessions-table"

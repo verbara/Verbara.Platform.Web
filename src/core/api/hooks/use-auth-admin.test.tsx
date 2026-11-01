@@ -18,6 +18,7 @@ import {
   useConfirmMfa,
   useDisableMfa,
   useChangePassword,
+  useRevokeOtherSessions,
   useRevokeSession,
   usePasswordPolicy,
 } from './use-auth-admin';
@@ -307,6 +308,37 @@ function renderedErrorToast(): HTMLElement {
   const { container } = render(<div>{content}</div>);
   return container;
 }
+
+describe('useRevokeOtherSessions (POST /api/v1/auth/sessions/revoke-others) through the real client', () => {
+  it('useRevokeOtherSessions_ShouldConfirmAndRefresh_WhenTheRouteAnswersTheFixtureStatus', async () => {
+    vi.clearAllMocks();
+    const actual = await vi.importActual<typeof import('@/core/api/client')>('@/core/api/client');
+    vi.mocked(client.customFetch).mockImplementation(actual.customFetch);
+    const contract = JSON.parse(
+      readFileSync(
+        resolve(process.cwd(), 'tests/fixtures/contracts/own-session-revoke-others.v1.json'),
+        'utf-8',
+      ),
+    ) as { revoked: { status: number } };
+    mintServer.use(
+      http.post(
+        '*/api/v1/auth/sessions/revoke-others',
+        () => new HttpResponse(null, { status: contract.revoked.status }),
+      ),
+    );
+    const { i18n, qc, wrapper } = await createMintWrapper();
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
+    const { result } = renderHook(() => useRevokeOtherSessions(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('toasts.auth.allOtherSessionsSignedOut'));
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['auth', 'sessions', 'me'] });
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+});
 
 describe('useRevokeSession (DELETE /api/v1/auth/sessions/{tokenId}) through the real client', () => {
   beforeEach(async () => {

@@ -165,6 +165,19 @@ describe('UserSessionsPage', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   }, 10_000);
 
+  it('Page_ShouldHideTheTable_WhenARefetchFailsOverCachedRows', () => {
+    mockSessions.mockReturnValue({
+      data: [{ ...CURRENT, tokenId: 'cached' }],
+      isLoading: false,
+      isError: true,
+    });
+
+    render(<UserSessionsPage />, { wrapper: makeWrapper() });
+
+    expect(screen.getByTestId('user-sessions-error')).toBeInTheDocument();
+    expect(screen.queryByTestId('user-sessions-table')).not.toBeInTheDocument();
+  });
+
   it('Page_ShouldRenderError_WhenLoadFails', () => {
     mockSessions.mockReturnValue({ data: undefined, isLoading: false, isError: true });
 
