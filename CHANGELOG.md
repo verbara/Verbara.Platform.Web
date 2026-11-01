@@ -9,46 +9,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
-
-- **The sign-in page and the console carry the tenant's brand.** Both show the tenant's name, logo, favicon and
-  primary colour, read from the anonymous `GET /api/v1/branding/{tenantId}` route: the sign-in page for the tenant
-  it resolves (from the host, or from the tenant field once it is left), the signed-in console for the requests'
-  tenant. A tenant with no branding keeps the Verbara defaults, and a value that
-  fails the safety rules is dropped.
-- **The webchat widget shows "Powered by Verbara".** Every widget state (loading, pre-chat form, conversation and
-  survey) is framed with the line, which stays inside the widget's viewport while the content above it scrolls.
-- **Every page title ends in ` · Verbara`.** The tab title is the page's title, then the tenant's display name when
-  there is one, then the ` · Verbara` suffix; the sign-in, forgot-password, reset-password, unauthorized, setup and
-  profile-security pages gain their own titles.
-- **A Customer without its own branding row is branded from its Partner** only with a Platform that carries
-  `public-branding-inherits-from-parent`; with an older Platform such a Customer keeps the Verbara defaults.
-
-### Changed
-
-- **Opening a conversation no longer downloads the chart and PDF libraries.** A bundler default had pulled
-  `vendor-charts` and `vendor-pdf` into the entry, so every route paid for them and `/agent/conversation/:id` weighed
-  770,806 B gzip-9. It now weighs 471,210 B, 38.9 % less; charts load with the pages that draw them, and PDF on export.
-  CI's `build` job gains `scripts/check-agent-closure-in-dist.py` (`Verbara.Platform.Web/ADR-0014`): it reads the
-  source maps of that route's static closure and fails on a module from `src/admin`, `src/analytics` or
-  `src/operations`, on the libraries behind `vendor-(charts|pdf|grid|flow)`, past 500,000 B gzip-9, or when it cannot
-  measure. No API, route or deployment change. (#494)
-- **The rail's agent alert badge counts on every route, and the campaign monitor reads the API on every entry.** The
-  badge used to depend on what a visit to `/agent` had left in memory. The console now loads the agent's identity on
-  every route for a user with `contacts:conversation:handle`, so an agent who starts on `/operations`, or stays away
-  from `/agent`, still sees the count; those users now send `GET /api/v1/agents/me` outside `/agent`, and anyone else
-  does not send it from there. The same agent also gets the new-conversation toast outside `/agent`, and an idle sign-out
-  outside `/agent` now sets a routable agent offline. An aux state such as Break excuses the idle timeout only inside
-  `/agent`. Reopening the monitor within 30 s used to show the old snapshot; it now reads the API
-  and replaces what it shows. CI's `lint` job now fails when `src/core` or `src/shell` statically imports a feature
-  domain, by alias or relative path, type imports and tests included; a dynamic `import()` or a `vi.mock` is not seen. No API, route or deployment change.
-
 ### Fixed
 
-- **Every console user can reach their own security page.** The user menu sent everyone to `/admin/security`, which an
-  Agent cannot open, so an Agent had no way to change its password. The page now lives at `/profile/security`, which
-  needs a session and no permission, and the menu goes there. `/admin/security` keeps rendering the same page under its
-  admin guard. No API change.
 - **A transfer note over the limit is reported from its code.** Platform's `transfer-note-too-long` refusal shows a
   localized message in the three locales, not the generic failure.
 - **An Agent can transfer a conversation to a real target.** Both transfer dialogs read
@@ -75,6 +37,56 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   heading, edit action and channel names, the label on the agent's own sent message and the user menu's fallback now come
   from the locale files in en-US, es-419 and pt-BR. A notification's title and body stay as the server wrote them.
 
+## [3.28.0-web] - 2026-10-31
+
+The console carries the tenant's brand, and an agent's first load drops by 39 %. Every user can reach their own security
+page at `/profile/security`, which the next Platform release links to; **requires Platform ≥ v2.33.0**, as 3.27.1-web did.
+
+### Added
+
+- **The sign-in page and the console carry the tenant's brand.** Both show the tenant's name, logo, favicon and
+  primary colour, read from the anonymous `GET /api/v1/branding/{tenantId}` route: the sign-in page for the tenant
+  it resolves (from the host, or from the tenant field once it is left), the signed-in console for the requests'
+  tenant. A tenant with no branding keeps the Verbara defaults, and a value that
+  fails the safety rules is dropped. (#492)
+- **The webchat widget shows "Powered by Verbara".** Every widget state (loading, pre-chat form, conversation and
+  survey) is framed with the line, which stays inside the widget's viewport while the content above it scrolls. (#492)
+- **Every page title ends in ` · Verbara`.** The tab title is the page's title, then the tenant's display name when
+  there is one, then the ` · Verbara` suffix; the sign-in, forgot-password, reset-password, unauthorized, setup and
+  profile-security pages gain their own titles. (#492)
+- **A Customer without its own branding row is branded from its Partner** only with a Platform that carries
+  `public-branding-inherits-from-parent`; with an older Platform such a Customer keeps the Verbara defaults. (#493)
+
+### Changed
+
+- **Opening a conversation no longer downloads the chart and PDF libraries.** A bundler default had pulled
+  `vendor-charts` and `vendor-pdf` into the entry, so every route paid for them and `/agent/conversation/:id` weighed
+  770,806 B gzip-9. It now weighs 471,210 B, 38.9 % less; charts load with the pages that draw them, and PDF on export.
+  CI's `build` job gains `scripts/check-agent-closure-in-dist.py` (`Verbara.Platform.Web/ADR-0014`): it reads the
+  source maps of that route's static closure and fails on a module from `src/admin`, `src/analytics` or
+  `src/operations`, on the libraries behind `vendor-(charts|pdf|grid|flow)`, past 500,000 B gzip-9, or when it cannot
+  measure. No API, route or deployment change. (#494)
+- **The rail's agent alert badge counts on every route, and the campaign monitor reads the API on every entry.** The
+  badge used to depend on what a visit to `/agent` had left in memory. The console now loads the agent's identity on
+  every route for a user with `contacts:conversation:handle`, so an agent who starts on `/operations`, or stays away
+  from `/agent`, still sees the count; those users now send `GET /api/v1/agents/me` outside `/agent`, and anyone else
+  does not send it from there. The same agent also gets the new-conversation toast outside `/agent`, and an idle sign-out
+  outside `/agent` now sets a routable agent offline. An aux state such as Break excuses the idle timeout only inside
+  `/agent`. Reopening the monitor within 30 s used to show the old snapshot; it now reads the API
+  and replaces what it shows. CI's `lint` job now fails when `src/core` or `src/shell` statically imports a feature
+  domain, by alias or relative path, type imports and tests included; a dynamic `import()` or a `vi.mock` is not seen. No API, route or deployment change. (#496)
+
+### Fixed
+
+- **The queue form carries the API's wrap-up range.** The wrap-up time accepts a whole number from `0` to `600`, and
+  a value outside it shows an error on the Wrap-up tab, which opens, instead of a failed save: since Platform
+  `v2.36.0` the API answers 400 to it. `0` is now sent as `0` (it used to become `30`); an empty field still sends
+  `30`. A queue already stored outside the range must be given a value in range before it saves. (#495)
+- **Every console user can reach their own security page.** The user menu sent everyone to `/admin/security`, which an
+  Agent cannot open, so an Agent had no way to change its password. The page now lives at `/profile/security`, which
+  needs a session and no permission, and the menu goes there. `/admin/security` keeps rendering the same page under its
+  admin guard. No API change. (#497)
+
 ## [3.27.1-web] - 2026-10-28
 
 The sign-in tenant guess follows the server's host rules (Platform/ADR-0038); **requires Platform ≥ v2.33.0**, as
@@ -83,10 +95,6 @@ phantom tenant. (#489)
 
 ### Fixed
 
-- **The queue form carries the API's wrap-up range.** The wrap-up time accepts a whole number from `0` to `600`, and
-  a value outside it shows an error on the Wrap-up tab, which opens, instead of a failed save: since Platform
-  `v2.36.0` the API answers 400 to it. `0` is now sent as `0` (it used to become `30`); an empty field still sends
-  `30`. A queue already stored outside the range must be given a value in range before it saves.
 - **The sign-in tenant guess follows the server's host rules.** The console now lowercases its host and drops one
   trailing dot before guessing a tenant from it, so a two-label host typed with a trailing dot (`acme-corp.lan.`) no
   longer pre-fills a phantom tenant (`acme-corp`) and `www` / `api` / `localhost` are reserved in any case — the same
