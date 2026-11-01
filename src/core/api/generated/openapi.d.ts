@@ -1704,6 +1704,84 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v{version}/transfer-targets/queues': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          search?: string;
+          page?: number;
+          pageSize?: number;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PagedResultOfTransferTargetQueueDto'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/transfer-targets/agents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          search?: string;
+          page?: number;
+          pageSize?: number;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PagedResultOfTransferTargetAgentDto'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v{version}/conversations/{id}/voice-transfer': {
     parameters: {
       query?: never;
@@ -2451,6 +2529,15 @@ export interface paths {
           };
           content: {
             'application/json': components['schemas']['QueueDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
           };
         };
         /** @description Not Found */
@@ -3502,6 +3589,41 @@ export interface paths {
         };
       };
     };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/channels/available': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['AvailableChannelDto'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -17712,6 +17834,11 @@ export interface components {
       impersonationAutoTimeoutMinutes: number;
       ipAllowlistEnabled: boolean;
     };
+    /** @description A channel a conversation can be started on. */
+    AvailableChannelDto: {
+      /** @description The channel, in the form `POST /conversations` takes as `channel`. */
+      channel: components['schemas']['ChannelType'];
+    };
     BotDto: {
       id: string;
       name: string;
@@ -19780,6 +19907,32 @@ export interface components {
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
+    PagedResultOfTransferTargetAgentDto: {
+      items: components['schemas']['TransferTargetAgentDto'][];
+      /** Format: int32 */
+      totalCount: number;
+      /** Format: int32 */
+      page: number;
+      /** Format: int32 */
+      pageSize: number;
+      /** Format: int32 */
+      totalPages?: number;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfTransferTargetQueueDto: {
+      items: components['schemas']['TransferTargetQueueDto'][];
+      /** Format: int32 */
+      totalCount: number;
+      /** Format: int32 */
+      page: number;
+      /** Format: int32 */
+      pageSize: number;
+      /** Format: int32 */
+      totalPages?: number;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
     PagedResultOfUserDto: {
       items: components['schemas']['UserDto'][];
       /** Format: int32 */
@@ -20754,9 +20907,35 @@ export interface components {
       /** @description Caller-supplied idempotency key; a repeat is a no-op. */
       idempotencyKey: string;
     };
+    /**
+     * @description `POST /conversations/{id}/transfer`. Exactly one of TargetQueueId and
+     *     TargetAgentId is set.
+     */
     TransferRequest: {
+      /** @description The queue to move the conversation to. */
       targetQueueId: null | string;
+      /** @description The agent to move the conversation to. */
       targetAgentId: null | string;
+      /** @description Optional handover note for the next owner. Trimmed by the server; omitted, null or blank means no note. */
+      note?: null | string;
+    };
+    /** @description An agent an actor may transfer a conversation to. Admin data (user id, extension, capacity) stays out. */
+    TransferTargetAgentDto: {
+      /** @description The agent id, never the user id: `targetAgentId` of a digital transfer, `target` of a voice one. */
+      id: string;
+      /** @description The agent's display name. */
+      displayName: string;
+      /** @description The agent's current state. */
+      state: components['schemas']['AgentState'];
+      /** @description Whether the agent's state is routable. */
+      canAcceptWork: boolean;
+    };
+    /** @description A queue an actor may transfer a conversation to. Admin data (SLA, overflow, wrap-up) stays out. */
+    TransferTargetQueueDto: {
+      /** @description The queue id: `targetQueueId` of a digital transfer, `target` of a voice one. */
+      id: string;
+      /** @description The queue's display name. */
+      name: string;
     };
     TrendPointDto: {
       label: string;

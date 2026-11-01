@@ -10,6 +10,14 @@ import { API_BASE } from '../../helpers/credentials';
  * (Platform v2.28.0, spec `agent-started-conversations`; console task 9.3). Every assertion on the
  * page reads `data-error-code` on `new-conv-error`, so the spec is locale-proof.
  *
+ * The dialog offers only what `GET /api/v1/channels/available` lists, and the lab's real list holds
+ * `WebChat` alone (`docker/demo/demo-reset.sh` activates nothing else; change
+ * `agent-console-contract-debt`, host design H6, measured by WEB-LAB-04). These refusals need
+ * `WhatsApp` and `Sms` on the screen, so that one read is intercepted and answers
+ * `[{"channel":"WhatsApp"},{"channel":"WebChat"},{"channel":"Sms"}]` before the dialog opens. The list
+ * is what the console offers, not a check on a start: every `POST /api/v1/conversations` stays real,
+ * so each code below comes from the server.
+ *
  * Against a real Platform (>= v2.28.0), an agent with an Agent profile starts with a message:
  *  - on WhatsApp, a contact that has only an SMS address: `contact-has-no-address` (400);
  *  - on SMS, the same contact: `channel-not-available` (409) — Platform registers no outbound SMS
@@ -17,11 +25,11 @@ import { API_BASE } from '../../helpers/credentials';
  *  - on WhatsApp, a contact with a WhatsApp address that never wrote to the tenant, with no template:
  *    `whatsapp-template-required` (409), and the dialog opens the template fields with the name
  *    focused;
- *  - the same start naming a template: the lab tenant has no working WhatsApp credentials, so the
- *    provider send fails and Platform answers `channel-send-failed` (502) — stored nothing.
+ *  - the same start naming a template: WhatsApp is not active for the lab tenant, so the send is
+ *    refused before any provider request and Platform answers `channel-send-failed` (502) — stored
+ *    nothing. Activating WhatsApp in the lab may change this step (not measured).
  *
- * Every refusal is decided before anything is stored (the first three before any provider request),
- * so the spec leaves no conversation behind. It creates its own agent user, Agent profile and two
+ * Every refusal is decided before anything is stored, so the spec leaves no conversation behind. It creates its own agent user, Agent profile and two
  * contacts through the API, and removes them. The seed's `demo-user-*` agents are linked to no user,
  * so a seeded agent would be refused `not-an-agent` before any of these checks.
  *
@@ -31,8 +39,13 @@ import { API_BASE } from '../../helpers/credentials';
 const SHOULD_RUN = process.env.E2E_FULL_STACK === 'true';
 const PASSWORD = 'E2eStartRefusals!2026';
 
-/** Two contacts, an agent, a sign-in and four starts; the 502 waits on the WhatsApp connector. */
+/** Two contacts, an agent, a sign-in and four starts. */
 const TEST_BUDGET = 90_000;
+
+const AVAILABLE_CHANNELS_PATH = '/api/v1/channels/available';
+
+/** The list of H6, spelled as the fixture's `webRules.e2eRewrite` spells it. */
+const INTERCEPTED_CHANNELS = [{ channel: 'WhatsApp' }, { channel: 'WebChat' }, { channel: 'Sms' }];
 
 async function createContact(
   api: APIRequestContext,
@@ -44,6 +57,27 @@ async function createContact(
   });
   expect(created.status(), `create contact ${firstName}`).toBe(201);
   return idOf(((await created.json()) as { contactId: unknown }).contactId);
+}
+
+/** Answers the list's GET and nothing else: a POST to any route passes this by untouched. */
+async function interceptChannelList(page: Page): Promise<void> {
+  await page.route(
+    (url) => url.pathname === AVAILABLE_CHANNELS_PATH,
+    (route) =>
+      route.request().method() === 'GET'
+        ? route.fulfill({ json: INTERCEPTED_CHANNELS })
+        : route.continue(),
+  );
+}
+
+/** Opens the dialog and waits for the list, so the channel field has its options. */
+async function openDialog(page: Page): Promise<void> {
+  const listed = page.waitForResponse(
+    (r) => new URL(r.url()).pathname === AVAILABLE_CHANNELS_PATH && r.ok(),
+  );
+  await page.getByTestId('new-conversation-btn').click();
+  await listed;
+  await expect(page.getByTestId('new-conv-channel-select')).toBeEnabled();
 }
 
 async function pickContact(page: Page, search: string, contactId: string): Promise<void> {
@@ -116,10 +150,11 @@ test.describe('New conversation start refusals (full stack)', () => {
 
     const page = await authenticatedPage(browser, { tenantId: 'demo', email, password: PASSWORD });
     try {
+      await interceptChannelList(page);
       await page.goto('/agent');
       await waitForAppReady(page);
       await skipAgentTour(page);
-      await page.getByTestId('new-conversation-btn').click();
+      await openDialog(page);
       const error = page.getByTestId('new-conv-error');
 
       // ── WhatsApp to a contact with only an SMS address ─────────────────────────────────────
@@ -135,10 +170,12 @@ test.describe('New conversation start refusals (full stack)', () => {
       expect([noAddress.status, noAddress.code]).toEqual([400, 'contact-has-no-address']);
       await expect(error).toHaveAttribute('data-error-code', 'contact-has-no-address');
 
-      // ── SMS: the contact has the address, Platform has no outbound connector ───────────────
+      // ── SMS, offered only by the intercepted list: the contact has the address, Platform has
+      // no outbound connector, and the real POST says so ─────────────────────────────────────
       await pickChannel(page, 'Sms');
       await expect(error).toHaveCount(0);
       const notAvailable = await submitStart(page);
+      expect(notAvailable.request).toMatchObject({ contactId: smsContactId, channel: 'Sms' });
       expect([notAvailable.status, notAvailable.code]).toEqual([409, 'channel-not-available']);
       await expect(error).toHaveAttribute('data-error-code', 'channel-not-available');
 
@@ -157,7 +194,7 @@ test.describe('New conversation start refusals (full stack)', () => {
       await expect(error).toHaveAttribute('data-error-code', 'whatsapp-template-required');
       await expect(templateName).toBeFocused();
 
-      // ── The same start with a template: the provider send fails, nothing is stored ─────────
+      // ── The same start with a template: the send is refused, nothing is stored ─────────────
       await templateName.fill('hello_world');
       const sendFailed = await submitStart(page);
       expect(sendFailed.request).toMatchObject({

@@ -15,6 +15,7 @@ import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks
 import { useVoiceDial } from '@/core/api/hooks/use-conversations';
 import { toastApiError } from '@/core/api/toast-api-error';
 import { trunkRefusalValues, voiceDialRefusals } from '@/core/api/voice-call-refusals';
+import { channelLabel } from '@/core/i18n/channel-label';
 import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 function InfoRow({
@@ -41,15 +42,6 @@ function InfoRow({
     </div>
   );
 }
-
-const channelLabels: Record<string, string> = {
-  whatsapp: 'WhatsApp',
-  email: 'Email',
-  webchat: 'Web Chat',
-  voice: 'Voice',
-  sms: 'SMS',
-  telegram: 'Telegram',
-};
 
 const languageLabels: Record<string, string> = {
   es: 'Español',
@@ -128,7 +120,9 @@ export function ContactInfo() {
   return (
     <div className="space-y-1 p-4">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Contact</span>
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          {t('agent:context.contact_heading')}
+        </span>
         <div className="flex items-center gap-0.5">
           <PermissionButton
             requires="contacts:contact:edit"
@@ -138,7 +132,7 @@ export function ContactInfo() {
             onClick={openEditDialog}
           >
             <Pencil className="mr-1 h-3 w-3" />
-            Edit
+            {t('agent:context.edit')}
           </PermissionButton>
           <PermissionButton
             requires="contacts:contact:delete"
@@ -197,7 +191,7 @@ export function ContactInfo() {
       <InfoRow
         icon={MessageSquare}
         label={t('agent:context.preferred_channel')}
-        value={channelLabels[contact.preferredChannel ?? ''] ?? contact.preferredChannel ?? '—'}
+        value={contact.preferredChannel == null ? '—' : channelLabel(t, contact.preferredChannel)}
       />
       <InfoRow
         icon={Globe}
@@ -218,8 +212,8 @@ export function ContactInfo() {
                 key={`${addr.channel}-${addr.address}`}
                 className="flex items-center justify-between py-1"
               >
-                <span className="text-xs text-slate-500 capitalize">
-                  {channelLabels[addr.channel] ?? addr.channel}
+                <span data-testid="contact-address-channel" className="text-xs text-slate-500">
+                  {channelLabel(t, addr.channel)}
                 </span>
                 <span className="text-xs text-slate-700 dark:text-slate-300">{displayAddress}</span>
               </div>

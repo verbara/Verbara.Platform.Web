@@ -98,7 +98,7 @@ export default function RegeneratePage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => navigate('/admin/profile/security')}
+              onClick={() => navigate('/profile/security')}
               data-testid="recovery-regenerate-cancel"
             >
               {t('common:actions.cancel')}
@@ -158,7 +158,7 @@ export default function RegeneratePage() {
             </Label>
           </div>
           <Button
-            onClick={() => navigate('/admin/profile/security')}
+            onClick={() => navigate('/profile/security')}
             disabled={!acknowledged}
             data-testid="recovery-regenerate-done"
           >

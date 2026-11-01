@@ -1,11 +1,39 @@
 import {
   useConversationStore,
+  initConversationSSE,
   mapServerConversationState,
   applyVoiceScreenPop,
   Conversation,
   Message,
 } from './conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
+import { mapPlatformMessage } from '@/core/api/platform-message';
+import { transferNoteMessage } from '@/tests/utils/contract-doubles';
+
+const { sseHandlers } = vi.hoisted(() => ({
+  sseHandlers: {} as Record<string, (data: unknown) => void>,
+}));
+
+// The stream itself is not under test: this hands the store's own handlers to the test.
+vi.mock('@/core/hooks/use-sse', () => ({
+  onSseEvent: (type: string, handler: (data: unknown) => void) => {
+    sseHandlers[type] = handler;
+    return () => undefined;
+  },
+}));
+
+/** The `data` of the host fixture's `sseEvent`, with `sender` varied by the case. */
+function conversationMessageEvent(sender: string) {
+  return {
+    tenantId: 'demo',
+    conversationId: 'conv-1',
+    messageId: 'e9f8d7c6b5a44f3e2d1c0b9a8f7e6d5c',
+    sender,
+    text: 'Customer disputes the October invoice',
+    type: 'conversation.message',
+    timestamp: '2026-10-30T15:04:05.130+00:00',
+  };
+}
 
 const makeConversation = (overrides: Partial<Conversation> = {}): Conversation => ({
   id: 'conv-1',
@@ -304,5 +332,41 @@ describe('ConversationStore', () => {
       );
     const result = useConversationStore.getState().filteredConversations();
     expect(result.map((c) => c.id)).toEqual(['c2', 'c3', 'c1']);
+  });
+
+  describe('conversation.message', () => {
+    beforeAll(() => initConversationSSE());
+
+    function receive(sender: string): Message {
+      sseHandlers['conversation.message']!(conversationMessageEvent(sender));
+      return useConversationStore.getState().messages['conv-1']!.at(-1)!;
+    }
+
+    it('LiveMessage_ShouldBecomeASystemRow_WhenTheSenderIsSystem', () => {
+      expect(receive('System')).toMatchObject({
+        id: 'e9f8d7c6b5a44f3e2d1c0b9a8f7e6d5c',
+        sender: 'system',
+        type: 'system',
+        text: 'Customer disputes the October invoice',
+        timestamp: '2026-10-30T15:04:05.130+00:00',
+      });
+    });
+
+    it('LiveMessage_ShouldMatchTheHistoryMapping_WhenTheSenderIsSystem', () => {
+      const live = receive('System');
+      const stored = mapPlatformMessage(transferNoteMessage);
+      expect({ sender: live.sender, type: live.type }).toEqual({
+        sender: stored.sender,
+        type: stored.type,
+      });
+    });
+
+    it.each([
+      ['agent', 'agent'],
+      ['Inbound', 'customer'],
+      ['Ana Pereira', 'customer'],
+    ])('LiveMessage_ShouldKeepItsMapping_WhenTheSenderIs_%s', (sender, mapped) => {
+      expect(receive(sender)).toMatchObject({ sender: mapped, senderName: sender, type: 'text' });
+    });
   });
 });

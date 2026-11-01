@@ -48,6 +48,7 @@ describe('conversationRefusals', () => {
       [403, 'not-offered-to-you', 'reject'],
       [400, 'target-agent-not-found', 'transfer'],
       [400, 'target-queue-not-found', 'transfer'],
+      [400, 'transfer-note-too-long', 'transfer'],
       [400, 'target-agent-not-found', 'reassign'],
       [400, 'target-queue-not-found', 'reassign'],
       [409, 'typification-required', 'close'],
@@ -59,6 +60,14 @@ describe('conversationRefusals', () => {
         expect(codeFor(status, { error: code }, action)).toBe(code);
       },
     );
+
+    it('describeApiError_ShouldReportTheNoteEntry_WhenPlatformRefusesATooLongNote', () => {
+      const refused = new ApiError(400, { error: 'transfer-note-too-long' });
+      expect(describeApiError(refused, conversationRefusals, 'transfer')).toEqual({
+        code: 'transfer-note-too-long',
+        key: 'errors.conversation.transfer_note_too_long',
+      });
+    });
 
     it('describeApiError_ShouldReportTheCodeOverTheActionStatus_WhenA400OnReassignCarriesACode', () => {
       expect(codeFor(400, { error: 'target-queue-not-found' }, 'reassign')).toBe(
@@ -253,6 +262,7 @@ describe('conversationRefusals locale coverage', () => {
         'not-offered-to-you',
         'target-agent-not-found',
         'target-queue-not-found',
+        'transfer-note-too-long',
         'conversation-not-found',
         'contact-not-found',
         'conversation-conflict',

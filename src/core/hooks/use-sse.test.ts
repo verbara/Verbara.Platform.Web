@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { createElement, type ReactNode } from 'react';
 import { act, cleanup, renderHook } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { isForCurrentAgent, resolveAgentId, useSSE } from './use-sse';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { refreshAccessToken } from '@/core/api/client';
 import { createWrapper } from '@/test/hook-test-utils';
+import { createLocaleI18n } from '@/test/locale-i18n';
 import { toast } from 'sonner';
 
 vi.mock('@/core/api/client', async (importOriginal) => ({
@@ -19,7 +22,9 @@ vi.mock('react-router', async (importOriginal) => ({
   useNavigate: () => navigateMock,
 }));
 
-const t = (key: string) => key;
+// `let`: the toast suite swaps in the real es-419 `t` before it mounts the hook.
+const echoKey = (key: string) => key;
+let t: (key: string, options?: Record<string, unknown>) => string = echoKey;
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t }) }));
 
 vi.mock('sonner', () => ({
@@ -87,13 +92,21 @@ class FakeEventSource {
   onopen: ((e: Event) => void) | null = null;
   onerror: ((e: Event) => void) | null = null;
   closed = false;
+  readonly listeners = new Map<string, (e: MessageEvent) => void>();
 
   constructor(url: string) {
     this.url = url;
     FakeEventSource.instances.push(this);
   }
 
-  addEventListener(): void {}
+  addEventListener(type: string, listener: (e: MessageEvent) => void): void {
+    this.listeners.set(type, listener);
+  }
+
+  /** The server sends a named event, serialized as `SseEndpoints.WriteEventAsync` writes it. */
+  emit(type: string, data: unknown): void {
+    this.listeners.get(type)?.(new MessageEvent(type, { data: JSON.stringify(data) }));
+  }
 
   close(): void {
     this.closed = true;
@@ -341,5 +354,125 @@ describe('useSSE reconnect', () => {
     await act(() => vi.advanceTimersByTimeAsync(60_000));
     expect(urls()).toEqual([streamUrl('T1'), streamUrl('T2')]);
     expect(latest().closed).toBe(false);
+  });
+});
+
+/**
+ * The live toasts in es-419 (spec `agent-console-localization`, "Live toasts" and "The offered toast
+ * names the channel"). The real locale file answers through the real `t`; the agent's identity, which
+ * only gates the event, is left in the query cache where the hook's observer would put it.
+ *
+ * A critical notification is two things: `title` and `body` are written by the server, in the
+ * language the server chose, and pass through; only the action label is the console's own text.
+ */
+describe('useSSE toasts in es-419', () => {
+  const ME = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
+  const CONVERSATION = '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a';
+
+  /** `data` of host fixture `conversation-offered.v1.json`. */
+  const offered = (channel: string, agentId = ME) => ({
+    tenantId: 'demo',
+    conversationId: CONVERSATION,
+    agentId,
+    queueId: '7c2e4a6b8d0f4e1a9b3c5d7e9f1a2b3c',
+    channel,
+    type: 'conversation.offered',
+    timestamp: '2026-10-30T15:04:05.130+00:00',
+  });
+
+  const critical = (actionUrl: string | null) => ({
+    notificationId: 'n-1',
+    userId: 'user-1',
+    category: 'Security',
+    severity: 'Critical',
+    title: 'Trunk 4 is down',
+    body: 'Calls on Trunk 4 are failing.',
+    actionUrl,
+    timestamp: '2026-10-30T15:04:05.130+00:00',
+  });
+
+  function lastToast(kind: 'info' | 'error') {
+    const call = vi.mocked(toast[kind]).mock.calls.at(-1);
+    if (!call) throw new Error(`no toast.${kind} was raised`);
+    const [message, options] = call;
+    const action = options?.action as { label: string; onClick: () => void } | undefined;
+    return { message, description: options?.description, action };
+  }
+
+  beforeEach(async () => {
+    const i18n = await createLocaleI18n('es-419');
+    t = i18n.getFixedT('es-419', 'common') as typeof t;
+    FakeEventSource.instances = [];
+    vi.stubGlobal('EventSource', FakeEventSource);
+    vi.mocked(toast.info).mockClear();
+    vi.mocked(toast.error).mockClear();
+    navigateMock.mockClear();
+
+    signIn('token');
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['agent-me'], { agentId: ME });
+    renderHook(() => useSSE(), {
+      wrapper: ({ children }: { children: ReactNode }) =>
+        createElement(QueryClientProvider, { client }, children),
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+    useAuthStore.getState().logout();
+    vi.unstubAllGlobals();
+    t = echoKey;
+  });
+
+  it('AssignedToast_ShouldComeFromTheLocaleFile_InEs419', () => {
+    latest().emit('conversation.assigned', {
+      conversationId: CONVERSATION,
+      agentId: ME,
+      contactName: 'Ana Díaz',
+    });
+
+    const { message, action } = lastToast('info');
+    expect(message).toBe('Nueva conversación de Ana Díaz');
+    expect(action?.label).toBe('Abrir');
+    action?.onClick();
+    expect(navigateMock).toHaveBeenCalledWith(`/agent/conversation/${CONVERSATION}`);
+  });
+
+  it.each([
+    ['WebChat', 'Chat web'],
+    ['Email', 'Correo electrónico'],
+    ['WhatsApp', 'WhatsApp'],
+    ['CarrierPigeon', 'CarrierPigeon'],
+  ])('OfferedToast_ShouldNameTheChannelThroughTheKeyedSet_For %s', (channel, label) => {
+    latest().emit('conversation.offered', offered(channel));
+
+    const { message, action } = lastToast('info');
+    expect(message).toBe(`Nueva conversación ofrecida por ${label}`);
+    expect(action?.label).toBe('Abrir');
+    action?.onClick();
+    expect(navigateMock).toHaveBeenCalledWith(`/agent/conversation/${CONVERSATION}`);
+  });
+
+  it('OfferedToast_ShouldNotShow_WhenTheEventNamesAnotherAgent', () => {
+    latest().emit('conversation.offered', offered('WhatsApp', 'another-agent'));
+
+    expect(toast.info).not.toHaveBeenCalled();
+  });
+
+  it('CriticalToast_ShouldLocalizeItsActionLabelAndPassTheServerTextThrough', () => {
+    latest().emit('notification.created', critical('/operations/trunks/4'));
+
+    const { message, description, action } = lastToast('error');
+    expect(message).toBe('Trunk 4 is down');
+    expect(description).toBe('Calls on Trunk 4 are failing.');
+    expect(action?.label).toBe('Ver');
+    action?.onClick();
+    expect(navigateMock).toHaveBeenCalledWith('/operations/trunks/4');
+  });
+
+  it('CriticalToast_ShouldOfferNoAction_WhenThereIsNoActionUrl', () => {
+    latest().emit('notification.created', critical(null));
+
+    expect(lastToast('error').action).toBeUndefined();
   });
 });

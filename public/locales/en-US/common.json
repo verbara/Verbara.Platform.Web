@@ -104,6 +104,7 @@
   "auth": {
     "login": "Sign in",
     "logout": "Sign out",
+    "user_fallback": "User",
     "sign_in": "Sign in to your account",
     "sign_in_sso": "Sign in with SSO",
     "email": "Email",
@@ -231,6 +232,7 @@
       "not_offered_to_you": "This conversation was offered to another agent.",
       "target_agent_not_found": "The selected agent no longer exists.",
       "target_queue_not_found": "The selected queue no longer exists.",
+      "transfer_note_too_long": "The note is too long. Keep it to 1,000 characters.",
       "conversation_not_found": "This conversation no longer exists.",
       "contact_not_found": "This contact no longer exists.",
       "conflict": "The conversation cannot change in its current state.",
@@ -281,6 +283,19 @@
     "voice": {
       "trunk_not_dialable": "Trunk {{trunkId}} for this number has no address to call. Ask an admin to set the trunk's host."
     }
+  },
+  "channels": {
+    "voice": "Voice",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "webchat": "Web Chat",
+    "email": "Email",
+    "messenger": "Messenger",
+    "instagram": "Instagram",
+    "telegram": "Telegram",
+    "twitter": "Twitter",
+    "video": "Video",
+    "rcs": "RCS"
   },
   "agent_layout": {
     "toggle_context": "Toggle context panel (Ctrl+I)",
@@ -546,6 +561,10 @@
       "removed": "IP entry removed"
     },
     "sse": {
+      "conversation_from": "New conversation from {{name}}",
+      "conversation_offered": "New {{channel}} conversation offered",
+      "open": "Open",
+      "view": "View",
       "connectionLost": "Real-time connection lost. Refresh the page to reconnect."
     },
     "dialerSettings": {

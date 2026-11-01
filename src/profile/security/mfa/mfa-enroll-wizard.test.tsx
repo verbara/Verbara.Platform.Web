@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import type { ReactNode } from 'react';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
@@ -38,11 +38,18 @@ const mockInit = asMock(useMfaEnrollInit);
 const mockVerify = asMock(useMfaEnrollVerify);
 const mockComplete = asMock(useMfaEnrollComplete);
 
+function CurrentPath() {
+  return <output data-testid="current-path">{useLocation().pathname}</output>;
+}
+
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={qc}>
-      <MemoryRouter>{children}</MemoryRouter>
+      <MemoryRouter initialEntries={['/profile/security/mfa/enroll']}>
+        {children}
+        <CurrentPath />
+      </MemoryRouter>
     </QueryClientProvider>
   );
 }
@@ -178,5 +185,34 @@ describe('MfaEnrollWizard', () => {
     await waitFor(() => screen.getByTestId('mfa-enroll-done'));
 
     expect(screen.getByTestId('mfa-enroll-done')).toBeDisabled();
+  });
+
+  it('Done_ShouldReturnToTheSecurityPage_WhenEnrolmentCompletes', async () => {
+    const initData = { secret: 'SEC', qrUri: 'uri', manualCode: 'SEC' };
+    const completeEnrolment = vi.fn().mockResolvedValue(undefined);
+    mockInit.mockReturnValue({
+      mutateAsync: vi.fn().mockResolvedValue(initData),
+      isPending: false,
+      isError: false,
+    });
+    mockVerify.mockReturnValue({
+      mutateAsync: vi.fn().mockResolvedValue({ recoveryCodes: ['CODE0789'] }),
+      isPending: false,
+    });
+    mockComplete.mockReturnValue({ mutateAsync: completeEnrolment, isPending: false });
+
+    render(<MfaEnrollWizard />, { wrapper: makeWrapper() });
+    await waitFor(() => screen.getByTestId('mfa-enroll-next-verify'));
+    fireEvent.click(screen.getByTestId('mfa-enroll-next-verify'));
+    fireEvent.change(screen.getByTestId('mfa-enroll-totp-input'), { target: { value: '123456' } });
+    fireEvent.click(screen.getByTestId('mfa-enroll-verify-submit'));
+    await waitFor(() => screen.getByTestId('mfa-enroll-done'));
+    fireEvent.click(screen.getByTestId('mfa-enroll-ack'));
+    fireEvent.click(screen.getByTestId('mfa-enroll-done'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('current-path').textContent).toBe('/profile/security');
+    });
+    expect(completeEnrolment).toHaveBeenCalledOnce();
   });
 });

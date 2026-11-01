@@ -13,6 +13,7 @@ import { FieldError } from '@/core/ui/field-error';
 import { Checkbox } from '@/core/ui/checkbox';
 import { LanguageSwitcher } from '@/core/i18n/language-switcher';
 import { MfaVerify } from './mfa-verify';
+import { roleDefaultRoute } from './role-default-route';
 import { ChevronDown } from 'lucide-react';
 import { useFieldA11y } from '@/core/hooks/use-field-a11y';
 import type { UserProfile, Features } from './auth-store';
@@ -81,12 +82,6 @@ export function LoginPage() {
   const successMessage = (location.state as { message?: string } | null)?.message;
   // Only an allow-listed `reason` shows a notice; the raw value is never rendered (design D7).
   const noticeCode = loginNoticeCode(new URLSearchParams(location.search).get('reason'));
-
-  const roleDefaultRoute: Record<string, string> = {
-    admin: '/admin',
-    supervisor: '/operations',
-    agent: '/agent',
-  };
 
   // The brand before sign-in (design D3 of `licensee-branding-in-the-console`): the host label as a
   // subdomain first; on its 404, failure or timeout, the queued field commit, else the field's value.
@@ -199,8 +194,7 @@ export function LoginPage() {
 
     const from =
       (location.state as { from?: { pathname: string } })?.from?.pathname ??
-      roleDefaultRoute[data.user.role] ??
-      '/agent';
+      roleDefaultRoute(data.user.role);
 
     navigate(from, { replace: true });
   }

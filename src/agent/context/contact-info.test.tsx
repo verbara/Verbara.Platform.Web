@@ -1,39 +1,43 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import type { ReactElement } from 'react';
+import { cleanup, render, screen, fireEvent, waitFor } from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/core/api/api-error';
+import esAgent from '../../../public/locales/es-419/agent.json';
 
 /**
  * Click-to-dial feedback (design D4; spec `conversation-action-feedback`, the click-to-dial
  * scenarios). The bodies come from the verbatim copy of the host's `voice-dial-transfer.v1.json`.
  */
 
-const { mutateMock, toastErrorMock, startOutboundMock } = vi.hoisted(() => ({
-  mutateMock: vi.fn(),
-  toastErrorMock: vi.fn(),
-  startOutboundMock: vi.fn(),
-}));
+const { mutateMock, toastErrorMock, startOutboundMock, DIAL_CONTACT, scene } = vi.hoisted(() => {
+  const DIAL_CONTACT = {
+    id: 'contact-1',
+    firstName: 'Ana',
+    lastName: 'Diaz',
+    company: null,
+    segment: null,
+    preferredChannel: 'voice' as string | null,
+    preferredLanguage: null,
+    timezone: null,
+    addresses: [{ channel: 'voice', address: '+15551234567' }],
+  };
+  return {
+    mutateMock: vi.fn(),
+    toastErrorMock: vi.fn(),
+    startOutboundMock: vi.fn(),
+    DIAL_CONTACT,
+    scene: { lng: 'en-US', contact: DIAL_CONTACT },
+  };
+});
 
 vi.mock('@/core/api/hooks/use-conversations', () => ({
   useVoiceDial: () => ({ mutate: mutateMock, isPending: false }),
 }));
 
 vi.mock('@/core/api/hooks/use-contacts', () => ({
-  useContact: () => ({
-    data: {
-      id: 'contact-1',
-      firstName: 'Ana',
-      lastName: 'Diaz',
-      company: null,
-      segment: null,
-      preferredChannel: 'voice',
-      preferredLanguage: null,
-      timezone: null,
-      addresses: [{ channel: 'voice', address: '+15551234567' }],
-    },
-  }),
+  useContact: () => ({ data: scene.contact }),
   useUpdateContact: () => ({ mutate: vi.fn(), isPending: false }),
   useDeleteContact: () => ({ mutate: vi.fn(), isPending: false }),
 }));
@@ -43,7 +47,9 @@ vi.mock('@/core/i18n/use-format-phone', () => ({
 }));
 
 vi.mock('@/core/ui/permission-button', () => ({
-  PermissionButton: () => null,
+  PermissionButton: ({ children }: { children: ReactNode }) => (
+    <button type="button">{children}</button>
+  ),
 }));
 
 vi.mock('@/agent/stores/conversation-store', () => ({
@@ -59,8 +65,7 @@ vi.mock('@/core/stores/voice-call-store', () => ({
 vi.mock('react-i18next', async () => {
   const { createLocaleI18n } = await import('@/test/locale-i18n');
   const i18n = await createLocaleI18n('en-US');
-  const t = i18n.getFixedT('en-US', 'agent');
-  return { useTranslation: () => ({ t, i18n }) };
+  return { useTranslation: () => ({ t: i18n.getFixedT(scene.lng, 'agent'), i18n }) };
 });
 
 vi.mock('sonner', () => ({
@@ -154,5 +159,72 @@ describe('ContactInfo click-to-dial', () => {
       correlationId: dialAccepted.body.correlationId,
     });
     expect(toastErrorMock).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * The panel's text in es-419. The contact double carries the wire's PascalCase (host fixture
+ * `contact-addresses.v1.json`) next to a lower-case double, which is not a wire value.
+ */
+describe('ContactInfo labels', () => {
+  afterEach(() => {
+    cleanup();
+    scene.lng = 'en-US';
+    scene.contact = DIAL_CONTACT;
+  });
+
+  function renderContact(channels: string[], preferredChannel: string | null) {
+    scene.lng = 'es-419';
+    scene.contact = {
+      ...DIAL_CONTACT,
+      preferredChannel,
+      addresses: channels.map((channel, i) => ({ channel, address: `address-${i}` })),
+    };
+    render(<ContactInfo />);
+  }
+
+  it('ContactInfo_ShouldShowItsHeadingAndEditFromTheLocaleFile_InEs419', () => {
+    renderContact([], null);
+
+    expect(screen.getByText('Contacto')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument();
+  });
+
+  it.each([
+    ['Email', 'email', 'Correo electrónico'],
+    ['WebChat', 'webchat', 'Chat web'],
+    ['Voice', 'voice', 'Voz'],
+    ['WhatsApp', 'whatsapp', 'WhatsApp'],
+  ])('ContactInfo_ShouldShowOneLabel_ForBothCasings %s %s', (wire, double, label) => {
+    renderContact([wire, double], null);
+
+    const labels = screen.getAllByTestId('contact-address-channel').map((el) => el.textContent);
+    expect(labels).toEqual([label, label]);
+  });
+
+  it('ContactInfo_ShouldLocalizeThePreferredChannel_WhenItCarriesTheWireValue', () => {
+    renderContact([], 'WebChat');
+
+    expect(screen.getByText('Chat web')).toBeInTheDocument();
+  });
+
+  it('ContactInfo_ShouldShowADash_WhenThereIsNoPreferredChannel', () => {
+    renderContact([], null);
+
+    const row = screen.getByText(esAgent.context.preferred_channel).parentElement;
+    expect(row?.textContent).toBe(`${esAgent.context.preferred_channel}—`);
+  });
+
+  it('ContactInfo_ShouldShowAnUnknownChannelAsItCame', () => {
+    renderContact(['CarrierPigeon'], null);
+
+    expect(screen.getByTestId('contact-address-channel').textContent).toBe('CarrierPigeon');
+  });
+
+  it('ContactInfo_ShouldLeaveTheLabelsCaseAlone_SoItMatchesTheOtherSurfaces', () => {
+    renderContact(['Email'], null);
+
+    // CSS `capitalize` would draw "Correo Electrónico" here and "Correo electrónico" in the dialog.
+    expect(screen.getByTestId('contact-address-channel')).not.toHaveClass('capitalize');
   });
 });

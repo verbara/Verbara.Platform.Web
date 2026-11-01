@@ -7,6 +7,7 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Textarea } from '@/core/ui/textarea';
+import { useAvailableChannels } from '@/core/api/hooks/use-available-channels';
 import { useSearchContacts, type Contact } from '@/core/api/hooks/use-contacts';
 import {
   useCreateConversation,
@@ -15,6 +16,7 @@ import {
 import { describeApiError } from '@/core/api/api-error';
 import { conversationRefusals, startRefusalOf } from '@/core/api/conversation-refusals';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { channelLabel } from '@/core/i18n/channel-label';
 import { useFormatPhone } from '@/core/i18n/use-format-phone';
 
 /** Platform's default when a template names no language (`CreateConversationRequest`). */
@@ -22,15 +24,6 @@ const DEFAULT_TEMPLATE_LANGUAGE = 'en_US';
 
 /** The permission that opens the supervisor monitor, where another owner's conversation is viewed. */
 const MONITOR_PERMISSION = 'contacts:conversation:monitor';
-
-const CHANNELS = [
-  { value: 'WhatsApp', label: 'WhatsApp' },
-  { value: 'Sms', label: 'SMS' },
-  { value: 'WebChat', label: 'WebChat' },
-  { value: 'Email', label: 'Email' },
-  { value: 'Messenger', label: 'Messenger' },
-  { value: 'Telegram', label: 'Telegram' },
-] as const;
 
 interface NewConversationDialogProps {
   open: boolean;
@@ -54,7 +47,8 @@ export function NewConversationDialog({
   }
 
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [channel, setChannel] = useState('WhatsApp');
+  // Only the agent's pick is state; the channel in force is derived from the list below.
+  const [pickedChannel, setPickedChannel] = useState<string | null>(null);
   const [initialMessage, setInitialMessage] = useState('');
   const [templateOpen, setTemplateOpen] = useState(false);
   const [templateName, setTemplateName] = useState('');
@@ -64,11 +58,22 @@ export function NewConversationDialog({
   const focusTemplateRef = useRef(false);
   const { data: contacts = [] } = useSearchContacts(contactSearch);
   const createMutation = useCreateConversation({ reportErrors: 'inline' });
+  const channelsRead = useAvailableChannels(open);
+
+  // Only a read that stands offers anything. A failed refresh leaves the last good `data` in the
+  // cache with `status` at `error`, and that list is no longer the server's word; a refresh in
+  // flight keeps `status` at `success`, so the list and the pick hold while it runs.
+  const channels = channelsRead.isSuccess ? channelsRead.data : [];
+  const noChannels = !channelsRead.isPending && channels.length === 0;
+  // The pick stands while it is listed, and applies again if a later read lists it again.
+  const channel =
+    channels.find((c) => c.channel === pickedChannel)?.channel ?? channels[0]?.channel ?? null;
 
   const isWhatsApp = channel === 'WhatsApp';
   const message = initialMessage.trim();
   // The refusal is shown in the dialog (ADR-0013: from the machine code, never Platform's text).
-  const refusalError = createMutation.error;
+  // It belongs to the channel it was answered for, which a new list can take out of the selection.
+  const refusalError = createMutation.variables?.channel === channel ? createMutation.error : null;
   const refusal = refusalError
     ? describeApiError(refusalError, conversationRefusals, 'create')
     : null;
@@ -83,7 +88,7 @@ export function NewConversationDialog({
   function resetForm() {
     setSelectedContact(null);
     setContactSearch('');
-    setChannel('WhatsApp');
+    setPickedChannel(null);
     setInitialMessage('');
     setTemplateOpen(false);
     setTemplateName('');
@@ -113,7 +118,7 @@ export function NewConversationDialog({
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!selectedContact || message === '') return;
+    if (!selectedContact || channel === null || message === '') return;
     const request: CreateConversationInput = {
       contactId: selectedContact.id,
       channel,
@@ -206,27 +211,39 @@ export function NewConversationDialog({
             <Label>{t('new_conversation.channel')}</Label>
             <Select
               value={channel}
+              disabled={channel === null}
               onValueChange={(v) => {
                 if (!v) return;
-                setChannel(v);
+                setPickedChannel(v);
                 createMutation.reset();
               }}
             >
               <SelectTrigger className="w-full" data-testid="new-conv-channel-select">
-                <SelectValue />
+                <SelectValue>
+                  {(value: string | null) => (value ? channelLabel(tCommon, value) : '')}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {CHANNELS.map((ch) => (
+                {channels.map(({ channel: listed }) => (
                   <SelectItem
-                    key={ch.value}
-                    value={ch.value}
-                    data-testid={`new-conv-channel-option-${ch.value}`}
+                    key={listed}
+                    value={listed}
+                    data-testid={`new-conv-channel-option-${listed}`}
                   >
-                    {ch.label}
+                    {channelLabel(tCommon, listed)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {noChannels && (
+              <p
+                role="status"
+                className="mt-1 text-xs text-muted-foreground"
+                data-testid="new-conv-no-channels"
+              >
+                {t('new_conversation.no_channels')}
+              </p>
+            )}
           </div>
 
           {/* Initial message (required since Platform 2.28.0: the start without one is deprecated) */}
@@ -338,7 +355,9 @@ export function NewConversationDialog({
           <Button
             type="submit"
             className="w-full"
-            disabled={!selectedContact || message === '' || createMutation.isPending}
+            disabled={
+              !selectedContact || channel === null || message === '' || createMutation.isPending
+            }
             data-testid="new-conv-submit-btn"
           >
             {t('new_conversation.submit')}

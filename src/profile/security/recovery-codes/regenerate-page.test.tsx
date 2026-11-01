@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import type { ReactNode } from 'react';
 
 vi.mock('react-i18next', () => ({
@@ -22,11 +22,18 @@ import RegeneratePage from './regenerate-page';
 
 const mockRegenerate = asMock(useRegenerateRecoveryCodes);
 
+function CurrentPath() {
+  return <output data-testid="current-path">{useLocation().pathname}</output>;
+}
+
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={qc}>
-      <MemoryRouter>{children}</MemoryRouter>
+      <MemoryRouter initialEntries={['/profile/security/recovery-codes/regenerate']}>
+        {children}
+        <CurrentPath />
+      </MemoryRouter>
     </QueryClientProvider>
   );
 }
@@ -94,5 +101,32 @@ describe('RegeneratePage', () => {
 
     await waitFor(() => screen.getByTestId('recovery-regenerate-done'));
     expect(screen.getByTestId('recovery-regenerate-done')).toBeDisabled();
+  });
+
+  it('Cancel_ShouldReturnToTheSecurityPage_WhenPicked', () => {
+    mockRegenerate.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
+
+    render(<RegeneratePage />, { wrapper: makeWrapper() });
+    fireEvent.click(screen.getByTestId('recovery-regenerate-cancel'));
+
+    expect(screen.getByTestId('current-path').textContent).toBe('/profile/security');
+  });
+
+  it('Done_ShouldReturnToTheSecurityPage_WhenTheCodesAreAcknowledged', async () => {
+    mockRegenerate.mockReturnValue({
+      mutateAsync: vi.fn().mockResolvedValue({ recoveryCodes: ['CODE0789'] }),
+      isPending: false,
+    });
+
+    render(<RegeneratePage />, { wrapper: makeWrapper() });
+    fireEvent.change(screen.getByTestId('recovery-regenerate-totp-input'), {
+      target: { value: '123456' },
+    });
+    fireEvent.click(screen.getByTestId('recovery-regenerate-submit'));
+    await waitFor(() => screen.getByTestId('recovery-regenerate-done'));
+    fireEvent.click(screen.getByTestId('recovery-regenerate-ack'));
+    fireEvent.click(screen.getByTestId('recovery-regenerate-done'));
+
+    expect(screen.getByTestId('current-path').textContent).toBe('/profile/security');
   });
 });

@@ -23,7 +23,11 @@ export function SystemEvent({ message }: { message: Message }) {
   const Icon = eventIcons[eventType] ?? UserPlus;
 
   return (
-    <div className="flex items-center justify-center gap-2 py-3">
+    <div
+      data-testid="system-event"
+      data-message-id={message.id}
+      className="flex items-center justify-center gap-2 py-3"
+    >
       <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
       <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500">
         <Icon className="h-3 w-3" />

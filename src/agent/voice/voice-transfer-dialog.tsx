@@ -12,9 +12,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/core/ui/dialog';
-import { useQueues } from '@/core/api/hooks/use-queues';
-import { useAgents } from '@/core/api/hooks/use-agents';
+import { normalizeStateToken } from '@/agent/inbox/agent-status-tokens';
+import {
+  useTransferTargetAgents,
+  useTransferTargetQueues,
+  type TransferTargetAgent,
+} from '@/core/api/hooks/use-transfer-targets';
 import { useVoiceTransfer } from '@/core/api/hooks/use-conversations';
+import { useDebouncedValue } from '@/core/hooks/use-debounced-value';
 import { toastApiError } from '@/core/api/toast-api-error';
 import { trunkRefusalValues, voiceTransferRefusals } from '@/core/api/voice-call-refusals';
 
@@ -42,8 +47,6 @@ export function VoiceTransferDialog({
   conversationId,
 }: VoiceTransferDialogProps) {
   const { t } = useTranslation('agent');
-  const { data: queues = [] } = useQueues();
-  const { data: agents = [] } = useAgents();
   const voiceTransfer = useVoiceTransfer();
 
   const [kind, setKind] = useState<TargetKind>('queue');
@@ -51,15 +54,17 @@ export function VoiceTransferDialog({
   const [search, setSearch] = useState('');
   const [externalNumber, setExternalNumber] = useState('');
 
-  const term = search.trim().toLowerCase();
-  const items: Array<{ id: string; name: string; state?: string }> =
+  // A cleared search needs no pause: it would otherwise read the other kind with the old term.
+  const debouncedSearch = useDebouncedValue(search);
+  const term = search === '' ? '' : debouncedSearch;
+  const queuesQuery = useTransferTargetQueues(term, open && kind === 'queue');
+  const agentsQuery = useTransferTargetAgents(term, open && kind === 'agent');
+
+  const items: Array<{ id: string; name: string; state?: TransferTargetAgent['state'] }> =
     kind === 'queue'
-      ? queues
-          .filter((q) => q.name.toLowerCase().includes(term))
-          .map((q) => ({ id: q.id, name: q.name }))
-      : agents
-          .filter((a) => a.displayName.toLowerCase().includes(term))
-          .map((a) => ({ id: a.id, name: a.displayName, state: a.state }));
+      ? (queuesQuery.data ?? []).map((q) => ({ id: q.id, name: q.name }))
+      : (agentsQuery.data ?? []).map((a) => ({ id: a.id, name: a.displayName, state: a.state }));
+  const isReading = kind === 'queue' ? queuesQuery.isFetching : agentsQuery.isFetching;
 
   function switchKind(next: TargetKind) {
     setKind(next);
@@ -160,19 +165,19 @@ export function VoiceTransferDialog({
               </div>
 
               <div className="flex max-h-48 flex-col gap-1 overflow-y-auto rounded-lg border border-slate-200 p-1 dark:border-slate-700">
-                {items.length === 0 && (
+                {items.length === 0 && !isReading && (
                   <span className="px-2 py-3 text-center text-xs text-slate-500">
                     {t('voice.transfer.no_results', 'No results')}
                   </span>
                 )}
                 {items.map((item) => {
-                  const isAgent = item.state !== undefined;
-                  const isBusy = item.state === 'busy';
+                  const isBusy = item.state === 'Busy';
                   return (
                     <button
                       key={item.id}
                       type="button"
                       data-testid={`voice-transfer-item-${item.id}`}
+                      data-agent-state={item.state}
                       disabled={isBusy}
                       onClick={() => setSelectedId(item.id)}
                       className={`flex items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
@@ -182,13 +187,13 @@ export function VoiceTransferDialog({
                       } ${isBusy ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                     >
                       <span>{item.name}</span>
-                      {isAgent && (
+                      {item.state !== undefined && (
                         <span
                           className={`text-[10px] font-medium ${
-                            item.state === 'available' ? 'text-green-600' : 'text-amber-500'
+                            item.state === 'Available' ? 'text-green-600' : 'text-amber-500'
                           }`}
                         >
-                          {String(item.state)}
+                          {t(`agent_status.${normalizeStateToken(item.state)}`)}
                         </span>
                       )}
                     </button>

@@ -9,6 +9,7 @@ import { refreshAccessToken } from '@/core/api/client';
 import { useAgentMe } from '@/core/api/hooks/use-agents';
 import { useAgentAlertsStore } from '@/core/stores/agent-alerts-store';
 import { useAgentAiStore } from '@/core/stores/agent-ai-store';
+import { channelLabel } from '@/core/i18n/channel-label';
 import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
 
 type SseEventHandler = (data: unknown) => void;
@@ -76,10 +77,10 @@ export function useSSE() {
 
         const isInAgentRoute = window.location.pathname.startsWith('/agent');
 
-        toast.info(`New conversation from ${data.contactName}`, {
+        toast.info(t('toasts.sse.conversation_from', { name: data.contactName }), {
           duration: 6000,
           action: {
-            label: 'Open',
+            label: t('toasts.sse.open'),
             onClick: () => navigate(`/agent/conversation/${data.conversationId}`),
           },
         });
@@ -109,10 +110,11 @@ export function useSSE() {
 
         const isInAgentRoute = window.location.pathname.startsWith('/agent');
 
-        toast.info(`New ${data.channel} conversation offered`, {
+        const channel = channelLabel(t, data.channel);
+        toast.info(t('toasts.sse.conversation_offered', { channel }), {
           duration: 6000,
           action: {
-            label: 'Open',
+            label: t('toasts.sse.open'),
             onClick: () => navigate(`/agent/conversation/${data.conversationId}`),
           },
         });
@@ -287,7 +289,7 @@ export function useSSE() {
             description: data.body,
             duration: 10000,
             action: data.actionUrl
-              ? { label: 'View', onClick: () => navigate(data.actionUrl!) }
+              ? { label: t('toasts.sse.view'), onClick: () => navigate(data.actionUrl!) }
               : undefined,
           });
         } else if (severity === 'Warning') {
