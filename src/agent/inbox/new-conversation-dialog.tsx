@@ -190,7 +190,7 @@ export function NewConversationDialog({
                             <div className="font-medium">{contactDisplayName(c)}</div>
                             {primary && (
                               <div className="text-xs text-muted-foreground">
-                                {primary.channel} ·{' '}
+                                {channelLabel(tCommon, primary.channel)} ·{' '}
                                 {primary.channel === 'voice' || primary.channel === 'sms'
                                   ? formatPhone(primary.address)
                                   : primary.address}

@@ -286,6 +286,26 @@ describe('NewConversationDialog with Platform contacts', () => {
     expect(screen.queryByTestId('new-conv-contact-option-undefined')).toBeNull();
   });
 
+  it('NewConversationDialog_ShouldNameTheContactsChannelThroughTheKeyedSet_WhenTheConsoleIsInSpanish', async () => {
+    server.use(
+      http.get('/api/v1/contacts', () =>
+        HttpResponse.json({
+          items: [
+            { ...platformContact, addresses: [{ channel: 'WebChat', address: 'visitor-3f9a' }] },
+          ],
+          totalCount: 1,
+          page: 1,
+          pageSize: 20,
+        }),
+      ),
+    );
+    await renderReopenable({ lng: 'es-419' });
+    await searchContact();
+
+    const option = await screen.findByTestId(`new-conv-contact-option-${CONTACT_ID}`);
+    expect(option).toHaveTextContent(`${esCommon.channels.webchat} · visitor-3f9a`);
+  });
+
   it('NewConversationDialog_ShouldSendThePlatformContactIdAndTheMessage_WhenConversationCreated', async () => {
     await renderDialog();
     await pickContactAndType('  Hola Ana  ');
