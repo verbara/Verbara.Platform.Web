@@ -250,6 +250,11 @@
       "not_closable": "Esta conversación no se puede cerrar en su estado actual.",
       "failed": "No se pudo completar la acción. Inténtalo de nuevo."
     },
+    "own_session": {
+      "session_is_current": "Esta es la sesión que estás usando ahora. Para terminarla, cierra sesión.",
+      "not_found": "Esa sesión ya terminó. La lista se actualizó.",
+      "revoke_failed": "No se pudo revocar la sesión. Inténtalo de nuevo."
+    },
     "partner_channel": {
       "plan_exceeds_parent": "El plan {{requestedPlan}} está por encima del plan {{parentPlan}} del tenant padre. Elige {{parentPlan}} o un plan inferior.",
       "dunning_partner_customer": "La cobranza no aplica a este Cliente: su Partner lo factura fuera de Verbara.",

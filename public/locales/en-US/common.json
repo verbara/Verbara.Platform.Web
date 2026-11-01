@@ -250,6 +250,11 @@
       "not_closable": "This conversation cannot be closed in its current state.",
       "failed": "The action could not be completed. Try again."
     },
+    "own_session": {
+      "session_is_current": "This is the session you are using now. To end it, sign out.",
+      "not_found": "That session has already ended. The list has been refreshed.",
+      "revoke_failed": "The session could not be revoked. Try again."
+    },
     "partner_channel": {
       "plan_exceeds_parent": "The {{requestedPlan}} plan is above the {{parentPlan}} plan of the parent tenant. Choose {{parentPlan}} or a lower plan.",
       "dunning_partner_customer": "Dunning does not apply to this Customer: its Partner bills it outside Verbara.",

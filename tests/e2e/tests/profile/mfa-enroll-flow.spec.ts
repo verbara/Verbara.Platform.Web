@@ -48,17 +48,47 @@ test.describe('Profile — MFA enroll wizard (R5.2 PA.2)', () => {
     await page.getByTestId('mfa-enroll-done').click();
 
     // ─── Step 2 — Sessions page ────────────────────────────────────────
+    // The page reads GET /api/v1/auth/sessions, which the refresh_token cookie reaches, so the
+    // browser's own session is marked current and its revoke is disabled (spec own-session-console).
     await page.goto('/profile/security/sessions');
     await expect(page.getByTestId('user-sessions-page')).toBeVisible();
-    // The wizard's session is "current" so revoke must be disabled on its row.
-    const currentBadge = page.getByTestId('user-session-current-badge').first();
-    await expect(currentBadge).toBeVisible();
+    const currentRow = page.locator('[data-testid^="user-session-row-"][data-current="true"]');
+    await expect(currentRow).toHaveCount(1);
+    await expect(currentRow.getByTestId('user-session-current-badge')).toBeVisible();
+    const currentRowId = await currentRow.getAttribute('data-testid');
+    const currentTokenId = currentRowId!.slice('user-session-row-'.length);
+    await expect(page.getByTestId(`user-session-revoke-${currentTokenId}`)).toBeDisabled();
 
     // ─── Step 3 — Regenerate codes ─────────────────────────────────────
+    // Platform's mint gate allows one recovery-code mint per interval, and enrolment just minted
+    // one, so the first regeneration may answer 429 with `Retry-After` (design D-4). Wait it out by
+    // polling the server's own answer, the first interval taken from the header: no wall-clock sleep.
     await page.goto('/profile/security/recovery-codes/regenerate');
     await expect(page.getByTestId('recovery-warning-step')).toBeVisible();
-    await page.getByTestId('recovery-regenerate-totp-input').fill(totp.generate());
-    await page.getByTestId('recovery-regenerate-submit').click();
+    let retryAfter: string | null = null;
+    const mint = async (): Promise<number> => {
+      await page.getByTestId('recovery-regenerate-totp-input').fill(totp.generate());
+      const [response] = await Promise.all([
+        page.waitForResponse(
+          (r) =>
+            r.request().method() === 'POST' &&
+            new URL(r.url()).pathname === '/api/v1/profile/security/recovery-codes/regenerate',
+        ),
+        page.getByTestId('recovery-regenerate-submit').click(),
+      ]);
+      retryAfter = response.headers()['retry-after'] ?? null;
+      return response.status();
+    };
+    const first = await mint();
+    if (first !== 200) {
+      expect(first).toBe(429);
+      await expect(page.locator('[data-error-code="recovery-codes-throttled"]')).toBeVisible();
+      const seconds = Number(retryAfter);
+      expect(Number.isInteger(seconds) && seconds >= 1 && seconds <= 10).toBe(true);
+      await expect
+        .poll(mint, { intervals: [seconds * 1000, 1_000], timeout: (seconds + 20) * 1000 })
+        .toBe(200);
+    }
     await expect(page.getByTestId('recovery-codes-step')).toBeVisible();
     await page.getByTestId('recovery-regenerate-ack').check();
     await page.getByTestId('recovery-regenerate-done').click();

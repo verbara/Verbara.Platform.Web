@@ -1,53 +1,66 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { I18nextProvider } from 'react-i18next';
+import type { i18n as I18n } from 'i18next';
 import { MemoryRouter } from 'react-router';
 import type { ReactNode } from 'react';
-
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'es-419' } }),
-}));
+import { createLocaleI18n } from '@/test/locale-i18n';
 
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock('@/core/api/hooks/use-user-sessions', () => ({
-  useUserSessions: vi.fn(),
-  useRevokeUserSession: vi.fn(),
+vi.mock('@/core/api/hooks/use-auth-admin', () => ({
+  useMySessions: vi.fn(),
+  useRevokeSession: vi.fn(),
 }));
 
 import { asMock } from '@/tests/utils/as-mock';
-import {
-  useUserSessions,
-  useRevokeUserSession,
-  type UserSessionDto,
-} from '@/core/api/hooks/use-user-sessions';
+import { useMySessions, useRevokeSession, type UserSession } from '@/core/api/hooks/use-auth-admin';
 import UserSessionsPage from './user-sessions-page';
 
-const mockSessions = asMock(useUserSessions);
-const mockRevoke = asMock(useRevokeUserSession);
+/** Host fixture `own-sessions.v1.json` (`GET /api/v1/auth/sessions`): the current row, then a null row. */
+const ROWS = (
+  JSON.parse(
+    readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts/own-sessions.v1.json'), 'utf-8'),
+  ) as { body: UserSession[] }
+).body;
+const CURRENT = ROWS[0]!;
+const OTHER = ROWS[1]!;
+
+const LOCALE = 'es-419';
+
+const mockSessions = asMock(useMySessions);
+const mockRevoke = asMock(useRevokeSession);
+
+let i18n: I18n;
+
+beforeAll(async () => {
+  i18n = await createLocaleI18n(LOCALE);
+});
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={qc}>
-      <MemoryRouter>{children}</MemoryRouter>
-    </QueryClientProvider>
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={qc}>
+        <MemoryRouter>{children}</MemoryRouter>
+      </QueryClientProvider>
+    </I18nextProvider>
   );
 }
 
-function makeSession(overrides: Partial<UserSessionDto> = {}): UserSessionDto {
-  return {
-    sessionId: 'session-1',
-    device: 'Chrome on macOS',
-    ipAddress: '192.0.2.1',
-    location: null,
-    createdAt: '2026-04-25T10:00:00Z',
-    lastActivity: '2026-04-25T11:00:00Z',
-    isCurrentSession: false,
-    ...overrides,
-  };
+function showRows(rows: UserSession[]) {
+  mockSessions.mockReturnValue({ data: rows, isLoading: false, isError: false });
+}
+
+function localeDateTime(iso: string): string {
+  return new Intl.DateTimeFormat(LOCALE, { dateStyle: 'short', timeStyle: 'short' }).format(
+    new Date(iso),
+  );
 }
 
 describe('UserSessionsPage', () => {
@@ -57,76 +70,109 @@ describe('UserSessionsPage', () => {
   });
 
   it('Page_ShouldRenderEmptyState_WhenNoSessions', () => {
-    mockSessions.mockReturnValue({ data: [], isLoading: false, isError: false });
+    showRows([]);
 
     render(<UserSessionsPage />, { wrapper: makeWrapper() });
 
     expect(screen.getByTestId('user-sessions-empty')).toBeInTheDocument();
   });
 
-  it('Page_ShouldRenderTable_WithRowPerSession', () => {
-    mockSessions.mockReturnValue({
-      data: [
-        makeSession({ sessionId: 's1' }),
-        makeSession({ sessionId: 's2', device: 'Firefox on Linux' }),
-      ],
-      isLoading: false,
-      isError: false,
-    });
+  it('Page_ShouldRenderOneRowPerSession_KeyedByTokenId', () => {
+    showRows(ROWS);
 
     render(<UserSessionsPage />, { wrapper: makeWrapper() });
 
-    expect(screen.getByTestId('user-session-row-s1')).toBeInTheDocument();
-    expect(screen.getByTestId('user-session-row-s2')).toBeInTheDocument();
-    expect(screen.getByText('Firefox on Linux')).toBeInTheDocument();
+    expect(screen.getByTestId('user-sessions-table')).toBeInTheDocument();
+    expect(screen.getByTestId(`user-session-row-${CURRENT.tokenId}`)).toBeInTheDocument();
+    expect(screen.getByTestId(`user-session-row-${OTHER.tokenId}`)).toBeInTheDocument();
   });
 
-  it('Page_ShouldShowCurrentBadge_OnCurrentSessionRow', () => {
-    mockSessions.mockReturnValue({
-      data: [makeSession({ sessionId: 's1', isCurrentSession: true })],
-      isLoading: false,
-      isError: false,
-    });
+  it('Page_ShouldMarkOnlyTheCurrentSession_WhenTheListHasOne', () => {
+    showRows(ROWS);
 
     render(<UserSessionsPage />, { wrapper: makeWrapper() });
 
-    expect(screen.getByTestId('user-session-current-badge')).toBeInTheDocument();
+    const current = screen.getByTestId(`user-session-row-${CURRENT.tokenId}`);
+    const other = screen.getByTestId(`user-session-row-${OTHER.tokenId}`);
+    expect(screen.getAllByTestId('user-session-current-badge')).toHaveLength(1);
+    expect(within(current).getByTestId('user-session-current-badge')).toBeInTheDocument();
+    expect(current).toHaveAttribute('data-current', 'true');
+    expect(other).toHaveAttribute('data-current', 'false');
+    expect(screen.getByTestId(`user-session-revoke-${CURRENT.tokenId}`)).toBeDisabled();
+    expect(screen.getByTestId(`user-session-revoke-${OTHER.tokenId}`)).toBeEnabled();
   });
 
-  it('RevokeButton_ShouldBeDisabled_OnCurrentSession', () => {
-    mockSessions.mockReturnValue({
-      data: [makeSession({ sessionId: 's1', isCurrentSession: true })],
-      isLoading: false,
-      isError: false,
-    });
+  it('Page_ShouldShowTheDeviceLabelAndIp_WhenTheRowHasThem', () => {
+    showRows(ROWS);
 
     render(<UserSessionsPage />, { wrapper: makeWrapper() });
 
-    expect(screen.getByTestId('user-session-revoke-s1')).toBeDisabled();
+    const cells = within(screen.getByTestId(`user-session-row-${CURRENT.tokenId}`)).getAllByRole(
+      'cell',
+    );
+    expect(cells[0]).toHaveTextContent(
+      i18n.t('admin:profile_security.sessions.device_label', { browser: 'Chrome', os: 'Linux' }),
+    );
+    expect(cells[1]).toHaveTextContent('203.0.113.24');
   });
 
-  it('RevokeButton_ShouldOpenConfirmDialog_WhenClicked', async () => {
-    mockSessions.mockReturnValue({
-      data: [makeSession({ sessionId: 's2', isCurrentSession: false })],
-      isLoading: false,
-      isError: false,
-    });
+  it('Page_ShouldShowUnknownDeviceAndADash_WhenUserAgentAndIpAreNull', () => {
+    showRows(ROWS);
 
     render(<UserSessionsPage />, { wrapper: makeWrapper() });
 
-    fireEvent.click(screen.getByTestId('user-session-revoke-s2'));
-
-    // ConfirmDeleteDialog renders with role=dialog
-    await waitFor(() => {
-      expect(screen.getAllByRole('dialog').length).toBeGreaterThan(0);
-    });
+    const row = screen.getByTestId(`user-session-row-${OTHER.tokenId}`);
+    const cells = within(row).getAllByRole('cell');
+    expect(cells[0]).toHaveTextContent(i18n.t('admin:profile_security.sessions.device_unknown'));
+    expect(cells[1]?.textContent).toBe('—');
+    expect(row.textContent).not.toContain('null');
   });
+
+  it('Page_ShouldShowSignedInAndLastActivityInTheActiveLocale_WhenTheyDiffer', () => {
+    showRows(ROWS);
+
+    render(<UserSessionsPage />, { wrapper: makeWrapper() });
+
+    const cells = within(screen.getByTestId(`user-session-row-${CURRENT.tokenId}`)).getAllByRole(
+      'cell',
+    );
+    const created = localeDateTime(CURRENT.createdAt);
+    const lastActivity = localeDateTime(CURRENT.lastActivityAt);
+    expect(created).not.toBe(lastActivity);
+    expect(cells[2]?.textContent).toBe(created);
+    expect(cells[3]?.textContent).toBe(lastActivity);
+  });
+
+  it('Revoke_ShouldCallTheMutationWithTheTokenIdAndCloseTheDialog_WhenConfirmed', async () => {
+    showRows(ROWS);
+    // The hook resolves on the route's 204; the page closes its dialog from the mutation's onSuccess.
+    const mutate = vi.fn((_tokenId: string, opts?: { onSuccess?: () => void }) =>
+      opts?.onSuccess?.(),
+    );
+    mockRevoke.mockReturnValue({ mutate, isPending: false });
+
+    render(<UserSessionsPage />, { wrapper: makeWrapper() });
+
+    fireEvent.click(screen.getByTestId(`user-session-revoke-${OTHER.tokenId}`));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent(i18n.t('admin:profile_security.sessions.device_unknown'));
+    const confirm = screen.getByTestId('confirm-delete-btn');
+    // The dialog's own 3 s countdown before the button arms.
+    await waitFor(() => expect(confirm).toBeEnabled(), { timeout: 5_000 });
+    fireEvent.click(confirm);
+
+    expect(mutate).toHaveBeenCalledWith(OTHER.tokenId, expect.any(Object));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  }, 10_000);
 
   it('Page_ShouldRenderError_WhenLoadFails', () => {
     mockSessions.mockReturnValue({ data: undefined, isLoading: false, isError: true });
 
     render(<UserSessionsPage />, { wrapper: makeWrapper() });
 
-    expect(screen.getByTestId('user-sessions-error')).toBeInTheDocument();
+    expect(screen.getByTestId('user-sessions-error')).toHaveTextContent(
+      i18n.t('admin:profile_security.sessions.load_error'),
+    );
+    expect(screen.queryByTestId('user-sessions-table')).not.toBeInTheDocument();
   });
 });

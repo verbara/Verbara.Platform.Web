@@ -1929,7 +1929,9 @@
       "col_device": "Dispositivo",
       "col_ip": "Dirección IP",
       "col_created": "Inicio de sesión",
-      "col_last_activity": "Última actividad"
+      "col_last_activity": "Última actividad",
+      "device_label": "{{browser}} · {{os}}",
+      "device_unknown": "Dispositivo desconocido"
     },
     "recovery_codes": {
       "regenerate": {

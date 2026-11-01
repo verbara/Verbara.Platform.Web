@@ -1929,7 +1929,9 @@
       "col_device": "Device",
       "col_ip": "IP address",
       "col_created": "Signed in",
-      "col_last_activity": "Last activity"
+      "col_last_activity": "Last activity",
+      "device_label": "{{browser}} · {{os}}",
+      "device_unknown": "Unknown device"
     },
     "recovery_codes": {
       "regenerate": {

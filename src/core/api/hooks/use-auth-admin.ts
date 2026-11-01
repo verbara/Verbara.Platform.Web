@@ -4,6 +4,9 @@ import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { describeMintRefusal } from '@/core/api/mint-refusal';
+import { isApiError } from '@/core/api/api-error';
+import { ownSessionRefusals, SESSION_IS_CURRENT } from '@/core/api/own-session-refusals';
+import { toastApiError } from '@/core/api/toast-api-error';
 
 // --- Types ---
 
@@ -246,6 +249,8 @@ export interface UserSession {
   createdAt: string;
   expiresAt: string;
   isCurrentSession: boolean;
+  /** Never null on the wire (host fixture `own-sessions.v1.json`): `createdAt` when never refreshed. */
+  lastActivityAt: string;
 }
 
 export function useMySessions() {
@@ -272,7 +277,14 @@ export function useRevokeSession() {
       qc.invalidateQueries({ queryKey: ['auth', 'sessions', 'me'] });
       toast.success(t('toasts.auth.sessionRevoked'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    // Reported from status and code, never server text (spec own-session-console, design D-2). A
+    // `session-is-current` refusal or a `404` means the list the user acted on is stale: refresh it.
+    onError: (err: Error) => {
+      const entry = toastApiError(err, ownSessionRefusals, t);
+      if (entry.code === SESSION_IS_CURRENT || (isApiError(err) && err.status === 404)) {
+        qc.invalidateQueries({ queryKey: ['auth', 'sessions', 'me'] });
+      }
+    },
   });
 }
 
