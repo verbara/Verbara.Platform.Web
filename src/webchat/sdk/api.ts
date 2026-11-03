@@ -2,6 +2,7 @@ import { createBubble, type BubbleHandle } from './bubble';
 import { createIframeLoader, type IframeLoaderHandle } from './iframe-loader';
 import { createPostMessageBridge, type BridgeHandle } from './postmessage-bridge';
 import { buildEmbedUrl, resolveEmbedOrigin } from './embed-origin';
+import { FORGET_TIMEOUT_MS, requestForgetVisitor } from './forget-visitor';
 import {
   getOrCreateVisitorId,
   getVisitorProfile,
@@ -61,12 +62,18 @@ export interface WebChatApi {
   setVisitor(profile: { name?: string; email?: string }): void;
   on(event: EventName, handler: Handler): void;
   off(event: EventName, handler: Handler): void;
-  destroy(): void;
+  /**
+   * Removes the widget and forgets the visitor: the id and profile on the host page at once, and the conversation
+   * the widget kept in its frame's storage before the frame is removed. Resolves once the frame is gone.
+   */
+  destroy(): Promise<void>;
 }
 
 export interface WebChatApiOptions {
   /** URL the SDK script was loaded from; the frame is loaded from its origin, not the host page's (#426). */
   scriptSrc?: string | null;
+  /** How long `destroy()` waits for the frame to confirm it cleared the conversation. Default 2 seconds. */
+  forgetTimeoutMs?: number;
 }
 
 export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
@@ -214,18 +221,48 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     state.handlers.get(event)?.delete(handler);
   }
 
-  function destroy(): void {
-    state.bridge?.destroy();
-    state.iframe?.destroy();
+  function destroy(): Promise<void> {
+    const { config, bridge, iframe, embedOrigin } = state;
+    // The SDK's state resets now, so init() can start a fresh widget at once; only the old frame lives on until it
+    // has cleared what it kept.
+    bridge?.destroy();
     state.bubble?.destroy();
-    if (state.config) resetVisitor(state.config.tenantId);
+    iframe?.hide();
+    if (config) resetVisitor(config.tenantId);
     state.bridge = null;
     state.iframe = null;
     state.bubble = null;
     state.embedOrigin = null;
     state.config = null;
+    state.isOpen = false;
+    state.unreadCount = 0;
     state.handlers.clear();
     state.outboundQueue.length = 0;
+
+    if (!config || !iframe || !embedOrigin) {
+      iframe?.destroy();
+      return Promise.resolve();
+    }
+
+    // The frame keeps the conversation in its own origin's storage, which this page cannot reach: ask it to clear
+    // the tenant's entries, over a bridge of its own so nothing from the torn-down session answers. A frame never
+    // opened on this page is loaded hidden to receive the request.
+    const frame = iframe.load();
+    const forgetBridge = createPostMessageBridge({
+      // A frame the page removed meanwhile has nothing left to clear or to answer.
+      target: () => (frame.isConnected ? frame.contentWindow : null),
+      targetOrigin: embedOrigin,
+      expectedSourceOrigin: embedOrigin,
+      side: 'host',
+    });
+    return requestForgetVisitor(
+      forgetBridge,
+      { tenantId: config.tenantId },
+      { timeoutMs: options.forgetTimeoutMs ?? FORGET_TIMEOUT_MS },
+    ).then(() => {
+      forgetBridge.destroy();
+      iframe.destroy();
+    });
   }
 
   return { init, open, close, sendMessage, setVisitor, on, off, destroy };
