@@ -55,6 +55,36 @@ describe('postmessage-bridge', () => {
     bridge.destroy();
   });
 
+  it('OnMessage_ShouldIgnoreAnotherWindow_WhenAnExpectedSourceIsGiven', () => {
+    const handler = vi.fn();
+    const own = document.createElement('iframe');
+    const other = document.createElement('iframe');
+    document.body.append(own, other);
+    const bridge = createPostMessageBridge({
+      target: () => null,
+      targetOrigin: 'https://example.com',
+      expectedSourceOrigin: 'https://example.com',
+      expectedSource: () => own.contentWindow,
+    });
+    bridge.on('ready', handler);
+    const data = { source: 'verbara-webchat-iframe', type: 'ready' };
+
+    window.dispatchEvent(new MessageEvent('message', { data, origin: 'https://example.com' }));
+    window.dispatchEvent(
+      new MessageEvent('message', { data, origin: 'https://example.com', source: other.contentWindow }),
+    );
+    expect(handler).not.toHaveBeenCalled();
+
+    window.dispatchEvent(
+      new MessageEvent('message', { data, origin: 'https://example.com', source: own.contentWindow }),
+    );
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    bridge.destroy();
+    own.remove();
+    other.remove();
+  });
+
   it('Destroy_RemovesEventListener', () => {
     const handler = vi.fn();
     const bridge = createPostMessageBridge({

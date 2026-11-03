@@ -15,7 +15,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   visitor id and profile on the site's page; the messages shown, the open session and any unsent messages stayed in the
   widget's own storage, and the next person to open the widget on that browser saw the earlier conversation. The widget
   also keeps its message history per visitor now, so a new visitor starts with an empty conversation. `destroy()` now
-  returns a promise that resolves once the widget is removed.
+  returns a promise that resolves once the widget is removed; a page that navigates away should wait for it. A widget
+  started again right after `destroy()` opens its frame only once the previous one is gone, and the page listens only
+  to its own widget's frame.
 
 - **Every agent-console surface names a channel in the agent's language.** The contact search result in the
   new-conversation dialog, the badge in the conversation header and the contact's past conversations showed the raw

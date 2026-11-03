@@ -53,8 +53,19 @@ await VerbaraWebChat.destroy();
 ```
 
 `destroy()` removes the widget and clears the conversation it kept in the browser (see Privacy). It returns a promise
-that resolves once the widget's frame is gone, at most about two seconds later; a page that does not wait for it
-loses nothing on the host side, which is cleared at once.
+that resolves once the widget's frame is gone, at most about two seconds later. The visitor id and profile on the
+site's page are cleared at once; the conversation inside the frame is cleared only if the page stays loaded until the
+promise resolves. Before navigating away, for example when a visitor logs out, wait for it:
+
+```javascript
+async function logout() {
+  await VerbaraWebChat.destroy();
+  location.assign('/logged-out');
+}
+```
+
+Calling `init()` or `open()` again right after `destroy()` is safe: the new widget's frame is created only once the
+previous frame is gone, so the previous frame's clear never touches the new conversation.
 
 Events: `open`, `close`, `unread`, `message-sent`, `message-received`, `ready`.
 

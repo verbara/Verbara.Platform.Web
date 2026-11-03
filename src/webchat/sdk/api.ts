@@ -52,6 +52,11 @@ interface InternalState {
   unreadCount: number;
   handlers: Map<EventName, Set<Handler>>;
   outboundQueue: Array<{ type: string; payload?: unknown }>;
+  /**
+   * The previous widget's frame while it is still forgetting, settled once that frame is gone. The next widget's frame
+   * is created only after it settles: frames of one embed origin share storage, and the clear is tenant-wide.
+   */
+  forgetting: Promise<void> | null;
 }
 
 export interface WebChatApi {
@@ -87,6 +92,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     unreadCount: 0,
     handlers: new Map(),
     outboundQueue: [],
+    forgetting: null,
   };
 
   function emit(event: EventName, payload?: unknown) {
@@ -97,10 +103,14 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
   function ensureIframeBridge() {
     if (state.bridge) return;
     if (!state.config || !state.iframe || !state.embedOrigin) return;
+    const iframe = state.iframe;
+    const frameWindow = () => iframe.getIframe()?.contentWindow ?? null;
     state.bridge = createPostMessageBridge({
-      target: () => state.iframe?.getIframe()?.contentWindow ?? null,
+      target: frameWindow,
       targetOrigin: state.embedOrigin,
       expectedSourceOrigin: state.embedOrigin,
+      // Only this widget's own frame: a previous frame of the same origin still forgetting must not reach it.
+      expectedSource: frameWindow,
       side: 'host',
     });
     state.bridge.on('ready', () => {
@@ -181,11 +191,18 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
 
   function open(): void {
     if (!state.config || !state.iframe) return;
-    state.iframe.show();
+    const iframe = state.iframe;
     state.isOpen = true;
     state.bubble?.setOpen(true);
-    ensureIframeBridge();
-    state.bridge?.send('open');
+    const showFrame = () => {
+      // The widget may have been closed or destroyed while the previous frame was forgetting.
+      if (state.iframe !== iframe || !state.isOpen) return;
+      iframe.show();
+      ensureIframeBridge();
+      state.bridge?.send('open');
+    };
+    if (state.forgetting) void state.forgetting.then(showFrame);
+    else showFrame();
     emit('open');
   }
 
@@ -223,8 +240,9 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
 
   function destroy(): Promise<void> {
     const { config, bridge, iframe, embedOrigin } = state;
+    const previous = state.forgetting;
     // The SDK's state resets now, so init() can start a fresh widget at once; only the old frame lives on until it
-    // has cleared what it kept.
+    // has cleared what it kept, and the next widget's frame is created after it is gone (see `forgetting`).
     bridge?.destroy();
     state.bubble?.destroy();
     iframe?.hide();
@@ -241,9 +259,26 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
 
     if (!config || !iframe || !embedOrigin) {
       iframe?.destroy();
-      return Promise.resolve();
+      return previous ?? Promise.resolve();
     }
 
+    // A widget destroyed while an earlier frame is still forgetting waits its turn: its own frame is loaded only once
+    // the earlier one is gone.
+    const forgetting = previous
+      ? previous.then(() => forgetInFrame(config, iframe, embedOrigin))
+      : forgetInFrame(config, iframe, embedOrigin);
+    state.forgetting = forgetting;
+    void forgetting.then(() => {
+      if (state.forgetting === forgetting) state.forgetting = null;
+    });
+    return forgetting;
+  }
+
+  function forgetInFrame(
+    config: InitConfig,
+    iframe: IframeLoaderHandle,
+    embedOrigin: string,
+  ): Promise<void> {
     // The frame keeps the conversation in its own origin's storage, which this page cannot reach: ask it to clear
     // the tenant's entries, over a bridge of its own so nothing from the torn-down session answers. A frame never
     // opened on this page is loaded hidden to receive the request.
@@ -251,6 +286,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     const forgetBridge = createPostMessageBridge({
       // A frame the page removed meanwhile has nothing left to clear or to answer.
       target: () => (frame.isConnected ? frame.contentWindow : null),
+      expectedSource: () => frame.contentWindow,
       targetOrigin: embedOrigin,
       expectedSourceOrigin: embedOrigin,
       side: 'host',
