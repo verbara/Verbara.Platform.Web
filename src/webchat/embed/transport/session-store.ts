@@ -9,7 +9,8 @@
  * new one.
  *
  * The stored session belongs to the visitor id the host page gave the widget. The SDK's `destroy()` forgets that
- * id (`resetVisitor`), so the next visitor on that browser gets a new id and does not resume the old session.
+ * id (`resetVisitor`) and asks this frame to clear the stored session (`forget-visitor`), so the next visitor on that
+ * browser gets a new id and does not resume the old session.
  */
 
 /** Platform's `WebChatOptions.SessionTimeout`. Change both together. */

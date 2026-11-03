@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { ChatWidget, type InitConfigPayload } from './chat-widget';
 import { flashUnread, stopFlash, playNotificationSound } from './notifications';
 import { setupKeyboardShortcuts } from './a11y';
@@ -7,6 +8,12 @@ import { applyTheme } from './theme-apply';
 import { breadcrumb } from './sentry-breadcrumbs';
 import { postToHost, resolveHostOrigin } from './origins';
 import { WidgetFrame } from './widget-frame';
+import {
+  FORGET_VISITOR,
+  VISITOR_FORGOTTEN,
+  forgetVisitorData,
+  readForgetVisitor,
+} from './forget-visitor';
 
 export function App() {
   const [config, setConfig] = useState<InitConfigPayload | null>(null);
@@ -45,6 +52,16 @@ export function App() {
 
     bridge.on('set-visitor', (_payload) => {
       // visitor updates flow through pre-chat form
+    });
+
+    // The host page's destroy(): close the chat first, so its socket is gone and no late reply writes the cache
+    // again, then clear what this frame kept for the tenant and confirm.
+    bridge.on(FORGET_VISITOR, (payload) => {
+      const request = readForgetVisitor(payload);
+      if (!request) return;
+      flushSync(() => setConfig(null));
+      forgetVisitorData(request.tenantId);
+      bridge.send(VISITOR_FORGOTTEN, { tenantId: request.tenantId });
     });
 
     const teardownKey = setupKeyboardShortcuts(() => {

@@ -5,6 +5,8 @@ export interface IframeLoaderConfig {
 
 export interface IframeLoaderHandle {
   show(): void;
+  /** Loads the frame without showing it. */
+  load(): HTMLIFrameElement;
   hide(): void;
   isVisible(): boolean;
   getIframe(): HTMLIFrameElement | null;
@@ -66,6 +68,9 @@ export function createIframeLoader(config: IframeLoaderConfig): IframeLoaderHand
     show() {
       const f = ensureIframe();
       f.style.display = 'block';
+    },
+    load() {
+      return ensureIframe();
     },
     hide() {
       if (iframe) iframe.style.display = 'none';

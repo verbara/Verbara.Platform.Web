@@ -10,6 +10,11 @@ export interface BridgeConfig {
   expectedSourceOrigin: string;
   /** 'host' (default) or 'iframe'. Determines source tag for outbound, expected tag for inbound. */
   side?: Direction;
+  /**
+   * The window we accept messages from. When given, a message whose `event.source` is any other window is ignored,
+   * even from the expected origin: two frames of the same origin never answer each other's bridge.
+   */
+  expectedSource?: () => Window | null;
 }
 
 export interface BridgeHandle {
@@ -61,6 +66,10 @@ export function createPostMessageBridge(config: BridgeConfig): BridgeHandle {
 
   function listener(e: MessageEvent) {
     if (e.origin !== config.expectedSourceOrigin) return;
+    if (config.expectedSource) {
+      const expected = config.expectedSource();
+      if (expected === null || e.source !== expected) return;
+    }
     const data = e.data as Envelope | undefined;
     if (!data || data.source !== expectedSource) return;
     const set = handlers.get(data.type);

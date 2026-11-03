@@ -17,6 +17,16 @@ describe('iframe-loader', () => {
     expect(document.querySelector('iframe[data-verbara-webchat-iframe]')).toBeNull();
   });
 
+  it('Load_ShouldCreateTheIframeHidden_AndReuseIt', () => {
+    handle = createIframeLoader({ src: '/webchat/embed/?tenantId=t1' });
+    const loaded = handle.load();
+    expect(loaded.style.display).toBe('none');
+    expect(handle.isVisible()).toBe(false);
+    handle.show();
+    expect(handle.load()).toBe(loaded);
+    expect(document.querySelectorAll('iframe[data-verbara-webchat-iframe]')).toHaveLength(1);
+  });
+
   it('Show_CreatesIframeWithCorrectSrcAndSandbox', () => {
     handle = createIframeLoader({ src: '/webchat/embed/?tenantId=t1' });
     handle.show();
