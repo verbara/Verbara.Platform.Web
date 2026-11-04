@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ReadRefusal } from '@/agent/context/read-refusal';
 import { useConversationStore, type Message } from '@/agent/stores/conversation-store';
@@ -50,6 +50,19 @@ export function MessageThread({ conversationId }: { conversationId: string }) {
   const refusal = errors.find(isNotReadable);
   const cursorRefused = refusalCodeOf(history.nextPageError) === 'invalid-cursor';
 
+  // The conversation whose last settled read failed with anything but a refusal or a 404. While this
+  // thread stays mounted, a further read of it keeps the store's messages on screen: a refetch of a read
+  // with no data has no error to show while it runs. Derived during render, so it holds no other
+  // conversation's answer; a fresh mount starts with none.
+  const [failedRead, setFailedRead] = useState<string | null>(null);
+  const { readError } = history;
+  let currentFailedRead = failedRead === conversationId && !history.isLoaded ? failedRead : null;
+  if (readError) {
+    currentFailedRead =
+      isNotReadable(readError) || isConversationNotFound(readError) ? null : conversationId;
+  }
+  if (currentFailedRead !== failedRead) setFailedRead(currentFailedRead);
+
   if (refusal) {
     return (
       <div className="flex-1 px-4 py-4">
@@ -71,7 +84,7 @@ export function MessageThread({ conversationId }: { conversationId: string }) {
 
   // Whether this conversation may be read at all is not known yet, so nothing of the store is drawn.
   // Any other failure of the first read leaves the store's messages on screen, below.
-  if (!history.isLoaded && !history.readError) {
+  if (!history.isLoaded && !readError && currentFailedRead === null) {
     return (
       <div data-testid="thread-loading" className="flex-1 space-y-2 px-4 py-4">
         <Skeleton className="h-12 w-full" />

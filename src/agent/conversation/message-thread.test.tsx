@@ -500,6 +500,131 @@ describe('MessageThread while its first read is pending', () => {
       expect(screen.queryByTestId('thread-loading')).toBeNull();
     },
   );
+
+  /** The first read failed, the store's rows show, and a second read is now on its way. */
+  async function refetchAfterAFailedFirstRead(failure: () => Response) {
+    holdInStore();
+    answers.first = failure;
+    const qc = newQueryClient();
+    const view = renderThread(qc);
+    await waitFor(() => expect(drawnRows(view.container)).toHaveLength(1));
+
+    const release = holdTheFirstRead();
+    act(() => void qc.invalidateQueries({ queryKey: HISTORY_KEY }));
+    await waitFor(() => expect(historyReads).toHaveLength(2));
+    return { ...view, qc, release };
+  }
+
+  describe.each(OTHER_FAILURES)('after a first read that answers %s', (_name, failure) => {
+    it('MessageThread_ShouldKeepTheStoreRows_WhileARefetchIsOnItsWay', async () => {
+      const { container } = await refetchAfterAFailedFirstRead(failure);
+
+      expect(drawnRows(container)).toHaveLength(1);
+      expect(screen.queryByTestId('thread-loading')).toBeNull();
+    });
+
+    it('MessageThread_ShouldReplaceTheRowsWithTheRefusal_WhenTheRefetchIsRefused', async () => {
+      const { container, release } = await refetchAfterAFailedFirstRead(failure);
+
+      release(NOT_READABLE);
+
+      await screen.findByTestId('read-refusal');
+      expect(drawnRows(container)).toHaveLength(0);
+    });
+
+    it('MessageThread_ShouldDrawNoRowOnTheNextRead_WhenTheRefetchWasRefused', async () => {
+      const { container, qc, release } = await refetchAfterAFailedFirstRead(failure);
+      release(NOT_READABLE);
+      await screen.findByTestId('read-refusal');
+
+      holdTheFirstRead();
+      act(() => void qc.invalidateQueries({ queryKey: HISTORY_KEY }));
+      await waitFor(() => expect(historyReads).toHaveLength(3));
+
+      expect(drawnRows(container)).toHaveLength(0);
+      expect(screen.getByTestId('thread-loading')).toBeInTheDocument();
+    });
+
+    it('MessageThread_ShouldKeepTheRows_WhenTheRefetchFailsTheSameWay', async () => {
+      const { container, qc, release } = await refetchAfterAFailedFirstRead(failure);
+      expect(qc.isFetching()).toBe(1);
+
+      release(failure);
+      await waitFor(() => expect(qc.isFetching()).toBe(0));
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(drawnRows(container)).toHaveLength(1);
+      expect(screen.queryByTestId('thread-loading')).toBeNull();
+    });
+
+    it('MessageThread_ShouldDrawTheServedRows_WhenTheRefetchAnswers', async () => {
+      const { release } = await refetchAfterAFailedFirstRead(failure);
+
+      release(page(historyFirstPage));
+
+      expect(await screen.findByText(NEWEST_TEXT)).toBeInTheDocument();
+      expect(screen.getByText(storedRow.text)).toBeInTheDocument();
+    });
+
+    it('MessageThread_ShouldDrawNoRowOnTheNextFirstRead_WhenTheRefetchWasAnswered', async () => {
+      const { container, qc, release } = await refetchAfterAFailedFirstRead(failure);
+      release(page(historyFirstPage));
+      await screen.findByText(NEWEST_TEXT);
+
+      holdTheFirstRead();
+      act(() => void qc.resetQueries({ queryKey: HISTORY_KEY }));
+      await waitFor(() => expect(historyReads).toHaveLength(3));
+
+      expect(drawnRows(container)).toHaveLength(0);
+      expect(screen.getByTestId('thread-loading')).toBeInTheDocument();
+    });
+
+    it('MessageThread_ShouldDrawNoStoreRow_WhenTheThreadRemountsDuringTheSecondRead', async () => {
+      holdInStore();
+      answers.first = failure;
+      const qc = newQueryClient();
+      const first = renderThread(qc);
+      await waitFor(() => expect(drawnRows(first.container)).toHaveLength(1));
+      first.unmount();
+
+      holdTheFirstRead();
+      const second = renderThread(qc);
+      await waitFor(() => expect(historyReads).toHaveLength(2));
+
+      expect(drawnRows(second.container)).toHaveLength(0);
+      expect(screen.getByTestId('thread-loading')).toBeInTheDocument();
+    });
+
+    it('MessageThread_ShouldDrawNoStoreRowOfTheNextConversation_WhenItOpensAfterTheFailure', async () => {
+      const NEXT_ID = 'next-conversation';
+      server.use(http.get(`/api/v1/conversations/${NEXT_ID}/history`, () => new Promise(() => {})));
+      holdInStore();
+      useConversationStore.setState((state) => ({
+        messages: {
+          ...state.messages,
+          [NEXT_ID]: [{ ...storedRow, id: 'stored-next', conversationId: NEXT_ID }],
+        },
+      }));
+      answers.first = failure;
+      const qc = newQueryClient();
+      const thread = (id: string) => (
+        <QueryClientProvider client={qc}>
+          <div style={{ height: 400 }}>
+            <MessageThread conversationId={id} />
+          </div>
+        </QueryClientProvider>
+      );
+      const { container, rerender } = render(thread(CONVERSATION_ID));
+      await waitFor(() => expect(drawnRows(container)).toHaveLength(1));
+
+      rerender(thread(NEXT_ID));
+
+      expect(drawnRows(container)).toHaveLength(0);
+      expect(screen.getByTestId('thread-loading')).toBeInTheDocument();
+    });
+  });
 });
 
 describe('MessageThread refusals (5.4, spec audit F2 and F3)', () => {
