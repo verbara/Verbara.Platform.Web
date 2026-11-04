@@ -11,6 +11,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **This console requires the Platform release that carries Verbara.Platform #539.** The History tab, the read-only
+  panel and the conversation thread read that release's `GET /api/v1/contacts/{id}/conversations` page and its
+  `GET /api/v1/conversations/{id}/history` route, which an earlier Platform does not have.
+
 - **The History tab shows the contact's past conversations as Platform sends them.** Each row names the channel, the
   state, the close reason, the queue, the agent, the duration, the disposition and the last message, in the agent's
   language, and a member Platform did not send stays empty. The conversation the agent holds now carries a mark and
@@ -63,7 +67,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   shows a device label, and shares one list with the `/profile/security` card. A `session-is-current` refusal,
   an already-ended session or any other failure is reported in the user's language, never in the server's text, on both
   surfaces. Ending the other sessions from the card reports success instead of a failure. **Requires Platform ≥ 2.38.0**
-  (the release that carries `profile-sessions-use-the-auth-route`).
+  (the release that carries `profile-sessions-use-the-auth-route`). (#503)
 
 ## [3.29.0-web] - 2026-11-01
 

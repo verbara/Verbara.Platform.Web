@@ -53,7 +53,11 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
   const isEmail = message.metadata?.contentType === 'html';
 
   return (
-    <div className={cn('flex flex-col', isAgent ? 'items-end' : 'items-start')}>
+    <div
+      data-testid="message-bubble"
+      data-message-id={message.id}
+      className={cn('flex flex-col', isAgent ? 'items-end' : 'items-start')}
+    >
       {showSender && (
         <span
           className={cn(
