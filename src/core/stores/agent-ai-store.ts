@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 
 export interface AgentSuggestion {
   id: string;
@@ -132,6 +133,8 @@ export const useAgentAiStore = create<AgentAiState>()((set) => ({
       return { sessions: rest };
     }),
 }));
+
+registerSessionWorkReset(() => useAgentAiStore.setState({ sessions: {} }));
 
 /** True when a session carries any agent-assist data (drives the ContextPanel transcript tab). */
 export function sessionHasData(session: AgentAiSession | undefined): boolean {

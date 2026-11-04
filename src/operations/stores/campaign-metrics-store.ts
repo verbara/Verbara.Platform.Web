@@ -4,6 +4,7 @@ import {
   type CampaignSummaryStatus,
 } from '@/core/api/hooks/use-campaigns';
 import { onSseEvent } from '@/core/hooks/use-sse';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 
 /**
  * A campaign as the Operations monitor holds it: keyed by its `campaignId` as a string, its status
@@ -78,6 +79,8 @@ export const useCampaignMetricsStore = create<CampaignMetricsState>()((set) => (
       ),
     })),
 }));
+
+registerSessionWorkReset(() => useCampaignMetricsStore.setState({ campaigns: [] }));
 
 // The store feeds itself, from when the monitor's chunk loads (design D5). Nothing counted before
 // that: the list is empty until the first entry, and every entry replaces it with the API's.

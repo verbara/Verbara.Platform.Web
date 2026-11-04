@@ -414,15 +414,12 @@ describe('AuthStore', () => {
     describe('cached current user (me)', () => {
       afterEach(() => vi.restoreAllMocks());
 
-      /** Records the access token held at the moment `['me']` was reset, so a test can tell the
+      /** Records the access token held at the moment the queries were reset, so a test can tell the
        *  refetch it triggers runs as the identity the store now holds. */
       function spyOnMeReset(): { tokens: (string | null)[] } {
         const seen = { tokens: [] as (string | null)[] };
-        vi.spyOn(queryClient, 'resetQueries').mockImplementation(async (filters) => {
-          const key = (filters as { queryKey?: unknown } | undefined)?.queryKey;
-          if (JSON.stringify(key) === JSON.stringify(['me'])) {
-            seen.tokens.push(useAuthStore.getState().accessToken);
-          }
+        vi.spyOn(queryClient, 'resetQueries').mockImplementation(async () => {
+          seen.tokens.push(useAuthStore.getState().accessToken);
         });
         return seen;
       }

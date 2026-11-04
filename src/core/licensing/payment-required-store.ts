@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 import type { PaymentRequiredProblemDetails } from './types';
 
 /**
@@ -36,3 +37,5 @@ export const usePaymentRequiredStore = create<PaymentRequiredState>()((set) => (
   // its close animation without flashing empty content. The next `show` call
   // replaces it.
 }));
+
+registerSessionWorkReset(() => usePaymentRequiredStore.setState({ open: false, current: null }));

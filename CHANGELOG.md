@@ -11,6 +11,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **Signing out or switching identity clears the previous person's conversations from the page.** The console signs out
+  without reloading, so the next person in that tab could see the inbox cards and, for a short while, the History list
+  and transcripts of the one before. Signing out, starting or ending an impersonation and managing another tenant's
+  billing now clear what was loaded and read it again as the new identity. A reply draft stays for the person who typed
+  it and is removed when someone else signs in.
+
 - **This console requires the Platform release that carries Verbara.Platform #539.** The History tab, the read-only
   panel and the conversation thread read that release's `GET /api/v1/contacts/{id}/conversations` page and its
   `GET /api/v1/conversations/{id}/history` route, which an earlier Platform does not have.
@@ -34,6 +40,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   state opens, closed ones included. A refused read shows "You can't read this conversation." in place of the
   transcript, also when the refusal arrives after messages were loaded, on "load earlier messages" or on a refresh. A
   conversation that no longer exists shows "Conversation not found."; other failures keep the messages already loaded.
+  If the panel itself cannot load, for example after a new version was deployed, it says so inside the panel and the
+  workspace stays as it was.
 
 - **The conversation thread opens on the newest messages.** A long conversation used to open on its oldest 50 messages, so
   the newest ones, a transfer note among them, were out of reach. It now opens on the latest page, with "load earlier
@@ -41,7 +49,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   once, in either order, with the server's content.
 
 - **The conversation thread says when it can no longer be read.** After a transfer or a takeover, a refused read shows "You
-  can't read this conversation." in place of the messages, also when the refusal arrives after messages were loaded. A
+  can't read this conversation." in place of the messages, also when the refusal arrives after messages were loaded. While
+  the first read is on its way the thread shows its loading state rather than the messages it holds. A
   conversation Platform no longer has shows "That conversation was not found. It may have ended." The reply box and the
   actions stay. Any other failure keeps the messages on screen.
 

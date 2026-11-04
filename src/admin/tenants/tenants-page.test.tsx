@@ -55,6 +55,10 @@ import { toast } from 'sonner';
 import { customFetch } from '@/core/api/client';
 import { ApiError } from '@/core/api/api-error';
 import { asMock } from '@/tests/utils/as-mock';
+import { useAuthStore } from '@/core/auth/auth-store';
+import { useTenantStore } from '@/core/tenant/tenant-store';
+import { queryClient as appQueryClient } from '@/core/api/query-client';
+import { useConversationStore } from '@/agent/stores/conversation-store';
 import TenantsPage from './tenants-page';
 
 function openCreateSheet() {
@@ -190,5 +194,64 @@ describe('TenantsPage create sheet — host refusal (P2, plan-exceeds-parent)', 
     expect(screen.getByTestId('tenants-create-sheet')).toBeInTheDocument();
     expect(screen.getByTestId('tenants-form-tenantId')).toHaveValue('c2');
     expect(screen.getByTestId('tenants-form-name')).toHaveValue('Customer 2');
+  });
+});
+
+describe('TenantsPage switching the tenant the console works on', () => {
+  function renderPage() {
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter>
+          <TenantsPage />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  }
+
+  const manageBilling = () =>
+    screen.getAllByTitle('tenants.list.actions.manage_billing').find((button) => {
+      return button.closest('tr')?.textContent?.includes('Partner One');
+    });
+
+  beforeEach(() => {
+    useAuthStore.getState().logout();
+    useAuthStore
+      .getState()
+      .setAuth(
+        'token',
+        Date.now() + 60_000,
+        { id: 'u', email: 'a@b.c', displayName: 'A', role: 'admin' },
+        'platform',
+        [],
+        {},
+      );
+    appQueryClient.setQueryData(['contacts', 'c-1', 'conversations'], { pages: [] });
+    useConversationStore.setState({ selectedId: 'conv-1' });
+  });
+
+  afterEach(() => {
+    useAuthStore.getState().logout();
+  });
+
+  it('ManageBilling_ShouldDropWhatTheOtherTenantLoaded_WhenItChangesTheTenant', () => {
+    renderPage();
+
+    fireEvent.click(manageBilling()!);
+
+    expect(useTenantStore.getState().activeTenantId).toBe('p1');
+    expect(appQueryClient.getQueryData(['contacts', 'c-1', 'conversations'])).toBeUndefined();
+    expect(useConversationStore.getState().selectedId).toBeNull();
+  });
+
+  it('ManageBilling_ShouldKeepWhatIsLoaded_WhenTheTenantStaysTheSame', () => {
+    useTenantStore.getState().setActiveTenant('p1');
+    renderPage();
+
+    fireEvent.click(manageBilling()!);
+
+    expect(appQueryClient.getQueryData(['contacts', 'c-1', 'conversations'])).toEqual({
+      pages: [],
+    });
+    expect(useConversationStore.getState().selectedId).toBe('conv-1');
   });
 });

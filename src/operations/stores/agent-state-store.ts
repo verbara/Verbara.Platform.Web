@@ -1,14 +1,8 @@
 import { create } from 'zustand';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 
 export type AgentPresence =
-  | 'available'
-  | 'busy'
-  | 'away'
-  | 'offline'
-  | 'wrap_up'
-  | 'on_break'
-  | 'in_meeting'
-  | 'training';
+  'available' | 'busy' | 'away' | 'offline' | 'wrap_up' | 'on_break' | 'in_meeting' | 'training';
 
 export interface AgentState {
   agentId: string;
@@ -39,3 +33,5 @@ export const useAgentStateStore = create<AgentStateStoreState>()((set) => ({
       ),
     })),
 }));
+
+registerSessionWorkReset(() => useAgentStateStore.setState({ agents: [] }));

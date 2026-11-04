@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 
 function startOfMonth(): string {
   const d = new Date();
@@ -16,7 +17,9 @@ interface AnalyticsFilterState {
   to: string;
   queue: string;
   channel: string;
-  setFilters: (filters: Partial<Pick<AnalyticsFilterState, 'from' | 'to' | 'queue' | 'channel'>>) => void;
+  setFilters: (
+    filters: Partial<Pick<AnalyticsFilterState, 'from' | 'to' | 'queue' | 'channel'>>,
+  ) => void;
   reset: () => void;
 }
 
@@ -28,3 +31,5 @@ export const useAnalyticsFilterStore = create<AnalyticsFilterState>()((set) => (
   setFilters: (filters) => set(filters),
   reset: () => set({ from: startOfMonth(), to: todayStr(), queue: '', channel: '' }),
 }));
+
+registerSessionWorkReset(() => useAnalyticsFilterStore.getState().reset());

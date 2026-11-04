@@ -4,6 +4,7 @@ import {
   registerActiveWorkSource,
   type ActiveWorkSource,
 } from '@/core/session/active-work-registry';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useAgentAiStore } from '@/core/stores/agent-ai-store';
 
@@ -156,6 +157,15 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
     return selectFilteredConversations(conversations, filter);
   },
 }));
+
+registerSessionWorkReset(() =>
+  useConversationStore.setState({
+    conversations: {},
+    messages: {},
+    selectedId: null,
+    filter: 'active',
+  }),
+);
 
 /**
  * A row no `/history` page will ever name, which a read of the page therefore ends, as it always has:
