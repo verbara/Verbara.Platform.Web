@@ -2,7 +2,7 @@ import { queryClient } from '@/core/api/query-client';
 
 /**
  * What one person or tenant leaves in the page. A sign-out or an identity change happens without a
- * reload, so whatever the previous identity loaded would otherwise be drawn for the next one.
+ * reload, so what one identity loaded is cleared before the next one reads.
  *
  * A store registers its own reset when its code loads, as {@link registerActiveWorkSource} does: most
  * stores live in lazy routes, the auth store cannot import them (they reach it back through the request
@@ -11,7 +11,7 @@ import { queryClient } from '@/core/api/query-client';
  */
 const resets = new Set<() => void>();
 
-/** Adds a reset for the rest of the page's life. It runs on sign-out and on every identity change. */
+/** Adds a reset for the rest of the page's life. It runs whenever either function below runs. */
 export function registerSessionWorkReset(reset: () => void): void {
   resets.add(reset);
 }
@@ -21,8 +21,9 @@ function resetStores(): void {
 }
 
 /**
- * Sign-out: nothing is left to read, so no query is read again. A read still in flight is dropped with
- * its query, and its answer reaches no cache. An open page leaves with the route change.
+ * Sign-out, or another user signing in on the sign-in page: no page reading the cache stays open, so no
+ * query is read again. A read still in flight is dropped with its query, and its answer reaches no cache.
+ * An open page leaves with the route change.
  */
 export function clearSessionWork(): void {
   resetStores();

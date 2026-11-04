@@ -180,6 +180,71 @@ describe('signing out', () => {
   });
 });
 
+describe('another person signing in with no sign-out before it', () => {
+  const NEXT_PERSON = { id: 'user-2', email: 'b@b.c', displayName: 'Bea', role: 'agent' } as const;
+
+  function arrive(user: typeof OPERATOR | typeof NEXT_PERSON) {
+    useAuthStore.getState().setAuth('next-token', Date.now() + 3600_000, user, 'tenant-1', [], {});
+  }
+
+  beforeEach(() => {
+    queryClient.clear();
+    signIn();
+    holdWork();
+  });
+
+  afterEach(() => {
+    cleanup();
+    useAuthStore.getState().logout();
+    vi.restoreAllMocks();
+  });
+
+  it('SetAuth_ShouldLeaveTheCacheAndTheStoresEmpty_WhenAnotherUserArrives', () => {
+    arrive(NEXT_PERSON);
+
+    expect(queryClient.getQueryCache().getAll()).toEqual([]);
+    expectNoWorkInStores();
+    expect(useAuthStore.getState().user?.id).toBe(NEXT_PERSON.id);
+    expect(useAuthStore.getState().accessToken).toBe('next-token');
+  });
+
+  it('SetAuth_ShouldDropAReadStillInFlight_WhenAnotherUserArrives', async () => {
+    let answer: (value: string) => void = () => undefined;
+    const read = new Promise<string>((resolve) => {
+      answer = resolve;
+    });
+    const prefetch = queryClient.prefetchQuery({ queryKey: ['late'], queryFn: () => read });
+
+    arrive(NEXT_PERSON);
+    answer('an answer for the other user');
+    await prefetch;
+
+    expect(queryClient.getQueryData(['late'])).toBeUndefined();
+  });
+
+  it('SetAuth_ShouldClearNothing_WhenTheSameUserRefreshes', () => {
+    arrive({ ...OPERATOR });
+
+    expect(queryClient.getQueryData(['messages', 'conv-1', 'history'])).toBeDefined();
+    expect(queryClient.getQueryData(['contacts', 'c-1', 'conversations'])).toBeDefined();
+    expect(useConversationStore.getState().conversations).toEqual({ 'conv-1': heldConversation });
+    expect(useConversationStore.getState().selectedId).toBe('conv-1');
+    expect(useAgentAlertsStore.getState().pendingCount).toBe(1);
+    expect(useQueueMetricsStore.getState().queues).toHaveLength(1);
+    expect(useAuthStore.getState().accessToken).toBe('next-token');
+  });
+
+  it('SetAuth_ShouldClearNothing_WhenNoUserWasHeld', () => {
+    useAuthStore.getState().logout();
+    holdWork();
+
+    arrive(NEXT_PERSON);
+
+    expect(queryClient.getQueryData(['messages', 'conv-1', 'history'])).toBeDefined();
+    expect(useConversationStore.getState().selectedId).toBe('conv-1');
+  });
+});
+
 describe('an impersonation starting or ending', () => {
   beforeEach(() => {
     queryClient.clear();

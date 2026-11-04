@@ -121,7 +121,8 @@ export const useAuthStore = create<AuthState>()(
         permissions,
         features,
         sessionIdleTimeoutMinutes,
-      ) =>
+      ) => {
+        const previousUser = get().user;
         set((state) => ({
           accessToken,
           tokenExpiry,
@@ -137,17 +138,24 @@ export const useAuthStore = create<AuthState>()(
             sessionIdleTimeoutMinutes === undefined
               ? state.sessionIdleTimeoutMinutes
               : sessionIdleTimeoutMinutes,
-        })),
+        }));
+        // A sign-in can follow a session that never signed out: `AuthGuard` sends a failed restore to the
+        // sign-in page with the user still held. A different user id clears the session work, as `logout`
+        // does; the same id, which is every token refresh, clears nothing. Only the id is compared, and the
+        // brand, the tenant store and an impersonation are left as they are.
+        if (previousUser && previousUser.id !== user.id) clearSessionWork();
+      },
       setMfaPending: (mfaToken, email, tenantId) =>
         set({ mfaPending: { mfaToken, email, ...(tenantId && { tenantId }) } }),
       clearMfaPending: () => set({ mfaPending: null }),
       setRememberMe: (value) => set({ rememberMe: value }),
-      // Every sign-out path (the user menu, the session manager, the request client, the realtime
-      // bootstrap) goes through here, so the brand returns to the Verbara defaults here too
+      // The sign-out paths (the user menu, the session manager, the request client, the realtime
+      // bootstrap) go through here, so the brand returns to the Verbara defaults here too
       // (`licensee-branding-in-the-console`, design D2: "Sign-out calls it"). Keying it on the
       // requests' tenant becoming `null` missed the user menu, which navigates without a reload, so
       // the sign-in page kept the old brand. For the same reason what this person loaded is cleared
       // here, and the tenant they worked on: an impersonation never touches that store, a sign-out does.
+      // A failed restore does not come here (`AuthGuard` only redirects); see `setAuth` for that path.
       logout: () => {
         set({
           accessToken: null,
