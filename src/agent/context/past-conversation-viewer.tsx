@@ -1,7 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { MessageBubble } from '@/agent/conversation/message-bubble';
 import { SystemEvent } from '@/agent/conversation/system-event';
-import { isNotReadable, refusalCodeOf } from '@/core/api/conversation-refusals';
+import {
+  isConversationNotFound,
+  isNotReadable,
+  refusalCodeOf,
+} from '@/core/api/conversation-refusals';
 import { useConversation, useMessageHistory } from '@/core/api/hooks/use-conversations';
 import type { PastConversation } from '@/core/api/platform-conversation';
 import { channelLabel } from '@/core/i18n/channel-label';
@@ -60,10 +64,12 @@ export function PastConversationViewer({ conversationId }: { conversationId: str
   const record = useConversation(conversationId);
   const history = useMessageHistory(conversationId);
 
-  // A refusal takes the viewer whatever is cached (spec audit F2). Any other failure only counts when
-  // there is nothing loaded to keep showing.
+  // A refusal or a 404 takes the viewer whatever is cached (spec audit F2, F3), as in the live thread.
+  // Any other failure only counts when there is nothing loaded to keep showing.
+  const errors = [record.error, history.readError, history.nextPageError];
   const failure =
-    [record.error, history.readError, history.nextPageError].find(isNotReadable) ??
+    errors.find(isNotReadable) ??
+    errors.find(isConversationNotFound) ??
     (record.data ? null : record.error) ??
     (history.isLoaded ? null : history.readError);
 

@@ -127,7 +127,10 @@ const OTHER_FAILURES: [string, () => Response][] = [
 ];
 
 /** What `/history` answers now, by page. Replace a member to change the answer of the next read. */
-let answers: { first: () => Response; older: () => Response };
+let answers: {
+  first: () => Response | Promise<Response>;
+  older: () => Response | Promise<Response>;
+};
 let historyReads: (string | null)[];
 let messagesReads: number;
 
@@ -405,6 +408,98 @@ describe('MessageThread on the filtered stream (5.3)', () => {
     expect(container.querySelectorAll(`[data-msg-id="${SECOND_ID}"]`)).toHaveLength(1);
     expect(container.querySelectorAll(`[data-msg-id="${NEWEST_ID}"]`)).toHaveLength(1);
   });
+});
+
+describe('MessageThread while its first read is pending', () => {
+  /** Holds `/history` open until `release` answers it, so a test can look at the pending thread. */
+  function holdTheFirstRead() {
+    let answer: (response: Response) => void = () => undefined;
+    const held = new Promise<Response>((resolve) => {
+      answer = resolve;
+    });
+    answers.first = () => held;
+    return (respond: () => Response) => answer(respond());
+  }
+
+  const drawnRows = (container: HTMLElement) => container.querySelectorAll('[data-msg-id]');
+
+  it('MessageThread_ShouldDrawNoStoreRowOnEitherRead_WhenTheConversationIsRefusedAndTheThreadRemounts', async () => {
+    holdInStore();
+    const release = holdTheFirstRead();
+    const qc = newQueryClient();
+    const first = renderThread(qc);
+
+    expect(drawnRows(first.container)).toHaveLength(0);
+    expect(screen.getByTestId('thread-loading')).toBeInTheDocument();
+    await waitFor(() => expect(historyReads).toHaveLength(1));
+    expect(drawnRows(first.container)).toHaveLength(0);
+
+    release(NOT_READABLE);
+    await screen.findByTestId('read-refusal');
+    expect(drawnRows(first.container)).toHaveLength(0);
+    first.unmount();
+
+    // The query holds a refusal and no data: remounting reads again, with no error while it does.
+    const releaseSecond = holdTheFirstRead();
+    const second = renderThread(qc);
+
+    expect(drawnRows(second.container)).toHaveLength(0);
+    expect(screen.getByTestId('thread-loading')).toBeInTheDocument();
+    await waitFor(() => expect(historyReads).toHaveLength(2));
+    expect(drawnRows(second.container)).toHaveLength(0);
+
+    releaseSecond(NOT_READABLE);
+    await screen.findByTestId('read-refusal');
+    expect(drawnRows(second.container)).toHaveLength(0);
+    expect(bucketIds()).toEqual([storedRow.id]);
+  });
+
+  it('MessageThread_ShouldDrawTheStoreRows_WhenTheFirstReadIsAllowed', async () => {
+    holdInStore();
+    const release = holdTheFirstRead();
+    const { container } = renderThread(newQueryClient());
+    await waitFor(() => expect(historyReads).toHaveLength(1));
+
+    release(page(historyEmptyPage));
+
+    await waitFor(() => expect(drawnRows(container)).toHaveLength(1));
+    expect(screen.queryByTestId('thread-loading')).toBeNull();
+  });
+
+  it('MessageThread_ShouldKeepALiveMessage_WhenItArrivesDuringTheFirstRead', async () => {
+    act(() =>
+      sseHandlers['conversation.offered']!({
+        conversationId: CONVERSATION_ID,
+        channel: 'WhatsApp',
+      }),
+    );
+    const release = holdTheFirstRead();
+    const { container } = renderThread(newQueryClient());
+    await waitFor(() => expect(historyReads).toHaveLength(1));
+
+    liveEvent('Inbound', 'live-1', 'Hello during the read');
+    expect(drawnRows(container)).toHaveLength(0);
+
+    release(page(historyEmptyPage));
+
+    expect(await screen.findByText('Hello during the read')).toBeInTheDocument();
+    expect(bucketIds()).toEqual(['live-1']);
+  });
+
+  it.each(OTHER_FAILURES)(
+    'MessageThread_ShouldLeaveTheStoreRowsOnScreen_WhenTheFirstReadAnswers %s',
+    async (_name, failure) => {
+      holdInStore();
+      const release = holdTheFirstRead();
+      const { container } = renderThread(newQueryClient());
+      await waitFor(() => expect(historyReads).toHaveLength(1));
+
+      release(failure);
+
+      await waitFor(() => expect(drawnRows(container)).toHaveLength(1));
+      expect(screen.queryByTestId('thread-loading')).toBeNull();
+    },
+  );
 });
 
 describe('MessageThread refusals (5.4, spec audit F2 and F3)', () => {

@@ -6,6 +6,7 @@ import {
   type InfiniteData,
 } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { useReadRetry } from '@/core/api/read-retry';
 import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformContact } from '@/core/api/platform-conversation';
 import { useTranslation } from 'react-i18next';
@@ -68,6 +69,7 @@ function summariesOf(
 
 /** A contact's conversations, newest first; `fetchNextPage` appends the next page while there is one. */
 export function useContactConversations(contactId: string | undefined) {
+  const retry = useReadRetry();
   return useInfiniteQuery({
     queryKey: ['contacts', contactId, 'conversations'],
     queryFn: ({ pageParam }) =>
@@ -80,6 +82,7 @@ export function useContactConversations(contactId: string | undefined) {
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.page + 1 : undefined),
     select: summariesOf,
     enabled: !!contactId,
+    retry,
   });
 }
 

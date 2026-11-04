@@ -614,7 +614,6 @@ describe('ConversationHistory', () => {
 
     it.each([
       ['500', SERVER_ERROR],
-      ['404', NOT_FOUND],
       ['403 with another code', () => new ApiError(403, { error: 'not-owner' })],
     ])(
       'ConversationHistory_ShouldKeepTheRowsAndTheControl_WhenANextPageAnswers %s',
@@ -635,7 +634,6 @@ describe('ConversationHistory', () => {
 
     it.each([
       ['500', SERVER_ERROR],
-      ['404', NOT_FOUND],
       ['403 with another code', () => new ApiError(403, { error: 'not-owner' })],
     ])('ConversationHistory_ShouldKeepTheRows_WhenARefetchAnswers %s', async (_n, err) => {
       const answers: Record<string, Answer> = { [LIST_URL]: contactSummaryPage };
@@ -650,6 +648,34 @@ describe('ConversationHistory', () => {
       await waitFor(() => expect(requestsTo(LIST_URL).length).toBeGreaterThan(1));
       expect(rows()).toHaveLength(3);
       expect(screen.queryByTestId('read-refusal')).toBeNull();
+    });
+  });
+
+  describe('a 404 once the rows are on screen', () => {
+    it('ConversationHistory_ShouldReplaceTheRowsWithTheEmptyText_WhenARefetchAnswers404', async () => {
+      const answers: Record<string, Answer> = { [LIST_URL]: contactSummaryPage };
+      serve(answers);
+      selectConversation();
+      const qc = renderTab();
+      await waitFor(() => expect(rows()).toHaveLength(3));
+
+      answers[LIST_URL] = NOT_FOUND;
+      await qc.invalidateQueries({ queryKey: ['contacts', CONTACT_ID, 'conversations'] });
+
+      await waitFor(() => expect(rows()).toHaveLength(0));
+      expect(screen.getByText(enAgent.context.no_history)).toBeInTheDocument();
+      expect(screen.queryByTestId('history-more')).toBeNull();
+    });
+
+    it('ConversationHistory_ShouldReplaceTheRowsWithTheEmptyText_WhenANextPageAnswers404', async () => {
+      servePages({ 1: contactSummaryFirstOfTwoPages, 2: NOT_FOUND });
+      selectConversation();
+      renderTab();
+
+      fireEvent.click(await screen.findByTestId('history-more'));
+
+      await waitFor(() => expect(rows()).toHaveLength(0));
+      expect(screen.getByText(enAgent.context.no_history)).toBeInTheDocument();
     });
   });
 

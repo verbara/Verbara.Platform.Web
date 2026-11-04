@@ -426,7 +426,6 @@ describe('PastConversationViewer', () => {
 
     it.each([
       ['a server error', SERVER_ERROR, 'read-failed'],
-      ['a 404', NOT_FOUND, '404'],
       ['a 403 of another code', OTHER_FORBIDDEN, 'read-failed'],
     ])(
       'PastConversationViewer_ShouldKeepTheMessagesAndTheControl_WhenANextPageAnswers %s',
@@ -457,9 +456,14 @@ describe('PastConversationViewer', () => {
   });
 
   describe('refusal and not-found states', () => {
-    function expectRefusalAlone(refusal: HTMLElement) {
-      expect(refusal).toHaveAttribute('data-refusal', 'not-readable');
-      expect(refusal).toHaveTextContent(enAgent.history.errors.not_readable);
+    function expectRefusalAlone(
+      refusal: HTMLElement,
+      code: 'not-readable' | '404' = 'not-readable',
+    ) {
+      expect(refusal).toHaveAttribute('data-refusal', code);
+      expect(refusal).toHaveTextContent(
+        code === '404' ? enAgent.history.errors.not_found : enAgent.history.errors.not_readable,
+      );
       expect(shownMessageIds()).toEqual([]);
       expect(screen.queryByTestId('history-viewer-state')).not.toBeInTheDocument();
       expect(screen.queryByTestId('history-viewer-created-at')).not.toBeInTheDocument();
@@ -513,7 +517,6 @@ describe('PastConversationViewer', () => {
 
     it.each([
       ['a server error', SERVER_ERROR],
-      ['a 404', NOT_FOUND],
       ['a 403 of another code', OTHER_FORBIDDEN],
     ])(
       'PastConversationViewer_ShouldKeepTheTranscript_WhenARefetchAnswers %s',
@@ -537,6 +540,32 @@ describe('PastConversationViewer', () => {
         expect(shownMessageIds()).toEqual([SECOND_ID, NEWEST_ID]);
         expect(screen.getByTestId('history-viewer-state')).toBeInTheDocument();
         expect(screen.queryByTestId('read-refusal')).not.toBeInTheDocument();
+      },
+    );
+
+    it('PastConversationViewer_ShouldShowNotFoundAlone_WhenANextPageAnswers404', async () => {
+      answers.olderPage = NOT_FOUND;
+      await openViewer();
+
+      fireEvent.click(await screen.findByTestId('history-load-earlier'));
+
+      expectRefusalAlone(await refusalShown(), '404');
+    });
+
+    it.each([
+      ['the record', ['conversations', VIEWED_ID], 'record' as const],
+      ['the transcript', ['messages', VIEWED_ID, 'history'], 'firstPage' as const],
+    ])(
+      'PastConversationViewer_ShouldShowNotFoundAlone_WhenARefetchOf %s answers 404',
+      async (_name, queryKey, read) => {
+        const qc = await openViewer();
+        await waitFor(() => expect(shownMessageIds()).toHaveLength(2));
+        await screen.findByTestId('history-viewer-state');
+
+        answers[read] = NOT_FOUND;
+        await refetchAndSettle(qc, queryKey);
+
+        expectRefusalAlone(await refusalShown(), '404');
       },
     );
 

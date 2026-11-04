@@ -20,6 +20,7 @@ import {
   conversationRefusals,
   refusalCodeOf,
 } from '@/core/api/conversation-refusals';
+import { useReadRetry } from '@/core/api/read-retry';
 import { toastApiError } from '@/core/api/toast-api-error';
 
 /**
@@ -97,6 +98,7 @@ export function useConversations(filter?: {
 }
 
 export function useConversation(id: string | undefined) {
+  const retry = useReadRetry();
   return useQuery({
     queryKey: ['conversations', id],
     queryFn: async () =>
@@ -107,6 +109,7 @@ export function useConversation(id: string | undefined) {
         }),
       ),
     enabled: !!id,
+    retry,
   });
 }
 
@@ -139,6 +142,7 @@ const NO_MESSAGES: Message[] = [];
  * leaves the loaded messages in place. Only one of the two is ever set.
  */
 export function useMessageHistory(conversationId: string | undefined) {
+  const retry = useReadRetry();
   const query = useInfiniteQuery({
     queryKey: ['messages', conversationId, 'history'],
     queryFn: ({ pageParam }) =>
@@ -152,6 +156,7 @@ export function useMessageHistory(conversationId: string | undefined) {
       lastPage.hasMore ? (lastPage.nextBefore ?? undefined) : undefined,
     select: transcriptOf,
     enabled: !!conversationId,
+    retry,
   });
   return {
     messages: query.data ?? NO_MESSAGES,
@@ -198,8 +203,11 @@ export function useAcceptConversation() {
         url: `/api/v1/conversations/${id}/accept`,
         method: 'POST',
       }),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
+      // The stream carries only what arrived while the offer was the agent's, so a mounted thread reads
+      // what it did not deliver now, not at its next read.
+      qc.invalidateQueries({ queryKey: ['messages', id] });
       // Accepting opens the contact's history to the agent (a mounted History tab sits on its 403 until
       // then) and changes `heldByCaller`. The mutation knows the conversation, not its contact.
       qc.invalidateQueries({ predicate: isContactConversationsQuery });

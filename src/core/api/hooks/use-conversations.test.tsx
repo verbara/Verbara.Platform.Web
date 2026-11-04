@@ -397,6 +397,25 @@ describe('useAcceptConversation', () => {
     expect(invalidated(['contacts', 'contact-1'])).toBe(false);
   });
 
+  it('useAcceptConversation_ShouldInvalidateTheConversationsMessagesAndNoOthers_WhenItSucceeds', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+    const qc = new QueryClient();
+    qc.setQueryData(['messages', 'conv-1', 'history'], { pages: [], pageParams: [] });
+    qc.setQueryData(['messages', 'conv-2', 'history'], { pages: [], pageParams: [] });
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useAcceptConversation(), { wrapper: Wrapper });
+
+    act(() => {
+      result.current.mutate('conv-1');
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(qc.getQueryState(['messages', 'conv-1', 'history'])?.isInvalidated).toBe(true);
+    expect(qc.getQueryState(['messages', 'conv-2', 'history'])?.isInvalidated).toBe(false);
+  });
+
   it('useAcceptConversation_ShouldLeaveTheContactHistoryAlone_WhenItFails', async () => {
     vi.mocked(client.customFetch).mockRejectedValue(new Error('Failed'));
     const qc = new QueryClient();
@@ -591,5 +610,67 @@ describe('useCreateConversation', () => {
       result.current.mutate({ contactId: 'contact-1', channel: 'chat' });
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('the conversation reads and the app-wide retry', () => {
+  /** The app's `retry: 1`, with no delay: what is under test is whether a second read goes out. */
+  function appWideRetryWrapper({ children }: { children: React.ReactNode }) {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, retryDelay: 0 } } });
+    return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['403', 403],
+    ['404', 404],
+  ])('useMessageHistory_ShouldReadOnce_WhenTheAnswerIs %s', async (_name, status) => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(status, notReadableRefusal));
+    const { result } = renderHook(() => useMessageHistory('conv-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.readError).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['403', 403],
+    ['404', 404],
+  ])('useConversation_ShouldReadOnce_WhenTheAnswerIs %s', async (_name, status) => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(status, notReadableRefusal));
+    const { result } = renderHook(() => useConversation('conv-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('useMessageHistory_ShouldKeepTheAppWideRetry_WhenTheAnswerIsAnyOtherError', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(500, null));
+    const { result } = renderHook(() => useMessageHistory('conv-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.readError).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('useConversation_ShouldKeepTheAppWideRetry_WhenTheAnswerIsAnyOtherError', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(500, null));
+    const { result } = renderHook(() => useConversation('conv-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(2);
   });
 });

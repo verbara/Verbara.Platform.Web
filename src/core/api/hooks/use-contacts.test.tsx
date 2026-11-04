@@ -221,3 +221,40 @@ describe('use-contacts', () => {
     });
   });
 });
+
+describe('useContactConversations and the app-wide retry', () => {
+  /** The app's `retry: 1`, with no delay: what is under test is whether a second read goes out. */
+  function appWideRetryWrapper({ children }: { children: React.ReactNode }) {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, retryDelay: 0 } } });
+    return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['403', 403],
+    ['404', 404],
+  ])('useContactConversations_ShouldReadOnce_WhenTheAnswerIs %s', async (_name, status) => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(status, notReadableRefusal));
+    const { result } = renderHook(() => useContactConversations('contact-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('useContactConversations_ShouldKeepTheAppWideRetry_WhenTheAnswerIsAnyOtherError', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(500, null));
+    const { result } = renderHook(() => useContactConversations('contact-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(2);
+  });
+});

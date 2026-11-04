@@ -2,8 +2,7 @@ import { lazy, Suspense, useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Clock, MessageSquare, User, XIcon } from 'lucide-react';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-import { isApiError } from '@/core/api/api-error';
-import { isNotReadable } from '@/core/api/conversation-refusals';
+import { isConversationNotFound, isNotReadable } from '@/core/api/conversation-refusals';
 import type { components } from '@/core/api/generated/openapi';
 import { useContactConversations } from '@/core/api/hooks/use-contacts';
 import { useConversation } from '@/core/api/hooks/use-conversations';
@@ -15,6 +14,7 @@ import { Sheet, SheetClose, SheetContent } from '@/core/ui/sheet';
 import { Skeleton } from '@/core/ui/skeleton';
 import { blockTypeLabelKey, closedReasonLabelKey, stateLabelKey } from './history-labels';
 import { ReadRefusal } from './read-refusal';
+import { ViewerLoadBoundary } from './viewer-load-boundary';
 
 // Out of the console's first load (W5): the agent-closure guard measures it, and this is its chunk.
 const PastConversationViewer = lazy(() =>
@@ -172,9 +172,11 @@ export function ConversationHistory() {
 
   // A refusal takes the tab whatever else is cached (spec audit F2).
   const refusal = [record.error, list.error].find(isNotReadable);
+  // A 404 takes it whatever is cached too, as in the live thread: the rows are gone from Platform.
+  const notFound = [record.error, list.error].some(isConversationNotFound);
 
   // The viewer belongs to the list it was opened from: it does not outlive the selection or the list.
-  if (viewing && (viewing.openedFrom !== selectedId || refusal)) setViewing(null);
+  if (viewing && (viewing.openedFrom !== selectedId || refusal || notFound)) setViewing(null);
 
   if (refusal) return <ReadRefusal error={refusal} />;
 
@@ -193,15 +195,11 @@ export function ConversationHistory() {
     </div>
   );
 
+  if (notFound) return emptyHistory;
+
   // Any other failure only counts when there is nothing loaded to keep showing.
   const failure = list.data ? null : (list.error ?? (contactId ? null : record.error));
-  if (failure) {
-    return isApiError(failure) && failure.status === 404 ? (
-      emptyHistory
-    ) : (
-      <ReadRefusal error={failure} />
-    );
-  }
+  if (failure) return <ReadRefusal error={failure} />;
 
   const history = list.data ?? [];
   if (history.length === 0) return emptyHistory;
@@ -246,16 +244,18 @@ export function ConversationHistory() {
           >
             <XIcon />
           </SheetClose>
-          <Suspense
-            fallback={
-              <div data-testid="history-viewer-loading" className="space-y-2 p-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            }
-          >
-            {viewing && <PastConversationViewer conversationId={viewing.id} />}
-          </Suspense>
+          <ViewerLoadBoundary key={viewing?.id}>
+            <Suspense
+              fallback={
+                <div data-testid="history-viewer-loading" className="space-y-2 p-4">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              }
+            >
+              {viewing && <PastConversationViewer conversationId={viewing.id} />}
+            </Suspense>
+          </ViewerLoadBoundary>
         </SheetContent>
       </Sheet>
     </div>

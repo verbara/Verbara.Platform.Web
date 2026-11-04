@@ -10,6 +10,7 @@ import {
 } from '@/core/api/conversation-refusals';
 import { useMessageHistory } from '@/core/api/hooks/use-conversations';
 import { Button } from '@/core/ui/button';
+import { Skeleton } from '@/core/ui/skeleton';
 import { VirtualList } from '@/core/ui/virtual-list';
 import { MessageBubble } from './message-bubble';
 import { SystemEvent } from './system-event';
@@ -64,6 +65,17 @@ export function MessageThread({ conversationId }: { conversationId: string }) {
         className="flex flex-1 items-center justify-center px-4 py-4 text-sm text-slate-500"
       >
         {t(CONVERSATION_NOT_FOUND_KEY)}
+      </div>
+    );
+  }
+
+  // Whether this conversation may be read at all is not known yet, so nothing of the store is drawn.
+  // Any other failure of the first read leaves the store's messages on screen, below.
+  if (!history.isLoaded && !history.readError) {
+    return (
+      <div data-testid="thread-loading" className="flex-1 space-y-2 px-4 py-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
       </div>
     );
   }
