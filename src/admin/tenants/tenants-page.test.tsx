@@ -58,7 +58,7 @@ import { asMock } from '@/tests/utils/as-mock';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { queryClient as appQueryClient } from '@/core/api/query-client';
-import { useConversationStore } from '@/agent/stores/conversation-store';
+import { useAgentAlertsStore } from '@/core/stores/agent-alerts-store';
 import TenantsPage from './tenants-page';
 
 function openCreateSheet() {
@@ -226,7 +226,7 @@ describe('TenantsPage switching the tenant the console works on', () => {
         {},
       );
     appQueryClient.setQueryData(['contacts', 'c-1', 'conversations'], { pages: [] });
-    useConversationStore.setState({ selectedId: 'conv-1' });
+    useAgentAlertsStore.getState().increment();
   });
 
   afterEach(() => {
@@ -240,7 +240,7 @@ describe('TenantsPage switching the tenant the console works on', () => {
 
     expect(useTenantStore.getState().activeTenantId).toBe('p1');
     expect(appQueryClient.getQueryData(['contacts', 'c-1', 'conversations'])).toBeUndefined();
-    expect(useConversationStore.getState().selectedId).toBeNull();
+    expect(useAgentAlertsStore.getState().pendingCount).toBe(0);
   });
 
   it('ManageBilling_ShouldKeepWhatIsLoaded_WhenTheTenantStaysTheSame', () => {
@@ -252,6 +252,6 @@ describe('TenantsPage switching the tenant the console works on', () => {
     expect(appQueryClient.getQueryData(['contacts', 'c-1', 'conversations'])).toEqual({
       pages: [],
     });
-    expect(useConversationStore.getState().selectedId).toBe('conv-1');
+    expect(useAgentAlertsStore.getState().pendingCount).toBe(1);
   });
 });
