@@ -324,7 +324,18 @@ test.describe('Contact history by assignment (full stack)', () => {
         isGet(r, `/api/v1/conversations/${closedId}/history`),
       );
       await closedRow.click();
-      expect((await viewerRead).status(), 'the holder reads the closed transcript').toBe(200);
+      const firstPage = await viewerRead;
+      expect(firstPage.status(), 'the holder reads the closed transcript').toBe(200);
+      // Paging, as the wire shows it: the list is virtualized, so what is not in the DOM proves nothing.
+      const firstPageBody = (await firstPage.json()) as {
+        items: { messageId: unknown }[];
+        hasMore: boolean;
+      };
+      expect(firstPageBody.hasMore, 'an older page is left').toBe(true);
+      expect(
+        firstPageBody.items.map((item) => idOf(item.messageId)),
+        'the first page stops short of the oldest message',
+      ).not.toContain(oldestClosedMessage);
 
       const viewer = holderPage.getByTestId('history-viewer');
       await expect(viewer).toHaveAttribute('data-conversation-id', closedId, {
@@ -336,7 +347,6 @@ test.describe('Contact history by assignment (full stack)', () => {
           `[data-testid="history-viewer-message"][data-message-id="${newestClosedMessage}"]`,
         ),
       ).toBeVisible({ timeout: LIST_TIMEOUT });
-      await expect(viewer.locator(`[data-message-id="${oldestClosedMessage}"]`)).toHaveCount(0);
 
       const loadEarlier = viewer.getByTestId('history-load-earlier');
       const earlierRead = holderPage.waitForResponse(
