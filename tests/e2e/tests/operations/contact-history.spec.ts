@@ -347,6 +347,10 @@ test.describe('Contact history by assignment (full stack)', () => {
       await loadEarlier.click();
       expect((await earlierRead).status(), 'the earlier page').toBe(200);
       await expect(loadEarlier).toHaveCount(0, { timeout: LIST_TIMEOUT });
+      // The list keeps the agent's place when a page lands above it, so the oldest is a scroll away.
+      await viewer.locator('[data-virtual-scroller]').evaluate((list) => {
+        list.scrollTop = 0;
+      });
       await expect(
         viewer.locator(
           `[data-testid="history-viewer-message"][data-message-id="${oldestClosedMessage}"]`,
