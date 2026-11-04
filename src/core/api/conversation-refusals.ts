@@ -190,6 +190,17 @@ export const conversationReadRefusals: ApiErrorMap = {
 };
 
 /**
+ * The workspace's "that conversation was not found" text (W10): the live thread on a 404 from `/history`,
+ * and the panel when the store has no entry. The viewer has its own, `agent:history.errors.not_found`.
+ */
+export const CONVERSATION_NOT_FOUND_KEY = 'common:errors.supervisor_listen.conversation_not_found';
+
+/** A 404: Platform has no such conversation in this tenant, whatever page was being read. */
+export function isConversationNotFound(err: unknown): boolean {
+  return isApiError(err) && err.status === 404;
+}
+
+/**
  * A 403 `not-readable`: the agent may not read this conversation or contact now. It takes the surface
  * whatever the fetch phase (first page, next page or refetch), because Platform applies its read rule
  * on every request and cached content would still show what the agent can no longer read.

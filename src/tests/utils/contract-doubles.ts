@@ -384,6 +384,12 @@ export const historyEmptyPage: Schemas['MessageHistoryPageDto'] = {
   hasMore: false,
 };
 
+/** A one-page transcript holding `transferNoteMessage`, for the thread's stored-note case. */
+export const historyTransferNotePage: Schemas['MessageHistoryPageDto'] = {
+  items: [transferNoteMessage],
+  hasMore: false,
+};
+
 /** The body of `conversation-by-id-terminal.v1.json`: a closed conversation read by id. */
 export const terminalConversation: Schemas['Conversation'] = {
   conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
@@ -451,3 +457,149 @@ export const notReadableRefusal: Schemas['ErrorResponse'] = { error: 'not-readab
 
 /** The 400 body of `conversation-message-history.v1.json` `invalidCursor`. */
 export const invalidCursorRefusal: Schemas['ErrorResponse'] = { error: 'invalid-cursor' };
+
+/** The `metadata` every SSE frame of the two fixtures below carries, with its `occurredAt`. */
+interface SseFrameMetadata {
+  tenantId: string;
+  occurredAt: string;
+}
+
+/**
+ * `data` of a `conversation.message` frame, as `conversation-message-event.v1.json` pins it. No generated
+ * schema covers SSE data, so this names the frame's members (W11).
+ */
+export interface ConversationMessageFrameData {
+  conversationId: string;
+  messageId: string;
+  sender: string;
+  text: string;
+  tenantId: string;
+  type: string;
+  timestamp: string;
+  eventType: string;
+  metadata: SseFrameMetadata;
+}
+
+/**
+ * `frame.data` of the fixture: the live copy of `historyNewestMessage` (`identityWithHistory`). Its
+ * `text` is the channel name, not the message (`_observedOnMain` (1)).
+ */
+export const conversationMessageFrame: ConversationMessageFrameData = {
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  messageId: 'm-0003-b1c2d3e4f5a6b7c8',
+  sender: 'Outbound',
+  text: 'WhatsApp',
+  tenantId: 'demo',
+  type: 'conversation.message',
+  timestamp: '2026-11-03T10:42:07.512+00:00',
+  eventType: 'conversation.message',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:42:07.512+00:00' },
+};
+
+/**
+ * A `TypingIndicator` frame: `messageId` `""` (`identityWithHistory.exception`) and the channel name in
+ * `text` (`fields.text`). The fixture has no such frame, so its other values are the frame's above.
+ */
+export const typingIndicatorFrame: ConversationMessageFrameData = {
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  messageId: '',
+  sender: 'TypingIndicator',
+  text: 'WhatsApp',
+  tenantId: 'demo',
+  type: 'conversation.message',
+  timestamp: '2026-11-03T10:42:07.512+00:00',
+  eventType: 'conversation.message',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:42:07.512+00:00' },
+};
+
+/** What the four `agentassist.*` frames of `agentassist-events.v1.json` share. */
+interface AgentAssistFrameData {
+  sessionId: string;
+  agentId: string;
+  conversationId: string;
+  tenantId: string;
+  type: string;
+  timestamp: string;
+  eventType: string;
+  metadata: SseFrameMetadata;
+}
+
+/** `events["agentassist.suggestion"].data`. */
+export const agentAssistSuggestionFrame: AgentAssistFrameData & {
+  suggestionId: string;
+  text: string;
+  priority: string;
+  source: string;
+} = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  suggestionId: 'sg-01',
+  text: 'Offer to resend the replacement card tracking number.',
+  priority: 'Important',
+  source: 'Keyword',
+  tenantId: 'demo',
+  type: 'agentassist.suggestion',
+  timestamp: '2026-11-03T10:43:01.004+00:00',
+  eventType: 'agentassist.suggestion',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:01.004+00:00' },
+};
+
+/** `events["agentassist.sentiment"].data`. */
+export const agentAssistSentimentFrame: AgentAssistFrameData & {
+  speaker: string;
+  score: number;
+  label: string;
+  triggerWords: string[];
+} = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  speaker: 'Caller',
+  score: -0.62,
+  label: 'Frustrated',
+  triggerWords: ['again', 'third time'],
+  tenantId: 'demo',
+  type: 'agentassist.sentiment',
+  timestamp: '2026-11-03T10:43:02.31+00:00',
+  eventType: 'agentassist.sentiment',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:02.31+00:00' },
+};
+
+/** `events["agentassist.compliance_alert"].data`. */
+export const agentAssistComplianceAlertFrame: AgentAssistFrameData & {
+  ruleId: string;
+  phrase: string;
+  severity: string;
+} = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  ruleId: 'cr-identity-check',
+  phrase: 'full card number',
+  severity: 'Warning',
+  tenantId: 'demo',
+  type: 'agentassist.compliance_alert',
+  timestamp: '2026-11-03T10:43:03.777+00:00',
+  eventType: 'agentassist.compliance_alert',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:03.777+00:00' },
+};
+
+/** `events["agentassist.transcript"].data`. */
+export const agentAssistTranscriptFrame: AgentAssistFrameData & {
+  speaker: string;
+  text: string;
+  isFinal: boolean;
+} = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  speaker: 'Caller',
+  text: 'This is the third time I am calling about the card.',
+  isFinal: true,
+  tenantId: 'demo',
+  type: 'agentassist.transcript',
+  timestamp: '2026-11-03T10:43:00.12+00:00',
+  eventType: 'agentassist.transcript',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:00.12+00:00' },
+};

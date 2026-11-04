@@ -110,21 +110,6 @@ export function useConversation(id: string | undefined) {
   });
 }
 
-export function useMessages(conversationId: string | undefined) {
-  return useQuery({
-    queryKey: ['messages', conversationId],
-    queryFn: async () => {
-      const messages = await customFetch<components['schemas']['Message'][]>({
-        url: `/api/v1/conversations/${conversationId}/messages`,
-        method: 'GET',
-        params: { limit: '50', offset: '0' },
-      });
-      return messages.map(mapPlatformMessage);
-    },
-    enabled: !!conversationId,
-  });
-}
-
 type MessageHistoryPage = components['schemas']['MessageHistoryPageDto'];
 
 /** The loaded pages as one transcript, oldest at the top, each `messageId` once. */

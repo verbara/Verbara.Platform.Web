@@ -8,7 +8,13 @@ import {
 } from './conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { mapPlatformMessage } from '@/core/api/platform-message';
-import { transferNoteMessage } from '@/tests/utils/contract-doubles';
+import {
+  conversationMessageFrame,
+  historyFirstPage,
+  historyOlderPage,
+  transferNoteMessage,
+  typingIndicatorFrame,
+} from '@/tests/utils/contract-doubles';
 
 const { sseHandlers } = vi.hoisted(() => ({
   sseHandlers: {} as Record<string, (data: unknown) => void>,
@@ -367,6 +373,161 @@ describe('ConversationStore', () => {
       ['Ana Pereira', 'customer'],
     ])('LiveMessage_ShouldKeepItsMapping_WhenTheSenderIs_%s', (sender, mapped) => {
       expect(receive(sender)).toMatchObject({ sender: mapped, senderName: sender, type: 'text' });
+    });
+  });
+
+  /** W8: the `/history` rows and the live frames of one message, in both arrival orders. */
+  describe('one message from /history and from the stream', () => {
+    beforeAll(() => initConversationSSE());
+
+    const CONVERSATION_ID = conversationMessageFrame.conversationId;
+    const NEWEST_ID = conversationMessageFrame.messageId;
+    const firstPage = historyFirstPage.items.map(mapPlatformMessage).reverse();
+    const [secondRow, newestRow] = firstPage as [Message, Message];
+    const olderRow = mapPlatformMessage(historyOlderPage.items[0]!);
+
+    const frame = (data: unknown) => sseHandlers['conversation.message']!(data);
+    const rest = (messages: Message[]) =>
+      useConversationStore.getState().mergeMessages(CONVERSATION_ID, messages);
+    const rows = () => useConversationStore.getState().messages[CONVERSATION_ID] ?? [];
+    const ids = () => rows().map((m) => m.id);
+
+    it('addMessage_ShouldKeepOneRowWithTheHistoryContent_WhenTheFrameFollowsTheHistoryRow', () => {
+      rest(firstPage);
+
+      frame(conversationMessageFrame);
+
+      expect(rows().filter((m) => m.id === NEWEST_ID)).toEqual([newestRow]);
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
+    });
+
+    it('mergeMessages_ShouldReplaceTheLiveRow_WhenTheHistoryRowFollowsTheFrame', () => {
+      frame(conversationMessageFrame);
+      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: 'WhatsApp', sender: 'customer' });
+
+      rest(firstPage);
+
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
+      expect(rows()[1]).toEqual(newestRow);
+      expect(rows()[1]?.sender).toBe('agent');
+    });
+
+    it('mergeMessages_ShouldPlaceAnOlderPageAbove_WhenItIsLoadedLater', () => {
+      rest(firstPage);
+
+      rest([olderRow, ...firstPage]);
+
+      expect(ids()).toEqual([olderRow.id, secondRow.id, NEWEST_ID]);
+    });
+
+    it('mergeMessages_ShouldKeepALiveRowThePageDoesNotHold_AtItsTime', () => {
+      const live = makeMessage({
+        id: 'live-1',
+        conversationId: CONVERSATION_ID,
+        timestamp: '2026-11-03T10:42:07.512+00:00',
+      });
+      useConversationStore.getState().addMessage(CONVERSATION_ID, live);
+
+      rest(firstPage);
+
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID, 'live-1']);
+      expect(rows()[2]).toBe(live);
+    });
+
+    it('mergeMessages_ShouldDuplicateNothing_WhenTheSamePageArrivesAgain', () => {
+      rest(firstPage);
+
+      rest(firstPage);
+
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
+    });
+
+    it('mergeMessages_ShouldOrderByInstant_WhenTheOffsetsDiffer', () => {
+      const ten = makeMessage({ id: 'at-ten', timestamp: '2026-11-03T10:00:00.000+00:00' });
+      const nine = makeMessage({ id: 'at-nine', timestamp: '2026-11-03T10:00:00.000+01:00' });
+
+      rest([ten, nine]);
+
+      expect(ids()).toEqual(['at-nine', 'at-ten']);
+    });
+
+    it('mergeMessages_ShouldNotLeaveTheComposersPendingRow_WhenThePageHoldsTheSentMessage', () => {
+      const pending = makeMessage({
+        id: 'msg-1762167727000-abcde',
+        conversationId: CONVERSATION_ID,
+        sender: 'agent',
+        status: 'sending',
+        timestamp: '2026-11-03T10:42:07.000+00:00',
+      });
+      useConversationStore.getState().addMessage(CONVERSATION_ID, pending);
+      frame(conversationMessageFrame);
+
+      rest(firstPage);
+
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
+    });
+
+    it('addMessage_ShouldLeaveTheRowsAndAppend_WhenTwoTypingFramesHaveNoId', () => {
+      rest(firstPage);
+      const before = rows();
+
+      frame(typingIndicatorFrame);
+      frame(typingIndicatorFrame);
+
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID, '', '']);
+      expect(rows()[0]).toBe(before[0]);
+      expect(rows()[1]).toBe(before[1]);
+    });
+
+    it('addMessage_ShouldAppendARowWithNoId_WhenItIsNotATypingFrame', () => {
+      frame({ ...typingIndicatorFrame, sender: 'Inbound' });
+      frame({ ...typingIndicatorFrame, sender: 'Inbound' });
+
+      expect(ids()).toEqual(['', '']);
+    });
+
+    it('mergeMessages_ShouldClearTypingRowsAndKeepAnyOtherRowWithNoId_WhenThePageArrives', () => {
+      frame(typingIndicatorFrame);
+      frame({ ...typingIndicatorFrame, sender: 'Inbound', text: 'A row with no id' });
+
+      rest(firstPage);
+
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID, '']);
+      expect(rows()[2]?.text).toBe('A row with no id');
+    });
+  });
+
+  /** W13: what the filtered server delivers, per the `recipients` table of the message fixture. */
+  describe('on the filtered stream', () => {
+    beforeAll(() => initConversationSSE());
+
+    it('Store_ShouldHoldTheOfferedConversationsMessage_WhenTheOfferedAgentReceivesIt', () => {
+      sseHandlers['conversation.offered']!({
+        conversationId: conversationMessageFrame.conversationId,
+        channel: 'WhatsApp',
+      });
+
+      sseHandlers['conversation.message']!(conversationMessageFrame);
+
+      const { conversations, messages } = useConversationStore.getState();
+      expect(conversations[conversationMessageFrame.conversationId]?.state).toBe('offered');
+      expect(messages[conversationMessageFrame.conversationId]).toHaveLength(1);
+    });
+
+    it('Store_ShouldHoldMessagesOfNoOtherConversation_WhenOnlyOwnedAndOfferedFramesArrive', () => {
+      const owned = 'owned-conversation';
+      const offered = conversationMessageFrame.conversationId;
+      useConversationStore.setState({
+        conversations: { [owned]: makeConversation({ id: owned }) },
+      });
+      sseHandlers['conversation.offered']!({ conversationId: offered, channel: 'WhatsApp' });
+
+      sseHandlers['conversation.message']!({ ...conversationMessageFrame, conversationId: owned });
+      sseHandlers['conversation.message']!(conversationMessageFrame);
+
+      expect(Object.keys(useConversationStore.getState().messages).sort()).toEqual(
+        [owned, offered].sort(),
+      );
     });
   });
 });

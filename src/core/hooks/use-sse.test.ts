@@ -8,6 +8,13 @@ import { refreshAccessToken } from '@/core/api/client';
 import { createWrapper } from '@/test/hook-test-utils';
 import { createLocaleI18n } from '@/test/locale-i18n';
 import { toast } from 'sonner';
+import { useAgentAiStore } from '@/core/stores/agent-ai-store';
+import {
+  agentAssistComplianceAlertFrame,
+  agentAssistSentimentFrame,
+  agentAssistSuggestionFrame,
+  agentAssistTranscriptFrame,
+} from '@/tests/utils/contract-doubles';
 
 vi.mock('@/core/api/client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/core/api/client')>()),
@@ -474,5 +481,67 @@ describe('useSSE toasts in es-419', () => {
     latest().emit('notification.created', critical(null));
 
     expect(lastToast('error').action).toBeUndefined();
+  });
+});
+
+/** The frames `agentassist-events.v1.json` delivers to the agent its `agentId` names (W13). */
+describe('useSSE agent-assist frames', () => {
+  const CONVERSATION = agentAssistSuggestionFrame.conversationId;
+
+  beforeEach(() => {
+    FakeEventSource.instances = [];
+    vi.stubGlobal('EventSource', FakeEventSource);
+    useAgentAiStore.setState({ sessions: {} });
+    signIn('token');
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['agent-me'], { agentId: agentAssistSuggestionFrame.agentId });
+    renderHook(() => useSSE(), {
+      wrapper: ({ children }: { children: ReactNode }) =>
+        createElement(QueryClientProvider, { client }, children),
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+    useAuthStore.getState().logout();
+    vi.unstubAllGlobals();
+  });
+
+  const session = () => useAgentAiStore.getState().sessions[CONVERSATION];
+
+  it('UseSSE_ShouldStoreTheSuggestionForItsConversation_WhenTheFrameNamesThisAgent', () => {
+    latest().emit('agentassist.suggestion', agentAssistSuggestionFrame);
+    expect(session()?.suggestions[0]).toMatchObject({
+      text: agentAssistSuggestionFrame.text,
+      priority: agentAssistSuggestionFrame.priority,
+      source: agentAssistSuggestionFrame.source,
+    });
+  });
+
+  it('UseSSE_ShouldStoreTheSentimentForItsConversation_WhenTheFrameNamesThisAgent', () => {
+    latest().emit('agentassist.sentiment', agentAssistSentimentFrame);
+    expect(session()?.sentiment).toMatchObject({
+      speaker: agentAssistSentimentFrame.speaker,
+      score: agentAssistSentimentFrame.score,
+      label: agentAssistSentimentFrame.label,
+    });
+  });
+
+  it('UseSSE_ShouldStoreTheAlertForItsConversation_WhenTheFrameNamesThisAgent', () => {
+    latest().emit('agentassist.compliance_alert', agentAssistComplianceAlertFrame);
+    expect(session()?.complianceAlerts[0]).toMatchObject({
+      ruleId: agentAssistComplianceAlertFrame.ruleId,
+      phrase: agentAssistComplianceAlertFrame.phrase,
+      severity: agentAssistComplianceAlertFrame.severity,
+    });
+  });
+
+  it('UseSSE_ShouldStoreTheTranscriptForItsConversation_WhenTheFrameNamesThisAgent', () => {
+    latest().emit('agentassist.transcript', agentAssistTranscriptFrame);
+    expect(session()?.transcript[0]).toMatchObject({
+      speaker: agentAssistTranscriptFrame.speaker,
+      text: agentAssistTranscriptFrame.text,
+      isFinal: agentAssistTranscriptFrame.isFinal,
+    });
   });
 });

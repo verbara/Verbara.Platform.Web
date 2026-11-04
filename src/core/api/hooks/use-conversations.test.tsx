@@ -5,7 +5,6 @@ import {
   useConversations,
   useConversation,
   useMessageHistory,
-  useMessages,
   useSendMessage,
   useAcceptConversation,
   useRejectConversation,
@@ -59,25 +58,6 @@ const sampleMessage: Message = {
   timestamp: '2026-01-01T00:00:00Z',
   status: 'delivered',
   type: 'text',
-};
-
-/** `sampleMessage` as Platform serializes its `Message` record (Conversations/Message.cs). */
-const platformSampleMessage = {
-  messageId: 'msg-1',
-  conversationId: 'conv-1',
-  tenantId: 'tenant-1',
-  direction: 'Inbound',
-  channel: 'WebChat',
-  senderId: 'John Doe',
-  content: { blocks: [{ $type: 'text', text: 'Hello', type: 'Text' }] },
-  deliveryStatus: 'Delivered',
-  externalMessageId: null,
-  createdAt: '2026-01-01T00:00:00Z',
-  deliveredAt: null,
-  readAt: null,
-  updatedAt: null,
-  createdBy: null,
-  updatedBy: null,
 };
 
 describe('useConversations', () => {
@@ -347,35 +327,6 @@ describe('useMessageHistory', () => {
     const { result } = renderHook(() => useMessageHistory(undefined), { wrapper });
     expect(result.current.messages).toEqual([]);
     expect(client.customFetch).not.toHaveBeenCalled();
-  });
-});
-
-describe('useMessages', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('useMessages_ShouldMapPlatformMessageRecord_WhenApiReturnsHistory', async () => {
-    vi.mocked(client.customFetch).mockResolvedValue([platformSampleMessage]);
-    const { result } = renderHook(() => useMessages('conv-1'), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual([sampleMessage]);
-    expect(client.customFetch).toHaveBeenCalledWith({
-      url: '/api/v1/conversations/conv-1/messages',
-      method: 'GET',
-      params: { limit: '50', offset: '0' },
-    });
-  });
-
-  it('should not fetch when conversationId is undefined', () => {
-    const { result } = renderHook(() => useMessages(undefined), { wrapper });
-    expect(result.current.fetchStatus).toBe('idle');
-  });
-
-  it('should handle error', async () => {
-    vi.mocked(client.customFetch).mockRejectedValue(new Error('Fetch failed'));
-    const { result } = renderHook(() => useMessages('conv-1'), { wrapper });
-    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
 

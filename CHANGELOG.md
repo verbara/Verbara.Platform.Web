@@ -31,6 +31,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   transcript, also when the refusal arrives after messages were loaded, on "load earlier messages" or on a refresh. A
   conversation that no longer exists shows "Conversation not found."; other failures keep the messages already loaded.
 
+- **The conversation thread opens on the newest messages.** A long conversation used to open on its oldest 50 messages, so
+  the newest ones, a transfer note among them, were out of reach. It now opens on the latest page, with "load earlier
+  messages" above it, and a live message stays at the bottom. A message that arrives both live and from the server shows
+  once, in either order, with the server's content.
+
+- **The conversation thread says when it can no longer be read.** After a transfer or a takeover, a refused read shows "You
+  can't read this conversation." in place of the messages, also when the refusal arrives after messages were loaded. A
+  conversation Platform no longer has shows "That conversation was not found. It may have ended." The reply box and the
+  actions stay. Any other failure keeps the messages on screen.
+
 - **`VerbaraWebChat.destroy()` now clears the conversation the widget kept in the browser.** It used to forget only the
   visitor id and profile on the site's page; the messages shown, the open session and any unsent messages stayed in the
   widget's own storage, and the next person to open the widget on that browser saw the earlier conversation. The widget
