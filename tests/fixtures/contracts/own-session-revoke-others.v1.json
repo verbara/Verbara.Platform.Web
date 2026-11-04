@@ -1,0 +1,15 @@
+{
+  "_comment": "POST /api/v1/auth/sessions/revoke-others (AuthEndpoints.cs, RevokeOtherSessions): ends every active session of the caller except the one the refresh_token cookie names. With no cookie (an API client) it ends all of them, unchanged. ONE outcome changes: success moves from an empty 200 to 204, for the reason of own-session-revoke.v1.json (contract choice C6, cross-diff review of 2026-11-01). Every child change's delta spec must cite these statuses VERBATIM.",
+  "route": "POST /api/v1/auth/sessions/revoke-others",
+  "revoked": {
+    "status": 204,
+    "new": true,
+    "body": null,
+    "_note": "Results.NoContent(), was Results.Ok() with an empty body: the console's client parses every success but 204, so the action reported a failure, kept its dialog open and left the ended sessions listed."
+  },
+  "unauthenticated": {
+    "status": 401,
+    "new": false,
+    "body": null
+  }
+}

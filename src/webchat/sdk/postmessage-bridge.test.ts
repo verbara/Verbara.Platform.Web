@@ -71,12 +71,20 @@ describe('postmessage-bridge', () => {
 
     window.dispatchEvent(new MessageEvent('message', { data, origin: 'https://example.com' }));
     window.dispatchEvent(
-      new MessageEvent('message', { data, origin: 'https://example.com', source: other.contentWindow }),
+      new MessageEvent('message', {
+        data,
+        origin: 'https://example.com',
+        source: other.contentWindow,
+      }),
     );
     expect(handler).not.toHaveBeenCalled();
 
     window.dispatchEvent(
-      new MessageEvent('message', { data, origin: 'https://example.com', source: own.contentWindow }),
+      new MessageEvent('message', {
+        data,
+        origin: 'https://example.com',
+        source: own.contentWindow,
+      }),
     );
     expect(handler).toHaveBeenCalledTimes(1);
 

@@ -283,7 +283,9 @@ describe('WebChatApi', () => {
     const EMBED = 'https://console.customer.com';
 
     function frames(): HTMLIFrameElement[] {
-      return [...document.querySelectorAll<HTMLIFrameElement>('iframe[data-verbara-webchat-iframe]')];
+      return [
+        ...document.querySelectorAll<HTMLIFrameElement>('iframe[data-verbara-webchat-iframe]'),
+      ];
     }
 
     function fromFrame(frameEl: HTMLIFrameElement, type: string, payload?: unknown) {
@@ -413,7 +415,9 @@ describe('WebChatApi', () => {
 
       fromFrame(stranger, 'ready');
       expect(onReady).not.toHaveBeenCalled();
-      expect(post.mock.calls.some(([msg]) => (msg as { type: string }).type === 'init-config')).toBe(false);
+      expect(
+        post.mock.calls.some(([msg]) => (msg as { type: string }).type === 'init-config'),
+      ).toBe(false);
 
       fromFrame(own, 'ready');
       expect(onReady).toHaveBeenCalledTimes(1);

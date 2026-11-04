@@ -39,6 +39,7 @@ import {
   type MfaSetupResponse,
 } from '@/core/api/hooks/use-auth-admin';
 import { useFormatDate } from '@/core/i18n/use-format';
+import { parseUserAgent } from './sessions/session-device';
 
 export default function SecurityPage() {
   const { t } = useTranslation(['admin', 'common']);
@@ -606,7 +607,7 @@ function SessionRow({
 }>) {
   const { t } = useTranslation(['admin']);
   const { formatDateTime } = useFormatDate();
-  const device = parseUserAgent(session.userAgent);
+  const device = describeDevice(session.userAgent);
   const created = formatDateTime(session.createdAt);
 
   return (
@@ -641,27 +642,8 @@ function SessionRow({
   );
 }
 
-function parseUserAgent(ua: string | null): string {
-  if (!ua) return 'Unknown';
-  const browser = /Chrome/.test(ua)
-    ? 'Chrome'
-    : /Firefox/.test(ua)
-      ? 'Firefox'
-      : /Safari/.test(ua)
-        ? 'Safari'
-        : /Edge/.test(ua)
-          ? 'Edge'
-          : 'Browser';
-  const os = /Windows/.test(ua)
-    ? 'Windows'
-    : /Mac OS/.test(ua)
-      ? 'macOS'
-      : /Linux/.test(ua)
-        ? 'Linux'
-        : /Android/.test(ua)
-          ? 'Android'
-          : /iPhone|iPad/.test(ua)
-            ? 'iOS'
-            : 'Unknown OS';
-  return `${browser} on ${os}`;
+/** The card's English device text over the shared helper (localizing it is a follow-up, design D-3). */
+function describeDevice(ua: string | null): string {
+  const device = parseUserAgent(ua);
+  return device ? `${device.browser} on ${device.os}` : 'Unknown';
 }

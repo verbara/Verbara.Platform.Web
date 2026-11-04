@@ -24,6 +24,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   value, such as `webchat`, or an English table of their own. They now use the same localized label as the rest of the
   console, and a value with no label still shows as it came. (#502)
 
+- **The own-sessions page marks the session you are using.** `/profile/security/sessions` reads
+  `GET /api/v1/auth/sessions` and revokes with `DELETE /api/v1/auth/sessions/{tokenId}`, the routes the sign-in cookie
+  reaches, so the current device carries its badge and cannot be revoked from the list. It keeps the last-activity column,
+  shows a device label, and shares one list with the `/profile/security` card. A `session-is-current` refusal,
+  an already-ended session or any other failure is reported in the user's language, never in the server's text, on both
+  surfaces. Ending the other sessions from the card reports success instead of a failure. **Requires Platform ≥ 2.38.0**
+  (the release that carries `profile-sessions-use-the-auth-route`).
+
 ## [3.29.0-web] - 2026-11-01
 
 The agent console uses what the server now offers: transfers carry the note and read real targets, the new-conversation
