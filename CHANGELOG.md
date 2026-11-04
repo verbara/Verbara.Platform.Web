@@ -11,11 +11,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- **Signing out or switching identity clears the previous person's conversations from the page.** The console signs out
-  without reloading, so the next person in that tab could see the inbox cards and, for a short while, the History list
-  and transcripts of the one before. Signing out, starting or ending an impersonation and managing another tenant's
-  billing now clear what was loaded and read it again as the new identity. A reply draft stays for the person who typed
-  it and is removed when someone else signs in.
+- **Signing out or switching identity clears the previous person's conversations from the page.** Signing out, another
+  user signing in on the same tab, starting or ending an impersonation and managing another tenant's billing clear what
+  was loaded, and the new identity reads its own. A reply draft stays for the person who typed it and is removed when
+  someone else signs in.
 
 - **This console requires the Platform release that carries Verbara.Platform #539.** The History tab, the read-only
   panel and the conversation thread read that release's `GET /api/v1/contacts/{id}/conversations` page and its
@@ -52,7 +51,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   can't read this conversation." in place of the messages, also when the refusal arrives after messages were loaded. While
   the first read is on its way the thread shows its loading state rather than the messages it holds. A
   conversation Platform no longer has shows "That conversation was not found. It may have ended." The reply box and the
-  actions stay. Any other failure keeps the messages on screen.
+  actions stay. Any other failure keeps the messages on screen, also while the thread reads again.
 
 - **The workspace says "conversation not found" in the agent's language.** Opening a conversation the console does not
   hold showed the text in English in every locale. It now shows the same localized text as the thread.
