@@ -106,6 +106,13 @@
       "minutes_seconds": "{{minutes}}m {{seconds}}s",
       "minutes": "{{minutes}}m",
       "seconds": "{{seconds}}s"
+    },
+    "viewer": {
+      "title": "Conversación anterior",
+      "created_at": "Inicio",
+      "closed_at": "Cierre",
+      "no_messages": "Esta conversación no tiene mensajes.",
+      "load_earlier": "Cargar mensajes anteriores"
     }
   },
   "context": {

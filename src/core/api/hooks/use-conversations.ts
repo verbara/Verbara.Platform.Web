@@ -170,6 +170,7 @@ export function useMessageHistory(conversationId: string | undefined) {
   });
   return {
     messages: query.data ?? NO_MESSAGES,
+    isLoaded: query.data !== undefined,
     isLoading: query.isLoading,
     hasNextPage: query.hasNextPage,
     isFetchingNextPage: query.isFetchingNextPage,

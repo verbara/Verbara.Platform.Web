@@ -91,6 +91,8 @@ export interface PastConversation {
   channel: string;
   /** The console's snake-case state name. */
   state: string;
+  /** As sent, PascalCase: what the state's label and `data-state` are chosen by (W3, W12). */
+  wireState: PlatformConversationState;
   createdAt: string;
   closedAt?: string;
   closedReason?: string;
@@ -107,6 +109,7 @@ export function mapPlatformPastConversation(conversation: PlatformConversation):
     contactId: String(conversation.contactId),
     channel: String(conversation.channel),
     state: STATE[conversation.state] ?? String(conversation.state).toLowerCase(),
+    wireState: conversation.state,
     createdAt: conversation.createdAt,
     ...(conversation.closedAt != null ? { closedAt: conversation.closedAt } : {}),
     ...(closedReason != null ? { closedReason } : {}),

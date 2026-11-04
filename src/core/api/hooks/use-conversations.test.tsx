@@ -176,6 +176,7 @@ describe('useConversation', () => {
       contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
       channel: 'WhatsApp',
       state: 'closed',
+      wireState: 'Closed',
       createdAt: '2026-10-28T09:15:00.000+00:00',
       closedAt: '2026-10-31T10:20:05.000+00:00',
       closedReason: 'inactivity',

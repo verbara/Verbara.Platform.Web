@@ -54,6 +54,7 @@ describe('mapPlatformConversation', () => {
 describe('mapPlatformPastConversation', () => {
   it('mapPlatformPastConversation_ShouldMapTheFixtureRecord_WhenTheConversationIsClosed', () => {
     expect(mapPlatformPastConversation(terminalConversation)).toEqual({
+      wireState: 'Closed',
       id: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
       contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
       channel: 'WhatsApp',

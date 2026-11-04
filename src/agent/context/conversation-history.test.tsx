@@ -26,6 +26,7 @@ import {
   contactSummaryShiftedSecondPage,
   conversationStateValues,
   heldContactSummary,
+  historyFirstPage,
   notReadableRefusal,
   terminalConversation,
 } from '@/tests/utils/contract-doubles';
@@ -458,7 +459,11 @@ describe('ConversationHistory', () => {
     });
 
     it('ConversationHistory_ShouldOpenAPastRowFromTheKeyboardFocus_WithoutChangingTheSelection', async () => {
-      serve({ [LIST_URL]: contactSummaryPage });
+      serve({
+        [LIST_URL]: contactSummaryPage,
+        [`/api/v1/conversations/${closedContactSummary.id}`]: terminalConversation,
+        [`/api/v1/conversations/${closedContactSummary.id}/history`]: historyFirstPage,
+      });
       selectConversation();
       renderTab();
 
@@ -470,8 +475,8 @@ describe('ConversationHistory', () => {
       // `<button>` above is the keyboard path, and this is the activation it produces.
       fireEvent.click(row);
 
-      expect(screen.getByTestId('history-list')).toHaveAttribute(
-        'data-viewing-id',
+      expect(await screen.findByTestId('history-viewer')).toHaveAttribute(
+        'data-conversation-id',
         closedContactSummary.id,
       );
       expect(useConversationStore.getState().selectedId).toBe(CONVERSATION_ID);
@@ -485,7 +490,8 @@ describe('ConversationHistory', () => {
       await waitFor(() => expect(rows()).toHaveLength(3));
       fireEvent.click(rowFor(heldContactSummary.id));
 
-      expect(screen.getByTestId('history-list')).not.toHaveAttribute('data-viewing-id');
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('history-viewer')).not.toBeInTheDocument();
     });
 
     it('ConversationHistory_ShouldOfferOlderConversationsOnlyWhileThereAreMore_WhenPaging', async () => {

@@ -1,6 +1,6 @@
-import { useState, type ComponentProps } from 'react';
+import { lazy, Suspense, useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Clock, MessageSquare, User } from 'lucide-react';
+import { Clock, MessageSquare, User, XIcon } from 'lucide-react';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { isApiError } from '@/core/api/api-error';
 import { isNotReadable } from '@/core/api/conversation-refusals';
@@ -11,9 +11,15 @@ import { channelLabel } from '@/core/i18n/channel-label';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
+import { Sheet, SheetClose, SheetContent } from '@/core/ui/sheet';
 import { Skeleton } from '@/core/ui/skeleton';
 import { blockTypeLabelKey, closedReasonLabelKey, stateLabelKey } from './history-labels';
 import { ReadRefusal } from './read-refusal';
+
+// Out of the console's first load (W5): the agent-closure guard measures it, and this is its chunk.
+const PastConversationViewer = lazy(() =>
+  import('./past-conversation-viewer').then((m) => ({ default: m.PastConversationViewer })),
+);
 
 type Summary = components['schemas']['ContactConversationSummaryDto'];
 
@@ -152,8 +158,8 @@ export function ConversationHistory() {
   const conversation = useConversationStore((s) =>
     selectedId ? s.conversations[selectedId] : undefined,
   );
-  // The row's target; the read-only viewer that shows it lands with W5.
-  const [viewingId, setViewingId] = useState<string | null>(null);
+  // The past conversation in the viewer, and the selection it was opened from (W5).
+  const [viewing, setViewing] = useState<{ id: string; openedFrom: string } | null>(null);
 
   // A fresh offer reaches the store with no contact id, so it comes from the record (W14). The store
   // is left as it is: the inbox contract does not change.
@@ -166,6 +172,10 @@ export function ConversationHistory() {
 
   // A refusal takes the tab whatever else is cached (spec audit F2).
   const refusal = [record.error, list.error].find(isNotReadable);
+
+  // The viewer belongs to the list it was opened from: it does not outlive the selection or the list.
+  if (viewing && (viewing.openedFrom !== selectedId || refusal)) setViewing(null);
+
   if (refusal) return <ReadRefusal error={refusal} />;
 
   if (record.isLoading || list.isLoading) {
@@ -197,13 +207,15 @@ export function ConversationHistory() {
   if (history.length === 0) return emptyHistory;
 
   return (
-    <div
-      data-testid="history-list"
-      data-viewing-id={viewingId ?? undefined}
-      className="divide-y divide-slate-100 dark:divide-slate-700/50"
-    >
+    <div data-testid="history-list" className="divide-y divide-slate-100 dark:divide-slate-700/50">
       {history.map((item) => (
-        <HistoryRow key={item.id} item={item} onOpen={setViewingId} />
+        <HistoryRow
+          key={item.id}
+          item={item}
+          onOpen={(id) => {
+            if (selectedId) setViewing({ id, openedFrom: selectedId });
+          }}
+        />
       ))}
       {list.hasNextPage && (
         <div className="px-4 py-2">
@@ -219,6 +231,33 @@ export function ConversationHistory() {
           </Button>
         </div>
       )}
+      <Sheet
+        open={viewing !== null}
+        onOpenChange={(open) => {
+          if (!open) setViewing(null);
+        }}
+      >
+        {/* Its own close control: the Sheet's default one carries an English literal. */}
+        <SheetContent showCloseButton={false} className="data-[side=right]:sm:max-w-xl">
+          <SheetClose
+            data-testid="history-viewer-close"
+            aria-label={t('common:actions.close')}
+            render={<Button variant="ghost" size="icon-sm" className="absolute top-3 right-3" />}
+          >
+            <XIcon />
+          </SheetClose>
+          <Suspense
+            fallback={
+              <div data-testid="history-viewer-loading" className="space-y-2 p-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            }
+          >
+            {viewing && <PastConversationViewer conversationId={viewing.id} />}
+          </Suspense>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

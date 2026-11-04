@@ -24,6 +24,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the tab showed "No conversation history" and sent no request. It now takes the contact from the conversation, shows the
   refusal while the offer is open, and shows the list as soon as the agent accepts, without leaving the tab.
 
+- **A past conversation opens from the History tab, read only.** Choosing a row shows the conversation's channel, state,
+  dates and close reason with its transcript, newest messages at the bottom and "load earlier messages" above them, in
+  a panel over the workspace. It offers no action, and the conversation the agent is working on stays selected. Any
+  state opens, closed ones included. A refused read shows "You can't read this conversation." in place of the
+  transcript, also when the refusal arrives after messages were loaded, on "load earlier messages" or on a refresh. A
+  conversation that no longer exists shows "Conversation not found."; other failures keep the messages already loaded.
+
 - **`VerbaraWebChat.destroy()` now clears the conversation the widget kept in the browser.** It used to forget only the
   visitor id and profile on the site's page; the messages shown, the open session and any unsent messages stayed in the
   widget's own storage, and the next person to open the widget on that browser saw the earlier conversation. The widget
