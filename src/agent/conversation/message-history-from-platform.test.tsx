@@ -19,6 +19,7 @@ import { useAuthStore } from '@/core/auth/auth-store';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { AreaErrorBoundary } from '@/core/ui/area-error-boundary';
 import { historyFirstPage, historyNewestMessage } from '@/tests/utils/contract-doubles';
+import { ConversationPanel } from './conversation-panel';
 import { MessageThread } from './message-thread';
 import enCommon from '../../../public/locales/en-US/common.json';
 import esCommon from '../../../public/locales/es-419/common.json';
@@ -122,6 +123,29 @@ describe('Agent Workspace message history from Platform', () => {
       expect(await screen.findByTestId('conversation-not-found')).toHaveTextContent(
         NOT_FOUND_TEXT[lng],
       );
+    },
+  );
+
+  it.each(TEST_LOCALES)(
+    'ConversationPanel_ShouldSayNotFoundInTheAgentsLanguage_WhenTheStoreHasNoEntry (%s)',
+    async (lng) => {
+      useConversationStore.setState({ conversations: {} });
+      const i18n = await createLocaleI18n(lng);
+      render(
+        <QueryClientProvider
+          client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+        >
+          <I18nextProvider i18n={i18n}>
+            <ConversationPanel conversationId={CONVERSATION_ID} />
+          </I18nextProvider>
+        </QueryClientProvider>,
+      );
+
+      expect(screen.getByText(NOT_FOUND_TEXT[lng])).toHaveAttribute(
+        'data-testid',
+        'conversation-not-found',
+      );
+      expect(requests).toBe(0);
     },
   );
 });

@@ -41,6 +41,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   conversation Platform no longer has shows "That conversation was not found. It may have ended." The reply box and the
   actions stay. Any other failure keeps the messages on screen.
 
+- **The workspace says "conversation not found" in the agent's language.** Opening a conversation the console does not
+  hold showed the text in English in every locale. It now shows the same localized text as the thread.
+
 - **`VerbaraWebChat.destroy()` now clears the conversation the widget kept in the browser.** It used to forget only the
   visitor id and profile on the site's page; the messages shown, the open session and any unsent messages stayed in the
   widget's own storage, and the next person to open the widget on that browser saw the earlier conversation. The widget

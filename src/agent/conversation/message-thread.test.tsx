@@ -618,6 +618,9 @@ describe('MessageThread refusals (5.4, spec audit F2 and F3)', () => {
     it('ConversationPanel_ShouldDrawNoThreadAndReadNothing_WhenTheStoreHasNoEntry', () => {
       renderPanel();
 
+      expect(screen.getByTestId('conversation-not-found')).toHaveTextContent(
+        CONVERSATION_NOT_FOUND_KEY,
+      );
       expect(screen.queryByRole('textbox')).toBeNull();
       expect(historyReads).toEqual([]);
     });
