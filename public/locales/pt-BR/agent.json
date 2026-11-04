@@ -59,6 +59,13 @@
       "follow_up": "Acompanhamento necessário"
     }
   },
+  "history": {
+    "errors": {
+      "not_readable": "Você não pode ler esta conversa.",
+      "not_found": "Conversa não encontrada.",
+      "invalid_cursor": "Não foi possível carregar as mensagens anteriores. Abra esta conversa novamente para tentar de novo."
+    }
+  },
   "context": {
     "contact_heading": "Contato",
     "edit": "Editar",

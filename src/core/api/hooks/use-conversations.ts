@@ -1,8 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformMessage } from '@/core/api/platform-message';
-import { mapPlatformConversation } from '@/core/api/platform-conversation';
+import {
+  mapPlatformConversation,
+  mapPlatformPastConversation,
+} from '@/core/api/platform-conversation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
@@ -89,11 +98,13 @@ export function useConversations(filter?: {
 export function useConversation(id: string | undefined) {
   return useQuery({
     queryKey: ['conversations', id],
-    queryFn: () =>
-      customFetch<Conversation>({
-        url: `/api/v1/conversations/${id}`,
-        method: 'GET',
-      }),
+    queryFn: async () =>
+      mapPlatformPastConversation(
+        await customFetch<components['schemas']['Conversation']>({
+          url: `/api/v1/conversations/${id}`,
+          method: 'GET',
+        }),
+      ),
     enabled: !!id,
   });
 }
@@ -111,6 +122,60 @@ export function useMessages(conversationId: string | undefined) {
     },
     enabled: !!conversationId,
   });
+}
+
+type MessageHistoryPage = components['schemas']['MessageHistoryPageDto'];
+
+/** The loaded pages as one transcript, oldest at the top, each `messageId` once. */
+function transcriptOf(data: InfiniteData<MessageHistoryPage, string | undefined>): Message[] {
+  const seen = new Set<string>();
+  const newestFirst: Message[] = [];
+  for (const page of data.pages) {
+    for (const item of page.items) {
+      const id = String(item.messageId);
+      if (seen.has(id)) continue;
+      seen.add(id);
+      newestFirst.push(mapPlatformMessage(item));
+    }
+  }
+  return newestFirst.reverse();
+}
+
+const NO_MESSAGES: Message[] = [];
+
+/**
+ * A conversation's transcript, newest page first (`GET /api/v1/conversations/{id}/history`), for any
+ * state. `fetchNextPage` reads the next older page with the page's `nextBefore`, sent back untouched
+ * as `before`. The key sits under `['messages', id]`, so that invalidation reaches it, and a refetch
+ * reads every loaded page again.
+ *
+ * `readError` is a refused read of the transcript; `nextPageError` is a refused "load earlier", which
+ * leaves the loaded messages in place. Only one of the two is ever set.
+ */
+export function useMessageHistory(conversationId: string | undefined) {
+  const query = useInfiniteQuery({
+    queryKey: ['messages', conversationId, 'history'],
+    queryFn: ({ pageParam }) =>
+      customFetch<MessageHistoryPage>({
+        url: `/api/v1/conversations/${conversationId}/history`,
+        method: 'GET',
+        ...(pageParam !== undefined ? { params: { before: pageParam } } : {}),
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? (lastPage.nextBefore ?? undefined) : undefined,
+    select: transcriptOf,
+    enabled: !!conversationId,
+  });
+  return {
+    messages: query.data ?? NO_MESSAGES,
+    isLoading: query.isLoading,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    fetchNextPage: query.fetchNextPage,
+    readError: query.isFetchNextPageError ? null : query.error,
+    nextPageError: query.isFetchNextPageError ? query.error : null,
+  };
 }
 
 export function useSendMessage() {

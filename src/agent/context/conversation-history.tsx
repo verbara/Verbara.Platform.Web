@@ -63,9 +63,9 @@ export function ConversationHistory() {
               {formatDuration(item.durationSeconds ?? 0)}
             </span>
           </div>
-          {item.disposition && (
+          {item.disposition?.label && (
             <span className="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-              {t(`agent:wrap_up.dispositions.${item.disposition}`, item.disposition)}
+              {item.disposition.label}
             </span>
           )}
         </div>

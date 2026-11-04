@@ -2,10 +2,13 @@ import { describe, it, expect } from 'vitest';
 import enCommon from '../../../public/locales/en-US/common.json';
 import esCommon from '../../../public/locales/es-419/common.json';
 import ptCommon from '../../../public/locales/pt-BR/common.json';
+import { TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
+import { invalidCursorRefusal, notReadableRefusal } from '@/tests/utils/contract-doubles';
 import { ApiError, describeApiError, entriesOf } from './api-error';
 import {
   CONVERSATION_NOT_CLOSABLE,
   TYPIFICATION_REQUIRED,
+  conversationReadRefusals,
   conversationRefusals,
   refusalCodeOf,
   refusedFieldLabels,
@@ -288,6 +291,61 @@ describe('conversationRefusals locale coverage', () => {
     (locale) => {
       const missing = entries.filter((e) => !hasKey(locales[locale], e.key)).map((e) => e.key);
       expect(missing).toEqual([]);
+    },
+  );
+});
+
+describe('conversationReadRefusals', () => {
+  it('ConversationReadRefusals_ShouldNameNotReadable_WhenPlatformAnswers403NotReadable', () => {
+    expect(
+      describeApiError(new ApiError(403, notReadableRefusal), conversationReadRefusals),
+    ).toEqual({ code: 'not-readable', key: 'agent:history.errors.not_readable' });
+  });
+
+  it('ConversationReadRefusals_ShouldNameNotFound_WhenPlatformAnswers404WithNoBody', () => {
+    expect(describeApiError(new ApiError(404, null), conversationReadRefusals)).toEqual({
+      code: '404',
+      key: 'agent:history.errors.not_found',
+    });
+  });
+
+  it('ConversationReadRefusals_ShouldNameInvalidCursor_WhenPlatformAnswers400InvalidCursor', () => {
+    expect(
+      describeApiError(new ApiError(400, invalidCursorRefusal), conversationReadRefusals),
+    ).toEqual({ code: 'invalid-cursor', key: 'agent:history.errors.invalid_cursor' });
+  });
+
+  it.each([
+    ['another code', 403, { error: 'not-owner' }],
+    ['no body', 403, null],
+    ['a server failure', 500, null],
+  ])(
+    'ConversationReadRefusals_ShouldFallBackToGeneric_WhenTheRefusalIs %s',
+    (_name, status, body) => {
+      expect(describeApiError(new ApiError(status, body), conversationReadRefusals).code).toBe(
+        'read-failed',
+      );
+    },
+  );
+
+  it.each(TEST_LOCALES)(
+    'ConversationReadRefusals_ShouldResolveEveryKey_WhenTheLocaleIs %s',
+    async (lng) => {
+      const i18n = await createLocaleI18n(lng);
+      for (const entry of entriesOf(conversationReadRefusals)) {
+        expect(i18n.exists(entry.key), `${lng} ${entry.key}`).toBe(true);
+      }
+    },
+  );
+
+  it.each(TEST_LOCALES)(
+    'ConversationReadRefusals_ShouldNeverShowServerProse_WhenTheBodyCarriesProse %s',
+    async (lng) => {
+      const i18n = await createLocaleI18n(lng);
+      const prose = 'Agent B holds nothing of contact 7a1c0e2b';
+      const entry = describeApiError(new ApiError(403, { error: prose }), conversationReadRefusals);
+      expect(entry.code).toBe('read-failed');
+      expect(i18n.t(entry.key)).not.toContain(prose);
     },
   );
 });

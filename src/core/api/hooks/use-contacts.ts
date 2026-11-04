@@ -1,4 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformContact } from '@/core/api/platform-conversation';
@@ -28,13 +34,6 @@ export interface Contact {
   createdAt: string;
 }
 
-interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-}
-
 export function useContact(id: string | undefined) {
   return useQuery({
     queryKey: ['contacts', id],
@@ -47,32 +46,39 @@ export function useContact(id: string | undefined) {
   });
 }
 
+type ContactConversationPage = components['schemas']['PagedResultOfContactConversationSummaryDto'];
+type ContactConversationSummary = components['schemas']['ContactConversationSummaryDto'];
+
 /**
- * Kept hand-written (openapi-typed-client-agent): `GET /contacts/{id}/conversations` returns
- * `PagedResultOfConversation` over the raw `Conversation` entity, which lacks this view-model's
- * `id`/`queueName`/`disposition`/`durationSeconds` (all read by conversation-history.tsx).
+ * The loaded pages in served order, each `id` once. The list is offset-paged, so a conversation that
+ * starts between two reads serves page 1's last row again as the first row of page 2.
  */
-export interface ContactConversation {
-  id: string;
-  channel: string;
-  queueName: string;
-  disposition?: string;
-  durationSeconds?: number;
-  closedAt?: string;
-  createdAt: string;
+function summariesOf(
+  data: InfiniteData<ContactConversationPage, number>,
+): ContactConversationSummary[] {
+  const seen = new Set<string>();
+  return data.pages
+    .flatMap((page) => page.items)
+    .filter((summary) => {
+      if (seen.has(summary.id)) return false;
+      seen.add(summary.id);
+      return true;
+    });
 }
 
+/** A contact's conversations, newest first; `fetchNextPage` appends the next page while there is one. */
 export function useContactConversations(contactId: string | undefined) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['contacts', contactId, 'conversations'],
-    queryFn: async () => {
-      const result = await customFetch<PagedResult<ContactConversation>>({
+    queryFn: ({ pageParam }) =>
+      customFetch<ContactConversationPage>({
         url: `/api/v1/contacts/${contactId}/conversations`,
         method: 'GET',
-        params: { page: '1', pageSize: '20' },
-      });
-      return result.items;
-    },
+        params: { page: String(pageParam), pageSize: '25' },
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.page + 1 : undefined),
+    select: summariesOf,
     enabled: !!contactId,
   });
 }

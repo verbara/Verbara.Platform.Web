@@ -59,6 +59,13 @@
       "follow_up": "Follow-up Required"
     }
   },
+  "history": {
+    "errors": {
+      "not_readable": "You can't read this conversation.",
+      "not_found": "Conversation not found.",
+      "invalid_cursor": "The earlier messages could not be loaded. Open this conversation again to retry."
+    }
+  },
   "context": {
     "contact_heading": "Contact",
     "edit": "Edit",

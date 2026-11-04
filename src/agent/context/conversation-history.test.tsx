@@ -1,11 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { useConversationStore } from '@/agent/stores/conversation-store';
-import type { ContactConversation } from '@/core/api/hooks/use-contacts';
+import type { components } from '@/core/api/generated/openapi';
 import type { Conversation } from '@/core/api/hooks/use-conversations';
 import enCommon from '../../../public/locales/en-US/common.json';
 import esCommon from '../../../public/locales/es-419/common.json';
+import { closedContactSummary } from '@/tests/utils/contract-doubles';
 import { ConversationHistory } from './conversation-history';
+
+type ContactConversation = components['schemas']['ContactConversationSummaryDto'];
 
 /**
  * The contact's past conversations name each channel through the one keyed set
@@ -35,7 +38,7 @@ vi.mock('@/core/api/hooks/use-contacts', () => ({
 }));
 
 function item(id: string, channel: string): ContactConversation {
-  return { id, channel, queueName: 'Support', createdAt: '2026-10-12T10:00:00Z' };
+  return { ...closedContactSummary, id, channel } as ContactConversation;
 }
 
 function renderHistory(...items: ContactConversation[]) {
