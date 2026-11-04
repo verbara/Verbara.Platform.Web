@@ -11,6 +11,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The History tab shows the contact's past conversations as Platform sends them.** Each row names the channel, the
+  state, the close reason, the queue, the agent, the duration, the disposition and the last message, in the agent's
+  language, and a member Platform did not send stays empty. The conversation the agent holds now carries a mark and
+  stays in the list; "show older conversations" appears while there are more.
+
+- **The History tab says when a conversation cannot be read.** A refused read shows "You can't read this conversation."
+  in place of the list, also when the refusal arrives after rows were loaded, on "show older conversations" or on a
+  refresh. A contact that no longer exists shows the empty-history text. Other failures keep the rows already loaded.
+
+- **The History tab of a new offer reads the contact's history.** An offer reaches the console without a contact id, so
+  the tab showed "No conversation history" and sent no request. It now takes the contact from the conversation, shows the
+  refusal while the offer is open, and shows the list as soon as the agent accepts, without leaving the tab.
+
 - **`VerbaraWebChat.destroy()` now clears the conversation the widget kept in the browser.** It used to forget only the
   visitor id and profile on the site's page; the messages shown, the open session and any unsent messages stayed in the
   widget's own storage, and the next person to open the widget on that browser saw the earlier conversation. The widget

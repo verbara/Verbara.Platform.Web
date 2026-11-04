@@ -190,6 +190,15 @@ export const conversationReadRefusals: ApiErrorMap = {
 };
 
 /**
+ * A 403 `not-readable`: the agent may not read this conversation or contact now. It takes the surface
+ * whatever the fetch phase (first page, next page or refetch), because Platform applies its read rule
+ * on every request and cached content would still show what the agent can no longer read.
+ */
+export function isNotReadable(err: unknown): boolean {
+  return isApiError(err) && err.status === 403 && err.code === 'not-readable';
+}
+
+/**
  * The refused fields named by the form's own labels, joined for the `typify_invalid` message.
  * `labelOf` returns the label the form shows for a field name, or `undefined` when the form has
  * none; such a field is named by its schema key (an identifier the tenant defined, not Platform's

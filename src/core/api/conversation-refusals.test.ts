@@ -10,6 +10,7 @@ import {
   TYPIFICATION_REQUIRED,
   conversationReadRefusals,
   conversationRefusals,
+  isNotReadable,
   refusalCodeOf,
   refusedFieldLabels,
   refusedFieldsOf,
@@ -293,6 +294,23 @@ describe('conversationRefusals locale coverage', () => {
       expect(missing).toEqual([]);
     },
   );
+});
+
+describe('isNotReadable', () => {
+  it('isNotReadable_ShouldBeTrue_WhenPlatformAnswers403NotReadable', () => {
+    expect(isNotReadable(new ApiError(403, notReadableRefusal))).toBe(true);
+  });
+
+  it.each([
+    ['a 403 with another code', new ApiError(403, { error: 'not-owner' })],
+    ['a 403 with prose', new ApiError(403, { error: 'not readable' })],
+    ['another status with the code', new ApiError(400, notReadableRefusal)],
+    ['a 404', new ApiError(404, null)],
+    ['a network failure', new Error('not-readable')],
+    ['no error', null],
+  ])('isNotReadable_ShouldBeFalse_WhenItIs %s', (_name, err) => {
+    expect(isNotReadable(err)).toBe(false);
+  });
 });
 
 describe('conversationReadRefusals', () => {

@@ -64,6 +64,48 @@
       "not_readable": "No puedes leer esta conversación.",
       "not_found": "No se encontró la conversación.",
       "invalid_cursor": "No se pudieron cargar los mensajes anteriores. Vuelve a abrir esta conversación para reintentarlo."
+    },
+    "held": "Actual",
+    "show_older": "Ver conversaciones anteriores",
+    "states": {
+      "queued": "En cola",
+      "offered": "Ofrecida",
+      "active": "Activa",
+      "on_hold": "En espera",
+      "consulting": "En consulta",
+      "wrap_up": "En cierre",
+      "waiting_for_customer": "Esperando al cliente",
+      "snoozed": "Pospuesta",
+      "resolved": "Resuelta",
+      "escalated": "Escalada",
+      "closed": "Cerrada",
+      "abandoned": "Abandonada",
+      "merged": "Fusionada",
+      "spam": "Spam"
+    },
+    "closed_reasons": {
+      "inactivity": "Cerrada por inactividad",
+      "inactivity_backlog": "Cerrada por inactividad (pendientes)",
+      "customer_returned": "El cliente volvió"
+    },
+    "block_types": {
+      "text": "Mensaje",
+      "image": "Imagen",
+      "audio": "Audio",
+      "video": "Video",
+      "file": "Archivo",
+      "location": "Ubicación",
+      "interactive": "Mensaje interactivo"
+    },
+    "direction": {
+      "inbound": "Cliente",
+      "outbound": "Agente"
+    },
+    "duration": {
+      "hours_minutes": "{{hours}}h {{minutes}}m",
+      "minutes_seconds": "{{minutes}}m {{seconds}}s",
+      "minutes": "{{minutes}}m",
+      "seconds": "{{seconds}}s"
     }
   },
   "context": {

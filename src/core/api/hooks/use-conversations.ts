@@ -4,6 +4,7 @@ import {
   useMutation,
   useQueryClient,
   type InfiniteData,
+  type Query,
 } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
@@ -197,6 +198,11 @@ export function useSendMessage() {
   });
 }
 
+/** `['contacts', contactId, 'conversations']`, the key of `useContactConversations`, for any contact. */
+function isContactConversationsQuery({ queryKey }: Query) {
+  return queryKey.length === 3 && queryKey[0] === 'contacts' && queryKey[2] === 'conversations';
+}
+
 export function useAcceptConversation() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
@@ -208,6 +214,9 @@ export function useAcceptConversation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
+      // Accepting opens the contact's history to the agent (a mounted History tab sits on its 403 until
+      // then) and changes `heldByCaller`. The mutation knows the conversation, not its contact.
+      qc.invalidateQueries({ predicate: isContactConversationsQuery });
       toast.success(t('toasts.conversations.accepted'));
     },
     onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'accept' }),

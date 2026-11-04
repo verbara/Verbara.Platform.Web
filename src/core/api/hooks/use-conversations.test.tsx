@@ -425,6 +425,43 @@ describe('useAcceptConversation', () => {
     });
   });
 
+  it('useAcceptConversation_ShouldInvalidateTheContactHistoryAndNotTheContact_WhenItSucceeds', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+    const qc = new QueryClient();
+    qc.setQueryData(['contacts', 'contact-1', 'conversations'], { pages: [], pageParams: [] });
+    qc.setQueryData(['contacts', 'contact-1'], {});
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useAcceptConversation(), { wrapper: Wrapper });
+
+    act(() => {
+      result.current.mutate('conv-1');
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const invalidated = (key: string[]) => qc.getQueryState(key)?.isInvalidated;
+    expect(invalidated(['contacts', 'contact-1', 'conversations'])).toBe(true);
+    expect(invalidated(['contacts', 'contact-1'])).toBe(false);
+  });
+
+  it('useAcceptConversation_ShouldLeaveTheContactHistoryAlone_WhenItFails', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new Error('Failed'));
+    const qc = new QueryClient();
+    qc.setQueryData(['contacts', 'contact-1', 'conversations'], { pages: [], pageParams: [] });
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useAcceptConversation(), { wrapper: Wrapper });
+
+    act(() => {
+      result.current.mutate('conv-1');
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(qc.getQueryState(['contacts', 'contact-1', 'conversations'])?.isInvalidated).toBe(false);
+  });
+
   it('should handle error', async () => {
     vi.mocked(client.customFetch).mockRejectedValue(new Error('Failed'));
     const { result } = renderHook(() => useAcceptConversation(), { wrapper });
