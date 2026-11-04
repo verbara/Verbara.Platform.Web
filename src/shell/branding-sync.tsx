@@ -10,8 +10,7 @@ import { useTenantStore } from '@/core/tenant/tenant-store';
  * changes, so an impersonation's start and end each repaint. A brand the sign-in page already
  * painted for the same tenant is kept without a refetch. Sign-out itself returns the brand to the
  * Verbara defaults (`useAuthStore.logout`, design D2), whether or not this component is still
- * mounted: `logout()` leaves the tenant store's active tenant set, so the requests' tenant alone
- * does not see it. When no tenant is left at all the brand is reset here as well. Renders nothing.
+ * mounted. When no tenant is left at all the brand is reset here as well. Renders nothing.
  */
 export function BrandingSync(): null {
   useEffect(() => {

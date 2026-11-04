@@ -4,6 +4,7 @@ import {
   registerActiveWorkSource,
   type ActiveWorkSource,
 } from '@/core/session/active-work-registry';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useAgentAiStore } from '@/core/stores/agent-ai-store';
 
@@ -58,8 +59,17 @@ interface ConversationState {
    */
   mergeFromRest: (conv: Conversation) => void;
   removeConversation: (id: string) => void;
+  /**
+   * The live path and the composer: appends, unless a row with the same non-empty id is already held
+   * (W8). A live row is incomplete, so it never overwrites what a `/history` page supplied. A row with
+   * no id is outside this: nothing can identify it, so it is always appended.
+   */
   addMessage: (convId: string, message: Message) => void;
-  setMessages: (convId: string, messages: Message[]) => void;
+  /**
+   * The `/history` path: a union by id, where a served row replaces the held row of its id, ordered by
+   * time, so an older page lands above and a live row stays at its time (W8).
+   */
+  mergeMessages: (convId: string, messages: Message[]) => void;
   markRead: (convId: string) => void;
   filteredConversations: () => Conversation[];
 }
@@ -108,17 +118,27 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
     }),
 
   addMessage: (convId, message) =>
-    set((s) => ({
-      messages: {
-        ...s.messages,
-        [convId]: [...(s.messages[convId] ?? []), message],
-      },
-    })),
+    set((s) => {
+      const held = s.messages[convId] ?? [];
+      if (message.id !== '' && held.some((m) => m.id === message.id)) return s;
+      return { messages: { ...s.messages, [convId]: [...held, message] } };
+    }),
 
-  setMessages: (convId, messages) =>
-    set((s) => ({
-      messages: { ...s.messages, [convId]: messages },
-    })),
+  mergeMessages: (convId, messages) =>
+    set((s) => {
+      const served = new Set(messages.map((m) => m.id));
+      const kept = (s.messages[convId] ?? []).filter(
+        (m) => !isSupersededByHistory(m) && (m.id === '' || !served.has(m.id)),
+      );
+      return {
+        messages: {
+          ...s.messages,
+          [convId]: [...kept, ...messages].sort(
+            (a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp),
+          ),
+        },
+      };
+    }),
 
   markRead: (convId) =>
     set((s) => {
@@ -137,6 +157,27 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
     return selectFilteredConversations(conversations, filter);
   },
 }));
+
+registerSessionWorkReset(() =>
+  useConversationStore.setState({
+    conversations: {},
+    messages: {},
+    selectedId: null,
+    filter: 'active',
+  }),
+);
+
+/**
+ * A row no `/history` page will ever name, which a read of the page therefore ends, as it always has:
+ * the composer's own row while its send is pending (the page holds the sent message under its real id,
+ * so keeping this one would show every sent message twice), and a typing frame, which stores no message
+ * (host fixture `identityWithHistory.exception`). Any other row with no id stays.
+ */
+function isSupersededByHistory(message: Message): boolean {
+  return (
+    message.status === 'sending' || (message.id === '' && message.senderName === 'TypingIndicator')
+  );
+}
 
 /**
  * A REST record over what the store already holds (LAB-W1 N17 follow-up). An empty REST field is

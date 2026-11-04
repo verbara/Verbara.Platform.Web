@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { queryClient } from '@/core/api/query-client';
 import { useBrandingStore } from '@/core/branding';
+import { clearSessionWork, clearWorkOfPreviousIdentity } from '@/core/session/session-work';
+import { useTenantStore } from '@/core/tenant/tenant-store';
 
 export interface UserProfile {
   id: string;
@@ -98,19 +99,6 @@ const LEGACY_SECRET_KEYS = [
   'impersonation',
 ] as const satisfies readonly (keyof AuthState)[];
 
-/**
- * Drops the cached `/users/me` (`['me']`) once the store holds a different identity: an
- * impersonation starting or ending swaps the token, so the cached user belongs to the other side.
- * Reset (not invalidate) so no reader sees the previous user's data while the refetch runs; active
- * readers refetch with the token just set. Every start and end path (the hooks, the banner's
- * fallback, the request client's and the countdown's local end) goes through the store actions,
- * so this is the one place that covers them all. `query-client` imports nothing from the app, so
- * there is no import cycle.
- */
-function resetCurrentUser(): void {
-  void queryClient.resetQueries({ queryKey: ['me'], exact: true });
-}
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -133,7 +121,8 @@ export const useAuthStore = create<AuthState>()(
         permissions,
         features,
         sessionIdleTimeoutMinutes,
-      ) =>
+      ) => {
+        const previousUser = get().user;
         set((state) => ({
           accessToken,
           tokenExpiry,
@@ -149,16 +138,24 @@ export const useAuthStore = create<AuthState>()(
             sessionIdleTimeoutMinutes === undefined
               ? state.sessionIdleTimeoutMinutes
               : sessionIdleTimeoutMinutes,
-        })),
+        }));
+        // A sign-in can follow a session that never signed out: `AuthGuard` sends a failed restore to the
+        // sign-in page with the user still held. A different user id clears the session work, as `logout`
+        // does; the same id, which is every token refresh, clears nothing. Only the id is compared, and the
+        // brand, the tenant store and an impersonation are left as they are.
+        if (previousUser && previousUser.id !== user.id) clearSessionWork();
+      },
       setMfaPending: (mfaToken, email, tenantId) =>
         set({ mfaPending: { mfaToken, email, ...(tenantId && { tenantId }) } }),
       clearMfaPending: () => set({ mfaPending: null }),
       setRememberMe: (value) => set({ rememberMe: value }),
-      // Every sign-out path (the user menu, the session manager, the request client, the realtime
-      // bootstrap) goes through here, so the brand returns to the Verbara defaults here too
+      // The sign-out paths (the user menu, the session manager, the request client, the realtime
+      // bootstrap) go through here, so the brand returns to the Verbara defaults here too
       // (`licensee-branding-in-the-console`, design D2: "Sign-out calls it"). Keying it on the
-      // requests' tenant becoming `null` missed the user menu: `logout()` leaves the tenant store's
-      // active tenant set and navigates without a reload, so the sign-in page kept the old brand.
+      // requests' tenant becoming `null` missed the user menu, which navigates without a reload, so
+      // the sign-in page kept the old brand. For the same reason what this person loaded is cleared
+      // here, and the tenant they worked on: an impersonation never touches that store, a sign-out does.
+      // A failed restore does not come here (`AuthGuard` only redirects); see `setAuth` for that path.
       logout: () => {
         set({
           accessToken: null,
@@ -171,7 +168,9 @@ export const useAuthStore = create<AuthState>()(
           impersonation: null,
           sessionIdleTimeoutMinutes: null,
         });
+        useTenantStore.setState({ activeTenantId: null });
         useBrandingStore.getState().reset();
+        clearSessionWork();
       },
       hasPermission: (permission) => get().permissions.includes(permission),
       // "There is a session worth restoring." With credentials no longer persisted, the rehydrated
@@ -199,11 +198,12 @@ export const useAuthStore = create<AuthState>()(
             readOnly: response.readOnly ?? false,
           },
         }));
-        resetCurrentUser();
+        clearWorkOfPreviousIdentity();
       },
       // The one way an impersonation ends in this tab, whatever ended it: the banner's End, its
       // expiry, or Platform refusing its token (design D3). Restores the operator's token, its expiry
-      // and tenant; a no-op when no impersonation is active.
+      // and tenant; a no-op when no impersonation is active. Every start and end path goes through
+      // these two actions, so this is the one place the other identity's data is dropped.
       endImpersonation: () => {
         const imp = get().impersonation;
         if (imp) {
@@ -213,7 +213,7 @@ export const useAuthStore = create<AuthState>()(
             tenantId: imp.originalTenantId,
             impersonation: null,
           });
-          resetCurrentUser();
+          clearWorkOfPreviousIdentity();
         }
       },
     }),

@@ -1,6 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ReadRefusal } from '@/agent/context/read-refusal';
 import { useConversationStore, type Message } from '@/agent/stores/conversation-store';
-import { useMessages } from '@/core/api/hooks/use-conversations';
+import {
+  CONVERSATION_NOT_FOUND_KEY,
+  isConversationNotFound,
+  isNotReadable,
+  refusalCodeOf,
+} from '@/core/api/conversation-refusals';
+import { useMessageHistory } from '@/core/api/hooks/use-conversations';
+import { Button } from '@/core/ui/button';
+import { Skeleton } from '@/core/ui/skeleton';
 import { VirtualList } from '@/core/ui/virtual-list';
 import { MessageBubble } from './message-bubble';
 import { SystemEvent } from './system-event';
@@ -12,39 +22,113 @@ const ESTIMATED_MESSAGE_HEIGHT_PX = 64;
  */
 const NO_MESSAGES: Message[] = [];
 
-export function MessageThread({ conversationId }: { conversationId: string }) {
-  const messages = useConversationStore((s) => s.messages[conversationId] ?? NO_MESSAGES);
-  const setMessages = useConversationStore((s) => s.setMessages);
+/**
+ * A row's list key. A row with no id (a `TypingIndicator` frame, `messageId` `""`) stays in the list, so
+ * it takes its position: it holds no state a remount would lose.
+ */
+function rowKey(message: Message, index: number): string {
+  return message.id || `no-id-${index}`;
+}
 
-  const { data: fetchedMessages } = useMessages(conversationId);
+export function MessageThread({ conversationId }: { conversationId: string }) {
+  const { t } = useTranslation(['agent', 'common']);
+  const messages = useConversationStore((s) => s.messages[conversationId] ?? NO_MESSAGES);
+  const mergeMessages = useConversationStore((s) => s.mergeMessages);
+
+  const history = useMessageHistory(conversationId);
+  const { messages: served } = history;
 
   useEffect(() => {
-    if (fetchedMessages && fetchedMessages.length > 0) {
-      setMessages(conversationId, fetchedMessages);
+    if (served.length > 0) {
+      mergeMessages(conversationId, served);
     }
-  }, [fetchedMessages, conversationId, setMessages]);
+  }, [served, conversationId, mergeMessages]);
+
+  // A refusal or a 404 takes the thread whatever the fetch phase, over whatever the store holds (spec
+  // audit F2, F3). Any other failure leaves the messages on screen.
+  const errors = [history.readError, history.nextPageError];
+  const refusal = errors.find(isNotReadable);
+  const cursorRefused = refusalCodeOf(history.nextPageError) === 'invalid-cursor';
+
+  // The conversation whose last settled read failed with anything but a refusal or a 404. While this
+  // thread stays mounted, a further read of it keeps the store's messages on screen: a refetch of a read
+  // with no data has no error to show while it runs. Derived during render, so it holds no other
+  // conversation's answer; a fresh mount starts with none.
+  const [failedRead, setFailedRead] = useState<string | null>(null);
+  const { readError } = history;
+  let currentFailedRead = failedRead === conversationId && !history.isLoaded ? failedRead : null;
+  if (readError) {
+    currentFailedRead =
+      isNotReadable(readError) || isConversationNotFound(readError) ? null : conversationId;
+  }
+  if (currentFailedRead !== failedRead) setFailedRead(currentFailedRead);
+
+  if (refusal) {
+    return (
+      <div className="flex-1 px-4 py-4">
+        <ReadRefusal error={refusal} />
+      </div>
+    );
+  }
+
+  if (errors.some(isConversationNotFound)) {
+    return (
+      <div
+        data-testid="conversation-not-found"
+        className="flex flex-1 items-center justify-center px-4 py-4 text-sm text-slate-500"
+      >
+        {t(CONVERSATION_NOT_FOUND_KEY)}
+      </div>
+    );
+  }
+
+  // Whether this conversation may be read at all is not known yet, so nothing of the store is drawn.
+  // Any other failure of the first read leaves the store's messages on screen, below.
+  if (!history.isLoaded && !readError && currentFailedRead === null) {
+    return (
+      <div data-testid="thread-loading" className="flex-1 space-y-2 px-4 py-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 px-4 py-4">
-      <div className="mx-auto h-full max-w-2xl">
-        <VirtualList
-          items={messages}
-          getItemKey={(msg) => msg.id}
-          estimateSize={() => ESTIMATED_MESSAGE_HEIGHT_PX}
-          stickToBottom
-          renderItem={(msg, idx) => {
-            if (msg.type === 'system') {
-              return <SystemEvent message={msg} />;
-            }
-            const prev = messages[idx - 1];
-            const showSender = !prev || prev.type === 'system' || prev.sender !== msg.sender;
-            return (
-              <div className="py-0.5">
-                <MessageBubble message={msg} showSender={showSender} />
-              </div>
-            );
-          }}
-        />
+      <div className="mx-auto flex h-full max-w-2xl flex-col">
+        {history.nextPageError && <ReadRefusal error={history.nextPageError} />}
+        {history.hasNextPage && !cursorRefused && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full"
+            data-testid="history-load-earlier"
+            disabled={history.isFetchingNextPage}
+            onClick={() => void history.fetchNextPage()}
+          >
+            {t('agent:history.viewer.load_earlier')}
+          </Button>
+        )}
+        <div className="min-h-0 flex-1">
+          <VirtualList
+            items={messages}
+            getItemKey={rowKey}
+            estimateSize={() => ESTIMATED_MESSAGE_HEIGHT_PX}
+            stickToBottom
+            renderItem={(msg, idx) => {
+              if (msg.type === 'system') {
+                return <SystemEvent message={msg} />;
+              }
+              const prev = messages[idx - 1];
+              const showSender = !prev || prev.type === 'system' || prev.sender !== msg.sender;
+              return (
+                <div className="py-0.5">
+                  <MessageBubble message={msg} showSender={showSender} />
+                </div>
+              );
+            }}
+          />
+        </div>
       </div>
     </div>
   );

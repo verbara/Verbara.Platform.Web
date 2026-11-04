@@ -197,3 +197,409 @@ export const transferNoteMessage: Schemas['Message'] = {
   createdAt: '2026-10-30T15:04:05.123+00:00',
   createdBy: 'transfer:0f1e2d3c4b5a69788796a5b4c3d2e1f0',
 };
+
+/**
+ * `GET /api/v1/contacts/{id}/conversations` as the host fixture `contact-conversation-history.v1.json`
+ * answers it (contact-history-opens-by-assignment-web, W11). The first item is the conversation the
+ * calling agent holds now, so it has no close members.
+ */
+export const heldContactSummary: Schemas['ContactConversationSummaryDto'] = {
+  id: 'c3b2a1f0e9d84c7b6a5f4e3d2c1b0a99',
+  channel: 'WhatsApp',
+  state: 'Active',
+  createdAt: '2026-11-03T14:02:11.000+00:00',
+  queueId: 'q-support-0001',
+  queueName: 'Support',
+  agentId: 'a-0f1e2d3c4b5a6978',
+  agentDisplayName: 'Agent B',
+  lastMessageAt: '2026-11-03T14:05:40.000+00:00',
+  lastMessage: {
+    direction: 'Inbound',
+    blockType: 'Text',
+    preview: 'Hi again, the replacement card has not arrived yet',
+    createdAt: '2026-11-03T14:05:40.000+00:00',
+  },
+  heldByCaller: true,
+};
+
+/** The fixture's second item: closed by the inactivity close, handled and typified by another agent. */
+export const closedContactSummary: Schemas['ContactConversationSummaryDto'] = {
+  id: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  channel: 'WhatsApp',
+  state: 'Closed',
+  createdAt: '2026-10-28T09:15:00.000+00:00',
+  closedAt: '2026-10-31T10:20:05.000+00:00',
+  durationSeconds: 3905,
+  closedReason: 'inactivity',
+  queueId: 'q-support-0001',
+  queueName: 'Support',
+  agentId: 'a-9e8d7c6b5a493827',
+  agentDisplayName: 'Agent A',
+  disposition: {
+    nodeId: 'n-card-replacement',
+    label: 'Card replacement requested',
+  },
+  lastMessageAt: '2026-10-28T10:20:05.000+00:00',
+  lastMessage: {
+    direction: 'Outbound',
+    blockType: 'Text',
+    preview: 'Your replacement card has been ordered and should arrive within five business days.',
+    createdAt: '2026-10-28T10:20:05.000+00:00',
+  },
+  heldByCaller: false,
+};
+
+/** The fixture's third item: no queue, agent, disposition or close reason; its last message is an image. */
+export const abandonedContactSummary: Schemas['ContactConversationSummaryDto'] = {
+  id: '0a9b8c7d6e5f40312233445566778899',
+  channel: 'WhatsApp',
+  state: 'Abandoned',
+  createdAt: '2026-09-02T18:00:00.000+00:00',
+  closedAt: '2026-09-02T18:30:00.000+00:00',
+  durationSeconds: 1800,
+  lastMessageAt: '2026-09-02T18:01:12.000+00:00',
+  lastMessage: {
+    direction: 'Inbound',
+    blockType: 'Image',
+    preview: '',
+    createdAt: '2026-09-02T18:01:12.000+00:00',
+  },
+  heldByCaller: false,
+};
+
+export const contactSummaryPage: Schemas['PagedResultOfContactConversationSummaryDto'] = {
+  items: [heldContactSummary, closedContactSummary, abandonedContactSummary],
+  totalCount: 3,
+  page: 1,
+  pageSize: 25,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};
+
+/** The same contact over two pages of two (W2). Not in the fixture: its values are the fixture's items. */
+export const contactSummaryFirstOfTwoPages: Schemas['PagedResultOfContactConversationSummaryDto'] =
+  {
+    items: [heldContactSummary, closedContactSummary],
+    totalCount: 3,
+    page: 1,
+    pageSize: 25,
+    totalPages: 2,
+    hasNextPage: true,
+    hasPreviousPage: false,
+  };
+
+/**
+ * Page 2 after a new conversation of the contact started between the two reads: offset paging shifted
+ * page 1's last row down, so it is served again first (W2).
+ */
+export const contactSummaryShiftedSecondPage: Schemas['PagedResultOfContactConversationSummaryDto'] =
+  {
+    items: [closedContactSummary, abandonedContactSummary],
+    totalCount: 4,
+    page: 2,
+    pageSize: 25,
+    totalPages: 2,
+    hasNextPage: false,
+    hasPreviousPage: true,
+  };
+
+/** `conversation-message-history.v1.json` `firstPage.body.items[0]`, the newest message. */
+export const historyNewestMessage: Schemas['Message'] = {
+  messageId: 'm-0003-b1c2d3e4f5a6b7c8',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  tenantId: 'demo',
+  direction: 'Outbound',
+  channel: 'WhatsApp',
+  senderId: 'a-9e8d7c6b5a493827',
+  content: {
+    blocks: [
+      {
+        $type: 'text',
+        text: 'Your replacement card has been ordered and should arrive within five business days.',
+        type: 'Text',
+      },
+    ],
+  },
+  deliveryStatus: 'Delivered',
+  createdAt: '2026-10-28T10:20:05.000+00:00',
+  deliveredAt: '2026-10-28T10:20:06.000+00:00',
+};
+
+/** `firstPage.body.items[1]`. */
+export const historySecondMessage: Schemas['Message'] = {
+  messageId: 'm-0002-a1b2c3d4e5f6a7b8',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  tenantId: 'demo',
+  direction: 'Inbound',
+  channel: 'WhatsApp',
+  content: {
+    blocks: [
+      {
+        $type: 'text',
+        text: 'My card was blocked after I reported it lost',
+        type: 'Text',
+      },
+    ],
+  },
+  deliveryStatus: 'Delivered',
+  externalMessageId: 'wamid.EXAMPLE0002',
+  createdAt: '2026-10-28T09:16:30.000+00:00',
+};
+
+/** `olderPage.body.items[0]`, the oldest message. */
+export const historyOldestMessage: Schemas['Message'] = {
+  messageId: 'm-0001-f0e1d2c3b4a59687',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  tenantId: 'demo',
+  direction: 'Inbound',
+  channel: 'WhatsApp',
+  content: {
+    blocks: [
+      {
+        $type: 'text',
+        text: 'Hello',
+        type: 'Text',
+      },
+    ],
+  },
+  deliveryStatus: 'Delivered',
+  externalMessageId: 'wamid.EXAMPLE0001',
+  createdAt: '2026-10-28T09:15:00.000+00:00',
+};
+
+export const historyFirstPage: Schemas['MessageHistoryPageDto'] = {
+  items: [historyNewestMessage, historySecondMessage],
+  hasMore: true,
+  nextBefore: 'opaque-cursor-value-1',
+};
+
+export const historyOlderPage: Schemas['MessageHistoryPageDto'] = {
+  items: [historyOldestMessage],
+  hasMore: false,
+};
+
+export const historyEmptyPage: Schemas['MessageHistoryPageDto'] = {
+  items: [],
+  hasMore: false,
+};
+
+/** A one-page transcript holding `transferNoteMessage`, for the thread's stored-note case. */
+export const historyTransferNotePage: Schemas['MessageHistoryPageDto'] = {
+  items: [transferNoteMessage],
+  hasMore: false,
+};
+
+/** The body of `conversation-by-id-terminal.v1.json`: a closed conversation read by id. */
+export const terminalConversation: Schemas['Conversation'] = {
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  tenantId: 'demo',
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  channel: 'WhatsApp',
+  owner: {
+    kind: 'Agent',
+    ownerId: 'a-9e8d7c6b5a493827',
+  },
+  state: 'Closed',
+  createdAt: '2026-10-28T09:15:00.000+00:00',
+  closedAt: '2026-10-31T10:20:05.000+00:00',
+  updatedAt: '2026-10-31T10:20:05.000+00:00',
+  queuePriority: 0,
+  metadata: {
+    _closedReason: 'inactivity',
+  },
+  sessions: [],
+};
+
+/**
+ * The same record with the internal metadata keys the fixture warns of. The fixture names `_offeredTo`
+ * and `_offeredAt` without values, so these two values are this file's own.
+ */
+export const terminalConversationWithOfferMetadata: Schemas['Conversation'] = {
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  tenantId: 'demo',
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  channel: 'WhatsApp',
+  state: 'Closed',
+  createdAt: '2026-10-28T09:15:00.000+00:00',
+  closedAt: '2026-10-31T10:20:05.000+00:00',
+  metadata: {
+    _closedReason: 'inactivity',
+    _offeredTo: 'a-9e8d7c6b5a493827',
+    _offeredAt: '2026-10-28T09:15:30.000+00:00',
+  },
+};
+
+const everyConversationState = {
+  Queued: true,
+  Offered: true,
+  Active: true,
+  OnHold: true,
+  Consulting: true,
+  WrapUp: true,
+  WaitingForCustomer: true,
+  Snoozed: true,
+  Resolved: true,
+  Escalated: true,
+  Closed: true,
+  Abandoned: true,
+  Merged: true,
+  Spam: true,
+} satisfies Record<Schemas['ConversationState'], true>;
+
+/** Every `ConversationState`; the `Record` above makes a value the schema adds or drops a compile error. */
+export const conversationStateValues = Object.keys(
+  everyConversationState,
+) as Schemas['ConversationState'][];
+
+/** The 403 body of `conversation-read-refusals.v1.json`. */
+export const notReadableRefusal: Schemas['ErrorResponse'] = { error: 'not-readable' };
+
+/** The 400 body of `conversation-message-history.v1.json` `invalidCursor`. */
+export const invalidCursorRefusal: Schemas['ErrorResponse'] = { error: 'invalid-cursor' };
+
+/** The `metadata` every SSE frame of the two fixtures below carries, with its `occurredAt`. */
+interface SseFrameMetadata {
+  tenantId: string;
+  occurredAt: string;
+}
+
+/**
+ * `data` of a `conversation.message` frame, as `conversation-message-event.v1.json` pins it. No generated
+ * schema covers SSE data, so this names the frame's members (W11).
+ */
+export interface ConversationMessageFrameData {
+  conversationId: string;
+  messageId: string;
+  sender: string;
+  text: string;
+  tenantId: string;
+  type: string;
+  timestamp: string;
+  eventType: string;
+  metadata: SseFrameMetadata;
+}
+
+/**
+ * `frame.data` of the fixture: the live copy of `historyNewestMessage` (`identityWithHistory`). Its
+ * `text` is the channel name, not the message (`_observedOnMain` (1)).
+ */
+export const conversationMessageFrame: ConversationMessageFrameData = {
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  messageId: 'm-0003-b1c2d3e4f5a6b7c8',
+  sender: 'Outbound',
+  text: 'WhatsApp',
+  tenantId: 'demo',
+  type: 'conversation.message',
+  timestamp: '2026-11-03T10:42:07.512+00:00',
+  eventType: 'conversation.message',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:42:07.512+00:00' },
+};
+
+/**
+ * A `TypingIndicator` frame: `messageId` `""` (`identityWithHistory.exception`) and the channel name in
+ * `text` (`fields.text`). The fixture has no such frame, so its other values are the frame's above.
+ */
+export const typingIndicatorFrame: ConversationMessageFrameData = {
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  messageId: '',
+  sender: 'TypingIndicator',
+  text: 'WhatsApp',
+  tenantId: 'demo',
+  type: 'conversation.message',
+  timestamp: '2026-11-03T10:42:07.512+00:00',
+  eventType: 'conversation.message',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:42:07.512+00:00' },
+};
+
+/** What the four `agentassist.*` frames of `agentassist-events.v1.json` share. */
+interface AgentAssistFrameData {
+  sessionId: string;
+  agentId: string;
+  conversationId: string;
+  tenantId: string;
+  type: string;
+  timestamp: string;
+  eventType: string;
+  metadata: SseFrameMetadata;
+}
+
+/** `events["agentassist.suggestion"].data`. */
+export const agentAssistSuggestionFrame: AgentAssistFrameData & {
+  suggestionId: string;
+  text: string;
+  priority: string;
+  source: string;
+} = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  suggestionId: 'sg-01',
+  text: 'Offer to resend the replacement card tracking number.',
+  priority: 'Important',
+  source: 'Keyword',
+  tenantId: 'demo',
+  type: 'agentassist.suggestion',
+  timestamp: '2026-11-03T10:43:01.004+00:00',
+  eventType: 'agentassist.suggestion',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:01.004+00:00' },
+};
+
+/** `events["agentassist.sentiment"].data`. */
+export const agentAssistSentimentFrame: AgentAssistFrameData & {
+  speaker: string;
+  score: number;
+  label: string;
+  triggerWords: string[];
+} = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  speaker: 'Caller',
+  score: -0.62,
+  label: 'Frustrated',
+  triggerWords: ['again', 'third time'],
+  tenantId: 'demo',
+  type: 'agentassist.sentiment',
+  timestamp: '2026-11-03T10:43:02.31+00:00',
+  eventType: 'agentassist.sentiment',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:02.31+00:00' },
+};
+
+/** `events["agentassist.compliance_alert"].data`. */
+export const agentAssistComplianceAlertFrame: AgentAssistFrameData & {
+  ruleId: string;
+  phrase: string;
+  severity: string;
+} = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  ruleId: 'cr-identity-check',
+  phrase: 'full card number',
+  severity: 'Warning',
+  tenantId: 'demo',
+  type: 'agentassist.compliance_alert',
+  timestamp: '2026-11-03T10:43:03.777+00:00',
+  eventType: 'agentassist.compliance_alert',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:03.777+00:00' },
+};
+
+/** `events["agentassist.transcript"].data`. */
+export const agentAssistTranscriptFrame: AgentAssistFrameData & {
+  speaker: string;
+  text: string;
+  isFinal: boolean;
+} = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  speaker: 'Caller',
+  text: 'This is the third time I am calling about the card.',
+  isFinal: true,
+  tenantId: 'demo',
+  type: 'agentassist.transcript',
+  timestamp: '2026-11-03T10:43:00.12+00:00',
+  eventType: 'agentassist.transcript',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:00.12+00:00' },
+};

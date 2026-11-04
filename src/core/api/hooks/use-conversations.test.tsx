@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   useConversations,
   useConversation,
-  useMessages,
+  useMessageHistory,
   useSendMessage,
   useAcceptConversation,
   useRejectConversation,
@@ -16,6 +16,16 @@ import {
 } from './use-conversations';
 import type { Conversation, Message } from './use-conversations';
 import * as client from '@/core/api/client';
+import { ApiError } from '@/core/api/api-error';
+import {
+  historyEmptyPage,
+  historyFirstPage,
+  historyOlderPage,
+  historySecondMessage,
+  invalidCursorRefusal,
+  notReadableRefusal,
+  terminalConversation,
+} from '@/tests/utils/contract-doubles';
 
 vi.mock('@/core/api/client', () => ({
   customFetch: vi.fn(),
@@ -48,25 +58,6 @@ const sampleMessage: Message = {
   timestamp: '2026-01-01T00:00:00Z',
   status: 'delivered',
   type: 'text',
-};
-
-/** `sampleMessage` as Platform serializes its `Message` record (Conversations/Message.cs). */
-const platformSampleMessage = {
-  messageId: 'msg-1',
-  conversationId: 'conv-1',
-  tenantId: 'tenant-1',
-  direction: 'Inbound',
-  channel: 'WebChat',
-  senderId: 'John Doe',
-  content: { blocks: [{ $type: 'text', text: 'Hello', type: 'Text' }] },
-  deliveryStatus: 'Delivered',
-  externalMessageId: null,
-  createdAt: '2026-01-01T00:00:00Z',
-  deliveredAt: null,
-  readAt: null,
-  updatedAt: null,
-  createdBy: null,
-  updatedBy: null,
 };
 
 describe('useConversations', () => {
@@ -154,56 +145,188 @@ describe('useConversation', () => {
     vi.clearAllMocks();
   });
 
-  it('should fetch a single conversation by id', async () => {
-    vi.mocked(client.customFetch).mockResolvedValue(sampleConversation);
-    const { result } = renderHook(() => useConversation('conv-1'), { wrapper });
+  it('useConversation_ShouldMapTheRecord_WhenTheConversationIsTerminal', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(terminalConversation);
+    const { result } = renderHook(() => useConversation('4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a'), {
+      wrapper,
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(sampleConversation);
+    expect(result.current.data).toEqual({
+      id: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+      contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+      channel: 'WhatsApp',
+      state: 'closed',
+      wireState: 'Closed',
+      createdAt: '2026-10-28T09:15:00.000+00:00',
+      closedAt: '2026-10-31T10:20:05.000+00:00',
+      closedReason: 'inactivity',
+    });
     expect(client.customFetch).toHaveBeenCalledWith({
-      url: '/api/v1/conversations/conv-1',
+      url: '/api/v1/conversations/4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
       method: 'GET',
     });
   });
 
-  it('should not fetch when id is undefined', () => {
+  it('useConversation_ShouldNotFetch_WhenIdIsUndefined', () => {
     const { result } = renderHook(() => useConversation(undefined), { wrapper });
     expect(result.current.fetchStatus).toBe('idle');
   });
 
-  it('should handle error', async () => {
-    vi.mocked(client.customFetch).mockRejectedValue(new Error('Not found'));
+  it('useConversation_ShouldExposeTheRefusal_WhenPlatformAnswersNotReadable', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(403, notReadableRefusal));
     const { result } = renderHook(() => useConversation('conv-1'), { wrapper });
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe('Not found');
+    expect(result.current.error).toMatchObject({ status: 403, code: 'not-readable' });
   });
 });
 
-describe('useMessages', () => {
+describe('useMessageHistory', () => {
+  const ID = '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a';
+  const URL = `/api/v1/conversations/${ID}/history`;
+
+  /** Serves the fixture's two pages by the cursor the hook sends. */
+  function serveFixturePages() {
+    vi.mocked(client.customFetch).mockImplementation(async (config) =>
+      config.params?.before === 'opaque-cursor-value-1' ? historyOlderPage : historyFirstPage,
+    );
+  }
+
+  function clientWrapper() {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    return { qc, Wrapper };
+  }
+
+  const shownIds = (messages: Message[]) => messages.map((m) => m.id);
+
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
-  it('useMessages_ShouldMapPlatformMessageRecord_WhenApiReturnsHistory', async () => {
-    vi.mocked(client.customFetch).mockResolvedValue([platformSampleMessage]);
-    const { result } = renderHook(() => useMessages('conv-1'), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual([sampleMessage]);
-    expect(client.customFetch).toHaveBeenCalledWith({
-      url: '/api/v1/conversations/conv-1/messages',
+  it('useMessageHistory_ShouldSendNoBeforeAndShowOldestOnTop_WhenTheFirstPageLoads', async () => {
+    serveFixturePages();
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper });
+    await waitFor(() => expect(result.current.messages).toHaveLength(2));
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+    expect(client.customFetch).toHaveBeenCalledWith({ url: URL, method: 'GET' });
+    expect(shownIds(result.current.messages)).toEqual([
+      'm-0002-a1b2c3d4e5f6a7b8',
+      'm-0003-b1c2d3e4f5a6b7c8',
+    ]);
+    expect(result.current.hasNextPage).toBe(true);
+  });
+
+  it('useMessageHistory_ShouldSendNextBeforeVerbatimAndStop_WhenHasMoreIsFalse', async () => {
+    serveFixturePages();
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper });
+    await waitFor(() => expect(result.current.hasNextPage).toBe(true));
+    await act(() => result.current.fetchNextPage());
+    await waitFor(() => expect(result.current.messages).toHaveLength(3));
+    expect(client.customFetch).toHaveBeenLastCalledWith({
+      url: URL,
       method: 'GET',
-      params: { limit: '50', offset: '0' },
+      params: { before: 'opaque-cursor-value-1' },
     });
+    expect(shownIds(result.current.messages)).toEqual([
+      'm-0001-f0e1d2c3b4a59687',
+      'm-0002-a1b2c3d4e5f6a7b8',
+      'm-0003-b1c2d3e4f5a6b7c8',
+    ]);
+    expect(result.current.hasNextPage).toBe(false);
   });
 
-  it('should not fetch when conversationId is undefined', () => {
-    const { result } = renderHook(() => useMessages(undefined), { wrapper });
-    expect(result.current.fetchStatus).toBe('idle');
+  it('useMessageHistory_ShouldUseTheHistoryKeyUnderMessages_WhenItLoads', async () => {
+    serveFixturePages();
+    const { qc, Wrapper } = clientWrapper();
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper: Wrapper });
+    await waitFor(() => expect(result.current.messages).toHaveLength(2));
+    expect(qc.getQueryData(['messages', ID, 'history'])).toBeDefined();
   });
 
-  it('should handle error', async () => {
-    vi.mocked(client.customFetch).mockRejectedValue(new Error('Fetch failed'));
-    const { result } = renderHook(() => useMessages('conv-1'), { wrapper });
-    await waitFor(() => expect(result.current.isError).toBe(true));
+  it('useMessageHistory_ShouldRepeatNothing_WhenInvalidatedAfterLoadingEarlier', async () => {
+    serveFixturePages();
+    const { qc, Wrapper } = clientWrapper();
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper: Wrapper });
+    await waitFor(() => expect(result.current.hasNextPage).toBe(true));
+    await act(() => result.current.fetchNextPage());
+    await waitFor(() => expect(result.current.messages).toHaveLength(3));
+    vi.mocked(client.customFetch).mockClear();
+
+    await act(() => qc.invalidateQueries({ queryKey: ['messages', ID] }));
+
+    // Every loaded page is read again (design: Evidence classes) and no message shows twice.
+    expect(client.customFetch).toHaveBeenCalledTimes(2);
+    expect(shownIds(result.current.messages)).toEqual([
+      'm-0001-f0e1d2c3b4a59687',
+      'm-0002-a1b2c3d4e5f6a7b8',
+      'm-0003-b1c2d3e4f5a6b7c8',
+    ]);
+  });
+
+  it('useMessageHistory_ShouldShowAMessageOnce_WhenTwoPagesServeTheSameId', async () => {
+    vi.mocked(client.customFetch).mockImplementation(async (config) =>
+      config.params?.before ? { items: [historySecondMessage], hasMore: false } : historyFirstPage,
+    );
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper });
+    await waitFor(() => expect(result.current.hasNextPage).toBe(true));
+    await act(() => result.current.fetchNextPage());
+    await waitFor(() => expect(result.current.hasNextPage).toBe(false));
+    expect(shownIds(result.current.messages)).toEqual([
+      'm-0002-a1b2c3d4e5f6a7b8',
+      'm-0003-b1c2d3e4f5a6b7c8',
+    ]);
+  });
+
+  it('useMessageHistory_ShouldKeepMessagesAndNameTheCursor_WhenANextPageIsInvalidCursor', async () => {
+    vi.mocked(client.customFetch).mockImplementation(async (config) => {
+      if (config.params?.before) throw new ApiError(400, invalidCursorRefusal);
+      return historyFirstPage;
+    });
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper });
+    await waitFor(() => expect(result.current.hasNextPage).toBe(true));
+    await act(() => result.current.fetchNextPage());
+    await waitFor(() => expect(result.current.nextPageError).not.toBeNull());
+    expect(result.current.nextPageError).toMatchObject({ status: 400, code: 'invalid-cursor' });
+    expect(result.current.readError).toBeNull();
+    expect(result.current.messages).toHaveLength(2);
+  });
+
+  it('useMessageHistory_ShouldReportAReadError_WhenTheFirstPageIsRefused', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(403, notReadableRefusal));
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper });
+    await waitFor(() => expect(result.current.readError).not.toBeNull());
+    expect(result.current.readError).toMatchObject({ status: 403, code: 'not-readable' });
+    expect(result.current.nextPageError).toBeNull();
+    expect(result.current.messages).toEqual([]);
+  });
+
+  it('useMessageHistory_ShouldReportAReadError_WhenARefetchIsRefusedAfterLoading', async () => {
+    serveFixturePages();
+    const { qc, Wrapper } = clientWrapper();
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper: Wrapper });
+    await waitFor(() => expect(result.current.messages).toHaveLength(2));
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(403, notReadableRefusal));
+
+    await act(() => qc.invalidateQueries({ queryKey: ['messages', ID] }));
+
+    await waitFor(() => expect(result.current.readError).not.toBeNull());
+    expect(result.current.nextPageError).toBeNull();
+  });
+
+  it('useMessageHistory_ShouldShowNoMessagesAndNoNextPage_WhenTheConversationIsEmpty', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(historyEmptyPage);
+    const { result } = renderHook(() => useMessageHistory(ID), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.messages).toEqual([]);
+    expect(result.current.hasNextPage).toBe(false);
+  });
+
+  it('useMessageHistory_ShouldNotFetch_WhenTheIdIsUndefined', () => {
+    const { result } = renderHook(() => useMessageHistory(undefined), { wrapper });
+    expect(result.current.messages).toEqual([]);
+    expect(client.customFetch).not.toHaveBeenCalled();
   });
 });
 
@@ -252,6 +375,62 @@ describe('useAcceptConversation', () => {
       url: '/api/v1/conversations/conv-1/accept',
       method: 'POST',
     });
+  });
+
+  it('useAcceptConversation_ShouldInvalidateTheContactHistoryAndNotTheContact_WhenItSucceeds', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+    const qc = new QueryClient();
+    qc.setQueryData(['contacts', 'contact-1', 'conversations'], { pages: [], pageParams: [] });
+    qc.setQueryData(['contacts', 'contact-1'], {});
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useAcceptConversation(), { wrapper: Wrapper });
+
+    act(() => {
+      result.current.mutate('conv-1');
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const invalidated = (key: string[]) => qc.getQueryState(key)?.isInvalidated;
+    expect(invalidated(['contacts', 'contact-1', 'conversations'])).toBe(true);
+    expect(invalidated(['contacts', 'contact-1'])).toBe(false);
+  });
+
+  it('useAcceptConversation_ShouldInvalidateTheConversationsMessagesAndNoOthers_WhenItSucceeds', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(undefined);
+    const qc = new QueryClient();
+    qc.setQueryData(['messages', 'conv-1', 'history'], { pages: [], pageParams: [] });
+    qc.setQueryData(['messages', 'conv-2', 'history'], { pages: [], pageParams: [] });
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useAcceptConversation(), { wrapper: Wrapper });
+
+    act(() => {
+      result.current.mutate('conv-1');
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(qc.getQueryState(['messages', 'conv-1', 'history'])?.isInvalidated).toBe(true);
+    expect(qc.getQueryState(['messages', 'conv-2', 'history'])?.isInvalidated).toBe(false);
+  });
+
+  it('useAcceptConversation_ShouldLeaveTheContactHistoryAlone_WhenItFails', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new Error('Failed'));
+    const qc = new QueryClient();
+    qc.setQueryData(['contacts', 'contact-1', 'conversations'], { pages: [], pageParams: [] });
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useAcceptConversation(), { wrapper: Wrapper });
+
+    act(() => {
+      result.current.mutate('conv-1');
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(qc.getQueryState(['contacts', 'contact-1', 'conversations'])?.isInvalidated).toBe(false);
   });
 
   it('should handle error', async () => {
@@ -431,5 +610,67 @@ describe('useCreateConversation', () => {
       result.current.mutate({ contactId: 'contact-1', channel: 'chat' });
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('the conversation reads and the app-wide retry', () => {
+  /** The app's `retry: 1`, with no delay: what is under test is whether a second read goes out. */
+  function appWideRetryWrapper({ children }: { children: React.ReactNode }) {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, retryDelay: 0 } } });
+    return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['403', 403],
+    ['404', 404],
+  ])('useMessageHistory_ShouldReadOnce_WhenTheAnswerIs %s', async (_name, status) => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(status, notReadableRefusal));
+    const { result } = renderHook(() => useMessageHistory('conv-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.readError).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['403', 403],
+    ['404', 404],
+  ])('useConversation_ShouldReadOnce_WhenTheAnswerIs %s', async (_name, status) => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(status, notReadableRefusal));
+    const { result } = renderHook(() => useConversation('conv-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('useMessageHistory_ShouldKeepTheAppWideRetry_WhenTheAnswerIsAnyOtherError', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(500, null));
+    const { result } = renderHook(() => useMessageHistory('conv-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.readError).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('useConversation_ShouldKeepTheAppWideRetry_WhenTheAnswerIsAnyOtherError', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(500, null));
+    const { result } = renderHook(() => useConversation('conv-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(2);
   });
 });

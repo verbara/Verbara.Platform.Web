@@ -10,8 +10,15 @@ import {
   useUpdateContact,
   useDeleteContact,
   type Contact,
-  type ContactConversation,
 } from './use-contacts';
+
+import { ApiError } from '@/core/api/api-error';
+import {
+  contactSummaryFirstOfTwoPages,
+  contactSummaryPage,
+  contactSummaryShiftedSecondPage,
+  notReadableRefusal,
+} from '@/tests/utils/contract-doubles';
 
 vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
 
@@ -30,16 +37,6 @@ const sampleContact: Contact = {
   preferredLanguage: 'en',
   timezone: 'America/New_York',
   addresses: [{ channel: 'voice', address: '+15551234567' }],
-  createdAt: '2026-01-01T00:00:00Z',
-};
-
-const sampleConversation: ContactConversation = {
-  id: 'conv-1',
-  channel: 'voice',
-  queueName: 'Sales',
-  disposition: 'Sale',
-  durationSeconds: 120,
-  closedAt: '2026-01-01T01:00:00Z',
   createdAt: '2026-01-01T00:00:00Z',
 };
 
@@ -67,24 +64,64 @@ describe('use-contacts', () => {
   });
 
   describe('useContactConversations', () => {
-    it('should fetch conversations when called', async () => {
-      vi.mocked(client.customFetch).mockResolvedValue({
-        items: [sampleConversation],
-        totalCount: 1,
-        page: 1,
-        pageSize: 20,
-      });
-      const { result } = renderHook(() => useContactConversations('contact-1'), { wrapper });
+    const CONTACT = '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d';
+    const URL = `/api/v1/contacts/${CONTACT}/conversations`;
+
+    it('useContactConversations_ShouldSendPageAndPageSizeAndKeepServedOrder_WhenItLoads', async () => {
+      vi.mocked(client.customFetch).mockResolvedValue(contactSummaryPage);
+      const { result } = renderHook(() => useContactConversations(CONTACT), { wrapper });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(result.current.data).toEqual([sampleConversation]);
       expect(client.customFetch).toHaveBeenCalledWith({
-        url: '/api/v1/contacts/contact-1/conversations',
+        url: URL,
         method: 'GET',
-        params: { page: '1', pageSize: '20' },
+        params: { page: '1', pageSize: '25' },
       });
+      expect(result.current.data?.map((c) => c.id)).toEqual([
+        'c3b2a1f0e9d84c7b6a5f4e3d2c1b0a99',
+        '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+        '0a9b8c7d6e5f40312233445566778899',
+      ]);
     });
 
-    it('should not fetch when contactId is undefined', () => {
+    it('useContactConversations_ShouldOfferNoNextPage_WhenHasNextPageIsFalse', async () => {
+      vi.mocked(client.customFetch).mockResolvedValue(contactSummaryPage);
+      const { result } = renderHook(() => useContactConversations(CONTACT), { wrapper });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.hasNextPage).toBe(false);
+      await act(() => result.current.fetchNextPage());
+      expect(client.customFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('useContactConversations_ShouldAskPageTwoAndShowAShiftedRowOnce_WhenHasNextPageIsTrue', async () => {
+      vi.mocked(client.customFetch).mockImplementation(async (config) =>
+        config.params?.page === '2'
+          ? contactSummaryShiftedSecondPage
+          : contactSummaryFirstOfTwoPages,
+      );
+      const { result } = renderHook(() => useContactConversations(CONTACT), { wrapper });
+      await waitFor(() => expect(result.current.hasNextPage).toBe(true));
+      await act(() => result.current.fetchNextPage());
+      await waitFor(() => expect(result.current.hasNextPage).toBe(false));
+      expect(client.customFetch).toHaveBeenLastCalledWith({
+        url: URL,
+        method: 'GET',
+        params: { page: '2', pageSize: '25' },
+      });
+      expect(result.current.data?.map((c) => c.id)).toEqual([
+        'c3b2a1f0e9d84c7b6a5f4e3d2c1b0a99',
+        '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+        '0a9b8c7d6e5f40312233445566778899',
+      ]);
+    });
+
+    it('useContactConversations_ShouldExposeTheRefusal_WhenPlatformAnswersNotReadable', async () => {
+      vi.mocked(client.customFetch).mockRejectedValue(new ApiError(403, notReadableRefusal));
+      const { result } = renderHook(() => useContactConversations(CONTACT), { wrapper });
+      await waitFor(() => expect(result.current.isError).toBe(true));
+      expect(result.current.error).toMatchObject({ status: 403, code: 'not-readable' });
+    });
+
+    it('useContactConversations_ShouldNotFetch_WhenContactIdIsUndefined', () => {
       const { result } = renderHook(() => useContactConversations(undefined), { wrapper });
       expect(result.current.fetchStatus).toBe('idle');
     });
@@ -182,5 +219,42 @@ describe('use-contacts', () => {
         method: 'DELETE',
       });
     });
+  });
+});
+
+describe('useContactConversations and the app-wide retry', () => {
+  /** The app's `retry: 1`, with no delay: what is under test is whether a second read goes out. */
+  function appWideRetryWrapper({ children }: { children: React.ReactNode }) {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, retryDelay: 0 } } });
+    return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['403', 403],
+    ['404', 404],
+  ])('useContactConversations_ShouldReadOnce_WhenTheAnswerIs %s', async (_name, status) => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(status, notReadableRefusal));
+    const { result } = renderHook(() => useContactConversations('contact-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('useContactConversations_ShouldKeepTheAppWideRetry_WhenTheAnswerIsAnyOtherError', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new ApiError(500, null));
+    const { result } = renderHook(() => useContactConversations('contact-1'), {
+      wrapper: appWideRetryWrapper,
+    });
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    expect(client.customFetch).toHaveBeenCalledTimes(2);
   });
 });

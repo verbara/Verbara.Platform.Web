@@ -172,6 +172,44 @@ export const conversationRefusals: ApiErrorMap<ConversationAction> = {
 };
 
 /**
+ * The closed map for the conversation reads (W9, ADR-0013): `GET /api/v1/conversations/{id}`, its
+ * `/history` and `GET /api/v1/contacts/{id}/conversations`. Platform answers every refusal by its read
+ * rule with one code, so a message never says why, and a bare 404 for an id its tenant does not have.
+ * The surface shows the message in place of its content, not as a toast. `code` is what
+ * `data-refusal` exposes: the machine code, or the status when Platform sends none.
+ */
+export const conversationReadRefusals: ApiErrorMap = {
+  codes: {
+    'not-readable': { code: 'not-readable', key: 'agent:history.errors.not_readable' },
+    'invalid-cursor': { code: 'invalid-cursor', key: 'agent:history.errors.invalid_cursor' },
+  },
+  statuses: {
+    404: { code: '404', key: 'agent:history.errors.not_found' },
+  },
+  fallback: { code: 'read-failed', key: 'common:errors.route_error_fallback' },
+};
+
+/**
+ * The workspace's "that conversation was not found" text (W10): the live thread on a 404 from `/history`,
+ * and the panel when the store has no entry. The viewer has its own, `agent:history.errors.not_found`.
+ */
+export const CONVERSATION_NOT_FOUND_KEY = 'common:errors.supervisor_listen.conversation_not_found';
+
+/** A 404: Platform has no such conversation in this tenant, whatever page was being read. */
+export function isConversationNotFound(err: unknown): boolean {
+  return isApiError(err) && err.status === 404;
+}
+
+/**
+ * A 403 `not-readable`: the agent may not read this conversation or contact now. It takes the surface
+ * whatever the fetch phase (first page, next page or refetch), because Platform applies its read rule
+ * on every request and cached content would still show what the agent can no longer read.
+ */
+export function isNotReadable(err: unknown): boolean {
+  return isApiError(err) && err.status === 403 && err.code === 'not-readable';
+}
+
+/**
  * The refused fields named by the form's own labels, joined for the `typify_invalid` message.
  * `labelOf` returns the label the form shows for a field name, or `undefined` when the form has
  * none; such a field is named by its schema key (an identifier the tenant defined, not Platform's

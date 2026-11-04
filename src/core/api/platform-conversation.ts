@@ -80,6 +80,43 @@ export function mapPlatformConversation(conversation: PlatformConversation): Con
 }
 
 /**
+ * The console's view of a conversation read by id (`GET /api/v1/conversations/{id}`), for any state:
+ * what the read-only viewer shows and where the History tab finds a fresh offer's contact. It never
+ * enters the inbox store, which keeps its own working-set rule in {@link mapPlatformConversation}.
+ */
+export interface PastConversation {
+  id: string;
+  contactId: string;
+  /** As sent, PascalCase; `channelLabel` names it. */
+  channel: string;
+  /** The console's snake-case state name. */
+  state: string;
+  /** As sent, PascalCase: what the state's label and `data-state` are chosen by (W3, W12). */
+  wireState: PlatformConversationState;
+  createdAt: string;
+  closedAt?: string;
+  closedReason?: string;
+}
+
+/**
+ * Maps the `Conversation` record for every one of its states, terminal included. `metadata` is read
+ * for `_closedReason` alone: its other underscore keys (`_offeredTo`, `_offeredAt`) are internal.
+ */
+export function mapPlatformPastConversation(conversation: PlatformConversation): PastConversation {
+  const closedReason = conversation.metadata?._closedReason;
+  return {
+    id: String(conversation.conversationId),
+    contactId: String(conversation.contactId),
+    channel: String(conversation.channel),
+    state: STATE[conversation.state] ?? String(conversation.state).toLowerCase(),
+    wireState: conversation.state,
+    createdAt: conversation.createdAt,
+    ...(conversation.closedAt != null ? { closedAt: conversation.closedAt } : {}),
+    ...(closedReason != null ? { closedReason } : {}),
+  };
+}
+
+/**
  * Maps the same `Conversation` record, as `GET /api/v1/supervisor/conversations` returns it
  * (SupervisorEndpoints.ListDigitalConversations), onto the supervisor monitor's view-model. The
  * monitor keys its channel icons by Platform's enum name, so `channel` is kept as sent; the state

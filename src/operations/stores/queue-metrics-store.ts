@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 import type { QueueMetrics } from '@/core/api/hooks/use-queue-metrics';
 
 interface QueueMetricsState {
@@ -37,3 +38,5 @@ export const useQueueMetricsStore = create<QueueMetricsState>()((set) => ({
       return { queues, ...computeGlobals(queues) };
     }),
 }));
+
+registerSessionWorkReset(() => useQueueMetricsStore.getState().setQueues([]));

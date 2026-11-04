@@ -6,6 +6,8 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { useNavigate } from 'react-router';
 import { Plus, Building2, Trash2, Pencil, Clock, CreditCard, Ban, CircleCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { requestTenantId } from '@/core/api/client';
+import { clearWorkOfPreviousIdentity } from '@/core/session/session-work';
 import { useTenantStore } from '@/core/tenant/tenant-store';
 import { RetentionPolicySection } from '@/admin/gdpr/retention-policy-section';
 import { Badge } from '@/core/ui/badge';
@@ -128,7 +130,9 @@ export default function TenantsPage() {
 
   const handleManageBilling = useCallback(
     (tenant: Tenant) => {
+      const previous = requestTenantId();
       useTenantStore.getState().setActiveTenant(tenant.tenantId);
+      if (requestTenantId() !== previous) clearWorkOfPreviousIdentity();
       navigate('/admin/billing/rate-cards');
     },
     [navigate],

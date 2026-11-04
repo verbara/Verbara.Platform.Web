@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { ConfirmDialog } from '@/core/ui/confirm-dialog';
+import { CONVERSATION_NOT_FOUND_KEY } from '@/core/api/conversation-refusals';
 import { channelLabel } from '@/core/i18n/channel-label';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
@@ -107,8 +108,11 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
 
   if (!conversation) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-slate-500">
-        Conversation not found
+      <div
+        data-testid="conversation-not-found"
+        className="flex h-full items-center justify-center text-sm text-slate-500"
+      >
+        {t(CONVERSATION_NOT_FOUND_KEY)}
       </div>
     );
   }

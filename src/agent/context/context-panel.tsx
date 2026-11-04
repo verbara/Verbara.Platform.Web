@@ -25,7 +25,9 @@ export function ContextPanel() {
         className="w-full shrink-0 border-b border-slate-200 px-2 dark:border-slate-700"
       >
         <TabsTrigger value="contact">{t('agent:context.contact_info')}</TabsTrigger>
-        <TabsTrigger value="history">{t('agent:context.history')}</TabsTrigger>
+        <TabsTrigger value="history" data-testid="context-tab-history">
+          {t('agent:context.history')}
+        </TabsTrigger>
         <TabsTrigger value="notes">{t('agent:context.notes')}</TabsTrigger>
         <TabsTrigger value="knowledge">{t('agent:context.knowledge')}</TabsTrigger>
         {hasAiData && <TabsTrigger value="transcript">{t('agent:context.transcript')}</TabsTrigger>}

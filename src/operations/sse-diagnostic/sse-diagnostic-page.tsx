@@ -6,6 +6,7 @@ import { PageHeader } from '@/core/ui/page-header';
 import { Badge } from '@/core/ui/badge';
 import { Button } from '@/core/ui/button';
 import { onSseEvent } from '@/core/hooks/use-sse';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 
 const SSE_EVENT_TYPES = [
   'conversation.assigned',
@@ -77,6 +78,8 @@ const useSseDiagnosticStore = create<SseDiagnosticState>((set) => ({
     }),
   clearLog: () => set({ events: [], counters: {}, totalEvents: 0 }),
 }));
+
+registerSessionWorkReset(() => useSseDiagnosticStore.getState().clearLog());
 
 const HEARTBEAT_TIMEOUT_MS = 20_000;
 

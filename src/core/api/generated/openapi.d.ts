@@ -986,6 +986,15 @@ export interface paths {
             'application/json': components['schemas']['PagedResultOfConversation'];
           };
         };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
       };
     };
     put?: never;
@@ -1100,6 +1109,15 @@ export interface paths {
             'application/json': components['schemas']['Conversation'];
           };
         };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
         /** @description Not Found */
         404: {
           headers: {
@@ -1147,6 +1165,22 @@ export interface paths {
             'application/json': components['schemas']['Message'][];
           };
         };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     put?: never;
@@ -1183,6 +1217,71 @@ export interface paths {
         };
       };
     };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/conversations/{id}/history': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          limit?: number;
+          before?: string;
+        };
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['MessageHistoryPageDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -3752,8 +3851,24 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            'application/json': components['schemas']['PagedResultOfConversation'];
+            'application/json': components['schemas']['PagedResultOfContactConversationSummaryDto'];
           };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -18275,6 +18390,54 @@ export interface components {
       updatedBy?: null | string;
       fullName?: null | string;
     };
+    /**
+     * @description One item of `GET /api/v1/contacts/{id}/conversations` (contact-history-opens-by-assignment, design D5, D6, D8;
+     *     fixture `contact-conversation-history.v1.json`). A member that is `null` here is absent from the
+     *     JSON (`WhenWritingNull`).
+     */
+    ContactConversationSummaryDto: {
+      /** @description The conversation id. */
+      id: string;
+      /** @description The channel, a PascalCase string. */
+      channel: components['schemas']['ChannelType'];
+      /** @description The state, any state, terminal included. */
+      state: components['schemas']['ConversationState'];
+      /**
+       * Format: date-time
+       * @description When the conversation was created.
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description When it closed; absent while it has no close time.
+       */
+      closedAt?: null | string;
+      /**
+       * Format: int64
+       * @description Whole seconds, floored and never below 0: `lastMessageAt - createdAt` when ClosedReason is
+       *     present (a system close), else `closedAt - createdAt`; absent when ClosedAt is.
+       */
+      durationSeconds?: null | number;
+      /** @description The system close reason (`_closedReason`); absent when a person closed it, or it is open. */
+      closedReason?: null | string;
+      /** @description The last queue it was placed in; absent when unknown. */
+      queueId?: null | string;
+      /** @description That queue's current name; absent when unknown or deleted. */
+      queueName?: null | string;
+      /** @description The owner's id when the owner is an agent. */
+      agentId?: null | string;
+      /** @description That agent's display name; absent when the agent no longer exists. */
+      agentDisplayName?: null | string;
+      disposition?: null | components['schemas']['ConversationDispositionDto'];
+      /**
+       * Format: date-time
+       * @description The newest activity message's time, else the stored last-activity time; always present.
+       */
+      lastMessageAt: string;
+      lastMessage?: null | components['schemas']['ConversationLastMessageDto'];
+      /** @description Whether the caller holds the conversation now (design D3). */
+      heldByCaller: boolean;
+    };
     ContactImportRowDto: {
       firstName: string;
       lastName: null | string;
@@ -18335,6 +18498,19 @@ export interface components {
         [key: string]: string;
       };
       sessions?: null | components['schemas']['IConversationSession'][];
+    };
+    /** @description A summary's disposition: the leaf node, and its label when the node still resolves. */
+    ConversationDispositionDto: {
+      nodeId: string;
+      label?: null | string;
+    };
+    /** @description A summary's last activity message: its direction, its first block's type, a text preview and its time. */
+    ConversationLastMessageDto: {
+      direction: components['schemas']['MessageDirection'];
+      blockType: components['schemas']['MessageBlockType'];
+      preview: string;
+      /** Format: date-time */
+      createdAt: string;
     };
     ConversationOwner: {
       kind: components['schemas']['ConversationOwnerKind'];
@@ -19584,6 +19760,17 @@ export interface components {
     MessageEnvelope: {
       blocks: components['schemas']['MessageBlock'][];
     };
+    /**
+     * @description `GET /conversations/{id}/history` (contact-history-opens-by-assignment, design D10;
+     *     `conversation-message-history.v1.json`): one newest-first page of the transcript in the existing
+     *     Message shape, whether an older message exists, and the opaque cursor that reads the next older page
+     *     (absent when HasMore is false).
+     */
+    MessageHistoryPageDto: {
+      items: components['schemas']['Message'][];
+      hasMore: boolean;
+      nextBefore?: null | string;
+    };
     MessageResponse: {
       message: string;
     };
@@ -19831,6 +20018,19 @@ export interface components {
     };
     PagedResultOfContact: {
       items: components['schemas']['Contact'][];
+      /** Format: int32 */
+      totalCount: number;
+      /** Format: int32 */
+      page: number;
+      /** Format: int32 */
+      pageSize: number;
+      /** Format: int32 */
+      totalPages?: number;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
+    PagedResultOfContactConversationSummaryDto: {
+      items: components['schemas']['ContactConversationSummaryDto'][];
       /** Format: int32 */
       totalCount: number;
       /** Format: int32 */

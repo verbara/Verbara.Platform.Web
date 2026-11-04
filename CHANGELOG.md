@@ -11,6 +11,51 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **Signing out or switching identity clears the previous person's conversations from the page.** Signing out, another
+  user signing in on the same tab, starting or ending an impersonation and managing another tenant's billing clear what
+  was loaded, and the new identity reads its own. A reply draft stays for the person who typed it and is removed when
+  someone else signs in.
+
+- **This console requires the Platform release that carries Verbara.Platform #539.** The History tab, the read-only
+  panel and the conversation thread read that release's `GET /api/v1/contacts/{id}/conversations` page and its
+  `GET /api/v1/conversations/{id}/history` route, which an earlier Platform does not have.
+
+- **The History tab shows the contact's past conversations as Platform sends them.** Each row names the channel, the
+  state, the close reason, the queue, the agent, the duration, the disposition and the last message, in the agent's
+  language, and a member Platform did not send stays empty. The conversation the agent holds now carries a mark and
+  stays in the list; "show older conversations" appears while there are more.
+
+- **The History tab says when a conversation cannot be read.** A refused read shows "You can't read this conversation."
+  in place of the list, also when the refusal arrives after rows were loaded, on "show older conversations" or on a
+  refresh. A contact that no longer exists shows the empty-history text. Other failures keep the rows already loaded.
+
+- **The History tab of a new offer reads the contact's history.** An offer reaches the console without a contact id, so
+  the tab showed "No conversation history" and sent no request. It now takes the contact from the conversation, shows the
+  refusal while the offer is open, and shows the list as soon as the agent accepts, without leaving the tab.
+
+- **A past conversation opens from the History tab, read only.** Choosing a row shows the conversation's channel, state,
+  dates and close reason with its transcript, newest messages at the bottom and "load earlier messages" above them, in
+  a panel over the workspace. It offers no action, and the conversation the agent is working on stays selected. Any
+  state opens, closed ones included. A refused read shows "You can't read this conversation." in place of the
+  transcript, also when the refusal arrives after messages were loaded, on "load earlier messages" or on a refresh. A
+  conversation that no longer exists shows "Conversation not found."; other failures keep the messages already loaded.
+  If the panel itself cannot load, for example after a new version was deployed, it says so inside the panel and the
+  workspace stays as it was.
+
+- **The conversation thread opens on the newest messages.** A long conversation used to open on its oldest 50 messages, so
+  the newest ones, a transfer note among them, were out of reach. It now opens on the latest page, with "load earlier
+  messages" above it, and a live message stays at the bottom. A message that arrives both live and from the server shows
+  once, in either order, with the server's content.
+
+- **The conversation thread says when it can no longer be read.** After a transfer or a takeover, a refused read shows "You
+  can't read this conversation." in place of the messages, also when the refusal arrives after messages were loaded. While
+  the first read is on its way the thread shows its loading state rather than the messages it holds. A
+  conversation Platform no longer has shows "That conversation was not found. It may have ended." The reply box and the
+  actions stay. Any other failure keeps the messages on screen, also while the thread reads again.
+
+- **The workspace says "conversation not found" in the agent's language.** Opening a conversation the console does not
+  hold showed the text in English in every locale. It now shows the same localized text as the thread.
+
 - **`VerbaraWebChat.destroy()` now clears the conversation the widget kept in the browser.** It used to forget only the
   visitor id and profile on the site's page; the messages shown, the open session and any unsent messages stayed in the
   widget's own storage, and the next person to open the widget on that browser saw the earlier conversation. The widget
@@ -30,7 +75,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   shows a device label, and shares one list with the `/profile/security` card. A `session-is-current` refusal,
   an already-ended session or any other failure is reported in the user's language, never in the server's text, on both
   surfaces. Ending the other sessions from the card reports success instead of a failure. **Requires Platform ≥ 2.38.0**
-  (the release that carries `profile-sessions-use-the-auth-route`).
+  (the release that carries `profile-sessions-use-the-auth-route`). (#503)
 
 ## [3.29.0-web] - 2026-11-01
 

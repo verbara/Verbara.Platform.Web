@@ -1,8 +1,18 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+  type Query,
+} from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformMessage } from '@/core/api/platform-message';
-import { mapPlatformConversation } from '@/core/api/platform-conversation';
+import {
+  mapPlatformConversation,
+  mapPlatformPastConversation,
+} from '@/core/api/platform-conversation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
@@ -10,6 +20,7 @@ import {
   conversationRefusals,
   refusalCodeOf,
 } from '@/core/api/conversation-refusals';
+import { useReadRetry } from '@/core/api/read-retry';
 import { toastApiError } from '@/core/api/toast-api-error';
 
 /**
@@ -87,30 +98,76 @@ export function useConversations(filter?: {
 }
 
 export function useConversation(id: string | undefined) {
+  const retry = useReadRetry();
   return useQuery({
     queryKey: ['conversations', id],
-    queryFn: () =>
-      customFetch<Conversation>({
-        url: `/api/v1/conversations/${id}`,
-        method: 'GET',
-      }),
+    queryFn: async () =>
+      mapPlatformPastConversation(
+        await customFetch<components['schemas']['Conversation']>({
+          url: `/api/v1/conversations/${id}`,
+          method: 'GET',
+        }),
+      ),
     enabled: !!id,
+    retry,
   });
 }
 
-export function useMessages(conversationId: string | undefined) {
-  return useQuery({
-    queryKey: ['messages', conversationId],
-    queryFn: async () => {
-      const messages = await customFetch<components['schemas']['Message'][]>({
-        url: `/api/v1/conversations/${conversationId}/messages`,
+type MessageHistoryPage = components['schemas']['MessageHistoryPageDto'];
+
+/** The loaded pages as one transcript, oldest at the top, each `messageId` once. */
+function transcriptOf(data: InfiniteData<MessageHistoryPage, string | undefined>): Message[] {
+  const seen = new Set<string>();
+  const newestFirst: Message[] = [];
+  for (const page of data.pages) {
+    for (const item of page.items) {
+      const id = String(item.messageId);
+      if (seen.has(id)) continue;
+      seen.add(id);
+      newestFirst.push(mapPlatformMessage(item));
+    }
+  }
+  return newestFirst.reverse();
+}
+
+const NO_MESSAGES: Message[] = [];
+
+/**
+ * A conversation's transcript, newest page first (`GET /api/v1/conversations/{id}/history`), for any
+ * state. `fetchNextPage` reads the next older page with the page's `nextBefore`, sent back untouched
+ * as `before`. The key sits under `['messages', id]`, so that invalidation reaches it, and a refetch
+ * reads every loaded page again.
+ *
+ * `readError` is a refused read of the transcript; `nextPageError` is a refused "load earlier", which
+ * leaves the loaded messages in place. Only one of the two is ever set.
+ */
+export function useMessageHistory(conversationId: string | undefined) {
+  const retry = useReadRetry();
+  const query = useInfiniteQuery({
+    queryKey: ['messages', conversationId, 'history'],
+    queryFn: ({ pageParam }) =>
+      customFetch<MessageHistoryPage>({
+        url: `/api/v1/conversations/${conversationId}/history`,
         method: 'GET',
-        params: { limit: '50', offset: '0' },
-      });
-      return messages.map(mapPlatformMessage);
-    },
+        ...(pageParam !== undefined ? { params: { before: pageParam } } : {}),
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? (lastPage.nextBefore ?? undefined) : undefined,
+    select: transcriptOf,
     enabled: !!conversationId,
+    retry,
   });
+  return {
+    messages: query.data ?? NO_MESSAGES,
+    isLoaded: query.data !== undefined,
+    isLoading: query.isLoading,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    fetchNextPage: query.fetchNextPage,
+    readError: query.isFetchNextPageError ? null : query.error,
+    nextPageError: query.isFetchNextPageError ? query.error : null,
+  };
 }
 
 export function useSendMessage() {
@@ -132,6 +189,11 @@ export function useSendMessage() {
   });
 }
 
+/** `['contacts', contactId, 'conversations']`, the key of `useContactConversations`, for any contact. */
+function isContactConversationsQuery({ queryKey }: Query) {
+  return queryKey.length === 3 && queryKey[0] === 'contacts' && queryKey[2] === 'conversations';
+}
+
 export function useAcceptConversation() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
@@ -141,8 +203,14 @@ export function useAcceptConversation() {
         url: `/api/v1/conversations/${id}/accept`,
         method: 'POST',
       }),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       qc.invalidateQueries({ queryKey: ['conversations'] });
+      // The stream carries only what arrived while the offer was the agent's, so a mounted thread reads
+      // what it did not deliver now, not at its next read.
+      qc.invalidateQueries({ queryKey: ['messages', id] });
+      // Accepting opens the contact's history to the agent (a mounted History tab sits on its 403 until
+      // then) and changes `heldByCaller`. The mutation knows the conversation, not its contact.
+      qc.invalidateQueries({ predicate: isContactConversationsQuery });
       toast.success(t('toasts.conversations.accepted'));
     },
     onError: (err: Error) => toastApiError(err, conversationRefusals, t, { action: 'accept' }),

@@ -59,6 +59,62 @@
       "follow_up": "Follow-up Required"
     }
   },
+  "history": {
+    "errors": {
+      "not_readable": "You can't read this conversation.",
+      "not_found": "Conversation not found.",
+      "invalid_cursor": "The earlier messages could not be loaded. Open this conversation again to retry."
+    },
+    "held": "Current",
+    "show_older": "Show older conversations",
+    "states": {
+      "queued": "Queued",
+      "offered": "Offered",
+      "active": "Active",
+      "on_hold": "On hold",
+      "consulting": "Consulting",
+      "wrap_up": "Wrap-up",
+      "waiting_for_customer": "Waiting for customer",
+      "snoozed": "Snoozed",
+      "resolved": "Resolved",
+      "escalated": "Escalated",
+      "closed": "Closed",
+      "abandoned": "Abandoned",
+      "merged": "Merged",
+      "spam": "Spam"
+    },
+    "closed_reasons": {
+      "inactivity": "Closed for inactivity",
+      "inactivity_backlog": "Closed for inactivity (backlog)",
+      "customer_returned": "Customer returned"
+    },
+    "block_types": {
+      "text": "Message",
+      "image": "Image",
+      "audio": "Audio",
+      "video": "Video",
+      "file": "File",
+      "location": "Location",
+      "interactive": "Interactive message"
+    },
+    "direction": {
+      "inbound": "Customer",
+      "outbound": "Agent"
+    },
+    "duration": {
+      "hours_minutes": "{{hours}}h {{minutes}}m",
+      "minutes_seconds": "{{minutes}}m {{seconds}}s",
+      "minutes": "{{minutes}}m",
+      "seconds": "{{seconds}}s"
+    },
+    "viewer": {
+      "title": "Past conversation",
+      "created_at": "Started",
+      "closed_at": "Closed",
+      "no_messages": "No messages in this conversation.",
+      "load_earlier": "Load earlier messages"
+    }
+  },
   "context": {
     "contact_heading": "Contact",
     "edit": "Edit",

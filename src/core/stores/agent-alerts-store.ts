@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { registerSessionWorkReset } from '@/core/session/session-work';
 
 interface AgentAlertsState {
   pendingCount: number;
@@ -11,3 +12,5 @@ export const useAgentAlertsStore = create<AgentAlertsState>()((set) => ({
   increment: () => set((s) => ({ pendingCount: s.pendingCount + 1 })),
   reset: () => set({ pendingCount: 0 }),
 }));
+
+registerSessionWorkReset(() => useAgentAlertsStore.getState().reset());
