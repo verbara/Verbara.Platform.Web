@@ -4,6 +4,7 @@ import { es, enUS, ptBR } from 'date-fns/locale';
 import { Clock, MessageSquare } from 'lucide-react';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useContactConversations } from '@/core/api/hooks/use-contacts';
+import { channelLabel } from '@/core/i18n/channel-label';
 
 const dateLocales: Record<string, typeof enUS> = {
   'es-419': es,
@@ -17,15 +18,6 @@ function formatDuration(seconds: number): string {
   const s = seconds % 60;
   return `${m}m ${s.toString().padStart(2, '0')}s`;
 }
-
-const channelLabels: Record<string, string> = {
-  whatsapp: 'WhatsApp',
-  email: 'Email',
-  webchat: 'Web Chat',
-  voice: 'Voice',
-  sms: 'SMS',
-  telegram: 'Telegram',
-};
 
 export function ConversationHistory() {
   const { t, i18n } = useTranslation(['agent']);
@@ -52,7 +44,7 @@ export function ConversationHistory() {
         <div key={item.id} className="space-y-1 px-4 py-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-              {channelLabels[item.channel] ?? item.channel}
+              {channelLabel(t, item.channel)}
             </span>
             <span className="text-xs text-slate-500">
               {formatDistanceToNow(new Date(item.closedAt ?? item.createdAt), {

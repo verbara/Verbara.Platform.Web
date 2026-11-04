@@ -11,12 +11,25 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **`VerbaraWebChat.destroy()` now clears the conversation the widget kept in the browser.** It used to forget only the
+  visitor id and profile on the site's page; the messages shown, the open session and any unsent messages stayed in the
+  widget's own storage, and the next person to open the widget on that browser saw the earlier conversation. The widget
+  also keeps its message history per visitor now, so a new visitor starts with an empty conversation. `destroy()` now
+  returns a promise that resolves once the widget is removed; a page that navigates away should wait for it. A widget
+  started again right after `destroy()` opens its frame only once the previous one is gone, and the page listens only
+  to its own widget's frame. (#516)
+
+- **Every agent-console surface names a channel in the agent's language.** The contact search result in the
+  new-conversation dialog, the badge in the conversation header and the contact's past conversations showed the raw
+  value, such as `webchat`, or an English table of their own. They now use the same localized label as the rest of the
+  console, and a value with no label still shows as it came. (#502)
+
 - **The own-sessions page marks the session you are using.** `/profile/security/sessions` reads
   `GET /api/v1/auth/sessions` and revokes with `DELETE /api/v1/auth/sessions/{tokenId}`, the routes the sign-in cookie
   reaches, so the current device carries its badge and cannot be revoked from the list. It keeps the last-activity column,
   shows a device label, and shares one list with the `/profile/security` card. A `session-is-current` refusal,
   an already-ended session or any other failure is reported in the user's language, never in the server's text, on both
-  surfaces. Ending the other sessions from the card reports success instead of a failure. **Requires Platform ≥ TBD**
+  surfaces. Ending the other sessions from the card reports success instead of a failure. **Requires Platform ≥ 2.38.0**
   (the release that carries `profile-sessions-use-the-auth-route`).
 
 ## [3.29.0-web] - 2026-11-01

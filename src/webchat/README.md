@@ -49,8 +49,24 @@ VerbaraWebChat.sendMessage('hello');
 VerbaraWebChat.setVisitor({ name: 'Jane', email: 'jane@x.com' });
 VerbaraWebChat.on('open', () => console.log('chat opened'));
 VerbaraWebChat.on('unread', (count) => console.log('unread:', count));
-VerbaraWebChat.destroy();
+await VerbaraWebChat.destroy();
 ```
+
+`destroy()` removes the widget and clears the conversation it kept in the browser (see Privacy). It returns a promise
+that resolves once the widget's frame is gone, usually within about two seconds. A `destroy()` called while an earlier
+widget's frame is still being removed waits for that frame first, so it can take about two seconds for each frame still
+pending. The visitor id and profile on the site's page are cleared at once; the conversation inside the frame is cleared
+only if the page stays loaded until the promise resolves. Before navigating away, for example when a visitor logs out, wait for it:
+
+```javascript
+async function logout() {
+  await VerbaraWebChat.destroy();
+  location.assign('/logged-out');
+}
+```
+
+Calling `init()` or `open()` again right after `destroy()` is safe: the new widget's frame is created only once the
+previous frame is gone, so the previous frame's clear never touches the new conversation.
 
 Events: `open`, `close`, `unread`, `message-sent`, `message-received`, `ready`.
 
@@ -91,10 +107,14 @@ the site's own storage (the SDK):
 Inside the widget's frame, in its own storage:
 
 - `verbara-webchat-session:<tenantId>` — the current session (id, socket URL, visitor UUID, last activity), so a
-  reload or the next page within 30 minutes resumes it. It belongs to the visitor UUID above: after `destroy()` the
-  next visitor gets a new UUID and does not resume it.
-- `verbara-webchat-messages:<tenantId>` — the last 100 messages shown
+  reload or the next page within 30 minutes resumes it. It belongs to the visitor UUID above.
+- `verbara-webchat-messages:<tenantId>:<visitorUUID>` — the last 100 messages shown to that visitor; another visitor
+  UUID never reads them
 - `verbara-webchat-queue:<tenantId>` — messages typed while the socket was not open, sent when it opens
+
+`VerbaraWebChat.destroy()` asks the frame to clear all three for the tenant and waits for its answer (about two seconds
+at most) before removing it; a frame that was not opened on the page is loaded hidden to receive the request. Call it
+when the person using the browser changes, for example on a shared device.
 
 ## Mobile
 

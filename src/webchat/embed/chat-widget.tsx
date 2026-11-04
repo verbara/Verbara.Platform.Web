@@ -118,7 +118,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   // Defer setMessages to a microtask so it's not synchronous within the effect body.
   useEffect(() => {
     if (profile && messages.length === 0) {
-      const cached = loadCachedMessages(config.tenantId);
+      const cached = loadCachedMessages(config.tenantId, config.visitorId);
       if (cached.length > 0) {
         queueMicrotask(() => setMessages(cached));
       }
@@ -129,9 +129,9 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   // Persist on every messages update
   useEffect(() => {
     if (profile) {
-      saveCachedMessages(config.tenantId, messages);
+      saveCachedMessages(config.tenantId, config.visitorId, messages);
     }
-  }, [messages, profile, config.tenantId]);
+  }, [messages, profile, config.tenantId, config.visitorId]);
 
   useEffect(() => {
     if (!profile) return;

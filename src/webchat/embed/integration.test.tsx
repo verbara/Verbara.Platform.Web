@@ -137,7 +137,7 @@ describe('Integration — full visitor flow', () => {
   // cached history. The widget now reads only the cache and makes no GET for messages.
   it('KeepsCachedHistory_AndMakesNoHistoryRequest_WhenSessionStarts', async () => {
     localStorage.setItem(
-      'verbara-webchat-messages:t1',
+      'verbara-webchat-messages:t1:v1',
       JSON.stringify([
         { id: 'c1', text: 'cached reply', from: 'agent', timestamp: '2026-10-16T10:00:00Z' },
       ]),
@@ -868,5 +868,57 @@ describe('Integration — embedded on a site of another domain', () => {
     const own = window.location.origin;
     expect(String(fetchMock.mock.calls[0]![0])).toBe(`${own}/api/v1/webchat/sessions`);
     expect(FakeWebSocket.last!.url).toBe(`${own.replace(/^http/, 'ws')}/ws/webchat/s1`);
+  });
+});
+
+// Regression: the message cache was keyed by tenant only, so the next visitor on a shared browser, who gets a new
+// visitor id, was shown the conversation the previous visitor had in the widget.
+describe('Integration — the next visitor on the same browser', () => {
+  function renderFor(visitorId: string, visitor: { name: string; email: string }) {
+    return render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget config={{ ...config, visitorId, visitor }} onUnreadChange={vi.fn()} />
+      </I18nextProvider>,
+    );
+  }
+
+  it('DoesNotShowThePreviousVisitorsMessages_WhenADifferentVisitorStarts', async () => {
+    const first = renderFor('v1', { name: 'Jane', email: 'jane@x.com' });
+    await waitFor(() => expect(FakeWebSocket.last).not.toBeNull(), { timeout: 3000 });
+    const ws = FakeWebSocket.last!;
+    act(() => {
+      ws.readyState = 1;
+      ws.onopen?.(new Event('open'));
+      ws.onmessage?.(new MessageEvent('message', { data: frames.server.connected }));
+      ws.onmessage?.(new MessageEvent('message', { data: frames.server.agentTextReply }));
+    });
+    expect(await screen.findByText('agent reply wcl71c00d.c2.1.1.')).toBeInTheDocument();
+    first.unmount();
+
+    renderFor('v2', { name: 'Ann', email: 'ann@x.com' });
+    await waitFor(() => expect(FakeWebSocket.all.length).toBeGreaterThan(1), { timeout: 3000 });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.queryByText('agent reply wcl71c00d.c2.1.1.')).toBeNull();
+  });
+
+  it('ShowsTheSameVisitorsMessages_WhenTheyReturn', async () => {
+    const first = renderFor('v1', { name: 'Jane', email: 'jane@x.com' });
+    await waitFor(() => expect(FakeWebSocket.last).not.toBeNull(), { timeout: 3000 });
+    const ws = FakeWebSocket.last!;
+    act(() => {
+      ws.readyState = 1;
+      ws.onopen?.(new Event('open'));
+      ws.onmessage?.(new MessageEvent('message', { data: frames.server.connected }));
+      ws.onmessage?.(new MessageEvent('message', { data: frames.server.agentTextReply }));
+    });
+    expect(await screen.findByText('agent reply wcl71c00d.c2.1.1.')).toBeInTheDocument();
+    first.unmount();
+
+    renderFor('v1', { name: 'Jane', email: 'jane@x.com' });
+
+    expect(await screen.findByText('agent reply wcl71c00d.c2.1.1.')).toBeInTheDocument();
   });
 });

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/core/ui/button';
 import { ConfirmDialog } from '@/core/ui/confirm-dialog';
+import { channelLabel } from '@/core/i18n/channel-label';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import {
@@ -148,9 +149,10 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
           </span>
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${badgeColor}`}
+            data-testid="conversation-channel-badge"
           >
             <ChannelIcon className="h-3 w-3" />
-            {conversation.channel}
+            {channelLabel(t, conversation.channel)}
           </span>
           <span className="text-xs text-slate-500 dark:text-slate-500">
             {conversation.queueName}
