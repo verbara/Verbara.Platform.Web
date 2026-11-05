@@ -14,9 +14,11 @@ import {
 
 import { ApiError } from '@/core/api/api-error';
 import {
+  contactLevelOne,
   contactSummaryFirstOfTwoPages,
   contactSummaryPage,
   contactSummaryShiftedSecondPage,
+  contactWithoutWebChat,
   notReadableRefusal,
 } from '@/tests/utils/contract-doubles';
 
@@ -46,15 +48,29 @@ describe('use-contacts', () => {
   });
 
   describe('useContact', () => {
-    it('should fetch contact when called', async () => {
-      vi.mocked(client.customFetch).mockResolvedValue(sampleContact);
-      const { result } = renderHook(() => useContact('contact-1'), { wrapper });
+    it('useContact_ShouldReadTheRoute_AndTakeTheIdFromContactId_WhenPlatformAnswersTheLevelOneBody', async () => {
+      vi.mocked(client.customFetch).mockResolvedValue(contactLevelOne);
+      const { result } = renderHook(() => useContact('7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d'), {
+        wrapper,
+      });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(result.current.data).toEqual(sampleContact);
       expect(client.customFetch).toHaveBeenCalledWith({
-        url: '/api/v1/contacts/contact-1',
+        url: '/api/v1/contacts/7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
         method: 'GET',
       });
+      expect(result.current.data?.id).toBe('7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d');
+      expect(result.current.data?.identityLevel).toBe('Unverified');
+      expect(result.current.data?.addresses[0]?.channel).toBe('webchat');
+    });
+
+    it('useContact_ShouldLeaveIdentityLevelAbsent_WhenTheContactHasNoWebChatAddress', async () => {
+      vi.mocked(client.customFetch).mockResolvedValue(contactWithoutWebChat);
+      const { result } = renderHook(() => useContact('0b1c2d3e4f5a46b7c8d9e0f1a2b3c4d5'), {
+        wrapper,
+      });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.id).toBe('0b1c2d3e4f5a46b7c8d9e0f1a2b3c4d5');
+      expect(result.current.data).not.toHaveProperty('identityLevel');
     });
 
     it('should not fetch when id is undefined', () => {

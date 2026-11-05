@@ -11,6 +11,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so
+  the edit reached no contact and the delete reported a deletion that removed nothing, and it compared address channels
+  in a different case, so the phone and e-mail rows read "—" and the call button never appeared. It now carries the
+  contact's id, and shows those rows and that button for a contact with a phone or e-mail address. The permissions for
+  edit and delete do not change. (#N)
+
 - **Signing out or switching identity clears the previous person's conversations from the page.** Signing out, another
   user signing in on the same tab, starting or ending an impersonation and managing another tenant's billing clear what
   was loaded, and the new identity reads its own. A reply draft stays for the person who typed it and is removed when

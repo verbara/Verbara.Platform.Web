@@ -1,5 +1,9 @@
 import type { components } from '@/core/api/generated/openapi';
 import {
+  contactAnonymous,
+  contactLevelOne,
+  contactLevelTwo,
+  contactWithoutWebChat,
   conversationStateValues,
   terminalConversation,
   terminalConversationWithOfferMetadata,
@@ -177,5 +181,23 @@ describe('mapPlatformContact', () => {
       { channel: 'sms', address: '+573001234567' },
       { channel: 'email', address: 'ana@example.com' },
     ]);
+  });
+
+  it.each([
+    ['Unverified', contactLevelOne],
+    ['Verified', contactLevelTwo],
+    ['Anonymous', contactAnonymous],
+  ] as const)('mapPlatformContact_ShouldCopyIdentityLevel_WhenItIs%s', (level, contact) => {
+    expect(mapPlatformContact(contact).identityLevel).toBe(level);
+  });
+
+  it('mapPlatformContact_ShouldLeaveIdentityLevelAbsent_WhenTheMemberIsAbsent', () => {
+    expect(mapPlatformContact(contactWithoutWebChat)).not.toHaveProperty('identityLevel');
+  });
+
+  it('mapPlatformContact_ShouldLeaveIdentityLevelAbsent_WhenTheMemberIsNull', () => {
+    expect(
+      mapPlatformContact({ ...contactWithoutWebChat, identityLevel: null }),
+    ).not.toHaveProperty('identityLevel');
   });
 });
