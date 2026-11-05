@@ -2659,7 +2659,30 @@
     "live_preview": "Visualização ao vivo",
     "snippet_scope": "Qualquer site que inclua este trecho pode iniciar chats para este tenant.",
     "channel_inactive": "Os visitantes ainda não podem iniciar chats: o canal WebChat está desativado ou não configurado para este tenant. Ative-o em Admin → Canais.",
-    "open_channels": "Abrir Canais"
+    "open_channels": "Abrir Canais",
+    "identity": {
+      "title": "Verificação de identidade",
+      "description": "Seu site assina um token com este segredo para informar ao widget quem é o cliente conectado. A Platform nunca mostra um segredo armazenado.",
+      "unavailable": "Não foi possível ler o status da verificação de identidade.",
+      "status_configured": "Configurado",
+      "status_not_configured": "Não configurado",
+      "previous_stored": "Há um segredo anterior armazenado",
+      "previous_explanation": "A Platform admite um segredo anterior somente até 24 horas após a rotação. Você pode revogá-lo agora.",
+      "generate": "Gerar segredo",
+      "rotate": "Rotacionar segredo",
+      "draft_label": "Novo segredo",
+      "draft_warning": "Copie este segredo agora e adicione-o ao assinador do seu site. Ele não poderá ser mostrado novamente depois de salvar, cancelar ou sair desta página.",
+      "save": "Salvar segredo",
+      "cancel": "Cancelar",
+      "revoke": "Revogar segredo anterior",
+      "turn_off": "Desativar a verificação de identidade",
+      "confirm_rotate_title": "Rotacionar o segredo de identidade?",
+      "confirm_rotate_description": "O segredo anterior continua válido por 24 horas, para que seu site tenha tempo de implantar o novo.",
+      "confirm_revoke_title": "Revogar o segredo anterior?",
+      "confirm_revoke_description": "O segredo anterior deixa de funcionar agora, mesmo que suas 24 horas não tenham terminado. Os tokens assinados com ele são recusados.",
+      "confirm_turn_off_title": "Desativar a verificação de identidade?",
+      "confirm_turn_off_description": "O segredo e qualquer segredo anterior são removidos. Todo token posterior é recusado, e as conversas continuam sem uma identidade verificada."
+    }
   },
   "caller-id-pools": {
     "title": "Pools de Caller ID",

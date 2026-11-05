@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ChannelConfig } from '@/core/api/hooks/use-channels';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { webchatChannelAfterRotate } from '@/tests/utils/contract-doubles';
 import {
   buildCredentialUpdate,
   channelFields,
@@ -317,6 +318,51 @@ describe('ChannelConfigForm', () => {
       WidgetKey: null,
       AllowedOrigins: null,
     });
+  });
+
+  // The identity keys have their own section on the WebChat page, where a removal asks for a confirm.
+  it('submit_ShouldOfferAndSendOnlyTheDefaultQueue_WhenAllFourWebChatKeysAreSet', async () => {
+    channelData = webchatChannelAfterRotate;
+    render(<ChannelConfigForm open onOpenChange={vi.fn()} channelId="webchat" />);
+
+    const keys = [...document.querySelectorAll<HTMLElement>('[data-channel-field]')].map(
+      (i) => i.dataset.channelField,
+    );
+    expect(keys).toEqual(['defaultQueueId']);
+    expect(document.querySelector('[data-legacy-credentials]')).toBeNull();
+    for (const key of [
+      'identityTokenSecret',
+      'identityTokenSecretPrevious',
+      'identityTokenSecretReplacedAt',
+    ]) {
+      expect(document.querySelector(`[data-credential-remove="${key}"]`)).toBeNull();
+    }
+
+    fireEvent.change(field('defaultQueueId')!, { target: { value: 'q-1' } });
+    save();
+
+    await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
+    expect(updateMutate.mock.calls[0][0].credentials).toEqual({ defaultQueueId: 'q-1' });
+  });
+
+  it('legacy_ShouldStillListAnOldKey_WhenItSitsBesideTheIdentityKeys', () => {
+    channelData = {
+      ...webchatChannelAfterRotate,
+      credentials: [...webchatChannelAfterRotate.credentials, { key: 'WidgetKey', isSet: true }],
+    };
+    render(<ChannelConfigForm open onOpenChange={vi.fn()} channelId="webchat" />);
+
+    const rows = [...document.querySelectorAll<HTMLElement>('[data-legacy-credential]')];
+    expect(rows.map((r) => r.dataset.legacyCredential)).toEqual(['WidgetKey']);
+  });
+
+  // Another channel's key of the same name is that channel's own: the set is per channel.
+  it('legacy_ShouldListAnIdentityKeyName_WhenItIsStoredOnAnotherChannel', () => {
+    channelData = whatsapp(CONFIGURED, [{ key: 'identityTokenSecret', isSet: true }]);
+    render(<ChannelConfigForm open onOpenChange={vi.fn()} channelId="whatsapp" />);
+
+    const rows = [...document.querySelectorAll<HTMLElement>('[data-legacy-credential]')];
+    expect(rows.map((r) => r.dataset.legacyCredential)).toEqual(['identityTokenSecret']);
   });
 
   it('submit_ShouldSaveWithNoKeys_WhenWebChatIsOnlySwitchedOn', async () => {

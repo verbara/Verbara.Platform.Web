@@ -181,13 +181,31 @@ export function buildCredentialUpdate(
   return credentials;
 }
 
-/** Stored keys the form has no field for (keys older consoles saved), in the server's order. */
+/**
+ * Stored keys another page manages, per channel. The form neither lists them for removal nor sends them, so saving
+ * the channel never changes them. WebChat's identity keys belong to the WebChat page's identity section.
+ */
+export const managedElsewhere: Readonly<Record<string, ReadonlySet<string>>> = {
+  webchat: new Set([
+    'identityTokenSecret',
+    'identityTokenSecretPrevious',
+    'identityTokenSecretReplacedAt',
+  ]),
+};
+
+/**
+ * Stored keys the form has no field for (keys older consoles saved), in the server's order, without the ones
+ * another page manages.
+ */
 export function legacyKeysOf(
   fields: readonly FieldDef[],
   credentials: readonly { key: string; isSet: boolean }[],
+  managed: ReadonlySet<string> = new Set(),
 ): string[] {
   const known = new Set(fields.map((f) => f.key));
-  return credentials.filter((c) => c.isSet && !known.has(c.key)).map((c) => c.key);
+  return credentials
+    .filter((c) => c.isSet && !known.has(c.key) && !managed.has(c.key))
+    .map((c) => c.key);
 }
 
 /** Channels whose provider calls Platform's inbound webhook route (`/webhooks/{tenantId}/{channel}`). */

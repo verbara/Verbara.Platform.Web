@@ -32,6 +32,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   transcript keep the "identity not verified" mark. The card and the header now also find the contact of a conversation
   accepted from a fresh offer, and of the offer itself. (#N)
 
+- **An admin manages the WebChat identity secret from the WebChat page.** A new "Identity verification" section says whether
+  a secret is configured and whether a previous one is stored. It generates a secret in the browser and shows it once to
+  copy, rotates it with a confirm that says the old one stays valid for 24 hours, revokes the previous one and turns
+  verification off. The Channels form keeps the default queue as its only WebChat field, so saving it never changes the
+  secret. (#N)
+
 ### Fixed
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so

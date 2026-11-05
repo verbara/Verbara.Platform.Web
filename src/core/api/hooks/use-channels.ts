@@ -65,6 +65,8 @@ export function useUpdateChannel() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
+    // A credential value in a request is not kept in the client's mutation cache once the request has ended.
+    gcTime: 0,
     mutationFn: ({
       channelId,
       ...data

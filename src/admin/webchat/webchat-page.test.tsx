@@ -13,6 +13,7 @@ const useChannel = vi.fn((_id: string | undefined) => channel);
 
 vi.mock('@/core/api/hooks/use-channels', () => ({
   useChannel: (id: string | undefined) => useChannel(id),
+  useUpdateChannel: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/core/tenant/tenant-store', () => ({
