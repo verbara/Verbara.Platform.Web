@@ -770,7 +770,7 @@ describe('a tab that discarded because of another tab', () => {
     expect(next1.config['startSession']).toBe(true);
     expect(next1.config['visitor']).toEqual(PROFILE_B);
 
-    expect(discarded.config['visitorId']).toBe(next1.config['visitorId']);
+    expect(discarded.config['visitorId']).not.toBe(next1.config['visitorId']);
     expect(discarded.config).not.toHaveProperty('identityToken');
     expect(discarded.config).not.toHaveProperty('startSession');
     expect(discarded.config['visitor']).toBeUndefined();
@@ -840,10 +840,10 @@ describe('a tab that discarded because of another tab', () => {
     expect(page.config['visitor']).toEqual(PROFILE_B);
   });
 
-  it('ADiscardedTabAlreadyUnderTheNewVisitor_ShouldKeepWhatThatVisitorHolds_WhenTheTokenReachesIt', async () => {
+  it('ADiscardedTab_ShouldKeepWhatTheNewCustomerHolds_WhenTheTokenReachesIt', async () => {
     const { tab2, next1, discarded } = await bSignedInOnTabOne();
     const visitorB = String(next1.config['visitorId']);
-    expect(discarded.config['visitorId']).toBe(visitorB);
+    const guest = String(discarded.config['visitorId']);
     const QUEUE = `verbara-webchat-queue:${TENANT}:${visitorB}`;
     const MESSAGES = `verbara-webchat-messages:${TENANT}:${visitorB}`;
     const SESSION = `verbara-webchat-session:${TENANT}`;
@@ -858,13 +858,16 @@ describe('a tab that discarded because of another tab', () => {
     tab2.api.setVisitor({ identityToken: tokenFor(B) });
     const told = await nextFrame(discarded.frame, known);
 
-    expect(sentTo(discarded.frame, 'forget-visitor')).toEqual([]);
+    expect(sentTo(discarded.frame, 'forget-visitor')).toEqual([
+      { tenantId: TENANT, visitorId: guest },
+    ]);
     expect(localStorage.getItem(QUEUE)).toBe(queued);
     expect(localStorage.getItem(MESSAGES)).toBe('[]');
     expect(localStorage.getItem(SESSION)).toBe(session);
     expect(told.config['visitorId']).toBe(visitorB);
     expect(told.config['identityToken']).toBe(tokenFor(B));
     expect(told.config['startSession']).toBe(true);
+    expect(told.config).not.toHaveProperty('guest');
   });
 
   it('ADiscard_ShouldStillClearTheOlderVisitor_WhenTheTabRunsUnderAnIdThatIsNoLongerShared', async () => {
@@ -887,6 +890,189 @@ describe('a tab that discarded because of another tab', () => {
       visitorId: visitorA,
     });
     expect(localStorage.getItem(QUEUE)).toBeNull();
+  });
+});
+
+describe('a tab with no customer of its own while the browser has one', () => {
+  const PROFILE_B = { name: 'Bea', email: 'bea@x.com' };
+
+  /** Tabs 1 and 2 chat as A, B signs in on tab 1, tab 2 hears of it and gets its next frame. */
+  async function untoldTab() {
+    const tab1 = await chattingTab({ identityToken: tokenFor(A) });
+    const tab2 = await chattingTab({ identityToken: tokenFor(A) });
+    const recordA = localStorage.getItem(RECORD);
+    let known = frames();
+    tab1.api.setVisitor({ ...PROFILE_B, identityToken: tokenFor(B) });
+    const next1 = await nextFrame(tab1.frame, known);
+    known = frames();
+    otherTabWroteTheRecord(recordA, localStorage.getItem(RECORD));
+    const untold = await nextFrame(tab2.frame, known);
+    return { tab1, tab2, next1, untold, visitorB: String(next1.config['visitorId']) };
+  }
+
+  it('AnUntoldTab_ShouldRunUnderAnIdOfItsOwn_SoItCannotReachTheCustomersSessionOrMessages', async () => {
+    const { untold, visitorB } = await untoldTab();
+
+    expect(localStorage.getItem(VISITOR)).toBe(visitorB);
+    expect(untold.config['visitorId']).toBeTruthy();
+    expect(untold.config['visitorId']).not.toBe(visitorB);
+    expect(untold.config['guest']).toBe(true);
+    expect(untold.config).not.toHaveProperty('identityToken');
+    expect(untold.config['visitor']).toBeUndefined();
+  });
+
+  it('AnUntoldTab_ShouldLeaveTheStoredProfile_WhenTheVisitorFillsItsForm', async () => {
+    const { untold } = await untoldTab();
+
+    fromFrame(untold.frame, 'visitor-updated', { name: 'Someone', email: 'someone@x.com' });
+    await settle();
+
+    expect(JSON.parse(localStorage.getItem(PROFILE)!)).toEqual(PROFILE_B);
+  });
+
+  it('AnUntoldTab_ShouldBeDiscarded_WhenTheCustomerSignsOutOnTheOtherTab', async () => {
+    const { tab1, tab2, untold, next1 } = await untoldTab();
+    void tab2;
+    const guest = String(untold.config['visitorId']);
+    const recordB = localStorage.getItem(RECORD);
+    const known = frames();
+
+    tab1.api.setVisitor({ identityToken: null });
+    await nextFrame(next1.frame, known);
+    expect(localStorage.getItem(RECORD)).toBeNull();
+    const before = frames();
+    otherTabWroteTheRecord(recordB, null);
+    const after = await nextFrame(untold.frame, before);
+
+    expect(sentTo(untold.frame, 'forget-visitor')).toEqual([
+      { tenantId: TENANT, visitorId: guest },
+    ]);
+    expect(after.config).not.toHaveProperty('guest');
+    expect(after.config['visitor']).toBeUndefined();
+    expect(after.config['visitorId']).toBe(localStorage.getItem(VISITOR));
+  });
+
+  it('ATabRunningUnderAnIdThatWasReset_ShouldBeDiscarded_EvenWhenNoCustomerIsOnEitherSide', async () => {
+    const tab = await chattingTab({});
+    const before = frames();
+    localStorage.removeItem(VISITOR);
+
+    otherTabWroteTheRecord('some-earlier-record', null);
+    const next = await nextFrame(tab.frame, before);
+
+    expect(sentTo(tab.frame, 'forget-visitor')).toEqual([
+      { tenantId: TENANT, visitorId: tab.config['visitorId'] },
+    ]);
+    expect(next.config['visitorId']).not.toBe(tab.config['visitorId']);
+  });
+
+  it('ATabWithNoToken_ShouldKeepChattingUnderTheSharedId_WhenTheRecordEventChangesNothing', async () => {
+    const tab = await chattingTab({});
+
+    otherTabWroteTheRecord(null, null);
+    await settle();
+
+    expect(tab.frame.isConnected).toBe(true);
+    expect(tab.config['visitorId']).toBe(localStorage.getItem(VISITOR));
+    expect(tab.config).not.toHaveProperty('guest');
+    expect(sentTo(tab.frame, 'forget-visitor')).toEqual([]);
+  });
+
+  it('ATabOfTheCustomer_ShouldKeepItsToken_WhenItRunsUnderAnOlderIdAndTheRecordIsItsOwn', async () => {
+    const tab = await chattingTab({ identityToken: tokenFor(A) });
+    localStorage.setItem(VISITOR, 'a-later-id');
+    const record = localStorage.getItem(RECORD);
+
+    otherTabWroteTheRecord(record, record);
+    await settle();
+
+    expect(tab.frame.isConnected).toBe(true);
+  });
+
+  it('Init_ShouldForgetNothing_WhenAnUntoldTabIsInitializedWithTheCustomerTheRecordHolds', async () => {
+    const { tab2, tab1, next1, untold, visitorB } = await untoldTab();
+    void tab1;
+    const SESSION = `verbara-webchat-session:${TENANT}`;
+    const MESSAGES = `verbara-webchat-messages:${TENANT}:${visitorB}`;
+    const session = JSON.stringify({ sessionId: 's', visitorId: visitorB });
+    localStorage.setItem(SESSION, session);
+    localStorage.setItem(MESSAGES, '[{"id":"m"}]');
+    const recordB = localStorage.getItem(RECORD);
+    frameClears = true;
+    const guest = String(untold.config['visitorId']);
+
+    const known = frames();
+    const forgetsBefore = allSent('forget-visitor').length;
+    tab2.api.init({ tenantId: TENANT, identityToken: tokenFor(B, 'newer') });
+    tab2.api.open();
+    await settle();
+
+    const forgets = allSent('forget-visitor').slice(forgetsBefore);
+    expect(forgets.map((m) => m.payload)).toEqual([{ tenantId: TENANT, visitorId: guest }]);
+    expect(sentTo(untold.frame, 'forget-visitor')).toEqual([
+      { tenantId: TENANT, visitorId: guest },
+    ]);
+    expect(localStorage.getItem(VISITOR)).toBe(visitorB);
+    expect(localStorage.getItem(RECORD)).toBe(recordB);
+    expect(localStorage.getItem(SESSION)).toBe(session);
+    expect(localStorage.getItem(MESSAGES)).toBe('[{"id":"m"}]');
+    // Tab 1 keeps chatting: its frame stays, and nothing was asked of it.
+    expect(next1.frame.isConnected).toBe(true);
+    expect(sentTo(next1.frame, 'forget-visitor')).toEqual([]);
+    const frame = frames().find((f) => !known.includes(f))!;
+    fromFrame(frame, 'ready');
+    await settle();
+    expect(sentTo(frame, 'init-config')[0]!['visitorId']).toBe(visitorB);
+    expect(sentTo(frame, 'init-config')[0]!['identityToken']).toBe(tokenFor(B, 'newer'));
+  });
+
+  it('AQueuedStorageStep_ShouldNotUndoWhatTheSiteSaidAfterIt_WhenItRunsBehindAForget', async () => {
+    const tab = await chattingTab({ identityToken: tokenFor(A) });
+    frameAnswersForget = false;
+    const known = frames();
+    tab.api.setVisitor({ identityToken: null });
+    const recordC = await subjectMac(TENANT, 'cust-c');
+    localStorage.setItem(RECORD, recordC);
+
+    otherTabWroteTheRecord(null, recordC);
+    tab.api.setVisitor({ ...PROFILE_B, identityToken: tokenFor(B) });
+    for (let i = 0; i < 6; i++) await settle();
+
+    const frame = frames()
+      .filter((f) => !known.includes(f))
+      .at(-1)!;
+    fromFrame(frame, 'ready');
+    await settle();
+    const config = sentTo(frame, 'init-config')[0]!;
+    expect(config['identityToken']).toBe(tokenFor(B));
+    expect(config['visitor']).toEqual(PROFILE_B);
+    expect(localStorage.getItem(RECORD)).toBe(await subjectMac(TENANT, B));
+  });
+
+  it('AQueuedStorageStep_ShouldNotHoldTheWidget_WhenTheRecordCannotBeRead', async () => {
+    const tab = await chattingTab({ identityToken: tokenFor(A) });
+    const known = frames();
+    frameAnswersForget = false;
+    tab.api.setVisitor({ identityToken: null });
+    const read = Storage.prototype.getItem;
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(function (
+      this: Storage,
+      key: string,
+    ) {
+      if (key === RECORD) throw new DOMException('denied', 'SecurityError');
+      return read.call(this, key);
+    });
+
+    otherTabWroteTheRecord(null, null);
+    await settle();
+    await settle();
+
+    const frame = frames()
+      .filter((f) => !known.includes(f))
+      .at(-1)!;
+    fromFrame(frame, 'ready');
+    await settle();
+    expect(sentTo(frame, 'init-config')).toHaveLength(1);
   });
 });
 
@@ -989,7 +1175,117 @@ describe('when the browser refuses to store the record', () => {
     const next = await nextFrame(tab.frame, known);
 
     expect(next.config['identityToken']).toBe(tokenFor(B));
-    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).not.toHaveBeenCalled();
+    // The record holds B and so does this tab: another tab writing B changes nothing here.
+    const recordB = await subjectMac(TENANT, B);
+    expect(localStorage.getItem(RECORD)).toBe(recordB);
+    otherTabWroteTheRecord(recordB, recordB);
+    await settle();
+    expect(next.frame.isConnected).toBe(true);
+    expect(sentTo(next.frame, 'forget-visitor')).toEqual([]);
+  });
+
+  /** The forget's frame cannot be listened to: a step after the record, which is not the record's doing. */
+  function forgetCannotListen() {
+    const listen = window.addEventListener.bind(window);
+    let refused = false;
+    return vi.spyOn(window, 'addEventListener').mockImplementation(((
+      type: string,
+      handler: EventListener,
+    ) => {
+      if (type === 'message' && !refused) {
+        refused = true;
+        throw new Error('no listener');
+      }
+      listen(type, handler);
+    }) as typeof window.addEventListener);
+  }
+
+  it('ALaterStepFailing_ShouldLeaveNoWarning_WhenTheRecordWasWritten', async () => {
+    const warn = silenced();
+    const tab = await chattingTab({ identityToken: tokenFor(A) });
+    const listening = forgetCannotListen();
+
+    tab.api.setVisitor({ identityToken: null });
+    await settle();
+    listening.mockRestore();
+
+    expect(localStorage.getItem(RECORD)).toBeNull();
+    expect(warn).not.toHaveBeenCalled();
+    await expect(tab.api.destroy()).resolves.toBeUndefined();
+  });
+
+  it('AForgetThatCannotRunBehindAnother_ShouldNotHoldTheWidget_AndLeaveTheNewCustomerRecorded', async () => {
+    const warn = silenced();
+    const tab = await chattingTab({ identityToken: tokenFor(A) });
+    const listening = forgetCannotListen();
+    const known = frames();
+
+    tab.api.setVisitor({ identityToken: tokenFor(B) });
+    await settle();
+    listening.mockRestore();
+
+    expect(localStorage.getItem(RECORD)).toBe(await subjectMac(TENANT, B));
+    expect(warn).not.toHaveBeenCalled();
+    expect(tab.frame.isConnected).toBe(false);
+    const frame = frames().find((f) => !known.includes(f))!;
+    fromFrame(frame, 'ready');
+    await settle();
+    expect(sentTo(frame, 'init-config')[0]!['identityToken']).toBe(tokenFor(B));
+    await expect(tab.api.destroy()).resolves.toBeUndefined();
+  });
+
+  it('SetVisitor_ShouldReachTheForgetAndTheNewCustomer_WhenTheProfileCannotBeStored', async () => {
+    const warn = silenced();
+    const tab = await chattingTab({ identityToken: tokenFor(A) });
+    const write = Storage.prototype.setItem;
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (
+      this: Storage,
+      key: string,
+      value: string,
+    ) {
+      if (key === PROFILE) throw new DOMException('full', 'QuotaExceededError');
+      write.call(this, key, value);
+    });
+    const profile = { name: 'Bea', email: 'bea@x.com' };
+
+    const known = frames();
+    expect(() => tab.api.setVisitor({ ...profile, identityToken: tokenFor(B) })).not.toThrow();
+    const next = await nextFrame(tab.frame, known);
+
+    expect(sentTo(tab.frame, 'forget-visitor')).toEqual([{ tenantId: TENANT }]);
+    expect(next.config['identityToken']).toBe(tokenFor(B));
+    expect(next.config['startSession']).toBe(true);
+    expect(next.config['visitor']).toEqual(profile);
+    expect(localStorage.getItem(RECORD)).toBe(await subjectMac(TENANT, B));
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('Init_ShouldStartWithTheProfileInMemory_WhenTheProfileCannotBeStored', async () => {
+    const write = Storage.prototype.setItem;
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (
+      this: Storage,
+      key: string,
+      value: string,
+    ) {
+      if (key === PROFILE) throw new DOMException('full', 'QuotaExceededError');
+      write.call(this, key, value);
+    });
+    const profile = { name: 'Bea', email: 'bea@x.com' };
+
+    const tab = api();
+    expect(() =>
+      tab.init({ tenantId: TENANT, identityToken: tokenFor(B), visitor: profile }),
+    ).not.toThrow();
+    tab.open();
+    await settle();
+    const frame = frames().at(-1)!;
+    fromFrame(frame, 'ready');
+    await settle();
+
+    const config = sentTo(frame, 'init-config')[0]!;
+    expect(config['identityToken']).toBe(tokenFor(B));
+    expect(config['visitor']).toEqual(profile);
   });
 
   it('Init_ShouldStillOpenAndDestroy_WhenTheRecordCannotBeRead', async () => {

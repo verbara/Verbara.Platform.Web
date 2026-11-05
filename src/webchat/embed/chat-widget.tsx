@@ -57,6 +57,11 @@ export interface InitConfigPayload {
   identityToken?: string;
   /** The SDK ended a running widget and asks for the next session now, without the pre-chat form. */
   startSession?: boolean;
+  /**
+   * This tab has no customer of its own while the browser has one, and `visitorId` is this frame's alone. What this
+   * frame's storage holds is that customer's: a guest keeps its chat in memory and leaves that storage as it is.
+   */
+  guest?: boolean;
 }
 
 interface Props {
@@ -126,8 +131,8 @@ export function ChatWidget({ config, identityToken, onUnreadChange }: Props) {
   // The first effect of the widget, so it runs before the effect below that creates the session, and so before any
   // queue is read.
   useEffect(() => {
-    settleVisitorQueues(config.tenantId, config.visitorId);
-  }, [config.tenantId, config.visitorId]);
+    if (!config.guest) settleVisitorQueues(config.tenantId, config.visitorId);
+  }, [config.tenantId, config.visitorId, config.guest]);
 
   // Initialize agent-activity timestamp on first mount.
   useEffect(() => {
@@ -148,10 +153,10 @@ export function ChatWidget({ config, identityToken, onUnreadChange }: Props) {
 
   // Persist on every messages update
   useEffect(() => {
-    if (profile) {
+    if (profile && !config.guest) {
       saveCachedMessages(config.tenantId, config.visitorId, messages);
     }
-  }, [messages, profile, config.tenantId, config.visitorId]);
+  }, [messages, profile, config.tenantId, config.visitorId, config.guest]);
 
   useEffect(() => {
     if (!profile) return;
@@ -292,7 +297,7 @@ export function ChatWidget({ config, identityToken, onUnreadChange }: Props) {
           lastActiveAt: now,
           ...(token?.trim() ? { createdWithToken: true } : {}),
         };
-        saveStoredSession(tenantId, session);
+        if (!config.guest) saveStoredSession(tenantId, session);
         breadcrumb('session-created', { sessionId: session.sessionId });
         setStatus('connecting');
         connect(session, true);

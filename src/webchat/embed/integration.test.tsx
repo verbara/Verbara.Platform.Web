@@ -511,6 +511,49 @@ describe('Session start and resume (#426)', () => {
     expect(localStorage.getItem('verbara-webchat-queue:t1')).toBeNull();
   });
 
+  it('Start_ShouldLeaveWhatOtherVisitorsHold_WhenTheWidgetIsAGuest', async () => {
+    const held = '[{"id":"q0","text":"x","timestamp":"t"}]';
+    localStorage.setItem('verbara-webchat-queue:t1:shared', held);
+    localStorage.setItem('verbara-webchat-messages:t1:shared', '[{"id":"m0"}]');
+    const session = JSON.stringify({
+      sessionId: 'of-the-customer',
+      wsUrl: 'wss://x/ws/webchat/of-the-customer',
+      visitorId: 'shared',
+      createdAt: Date.now(),
+      lastActiveAt: Date.now(),
+      createdWithToken: true,
+    });
+    localStorage.setItem('verbara-webchat-session:t1', session);
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ sessionId: 'guest', wsUrl: 'wss://x/ws/webchat/guest' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    ) as never;
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget
+          config={{
+            ...config,
+            visitorId: 'guest',
+            guest: true,
+            visitor: { name: 'Someone', email: 'someone@x.com' },
+          }}
+          onUnreadChange={vi.fn()}
+        />
+      </I18nextProvider>,
+    );
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(FakeWebSocket.all[0]!.url).not.toContain('of-the-customer');
+    expect(localStorage.getItem('verbara-webchat-queue:t1:shared')).toBe(held);
+    expect(localStorage.getItem('verbara-webchat-messages:t1:shared')).toBe('[{"id":"m0"}]');
+    expect(localStorage.getItem('verbara-webchat-session:t1')).toBe(session);
+    expect(localStorage.getItem('verbara-webchat-messages:t1:guest')).toBeNull();
+  });
+
   it('Start_ShouldDeleteOtherVisitorsQueues_BeforeTheVisitorFillsTheForm', async () => {
     localStorage.setItem('verbara-webchat-queue:t1:v0', '[{"id":"q0","text":"x","timestamp":"t"}]');
 

@@ -14,6 +14,7 @@ import {
   readVisitorId,
   setVisitorProfile,
   resetVisitor,
+  type VisitorProfile,
 } from './visitor-storage';
 import {
   canRecordSubject,
@@ -197,7 +198,8 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     const sendConfig = () => {
       // A decision that was pending may have replaced this frame.
       if (state.bridge !== bridge) return;
-      const visitorId = getOrCreateVisitorId(state.config!.tenantId);
+      const guest = isGuest(state.config!.tenantId);
+      const visitorId = guest ? crypto.randomUUID() : getOrCreateVisitorId(state.config!.tenantId);
       const startSession = state.startSession;
       state.widgetVisitorId = visitorId;
       state.startSession = false;
@@ -220,6 +222,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
         ...(state.config!.csat ? { csat: state.config!.csat } : {}),
         ...(state.identityToken ? { identityToken: state.identityToken } : {}),
         ...(startSession ? { startSession } : {}),
+        ...(guest ? { guest } : {}),
       });
       // Flush queued outbound messages
       while (state.outboundQueue.length > 0) {
@@ -238,11 +241,34 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     state.bridge.on('message-sent', (p) => emit('message-sent', p));
     state.bridge.on('message-received', (p) => emit('message-received', p));
     state.bridge.on('visitor-updated', (p) => {
-      if (state.config && typeof p === 'object' && p !== null) {
-        setVisitorProfile(state.config.tenantId, p as { name?: string; email?: string });
+      // A guest's form speaks for that tab alone: the stored profile is the customer's.
+      if (state.config && typeof p === 'object' && p !== null && !isGuest(state.config.tenantId)) {
+        storeProfile(state.config.tenantId, p as { name?: string; email?: string });
       }
     });
     state.bridge.on('session-identity', reportIdentity);
+  }
+
+  /**
+   * A tab with no customer of its own while the browser has one, which only a discard leaves: everything the frame keeps
+   * under the shared visitor id is that customer's, so this tab's widget runs under an id of its own and keeps nothing.
+   */
+  function isGuest(tenantId: string): boolean {
+    if (state.ownSubject !== null) return false;
+    try {
+      return readSubjectRecord(tenantId) !== null;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Full storage must not stop what the site asked for: the profile then lives in this page's memory only. */
+  function storeProfile(tenantId: string, profile: VisitorProfile): void {
+    try {
+      setVisitorProfile(tenantId, profile);
+    } catch {
+      // Sent from `siteVisitor`, which holds it too.
+    }
   }
 
   /** The SDK only passes on what Platform answered; the code alone goes to the console, never the token. */
@@ -285,7 +311,8 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
 
   /** Runs `step` once what is settling has settled, or now when nothing is. */
   function afterSettling(step: () => void): void {
-    if (state.forgetting) hold(state.forgetting.then(step));
+    // What is held must settle, or the widget never opens and destroy() never forgets.
+    if (state.forgetting) hold(state.forgetting.then(step).catch(() => {}));
     else step();
   }
 
@@ -305,14 +332,22 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     if (state.isOpen) reveal(config);
   }
 
+  /** The widget runs under an id that is no longer the one all tabs share. */
+  function runsUnderOtherId(tenantId: string): boolean {
+    return state.widgetVisitorId !== null && state.widgetVisitorId !== readVisitorId(tenantId);
+  }
+
+  /** What ending this tab's widget has to clear: only what its own id holds, and nothing under the shared id. */
+  function ownClear(tenantId: string): ForgetVisitorPayload | null {
+    return runsUnderOtherId(tenantId) ? { tenantId, visitorId: state.widgetVisitorId! } : null;
+  }
+
   /**
    * This tab's widget is no longer the customer's. What another tab started on the same storage stays, and so does what
    * the visitor this tab moves to holds: a widget already under the shared visitor id has nothing to clear.
    */
   function discardWidget(config: InitConfig): void {
-    const visitorId = state.widgetVisitorId;
-    const superseded = visitorId !== null && visitorId !== readVisitorId(config.tenantId);
-    replaceWidget(superseded ? { tenantId: config.tenantId, visitorId } : null);
+    replaceWidget(ownClear(config.tenantId));
   }
 
   /** A browser that will not store the record leaves no customer known, and no stale one on the record. */
@@ -357,8 +392,8 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
       try {
         settleIdentity(config, call, token, statement, profile);
       } catch {
-        // What is held on this decision must settle, or the widget never opens and destroy() never forgets.
-        treatSubjectAsUnknown();
+        // What is held on this decision must settle, or the widget never opens and destroy() never forgets. The subject
+        // stands: only a record that cannot be read or written makes it unknown, and those are handled where they fail.
       }
     };
     const externalId = token ? readExternalId(token) : null;
@@ -387,24 +422,26 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     profile: InitConfig['visitor'],
   ): void {
     const tenantId = config.tenantId;
-    const decision = decideForget(
-      readSubjectRecord(tenantId),
-      statement,
-      hasVisitorId(tenantId),
-      call,
-    );
+    let recorded: string | null;
+    try {
+      recorded = readSubjectRecord(tenantId);
+    } catch {
+      treatSubjectAsUnknown();
+      return;
+    }
+    const decision = decideForget(recorded, statement, hasVisitorId(tenantId), call);
     const subject = statement.kind === 'subject' ? statement.subject : null;
     const own = state.ownSubject;
     const differs = statement.kind !== 'omitted' && subject !== own;
     if (decision.forget || statement.kind !== 'omitted') state.ownSubject = subject;
     if (call === 'setVisitor')
-      state.siteVisitor = decision.forget || differs ? undefined : state.siteVisitor;
+      state.siteVisitor = decision.forget || differs ? profile : state.siteVisitor;
 
     if (decision.forget) {
       resetVisitor(tenantId);
       recordSubject(tenantId, decision.record);
       replaceWidget({ tenantId });
-      if (profile) setVisitorProfile(tenantId, profile);
+      if (profile) storeProfile(tenantId, profile);
     } else {
       recordSubject(tenantId, decision.record);
       if (differs && state.widgetStarted) discardWidget(config);
@@ -420,14 +457,19 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
       console.warn(WARN_UNREADABLE);
   }
 
-  /** Another tab wrote the record. Unless it is this tab's customer, this tab's customer is gone. */
+  /**
+   * Another tab wrote the record. Unless it is this tab's customer, this tab's customer is gone. A tab with no customer
+   * compares equal to an empty record, so it also goes when the id it runs under was reset.
+   */
   function onStorage(event: StorageEvent): void {
     const config = state.config;
     if (!config) return;
     if (event.key !== null && event.key !== subjectRecordKey(config.tenantId)) return;
     afterSettling(() => {
       if (state.config !== config) return;
-      if (readSubjectRecord(config.tenantId) === state.ownSubject) return;
+      const own = state.ownSubject;
+      const unchanged = readSubjectRecord(config.tenantId) === own;
+      if (unchanged && (own !== null || !runsUnderOtherId(config.tenantId))) return;
       state.identityToken = null;
       state.ownSubject = null;
       state.siteVisitor = undefined;
@@ -447,16 +489,21 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     }
     if (state.config) {
       const externalId = config.identityToken ? readExternalId(config.identityToken) : null;
-      const sameCustomer =
+      // A token naming a customer is settled by the table against the record all tabs share, below: this tab may hold no
+      // token of the customer it is told about, and a newer token of the customer who is signed in forgets nothing. A
+      // page with no record to read has only the token it holds.
+      const decidedBelow =
         externalId !== null &&
         state.config.tenantId === config.tenantId &&
-        state.identityToken !== null &&
-        readExternalId(state.identityToken) === externalId;
-      // A newer token of the customer already running forgets nothing.
-      if (sameCustomer) {
-        const iframe = state.iframe;
+        (canRecordSubject() ||
+          (state.identityToken !== null && readExternalId(state.identityToken) === externalId));
+      if (decidedBelow) {
+        const { iframe, embedOrigin } = state;
+        const clear = ownClear(config.tenantId);
         tearDown();
-        iframe?.destroy();
+        iframe?.hide();
+        if (clear && iframe && embedOrigin) void forgetThenRemove(clear, iframe, embedOrigin);
+        else iframe?.destroy();
       } else {
         // Already initialized — destroy and re-init
         void destroy();
@@ -465,7 +512,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     state.config = config;
     state.identityToken = config.identityToken ?? null;
     state.siteVisitor = config.visitor;
-    if (config.visitor) setVisitorProfile(config.tenantId, config.visitor);
+    if (config.visitor) storeProfile(config.tenantId, config.visitor);
 
     state.bubble = createBubble({
       position: config.position ?? 'bottom-right',
@@ -519,18 +566,26 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     state.bridge.send('send-message', { text });
   }
 
+  /** Takes its turn behind what is settling, so a step queued before this call cannot undo what it says. */
   function setVisitor(update: VisitorUpdate): void {
-    if (!state.config) return;
+    const config = state.config;
+    if (!config) return;
+    afterSettling(() => {
+      if (state.config === config) applyVisitorUpdate(config, update);
+    });
+  }
+
+  function applyVisitorUpdate(config: InitConfig, update: VisitorUpdate): void {
     state.awaitingSite = false;
     const { identityToken, ...profile } = update;
     if (identityToken === undefined || Object.keys(profile).length > 0) {
-      setVisitorProfile(state.config.tenantId, profile);
+      storeProfile(config.tenantId, profile);
       state.bridge?.send('set-visitor', profile);
     }
     if (identityToken === undefined) return;
     state.identityToken = identityToken;
     applyIdentity(
-      state.config,
+      config,
       'setVisitor',
       identityToken,
       Object.keys(profile).length > 0 ? profile : undefined,
@@ -600,7 +655,8 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
   ): Promise<void> {
     const previous = state.forgetting;
     const forgetting = previous
-      ? previous.then(() => forgetInFrame(clear, iframe, embedOrigin))
+      ? // What is held must settle: a frame that cannot be asked is removed all the same.
+        previous.then(() => forgetInFrame(clear, iframe, embedOrigin)).catch(() => iframe.destroy())
       : forgetInFrame(clear, iframe, embedOrigin);
     hold(forgetting);
     return forgetting;

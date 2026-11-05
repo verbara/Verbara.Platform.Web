@@ -205,6 +205,13 @@ function keptOf(page: Page, visitorId: string): Promise<string[]> {
 
 const openSockets = (tab: Tab) => tab.sockets.filter((ws) => !ws.isClosed()).length;
 
+/** The composer only proves the form is gone: this proves the tab has its session, and one socket. */
+async function expectOneSocket(tab: Tab): Promise<void> {
+  await expect
+    .poll(() => openSockets(tab), { message: 'the socket of this tab', timeout: WIDGET_TIMEOUT })
+    .toBe(1);
+}
+
 /** Tab is showing a widget that started after A, and nothing of A is left in it. */
 async function expectDiscarded(
   tab: Tab,
@@ -387,6 +394,7 @@ test.describe('WebChat widget identity (full stack)', () => {
     await setToken(A.two.page, tokenB);
     const frameTwo = await waitComposer(A.two.page);
     await expect(frameTwo.locator('#webchat-name'), 'B starts at once').toHaveCount(0);
+    await expectOneSocket(A.two);
     await expectDiscarded(A.two, frameTwo, A.marks, A.socketsOfTwo);
 
     const after = visitor.creates.slice(A.createsBefore);
@@ -418,11 +426,13 @@ test.describe('WebChat widget identity (full stack)', () => {
     await signIn(A.two.page, { ...profileB, identityToken: tokenB });
     const frameTwo = await waitComposer(A.two.page);
     await expect(frameTwo.locator('#webchat-name'), 'B starts at once').toHaveCount(0);
+    await expectOneSocket(A.two);
 
     // A later page of the site: init with the token and the profile.
     const three = await visitor.tab();
     await initWidget(three.page, { identityToken: tokenB, visitor: profileB });
     await waitComposer(three.page);
+    await expectOneSocket(three);
 
     const after = visitor.creates.slice(A.createsBefore);
     expect(after.every((c) => c.identityToken === tokenB)).toBe(true);
@@ -472,8 +482,60 @@ test.describe('WebChat widget identity (full stack)', () => {
       })
       .toBe(before + 2);
     expect(visitor.creates[before + 1]?.identityToken).toBe(tokenB);
-    expect(visitor.creates[before + 1]?.visitorId).toBe(tokenless.visitorId);
+    expect(visitor.creates[before + 1]?.visitorId).not.toBe(tokenless.visitorId);
     await expectLastIdentity(closed.page, 'Verified');
+  });
+
+  test('a tab the site did not tell cannot reach the chat of the customer on the other tab, and their sign-out ends it', async () => {
+    test.setTimeout(90_000);
+    const A = await twoTabsAsA(visitor, signToken(secret, `cust-a-${stamp}`), stamp);
+    const tokenB = signToken(secret, `cust-b-${stamp}`);
+
+    await forgetIdentityEvents(A.one.page);
+    await signIn(A.one.page, {
+      name: 'Customer B',
+      email: 'b@e2e.local',
+      identityToken: tokenB,
+    });
+    const markB = `said as B ${stamp}`;
+    await say(A.one.page, markB);
+    await expectOneSocket(A.one);
+    await expectLastIdentity(A.one.page, 'Verified');
+    const visitorOfB = await storedVisitorId(A.one.page);
+    expect(visitorOfB, 'B has a visitor id').toBeTruthy();
+    await expectUntoldTabDiscarded(A.two, A.marks, A.socketsOfTwo);
+    const keptOfB = await keptOf(A.one.page, visitorOfB!);
+    expect(keptOfB, 'the frame keeps B').not.toEqual([]);
+    const before = visitor.creates.length;
+
+    // The visitor acts in the tab the site did not tell.
+    const frameTwo = await widget(A.two.page);
+    await frameTwo.locator('#webchat-name').fill('Someone');
+    await frameTwo.locator('#webchat-email').fill('someone@e2e.local');
+    await frameTwo.locator('button[type="submit"]').click();
+    await waitComposer(A.two.page);
+    await expectOneSocket(A.two);
+    await expect
+      .poll(() => visitor.creates.length, { message: 'its session', timeout: WIDGET_TIMEOUT })
+      .toBe(before + 1);
+    expect(visitor.creates[before]?.identityToken).toBeUndefined();
+    expect(visitor.creates[before]?.visitorId).not.toBe(visitorOfB);
+    await expect(frameTwo.getByText(markB), "B's message is not in this tab").toHaveCount(0);
+    const socketsOfGuest = [...A.two.sockets];
+    await say(A.two.page, `said by someone ${stamp}`);
+
+    // Nothing B holds moved: the session, the messages, and the socket of B's own tab.
+    expect(await keptOf(A.one.page, visitorOfB!)).toEqual(keptOfB);
+    expect(await storedVisitorId(A.two.page)).toBe(visitorOfB);
+    await expectOneSocket(A.one);
+    await say(A.one.page, `still chatting as B ${stamp}`);
+
+    // B signs out on the other tab: this tab's chat ends there, and it asks for a new visitor.
+    await setToken(A.one.page, null);
+    await expectUntoldTabDiscarded(A.two, [markB, `said by someone ${stamp}`], socketsOfGuest);
+    await expect
+      .poll(() => openSockets(A.two), { message: 'no socket left', timeout: WIDGET_TIMEOUT })
+      .toBe(0);
   });
 
   test('two tabs of customer A both drop A when the site signs out, one after the other', async () => {
