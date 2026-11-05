@@ -603,3 +603,330 @@ export const agentAssistTranscriptFrame: AgentAssistFrameData & {
   eventType: 'agentassist.transcript',
   metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:00.12+00:00' },
 };
+
+/**
+ * The six answers of `POST /api/v1/webchat/sessions`, `responses[].body` of
+ * `webchat-session-create.v1.json`, in the fixture's order.
+ */
+export const webchatSessionVerified: Schemas['CreateSessionResponse'] = {
+  sessionId: '0d6f4f2b8e1a4c3b9a7e5d4c3b2a1f0e',
+  wsUrl: '/ws/webchat/0d6f4f2b8e1a4c3b9a7e5d4c3b2a1f0e',
+  visitorAddress: 'webchat-5b9e0c7a2d4f41e8a6c3b1d0e9f8a7b6',
+  contactId: 'c0ffee00aa11bb22cc33dd44ee55ff66',
+  conversationId: '9a8b7c6d5e4f40312a3b4c5d6e7f8091',
+  identityLevel: 'Verified',
+};
+
+export const webchatSessionUnverified: Schemas['CreateSessionResponse'] = {
+  sessionId: '1e2d3c4b5a6948372615a4b3c2d1e0f9',
+  wsUrl: '/ws/webchat/1e2d3c4b5a6948372615a4b3c2d1e0f9',
+  visitorAddress: 'webchat-8c1d2e3f4a5b46c7d8e9f0a1b2c3d4e5',
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  conversationId: '2b3c4d5e6f7a48b9c0d1e2f3a4b5c6d7',
+  identityLevel: 'Unverified',
+};
+
+export const webchatSessionTokenRefused: Schemas['CreateSessionResponse'] = {
+  sessionId: '2f3e4d5c6b7a48190a1b2c3d4e5f6a7b',
+  wsUrl: '/ws/webchat/2f3e4d5c6b7a48190a1b2c3d4e5f6a7b',
+  visitorAddress: 'webchat-a1b2c3d4e5f647a8b9c0d1e2f3a4b5c6',
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  conversationId: '3c4d5e6f7a8b49c0d1e2f3a4b5c6d7e8',
+  identityLevel: 'Unverified',
+  identityTokenRefusal: 'identity-token-expired',
+};
+
+export const webchatSessionAnonymous: Schemas['CreateSessionResponse'] = {
+  sessionId: '3a4b5c6d7e8f49a0b1c2d3e4f5a6b7c8',
+  wsUrl: '/ws/webchat/3a4b5c6d7e8f49a0b1c2d3e4f5a6b7c8',
+  visitorAddress: 'webchat-b2c3d4e5f6a748b9c0d1e2f3a4b5c6d7',
+  contactId: 'e1f2a3b4c5d64e7f8a9b0c1d2e3f4a5b',
+  conversationId: '4d5e6f7a8b9c40d1e2f3a4b5c6d7e8f9',
+  identityLevel: 'Anonymous',
+};
+
+/** Level 1 would land on a contact that already holds 5 open WebChat conversations. */
+export const webchatSessionAnonymousSaturatedKey: Schemas['CreateSessionResponse'] = {
+  sessionId: '5c6d7e8f9a0b41c2d3e4f5a6b7c8d9e0',
+  wsUrl: '/ws/webchat/5c6d7e8f9a0b41c2d3e4f5a6b7c8d9e0',
+  visitorAddress: 'webchat-d4e5f6a7b8c94ad0e1f2a3b4c5d6e7f8',
+  contactId: 'a3b4c5d6e7f84a9b0c1d2e3f4a5b6c7d',
+  conversationId: '6f7a8b9c0d1e42f3a4b5c6d7e8f9a0b1',
+  identityLevel: 'Anonymous',
+};
+
+/** Level 1 would land on a contact that holds a verified key. */
+export const webchatSessionAnonymousVerifiedKey: Schemas['CreateSessionResponse'] = {
+  sessionId: '4b5c6d7e8f9a40b1c2d3e4f5a6b7c8d9',
+  wsUrl: '/ws/webchat/4b5c6d7e8f9a40b1c2d3e4f5a6b7c8d9',
+  visitorAddress: 'webchat-c3d4e5f6a7b849c0d1e2f3a4b5c6d7e8',
+  contactId: 'f2a3b4c5d6e74f8a9b0c1d2e3f4a5b6c',
+  conversationId: '5e6f7a8b9c0d41e2f3a4b5c6d7e8f9a0',
+  identityLevel: 'Anonymous',
+};
+
+/** `refusalCodes` of `webchat-identity-token.v1.json`. */
+export const identityTokenRefusalCodes: NonNullable<
+  Schemas['CreateSessionResponse']['identityTokenRefusal']
+>[] = [
+  'identity-token-not-configured',
+  'identity-token-malformed',
+  'identity-token-signature-invalid',
+  'identity-token-wrong-tenant',
+  'identity-token-lifetime-too-long',
+  'identity-token-not-yet-valid',
+  'identity-token-expired',
+];
+
+/** The four `examples[].body` of `contact-identity-level.v1.json`, as `GET /api/v1/contacts/{id}` answers. */
+export const contactLevelOne: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  doNotContact: false,
+  addresses: [
+    {
+      channel: 'WebChat',
+      address: 'webchat-visitor:rcfqwP4uUDSA6hgRqgUIE3hCFFsXvDuxhE3MgUu0Y1M',
+    },
+    { channel: 'WebChat', address: 'webchat-6a7b8c9d0e1f42a3b4c5d6e7f8a9b0c1' },
+    { channel: 'WebChat', address: 'webchat-8c1d2e3f4a5b46c7d8e9f0a1b2c3d4e5' },
+  ],
+  customFields: { webchatEmail: 'ana@example.com' },
+  channelConsent: {},
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  updatedAt: '2026-11-04T14:05:00.000+00:00',
+  updatedBy: 'system',
+  fullName: 'Ana',
+  identityLevel: 'Unverified',
+};
+
+export const contactLevelTwo: Schemas['Contact'] = {
+  contactId: 'c0ffee00aa11bb22cc33dd44ee55ff66',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana Pérez',
+  doNotContact: false,
+  addresses: [
+    { channel: 'WebChat', address: 'webchat-external:cust-48151623' },
+    { channel: 'WebChat', address: 'webchat-5b9e0c7a2d4f41e8a6c3b1d0e9f8a7b6' },
+  ],
+  customFields: { webchatEmail: 'ana.perez@example.com' },
+  channelConsent: {},
+  createdAt: '2026-11-04T14:05:00.000+00:00',
+  fullName: 'Ana Pérez',
+  identityLevel: 'Verified',
+};
+
+export const contactAnonymous: Schemas['Contact'] = {
+  contactId: 'e1f2a3b4c5d64e7f8a9b0c1d2e3f4a5b',
+  tenantId: 't-demo-0001',
+  doNotContact: false,
+  addresses: [{ channel: 'WebChat', address: 'webchat-b2c3d4e5f6a748b9c0d1e2f3a4b5c6d7' }],
+  customFields: {},
+  channelConsent: {},
+  createdAt: '2026-10-20T08:30:00.000+00:00',
+  identityLevel: 'Anonymous',
+};
+
+export const contactWithoutWebChat: Schemas['Contact'] = {
+  contactId: '0b1c2d3e4f5a46b7c8d9e0f1a2b3c4d5',
+  tenantId: 't-demo-0001',
+  firstName: 'Luis',
+  doNotContact: false,
+  addresses: [{ channel: 'WhatsApp', address: '5215512345678' }],
+  customFields: {},
+  channelConsent: {},
+  createdAt: '2026-09-12T16:00:00.000+00:00',
+  fullName: 'Luis',
+};
+
+/**
+ * The level-1 contact holding the phone of `cardDial`, for the card's call button. The fixtures show no such
+ * record: spec `platform-entity-mapping` names this address, and every other value is `contactLevelOne`'s.
+ */
+export const contactLevelOneWithVoiceAddress: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  doNotContact: false,
+  addresses: [{ channel: 'Voice', address: '+15551234567' }],
+  customFields: { webchatEmail: 'ana@example.com' },
+  channelConsent: {},
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  fullName: 'Ana',
+  identityLevel: 'Unverified',
+};
+
+/**
+ * `GET`/`PUT /api/v1/admin/channels/WebChat` answers of `webchat-identity-secret-admin.v1.json`: the `set`,
+ * `rotate`, `revokePrevious` and `read` bodies. A secret value never appears in them.
+ */
+export const webchatChannelAfterSet: Schemas['ChannelConfigResponse'] = {
+  channel: 'WebChat',
+  isActive: true,
+  isConfigured: true,
+  credentials: [
+    { key: 'defaultQueueId', isSet: true },
+    { key: 'identityTokenSecret', isSet: true },
+    { key: 'identityTokenSecretPrevious', isSet: false },
+    { key: 'identityTokenSecretReplacedAt', isSet: false },
+  ],
+};
+
+export const webchatChannelAfterRotate: Schemas['ChannelConfigResponse'] = {
+  channel: 'WebChat',
+  isActive: true,
+  isConfigured: true,
+  credentials: [
+    { key: 'defaultQueueId', isSet: true },
+    { key: 'identityTokenSecret', isSet: true },
+    { key: 'identityTokenSecretPrevious', isSet: true },
+    { key: 'identityTokenSecretReplacedAt', isSet: true },
+  ],
+};
+
+export const webchatChannelAfterRevokePrevious: Schemas['ChannelConfigResponse'] = {
+  channel: 'WebChat',
+  isActive: true,
+  isConfigured: true,
+  credentials: [
+    { key: 'defaultQueueId', isSet: true },
+    { key: 'identityTokenSecret', isSet: true },
+    { key: 'identityTokenSecretPrevious', isSet: false },
+    { key: 'identityTokenSecretReplacedAt', isSet: false },
+  ],
+};
+
+export const webchatChannelRead: Schemas['ChannelConfigResponse'] = {
+  channel: 'WebChat',
+  isActive: true,
+  isConfigured: true,
+  credentials: [
+    { key: 'defaultQueueId', isSet: true },
+    { key: 'identityTokenSecret', isSet: true },
+    { key: 'identityTokenSecretPrevious', isSet: false },
+    { key: 'identityTokenSecretReplacedAt', isSet: false },
+  ],
+};
+
+/** The four 400 `refusals[].body` of `webchat-identity-secret-admin.v1.json`. */
+export const weakIdentityTokenSecretRefusal: Schemas['ErrorDetailResponse'] = {
+  error: 'weak-identity-token-secret',
+  details: ['identityTokenSecret'],
+};
+
+export const serverManagedPreviousSecretRefusal: Schemas['ErrorDetailResponse'] = {
+  error: 'server-managed-credential-key',
+  details: ['identityTokenSecretPrevious'],
+};
+
+export const serverManagedReplacedAtRefusal: Schemas['ErrorDetailResponse'] = {
+  error: 'server-managed-credential-key',
+  details: ['identityTokenSecretReplacedAt'],
+};
+
+export const unknownCredentialKeyRefusal: Schemas['ErrorDetailResponse'] = {
+  error: 'unknown-credential-key',
+  details: ['VisitorTokenSecret'],
+};
+
+/** The request bodies and the 200 body of `contact-card-actions.v1.json`. */
+export const cardDialRequest: Schemas['VoiceDialRequest'] = {
+  toNumber: '+15551234567',
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+};
+
+export const cardEditRequest: Schemas['UpdateContactRequest'] = {
+  firstName: 'Ana',
+  lastName: 'Ruiz',
+  company: 'Example Co',
+  segment: 'retail',
+  preferredChannel: 'WebChat',
+  preferredLanguage: 'es',
+  timezone: 'America/Bogota',
+};
+
+export const cardEditResponse: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  lastName: 'Ruiz',
+  company: 'Example Co',
+  segment: 'retail',
+  preferredChannel: 'WebChat',
+  preferredLanguage: 'es',
+  timezone: 'America/Bogota',
+  doNotContact: false,
+  addresses: [
+    {
+      channel: 'WebChat',
+      address: 'webchat-visitor:rcfqwP4uUDSA6hgRqgUIE3hCFFsXvDuxhE3MgUu0Y1M',
+    },
+    { channel: 'WebChat', address: 'webchat-6a7b8c9d0e1f42a3b4c5d6e7f8a9b0c1' },
+    { channel: 'WebChat', address: 'webchat-8c1d2e3f4a5b46c7d8e9f0a1b2c3d4e5' },
+  ],
+  customFields: { webchatEmail: 'ana@example.com' },
+  channelConsent: {},
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  updatedAt: '2026-11-05T09:30:00.000+00:00',
+  updatedBy: 'system',
+  fullName: 'Ana Ruiz',
+  identityLevel: 'Unverified',
+};
+
+/**
+ * `data` of a `voice.screenpop` frame, as `voice-screenpop.v1.json` pins it. No generated schema covers SSE
+ * data, so this names the frame's members. `correlationId` is absent on an inbound call.
+ */
+export interface VoiceScreenPopFrameData {
+  tenantId: string;
+  conversationId: string;
+  agentId: string;
+  channel: string;
+  contactId: string;
+  contactName: string;
+  callerNumber: string;
+  voiceLinkedId: string;
+  queueName: string;
+  queueAutoAnswerDefault: boolean;
+  correlationId?: string;
+  type: string;
+  timestamp: string;
+  metadata: SseFrameMetadata;
+  eventType: string;
+}
+
+export const voiceScreenPopInbound: VoiceScreenPopFrameData = {
+  tenantId: 't-demo-0001',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  agentId: 'a1b2c3d4e5f647a8b9c0d1e2f3a4b5c6',
+  channel: 'Voice',
+  contactId: '0b1c2d3e4f5a46b7c8d9e0f1a2b3c4d5',
+  contactName: 'Luis',
+  callerNumber: '+15551234567',
+  voiceLinkedId: '1793905800.42',
+  queueName: 'Sales',
+  queueAutoAnswerDefault: true,
+  type: 'voice.screenpop',
+  timestamp: '2026-11-05T09:30:00.0000000+00:00',
+  metadata: { tenantId: 't-demo-0001', occurredAt: '2026-11-05T09:30:00.0000000+00:00' },
+  eventType: 'voice.screenpop',
+};
+
+export const voiceScreenPopOutbound: VoiceScreenPopFrameData = {
+  tenantId: 't-demo-0001',
+  conversationId: '7c2e9a10b4d34f6e8a1b2c3d4e5f6a7b',
+  agentId: 'a1b2c3d4e5f647a8b9c0d1e2f3a4b5c6',
+  channel: 'Voice',
+  contactId: '0b1c2d3e4f5a46b7c8d9e0f1a2b3c4d5',
+  contactName: 'Luis',
+  callerNumber: '+15551234567',
+  voiceLinkedId: '1793905800.42',
+  queueName: '',
+  queueAutoAnswerDefault: false,
+  correlationId: '7c2e9a10b4d34f6e8a1b2c3d4e5f6a7b',
+  type: 'voice.screenpop',
+  timestamp: '2026-11-05T09:30:00.0000000+00:00',
+  metadata: { tenantId: 't-demo-0001', occurredAt: '2026-11-05T09:30:00.0000000+00:00' },
+  eventType: 'voice.screenpop',
+};
