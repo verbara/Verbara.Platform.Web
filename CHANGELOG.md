@@ -15,7 +15,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `identityToken` the site signs: a string signs the customer in, `null` signs out, and leaving it out of `setVisitor`
   keeps the current one. The token stays in memory and is never stored or read from the script tag. A new `identity` event
   reports the level Platform answered and, when it did not accept the token, the reason, which also goes to the browser
-  console. The visitor sees no difference and the chat works the same at every level. (#N)
+  console. The visitor sees no difference and the chat works the same at every level.
 
 - **A new signed-in customer on a shared browser does not inherit the previous one's chat.** When the customer changes or
   signs out, or the first customer signs in over an anonymous chat, the widget forgets what it kept, starts with a new
@@ -23,25 +23,25 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with a refreshed token keeps the chat. Every open tab of the site ends the previous customer's chat, including a tab the site
   did not call. The browser stores a keyed digest to recognise the customer, never the customer's id or the token, and the
   widget warns in the console when it forgets because a token was left out or could not be read, or when the page is not
-  on `https`, where this check does not run. `destroy()` also clears the digest. (#N)
+  on `https`, where this check does not run. `destroy()` also clears the digest.
 
 - **The agent console shows how sure the platform is of who a WebChat contact is.** A contact known by browser only carries an
   "identity not verified" mark, and one the company's site signed in carries a "Verified" badge, on the contact card, in the
   conversation header, on every row of the History tab and in the transcript opened from a row. An anonymous contact, or one
   with no WebChat address, carries neither. While the contact is still loading or could not be read, the History rows and the
   transcript keep the "identity not verified" mark. The card and the header now also find the contact of a conversation
-  accepted from a fresh offer, and of the offer itself. (#N)
+  accepted from a fresh offer, and of the offer itself.
 
 - **An admin manages the WebChat identity secret from the WebChat page.** A new "Identity verification" section says whether
   a secret is configured and whether a previous one is stored. It generates a secret in the browser and shows it once to
   copy, rotates it with a confirm that says the old one stays valid for 24 hours, revokes the previous one and turns
   verification off. The Channels form keeps the default queue as its only WebChat field, so saving it never changes the
-  secret. (#N)
+  secret.
 
 - **The WebChat embedding guide explains how to identify signed-in visitors.** A new section covers the two levels, signing
   a token, passing, refreshing and clearing it, the `identity` event and its seven codes, and rotating the secret. It says
   that level 1 stays off until the host turns it on, and what comes first, measuring the contact lookup on a large tenant
-  included. The snippet on the WebChat page gains a comment line that points to it, in the three languages. (#N)
+  included. The snippet on the WebChat page gains a comment line that points to it, in the three languages.
 
 ### Fixed
 
@@ -49,15 +49,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the edit reached no contact and the delete reported a deletion that removed nothing, and it compared address channels
   in a different case, so the phone and e-mail rows read "—" and the call button never appeared. It now carries the
   contact's id, and shows those rows and that button for a contact with a phone or e-mail address. The permissions for
-  edit and delete do not change. (#N)
+  edit and delete do not change.
 
 - **Unsent messages stay with the visitor who typed them.** The widget keeps what is typed while the connection is down
   per visitor. When it starts, it deletes what any other visitor of the tenant left on this browser, and it never sends
   those messages in the new visitor's session, also when `destroy()` got no answer from the frame. `destroy()` clears
-  every visitor's queue of the tenant. Messages kept by an earlier version are removed unsent. (#N)
+  every visitor's queue of the tenant. Messages kept by an earlier version are removed unsent.
 
 - **The channel form explains two more refusals.** A secret of the wrong length and a key only the server can write each
-  have their own message, in the three languages. (#N)
+  have their own message, in the three languages.
 
 - **Signing out or switching identity clears the previous person's conversations from the page.** Signing out, another
   user signing in on the same tab, starting or ending an impersonation and managing another tenant's billing clear what

@@ -61,6 +61,8 @@ export interface WebChatVisitor {
   contactId: string;
   /** That contact's conversation, `Queued` with no owner until the visitor's first message routes it. */
   conversationId: string;
+  /** How sure Platform is of who this visitor is, as the session response names it. */
+  identityLevel: string;
 }
 
 interface WebChatSessionResponse {
@@ -68,17 +70,21 @@ interface WebChatSessionResponse {
   visitorAddress?: unknown;
   contactId?: unknown;
   conversationId?: unknown;
+  identityLevel?: unknown;
 }
 
 /**
  * Opens a WebChat visitor session and returns the visitor Platform (>= v2.28.0) created for it, read
- * from the session response.
+ * from the session response. A `visitorId` is the browser's id, which a returning visitor sends again.
  */
 export async function openWebChatSession(
   api: APIRequestContext,
   tenantId: string,
+  visitorId?: string,
 ): Promise<WebChatVisitor> {
-  const session = await api.post(`${API_BASE}/api/v1/webchat/sessions`, { data: { tenantId } });
+  const session = await api.post(`${API_BASE}/api/v1/webchat/sessions`, {
+    data: visitorId ? { tenantId, visitorId } : { tenantId },
+  });
   expect(session.status(), 'open webchat session').toBe(200);
   const body = (await session.json()) as WebChatSessionResponse;
   const visitor: WebChatVisitor = {
@@ -86,6 +92,7 @@ export async function openWebChatSession(
     visitorAddress: idOf(body.visitorAddress),
     contactId: idOf(body.contactId),
     conversationId: idOf(body.conversationId),
+    identityLevel: String(body.identityLevel),
   };
   expect(visitor.visitorAddress, 'the session names its visitor address').toMatch(/^webchat-/);
   return visitor;
