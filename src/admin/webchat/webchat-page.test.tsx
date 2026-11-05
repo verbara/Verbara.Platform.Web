@@ -3,6 +3,10 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import type { ReactNode } from 'react';
 import type { ChannelConfig } from '@/core/api/hooks/use-channels';
+import enAdmin from '../../../public/locales/en-US/admin.json';
+import esAdmin from '../../../public/locales/es-419/admin.json';
+import ptAdmin from '../../../public/locales/pt-BR/admin.json';
+import guide from '../../webchat/README.md?raw';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
@@ -44,6 +48,25 @@ describe('WebChatPage', () => {
       'data-tenant-id="ten-acme"',
     );
     expect(screen.getByText('webchat.snippet_scope')).toBeInTheDocument();
+  });
+
+  it('render_ShouldPointToTheIdentityGuide_InACommentLineOfTheSnippet', () => {
+    render(<WebChatPage />, { wrapper });
+
+    expect(screen.getByTestId('webchat-snippet').textContent?.split('\n')).toContain(
+      '<!-- webchat.snippet_identity_guide -->',
+    );
+  });
+
+  it('snippetIdentityGuide_ShouldNameASectionOfTheGuide_AndStayOneHtmlComment_InEveryLocale', () => {
+    const lines = [enAdmin, esAdmin, ptAdmin].map((l) => l.webchat.snippet_identity_guide);
+
+    expect(new Set(lines).size).toBe(3);
+    for (const line of lines) {
+      expect(line).toContain('"Identify signed-in visitors"');
+      expect(line).not.toMatch(/--|>|\n/);
+    }
+    expect(guide).toContain('\n## Identify signed-in visitors\n');
   });
 
   it('render_ShouldReadTheTenantWebChatChannel', () => {

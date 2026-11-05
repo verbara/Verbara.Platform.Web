@@ -38,6 +38,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   verification off. The Channels form keeps the default queue as its only WebChat field, so saving it never changes the
   secret. (#N)
 
+- **The WebChat embedding guide explains how to identify signed-in visitors.** A new section covers the two levels, signing
+  a token, passing, refreshing and clearing it, the `identity` event and its seven codes, and rotating the secret. It says
+  that level 1 stays off until the host turns it on, and what comes first, measuring the contact lookup on a large tenant
+  included. The snippet on the WebChat page gains a comment line that points to it, in the three languages. (#N)
+
 ### Fixed
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so

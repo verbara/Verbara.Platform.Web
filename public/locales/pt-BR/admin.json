@@ -2658,6 +2658,7 @@
     "ws_url": "URL do WebSocket",
     "live_preview": "Visualização ao vivo",
     "snippet_scope": "Qualquer site que inclua este trecho pode iniciar chats para este tenant.",
+    "snippet_identity_guide": "Clientes com sessão iniciada: consulte \"Identify signed-in visitors\" no guia de incorporação do WebChat.",
     "channel_inactive": "Os visitantes ainda não podem iniciar chats: o canal WebChat está desativado ou não configurado para este tenant. Ative-o em Admin → Canais.",
     "open_channels": "Abrir Canais",
     "identity": {

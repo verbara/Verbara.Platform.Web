@@ -20,6 +20,7 @@ export default function WebChatPage() {
   const channelOff = channel !== undefined && !channel.isActive;
 
   const snippet = `<!-- Verbara WebChat Widget -->
+<!-- ${t('webchat.snippet_identity_guide')} -->
 <script
   src="${apiBase}/webchat/v1/verbara-webchat.js"
   data-tenant-id="${tenantId}"
