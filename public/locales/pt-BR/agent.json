@@ -253,6 +253,7 @@
     "dialing": "Discando",
     "cancel_dial": "Cancelar",
     "call_contact": "Ligar",
+    "call_do_not_contact": "Este contato está marcado como não contatar, por isso a chamada não está disponível.",
     "dial_failed": "Não foi possível realizar a chamada",
     "transfer": {
       "open": "Transferir",

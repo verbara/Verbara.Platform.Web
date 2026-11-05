@@ -185,4 +185,15 @@ describe('ContactInfo actions', () => {
       data: cardDialRequest,
     });
   });
+
+  it('ContactInfo_ShouldDialNothing_WhenTheReadSaysTheContactIsDoNotContact', async () => {
+    await renderCard({ ...contactLevelOneWithVoiceAddress, doNotContact: true }, AGENT_PERMISSIONS);
+
+    const button = screen.getByTestId('contact-call-btn');
+    expect(button).toBeDisabled();
+    fireEvent.click(button);
+
+    expect(screen.getByTestId('contact-call-do-not-contact')).toBeInTheDocument();
+    expect(callsOf('POST')).toEqual([]);
+  });
 });

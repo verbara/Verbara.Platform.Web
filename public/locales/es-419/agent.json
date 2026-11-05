@@ -253,6 +253,7 @@
     "dialing": "Marcando",
     "cancel_dial": "Cancelar",
     "call_contact": "Llamar",
+    "call_do_not_contact": "Este contacto está marcado como no contactar, por lo que la llamada no está disponible.",
     "dial_failed": "No se pudo realizar la llamada",
     "transfer": {
       "open": "Transferir",

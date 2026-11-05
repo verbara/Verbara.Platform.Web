@@ -48,6 +48,8 @@ function InfoRow({
   );
 }
 
+const CALL_DO_NOT_CONTACT_NOTE = 'contact-call-do-not-contact-note';
+
 const languageLabels: Record<string, string> = {
   es: 'Español',
   en: 'English',
@@ -121,6 +123,7 @@ export function ContactInfo() {
     contact.addresses.find((a) => a.channel === 'voice' || a.channel === 'sms')?.address ?? '—';
   const phone = rawPhone === '—' ? rawPhone : formatPhone(rawPhone);
   const email = contact.addresses.find((a) => a.channel === 'email')?.address ?? '—';
+  const doNotContact = contact.doNotContact === true;
 
   return (
     <div className="space-y-1 p-4">
@@ -169,7 +172,8 @@ export function ContactInfo() {
           variant="outline"
           size="sm"
           className="mt-1 w-full"
-          disabled={dial.isPending || callPhase !== 'idle'}
+          disabled={doNotContact || dial.isPending || callPhase !== 'idle'}
+          aria-describedby={doNotContact ? CALL_DO_NOT_CONTACT_NOTE : undefined}
           onClick={() => {
             dial.mutate(
               { toNumber: rawPhone, contactId: contact.id },
@@ -190,6 +194,15 @@ export function ContactInfo() {
           <Phone data-icon="inline-start" />
           {t('voice.call_contact', 'Call')}
         </Button>
+      )}
+      {doNotContact && rawPhone !== '—' && registration === 'registered' && (
+        <p
+          id={CALL_DO_NOT_CONTACT_NOTE}
+          data-testid="contact-call-do-not-contact"
+          className="mt-1 text-xs text-slate-500 dark:text-slate-400"
+        >
+          {t('voice.call_do_not_contact')}
+        </p>
       )}
       <InfoRow
         icon={Mail}

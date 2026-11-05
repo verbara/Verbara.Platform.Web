@@ -21,7 +21,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   signs out, or the first customer signs in over an anonymous chat, the widget forgets what it kept, starts with a new
   visitor id, and, if the visitor was chatting and a token is in hand, starts the new session at once. An unchanged customer
   with a refreshed token keeps the chat. Every open tab of the site ends the previous customer's chat, including a tab the site
-  did not call. The browser stores a keyed digest to recognise the customer, never the customer's id or the token, and the
+  did not call, and that tab starts no conversation until the site calls it or the visitor fills in its form. A tab holding
+  the token does not continue a conversation started without one, so the new customer's next session carries it. The browser stores a keyed digest to recognise the customer, never the customer's id or the token, and the
   widget warns in the console when it forgets because a token was left out or could not be read, or when the page is not
   on `https`, where this check does not run. `destroy()` also clears the digest.
 
@@ -50,6 +51,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   in a different case, so the phone and e-mail rows read "—" and the call button never appeared. It now carries the
   contact's id, and shows those rows and that button for a contact with a phone or e-mail address. The permissions for
   edit and delete do not change.
+
+- **A contact marked do not contact offers no call from the contact card.** The card's call button is disabled for that
+  contact, with a line under it saying why, in the agent's language.
 
 - **Unsent messages stay with the visitor who typed them.** The widget keeps what is typed while the connection is down
   per visitor. When it starts, it deletes what any other visitor of the tenant left on this browser, and it never sends

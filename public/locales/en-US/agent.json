@@ -253,6 +253,7 @@
     "dialing": "Dialing",
     "cancel_dial": "Cancel",
     "call_contact": "Call",
+    "call_do_not_contact": "This contact is marked do not contact, so the call is not available.",
     "dial_failed": "Could not place the call",
     "transfer": {
       "open": "Transfer",
