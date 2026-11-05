@@ -10,11 +10,28 @@ export interface CreateSessionInput {
   visitorId: string;
   profile: { name?: string; email?: string };
   pageContext: PageContext;
+  /** The token the site signed. Only a non-blank string reaches the request. */
+  identityToken?: string | null;
 }
+
+/** How far Platform knows the contact. It alone decides this: the widget infers nothing from the token. */
+export type IdentityLevel = 'Verified' | 'Unverified' | 'Anonymous';
+
+export type IdentityTokenRefusal =
+  | 'identity-token-not-configured'
+  | 'identity-token-malformed'
+  | 'identity-token-signature-invalid'
+  | 'identity-token-wrong-tenant'
+  | 'identity-token-lifetime-too-long'
+  | 'identity-token-not-yet-valid'
+  | 'identity-token-expired';
 
 export interface CreateSessionResult {
   sessionId: string;
   wsUrl: string;
+  identityLevel: IdentityLevel;
+  /** Why a token that was sent was not honoured. The session opens all the same. */
+  identityTokenRefusal?: IdentityTokenRefusal;
 }
 
 export interface ChatMessage {
@@ -36,6 +53,7 @@ export async function createSession(input: CreateSessionInput): Promise<CreateSe
       visitorName: input.profile.name,
       visitorEmail: input.profile.email,
       pageContext: input.pageContext,
+      ...(input.identityToken?.trim() ? { identityToken: input.identityToken } : {}),
     }),
   });
   if (!res.ok) {
