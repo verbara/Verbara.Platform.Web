@@ -21,7 +21,7 @@ import {
   type StoredSession,
 } from './transport/session-store';
 import { messageFrame, readAgentMessage, type ServerFrame } from './transport/ws-protocol';
-import { createOfflineQueue } from './transport/offline-queue';
+import { createOfflineQueue, settleVisitorQueues } from './transport/offline-queue';
 import { loadCachedMessages, saveCachedMessages } from './message-cache';
 import { playNotificationSound, loadSoundPreference, setSoundEnabled } from './notifications';
 import { breadcrumb } from './sentry-breadcrumbs';
@@ -53,10 +53,21 @@ export interface InitConfigPayload {
   theme?: { primaryColor?: string; fontFamily?: string };
   /** Optional CSAT survey context (server-issued); enables the rating panel. */
   csat?: CsatEmbedContext;
+  /** The token the site signed, held in memory only. A later `set-visitor` replaces it (see `App`). */
+  identityToken?: string;
+  /** The SDK ended a running widget and asks for the next session now, without the pre-chat form. */
+  startSession?: boolean;
+  /**
+   * This tab has no customer of its own while the browser has one, and `visitorId` is this frame's alone. What this
+   * frame's storage holds is that customer's: a guest keeps its chat in memory and leaves that storage as it is.
+   */
+  guest?: boolean;
 }
 
 interface Props {
   readonly config: InitConfigPayload;
+  /** The site's current token. A change is used by the next session create and leaves the live session alone. */
+  readonly identityToken?: string | null;
   readonly onUnreadChange: (n: number) => void;
 }
 
@@ -71,7 +82,7 @@ function createRetryDelayMs(failures: number, err: unknown): number {
   return Math.min(Math.max(backoff, hinted), 60_000);
 }
 
-export function ChatWidget({ config, onUnreadChange }: Props) {
+export function ChatWidget({ config, identityToken, onUnreadChange }: Props) {
   const { t } = useTranslation('webchat');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<Status>('connecting');
@@ -84,8 +95,16 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     statusRef.current = status;
   }, [status]);
   const [profile, setProfile] = useState<{ name?: string; email?: string } | null>(
-    config.visitor?.name && config.visitor?.email ? config.visitor : null,
+    config.visitor?.name && config.visitor?.email
+      ? config.visitor
+      : config.startSession
+        ? (config.visitor ?? {})
+        : null,
   );
+  const identityTokenRef = useRef(identityToken);
+  useEffect(() => {
+    identityTokenRef.current = identityToken;
+  }, [identityToken]);
   // The session machinery lives in refs: one socket per widget, whatever React re-renders.
   const clientRef = useRef<WsClient | null>(null);
   // The session the socket in clientRef belongs to (another tab may have stored a different one since).
@@ -109,6 +128,12 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const TIMEOUT_MS = 5 * 60 * 1000;
   const lastAgentActivityRef = useRef<number | null>(null);
 
+  // The first effect of the widget, so it runs before the effect below that creates the session, and so before any
+  // queue is read.
+  useEffect(() => {
+    if (!config.guest) settleVisitorQueues(config.tenantId, config.visitorId);
+  }, [config.tenantId, config.visitorId, config.guest]);
+
   // Initialize agent-activity timestamp on first mount.
   useEffect(() => {
     lastAgentActivityRef.current = Date.now();
@@ -128,10 +153,10 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
 
   // Persist on every messages update
   useEffect(() => {
-    if (profile) {
+    if (profile && !config.guest) {
       saveCachedMessages(config.tenantId, config.visitorId, messages);
     }
-  }, [messages, profile, config.tenantId, config.visitorId]);
+  }, [messages, profile, config.tenantId, config.visitorId, config.guest]);
 
   useEffect(() => {
     if (!profile) return;
@@ -157,7 +182,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     const { tenantId, visitorId } = config;
 
     function connect(session: StoredSession, isNew: boolean): void {
-      const queue = createOfflineQueue(tenantId);
+      const queue = createOfflineQueue(tenantId, visitorId);
       let openCount = 0;
       // Closes in a row without Platform confirming the socket in between. Platform refuses an unknown session
       // before the upgrade, which the page sees only as a socket that closes unopened.
@@ -237,7 +262,9 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
       if (!mountedRef.current || clientRef.current || unavailableRef.current) return;
 
       const stored = loadStoredSession(tenantId, visitorId);
-      if (stored) {
+      const token = identityTokenRef.current;
+      // A tab holding a token does not resume a session created without one: it would never reach Platform.
+      if (stored && (stored.createdWithToken || !token?.trim())) {
         breadcrumb('session-resumed', { sessionId: stored.sessionId });
         connect(stored, false);
         return;
@@ -250,6 +277,14 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
           visitorId,
           profile: profileRef.current ?? {},
           pageContext: config.pageContext,
+          identityToken: token,
+        });
+        // Reported whatever happens next here: the session exists on Platform either way.
+        postToHost('session-identity', {
+          identityLevel: created.identityLevel,
+          ...(created.identityTokenRefusal
+            ? { identityTokenRefusal: created.identityTokenRefusal }
+            : {}),
         });
         if (!mountedRef.current) return;
         createFailuresRef.current = 0;
@@ -260,8 +295,9 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
           visitorId,
           createdAt: now,
           lastActiveAt: now,
+          ...(token?.trim() ? { createdWithToken: true } : {}),
         };
-        saveStoredSession(tenantId, session);
+        if (!config.guest) saveStoredSession(tenantId, session);
         breadcrumb('session-created', { sessionId: session.sessionId });
         setStatus('connecting');
         connect(session, true);
@@ -270,7 +306,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         if (isChatUnavailable(err)) {
           // Terminal: what the visitor typed cannot be delivered, so it is not kept for a later session.
           unavailableRef.current = true;
-          createOfflineQueue(tenantId).clear();
+          createOfflineQueue(tenantId, visitorId).clear();
           breadcrumb('session-unavailable');
           setStatus('unavailable');
           return;
@@ -327,7 +363,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
 
   const handleSend = useCallback(
     (text: string) => {
-      const queue = createOfflineQueue(config.tenantId);
+      const queue = createOfflineQueue(config.tenantId, config.visitorId);
       const msg: ChatMessage = {
         id: crypto.randomUUID(),
         text,
@@ -344,7 +380,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
       breadcrumb('message-sent');
       postToHost('message-sent', { text });
     },
-    [config.tenantId],
+    [config.tenantId, config.visitorId],
   );
 
   if (!profile) {

@@ -144,9 +144,9 @@ export function mapPlatformSupervisorConversation(
 }
 
 /**
- * Maps Platform's `Contact` record — what `GET /api/v1/contacts` returns in its `PagedResult`
- * (`contactId`, nullable names, `addresses[{ channel: 'WhatsApp', address }]`) — onto the console's
- * contact view-model. Address channels are lower-cased, which is how every reader of a search
+ * Maps Platform's `Contact` record — what `GET /api/v1/contacts` returns in its `PagedResult` and
+ * `GET /api/v1/contacts/{id}` returns alone (`contactId`, nullable names,
+ * `addresses[{ channel: 'WhatsApp', address }]`) — onto the console's contact view-model. Address channels are lower-cased, which is how every reader of a search
  * result compares them (`'voice'`, `'sms'`, `'email'`). Before 3.21.0-web the record was read as is:
  * each search option was keyed `undefined` and creating a conversation sent no `contactId`
  * (LAB-W1 N16).
@@ -164,6 +164,7 @@ export function mapPlatformContact(contact: PlatformContact): Contact {
     ...(contact.doNotContact !== undefined ? { doNotContact: contact.doNotContact } : {}),
     ...(contact.channelConsent != null ? { channelConsent: contact.channelConsent } : {}),
     ...(contact.customFields != null ? { customFields: contact.customFields } : {}),
+    ...(contact.identityLevel != null ? { identityLevel: contact.identityLevel } : {}),
     addresses: (contact.addresses ?? []).map((a) => ({
       channel: String(a.channel).toLowerCase(),
       address: a.address,

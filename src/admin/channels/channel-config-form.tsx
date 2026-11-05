@@ -30,6 +30,7 @@ import {
   buildDefaults,
   buildCredentialUpdate,
   legacyKeysOf,
+  managedElsewhere,
   webhookUrlFor,
 } from './channel-fields';
 export type { FieldDef } from './channel-fields';
@@ -171,8 +172,8 @@ function ChannelConfigBody({
     [setKeys],
   );
   const legacyKeys = useMemo(
-    () => (config ? legacyKeysOf(fields, config.credentials) : []),
-    [config, fields],
+    () => (config ? legacyKeysOf(fields, config.credentials, managedElsewhere[channelId]) : []),
+    [config, fields, channelId],
   );
   const schema = useMemo(() => buildSchema(fields, (key) => isSet(key) === true), [fields, isSet]);
 

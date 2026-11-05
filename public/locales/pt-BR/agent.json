@@ -115,6 +115,12 @@
       "load_earlier": "Carregar mensagens anteriores"
     }
   },
+  "identity": {
+    "unverified": "Identidade não verificada",
+    "unverified_hint": "Identidade não verificada: nada confirma quem é esta pessoa, então as conversas vinculadas a este contato podem ser de outra pessoa.",
+    "verified": "Identidade verificada",
+    "verified_hint": "Identidade verificada: o site da sua empresa confirmou este cliente."
+  },
   "context": {
     "contact_heading": "Contato",
     "edit": "Editar",
@@ -247,6 +253,7 @@
     "dialing": "Discando",
     "cancel_dial": "Cancelar",
     "call_contact": "Ligar",
+    "call_do_not_contact": "Este contato está marcado como não contatar, por isso a chamada não está disponível.",
     "dial_failed": "Não foi possível realizar a chamada",
     "transfer": {
       "open": "Transferir",

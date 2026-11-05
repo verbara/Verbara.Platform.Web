@@ -410,6 +410,8 @@
     },
     "errors": {
       "unknown_credential_key": "The server does not accept one of the keys sent for this channel. Nothing was saved.",
+      "weak_identity_token_secret": "The identity secret must be between 32 and 512 characters. Nothing was saved.",
+      "server_managed_credential_key": "The server manages one of the keys sent for this channel, so it cannot be set here. Nothing was saved.",
       "invalid_channel": "The server does not know this channel.",
       "update_failed": "The channel configuration could not be saved.",
       "test_request_failed": "The connection test could not be run."
@@ -2656,8 +2658,32 @@
     "ws_url": "WebSocket URL",
     "live_preview": "Live preview",
     "snippet_scope": "Any website that includes this snippet can start chats for this tenant.",
+    "snippet_identity_guide": "Signed-in customers: see \"Identify signed-in visitors\" in the WebChat embedding guide.",
     "channel_inactive": "Visitors cannot start chats yet: the WebChat channel is off or not configured for this tenant. Enable it in Admin → Channels.",
-    "open_channels": "Open Channels"
+    "open_channels": "Open Channels",
+    "identity": {
+      "title": "Identity verification",
+      "description": "Your site signs a token with this secret to tell the widget who its signed-in customer is. Platform never shows a stored secret.",
+      "unavailable": "The identity verification status could not be read.",
+      "status_configured": "Configured",
+      "status_not_configured": "Not configured",
+      "previous_stored": "A previous secret is stored",
+      "previous_explanation": "Platform accepts a previous secret only until 24 hours after the rotation. You can revoke it now.",
+      "generate": "Generate secret",
+      "rotate": "Rotate secret",
+      "draft_label": "New secret",
+      "draft_warning": "Copy this secret now and add it to your site's signer. It cannot be shown again after you save, cancel or leave this page.",
+      "save": "Save secret",
+      "cancel": "Cancel",
+      "revoke": "Revoke previous secret",
+      "turn_off": "Turn off identity verification",
+      "confirm_rotate_title": "Rotate the identity secret?",
+      "confirm_rotate_description": "The old secret stays valid for 24 hours, so your site has time to deploy the new one.",
+      "confirm_revoke_title": "Revoke the previous secret?",
+      "confirm_revoke_description": "The previous secret stops working now, even if its 24 hours have not ended. Tokens signed with it are refused.",
+      "confirm_turn_off_title": "Turn off identity verification?",
+      "confirm_turn_off_description": "The secret and any previous secret are removed. Every later token is refused, and chats continue without a verified identity."
+    }
   },
   "caller-id-pools": {
     "title": "Caller ID Pools",

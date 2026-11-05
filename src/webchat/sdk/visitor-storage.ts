@@ -16,6 +16,16 @@ export function getOrCreateVisitorId(tenantId: string): string {
   return id;
 }
 
+/** The visitor id all tabs of this browser share for the tenant, if there is one. Creates nothing. */
+export function readVisitorId(tenantId: string): string | null {
+  return localStorage.getItem(ID_KEY(tenantId));
+}
+
+/** Whether this browser has been used for the tenant. Creates nothing. */
+export function hasVisitorId(tenantId: string): boolean {
+  return readVisitorId(tenantId) !== null;
+}
+
 export function getVisitorProfile(tenantId: string): VisitorProfile | null {
   const raw = localStorage.getItem(PROFILE_KEY(tenantId));
   if (!raw) return null;

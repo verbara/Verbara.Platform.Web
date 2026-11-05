@@ -15,6 +15,7 @@ import { SheetHeader, SheetTitle } from '@/core/ui/sheet';
 import { Skeleton } from '@/core/ui/skeleton';
 import { VirtualList } from '@/core/ui/virtual-list';
 import { closedReasonLabelKey, stateLabelKey } from './history-labels';
+import { IdentityLevelMark } from './identity-level-mark';
 import { ReadRefusal } from './read-refusal';
 
 const ESTIMATED_MESSAGE_HEIGHT_PX = 64;
@@ -57,9 +58,16 @@ function ViewerHeaderDetails({ conversation }: { conversation: PastConversation 
 /**
  * A past conversation, read only (W5): the record for the header, `/history` for the transcript, and
  * no control that writes. It reads nothing from the conversation store and writes nothing to it. The
- * `Sheet` around it belongs to the History tab, so it opens before this chunk has loaded.
+ * `Sheet` around it belongs to the History tab, so it opens before this chunk has loaded. The level comes
+ * from that tab too, and its mark stands whatever the reads below answer (W7).
  */
-export function PastConversationViewer({ conversationId }: { conversationId: string }) {
+export function PastConversationViewer({
+  conversationId,
+  identityLevel,
+}: {
+  conversationId: string;
+  identityLevel: string | undefined;
+}) {
   const { t } = useTranslation(['agent']);
   const record = useConversation(conversationId);
   const history = useMessageHistory(conversationId);
@@ -84,7 +92,10 @@ export function PastConversationViewer({ conversationId }: { conversationId: str
       className="flex h-full min-h-0 flex-col"
     >
       <SheetHeader className="pr-12">
-        <SheetTitle>{t('agent:history.viewer.title')}</SheetTitle>
+        <div className="flex flex-wrap items-center gap-2">
+          <SheetTitle>{t('agent:history.viewer.title')}</SheetTitle>
+          <IdentityLevelMark identityLevel={identityLevel} />
+        </div>
         {!failure && record.data && <ViewerHeaderDetails conversation={record.data} />}
       </SheetHeader>
 

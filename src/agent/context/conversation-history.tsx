@@ -4,7 +4,7 @@ import { Clock, MessageSquare, User, XIcon } from 'lucide-react';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { isConversationNotFound, isNotReadable } from '@/core/api/conversation-refusals';
 import type { components } from '@/core/api/generated/openapi';
-import { useContactConversations } from '@/core/api/hooks/use-contacts';
+import { useContact, useContactConversations } from '@/core/api/hooks/use-contacts';
 import { useConversation } from '@/core/api/hooks/use-conversations';
 import { channelLabel } from '@/core/i18n/channel-label';
 import { useFormatDate } from '@/core/i18n/use-format';
@@ -13,6 +13,7 @@ import { Button } from '@/core/ui/button';
 import { Sheet, SheetClose, SheetContent } from '@/core/ui/sheet';
 import { Skeleton } from '@/core/ui/skeleton';
 import { blockTypeLabelKey, closedReasonLabelKey, stateLabelKey } from './history-labels';
+import { IdentityLevelMark } from './identity-level-mark';
 import { ReadRefusal } from './read-refusal';
 import { ViewerLoadBoundary } from './viewer-load-boundary';
 
@@ -62,7 +63,7 @@ function LastMessage({ lastMessage }: { lastMessage: NonNullable<Summary['lastMe
 }
 
 /** Spans only: a past conversation's row is a `<button>`, which holds phrasing content. */
-function RowContent({ item }: { item: Summary }) {
+function RowContent({ item, identityLevel }: { item: Summary; identityLevel: string | undefined }) {
   const { t } = useTranslation(['agent']);
   const { formatDate, formatRelative } = useFormatDate();
   const formatDuration = useFormatDuration();
@@ -78,6 +79,7 @@ function RowContent({ item }: { item: Summary }) {
               {t('agent:history.held')}
             </Badge>
           )}
+          <IdentityLevelMark identityLevel={identityLevel} />
         </span>
         <span
           data-testid="history-time"
@@ -124,7 +126,15 @@ function RowContent({ item }: { item: Summary }) {
   );
 }
 
-function HistoryRow({ item, onOpen }: { item: Summary; onOpen: (id: string) => void }) {
+function HistoryRow({
+  item,
+  identityLevel,
+  onOpen,
+}: {
+  item: Summary;
+  identityLevel: string | undefined;
+  onOpen: (id: string) => void;
+}) {
   const selectors = {
     'data-testid': 'history-row',
     'data-conversation-id': item.id,
@@ -136,7 +146,7 @@ function HistoryRow({ item, onOpen }: { item: Summary; onOpen: (id: string) => v
   if (item.heldByCaller) {
     return (
       <div {...selectors} className={layout}>
-        <RowContent item={item} />
+        <RowContent item={item} identityLevel={identityLevel} />
       </div>
     );
   }
@@ -147,7 +157,7 @@ function HistoryRow({ item, onOpen }: { item: Summary; onOpen: (id: string) => v
       onClick={() => onOpen(item.id)}
       className={`${layout} hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:hover:bg-slate-700/30`}
     >
-      <RowContent item={item} />
+      <RowContent item={item} identityLevel={identityLevel} />
     </button>
   );
 }
@@ -169,6 +179,9 @@ export function ConversationHistory() {
   );
   const contactId = storedContactId ?? record.data?.contactId;
   const list = useContactConversations(contactId);
+  const contact = useContact(contactId);
+  // The rows and the transcript do not wait for this read, and only its answer can lift the warning (W7).
+  const identityLevel = contact.data ? contact.data.identityLevel : 'Unverified';
 
   // A refusal takes the tab whatever else is cached (spec audit F2).
   const refusal = [record.error, list.error].find(isNotReadable);
@@ -210,6 +223,7 @@ export function ConversationHistory() {
         <HistoryRow
           key={item.id}
           item={item}
+          identityLevel={identityLevel}
           onOpen={(id) => {
             if (selectedId) setViewing({ id, openedFrom: selectedId });
           }}
@@ -253,7 +267,9 @@ export function ConversationHistory() {
                 </div>
               }
             >
-              {viewing && <PastConversationViewer conversationId={viewing.id} />}
+              {viewing && (
+                <PastConversationViewer conversationId={viewing.id} identityLevel={identityLevel} />
+              )}
             </Suspense>
           </ViewerLoadBoundary>
         </SheetContent>

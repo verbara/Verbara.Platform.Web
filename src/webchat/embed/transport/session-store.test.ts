@@ -28,6 +28,12 @@ describe('session-store', () => {
     expect(loadStoredSession('t1', 'v1', NOW)).toEqual(session);
   });
 
+  it('TouchStoredSession_ShouldKeepThatItWasCreatedWithAToken', () => {
+    saveStoredSession('t1', { ...session, createdWithToken: true });
+    touchStoredSession('t1', 's1', NOW);
+    expect(loadStoredSession('t1', 'v1', NOW)?.createdWithToken).toBe(true);
+  });
+
   it('LoadStoredSession_ReturnsNull_WhenIdleForSessionTimeout', () => {
     saveStoredSession('t1', { ...session, lastActiveAt: NOW - SESSION_TIMEOUT_MS });
     expect(loadStoredSession('t1', 'v1', NOW)).toBeNull();

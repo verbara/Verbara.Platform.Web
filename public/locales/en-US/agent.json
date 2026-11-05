@@ -115,6 +115,12 @@
       "load_earlier": "Load earlier messages"
     }
   },
+  "identity": {
+    "unverified": "Identity not verified",
+    "unverified_hint": "Identity not verified: nothing confirms who this person is, so the conversations linked to this contact may belong to someone else.",
+    "verified": "Verified",
+    "verified_hint": "Verified: your company's site confirmed this customer."
+  },
   "context": {
     "contact_heading": "Contact",
     "edit": "Edit",
@@ -247,6 +253,7 @@
     "dialing": "Dialing",
     "cancel_dial": "Cancel",
     "call_contact": "Call",
+    "call_do_not_contact": "This contact is marked do not contact, so the call is not available.",
     "dial_failed": "Could not place the call",
     "transfer": {
       "open": "Transfer",

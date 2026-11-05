@@ -17,7 +17,7 @@ import { toast } from 'sonner';
  * different shape — no `id` (only `contactId`), `addresses` optional+nullable, `preferredChannel`
  * as the `ChannelType` enum. Consumers read `contact.id`, index `addresses` without a null-guard,
  * and bind `preferredChannel` to a plain-string form field, so a swap would not typecheck. A search
- * result is mapped onto it at the data boundary by `mapPlatformContact`.
+ * result and the single-contact read are mapped onto it at the data boundary by `mapPlatformContact`.
  */
 export interface Contact {
   id: string;
@@ -33,16 +33,20 @@ export interface Contact {
   addresses: { channel: string; address: string }[];
   customFields?: Record<string, string>;
   createdAt: string;
+  /** Computed by Platform and read-only: no contact write names it. Absent without a WebChat address. */
+  identityLevel?: 'Verified' | 'Unverified' | 'Anonymous';
 }
 
 export function useContact(id: string | undefined) {
   return useQuery({
     queryKey: ['contacts', id],
-    queryFn: () =>
-      customFetch<Contact>({
-        url: `/api/v1/contacts/${id}`,
-        method: 'GET',
-      }),
+    queryFn: async () =>
+      mapPlatformContact(
+        await customFetch<components['schemas']['Contact']>({
+          url: `/api/v1/contacts/${id}`,
+          method: 'GET',
+        }),
+      ),
     enabled: !!id,
   });
 }
@@ -105,7 +109,7 @@ export function useCreateContact() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: (data: Omit<Contact, 'id' | 'createdAt'>) =>
+    mutationFn: (data: Omit<Contact, 'id' | 'createdAt' | 'identityLevel'>) =>
       customFetch<Contact>({
         url: '/api/v1/contacts',
         method: 'POST',
@@ -123,7 +127,7 @@ export function useUpdateContact() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({ id, ...data }: Partial<Contact> & { id: string }) =>
+    mutationFn: ({ id, ...data }: Partial<Omit<Contact, 'identityLevel'>> & { id: string }) =>
       customFetch<Contact>({
         url: `/api/v1/contacts/${id}`,
         method: 'PUT',

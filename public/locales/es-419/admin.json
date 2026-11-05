@@ -410,6 +410,8 @@
     },
     "errors": {
       "unknown_credential_key": "El servidor no acepta una de las claves enviadas para este canal. No se guardó nada.",
+      "weak_identity_token_secret": "El secreto de identidad debe tener entre 32 y 512 caracteres. No se guardó nada.",
+      "server_managed_credential_key": "El servidor administra una de las claves enviadas para este canal, así que no se puede definir aquí. No se guardó nada.",
       "invalid_channel": "El servidor no conoce este canal.",
       "update_failed": "No se pudo guardar la configuración del canal.",
       "test_request_failed": "No se pudo ejecutar la prueba de conexión."
@@ -2656,8 +2658,32 @@
     "ws_url": "URL de WebSocket",
     "live_preview": "Vista previa",
     "snippet_scope": "Cualquier sitio web que incluya este fragmento puede iniciar chats para este tenant.",
+    "snippet_identity_guide": "Clientes con sesión iniciada: consulte \"Identify signed-in visitors\" en la guía de inserción de WebChat.",
     "channel_inactive": "Los visitantes todavía no pueden iniciar chats: el canal WebChat está desactivado o sin configurar para este tenant. Actívalo en Admin → Canales.",
-    "open_channels": "Abrir Canales"
+    "open_channels": "Abrir Canales",
+    "identity": {
+      "title": "Verificación de identidad",
+      "description": "Su sitio firma un token con este secreto para decirle al widget quién es su cliente con sesión iniciada. Platform nunca muestra un secreto guardado.",
+      "unavailable": "No se pudo leer el estado de la verificación de identidad.",
+      "status_configured": "Configurado",
+      "status_not_configured": "Sin configurar",
+      "previous_stored": "Hay un secreto anterior guardado",
+      "previous_explanation": "Platform admite un secreto anterior solo hasta 24 horas después de la rotación. Puede revocarlo ahora.",
+      "generate": "Generar secreto",
+      "rotate": "Rotar secreto",
+      "draft_label": "Secreto nuevo",
+      "draft_warning": "Copie este secreto ahora y agréguelo al firmador de su sitio. No se podrá volver a mostrar después de guardar, cancelar o salir de esta página.",
+      "save": "Guardar secreto",
+      "cancel": "Cancelar",
+      "revoke": "Revocar secreto anterior",
+      "turn_off": "Desactivar la verificación de identidad",
+      "confirm_rotate_title": "¿Rotar el secreto de identidad?",
+      "confirm_rotate_description": "El secreto anterior sigue siendo válido durante 24 horas, para que su sitio tenga tiempo de desplegar el nuevo.",
+      "confirm_revoke_title": "¿Revocar el secreto anterior?",
+      "confirm_revoke_description": "El secreto anterior deja de funcionar ahora, aunque no hayan terminado sus 24 horas. Los tokens firmados con él se rechazan.",
+      "confirm_turn_off_title": "¿Desactivar la verificación de identidad?",
+      "confirm_turn_off_description": "Se eliminan el secreto y cualquier secreto anterior. Todo token posterior se rechaza, y los chats continúan sin una identidad verificada."
+    }
   },
   "caller-id-pools": {
     "title": "Grupos de Caller ID",

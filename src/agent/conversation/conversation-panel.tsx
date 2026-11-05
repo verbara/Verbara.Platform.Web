@@ -22,7 +22,10 @@ import { Button } from '@/core/ui/button';
 import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { CONVERSATION_NOT_FOUND_KEY } from '@/core/api/conversation-refusals';
 import { channelLabel } from '@/core/i18n/channel-label';
+import { IdentityLevelMark } from '@/agent/context/identity-level-mark';
+import { useConversationContactId } from '@/agent/context/use-conversation-contact-id';
 import { useConversationStore } from '@/agent/stores/conversation-store';
+import { useContact } from '@/core/api/hooks/use-contacts';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import {
   useAcceptConversation,
@@ -64,6 +67,8 @@ const channelColors: Record<string, string> = {
 export function ConversationPanel({ conversationId }: { conversationId: string }) {
   const { t } = useTranslation('agent');
   const conversation = useConversationStore((s) => s.conversations[conversationId]);
+  // No mark until this read answers (W7): the header is on every conversation of every channel.
+  const contact = useContact(useConversationContactId(conversation));
 
   const acceptMutation = useAcceptConversation();
   const rejectMutation = useRejectConversation();
@@ -151,6 +156,7 @@ export function ConversationPanel({ conversationId }: { conversationId: string }
           <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
             {conversation.contactName}
           </span>
+          <IdentityLevelMark identityLevel={contact.data?.identityLevel} />
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${badgeColor}`}
             data-testid="conversation-channel-badge"

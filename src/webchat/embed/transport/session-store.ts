@@ -34,6 +34,11 @@ export interface StoredSession {
   createdAt: number;
   /** Epoch ms of the last activity Platform saw from this widget (socket attached, message sent). */
   lastActiveAt: number;
+  /**
+   * Whether the create carried the site's token. Platform reads the token only there, so a session made without one
+   * stays at its level whoever resumes it. Never the token itself.
+   */
+  createdWithToken?: boolean;
 }
 
 const KEY = (tenantId: string) => `verbara-webchat-session:${tenantId}`;
@@ -117,5 +122,18 @@ export function clearStoredSession(tenantId: string, sessionId?: string): void {
     localStorage.removeItem(KEY(tenantId));
   } catch {
     // Storage unavailable: nothing was stored.
+  }
+}
+
+/** Forgets the stored session only when it is this visitor's: another tab may have stored the next visitor's. */
+export function clearVisitorSession(tenantId: string, visitorId: string): void {
+  try {
+    const raw = localStorage.getItem(KEY(tenantId));
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    if (isStoredSession(parsed) && parsed.visitorId === visitorId) {
+      localStorage.removeItem(KEY(tenantId));
+    }
+  } catch {
+    // Storage unavailable or an unreadable entry: loadStoredSession ignores it.
   }
 }

@@ -20,6 +20,11 @@ import i18n from 'i18next';
 import { ChatWidget, type InitConfigPayload } from './chat-widget';
 import frames from './transport/__fixtures__/ws-frames.json';
 import { MAX_ATTACH_ATTEMPTS, SESSION_TIMEOUT_MS } from './transport/session-store';
+import {
+  webchatSessionAnonymous,
+  webchatSessionTokenRefused,
+  webchatSessionVerified,
+} from '@/tests/utils/contract-doubles';
 
 class FakeWebSocket {
   static last: FakeWebSocket | null = null;
@@ -458,10 +463,123 @@ describe('Session start and resume (#426)', () => {
     expect(FakeWebSocket.all[1]!.url).toBe('wss://x/ws/y');
   });
 
+  it('Start_ShouldSendOnlyThisVisitorsQueue_AndDeleteTheOthers_WhenAnotherVisitorLeftOne', async () => {
+    const message = (text: string) =>
+      JSON.stringify([{ id: text, text, timestamp: '2026-10-17T10:00:00Z' }]);
+    localStorage.setItem('verbara-webchat-queue:t1:v0', message('from the earlier visitor'));
+    localStorage.setItem('verbara-webchat-queue:t1:v1', message('mine'));
+    localStorage.setItem('verbara-webchat-queue:t10:v0', message('of t10'));
+    localStorage.setItem('verbara-webchat-queue:t2:v0', message('of t2'));
+    let othersAtCreate: string | null = 'not read';
+    globalThis.fetch = vi.fn(async () => {
+      othersAtCreate = localStorage.getItem('verbara-webchat-queue:t1:v0');
+      return new Response(JSON.stringify({ sessionId: 's1', wsUrl: 'wss://x/ws/y' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }) as never;
+
+    mount();
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    const ws = FakeWebSocket.all[0]!;
+    open(ws);
+    await settle();
+
+    expect(othersAtCreate).toBeNull();
+    expect(ws.sent).toEqual([JSON.stringify({ type: 'message', text: 'mine' })]);
+    expect(screen.queryByText('from the earlier visitor')).not.toBeInTheDocument();
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v0')).toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t10:v0')).not.toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t2:v0')).not.toBeNull();
+  });
+
+  it('Start_ShouldRemoveTheOldTenantKey_AndNeverSendIt_WhenItHoldsMessages', async () => {
+    localStorage.setItem(
+      'verbara-webchat-queue:t1',
+      JSON.stringify([
+        { id: 'q1', text: 'kept by an earlier version', timestamp: '2026-10-17T10:00:00Z' },
+      ]),
+    );
+
+    mount();
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    const ws = FakeWebSocket.all[0]!;
+    open(ws);
+    await settle();
+
+    expect(ws.sent).toEqual([]);
+    expect(localStorage.getItem('verbara-webchat-queue:t1')).toBeNull();
+  });
+
+  it('Start_ShouldLeaveWhatOtherVisitorsHold_WhenTheWidgetIsAGuest', async () => {
+    const held = '[{"id":"q0","text":"x","timestamp":"t"}]';
+    localStorage.setItem('verbara-webchat-queue:t1:shared', held);
+    localStorage.setItem('verbara-webchat-messages:t1:shared', '[{"id":"m0"}]');
+    const session = JSON.stringify({
+      sessionId: 'of-the-customer',
+      wsUrl: 'wss://x/ws/webchat/of-the-customer',
+      visitorId: 'shared',
+      createdAt: Date.now(),
+      lastActiveAt: Date.now(),
+      createdWithToken: true,
+    });
+    localStorage.setItem('verbara-webchat-session:t1', session);
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ sessionId: 'guest', wsUrl: 'wss://x/ws/webchat/guest' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    ) as never;
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget
+          config={{
+            ...config,
+            visitorId: 'guest',
+            guest: true,
+            visitor: { name: 'Someone', email: 'someone@x.com' },
+          }}
+          onUnreadChange={vi.fn()}
+        />
+      </I18nextProvider>,
+    );
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(FakeWebSocket.all[0]!.url).not.toContain('of-the-customer');
+    expect(localStorage.getItem('verbara-webchat-queue:t1:shared')).toBe(held);
+    expect(localStorage.getItem('verbara-webchat-messages:t1:shared')).toBe('[{"id":"m0"}]');
+    expect(localStorage.getItem('verbara-webchat-session:t1')).toBe(session);
+    expect(localStorage.getItem('verbara-webchat-messages:t1:guest')).toBeNull();
+  });
+
+  it('Start_ShouldDeleteOtherVisitorsQueues_BeforeTheVisitorFillsTheForm', async () => {
+    localStorage.setItem('verbara-webchat-queue:t1:v0', '[{"id":"q0","text":"x","timestamp":"t"}]');
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget config={config} onUnreadChange={vi.fn()} />
+      </I18nextProvider>,
+    );
+
+    await waitFor(() => expect(localStorage.getItem('verbara-webchat-queue:t1:v0')).toBeNull());
+    expect(FakeWebSocket.all).toHaveLength(0);
+  });
+
+  it('Send_ShouldQueueUnderThisVisitor_WhenTheSocketIsNotOpen', async () => {
+    mount();
+    await settle();
+    sendFromComposer('hola');
+
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v1')).toContain('hola');
+    expect(localStorage.getItem('verbara-webchat-queue:t1')).toBeNull();
+  });
+
   it('ResumesStoredSession_AndDrainsQueueInOrder_WhenSocketReattaches', async () => {
     storeSession();
     localStorage.setItem(
-      'verbara-webchat-queue:t1',
+      'verbara-webchat-queue:t1:v1',
       JSON.stringify([
         { id: 'q1', text: 'first', timestamp: '2026-10-17T10:00:00Z' },
         { id: 'q2', text: 'second', timestamp: '2026-10-17T10:00:01Z' },
@@ -625,7 +743,7 @@ describe('Session start and resume (#426)', () => {
   it('SendsQueuedTextToNewSession_WhenExpiredSocketOpensBeforeClosing', async () => {
     storeSession();
     localStorage.setItem(
-      'verbara-webchat-queue:t1',
+      'verbara-webchat-queue:t1:v1',
       JSON.stringify([{ id: 'q1', text: 'pending', timestamp: '2026-10-17T10:00:00Z' }]),
     );
     mount();
@@ -760,7 +878,7 @@ describe('Session start and resume (#426)', () => {
     mount();
     await settle();
     sendFromComposer('hola');
-    expect(localStorage.getItem('verbara-webchat-queue:t1')).not.toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v1')).not.toBeNull();
 
     await act(async () => {
       answer(new Response('', { status: 404 }));
@@ -768,7 +886,7 @@ describe('Session start and resume (#426)', () => {
     });
 
     expect(screen.getByText('Chat is not available')).toBeInTheDocument();
-    expect(localStorage.getItem('verbara-webchat-queue:t1')).toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v1')).toBeNull();
     expect(sessionPosts()).toBe(1);
   });
 
@@ -920,5 +1038,171 @@ describe('Integration — the next visitor on the same browser', () => {
     renderFor('v1', { name: 'Jane', email: 'jane@x.com' });
 
     expect(await screen.findByText('agent reply wcl71c00d.c2.1.1.')).toBeInTheDocument();
+  });
+});
+
+// The refusal never stops the chat, and a token refreshed on a long-open page is what the next session create sends.
+describe('Integration — the identity token', () => {
+  // One object, as `App` holds one: a new config object is a new widget.
+  const signedIn = { ...config, visitor: { name: 'Jane', email: 'jane@x.com' } };
+
+  function answer(body: object) {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    ) as never;
+  }
+
+  function widget(token: string | null) {
+    return (
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget config={signedIn} identityToken={token} onUnreadChange={vi.fn()} />
+      </I18nextProvider>
+    );
+  }
+
+  function postedBodies(): Array<Record<string, unknown>> {
+    return vi
+      .mocked(globalThis.fetch)
+      .mock.calls.map(([, init]) => JSON.parse(String(init?.body)) as Record<string, unknown>);
+  }
+
+  it('Session_ShouldConnectAndShowNoError_WhenTheTokenIsRefused', async () => {
+    answer(webchatSessionTokenRefused);
+    const post = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
+    render(widget('T1'));
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(screen.getByPlaceholderText(/type/i)).toBeInTheDocument();
+    expect(screen.queryByText(/could not start chat/i)).toBeNull();
+    const outcome = post.mock.calls
+      .map(([msg]) => msg as { type: string; payload?: unknown })
+      .find((msg) => msg.type === 'session-identity');
+    expect(outcome?.payload).toEqual({
+      identityLevel: webchatSessionTokenRefused.identityLevel,
+      identityTokenRefusal: webchatSessionTokenRefused.identityTokenRefusal,
+    });
+    expect(JSON.stringify(outcome)).not.toContain('T1');
+    post.mockRestore();
+  });
+
+  it('Session_ShouldSendTheRefreshedToken_WhenTheNextSessionIsCreated', async () => {
+    answer(webchatSessionVerified);
+    const view = render(widget('T1'));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(postedBodies()[0]!['identityToken']).toBe('T1');
+
+    view.rerender(widget('T2'));
+    expect(FakeWebSocket.all).toHaveLength(1);
+    const live = FakeWebSocket.all[0]!;
+    expect(live.readyState).not.toBe(3);
+
+    act(() => {
+      live.readyState = 3;
+      live.onclose?.(new CloseEvent('close', { code: 1008, reason: 'Session expired' }));
+    });
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(2));
+    expect(postedBodies()).toHaveLength(2);
+    expect(postedBodies()[1]!['identityToken']).toBe('T2');
+  });
+
+  it('Session_ShouldSendNoToken_WhenThereIsNone', async () => {
+    answer(webchatSessionAnonymous);
+    render(widget(null));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(postedBodies()[0]).not.toHaveProperty('identityToken');
+  });
+
+  function storeSession(overrides: Record<string, unknown>) {
+    const now = Date.now();
+    localStorage.setItem(
+      'verbara-webchat-session:t1',
+      JSON.stringify({
+        sessionId: 'stored',
+        wsUrl: 'wss://x/ws/webchat/stored',
+        visitorId: config.visitorId,
+        createdAt: now - 60_000,
+        lastActiveAt: now - 60_000,
+        ...overrides,
+      }),
+    );
+  }
+
+  it('Session_ShouldCreateOneWithTheToken_WhenTheStoredOneWasCreatedWithoutAToken', async () => {
+    answer(webchatSessionVerified);
+    storeSession({});
+    render(widget('T1'));
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(FakeWebSocket.all[0]!.url).not.toContain('stored');
+    expect(postedBodies()).toHaveLength(1);
+    expect(postedBodies()[0]!['identityToken']).toBe('T1');
+  });
+
+  it('Session_ShouldResumeTheStoredOne_WhenItWasCreatedWithAToken', async () => {
+    answer(webchatSessionVerified);
+    storeSession({ createdWithToken: true });
+    render(widget('T2'));
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(FakeWebSocket.all[0]!.url).toContain('stored');
+    expect(vi.mocked(globalThis.fetch)).not.toHaveBeenCalled();
+  });
+
+  it('Session_ShouldResumeTheStoredOne_WhenTheTabHoldsNoToken', async () => {
+    answer(webchatSessionAnonymous);
+    storeSession({});
+    render(widget(null));
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(FakeWebSocket.all[0]!.url).toContain('stored');
+    expect(vi.mocked(globalThis.fetch)).not.toHaveBeenCalled();
+  });
+
+  it('Session_ShouldRememberItWasCreatedWithAToken_SoAReloadResumesIt', async () => {
+    answer(webchatSessionVerified);
+    const first = render(widget('T1'));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    first.unmount();
+
+    render(widget('T1'));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(2));
+    expect(postedBodies()).toHaveLength(1);
+    expect(localStorage.getItem('verbara-webchat-session:t1')).not.toContain('T1');
+  });
+
+  it('Session_ShouldNotCountABlankTokenAsOne_WhenALaterTabHoldsAToken', async () => {
+    answer(webchatSessionAnonymous);
+    const first = render(widget('   '));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(postedBodies()[0]).not.toHaveProperty('identityToken');
+    first.unmount();
+
+    answer(webchatSessionVerified);
+    render(widget('T1'));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(2));
+    expect(postedBodies()).toHaveLength(1);
+    expect(postedBodies()[0]!['identityToken']).toBe('T1');
+  });
+
+  it('Widget_ShouldStartTheSessionWithoutTheForm_WhenTheSdkAsksForAStartAtOnce', async () => {
+    answer(webchatSessionVerified);
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget
+          config={{ ...config, startSession: true }}
+          identityToken="T1"
+          onUnreadChange={vi.fn()}
+        />
+      </I18nextProvider>,
+    );
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(screen.queryByLabelText(/your name/i)).toBeNull();
+    expect(postedBodies()[0]!['identityToken']).toBe('T1');
   });
 });

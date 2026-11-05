@@ -41,6 +41,15 @@ export function saveCachedMessages(
   }
 }
 
+/** Forgets the cached messages of one visitor. */
+export function clearVisitorMessages(tenantId: string, visitorId: string): void {
+  try {
+    localStorage.removeItem(KEY(tenantId, visitorId));
+  } catch {
+    // Storage unavailable: nothing was stored.
+  }
+}
+
 /** Forgets the cached messages of every visitor of the tenant, and the tenant-only entry of earlier versions. */
 export function clearCachedMessages(tenantId: string): void {
   const exact = TENANT_KEY(tenantId);

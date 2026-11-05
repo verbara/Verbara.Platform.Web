@@ -5,6 +5,11 @@ import { toast } from 'sonner';
 import * as client from '@/core/api/client';
 import { ApiError, entriesOf } from '@/core/api/api-error';
 import { TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
+import {
+  serverManagedPreviousSecretRefusal,
+  serverManagedReplacedAtRefusal,
+  weakIdentityTokenSecretRefusal,
+} from '@/tests/utils/contract-doubles';
 import type { ChannelConfig, ChannelTestResult } from './use-channels';
 import {
   CHANNEL_TEST_ERRORS,
@@ -189,5 +194,16 @@ describe.each(TEST_LOCALES)('channel error maps in %s', (lng) => {
     for (const entry of [...entriesOf(CHANNEL_UPDATE_ERRORS), ...entriesOf(CHANNEL_TEST_ERRORS)]) {
       expect(i18n.exists(entry.key), entry.key).toBe(true);
     }
+  });
+});
+
+describe('CHANNEL_UPDATE_ERRORS identity codes', () => {
+  it.each([
+    [weakIdentityTokenSecretRefusal, 'admin:channels.errors.weak_identity_token_secret'],
+    [serverManagedPreviousSecretRefusal, 'admin:channels.errors.server_managed_credential_key'],
+    [serverManagedReplacedAtRefusal, 'admin:channels.errors.server_managed_credential_key'],
+  ])('CHANNEL_UPDATE_ERRORS_ShouldMapTheCodeToItsKey_WhenPlatformRefuses %j', (refusal, key) => {
+    const { code } = new ApiError(400, refusal);
+    expect(CHANNEL_UPDATE_ERRORS.codes[code!]).toEqual({ code, key });
   });
 });

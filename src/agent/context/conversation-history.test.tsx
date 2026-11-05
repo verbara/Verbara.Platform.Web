@@ -563,10 +563,11 @@ describe('ConversationHistory', () => {
 
     it('ConversationHistory_ShouldShowNeitherTextNorRefusal_WhileTheFirstPageLoads', async () => {
       let answerList = (_page: unknown) => undefined as unknown;
+      // Only the list holds the tab back: the contact read is not one of its loading gates (W12).
       vi.mocked(client.customFetch).mockImplementation(
-        () =>
+        (config) =>
           new Promise((resolve) => {
-            answerList = resolve;
+            if (config.url === LIST_URL) answerList = resolve;
           }) as never,
       );
       selectConversation();

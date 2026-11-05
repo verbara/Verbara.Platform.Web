@@ -34,6 +34,7 @@ const { mutateMock, toastErrorMock, startOutboundMock, DIAL_CONTACT, scene } = v
 
 vi.mock('@/core/api/hooks/use-conversations', () => ({
   useVoiceDial: () => ({ mutate: mutateMock, isPending: false }),
+  useConversation: () => ({ data: undefined }),
 }));
 
 vi.mock('@/core/api/hooks/use-contacts', () => ({
@@ -166,6 +167,50 @@ describe('ContactInfo click-to-dial', () => {
  * The panel's text in es-419. The contact double carries the wire's PascalCase (host fixture
  * `contact-addresses.v1.json`) next to a lower-case double, which is not a wire value.
  */
+describe('ContactInfo call of a do-not-contact contact', () => {
+  afterEach(() => {
+    cleanup();
+    mutateMock.mockReset();
+    scene.lng = 'en-US';
+    scene.contact = DIAL_CONTACT;
+  });
+
+  it.each([
+    ['en-US', 'This contact is marked do not contact, so the call is not available.'],
+    [
+      'es-419',
+      'Este contacto está marcado como no contactar, por lo que la llamada no está disponible.',
+    ],
+    [
+      'pt-BR',
+      'Este contato está marcado como não contatar, por isso a chamada não está disponível.',
+    ],
+  ])('ContactInfo_ShouldDisableTheCallAndSayWhy_InTheLocale_%s', (lng, explanation) => {
+    scene.lng = lng;
+    scene.contact = { ...DIAL_CONTACT, doNotContact: true } as typeof DIAL_CONTACT;
+    render(<ContactInfo />);
+
+    const button = screen.getByTestId('contact-call-btn');
+    expect(button).toBeDisabled();
+    const note = screen.getByTestId('contact-call-do-not-contact');
+    expect(note.textContent).toBe(explanation);
+    expect(button).toHaveAttribute('aria-describedby', note.id);
+
+    fireEvent.click(button);
+    expect(mutateMock).not.toHaveBeenCalled();
+  });
+
+  it('ContactInfo_ShouldLeaveTheCallEnabledAndSayNothing_WhenTheContactIsNotMarked', () => {
+    scene.contact = { ...DIAL_CONTACT, doNotContact: false } as typeof DIAL_CONTACT;
+    render(<ContactInfo />);
+
+    const button = screen.getByTestId('contact-call-btn');
+    expect(button).toBeEnabled();
+    expect(button).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByTestId('contact-call-do-not-contact')).toBeNull();
+  });
+});
+
 describe('ContactInfo labels', () => {
   afterEach(() => {
     cleanup();

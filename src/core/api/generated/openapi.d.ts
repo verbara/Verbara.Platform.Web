@@ -3606,6 +3606,10 @@ export interface paths {
         };
       };
     };
+    /**
+     * Update a channel's configuration
+     * @description Merges with what is stored, key by key: an omitted or blank key keeps its value, a value replaces it, `null` removes it. A key outside the channel's schema answers 400 `unknown-credential-key`. On WebChat, a new `identityTokenSecret` (32 to 512 characters, else 400 `weak-identity-token-secret`) moves the old one to `identityTokenSecretPrevious`, which verifies for 24 hours from `identityTokenSecretReplacedAt`. `identityTokenSecretPrevious` accepts only `null`, which ends that time at once, and `identityTokenSecretReplacedAt` cannot be named at all: both answer 400 `server-managed-credential-key` otherwise.
+     */
     put: {
       parameters: {
         query?: never;
@@ -3765,6 +3769,7 @@ export interface paths {
         };
       };
     };
+    /** @description A WebChat address that starts with `webchat-visitor:` or `webchat-external:` answers 400 `reserved-contact-address`, with the offending addresses in `details`, and nothing is written. `identityLevel` in the body is ignored. */
     put: {
       parameters: {
         query?: never;
@@ -3787,6 +3792,15 @@ export interface paths {
           };
           content: {
             'application/json': components['schemas']['Contact'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorDetailResponse'];
           };
         };
         /** @description Not Found */
@@ -3912,6 +3926,7 @@ export interface paths {
       };
     };
     put?: never;
+    /** @description A WebChat address that starts with `webchat-visitor:` or `webchat-external:` answers 400 `reserved-contact-address`, with the offending addresses in `details`, and nothing is written. `identityLevel` in the body is ignored. */
     post: {
       parameters: {
         query?: never;
@@ -3925,12 +3940,23 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['Contact'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorDetailResponse'];
+          };
         };
       };
     };
@@ -17044,6 +17070,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
+    /**
+     * Open a WebChat session for a visitor
+     * @description Creates the session and a new conversation, and resolves its contact by identity level. An `identityToken` that verifies gives `identityLevel` `Verified`. Otherwise a version-4 `visitorId` gives `Unverified`, when the host sets `WebChat:VisitorIdentity:Level1Enabled`. Anything else gives `Anonymous`, a contact of this session alone. A refused token does not refuse the session: it opens at the level the rest of the request allows, and `identityTokenRefusal` names the code.
+     */
     post: {
       parameters: {
         query?: never;
@@ -18389,6 +18419,11 @@ export interface components {
       createdBy?: null | string;
       updatedBy?: null | string;
       fullName?: null | string;
+      /**
+       * @description The contact's WebChat identity level, computed from its addresses, so it cannot drift from the keys that
+       *     produce it. `null` for a contact with no WebChat address.
+       */
+      identityLevel?: components['schemas']['ContactIdentityLevel'];
     };
     /**
      * @description One item of `GET /api/v1/contacts/{id}/conversations` (contact-history-opens-by-assignment, design D5, D6, D8;
@@ -18438,6 +18473,8 @@ export interface components {
       /** @description Whether the caller holds the conversation now (design D3). */
       heldByCaller: boolean;
     };
+    /** @enum {unknown} */
+    ContactIdentityLevel: 'Anonymous' | 'Unverified' | 'Verified' | null;
     ContactImportRowDto: {
       firstName: string;
       lastName: null | string;
@@ -18823,20 +18860,72 @@ export interface components {
       fields: components['schemas']['TypificationFieldDto'][];
       aiConfig?: null | components['schemas']['AiConfigDto'];
     };
+    /** @description The page a session request came from. Accepted and not stored. */
+    CreateSessionPageContext: {
+      url?: null | string;
+      title?: null | string;
+      referrer?: null | string;
+    };
+    /**
+     * @description A session request. `visitorId` is the widget's per-browser id, `visitorName` and `visitorEmail` are
+     *     form data, which never find a contact, `pageContext` is accepted and not stored, and `identityToken` is
+     *     the token the tenant's site signs for its logged-in customer.
+     */
     CreateSessionRequest: {
+      /** @description The tenant the session belongs to. */
       tenantId: string;
+      /**
+       * @description The widget's per-browser id. It finds a contact only when it is a random version-4 GUID and the host sets
+       *     `WebChat:VisitorIdentity:Level1Enabled`; otherwise it counts as absent. It is not used when
+       *     `identityToken` verifies.
+       */
+      visitorId?: null | string;
+      /**
+       * @description Form data, at most 200 characters (longer is cut). Fills the contact's first name when it has none. Not used when
+       *     `identityToken` verifies: a verified contact takes its name from the token.
+       */
+      visitorName?: null | string;
+      /**
+       * @description Form data, at most 320 characters (longer is dropped). Stored as the contact custom field `webchatEmail` when
+       *     the contact has none. It is never an Email channel address. Not used when `identityToken` verifies: a verified
+       *     contact takes its e-mail from the token.
+       */
+      visitorEmail?: null | string;
+      pageContext?: null | components['schemas']['CreateSessionPageContext'];
+      /**
+       * @description The compact JWT, HS256, that the tenant's site signs with its `identityTokenSecret`. When it verifies, the
+       *     session is `Verified`. A refused token does not refuse the session.
+       */
+      identityToken?: null | string;
     };
     /**
      * @description A created WebChat session: its transport handle (`sessionId`, `wsUrl`) and the visitor's
-     *     identity — its `webchat-` visitor address, the contact carrying it and that contact's
-     *     conversation (spec `webchat-visitor-identity`; the last three are additive in 2.28.0).
+     *     identity — its `webchat-` visitor address, the contact carrying it, that contact's new conversation and how
+     *     far the contact's identity is known. `identityTokenRefusal` names why a token that was sent was not honoured;
+     *     the session still opens (spec `webchat-visitor-identity`).
      */
     CreateSessionResponse: {
+      /** @description The session's id. */
       sessionId: string;
+      /** @description The path of the session's WebSocket. */
       wsUrl: string;
+      /** @description This session's own address, `webchat-` and 32 hex digits, new on every session. It is the conversation's reply destination. */
       visitorAddress: string;
+      /** @description The contact carrying the session's address. Every session of one identity key returns the same contact. */
       contactId: string;
+      /** @description The conversation this session created. It is always a new one. */
       conversationId: string;
+      /**
+       * @description `Verified` when `identityToken` verified, `Unverified` when `visitorId` found or created the
+       *     contact, `Anonymous` for a contact of this session alone.
+       */
+      identityLevel: components['schemas']['ContactIdentityLevel'];
+      /**
+       * @description Present only when a non-blank `identityToken` was refused: `identity-token-not-configured`,
+       *     `identity-token-malformed`, `identity-token-signature-invalid`, `identity-token-wrong-tenant`,
+       *     `identity-token-lifetime-too-long`, `identity-token-not-yet-valid` or `identity-token-expired`.
+       */
+      identityTokenRefusal?: null | string;
     };
     CreateSkillRequest: {
       name: string;

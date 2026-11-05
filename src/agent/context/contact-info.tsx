@@ -17,31 +17,38 @@ import { toastApiError } from '@/core/api/toast-api-error';
 import { trunkRefusalValues, voiceDialRefusals } from '@/core/api/voice-call-refusals';
 import { channelLabel } from '@/core/i18n/channel-label';
 import { useFormatPhone } from '@/core/i18n/use-format-phone';
+import { IdentityLevelMark } from './identity-level-mark';
+import { useConversationContactId } from './use-conversation-contact-id';
 
 function InfoRow({
   icon: Icon,
   label,
   value,
   copyable = false,
+  adornment,
 }: {
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   value: string;
   copyable?: boolean;
+  adornment?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start gap-2.5 py-2">
       <Icon size={16} className="mt-0.5 shrink-0 text-slate-500" />
       <div className="min-w-0 flex-1">
         <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <p className="truncate text-sm text-slate-700 dark:text-slate-200">{value}</p>
           {copyable && <CopyButton value={value} iconOnly />}
+          {adornment}
         </div>
       </div>
     </div>
   );
 }
+
+const CALL_DO_NOT_CONTACT_NOTE = 'contact-call-do-not-contact-note';
 
 const languageLabels: Record<string, string> = {
   es: 'Español',
@@ -86,7 +93,7 @@ export function ContactInfo() {
   const dial = useVoiceDial();
 
   const conversation = selectedId ? conversations[selectedId] : null;
-  const contactId = conversation?.contactId;
+  const contactId = useConversationContactId(conversation);
   const { data: contact } = useContact(contactId);
 
   const openEditDialog = () => {
@@ -116,6 +123,7 @@ export function ContactInfo() {
     contact.addresses.find((a) => a.channel === 'voice' || a.channel === 'sms')?.address ?? '—';
   const phone = rawPhone === '—' ? rawPhone : formatPhone(rawPhone);
   const email = contact.addresses.find((a) => a.channel === 'email')?.address ?? '—';
+  const doNotContact = contact.doNotContact === true;
 
   return (
     <div className="space-y-1 p-4">
@@ -146,7 +154,12 @@ export function ContactInfo() {
           </PermissionButton>
         </div>
       </div>
-      <InfoRow icon={User} label={t('agent:context.name')} value={displayName} />
+      <InfoRow
+        icon={User}
+        label={t('agent:context.name')}
+        value={displayName}
+        adornment={<IdentityLevelMark identityLevel={contact.identityLevel} />}
+      />
       <InfoRow
         icon={Phone}
         label={t('agent:context.phone')}
@@ -159,7 +172,8 @@ export function ContactInfo() {
           variant="outline"
           size="sm"
           className="mt-1 w-full"
-          disabled={dial.isPending || callPhase !== 'idle'}
+          disabled={doNotContact || dial.isPending || callPhase !== 'idle'}
+          aria-describedby={doNotContact ? CALL_DO_NOT_CONTACT_NOTE : undefined}
           onClick={() => {
             dial.mutate(
               { toNumber: rawPhone, contactId: contact.id },
@@ -180,6 +194,15 @@ export function ContactInfo() {
           <Phone data-icon="inline-start" />
           {t('voice.call_contact', 'Call')}
         </Button>
+      )}
+      {doNotContact && rawPhone !== '—' && registration === 'registered' && (
+        <p
+          id={CALL_DO_NOT_CONTACT_NOTE}
+          data-testid="contact-call-do-not-contact"
+          className="mt-1 text-xs text-slate-500 dark:text-slate-400"
+        >
+          {t('voice.call_do_not_contact')}
+        </p>
       )}
       <InfoRow
         icon={Mail}

@@ -17,6 +17,7 @@ import {
 
 export function App() {
   const [config, setConfig] = useState<InitConfigPayload | null>(null);
+  const [identityToken, setIdentityToken] = useState<string | null>(null);
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export function App() {
     bridge.on('init-config', (payload) => {
       const cfg = payload as InitConfigPayload;
       applyTheme(cfg.theme);
+      setIdentityToken(cfg.identityToken ?? null);
       setConfig(cfg);
     });
 
@@ -50,8 +52,10 @@ export function App() {
       // handled by ChatWidget internals via postMessage
     });
 
-    bridge.on('set-visitor', (_payload) => {
-      // visitor updates flow through pre-chat form
+    // The profile flows through the pre-chat form; only the token is applied here. Omitted leaves it as it is.
+    bridge.on('set-visitor', (payload) => {
+      const token = (payload as { identityToken?: unknown } | null | undefined)?.identityToken;
+      if (typeof token === 'string' || token === null) setIdentityToken(token);
     });
 
     // The host page's destroy(): close the chat first, so its socket is gone and no late reply writes the cache
@@ -59,8 +63,11 @@ export function App() {
     bridge.on(FORGET_VISITOR, (payload) => {
       const request = readForgetVisitor(payload);
       if (!request) return;
-      flushSync(() => setConfig(null));
-      forgetVisitorData(request.tenantId);
+      flushSync(() => {
+        setConfig(null);
+        setIdentityToken(null);
+      });
+      forgetVisitorData(request.tenantId, request.visitorId);
       bridge.send(VISITOR_FORGOTTEN, { tenantId: request.tenantId });
     });
 
@@ -101,7 +108,7 @@ export function App() {
 
   return (
     <WidgetFrame>
-      <ChatWidget config={config} onUnreadChange={handleUnread} />
+      <ChatWidget config={config} identityToken={identityToken} onUnreadChange={handleUnread} />
     </WidgetFrame>
   );
 }

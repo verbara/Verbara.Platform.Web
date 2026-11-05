@@ -7,6 +7,7 @@ import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { useTenantStore } from '@/core/tenant/tenant-store';
+import { IdentitySecretSection } from './identity-secret-section';
 
 export default function WebChatPage() {
   const { t } = useTranslation('admin');
@@ -15,10 +16,11 @@ export default function WebChatPage() {
   const tenantId = activeTenantId ?? 'YOUR_TENANT_ID';
   // Platform starts a WebChat session only while the tenant's WebChat channel is active. A channel that was never
   // configured comes back with isActive false. No answer (loading, error) is not a reason to warn.
-  const { data: channel } = useChannel('webchat');
+  const { data: channel, isError } = useChannel('webchat');
   const channelOff = channel !== undefined && !channel.isActive;
 
   const snippet = `<!-- Verbara WebChat Widget -->
+<!-- ${t('webchat.snippet_identity_guide')} -->
 <script
   src="${apiBase}/webchat/v1/verbara-webchat.js"
   data-tenant-id="${tenantId}"
@@ -113,6 +115,13 @@ export default function WebChatPage() {
           </div>
         </div>
       </div>
+
+      {/* Keyed by tenant: a generated secret never outlives the tenant it was generated for. */}
+      <IdentitySecretSection
+        key={activeTenantId ?? ''}
+        channel={channel}
+        unreadable={isError && channel === undefined}
+      />
     </div>
   );
 }
