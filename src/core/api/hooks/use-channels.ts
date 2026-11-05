@@ -29,6 +29,14 @@ export const CHANNEL_UPDATE_ERRORS: ApiErrorMap = {
       code: 'unknown-credential-key',
       key: 'admin:channels.errors.unknown_credential_key',
     },
+    'weak-identity-token-secret': {
+      code: 'weak-identity-token-secret',
+      key: 'admin:channels.errors.weak_identity_token_secret',
+    },
+    'server-managed-credential-key': {
+      code: 'server-managed-credential-key',
+      key: 'admin:channels.errors.server_managed_credential_key',
+    },
     'invalid-channel': { code: 'invalid-channel', key: 'admin:channels.errors.invalid_channel' },
   },
   fallback: { code: 'channel-update-failed', key: 'admin:channels.errors.update_failed' },

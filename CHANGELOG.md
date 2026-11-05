@@ -22,6 +22,9 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   those messages in the new visitor's session, also when `destroy()` got no answer from the frame. `destroy()` clears
   every visitor's queue of the tenant. Messages kept by an earlier version are removed unsent. (#N)
 
+- **The channel form explains two more refusals.** A secret of the wrong length and a key only the server can write each
+  have their own message, in the three languages. (#N)
+
 - **Signing out or switching identity clears the previous person's conversations from the page.** Signing out, another
   user signing in on the same tab, starting or ending an impersonation and managing another tenant's billing clear what
   was loaded, and the new identity reads its own. A reply draft stays for the person who typed it and is removed when

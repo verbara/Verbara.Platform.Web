@@ -410,6 +410,8 @@
     },
     "errors": {
       "unknown_credential_key": "El servidor no acepta una de las claves enviadas para este canal. No se guardó nada.",
+      "weak_identity_token_secret": "El secreto de identidad debe tener entre 32 y 512 caracteres. No se guardó nada.",
+      "server_managed_credential_key": "El servidor administra una de las claves enviadas para este canal, así que no se puede definir aquí. No se guardó nada.",
       "invalid_channel": "El servidor no conoce este canal.",
       "update_failed": "No se pudo guardar la configuración del canal.",
       "test_request_failed": "No se pudo ejecutar la prueba de conexión."
