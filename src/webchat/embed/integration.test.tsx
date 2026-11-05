@@ -20,6 +20,11 @@ import i18n from 'i18next';
 import { ChatWidget, type InitConfigPayload } from './chat-widget';
 import frames from './transport/__fixtures__/ws-frames.json';
 import { MAX_ATTACH_ATTEMPTS, SESSION_TIMEOUT_MS } from './transport/session-store';
+import {
+  webchatSessionAnonymous,
+  webchatSessionTokenRefused,
+  webchatSessionVerified,
+} from '@/tests/utils/contract-doubles';
 
 class FakeWebSocket {
   static last: FakeWebSocket | null = null;
@@ -990,5 +995,99 @@ describe('Integration — the next visitor on the same browser', () => {
     renderFor('v1', { name: 'Jane', email: 'jane@x.com' });
 
     expect(await screen.findByText('agent reply wcl71c00d.c2.1.1.')).toBeInTheDocument();
+  });
+});
+
+// The refusal never stops the chat, and a token refreshed on a long-open page is what the next session create sends.
+describe('Integration — the identity token', () => {
+  // One object, as `App` holds one: a new config object is a new widget.
+  const signedIn = { ...config, visitor: { name: 'Jane', email: 'jane@x.com' } };
+
+  function answer(body: object) {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    ) as never;
+  }
+
+  function widget(token: string | null) {
+    return (
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget config={signedIn} identityToken={token} onUnreadChange={vi.fn()} />
+      </I18nextProvider>
+    );
+  }
+
+  function postedBodies(): Array<Record<string, unknown>> {
+    return vi
+      .mocked(globalThis.fetch)
+      .mock.calls.map(([, init]) => JSON.parse(String(init?.body)) as Record<string, unknown>);
+  }
+
+  it('Session_ShouldConnectAndShowNoError_WhenTheTokenIsRefused', async () => {
+    answer(webchatSessionTokenRefused);
+    const post = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
+    render(widget('T1'));
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(screen.getByPlaceholderText(/type/i)).toBeInTheDocument();
+    expect(screen.queryByText(/could not start chat/i)).toBeNull();
+    const outcome = post.mock.calls
+      .map(([msg]) => msg as { type: string; payload?: unknown })
+      .find((msg) => msg.type === 'session-identity');
+    expect(outcome?.payload).toEqual({
+      identityLevel: webchatSessionTokenRefused.identityLevel,
+      identityTokenRefusal: webchatSessionTokenRefused.identityTokenRefusal,
+    });
+    expect(JSON.stringify(outcome)).not.toContain('T1');
+    post.mockRestore();
+  });
+
+  it('Session_ShouldSendTheRefreshedToken_WhenTheNextSessionIsCreated', async () => {
+    answer(webchatSessionVerified);
+    const view = render(widget('T1'));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(postedBodies()[0]!['identityToken']).toBe('T1');
+
+    view.rerender(widget('T2'));
+    expect(FakeWebSocket.all).toHaveLength(1);
+    const live = FakeWebSocket.all[0]!;
+    expect(live.readyState).not.toBe(3);
+
+    act(() => {
+      live.readyState = 3;
+      live.onclose?.(new CloseEvent('close', { code: 1008, reason: 'Session expired' }));
+    });
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(2));
+    expect(postedBodies()).toHaveLength(2);
+    expect(postedBodies()[1]!['identityToken']).toBe('T2');
+  });
+
+  it('Session_ShouldSendNoToken_WhenThereIsNone', async () => {
+    answer(webchatSessionAnonymous);
+    render(widget(null));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(postedBodies()[0]).not.toHaveProperty('identityToken');
+  });
+
+  it('Widget_ShouldStartTheSessionWithoutTheForm_WhenTheSdkAsksForAStartAtOnce', async () => {
+    answer(webchatSessionVerified);
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget
+          config={{ ...config, startSession: true }}
+          identityToken="T1"
+          onUnreadChange={vi.fn()}
+        />
+      </I18nextProvider>,
+    );
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(screen.queryByLabelText(/your name/i)).toBeNull();
+    expect(postedBodies()[0]!['identityToken']).toBe('T1');
   });
 });

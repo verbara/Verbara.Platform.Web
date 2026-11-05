@@ -9,6 +9,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A site can tell the chat widget who its signed-in customer is.** `VerbaraWebChat.init` and `setVisitor` accept an
+  `identityToken` the site signs: a string signs the customer in, `null` signs out, and leaving it out of `setVisitor`
+  keeps the current one. The token stays in memory and is never stored or read from the script tag. A new `identity` event
+  reports the level Platform answered and, when it did not accept the token, the reason, which also goes to the browser
+  console. The visitor sees no difference and the chat works the same at every level. (#N)
+
 ### Fixed
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so

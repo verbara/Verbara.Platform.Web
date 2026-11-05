@@ -53,10 +53,16 @@ export interface InitConfigPayload {
   theme?: { primaryColor?: string; fontFamily?: string };
   /** Optional CSAT survey context (server-issued); enables the rating panel. */
   csat?: CsatEmbedContext;
+  /** The token the site signed, held in memory only. A later `set-visitor` replaces it (see `App`). */
+  identityToken?: string;
+  /** The SDK ended a running widget and asks for the next session now, without the pre-chat form. */
+  startSession?: boolean;
 }
 
 interface Props {
   readonly config: InitConfigPayload;
+  /** The site's current token. A change is used by the next session create and leaves the live session alone. */
+  readonly identityToken?: string | null;
   readonly onUnreadChange: (n: number) => void;
 }
 
@@ -71,7 +77,7 @@ function createRetryDelayMs(failures: number, err: unknown): number {
   return Math.min(Math.max(backoff, hinted), 60_000);
 }
 
-export function ChatWidget({ config, onUnreadChange }: Props) {
+export function ChatWidget({ config, identityToken, onUnreadChange }: Props) {
   const { t } = useTranslation('webchat');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<Status>('connecting');
@@ -84,8 +90,16 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     statusRef.current = status;
   }, [status]);
   const [profile, setProfile] = useState<{ name?: string; email?: string } | null>(
-    config.visitor?.name && config.visitor?.email ? config.visitor : null,
+    config.visitor?.name && config.visitor?.email
+      ? config.visitor
+      : config.startSession
+        ? (config.visitor ?? {})
+        : null,
   );
+  const identityTokenRef = useRef(identityToken);
+  useEffect(() => {
+    identityTokenRef.current = identityToken;
+  }, [identityToken]);
   // The session machinery lives in refs: one socket per widget, whatever React re-renders.
   const clientRef = useRef<WsClient | null>(null);
   // The session the socket in clientRef belongs to (another tab may have stored a different one since).
@@ -256,6 +270,14 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
           visitorId,
           profile: profileRef.current ?? {},
           pageContext: config.pageContext,
+          identityToken: identityTokenRef.current,
+        });
+        // Reported whatever happens next here: the session exists on Platform either way.
+        postToHost('session-identity', {
+          identityLevel: created.identityLevel,
+          ...(created.identityTokenRefusal
+            ? { identityTokenRefusal: created.identityTokenRefusal }
+            : {}),
         });
         if (!mountedRef.current) return;
         createFailuresRef.current = 0;

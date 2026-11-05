@@ -68,7 +68,7 @@ async function logout() {
 Calling `init()` or `open()` again right after `destroy()` is safe: the new widget's frame is created only once the
 previous frame is gone, so the previous frame's clear never touches the new conversation.
 
-Events: `open`, `close`, `unread`, `message-sent`, `message-received`, `ready`.
+Events: `open`, `close`, `unread`, `message-sent`, `message-received`, `ready`, `identity`.
 
 ## CSP requirements
 

@@ -36,9 +36,28 @@ export interface InitConfig {
   visitor?: { name?: string; email?: string };
   /** Optional server-issued CSAT survey context; enables the rating panel. */
   csat?: CsatConfig;
+  /**
+   * The token the site signed for its signed-in customer. A string signs in, `null` signs out. It stays in memory and
+   * is never stored. It is not read from the script tag: pass it from the site's own script.
+   */
+  identityToken?: string | null;
 }
 
-type EventName = 'open' | 'close' | 'unread' | 'message-sent' | 'message-received' | 'ready';
+/** A partial update. An omitted `identityToken` leaves the token as it is. */
+export interface VisitorUpdate {
+  name?: string;
+  email?: string;
+  identityToken?: string | null;
+}
+
+/** What Platform answered about the visitor when the session was created. */
+export interface IdentityOutcome {
+  identityLevel: string;
+  identityTokenRefusal?: string;
+}
+
+type EventName =
+  'open' | 'close' | 'unread' | 'message-sent' | 'message-received' | 'ready' | 'identity';
 type Handler = (payload?: unknown) => void;
 
 interface InternalState {
@@ -57,6 +76,8 @@ interface InternalState {
    * is created only after it settles: frames of one embed origin share storage, and the clear is tenant-wide.
    */
   forgetting: Promise<void> | null;
+  /** Held here only. Sent to the frame in `init-config` and `set-visitor`, and never stored. */
+  identityToken: string | null;
 }
 
 export interface WebChatApi {
@@ -64,7 +85,7 @@ export interface WebChatApi {
   open(): void;
   close(): void;
   sendMessage(text: string): void;
-  setVisitor(profile: { name?: string; email?: string }): void;
+  setVisitor(update: VisitorUpdate): void;
   on(event: EventName, handler: Handler): void;
   off(event: EventName, handler: Handler): void;
   /**
@@ -93,6 +114,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     handlers: new Map(),
     outboundQueue: [],
     forgetting: null,
+    identityToken: null,
   };
 
   function emit(event: EventName, payload?: unknown) {
@@ -129,6 +151,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
           referrer: document.referrer,
         },
         ...(state.config!.csat ? { csat: state.config!.csat } : {}),
+        ...(state.identityToken ? { identityToken: state.identityToken } : {}),
       });
       // Flush queued outbound messages
       while (state.outboundQueue.length > 0) {
@@ -150,6 +173,21 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
         setVisitorProfile(state.config.tenantId, p as { name?: string; email?: string });
       }
     });
+    state.bridge.on('session-identity', reportIdentity);
+  }
+
+  /** The SDK only passes on what Platform answered; the code alone goes to the console, never the token. */
+  function reportIdentity(payload: unknown) {
+    if (typeof payload !== 'object' || payload === null) return;
+    const { identityLevel, identityTokenRefusal } = payload as Record<string, unknown>;
+    if (typeof identityLevel !== 'string') return;
+    const refusal = typeof identityTokenRefusal === 'string' ? identityTokenRefusal : undefined;
+    if (refusal) console.warn(`VerbaraWebChat: the identity token was refused: ${refusal}`);
+    const outcome: IdentityOutcome = {
+      identityLevel,
+      ...(refusal ? { identityTokenRefusal: refusal } : {}),
+    };
+    emit('identity', outcome);
   }
 
   function toggleOpen() {
@@ -166,6 +204,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
       destroy();
     }
     state.config = config;
+    state.identityToken = config.identityToken ?? null;
     if (config.visitor) setVisitorProfile(config.tenantId, config.visitor);
 
     state.bubble = createBubble({
@@ -223,10 +262,16 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     state.bridge.send('send-message', { text });
   }
 
-  function setVisitor(profile: { name?: string; email?: string }): void {
+  function setVisitor(update: VisitorUpdate): void {
     if (!state.config) return;
-    setVisitorProfile(state.config.tenantId, profile);
-    state.bridge?.send('set-visitor', profile);
+    const { identityToken, ...profile } = update;
+    if (identityToken !== undefined) {
+      state.identityToken = identityToken;
+      if (Object.keys(profile).length > 0) setVisitorProfile(state.config.tenantId, profile);
+    } else {
+      setVisitorProfile(state.config.tenantId, profile);
+    }
+    state.bridge?.send('set-visitor', update);
   }
 
   function on(event: EventName, handler: Handler): void {
@@ -256,6 +301,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     state.unreadCount = 0;
     state.handlers.clear();
     state.outboundQueue.length = 0;
+    state.identityToken = null;
 
     if (!config || !iframe || !embedOrigin) {
       iframe?.destroy();
