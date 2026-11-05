@@ -102,7 +102,12 @@ the site's own storage (the SDK):
 - `verbara-webchat-visitor:<tenantId>` — visitor UUID
 - `verbara-webchat-profile:<tenantId>` — name + email
 
-`VerbaraWebChat.destroy()` clears both keys.
+When the site passes an `identityToken`, two more, so the widget can tell that the signed-in customer changed:
+
+- `verbara-webchat-subject:<tenantId>` — an HMAC-SHA256 of the customer's id, never the id or the token
+- `verbara-webchat-subject-key:<tenantId>` — the random key of that HMAC, of this browser and tenant
+
+The token itself is never stored. `VerbaraWebChat.destroy()` clears the visitor UUID, the profile and the HMAC.
 
 Inside the widget's frame, in its own storage:
 

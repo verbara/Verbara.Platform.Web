@@ -97,6 +97,15 @@ export function settleVisitorQueues(tenantId: string, visitorId: string): void {
   removeTenantQueues(tenantId, KEY(tenantId, visitorId));
 }
 
+/** Forgets what one visitor had waiting to be sent. */
+export function clearVisitorQueue(tenantId: string, visitorId: string): void {
+  try {
+    localStorage.removeItem(KEY(tenantId, visitorId));
+  } catch {
+    // Storage unavailable: nothing was queued.
+  }
+}
+
 /** Forgets the queues of every visitor of the tenant, and the tenant-only entry of earlier versions. */
 export function clearTenantQueues(tenantId: string): void {
   removeTenantQueues(tenantId);

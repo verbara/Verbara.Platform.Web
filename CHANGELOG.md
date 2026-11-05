@@ -17,6 +17,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   reports the level Platform answered and, when it did not accept the token, the reason, which also goes to the browser
   console. The visitor sees no difference and the chat works the same at every level. (#N)
 
+- **A new signed-in customer on a shared browser does not inherit the previous one's chat.** When the customer changes or
+  signs out, or the first customer signs in over an anonymous chat, the widget forgets what it kept, starts with a new
+  visitor id, and, if the visitor was chatting and a token is in hand, starts the new session at once. An unchanged customer
+  with a refreshed token keeps the chat. Every open tab of the site ends the previous customer's chat, including a tab the site
+  did not call. The browser stores a keyed digest to recognise the customer, never the customer's id or the token, and the
+  widget warns in the console when it forgets because a token was left out or could not be read, or when the page is not
+  on `https`, where this check does not run. `destroy()` also clears the digest. (#N)
+
 ### Fixed
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so

@@ -119,3 +119,16 @@ export function clearStoredSession(tenantId: string, sessionId?: string): void {
     // Storage unavailable: nothing was stored.
   }
 }
+
+/** Forgets the stored session only when it is this visitor's: another tab may have stored the next visitor's. */
+export function clearVisitorSession(tenantId: string, visitorId: string): void {
+  try {
+    const raw = localStorage.getItem(KEY(tenantId));
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    if (isStoredSession(parsed) && parsed.visitorId === visitorId) {
+      localStorage.removeItem(KEY(tenantId));
+    }
+  } catch {
+    // Storage unavailable or an unreadable entry: loadStoredSession ignores it.
+  }
+}

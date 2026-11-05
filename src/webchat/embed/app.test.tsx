@@ -151,6 +151,40 @@ describe('App — forgetting the visitor when the host page destroys the widget'
     expect(localStorage.getItem('verbara-webchat-messages:t1:v1')).toBeNull();
   });
 
+  it('App_ShouldClearOnlyThatVisitor_AndCloseTheChat_WhenTheRequestNamesOne', () => {
+    window.history.replaceState(null, '', `/?tenantId=t1&hostOrigin=${encodeURIComponent(HOST)}`);
+    seed();
+    const post = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
+    render(<App />);
+    act(() => {
+      window.dispatchEvent(initConfig(HOST));
+    });
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          origin: HOST,
+          data: {
+            source: 'verbara-webchat-host',
+            type: 'forget-visitor',
+            payload: { tenantId: 't1', visitorId: 'v0' },
+          },
+        }),
+      );
+    });
+
+    expect(screen.getByTestId('webchat-embed-loading')).toBeInTheDocument();
+    expect(localStorage.getItem('verbara-webchat-messages:t1:v0')).toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v0')).toBeNull();
+    expect(localStorage.getItem('verbara-webchat-messages:t1:v1')).not.toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v1')).not.toBeNull();
+    expect(localStorage.getItem('verbara-webchat-session:t1')).not.toBeNull();
+    expect(post).toHaveBeenCalledWith(
+      { source: 'verbara-webchat-iframe', type: 'visitor-forgotten', payload: { tenantId: 't1' } },
+      HOST,
+    );
+  });
+
   it('App_ShouldIgnoreTheRequest_WithoutATenant', () => {
     window.history.replaceState(null, '', `/?tenantId=t1&hostOrigin=${encodeURIComponent(HOST)}`);
     seed();

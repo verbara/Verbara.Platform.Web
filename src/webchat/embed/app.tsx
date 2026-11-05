@@ -67,7 +67,7 @@ export function App() {
         setConfig(null);
         setIdentityToken(null);
       });
-      forgetVisitorData(request.tenantId);
+      forgetVisitorData(request.tenantId, request.visitorId);
       bridge.send(VISITOR_FORGOTTEN, { tenantId: request.tenantId });
     });
 

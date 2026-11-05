@@ -15,6 +15,8 @@ export const FORGET_RETRY_MS = 100;
 
 export interface ForgetVisitorPayload {
   tenantId: string;
+  /** Only what this visitor owns, when another tab may already run the next one. Absent: all of the tenant's. */
+  visitorId?: string;
 }
 
 export interface ForgetVisitorOptions {
