@@ -91,9 +91,10 @@ class Visitor {
 async function initWidget(
   page: Page,
   config: { identityToken?: string; visitor?: { name: string; email: string } },
+  { open = true }: { open?: boolean } = {},
 ): Promise<void> {
   await page.evaluate(
-    ({ tenantId, config: extra }) => {
+    ({ tenantId, config: extra, open: openIt }) => {
       const w = window as unknown as {
         VerbaraWebChat: {
           init: (c: object) => void;
@@ -105,10 +106,34 @@ async function initWidget(
       w.__identity = [];
       w.VerbaraWebChat.init({ tenantId, locale: 'en-US', ...extra });
       w.VerbaraWebChat.on('identity', (p) => w.__identity.push(p));
-      w.VerbaraWebChat.open();
+      if (openIt) w.VerbaraWebChat.open();
     },
-    { tenantId: TENANT, config },
+    { tenantId: TENANT, config, open },
   );
+}
+
+async function openWidget(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    (window as unknown as { VerbaraWebChat: { open: () => void } }).VerbaraWebChat.open();
+  });
+}
+
+/** Signs a customer in with a name and an e-mail in one call, which is how a site's login usually reads. */
+async function signIn(
+  page: Page,
+  update: { name: string; email: string; identityToken: string },
+): Promise<void> {
+  await page.evaluate((u) => {
+    const w = window as unknown as { VerbaraWebChat: { setVisitor: (v: object) => void } };
+    w.VerbaraWebChat.setVisitor(u);
+  }, update);
+}
+
+/** `__identity` keeps every event of the page, so a check of the next session has to start it over. */
+async function forgetIdentityEvents(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    (window as unknown as { __identity: unknown[] }).__identity = [];
+  });
 }
 
 async function setToken(page: Page, identityToken: string | null): Promise<void> {
@@ -350,6 +375,7 @@ test.describe('WebChat widget identity (full stack)', () => {
     const A = await twoTabsAsA(visitor, signToken(secret, `cust-a-${stamp}`), stamp);
     const tokenB = signToken(secret, `cust-b-${stamp}`);
 
+    await forgetIdentityEvents(A.one.page);
     await setToken(A.one.page, tokenB);
     const frameOne = await waitComposer(A.one.page);
     await expectDiscarded(A.one, frameOne, A.marks, A.socketsOfOne);
@@ -369,6 +395,85 @@ test.describe('WebChat widget identity (full stack)', () => {
     expect(after.every((c) => c.identityToken === tokenB)).toBe(true);
     await expect.poll(() => keptOf(A.one.page, A.visitorOfA)).toEqual([]);
     expect(await storedVisitorId(A.two.page)).not.toBe(A.visitorOfA);
+  });
+
+  test('a sign-in that carries a name and an e-mail makes the tab it did not reach create no session', async () => {
+    test.setTimeout(90_000);
+    const A = await twoTabsAsA(visitor, signToken(secret, `cust-a-${stamp}`), stamp);
+    const tokenB = signToken(secret, `cust-b-${stamp}`);
+    const profileB = { name: 'Customer B', email: 'b@e2e.local' };
+
+    await forgetIdentityEvents(A.one.page);
+    await signIn(A.one.page, { ...profileB, identityToken: tokenB });
+    const frameOne = await waitComposer(A.one.page);
+    await expectDiscarded(A.one, frameOne, A.marks, A.socketsOfOne);
+    await expectLastIdentity(A.one.page, 'Verified');
+
+    // The stored profile is B's now, and it is complete. Tab two still asks: the site has not told it.
+    await expectUntoldTabDiscarded(A.two, A.marks, A.socketsOfTwo);
+    const afterTabOne = visitor.creates.slice(A.createsBefore);
+    expect(afterTabOne, 'only the session of the tab the site told').toHaveLength(1);
+    expect(afterTabOne[0]?.identityToken).toBe(tokenB);
+
+    await signIn(A.two.page, { ...profileB, identityToken: tokenB });
+    const frameTwo = await waitComposer(A.two.page);
+    await expect(frameTwo.locator('#webchat-name'), 'B starts at once').toHaveCount(0);
+
+    // A later page of the site: init with the token and the profile.
+    const three = await visitor.tab();
+    await initWidget(three.page, { identityToken: tokenB, visitor: profileB });
+    await waitComposer(three.page);
+
+    const after = visitor.creates.slice(A.createsBefore);
+    expect(after.every((c) => c.identityToken === tokenB)).toBe(true);
+    expect(after.map((c) => c.visitorId)).not.toContain(A.visitorOfA);
+  });
+
+  test('a session the visitor started without the token is not the one a tab holding it resumes', async () => {
+    test.setTimeout(90_000);
+    const tokenA = signToken(secret, `cust-a-${stamp}`);
+    const tokenB = signToken(secret, `cust-b-${stamp}`);
+    const asked = await visitor.tab();
+    await initWidget(asked.page, {
+      identityToken: tokenA,
+      visitor: { name: 'Customer A', email: 'a@e2e.local' },
+    });
+    const mark = `said as A ${stamp}`;
+    await say(asked.page, mark);
+    const socketsOfA = [...asked.sockets];
+    const before = visitor.creates.length;
+
+    // The site signs B in on a tab whose chat is closed, so that tab has created nothing yet.
+    const closed = await visitor.tab();
+    await initWidget(
+      closed.page,
+      { identityToken: tokenB, visitor: { name: 'Customer B', email: 'b@e2e.local' } },
+      { open: false },
+    );
+    await expectUntoldTabDiscarded(asked, [mark], socketsOfA);
+
+    // The visitor acts in the tab the site did not tell.
+    const frame = await widget(asked.page);
+    await frame.locator('#webchat-name').fill('Someone');
+    await frame.locator('#webchat-email').fill('someone@e2e.local');
+    await frame.locator('button[type="submit"]').click();
+    await expect
+      .poll(() => visitor.creates.length, { message: 'its session', timeout: WIDGET_TIMEOUT })
+      .toBe(before + 1);
+    const tokenless = visitor.creates[before]!;
+    expect(tokenless.identityToken).toBeUndefined();
+
+    await openWidget(closed.page);
+    await waitComposer(closed.page);
+    await expect
+      .poll(() => visitor.creates.length, {
+        message: "the token's session",
+        timeout: WIDGET_TIMEOUT,
+      })
+      .toBe(before + 2);
+    expect(visitor.creates[before + 1]?.identityToken).toBe(tokenB);
+    expect(visitor.creates[before + 1]?.visitorId).toBe(tokenless.visitorId);
+    await expectLastIdentity(closed.page, 'Verified');
   });
 
   test('two tabs of customer A both drop A when the site signs out, one after the other', async () => {

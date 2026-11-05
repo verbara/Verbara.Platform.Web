@@ -11,6 +11,7 @@ import {
   getOrCreateVisitorId,
   getVisitorProfile,
   hasVisitorId,
+  readVisitorId,
   setVisitorProfile,
   resetVisitor,
 } from './visitor-storage';
@@ -85,6 +86,9 @@ const WARN_UNREADABLE =
 const WARN_INSECURE =
   'VerbaraWebChat: this page is not served over https, so the widget cannot tell when the signed-in visitor changes. ' +
   'Visitor identity verification requires https.';
+const WARN_UNSTORED =
+  'VerbaraWebChat: the browser could not store which signed-in visitor this is, so the widget treats the visitor as ' +
+  'unknown.';
 
 interface InternalState {
   config: InitConfig | null;
@@ -118,6 +122,11 @@ interface InternalState {
   widgetVisitorId: string | null;
   /** The next frame's config asks for a session now: the visitor was chatting, and the site signed a customer in. */
   startSession: boolean;
+  /**
+   * Another tab changed the customer and the site has said nothing here since. The stored profile is that tab's, and a
+   * complete one would start a session with no form: this tab waits for the site, or for the visitor to fill the form.
+   */
+  awaitingSite: boolean;
   insecureWarned: boolean;
 }
 
@@ -161,6 +170,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     widgetStarted: false,
     widgetVisitorId: null,
     startSession: false,
+    awaitingSite: false,
     insecureWarned: false,
   };
 
@@ -199,7 +209,9 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
         theme: state.config!.theme,
         greeting: state.config!.greeting,
         visitorId,
-        visitor: getVisitorProfile(state.config!.tenantId) ?? state.siteVisitor,
+        visitor: state.awaitingSite
+          ? undefined
+          : (getVisitorProfile(state.config!.tenantId) ?? state.siteVisitor),
         pageContext: {
           url: globalThis.location.href,
           title: document.title,
@@ -293,10 +305,33 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     if (state.isOpen) reveal(config);
   }
 
-  /** This tab's widget is no longer the customer's. What another tab started on the same storage stays. */
+  /**
+   * This tab's widget is no longer the customer's. What another tab started on the same storage stays, and so does what
+   * the visitor this tab moves to holds: a widget already under the shared visitor id has nothing to clear.
+   */
   function discardWidget(config: InitConfig): void {
     const visitorId = state.widgetVisitorId;
-    replaceWidget(visitorId ? { tenantId: config.tenantId, visitorId } : null);
+    const superseded = visitorId !== null && visitorId !== readVisitorId(config.tenantId);
+    replaceWidget(superseded ? { tenantId: config.tenantId, visitorId } : null);
+  }
+
+  /** A browser that will not store the record leaves no customer known, and no stale one on the record. */
+  function treatSubjectAsUnknown(): void {
+    state.ownSubject = null;
+    console.warn(WARN_UNSTORED);
+  }
+
+  function recordSubject(tenantId: string, subject: string | null): void {
+    try {
+      writeSubjectRecord(tenantId, subject);
+    } catch {
+      treatSubjectAsUnknown();
+      try {
+        writeSubjectRecord(tenantId, null);
+      } catch {
+        // The storage is out of reach altogether: there is no record to correct.
+      }
+    }
   }
 
   /** Applies what the site said about the token, in the order it said it. */
@@ -318,7 +353,13 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
       return;
     }
     const decide = (statement: TokenStatement) => {
-      if (state.config === config) settleIdentity(config, call, token, statement, profile);
+      if (state.config !== config) return;
+      try {
+        settleIdentity(config, call, token, statement, profile);
+      } catch {
+        // What is held on this decision must settle, or the widget never opens and destroy() never forgets.
+        treatSubjectAsUnknown();
+      }
     };
     const externalId = token ? readExternalId(token) : null;
     if (externalId !== null) {
@@ -361,11 +402,11 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
 
     if (decision.forget) {
       resetVisitor(tenantId);
-      writeSubjectRecord(tenantId, decision.record);
-      if (profile) setVisitorProfile(tenantId, profile);
+      recordSubject(tenantId, decision.record);
       replaceWidget({ tenantId });
+      if (profile) setVisitorProfile(tenantId, profile);
     } else {
-      writeSubjectRecord(tenantId, decision.record);
+      recordSubject(tenantId, decision.record);
       if (differs && state.widgetStarted) discardWidget(config);
       else if (call === 'setVisitor') state.bridge?.send('set-visitor', { identityToken: token });
     }
@@ -390,6 +431,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
       state.identityToken = null;
       state.ownSubject = null;
       state.siteVisitor = undefined;
+      state.awaitingSite = true;
       if (state.widgetStarted) discardWidget(config);
     });
   }
@@ -479,6 +521,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
 
   function setVisitor(update: VisitorUpdate): void {
     if (!state.config) return;
+    state.awaitingSite = false;
     const { identityToken, ...profile } = update;
     if (identityToken === undefined || Object.keys(profile).length > 0) {
       setVisitorProfile(state.config.tenantId, profile);
@@ -544,6 +587,7 @@ export function createWebChatApi(options: WebChatApiOptions = {}): WebChatApi {
     state.widgetStarted = false;
     state.widgetVisitorId = null;
     state.startSession = false;
+    state.awaitingSite = false;
   }
 
   /**

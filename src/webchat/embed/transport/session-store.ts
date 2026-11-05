@@ -34,6 +34,11 @@ export interface StoredSession {
   createdAt: number;
   /** Epoch ms of the last activity Platform saw from this widget (socket attached, message sent). */
   lastActiveAt: number;
+  /**
+   * Whether the create carried the site's token. Platform reads the token only there, so a session made without one
+   * stays at its level whoever resumes it. Never the token itself.
+   */
+  createdWithToken?: boolean;
 }
 
 const KEY = (tenantId: string) => `verbara-webchat-session:${tenantId}`;

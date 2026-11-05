@@ -257,7 +257,9 @@ export function ChatWidget({ config, identityToken, onUnreadChange }: Props) {
       if (!mountedRef.current || clientRef.current || unavailableRef.current) return;
 
       const stored = loadStoredSession(tenantId, visitorId);
-      if (stored) {
+      const token = identityTokenRef.current;
+      // A tab holding a token does not resume a session created without one: it would never reach Platform.
+      if (stored && (stored.createdWithToken || !token?.trim())) {
         breadcrumb('session-resumed', { sessionId: stored.sessionId });
         connect(stored, false);
         return;
@@ -270,7 +272,7 @@ export function ChatWidget({ config, identityToken, onUnreadChange }: Props) {
           visitorId,
           profile: profileRef.current ?? {},
           pageContext: config.pageContext,
-          identityToken: identityTokenRef.current,
+          identityToken: token,
         });
         // Reported whatever happens next here: the session exists on Platform either way.
         postToHost('session-identity', {
@@ -288,6 +290,7 @@ export function ChatWidget({ config, identityToken, onUnreadChange }: Props) {
           visitorId,
           createdAt: now,
           lastActiveAt: now,
+          ...(token?.trim() ? { createdWithToken: true } : {}),
         };
         saveStoredSession(tenantId, session);
         breadcrumb('session-created', { sessionId: session.sessionId });

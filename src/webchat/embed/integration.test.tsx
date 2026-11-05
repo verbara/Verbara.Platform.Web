@@ -1074,6 +1074,78 @@ describe('Integration — the identity token', () => {
     expect(postedBodies()[0]).not.toHaveProperty('identityToken');
   });
 
+  function storeSession(overrides: Record<string, unknown>) {
+    const now = Date.now();
+    localStorage.setItem(
+      'verbara-webchat-session:t1',
+      JSON.stringify({
+        sessionId: 'stored',
+        wsUrl: 'wss://x/ws/webchat/stored',
+        visitorId: config.visitorId,
+        createdAt: now - 60_000,
+        lastActiveAt: now - 60_000,
+        ...overrides,
+      }),
+    );
+  }
+
+  it('Session_ShouldCreateOneWithTheToken_WhenTheStoredOneWasCreatedWithoutAToken', async () => {
+    answer(webchatSessionVerified);
+    storeSession({});
+    render(widget('T1'));
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(FakeWebSocket.all[0]!.url).not.toContain('stored');
+    expect(postedBodies()).toHaveLength(1);
+    expect(postedBodies()[0]!['identityToken']).toBe('T1');
+  });
+
+  it('Session_ShouldResumeTheStoredOne_WhenItWasCreatedWithAToken', async () => {
+    answer(webchatSessionVerified);
+    storeSession({ createdWithToken: true });
+    render(widget('T2'));
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(FakeWebSocket.all[0]!.url).toContain('stored');
+    expect(vi.mocked(globalThis.fetch)).not.toHaveBeenCalled();
+  });
+
+  it('Session_ShouldResumeTheStoredOne_WhenTheTabHoldsNoToken', async () => {
+    answer(webchatSessionAnonymous);
+    storeSession({});
+    render(widget(null));
+
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(FakeWebSocket.all[0]!.url).toContain('stored');
+    expect(vi.mocked(globalThis.fetch)).not.toHaveBeenCalled();
+  });
+
+  it('Session_ShouldRememberItWasCreatedWithAToken_SoAReloadResumesIt', async () => {
+    answer(webchatSessionVerified);
+    const first = render(widget('T1'));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    first.unmount();
+
+    render(widget('T1'));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(2));
+    expect(postedBodies()).toHaveLength(1);
+    expect(localStorage.getItem('verbara-webchat-session:t1')).not.toContain('T1');
+  });
+
+  it('Session_ShouldNotCountABlankTokenAsOne_WhenALaterTabHoldsAToken', async () => {
+    answer(webchatSessionAnonymous);
+    const first = render(widget('   '));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    expect(postedBodies()[0]).not.toHaveProperty('identityToken');
+    first.unmount();
+
+    answer(webchatSessionVerified);
+    render(widget('T1'));
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(2));
+    expect(postedBodies()).toHaveLength(1);
+    expect(postedBodies()[0]!['identityToken']).toBe('T1');
+  });
+
   it('Widget_ShouldStartTheSessionWithoutTheForm_WhenTheSdkAsksForAStartAtOnce', async () => {
     answer(webchatSessionVerified);
     render(
