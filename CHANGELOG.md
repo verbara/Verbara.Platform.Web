@@ -17,6 +17,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   contact's id, and shows those rows and that button for a contact with a phone or e-mail address. The permissions for
   edit and delete do not change. (#N)
 
+- **Unsent messages stay with the visitor who typed them.** The widget keeps what is typed while the connection is down
+  per visitor. When it starts, it deletes what any other visitor of the tenant left on this browser, and it never sends
+  those messages in the new visitor's session, also when `destroy()` got no answer from the frame. `destroy()` clears
+  every visitor's queue of the tenant. Messages kept by an earlier version are removed unsent. (#N)
+
 - **Signing out or switching identity clears the previous person's conversations from the page.** Signing out, another
   user signing in on the same tab, starting or ending an impersonation and managing another tenant's billing clear what
   was loaded, and the new identity reads its own. A reply draft stays for the person who typed it and is removed when

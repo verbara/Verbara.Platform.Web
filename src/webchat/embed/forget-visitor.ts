@@ -1,6 +1,6 @@
 import { clearCachedMessages } from './message-cache';
 import { clearStoredSession } from './transport/session-store';
-import { createOfflineQueue } from './transport/offline-queue';
+import { clearTenantQueues } from './transport/offline-queue';
 import {
   FORGET_VISITOR,
   VISITOR_FORGOTTEN,
@@ -17,15 +17,11 @@ export function readForgetVisitor(payload: unknown): ForgetVisitorPayload | null
 }
 
 /**
- * Clears the conversation the widget kept in this frame's storage for the tenant: the cached messages of every
- * visitor, the stored session and the messages waiting to be sent. The host page's `destroy()` asks for it.
+ * Clears the conversation the widget kept in this frame's storage for the tenant: the cached messages and the
+ * messages waiting to be sent of every visitor, and the stored session. The host page's `destroy()` asks for it.
  */
 export function forgetVisitorData(tenantId: string): void {
   clearCachedMessages(tenantId);
   clearStoredSession(tenantId);
-  try {
-    createOfflineQueue(tenantId).clear();
-  } catch {
-    // Storage unavailable: nothing was queued.
-  }
+  clearTenantQueues(tenantId);
 }

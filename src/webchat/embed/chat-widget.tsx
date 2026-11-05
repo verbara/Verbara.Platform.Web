@@ -21,7 +21,7 @@ import {
   type StoredSession,
 } from './transport/session-store';
 import { messageFrame, readAgentMessage, type ServerFrame } from './transport/ws-protocol';
-import { createOfflineQueue } from './transport/offline-queue';
+import { createOfflineQueue, settleVisitorQueues } from './transport/offline-queue';
 import { loadCachedMessages, saveCachedMessages } from './message-cache';
 import { playNotificationSound, loadSoundPreference, setSoundEnabled } from './notifications';
 import { breadcrumb } from './sentry-breadcrumbs';
@@ -109,6 +109,12 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
   const TIMEOUT_MS = 5 * 60 * 1000;
   const lastAgentActivityRef = useRef<number | null>(null);
 
+  // The first effect of the widget, so it runs before the effect below that creates the session, and so before any
+  // queue is read.
+  useEffect(() => {
+    settleVisitorQueues(config.tenantId, config.visitorId);
+  }, [config.tenantId, config.visitorId]);
+
   // Initialize agent-activity timestamp on first mount.
   useEffect(() => {
     lastAgentActivityRef.current = Date.now();
@@ -157,7 +163,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
     const { tenantId, visitorId } = config;
 
     function connect(session: StoredSession, isNew: boolean): void {
-      const queue = createOfflineQueue(tenantId);
+      const queue = createOfflineQueue(tenantId, visitorId);
       let openCount = 0;
       // Closes in a row without Platform confirming the socket in between. Platform refuses an unknown session
       // before the upgrade, which the page sees only as a socket that closes unopened.
@@ -270,7 +276,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
         if (isChatUnavailable(err)) {
           // Terminal: what the visitor typed cannot be delivered, so it is not kept for a later session.
           unavailableRef.current = true;
-          createOfflineQueue(tenantId).clear();
+          createOfflineQueue(tenantId, visitorId).clear();
           breadcrumb('session-unavailable');
           setStatus('unavailable');
           return;
@@ -327,7 +333,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
 
   const handleSend = useCallback(
     (text: string) => {
-      const queue = createOfflineQueue(config.tenantId);
+      const queue = createOfflineQueue(config.tenantId, config.visitorId);
       const msg: ChatMessage = {
         id: crypto.randomUUID(),
         text,
@@ -344,7 +350,7 @@ export function ChatWidget({ config, onUnreadChange }: Props) {
       breadcrumb('message-sent');
       postToHost('message-sent', { text });
     },
-    [config.tenantId],
+    [config.tenantId, config.visitorId],
   );
 
   if (!profile) {

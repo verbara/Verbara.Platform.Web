@@ -458,10 +458,80 @@ describe('Session start and resume (#426)', () => {
     expect(FakeWebSocket.all[1]!.url).toBe('wss://x/ws/y');
   });
 
+  it('Start_ShouldSendOnlyThisVisitorsQueue_AndDeleteTheOthers_WhenAnotherVisitorLeftOne', async () => {
+    const message = (text: string) =>
+      JSON.stringify([{ id: text, text, timestamp: '2026-10-17T10:00:00Z' }]);
+    localStorage.setItem('verbara-webchat-queue:t1:v0', message('from the earlier visitor'));
+    localStorage.setItem('verbara-webchat-queue:t1:v1', message('mine'));
+    localStorage.setItem('verbara-webchat-queue:t10:v0', message('of t10'));
+    localStorage.setItem('verbara-webchat-queue:t2:v0', message('of t2'));
+    let othersAtCreate: string | null = 'not read';
+    globalThis.fetch = vi.fn(async () => {
+      othersAtCreate = localStorage.getItem('verbara-webchat-queue:t1:v0');
+      return new Response(JSON.stringify({ sessionId: 's1', wsUrl: 'wss://x/ws/y' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }) as never;
+
+    mount();
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    const ws = FakeWebSocket.all[0]!;
+    open(ws);
+    await settle();
+
+    expect(othersAtCreate).toBeNull();
+    expect(ws.sent).toEqual([JSON.stringify({ type: 'message', text: 'mine' })]);
+    expect(screen.queryByText('from the earlier visitor')).not.toBeInTheDocument();
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v0')).toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t10:v0')).not.toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t2:v0')).not.toBeNull();
+  });
+
+  it('Start_ShouldRemoveTheOldTenantKey_AndNeverSendIt_WhenItHoldsMessages', async () => {
+    localStorage.setItem(
+      'verbara-webchat-queue:t1',
+      JSON.stringify([
+        { id: 'q1', text: 'kept by an earlier version', timestamp: '2026-10-17T10:00:00Z' },
+      ]),
+    );
+
+    mount();
+    await waitFor(() => expect(FakeWebSocket.all).toHaveLength(1));
+    const ws = FakeWebSocket.all[0]!;
+    open(ws);
+    await settle();
+
+    expect(ws.sent).toEqual([]);
+    expect(localStorage.getItem('verbara-webchat-queue:t1')).toBeNull();
+  });
+
+  it('Start_ShouldDeleteOtherVisitorsQueues_BeforeTheVisitorFillsTheForm', async () => {
+    localStorage.setItem('verbara-webchat-queue:t1:v0', '[{"id":"q0","text":"x","timestamp":"t"}]');
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <ChatWidget config={config} onUnreadChange={vi.fn()} />
+      </I18nextProvider>,
+    );
+
+    await waitFor(() => expect(localStorage.getItem('verbara-webchat-queue:t1:v0')).toBeNull());
+    expect(FakeWebSocket.all).toHaveLength(0);
+  });
+
+  it('Send_ShouldQueueUnderThisVisitor_WhenTheSocketIsNotOpen', async () => {
+    mount();
+    await settle();
+    sendFromComposer('hola');
+
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v1')).toContain('hola');
+    expect(localStorage.getItem('verbara-webchat-queue:t1')).toBeNull();
+  });
+
   it('ResumesStoredSession_AndDrainsQueueInOrder_WhenSocketReattaches', async () => {
     storeSession();
     localStorage.setItem(
-      'verbara-webchat-queue:t1',
+      'verbara-webchat-queue:t1:v1',
       JSON.stringify([
         { id: 'q1', text: 'first', timestamp: '2026-10-17T10:00:00Z' },
         { id: 'q2', text: 'second', timestamp: '2026-10-17T10:00:01Z' },
@@ -625,7 +695,7 @@ describe('Session start and resume (#426)', () => {
   it('SendsQueuedTextToNewSession_WhenExpiredSocketOpensBeforeClosing', async () => {
     storeSession();
     localStorage.setItem(
-      'verbara-webchat-queue:t1',
+      'verbara-webchat-queue:t1:v1',
       JSON.stringify([{ id: 'q1', text: 'pending', timestamp: '2026-10-17T10:00:00Z' }]),
     );
     mount();
@@ -760,7 +830,7 @@ describe('Session start and resume (#426)', () => {
     mount();
     await settle();
     sendFromComposer('hola');
-    expect(localStorage.getItem('verbara-webchat-queue:t1')).not.toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v1')).not.toBeNull();
 
     await act(async () => {
       answer(new Response('', { status: 404 }));
@@ -768,7 +838,7 @@ describe('Session start and resume (#426)', () => {
     });
 
     expect(screen.getByText('Chat is not available')).toBeInTheDocument();
-    expect(localStorage.getItem('verbara-webchat-queue:t1')).toBeNull();
+    expect(localStorage.getItem('verbara-webchat-queue:t1:v1')).toBeNull();
     expect(sessionPosts()).toBe(1);
   });
 
