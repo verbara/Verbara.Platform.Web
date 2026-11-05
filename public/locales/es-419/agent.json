@@ -115,6 +115,12 @@
       "load_earlier": "Cargar mensajes anteriores"
     }
   },
+  "identity": {
+    "unverified": "Identidad no verificada",
+    "unverified_hint": "Identidad no verificada: nada confirma quién es esta persona, así que las conversaciones vinculadas a este contacto pueden ser de otra persona.",
+    "verified": "Identidad verificada",
+    "verified_hint": "Identidad verificada: el sitio de su empresa confirmó a este cliente."
+  },
   "context": {
     "contact_heading": "Contacto",
     "edit": "Editar",

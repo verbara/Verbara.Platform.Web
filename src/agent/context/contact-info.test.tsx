@@ -34,6 +34,7 @@ const { mutateMock, toastErrorMock, startOutboundMock, DIAL_CONTACT, scene } = v
 
 vi.mock('@/core/api/hooks/use-conversations', () => ({
   useVoiceDial: () => ({ mutate: mutateMock, isPending: false }),
+  useConversation: () => ({ data: undefined }),
 }));
 
 vi.mock('@/core/api/hooks/use-contacts', () => ({

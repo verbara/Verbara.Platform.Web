@@ -52,7 +52,8 @@ vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
 
 const SELECTED_ID = 'conv-1';
 const VIEWED_ID = closedContactSummary.id;
-const LIST_URL = `/api/v1/contacts/${terminalConversation.contactId}/conversations`;
+const CONTACT_URL = `/api/v1/contacts/${terminalConversation.contactId}`;
+const LIST_URL = `${CONTACT_URL}/conversations`;
 const RECORD_URL = `/api/v1/conversations/${VIEWED_ID}`;
 const HISTORY_URL = `${RECORD_URL}/history`;
 const CURSOR = String(historyFirstPage.nextBefore);
@@ -300,7 +301,7 @@ describe('PastConversationViewer', () => {
       const calls = vi.mocked(client.customFetch).mock.calls.map(([c]) => c);
       expect(new Set(calls.map((c) => c.method))).toEqual(new Set(['GET']));
       expect(new Set(calls.map((c) => c.url))).toEqual(
-        new Set([LIST_URL, RECORD_URL, HISTORY_URL]),
+        new Set([LIST_URL, CONTACT_URL, RECORD_URL, HISTORY_URL]),
       );
     });
 

@@ -17,26 +17,31 @@ import { toastApiError } from '@/core/api/toast-api-error';
 import { trunkRefusalValues, voiceDialRefusals } from '@/core/api/voice-call-refusals';
 import { channelLabel } from '@/core/i18n/channel-label';
 import { useFormatPhone } from '@/core/i18n/use-format-phone';
+import { IdentityLevelMark } from './identity-level-mark';
+import { useConversationContactId } from './use-conversation-contact-id';
 
 function InfoRow({
   icon: Icon,
   label,
   value,
   copyable = false,
+  adornment,
 }: {
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   value: string;
   copyable?: boolean;
+  adornment?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start gap-2.5 py-2">
       <Icon size={16} className="mt-0.5 shrink-0 text-slate-500" />
       <div className="min-w-0 flex-1">
         <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <p className="truncate text-sm text-slate-700 dark:text-slate-200">{value}</p>
           {copyable && <CopyButton value={value} iconOnly />}
+          {adornment}
         </div>
       </div>
     </div>
@@ -86,7 +91,7 @@ export function ContactInfo() {
   const dial = useVoiceDial();
 
   const conversation = selectedId ? conversations[selectedId] : null;
-  const contactId = conversation?.contactId;
+  const contactId = useConversationContactId(conversation);
   const { data: contact } = useContact(contactId);
 
   const openEditDialog = () => {
@@ -146,7 +151,12 @@ export function ContactInfo() {
           </PermissionButton>
         </div>
       </div>
-      <InfoRow icon={User} label={t('agent:context.name')} value={displayName} />
+      <InfoRow
+        icon={User}
+        label={t('agent:context.name')}
+        value={displayName}
+        adornment={<IdentityLevelMark identityLevel={contact.identityLevel} />}
+      />
       <InfoRow
         icon={Phone}
         label={t('agent:context.phone')}

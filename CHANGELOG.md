@@ -25,6 +25,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   widget warns in the console when it forgets because a token was left out or could not be read, or when the page is not
   on `https`, where this check does not run. `destroy()` also clears the digest. (#N)
 
+- **The agent console shows how sure the platform is of who a WebChat contact is.** A contact known by browser only carries an
+  "identity not verified" mark, and one the company's site signed in carries a "Verified" badge, on the contact card, in the
+  conversation header, on every row of the History tab and in the transcript opened from a row. An anonymous contact, or one
+  with no WebChat address, carries neither. While the contact is still loading or could not be read, the History rows and the
+  transcript keep the "identity not verified" mark. The card and the header now also find the contact of a conversation
+  accepted from a fresh offer, and of the offer itself. (#N)
+
 ### Fixed
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so

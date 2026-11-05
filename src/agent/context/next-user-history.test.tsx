@@ -78,9 +78,9 @@ describe('the next person on the same tab', () => {
     // Still inside the app's `staleTime`, so a kept entry would be drawn with no request at all.
     let answer: (page: unknown) => void = () => undefined;
     vi.mocked(client.customFetch).mockImplementation(
-      () =>
+      (config) =>
         new Promise((resolve) => {
-          answer = resolve;
+          if (config.url === LIST_URL) answer = resolve;
         }),
     );
     signIn('next');
