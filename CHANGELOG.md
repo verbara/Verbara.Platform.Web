@@ -55,6 +55,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Saving consent and "Set Do Not Contact" on the consent page need the contact edit permission.** For a user without it
   both buttons are shown disabled, with a tooltip naming the permission. (#N)
 
+- **"Set Do Not Contact" on the consent page reports once, after every contact has answered.** It shows one message per
+  kind of failure and one message with the number of contacts updated, instead of one message per contact. The contacts
+  that could not be updated stay selected, so they can be tried again, and the rows show the new status without a
+  reload. (#N)
+
 ### Fixed
 
 - **The consent page records and shows consent per channel.** It lists every channel Platform knows, and shows each one

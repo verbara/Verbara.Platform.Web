@@ -13,6 +13,10 @@ import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/core/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { useSearchContacts, useUpdateContact, type Contact } from '@/core/api/hooks/use-contacts';
+import { contactWriteRefusals } from '@/core/api/contact-write-refusals';
+import { describeApiError } from '@/core/api/api-error';
+import { toastApiError } from '@/core/api/toast-api-error';
+import { toast } from 'sonner';
 import { CHANNEL_TYPES, type ChannelType } from '@/core/api/channel-types';
 
 /** The permission every write of this page needs (`contact-write-refusals.v1.json` `permissionByRoute`, `PUT`). */
@@ -84,6 +88,7 @@ function contactName(c: Contact) {
 
 export default function ConsentManagementPage() {
   const { t } = useTranslation('admin');
+  const { t: tCommon } = useTranslation('common');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -102,6 +107,9 @@ export default function ConsentManagementPage() {
 
   const { data: contacts = [] } = useSearchContacts(debouncedSearch);
   const updateContact = useUpdateContact();
+  // The bulk write reports its own outcome once every answer has settled (design W5).
+  const bulkUpdate = useUpdateContact({ report: 'caller' });
+  const [bulkPending, setBulkPending] = useState(false);
   const allSelected = useMemo(
     () => contacts.length > 0 && contacts.every((c) => selected.has(c.id)),
     [contacts, selected],
@@ -137,9 +145,34 @@ export default function ConsentManagementPage() {
       { onSuccess: () => setEditContact(null) },
     );
   }
-  function bulkDnc() {
-    selected.forEach((id) => updateContact.mutate({ id, doNotContact: true }));
-    setSelected(new Set());
+  /**
+   * Marks every selected contact as do not contact, then, once every answer has settled, shows one
+   * error per distinct refusal code and one success with the count, keeps only the refused contacts
+   * selected and closes the confirm. Nothing is reported or cleared before the last answer.
+   */
+  async function bulkDnc() {
+    if (bulkPending) return;
+    const ids = [...selected];
+    setBulkPending(true);
+    const results = await Promise.allSettled(
+      ids.map((id) => bulkUpdate.mutateAsync({ id, doNotContact: true })),
+    );
+    const refused = new Set<string>();
+    const refusalByCode = new Map<string, unknown>();
+    let updated = 0;
+    results.forEach((result, i) => {
+      if (result.status === 'fulfilled') {
+        updated += 1;
+        return;
+      }
+      refused.add(ids[i]!);
+      const { code } = describeApiError(result.reason, contactWriteRefusals);
+      if (!refusalByCode.has(code)) refusalByCode.set(code, result.reason);
+    });
+    refusalByCode.forEach((err) => toastApiError(err, contactWriteRefusals, tCommon));
+    if (updated > 0) toast.success(t('consent.bulk.updated', { count: updated }));
+    setSelected(refused);
+    setBulkPending(false);
     setShowBulkConfirm(false);
   }
 
@@ -314,10 +347,10 @@ export default function ConsentManagementPage() {
       <ConfirmDeleteDialog
         open={showBulkConfirm}
         onOpenChange={setShowBulkConfirm}
-        onConfirm={bulkDnc}
+        onConfirm={() => void bulkDnc()}
         entityName={t('consent.bulk.confirm', { count: selected.size })}
         entityType={t('consent.dnc.label')}
-        isPending={updateContact.isPending}
+        isPending={bulkPending}
       />
     </div>
   );

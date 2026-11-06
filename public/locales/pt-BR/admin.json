@@ -3152,7 +3152,9 @@
     },
     "bulk": {
       "setDnc": "Marcar Não Contatar",
-      "confirm": "Isso marcará {{count}} contatos como Não Contatar. Esta ação é auditada."
+      "confirm": "Isso marcará {{count}} contatos como Não Contatar. Esta ação é auditada.",
+      "updated_one": "{{count}} contato marcado como Não contatar",
+      "updated_other": "{{count}} contatos marcados como Não contatar"
     },
     "empty": "Nenhum contato encontrado. Tente outro termo de busca.",
     "save": "Salvar",
