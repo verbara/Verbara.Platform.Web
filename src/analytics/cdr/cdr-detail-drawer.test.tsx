@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router';
 import { createWrapper } from '@/test/hook-test-utils';
 import fullDetail from './__fixtures__/cdr-detail-response.v1.json';
 import sparseDetail from './__fixtures__/cdr-detail-response.sparse.v1.json';
+import partialDetail from './__fixtures__/cdr-detail-response.partial.v1.json';
 import { ApiError } from '@/core/api/api-error';
 
 // The hook under the drawer is the real `useCdrDetail`; only its transport answers
@@ -54,6 +55,7 @@ import { CdrDetailDrawer } from './cdr-detail-drawer';
 
 const FULL_ID = 'c7a1f0e25b6d4c3e9a8f1e2d3c4b5a69';
 const SPARSE_ID = '0b9e4d217c3a4f58b6e192d4a7c0f3e8';
+const PARTIAL_ID = '5d2a8c419e074b3fa1c67f80e2d94b15';
 
 function answerDetail(detail: unknown) {
   mockCustomFetch.mockImplementation(({ url }: { url: string }) => {
@@ -192,6 +194,35 @@ describe('CdrDetailDrawer', () => {
 
     expect(await screen.findByTestId('cdr-detail-loading')).toHaveTextContent('cdr.detail.loading');
     expect(screen.queryAllByTestId('cdr-detail-timeline-entry')).toHaveLength(0);
+  });
+
+  // Spec "The console shows a partial record's hold figures as unknown", detail scenarios (B.3).
+  it('RendersTheHoldCountAsUnknown_NotItsNumber_WhenTheDetailIsPartial', async () => {
+    answerDetail(partialDetail);
+    renderDrawer(PARTIAL_ID);
+
+    await screen.findByTestId('cdr-detail-fields');
+    // The fixture's `holdCount` is 2 (`cdr-detail-response.partial.v1.json:24`): the number is
+    // suppressed, not merely absent.
+    expect(screen.queryByText('2', { exact: true })).not.toBeInTheDocument();
+    const hold = screen.getByTestId('cdr-detail-hold-count');
+    expect(hold).toHaveTextContent('cdr.hold_unknown');
+    expect(hold).toHaveAttribute('data-hold-unknown');
+    expect(hold.textContent).not.toMatch(/\d/);
+    // The other members render as usual.
+    expect(screen.getByTestId('cdr-detail-fields')).toHaveTextContent('Lab Agent 1001');
+  });
+
+  it('RendersTheHoldCountAsItsNumber_WhenTheDetailIsComplete', async () => {
+    answerDetail(fullDetail);
+    renderDrawer(FULL_ID);
+
+    await screen.findByTestId('cdr-detail-fields');
+    // The control's `holdCount` is 0 (`cdr-detail-response.v1.json:24`), a number like any other.
+    const hold = screen.getByTestId('cdr-detail-hold-count');
+    expect(hold).toHaveTextContent('0');
+    expect(hold).not.toHaveTextContent('cdr.hold_unknown');
+    expect(hold).not.toHaveAttribute('data-hold-unknown');
   });
 
   it.each([FULL_ID, SPARSE_ID, '5d2a8c419e074b3fa1c67f80e2d94b15'])(

@@ -103,6 +103,13 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
 
   const qaSummary = detail?.qaSummary;
 
+  // A partial record's hold figures are unknown, never its number (spec "The console shows a
+  // partial record's hold figures as unknown", host D17); a complete record shows its count,
+  // zero included. An absent count on a complete record reads as null and is not shown.
+  const isPartial = apiCdr?.isPartial === true;
+  const showHold = isPartial || apiCdr?.holdCount != null;
+  const holdUnknownAttr = isPartial ? { 'data-hold-unknown': '' } : {};
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="sm:max-w-md">
@@ -172,9 +179,7 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
               </div>
 
               {/* Timing */}
-              {(apiCdr?.ringDurationMs != null ||
-                apiCdr?.wrapUpDurationMs != null ||
-                (apiCdr?.holdCount ?? 0) > 0) && (
+              {(apiCdr?.ringDurationMs != null || apiCdr?.wrapUpDurationMs != null || showHold) && (
                 <>
                   <Separator />
                   <div className="space-y-2">
@@ -186,8 +191,17 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
                       {apiCdr?.wrapUpDurationMs != null && (
                         <Field label="Wrap-up time" value={formatMs(apiCdr.wrapUpDurationMs)} />
                       )}
-                      {(apiCdr?.holdCount ?? 0) > 0 && (
-                        <Field label="Hold count" value={String(apiCdr!.holdCount)} />
+                      {showHold && (
+                        <div data-testid="cdr-detail-hold-count" {...holdUnknownAttr}>
+                          <span className="text-muted-foreground">{t('cdr.hold_count')}</span>
+                          <p
+                            className={
+                              isPartial ? 'font-medium italic text-muted-foreground' : 'font-medium'
+                            }
+                          >
+                            {isPartial ? t('cdr.hold_unknown') : String(apiCdr?.holdCount)}
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
