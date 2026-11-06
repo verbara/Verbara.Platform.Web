@@ -287,6 +287,14 @@
     },
     "voice": {
       "trunk_not_dialable": "Trunk {{trunkId}} for this number has no address to call. Ask an admin to set the trunk's host."
+    },
+    "contacts": {
+      "not_permitted": "You don't have permission to change this contact.",
+      "unknown_consent_channel": "The consent could not be saved: a channel was not recognized. Reload the page and try again.",
+      "not_found": "This contact no longer exists.",
+      "write_failed": "The contact could not be saved. Try again.",
+      "do_not_contact": "This contact asked not to be contacted.",
+      "consent_withdrawn": "This contact withdrew consent on this channel."
     }
   },
   "channels": {

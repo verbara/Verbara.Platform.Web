@@ -287,6 +287,14 @@
     },
     "voice": {
       "trunk_not_dialable": "La troncal {{trunkId}} de este número no tiene una dirección a la cual llamar. Pide a un administrador que configure el host de la troncal."
+    },
+    "contacts": {
+      "not_permitted": "No tienes permiso para modificar este contacto.",
+      "unknown_consent_channel": "No se pudo guardar el consentimiento: un canal no fue reconocido. Recarga la página e inténtalo de nuevo.",
+      "not_found": "Este contacto ya no existe.",
+      "write_failed": "No se pudo guardar el contacto. Inténtalo de nuevo.",
+      "do_not_contact": "Este contacto pidió que no se le contacte.",
+      "consent_withdrawn": "Este contacto retiró su consentimiento en este canal."
     }
   },
   "channels": {
