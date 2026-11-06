@@ -471,18 +471,79 @@ describe('ContactInfo actions', () => {
     });
   });
 
-  it('ContactInfo_ShouldSendNoPreferredChannel_WhenTheFieldHoldsNoChannelTypeName', async () => {
-    await renderCard(cardEditResponse, [...AGENT_PERMISSIONS, 'contacts:contact:edit']);
+  describe('preferred channel picker', () => {
+    function channelTrigger() {
+      return screen.getByTestId('contact-edit-channel-select');
+    }
 
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    fireEvent.change(await screen.findByLabelText('Preferred Channel'), {
-      target: { value: 'whatsapp' },
+    /** The text the closed field shows. */
+    function shownChannel() {
+      return channelTrigger().querySelector('[data-slot="select-value"]')?.textContent;
+    }
+
+    /**
+     * A press starts on the option, as a real click does: base-ui ignores any other click. The wait is on the
+     * listbox, not on `option`: the timezone field is a native select whose options are on the page too.
+     */
+    async function pickChannel(option: string) {
+      fireEvent.click(channelTrigger());
+      const item = await screen.findByTestId(`contact-edit-channel-option-${option}`);
+      fireEvent.pointerDown(item);
+      fireEvent.click(item);
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+    }
+
+    async function save() {
+      fireEvent.click(screen.getByRole('button', { name: 'Update' }));
+      await waitFor(() => expect(callsOf('PUT')).toHaveLength(1));
+      return JSON.parse(JSON.stringify(callsOf('PUT')[0]?.data)) as Record<string, unknown>;
+    }
+
+    it('ContactInfo_ShouldPutWhatsApp_WhenAnAgentPicksWhatsAppAsThePreferredChannel', async () => {
+      await renderCard(cardEditResponse, [...AGENT_PERMISSIONS, 'contacts:contact:edit']);
+      fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+      await screen.findByRole('button', { name: 'Update' });
+
+      expect(shownChannel()).toBe('Web Chat');
+      await pickChannel('WhatsApp');
+      expect(shownChannel()).toBe('WhatsApp');
+
+      const sent = await save();
+      expect(sent.preferredChannel).toBe('WhatsApp');
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Update' }));
 
-    await waitFor(() => expect(callsOf('PUT')).toHaveLength(1));
-    const sent = JSON.parse(JSON.stringify(callsOf('PUT')[0]?.data)) as Record<string, unknown>;
-    expect(sent).not.toHaveProperty('preferredChannel');
-    expect(sent.firstName).toBe('Ana');
+    it('ContactInfo_ShouldSendNoPreferredChannel_WhenAnAgentPicksNone', async () => {
+      await renderCard(cardEditResponse, [...AGENT_PERMISSIONS, 'contacts:contact:edit']);
+      fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+      await screen.findByRole('button', { name: 'Update' });
+
+      await pickChannel('none');
+      expect(shownChannel()).toBe('No preference');
+
+      const sent = await save();
+      expect(sent).not.toHaveProperty('preferredChannel');
+      expect(sent.firstName).toBe('Ana');
+    });
+
+    it('ContactInfo_ShouldShowTheStoredValueAsIsAndSendNoPreferredChannel_WhenItIsNoChannelTypeName', async () => {
+      await renderCard({ ...cardEditResponse, preferredChannel: 'whatsapp' }, [
+        ...AGENT_PERMISSIONS,
+        'contacts:contact:edit',
+      ]);
+      fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+      await screen.findByRole('button', { name: 'Update' });
+
+      expect(shownChannel()).toBe('whatsapp');
+      fireEvent.click(channelTrigger());
+      const stored = await screen.findByTestId('contact-edit-channel-option-stored');
+      expect(stored).toHaveTextContent('whatsapp');
+      expect(stored).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.keyDown(stored, { key: 'Escape' });
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+
+      const sent = await save();
+      expect(sent).not.toHaveProperty('preferredChannel');
+      expect(sent.firstName).toBe('Ana');
+    });
   });
 });

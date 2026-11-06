@@ -161,6 +161,7 @@
       "company": "Empresa",
       "segment": "Segmento",
       "preferredChannel": "Canal preferido",
+      "noPreferredChannel": "Sin preferencia",
       "preferredLanguage": "Idioma preferido",
       "timezone": "Zona horaria",
       "update": "Actualizar",

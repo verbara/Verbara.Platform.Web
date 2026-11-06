@@ -161,6 +161,7 @@
       "company": "Company",
       "segment": "Segment",
       "preferredChannel": "Preferred Channel",
+      "noPreferredChannel": "No preference",
       "preferredLanguage": "Preferred Language",
       "timezone": "Timezone",
       "update": "Update",

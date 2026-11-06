@@ -15,6 +15,7 @@ import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { TimezoneSelect } from '@/core/ui/timezone-select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
@@ -29,7 +30,7 @@ import {
   useOptOutContact,
 } from '@/core/api/hooks/use-contacts';
 import { useVoiceDial } from '@/core/api/hooks/use-conversations';
-import { isChannelType } from '@/core/api/channel-types';
+import { CHANNEL_TYPES, isChannelType } from '@/core/api/channel-types';
 import { toastApiError } from '@/core/api/toast-api-error';
 import { trunkRefusalValues, voiceDialRefusals } from '@/core/api/voice-call-refusals';
 import { channelLabel } from '@/core/i18n/channel-label';
@@ -73,6 +74,9 @@ const languageLabels: Record<string, string> = {
   pt: 'Português',
 };
 
+/** The picker's "no preference" option; no `ChannelType` name can equal it, and it sends nothing. */
+const NO_CHANNEL = '__none__';
+
 interface ContactEditForm {
   firstName: string;
   lastName: string;
@@ -114,6 +118,15 @@ export function ContactInfo() {
   const conversation = selectedId ? conversations[selectedId] : null;
   const contactId = useConversationContactId(conversation);
   const { data: contact } = useContact(contactId);
+
+  // The stored preferred channel when it names no `ChannelType` (written before the names were
+  // enforced, for example): shown as-is in the picker, read-only, and never sent back.
+  const storedUnknownChannel =
+    contact?.preferredChannel && !isChannelType(contact.preferredChannel)
+      ? contact.preferredChannel
+      : null;
+  const channelOptionLabel = (value: string) =>
+    isChannelType(value) ? channelLabel(t, value) : value;
 
   const openEditDialog = () => {
     if (!contact) return;
@@ -354,11 +367,52 @@ export function ContactInfo() {
               <Label htmlFor="edit-prefChannel">
                 {t('agent:context.contactEdit.preferredChannel')}
               </Label>
-              <Input
-                id="edit-prefChannel"
-                value={editForm.preferredChannel}
-                onChange={(e) => setEditForm((f) => ({ ...f, preferredChannel: e.target.value }))}
-              />
+              <Select
+                value={editForm.preferredChannel === '' ? NO_CHANNEL : editForm.preferredChannel}
+                onValueChange={(v) => {
+                  if (v == null) return;
+                  setEditForm((f) => ({ ...f, preferredChannel: v === NO_CHANNEL ? '' : v }));
+                }}
+              >
+                <SelectTrigger
+                  id="edit-prefChannel"
+                  className="w-full"
+                  data-testid="contact-edit-channel-select"
+                >
+                  <SelectValue>
+                    {(value: string | null) =>
+                      value == null || value === NO_CHANNEL
+                        ? t('agent:context.contactEdit.noPreferredChannel')
+                        : channelOptionLabel(value)
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_CHANNEL} data-testid="contact-edit-channel-option-none">
+                    {t('agent:context.contactEdit.noPreferredChannel')}
+                  </SelectItem>
+                  {storedUnknownChannel != null && (
+                    // A stored value that names no channel shows as it came; it cannot be picked
+                    // again once left, and the save never sends it.
+                    <SelectItem
+                      value={storedUnknownChannel}
+                      disabled
+                      data-testid="contact-edit-channel-option-stored"
+                    >
+                      {storedUnknownChannel}
+                    </SelectItem>
+                  )}
+                  {CHANNEL_TYPES.map((name) => (
+                    <SelectItem
+                      key={name}
+                      value={name}
+                      data-testid={`contact-edit-channel-option-${name}`}
+                    >
+                      {channelLabel(t, name)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-prefLang">

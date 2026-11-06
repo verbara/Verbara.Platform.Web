@@ -61,7 +61,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **A contact that could not be created, saved or deleted says why, in the user's language.** The message now says
   whether the user lacks the permission, a consent channel was not recognized, or the contact no longer exists, instead
   of repeating the server's text. A saved contact also refreshes every contact search on the page. The contact card's
-  edit sends the preferred channel only when it names a known channel.
+  edit picks the preferred channel from the list of channels, with a "No preference" option that sends none; a
+  stored value that names no known channel is shown as it is and is not sent back.
 
 - **Saving consent and "Set Do Not Contact" on the consent page need the contact edit permission.** For a user without it
   both buttons are shown disabled, with a tooltip naming the permission.
