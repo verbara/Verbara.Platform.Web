@@ -45,6 +45,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that level 1 stays off until the host turns it on, and what comes first, measuring the contact lookup on a large tenant
   included. The snippet on the WebChat page gains a comment line that points to it, in the three languages. (#520)
 
+- **A call or a new conversation refused because the contact does not want to be contacted says so.** When Platform
+  refuses the contact card's Call or the new-conversation dialog because the contact asked not to be contacted, or
+  withdrew consent on that channel, the agent sees that reason in their language instead of "Could not place the call"
+  or a generic conflict. No call card starts, and the dialog stays open with the message. (#N)
+
 ### Changed
 
 - **A contact that could not be created, saved or deleted says why, in the user's language.** The message now says

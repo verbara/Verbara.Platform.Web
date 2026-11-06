@@ -3,7 +3,14 @@ import enCommon from '../../../public/locales/en-US/common.json';
 import esCommon from '../../../public/locales/es-419/common.json';
 import ptCommon from '../../../public/locales/pt-BR/common.json';
 import { TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
-import { invalidCursorRefusal, notReadableRefusal } from '@/tests/utils/contract-doubles';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import {
+  invalidCursorRefusal,
+  notReadableRefusal,
+  startConsentWithdrawnRefusal,
+  startDoNotContactRefusal,
+} from '@/tests/utils/contract-doubles';
 import { ApiError, describeApiError, entriesOf } from './api-error';
 import {
   CONVERSATION_NOT_CLOSABLE,
@@ -246,7 +253,8 @@ describe('conversationRefusals', () => {
 /** Resolves a dotted i18n key against a locale's `common.json`. */
 function hasKey(resource: unknown, key: string): boolean {
   let node: unknown = resource;
-  for (const part of key.split('.')) {
+  // The shared contact entries name their namespace (`common:`); every other key is in `common`.
+  for (const part of key.replace(/^common:/, '').split('.')) {
     if (typeof node !== 'object' || node === null || !Object.hasOwn(node, part)) return false;
     node = (node as Record<string, unknown>)[part];
   }
@@ -283,6 +291,8 @@ describe('conversationRefusals locale coverage', () => {
         'start-persist-failed',
         'typification-required',
         'conversation-not-closable',
+        'contact-do-not-contact',
+        'contact-consent-withdrawn',
       ]),
     );
   });
@@ -364,6 +374,48 @@ describe('conversationReadRefusals', () => {
       const entry = describeApiError(new ApiError(403, { error: prose }), conversationReadRefusals);
       expect(entry.code).toBe('read-failed');
       expect(i18n.t(entry.key)).not.toContain(prose);
+    },
+  );
+});
+
+/**
+ * The start's do-not-contact refusals (host change `contacts-writes-follow-their-permissions`, fixture
+ * `do-not-contact-refusals.v1.json` `start` and `startConsentWithdrawn`; design W6). Bodies are read
+ * from the verbatim copy of the fixture; the code decides, whatever the status.
+ */
+describe('conversationRefusals do-not-contact refusals', () => {
+  type DncEntry = { status: number; body: Record<string, unknown> };
+  const dncFixture = JSON.parse(
+    readFileSync(
+      resolve(process.cwd(), 'tests/fixtures/contracts/do-not-contact-refusals.v1.json'),
+      'utf-8',
+    ),
+  ) as Record<string, DncEntry>;
+
+  it('ConversationStartRefusalDoubles_ShouldMatchTheFixture_WhenTheDoublesAreRead', () => {
+    expect(startDoNotContactRefusal).toEqual(dncFixture.start!.body);
+    expect(startConsentWithdrawnRefusal).toEqual(dncFixture.startConsentWithdrawn!.body);
+  });
+
+  it.each([
+    ['start', 'contact-do-not-contact', 'common:errors.contacts.do_not_contact'],
+    [
+      'startConsentWithdrawn',
+      'contact-consent-withdrawn',
+      'common:errors.contacts.consent_withdrawn',
+    ],
+  ] as const)('ConversationRefusals_ShouldMapTheFixture %s_ToItsOwnMessage', (name, code, key) => {
+    const refused = dncFixture[name]!;
+    expect(refused.status).toBe(409);
+    expect(
+      describeApiError(new ApiError(refused.status, refused.body), conversationRefusals, 'create'),
+    ).toEqual({ code, key });
+  });
+
+  it.each(['contact-do-not-contact', 'contact-consent-withdrawn'])(
+    'ConversationRefusals_ShouldMap %s_OverTheStatus_WhenItComesUnderAnotherOne',
+    (code) => {
+      expect(codeFor(400, { error: code }, 'create')).toBe(code);
     },
   );
 });

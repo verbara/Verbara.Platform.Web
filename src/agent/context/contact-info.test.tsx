@@ -4,6 +4,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/core/api/api-error';
+import {
+  dialConsentWithdrawnRefusal,
+  dialDoNotContactRefusal,
+} from '@/tests/utils/contract-doubles';
 import esAgent from '../../../public/locales/es-419/agent.json';
 
 /**
@@ -145,6 +149,30 @@ describe('ContactInfo click-to-dial', () => {
     expect(renderedToast()).toHaveAttribute('data-error-code', 'dial-failed');
     expect(startOutboundMock).not.toHaveBeenCalled();
   });
+
+  // `do-not-contact-refusals.v1.json` `dial` and `dialConsentWithdrawn` (design W6): the code's own
+  // message, never `dial-failed`, and no call card. The fixture's status is 409 for both.
+  it.each([
+    ['contact-do-not-contact', dialDoNotContactRefusal, 'This contact asked not to be contacted.'],
+    [
+      'contact-consent-withdrawn',
+      dialConsentWithdrawnRefusal,
+      'This contact withdrew consent on this channel.',
+    ],
+  ] as const)(
+    'ContactInfo_ShouldToastItsOwnMessageAndStartNoCall_WhenTheDialIsRefusedWith %s',
+    async (code, body, text) => {
+      mutateMock.mockImplementation((_vars: unknown, opts?: { onError?: (e: unknown) => void }) =>
+        opts?.onError?.(new ApiError(409, body)),
+      );
+      clickCall();
+      await waitFor(() => expect(toastErrorMock).toHaveBeenCalledTimes(1));
+      const el = renderedToast();
+      expect(el).toHaveAttribute('data-error-code', code);
+      expect(el.textContent).toBe(text);
+      expect(startOutboundMock).not.toHaveBeenCalled();
+    },
+  );
 
   it('ContactInfo_ShouldStartTheOutboundCall_WhenTheDialIsAccepted', () => {
     mutateMock.mockImplementation((_vars: unknown, opts?: { onSuccess?: (r: unknown) => void }) =>

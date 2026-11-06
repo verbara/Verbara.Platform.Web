@@ -1030,3 +1030,27 @@ export const optOutResponse: Schemas['Contact'] = {
 export const contactNotPermittedRefusal: Schemas['ErrorResponse'] = {
   error: 'not-permitted',
 };
+
+/** `do-not-contact-refusals.v1.json` `dial.body`: a call to a contact marked do-not-contact (design W6). */
+export const dialDoNotContactRefusal: Schemas['VoiceDialResponse'] = {
+  accepted: false,
+  error: 'contact-do-not-contact',
+  trunkId: null,
+};
+
+/** `do-not-contact-refusals.v1.json` `dialConsentWithdrawn.body`: Voice consent recorded `false`. */
+export const dialConsentWithdrawnRefusal: Schemas['VoiceDialResponse'] = {
+  accepted: false,
+  error: 'contact-consent-withdrawn',
+  trunkId: null,
+};
+
+/** `do-not-contact-refusals.v1.json` `start.body`: a new conversation with a contact marked do-not-contact. */
+export const startDoNotContactRefusal: Schemas['ConversationStartRefusal'] = {
+  error: 'contact-do-not-contact',
+};
+
+/** `do-not-contact-refusals.v1.json` `startConsentWithdrawn.body`: consent on the channel recorded `false`. */
+export const startConsentWithdrawnRefusal: Schemas['ConversationStartRefusal'] = {
+  error: 'contact-consent-withdrawn',
+};

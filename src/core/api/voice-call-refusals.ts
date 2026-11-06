@@ -1,9 +1,10 @@
 import { isApiError, type ApiErrorEntry, type ApiErrorMap } from './api-error';
+import { CONTACT_CONSENT_WITHDRAWN, CONTACT_DO_NOT_CONTACT } from './contact-write-refusals';
 
 /**
  * The click-to-dial and voice-transfer refusals (host change `outbound-calls-reach-the-trunk`,
  * fixture `voice-dial-transfer.v1.json`; design D1-D3 here; spec `conversation-action-feedback`).
- * Each map knows only `trunk-not-dialable`, read by {@link ApiError} into `err.code` (ADR-0013),
+ * Each map knows `trunk-not-dialable`, read by {@link ApiError} into `err.code` (ADR-0013),
  * whatever the status. Every other failure falls back to the message shown before this change.
  */
 export const TRUNK_NOT_DIALABLE: ApiErrorEntry = {
@@ -11,9 +12,17 @@ export const TRUNK_NOT_DIALABLE: ApiErrorEntry = {
   key: 'common:errors.voice.trunk_not_dialable',
 };
 
-/** `POST /api/v1/voice/dial` (click-to-dial). */
+/**
+ * `POST /api/v1/voice/dial` (click-to-dial). It also knows the contact's own refusals, a contact who
+ * asked not to be contacted or withdrew consent on Voice (host change
+ * `contacts-writes-follow-their-permissions`, fixture `do-not-contact-refusals.v1.json`; design W6).
+ */
 export const voiceDialRefusals: ApiErrorMap = {
-  codes: { 'trunk-not-dialable': TRUNK_NOT_DIALABLE },
+  codes: {
+    'trunk-not-dialable': TRUNK_NOT_DIALABLE,
+    [CONTACT_DO_NOT_CONTACT.code]: CONTACT_DO_NOT_CONTACT,
+    [CONTACT_CONSENT_WITHDRAWN.code]: CONTACT_CONSENT_WITHDRAWN,
+  },
   fallback: { code: 'dial-failed', key: 'agent:voice.dial_failed' },
 };
 
