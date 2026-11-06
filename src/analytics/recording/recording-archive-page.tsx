@@ -1,11 +1,13 @@
 import { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Play, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { useCdrList } from '@/core/api/hooks/use-analytics';
 import { recordingStreamUrl } from '@/core/api/hooks/use-recording';
+import { downloadRecording } from '@/core/api/recording-download';
 
 const StereoWaveformPlayer = lazy(() => import('@/analytics/cdr/stereo-waveform-player'));
 
@@ -187,6 +189,20 @@ interface RecordingRowProps {
 function RecordingRow({ row, isExpanded, onPlay }: RecordingRowProps) {
   const { t } = useTranslation('analytics');
   const streamUrl = recordingStreamUrl(row.sessionId);
+  const [downloading, setDownloading] = useState(false);
+
+  // The download fetches the bytes through the authenticated client and saves the blob: the page
+  // renders no link to the stream URL (design W6, spec `recording-playback`).
+  async function handleDownload() {
+    setDownloading(true);
+    try {
+      await downloadRecording(streamUrl, row.sessionId);
+    } catch {
+      toast.error(t('recording.player.error'));
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <>
@@ -207,12 +223,17 @@ function RecordingRow({ row, isExpanded, onPlay }: RecordingRowProps) {
               <Play className="h-4 w-4" />
               <span className="sr-only">{t('recording.archive.play', 'Play')}</span>
             </Button>
-            <a href={streamUrl} target="_blank" rel="noopener noreferrer" download>
-              <Button variant="ghost" size="sm" data-testid={`download-${row.sessionId}`}>
-                <Download className="h-4 w-4" />
-                <span className="sr-only">{t('recording.archive.download', 'Download')}</span>
-              </Button>
-            </a>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void handleDownload()}
+              disabled={downloading}
+              aria-busy={downloading}
+              data-testid={`download-${row.sessionId}`}
+            >
+              <Download className="h-4 w-4" />
+              <span className="sr-only">{t('recording.archive.download', 'Download')}</span>
+            </Button>
           </div>
         </td>
       </tr>
@@ -226,7 +247,11 @@ function RecordingRow({ row, isExpanded, onPlay }: RecordingRowProps) {
                 </div>
               }
             >
-              <StereoWaveformPlayer src={streamUrl} />
+              <StereoWaveformPlayer
+                src={streamUrl}
+                durationMs={row.durationMs}
+                sessionId={row.sessionId}
+              />
             </Suspense>
           </td>
         </tr>

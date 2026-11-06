@@ -9,7 +9,6 @@ import { Separator } from '@/core/ui/separator';
 import { PrintButton } from '@/core/ui/print-button';
 import { PdfDownloadButton } from '@/core/ui/pdf-download-button';
 import { renderCdrPdf } from './cdr-pdf-template';
-import { AudioPlayer } from './audio-player';
 
 const StereoWaveformPlayer = lazy(() => import('./stereo-waveform-player'));
 import { SyncedTranscript } from './synced-transcript';
@@ -325,17 +324,22 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
                   <Separator />
                   <div data-testid="cdr-detail-recording" className="space-y-3">
                     <h3 className="mb-2 text-sm font-medium">{t('cdr.recording')}</h3>
+                    {/* While the player chunk loads, a placeholder that plays nothing: no media
+                        element is ever handed the stream URL (design W5). */}
                     <Suspense
                       fallback={
-                        <AudioPlayer
-                          src={recordingUrl}
-                          onTimeUpdate={setCurrentTime}
-                          seekRef={seekRef}
+                        <div
+                          data-testid="recording-player-loading"
+                          aria-busy="true"
+                          className="h-[7.5rem] animate-pulse rounded-lg border bg-muted/30"
                         />
                       }
                     >
                       <StereoWaveformPlayer
                         src={recordingUrl}
+                        durationMs={apiCdr?.durationMs ?? 0}
+                        sessionId={sessionId}
+                        recordingName={detail.recordingName}
                         onTimeUpdate={setCurrentTime}
                         seekRef={seekRef}
                       />

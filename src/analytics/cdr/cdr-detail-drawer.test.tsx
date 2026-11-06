@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import { createWrapper } from '@/test/hook-test-utils';
@@ -21,12 +21,30 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-// The players are B.7's; here they only mark that a player was rendered and with which path.
+// The player is tested in its own file; here it only marks that it was rendered and with which
+// path, duration and file name. `suspendPlayer` holds it in its loading state (a never-settling
+// lazy chunk), so the drawer's `Suspense` fallback is what renders (B.7, spec `recording-playback`
+// "The loading placeholder plays nothing").
+let suspendPlayer = false;
+const neverSettles = new Promise<never>(() => {});
 vi.mock('./stereo-waveform-player', () => ({
-  default: ({ src }: { src: string }) => <div data-testid="stereo-player" data-src={src} />,
-}));
-vi.mock('./audio-player', () => ({
-  AudioPlayer: ({ src }: { src: string }) => <div data-testid="audio-player" data-src={src} />,
+  default: (props: {
+    src: string;
+    durationMs: number;
+    sessionId: string;
+    recordingName?: string | null;
+  }) => {
+    if (suspendPlayer) throw neverSettles;
+    return (
+      <div
+        data-testid="stereo-player"
+        data-src={props.src}
+        data-duration-ms={String(props.durationMs)}
+        data-session-id={props.sessionId}
+        data-recording-name={props.recordingName ?? ''}
+      />
+    );
+  },
 }));
 vi.mock('./synced-transcript', () => ({ SyncedTranscript: () => null }));
 vi.mock('@/core/ui/print-button', () => ({ PrintButton: () => null }));
@@ -71,6 +89,7 @@ function detailRequestUrls(): string[] {
 describe('CdrDetailDrawer', () => {
   beforeEach(() => {
     mockCustomFetch.mockReset();
+    suspendPlayer = false;
   });
 
   it('RendersFourTimelineEntries_TheNarrative_AndThePlayer_WhenTheDetailAnswersItsFullFixture', async () => {
@@ -88,13 +107,41 @@ describe('CdrDetailDrawer', () => {
     expect(screen.getByTestId('cdr-detail-qa-summary')).toHaveTextContent(
       'The caller asked about an invoice; the agent explained the charge.',
     );
-    // The stream path is the detail's `recordingStreamUrl`, as sent.
-    expect(screen.getByTestId('cdr-detail-recording')).toBeInTheDocument();
-    expect(screen.getByTestId('cdr-detail-recording').querySelector('[data-src]')).toHaveAttribute(
+    // The stream path is the detail's `recordingStreamUrl`, as sent. The player chunk is lazy (its
+    // placeholder carries no source), so the player is awaited.
+    const recording = screen.getByTestId('cdr-detail-recording');
+    expect(await within(recording).findByTestId('stereo-player')).toHaveAttribute(
       'data-src',
       `/api/v1/recordings/${FULL_ID}/stream`,
     );
     expect(screen.queryByTestId('cdr-detail-error-state')).not.toBeInTheDocument();
+  });
+
+  it('HandsThePlayerTheStreamPath_TheRecordsDuration_AndTheRecordingName_WhenTheDetailHasARecording', async () => {
+    answerDetail(fullDetail);
+    renderDrawer(FULL_ID);
+
+    const player = await screen.findByTestId('stereo-player');
+    expect(player).toHaveAttribute('data-src', `/api/v1/recordings/${FULL_ID}/stream`);
+    expect(player).toHaveAttribute('data-duration-ms', '82422');
+    expect(player).toHaveAttribute('data-session-id', FULL_ID);
+    expect(player).toHaveAttribute('data-recording-name', `${FULL_ID}.wav`);
+  });
+
+  it('RendersANonPlayingPlaceholder_AndNoAudioElement_WhileThePlayerChunkLoads', async () => {
+    suspendPlayer = true;
+    answerDetail(fullDetail);
+    renderDrawer(FULL_ID);
+
+    expect(await screen.findByTestId('cdr-detail-recording')).toBeInTheDocument();
+    expect(screen.getByTestId('recording-player-loading')).toBeInTheDocument();
+    expect(document.querySelectorAll('audio, video')).toHaveLength(0);
+    for (const el of Array.from(document.querySelectorAll('[src], [href]'))) {
+      expect(el.getAttribute('src') ?? el.getAttribute('href')).not.toContain(
+        '/api/v1/recordings/',
+      );
+    }
+    expect(document.querySelector('[referrerpolicy]')).toBeNull();
   });
 
   it('RendersTwoTimelineEntries_NoQaSummary_AndNoPlayer_WhenTheDetailAnswersItsSparseFixture', async () => {
@@ -108,7 +155,7 @@ describe('CdrDetailDrawer', () => {
     expect(screen.queryByTestId('cdr-detail-qa-summary')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cdr-detail-recording')).not.toBeInTheDocument();
     expect(screen.queryByTestId('stereo-player')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('audio-player')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('recording-player-loading')).not.toBeInTheDocument();
     // An absent member never renders as a literal.
     expect(document.body.textContent).not.toMatch(/undefined|NaN/);
   });
