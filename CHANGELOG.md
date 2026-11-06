@@ -57,12 +57,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   each time it arrived; it now adds nothing.
 
 - **Dismissing one agent-assist suggestion keeps the others.** Suggestions arrived without their id, so dismissing one
-  removed none of them. Each suggestion now keeps its own id, and dismissing it removes only that one.
+  removed all of them, and when the first one timed out the others disappeared with it. Each suggestion now keeps its
+  own id, and dismissing it or letting it time out removes only that one.
 
 - **Message labels show who sent the message, never an internal id.** A message could be labelled with the sender's
   internal id or with "Outbound" / "Inbound". In the agent workspace a reply now reads "You" when the signed-in agent
-  sent it and "Agent" otherwise; in the supervisor's conversation view every reply reads "Agent". A customer message
-  reads the contact's name, or "Customer" when the contact has none.
+  sent it and "Agent" otherwise, both in the open conversation and in a past one opened from the History tab; in the
+  supervisor's conversation view every reply reads "Agent". A customer message reads the contact's name, or "Customer"
+  when the contact has none.
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so
   the edit reached no contact and the delete reported a deletion that removed nothing, and it compared address channels
