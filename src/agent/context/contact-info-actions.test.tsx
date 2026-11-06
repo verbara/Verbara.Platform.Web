@@ -5,12 +5,15 @@ import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { customFetch } from '@/core/api/client';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
+import { toast } from 'sonner';
+import { ApiError } from '@/core/api/api-error';
 import {
   cardDialRequest,
   cardEditRequest,
   cardEditResponse,
   contactLevelOne,
   contactLevelOneWithVoiceAddress,
+  contactNotPermittedRefusal,
 } from '@/tests/utils/contract-doubles';
 
 /**
@@ -195,5 +198,68 @@ describe('ContactInfo actions', () => {
 
     expect(screen.getByTestId('contact-call-do-not-contact')).toBeInTheDocument();
     expect(callsOf('POST')).toEqual([]);
+  });
+
+  /** The fixture's 403 `{ "error": "not-permitted" }` on `method`; every other request answers as `renderCard`'s. */
+  function refuse(method: 'PUT' | 'DELETE', body: unknown) {
+    vi.mocked(customFetch).mockImplementation(async (config) => {
+      if (config.method === method) throw new ApiError(403, contactNotPermittedRefusal);
+      if (config.method === 'GET') return body;
+      return undefined;
+    });
+  }
+
+  function shownErrorCodes(): string[] {
+    return vi
+      .mocked(toast.error)
+      .mock.calls.map(
+        ([shown]) =>
+          (shown as React.ReactElement<{ 'data-error-code': string }>).props['data-error-code'],
+      );
+  }
+
+  it('ContactInfo_ShouldToastNotPermittedAndKeepTheEditDialogOpen_WhenPlatformRefusesTheEdit', async () => {
+    vi.mocked(toast.error).mockClear();
+    await renderCard(cardEditResponse, [...AGENT_PERMISSIONS, 'contacts:contact:edit']);
+    refuse('PUT', cardEditResponse);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Update' }));
+
+    await waitFor(() => expect(shownErrorCodes()).toEqual(['not-permitted']));
+    expect(callsOf('PUT')).toHaveLength(1);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Update' })).toBeEnabled();
+  });
+
+  it('ContactInfo_ShouldToastNotPermittedAndKeepTheCard_WhenPlatformRefusesTheDelete', async () => {
+    vi.mocked(toast.error).mockClear();
+    await renderCard(contactLevelOne, [...AGENT_PERMISSIONS, 'contacts:contact:delete']);
+    refuse('DELETE', contactLevelOne);
+
+    fireEvent.click(screen.getByTestId('contact-delete-btn'));
+    const confirm = await screen.findByRole('button', { name: 'Delete' }, { timeout: 4_000 });
+    fireEvent.click(confirm);
+
+    await waitFor(() => expect(shownErrorCodes()).toEqual(['not-permitted']));
+    expect(callsOf('DELETE')).toEqual([{ url: CONTACT_URL, method: 'DELETE' }]);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('contact-delete-btn')).toBeInTheDocument();
+    expect(screen.getByText('Ana')).toBeInTheDocument();
+  }, 10_000);
+
+  it('ContactInfo_ShouldSendNoPreferredChannel_WhenTheFieldHoldsNoChannelTypeName', async () => {
+    await renderCard(cardEditResponse, [...AGENT_PERMISSIONS, 'contacts:contact:edit']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.change(await screen.findByLabelText('Preferred Channel'), {
+      target: { value: 'whatsapp' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() => expect(callsOf('PUT')).toHaveLength(1));
+    const sent = JSON.parse(JSON.stringify(callsOf('PUT')[0]?.data)) as Record<string, unknown>;
+    expect(sent).not.toHaveProperty('preferredChannel');
+    expect(sent.firstName).toBe('Ana');
   });
 });

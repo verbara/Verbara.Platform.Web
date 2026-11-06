@@ -511,7 +511,8 @@
     "contacts": {
       "created": "Contacto creado",
       "updated": "Contacto actualizado",
-      "deleted": "Contacto eliminado"
+      "deleted": "Contacto eliminado",
+      "opted_out": "Marcado como no contactar"
     },
     "supervisor": {
       "whisperSent": "Susurro enviado",

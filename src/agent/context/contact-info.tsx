@@ -13,6 +13,7 @@ import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
 import { useVoiceDial } from '@/core/api/hooks/use-conversations';
+import { isChannelType } from '@/core/api/channel-types';
 import { toastApiError } from '@/core/api/toast-api-error';
 import { trunkRefusalValues, voiceDialRefusals } from '@/core/api/voice-call-refusals';
 import { channelLabel } from '@/core/i18n/channel-label';
@@ -342,7 +343,10 @@ export function ContactInfo() {
                     lastName: editForm.lastName || undefined,
                     company: editForm.company || undefined,
                     segment: editForm.segment || undefined,
-                    preferredChannel: editForm.preferredChannel || undefined,
+                    // The body takes a `ChannelType` name; an empty or unknown value is not sent.
+                    preferredChannel: isChannelType(editForm.preferredChannel)
+                      ? editForm.preferredChannel
+                      : undefined,
                     preferredLanguage: editForm.preferredLanguage || undefined,
                     timezone: editForm.timezone || undefined,
                   },

@@ -45,6 +45,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that level 1 stays off until the host turns it on, and what comes first, measuring the contact lookup on a large tenant
   included. The snippet on the WebChat page gains a comment line that points to it, in the three languages. (#520)
 
+### Changed
+
+- **A contact that could not be created, saved or deleted says why, in the user's language.** The message now says
+  whether the user lacks the permission, a consent channel was not recognized, or the contact no longer exists, instead
+  of repeating the server's text. A saved contact also refreshes every contact search on the page. The contact card's
+  edit sends the preferred channel only when it names a known channel. (#N)
+
 ### Fixed
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so

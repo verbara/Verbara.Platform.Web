@@ -995,3 +995,38 @@ export const consentSearchVoiceAndEmailYes: Schemas['PagedResultOfContact'] = {
   hasNextPage: false,
   hasPreviousPage: false,
 };
+
+/** `contact-opt-out.v1.json` `refusals[0].request.body`: the card's "Do not contact" body (design W11). */
+export const optOutDoNotContactRequest: Schemas['ContactOptOutRequest'] = {
+  doNotContact: true,
+};
+
+/** `contact-opt-out.v1.json` `request.body`: the route's own example, a channel named as `GET` writes it. */
+export const optOutDoNotContactAndSmsRequest: Schemas['ContactOptOutRequest'] = {
+  doNotContact: true,
+  channels: ['Sms'],
+};
+
+/** `contact-opt-out.v1.json` `response.body`: the contact after the opt-out, as `GET` reads it. */
+export const optOutResponse: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  lastName: 'Ruiz',
+  doNotContact: true,
+  addresses: [
+    { channel: 'Voice', address: '+15551234567' },
+    { channel: 'Sms', address: '+15551234567' },
+  ],
+  customFields: {},
+  channelConsent: { Voice: true, Sms: false },
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  updatedAt: '2026-11-05T09:30:00.000+00:00',
+  updatedBy: 'u-agent-0042',
+  fullName: 'Ana Ruiz',
+};
+
+/** `contact-write-refusals.v1.json` `refusals[*].body`, the body every contact-write refusal carries. */
+export const contactNotPermittedRefusal: Schemas['ErrorResponse'] = {
+  error: 'not-permitted',
+};
