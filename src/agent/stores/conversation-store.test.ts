@@ -368,12 +368,19 @@ describe('ConversationStore', () => {
     });
 
     it.each([
-      ['agent', 'agent'],
+      ['Outbound', 'agent'],
       ['Inbound', 'customer'],
-      ['Ana Pereira', 'customer'],
-    ])('LiveMessage_ShouldKeepItsMapping_WhenTheSenderIs_%s', (sender, mapped) => {
-      expect(receive(sender)).toMatchObject({ sender: mapped, senderName: sender, type: 'text' });
+    ])('LiveMessage_ShouldTakeTheSideOfHistorysDirection_WhenTheSenderIs_%s', (sender, mapped) => {
+      expect(receive(sender)).toMatchObject({ sender: mapped, type: 'text' });
     });
+
+    it.each(['agent', 'Ana Pereira'])(
+      'LiveMessage_ShouldAddNoRow_WhenTheSenderIsNotOneHistoryUses_%s',
+      (sender) => {
+        sseHandlers['conversation.message']!(conversationMessageEvent(sender));
+        expect(useConversationStore.getState().messages['conv-1'] ?? []).toEqual([]);
+      },
+    );
   });
 
   /** W8: the `/history` rows and the live frames of one message, in both arrival orders. */
@@ -403,7 +410,7 @@ describe('ConversationStore', () => {
 
     it('mergeMessages_ShouldReplaceTheLiveRow_WhenTheHistoryRowFollowsTheFrame', () => {
       frame(conversationMessageFrame);
-      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: 'WhatsApp', sender: 'customer' });
+      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: 'WhatsApp', sender: 'agent' });
 
       rest(firstPage);
 

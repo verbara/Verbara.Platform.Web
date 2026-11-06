@@ -7,6 +7,7 @@ import {
 import { registerSessionWorkReset } from '@/core/session/session-work';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useAgentAiStore } from '@/core/stores/agent-ai-store';
+import { senderOf } from '@/core/api/platform-message';
 
 export interface Conversation {
   id: string;
@@ -316,13 +317,17 @@ export function initConversationSSE() {
       text: string;
       timestamp: string;
     };
+    // The side comes from the same table as `/history`'s `direction`; a sender outside it is not a
+    // message any page will name, so it adds no row.
+    const side = event.sender === 'TypingIndicator' ? 'customer' : senderOf(event.sender);
+    if (side === undefined) return;
     // A `System` message is an internal row, as `mapPlatformMessage` makes it from history: both
     // members move together, because the thread chooses a bubble by `type`, not by `sender`.
-    const isSystem = event.sender === 'System';
+    const isSystem = side === 'system';
     store.addMessage(event.conversationId, {
       id: event.messageId,
       conversationId: event.conversationId,
-      sender: isSystem ? 'system' : event.sender === 'agent' ? 'agent' : 'customer',
+      sender: side,
       senderName: event.sender,
       text: event.text,
       timestamp: event.timestamp,
