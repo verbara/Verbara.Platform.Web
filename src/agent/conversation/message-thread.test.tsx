@@ -309,7 +309,10 @@ describe('MessageThread with the live stream (5.2)', () => {
     const { container } = renderThread(queryClient);
     await waitFor(() => expect(historyReads).toHaveLength(1));
     frame(conversationMessageFrame);
-    expect(await screen.findByText('WhatsApp')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(container.querySelectorAll(`[data-msg-id="${NEWEST_ID}"]`)).toHaveLength(1),
+    );
+    expect(bucket()[0]).toMatchObject({ id: NEWEST_ID, text: '', pending: true });
 
     answers.first = page(historyFirstPage);
     await refetch(queryClient);
@@ -358,7 +361,7 @@ describe('MessageThread with the live stream (5.2)', () => {
     expect(bucketIds()).toEqual([OLDEST_ID, SECOND_ID, NEWEST_ID]);
   });
 
-  it('MessageThread_ShouldGiveEachRowItsOwnKey_WhenTwoTypingFramesHaveNoId', async () => {
+  it('MessageThread_ShouldDrawNoRow_WhenTwoTypingFramesArrive', async () => {
     answers.first = page(historyFirstPage);
     const { container } = renderThread(newQueryClient());
     await screen.findByText(NEWEST_TEXT);
@@ -366,13 +369,9 @@ describe('MessageThread with the live stream (5.2)', () => {
     frame(typingIndicatorFrame);
     frame(typingIndicatorFrame);
 
-    expect(bucketIds()).toEqual([SECOND_ID, NEWEST_ID, '', '']);
-    const keys = listKeys.at(-1)!;
-    expect(keys).toHaveLength(4);
-    expect(new Set(keys).size).toBe(4);
-    expect(keys.slice(0, 2)).toEqual([SECOND_ID, NEWEST_ID]);
-    // Both rows are drawn: the thread hides nothing the store holds.
-    await waitFor(() => expect(container.querySelectorAll('[data-msg-id=""]')).toHaveLength(2));
+    expect(bucketIds()).toEqual([SECOND_ID, NEWEST_ID]);
+    expect(listKeys.at(-1)).toEqual([SECOND_ID, NEWEST_ID]);
+    expect(container.querySelectorAll('[data-msg-id=""]')).toHaveLength(0);
   });
 });
 
@@ -385,12 +384,15 @@ describe('MessageThread on the filtered stream (5.3)', () => {
       }),
     );
     expect(useConversationStore.getState().conversations[CONVERSATION_ID]?.state).toBe('offered');
-    renderThread(newQueryClient());
+    const { container } = renderThread(newQueryClient());
     await waitFor(() => expect(historyReads).toHaveLength(1));
 
     frame(conversationMessageFrame);
 
-    expect(await screen.findByText('WhatsApp')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(container.querySelectorAll(`[data-msg-id="${NEWEST_ID}"]`)).toHaveLength(1),
+    );
+    expect(screen.queryByText('WhatsApp')).toBeNull();
     expect(bucketIds()).toEqual([NEWEST_ID]);
   });
 
@@ -482,7 +484,10 @@ describe('MessageThread while its first read is pending', () => {
 
     release(page(historyEmptyPage));
 
-    expect(await screen.findByText('Hello during the read')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(container.querySelectorAll('[data-msg-id="live-1"]')).toHaveLength(1),
+    );
+    expect(screen.queryByText('Hello during the read')).toBeNull();
     expect(bucketIds()).toEqual(['live-1']);
   });
 

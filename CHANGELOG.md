@@ -84,6 +84,25 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   card's "Do not contact" and the localized refusals read that release's contact consent channel names, its
   `POST /api/v1/contacts/{id}/opt-out` route and its refusal codes, which an earlier Platform does not have.
 
+- **A message that arrives while the agent has the conversation open shows its own text, on the right side.** The row
+  used to show the channel name, such as "WhatsApp", instead of the message, and an agent's reply could appear on the
+  customer's side. The row now sits on the side of whoever sent it, shows "Loading message…" in the agent's language
+  for the moment it takes to read the stored message, and then shows the text. A message that arrives while that read
+  is still running is read again once it finishes, and a burst of messages leads to one further read, not one each.
+
+- **The customer typing no longer adds empty messages to the conversation.** A typing notice used to add a blank row
+  each time it arrived; it now adds nothing.
+
+- **Dismissing one agent-assist suggestion keeps the others.** Suggestions arrived without their id, so dismissing one
+  removed all of them, and when the first one timed out the others disappeared with it. Each suggestion now keeps its
+  own id, and dismissing it or letting it time out removes only that one.
+
+- **Message labels show who sent the message, never an internal id.** A message could be labelled with the sender's
+  internal id or with "Outbound" / "Inbound". In the agent workspace a reply now reads "You" when the signed-in agent
+  sent it and "Agent" otherwise, both in the open conversation and in a past one opened from the History tab; in the
+  supervisor's conversation view every reply reads "Agent". A customer message reads the contact's name, or "Customer"
+  when the contact has none.
+
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so
   the edit reached no contact and the delete reported a deletion that removed nothing, and it compared address channels
   in a different case, so the phone and e-mail rows read "—" and the call button never appeared. It now carries the

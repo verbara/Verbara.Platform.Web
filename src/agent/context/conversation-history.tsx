@@ -182,6 +182,11 @@ export function ConversationHistory() {
   const contact = useContact(contactId);
   // The rows and the transcript do not wait for this read, and only its answer can lift the warning (W7).
   const identityLevel = contact.data ? contact.data.identityLevel : 'Unverified';
+  // The name the viewer labels the customer's messages with: this contact's, else the open thread's.
+  const contactName =
+    [contact.data?.firstName, contact.data?.lastName].filter(Boolean).join(' ') ||
+    conversation?.contactName ||
+    undefined;
 
   // A refusal takes the tab whatever else is cached (spec audit F2).
   const refusal = [record.error, list.error].find(isNotReadable);
@@ -268,7 +273,11 @@ export function ConversationHistory() {
               }
             >
               {viewing && (
-                <PastConversationViewer conversationId={viewing.id} identityLevel={identityLevel} />
+                <PastConversationViewer
+                  conversationId={viewing.id}
+                  identityLevel={identityLevel}
+                  contactName={contactName}
+                />
               )}
             </Suspense>
           </ViewerLoadBoundary>

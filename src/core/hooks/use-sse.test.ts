@@ -518,6 +518,29 @@ describe('useSSE agent-assist frames', () => {
     });
   });
 
+  it('UseSSE_ShouldIdentifyTheStoredSuggestionByItsSuggestionId_WhenTheFrameArrives', () => {
+    latest().emit('agentassist.suggestion', agentAssistSuggestionFrame);
+    expect(session()?.suggestions[0]).toEqual({
+      id: 'sg-01',
+      text: agentAssistSuggestionFrame.text,
+      priority: agentAssistSuggestionFrame.priority,
+      source: agentAssistSuggestionFrame.source,
+      timestamp: agentAssistSuggestionFrame.timestamp,
+    });
+  });
+
+  it('UseSSE_ShouldKeepTheOtherSuggestion_WhenOneOfTwoIsDismissed', () => {
+    latest().emit('agentassist.suggestion', agentAssistSuggestionFrame);
+    latest().emit('agentassist.suggestion', {
+      ...agentAssistSuggestionFrame,
+      suggestionId: 'sg-02',
+    });
+
+    useAgentAiStore.getState().dismissSuggestion(CONVERSATION, 'sg-01');
+
+    expect(session()?.suggestions.map((s) => s.id)).toEqual(['sg-02']);
+  });
+
   it('UseSSE_ShouldStoreTheSentimentForItsConversation_WhenTheFrameNamesThisAgent', () => {
     latest().emit('agentassist.sentiment', agentAssistSentimentFrame);
     expect(session()?.sentiment).toMatchObject({

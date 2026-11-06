@@ -8,9 +8,10 @@ import { useHasPermission } from '@/core/auth/use-has-permission';
 import { refreshAccessToken } from '@/core/api/client';
 import { useAgentMe } from '@/core/api/hooks/use-agents';
 import { useAgentAlertsStore } from '@/core/stores/agent-alerts-store';
-import { useAgentAiStore } from '@/core/stores/agent-ai-store';
+import { useAgentAiStore, type AgentSuggestion } from '@/core/stores/agent-ai-store';
 import { channelLabel } from '@/core/i18n/channel-label';
 import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
+import { resolveAgentId } from '@/core/api/agent-id';
 
 type SseEventHandler = (data: unknown) => void;
 
@@ -220,7 +221,7 @@ export function useSSE() {
       try {
         const data = JSON.parse(e.data);
         if (isForCurrentAgent(data.agentId, currentAgentId()) && data.conversationId) {
-          useAgentAiStore.getState().addSuggestion(data.conversationId, data.suggestion ?? data);
+          useAgentAiStore.getState().addSuggestion(data.conversationId, suggestionOf(data));
         }
         handlers['agentassist.suggestion']?.forEach((h) => h(data));
       } catch {
@@ -366,23 +367,35 @@ export function isForCurrentAgent(
   return !!myAgentId && eventAgentId === myAgentId;
 }
 
-/**
- * Resolve the current agent's AgentId from the cached /agents/me payload.
- * GET /agents/me serializes the raw Agent domain object as `agentId` (it does
- * NOT follow the `id` DTO convention the other agent hooks normalize to), so
- * accept either key — otherwise currentAgentId() is undefined and every
- * agent-targeted SSE event (incl. the WebChat offer card) is dropped.
- */
-export function resolveAgentId(
-  cached: { id?: string; agentId?: string } | undefined,
-): string | undefined {
-  return cached?.agentId ?? cached?.id;
-}
+export { resolveAgentId };
 
 export function onSseEvent(type: string, handler: SseEventHandler) {
   if (!handlers[type]) handlers[type] = [];
   handlers[type]!.push(handler);
   return () => {
     handlers[type] = handlers[type]?.filter((h) => h !== handler) ?? [];
+  };
+}
+
+/**
+ * The store's suggestion from an `agentassist.suggestion` frame (host fixture `agentassist-events.v1.json`):
+ * its id is the frame's `suggestionId`, so dismissing or expiring one suggestion removes only that one.
+ * `triggerPhrase` is absent while null.
+ */
+function suggestionOf(data: {
+  suggestionId: string;
+  text: string;
+  priority: string;
+  source: string;
+  triggerPhrase?: string;
+  timestamp: string;
+}): AgentSuggestion {
+  return {
+    id: data.suggestionId,
+    text: data.text,
+    priority: data.priority,
+    source: data.source,
+    ...(data.triggerPhrase !== undefined ? { triggerPhrase: data.triggerPhrase } : {}),
+    timestamp: data.timestamp,
   };
 }

@@ -8,7 +8,9 @@ import {
   isNotReadable,
   refusalCodeOf,
 } from '@/core/api/conversation-refusals';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMessageHistory } from '@/core/api/hooks/use-conversations';
+import { resolveAgentId } from '@/core/api/agent-id';
 import { Button } from '@/core/ui/button';
 import { Skeleton } from '@/core/ui/skeleton';
 import { VirtualList } from '@/core/ui/virtual-list';
@@ -22,18 +24,18 @@ const ESTIMATED_MESSAGE_HEIGHT_PX = 64;
  */
 const NO_MESSAGES: Message[] = [];
 
-/**
- * A row's list key. A row with no id (a `TypingIndicator` frame, `messageId` `""`) stays in the list, so
- * it takes its position: it holds no state a remount would lose.
- */
-function rowKey(message: Message, index: number): string {
-  return message.id || `no-id-${index}`;
+/** A row's list key: its message id, unique in the store (`addMessage` and `mergeMessages` key by it). */
+function rowKey(message: Message): string {
+  return message.id;
 }
 
 export function MessageThread({ conversationId }: { conversationId: string }) {
   const { t } = useTranslation(['agent', 'common']);
   const messages = useConversationStore((s) => s.messages[conversationId] ?? NO_MESSAGES);
   const mergeMessages = useConversationStore((s) => s.mergeMessages);
+  const contactName = useConversationStore((s) => s.conversations[conversationId]?.contactName);
+  // The signed-in agent, as the stream reads it (`/agents/me`, loaded by the shell): their replies read "You".
+  const ownAgentId = resolveAgentId(useQueryClient().getQueryData(['agent-me']));
 
   const history = useMessageHistory(conversationId);
   const { messages: served } = history;
@@ -123,7 +125,12 @@ export function MessageThread({ conversationId }: { conversationId: string }) {
               const showSender = !prev || prev.type === 'system' || prev.sender !== msg.sender;
               return (
                 <div className="py-0.5">
-                  <MessageBubble message={msg} showSender={showSender} />
+                  <MessageBubble
+                    message={msg}
+                    showSender={showSender}
+                    ownAgentId={ownAgentId}
+                    contactName={contactName}
+                  />
                 </div>
               );
             }}

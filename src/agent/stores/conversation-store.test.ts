@@ -8,6 +8,7 @@ import {
 } from './conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { mapPlatformMessage } from '@/core/api/platform-message';
+import { queryClient } from '@/core/api/query-client';
 import {
   conversationMessageFrame,
   historyFirstPage,
@@ -368,12 +369,19 @@ describe('ConversationStore', () => {
     });
 
     it.each([
-      ['agent', 'agent'],
+      ['Outbound', 'agent'],
       ['Inbound', 'customer'],
-      ['Ana Pereira', 'customer'],
-    ])('LiveMessage_ShouldKeepItsMapping_WhenTheSenderIs_%s', (sender, mapped) => {
-      expect(receive(sender)).toMatchObject({ sender: mapped, senderName: sender, type: 'text' });
+    ])('LiveMessage_ShouldTakeTheSideOfHistorysDirection_WhenTheSenderIs_%s', (sender, mapped) => {
+      expect(receive(sender)).toMatchObject({ sender: mapped, type: 'text' });
     });
+
+    it.each(['agent', 'Ana Pereira'])(
+      'LiveMessage_ShouldAddNoRow_WhenTheSenderIsNotOneHistoryUses_%s',
+      (sender) => {
+        sseHandlers['conversation.message']!(conversationMessageEvent(sender));
+        expect(useConversationStore.getState().messages['conv-1'] ?? []).toEqual([]);
+      },
+    );
   });
 
   /** W8: the `/history` rows and the live frames of one message, in both arrival orders. */
@@ -401,9 +409,37 @@ describe('ConversationStore', () => {
       expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
     });
 
+    it('Handler_ShouldAddAPendingRowAndRefreshTheHistory_WhenTheFrameIsNotASystemMessage', async () => {
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+
+      frame(conversationMessageFrame);
+
+      expect(rows()).toHaveLength(1);
+      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: '', pending: true, sender: 'agent' });
+      await vi.waitFor(() =>
+        expect(invalidate).toHaveBeenCalledWith(
+          expect.objectContaining({ queryKey: ['messages', CONVERSATION_ID, 'history'] }),
+          expect.anything(),
+        ),
+      );
+      invalidate.mockRestore();
+    });
+
+    it('Handler_ShouldKeepTheTextAndRefreshNothing_WhenTheFrameIsASystemMessage', async () => {
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+
+      frame({ ...conversationMessageFrame, sender: 'System', text: 'Coaching' });
+
+      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: 'Coaching', type: 'system' });
+      expect(rows()[0]?.pending).toBeUndefined();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(invalidate).not.toHaveBeenCalled();
+      invalidate.mockRestore();
+    });
+
     it('mergeMessages_ShouldReplaceTheLiveRow_WhenTheHistoryRowFollowsTheFrame', () => {
       frame(conversationMessageFrame);
-      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: 'WhatsApp', sender: 'customer' });
+      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: '', pending: true, sender: 'agent' });
 
       rest(firstPage);
 
@@ -467,33 +503,23 @@ describe('ConversationStore', () => {
       expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
     });
 
-    it('addMessage_ShouldLeaveTheRowsAndAppend_WhenTwoTypingFramesHaveNoId', () => {
+    it('Handler_ShouldAddNoRow_WhenTwoTypingFramesArrive', () => {
       rest(firstPage);
       const before = rows();
 
       frame(typingIndicatorFrame);
       frame(typingIndicatorFrame);
 
-      expect(ids()).toEqual([secondRow.id, NEWEST_ID, '', '']);
-      expect(rows()[0]).toBe(before[0]);
-      expect(rows()[1]).toBe(before[1]);
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
+      expect(rows()).toBe(before);
     });
 
-    it('addMessage_ShouldAppendARowWithNoId_WhenItIsNotATypingFrame', () => {
-      frame({ ...typingIndicatorFrame, sender: 'Inbound' });
-      frame({ ...typingIndicatorFrame, sender: 'Inbound' });
-
-      expect(ids()).toEqual(['', '']);
-    });
-
-    it('mergeMessages_ShouldClearTypingRowsAndKeepAnyOtherRowWithNoId_WhenThePageArrives', () => {
+    it('Handler_ShouldAddNoRowWithAnEmptyId_WhenOnlyTypingFramesArrive', () => {
       frame(typingIndicatorFrame);
-      frame({ ...typingIndicatorFrame, sender: 'Inbound', text: 'A row with no id' });
+      frame(typingIndicatorFrame);
 
-      rest(firstPage);
-
-      expect(ids()).toEqual([secondRow.id, NEWEST_ID, '']);
-      expect(rows()[2]?.text).toBe('A row with no id');
+      expect(ids()).not.toContain('');
+      expect(rows()).toEqual([]);
     });
   });
 

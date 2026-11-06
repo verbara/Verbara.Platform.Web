@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { Message } from '@/agent/stores/conversation-store';
+import { mapPlatformMessage } from '@/core/api/platform-message';
+import { historyNewestMessage, historySecondMessage } from '@/tests/utils/contract-doubles';
 import { MessageBubble } from './message-bubble';
 
 /**
@@ -56,4 +58,52 @@ describe('MessageBubble', () => {
     render(<MessageBubble message={viewModelMessage} showSender />);
     expect(screen.getByTestId('message-time').textContent).toMatch(/\d/);
   });
+});
+
+/** The label above a bubble names a side, never the raw stream sender or the stored sender id. */
+describe('MessageBubble sender label', () => {
+  const agentReply = mapPlatformMessage(historyNewestMessage);
+  const customerMessage = mapPlatformMessage(historySecondMessage);
+  const OWN_AGENT = String(historyNewestMessage.senderId);
+
+  it('MessageBubble_ShouldNeverShowTheStoredSenderId_WhenTheReplyIsAnotherAgents', () => {
+    const { container } = render(<MessageBubble message={agentReply} showSender />);
+    expect(container).not.toHaveTextContent(OWN_AGENT);
+    expect(screen.getByText('history.direction.outbound')).toBeInTheDocument();
+  });
+
+  it('MessageBubble_ShouldLabelTheReplyYou_WhenItIsTheSignedInAgents', () => {
+    const { container } = render(
+      <MessageBubble message={agentReply} showSender ownAgentId={OWN_AGENT} />,
+    );
+    expect(container).not.toHaveTextContent(OWN_AGENT);
+    expect(screen.getByText('composer.you')).toBeInTheDocument();
+  });
+
+  it('MessageBubble_ShouldLabelACustomerMessageWithTheContactName_NeverItsAddress', () => {
+    const fromAddress = { ...customerMessage, senderId: '+5215512345678' };
+    const { container } = render(
+      <MessageBubble message={fromAddress} showSender contactName="Ana Pereira" />,
+    );
+    expect(container).not.toHaveTextContent('+5215512345678');
+    expect(screen.getByText('Ana Pereira')).toBeInTheDocument();
+  });
+
+  it.each(['Outbound', 'Inbound'])(
+    'MessageBubble_ShouldNeverShowTheStreamSender_WhenALiveRowCarries_%s',
+    (sender) => {
+      const live: Message = {
+        id: 'm-live',
+        conversationId: 'c1',
+        sender: sender === 'Outbound' ? 'agent' : 'customer',
+        senderName: sender,
+        text: '',
+        pending: true,
+        timestamp: '2026-11-03T10:42:07.512+00:00',
+        type: 'text',
+      };
+      const { container } = render(<MessageBubble message={live} showSender />);
+      expect(container).not.toHaveTextContent(sender);
+    },
+  );
 });

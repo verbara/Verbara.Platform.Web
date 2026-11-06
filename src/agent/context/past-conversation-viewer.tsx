@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { MessageBubble } from '@/agent/conversation/message-bubble';
 import { SystemEvent } from '@/agent/conversation/system-event';
+import { resolveAgentId } from '@/core/api/agent-id';
 import {
   isConversationNotFound,
   isNotReadable,
@@ -59,16 +61,21 @@ function ViewerHeaderDetails({ conversation }: { conversation: PastConversation 
  * A past conversation, read only (W5): the record for the header, `/history` for the transcript, and
  * no control that writes. It reads nothing from the conversation store and writes nothing to it. The
  * `Sheet` around it belongs to the History tab, so it opens before this chunk has loaded. The level comes
- * from that tab too, and its mark stands whatever the reads below answer (W7).
+ * from that tab too, and its mark stands whatever the reads below answer (W7). So does the contact's
+ * name, which labels the customer's messages as the open thread does.
  */
 export function PastConversationViewer({
   conversationId,
   identityLevel,
+  contactName,
 }: {
   conversationId: string;
   identityLevel: string | undefined;
+  contactName: string | undefined;
 }) {
   const { t } = useTranslation(['agent']);
+  // The signed-in agent, read as the open thread reads it (`/agents/me`): their replies read "You".
+  const ownAgentId = resolveAgentId(useQueryClient().getQueryData(['agent-me']));
   const record = useConversation(conversationId);
   const history = useMessageHistory(conversationId);
 
@@ -146,6 +153,8 @@ export function PastConversationViewer({
                       <div className="py-0.5">
                         <MessageBubble
                           message={message}
+                          ownAgentId={ownAgentId}
+                          contactName={contactName}
                           showSender={
                             !previous ||
                             previous.type === 'system' ||

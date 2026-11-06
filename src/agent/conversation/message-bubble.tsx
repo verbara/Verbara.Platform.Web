@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { Check, CheckCheck, FileIcon, CircleAlert } from 'lucide-react';
 import type { Message } from '@/agent/stores/conversation-store';
+import { senderLabel } from '@/core/api/sender-label';
 import { cn } from '@/lib/utils';
 
 const LOCALE_MAP: Record<string, Locale> = {
@@ -44,9 +45,18 @@ function formatTimestamp(iso: string | undefined, locale: Locale): string {
 interface MessageBubbleProps {
   readonly message: Message;
   readonly showSender: boolean;
+  /** The signed-in agent's id: their own replies read "You". */
+  readonly ownAgentId?: string | undefined;
+  /** The conversation's contact name, the label of a customer message. */
+  readonly contactName?: string | undefined;
 }
 
-export function MessageBubble({ message, showSender }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  showSender,
+  ownAgentId,
+  contactName,
+}: MessageBubbleProps) {
   const { t, i18n } = useTranslation('agent');
   const locale = LOCALE_MAP[i18n.resolvedLanguage ?? i18n.language] ?? es;
   const isAgent = message.sender === 'agent';
@@ -56,6 +66,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
     <div
       data-testid="message-bubble"
       data-message-id={message.id}
+      {...(message.pending ? { 'data-msg-pending': '' } : {})}
       className={cn('flex flex-col', isAgent ? 'items-end' : 'items-start')}
     >
       {showSender && (
@@ -67,7 +78,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
               : 'ml-1 text-slate-500 dark:text-slate-400',
           )}
         >
-          {message.senderName}
+          {senderLabel(message, { ownAgentId, contactName }, t)}
         </span>
       )}
 
@@ -96,7 +107,9 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
           </div>
         )}
 
-        {isEmail ? (
+        {message.pending ? (
+          <span className="italic opacity-70">{t('thread.messagePending')}</span>
+        ) : isEmail ? (
           <div
             className="prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.text) }}
