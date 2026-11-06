@@ -22,12 +22,9 @@ const ESTIMATED_MESSAGE_HEIGHT_PX = 64;
  */
 const NO_MESSAGES: Message[] = [];
 
-/**
- * A row's list key. A row with no id (a `TypingIndicator` frame, `messageId` `""`) stays in the list, so
- * it takes its position: it holds no state a remount would lose.
- */
-function rowKey(message: Message, index: number): string {
-  return message.id || `no-id-${index}`;
+/** A row's list key: its message id, unique in the store (`addMessage` and `mergeMessages` key by it). */
+function rowKey(message: Message): string {
+  return message.id;
 }
 
 export function MessageThread({ conversationId }: { conversationId: string }) {

@@ -358,7 +358,7 @@ describe('MessageThread with the live stream (5.2)', () => {
     expect(bucketIds()).toEqual([OLDEST_ID, SECOND_ID, NEWEST_ID]);
   });
 
-  it('MessageThread_ShouldGiveEachRowItsOwnKey_WhenTwoTypingFramesHaveNoId', async () => {
+  it('MessageThread_ShouldDrawNoRow_WhenTwoTypingFramesArrive', async () => {
     answers.first = page(historyFirstPage);
     const { container } = renderThread(newQueryClient());
     await screen.findByText(NEWEST_TEXT);
@@ -366,13 +366,9 @@ describe('MessageThread with the live stream (5.2)', () => {
     frame(typingIndicatorFrame);
     frame(typingIndicatorFrame);
 
-    expect(bucketIds()).toEqual([SECOND_ID, NEWEST_ID, '', '']);
-    const keys = listKeys.at(-1)!;
-    expect(keys).toHaveLength(4);
-    expect(new Set(keys).size).toBe(4);
-    expect(keys.slice(0, 2)).toEqual([SECOND_ID, NEWEST_ID]);
-    // Both rows are drawn: the thread hides nothing the store holds.
-    await waitFor(() => expect(container.querySelectorAll('[data-msg-id=""]')).toHaveLength(2));
+    expect(bucketIds()).toEqual([SECOND_ID, NEWEST_ID]);
+    expect(listKeys.at(-1)).toEqual([SECOND_ID, NEWEST_ID]);
+    expect(container.querySelectorAll('[data-msg-id=""]')).toHaveLength(0);
   });
 });
 

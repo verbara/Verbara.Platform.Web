@@ -474,33 +474,23 @@ describe('ConversationStore', () => {
       expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
     });
 
-    it('addMessage_ShouldLeaveTheRowsAndAppend_WhenTwoTypingFramesHaveNoId', () => {
+    it('Handler_ShouldAddNoRow_WhenTwoTypingFramesArrive', () => {
       rest(firstPage);
       const before = rows();
 
       frame(typingIndicatorFrame);
       frame(typingIndicatorFrame);
 
-      expect(ids()).toEqual([secondRow.id, NEWEST_ID, '', '']);
-      expect(rows()[0]).toBe(before[0]);
-      expect(rows()[1]).toBe(before[1]);
+      expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
+      expect(rows()).toBe(before);
     });
 
-    it('addMessage_ShouldAppendARowWithNoId_WhenItIsNotATypingFrame', () => {
-      frame({ ...typingIndicatorFrame, sender: 'Inbound' });
-      frame({ ...typingIndicatorFrame, sender: 'Inbound' });
-
-      expect(ids()).toEqual(['', '']);
-    });
-
-    it('mergeMessages_ShouldClearTypingRowsAndKeepAnyOtherRowWithNoId_WhenThePageArrives', () => {
+    it('Handler_ShouldAddNoRowWithAnEmptyId_WhenOnlyTypingFramesArrive', () => {
       frame(typingIndicatorFrame);
-      frame({ ...typingIndicatorFrame, sender: 'Inbound', text: 'A row with no id' });
+      frame(typingIndicatorFrame);
 
-      rest(firstPage);
-
-      expect(ids()).toEqual([secondRow.id, NEWEST_ID, '']);
-      expect(rows()[2]?.text).toBe('A row with no id');
+      expect(ids()).not.toContain('');
+      expect(rows()).toEqual([]);
     });
   });
 

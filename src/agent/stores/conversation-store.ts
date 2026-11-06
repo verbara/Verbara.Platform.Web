@@ -63,9 +63,8 @@ interface ConversationState {
   mergeFromRest: (conv: Conversation) => void;
   removeConversation: (id: string) => void;
   /**
-   * The live path and the composer: appends, unless a row with the same non-empty id is already held
-   * (W8). A live row is incomplete, so it never overwrites what a `/history` page supplied. A row with
-   * no id is outside this: nothing can identify it, so it is always appended.
+   * The live path and the composer: appends, unless a row with the same id is already held (W8). A live
+   * row is incomplete, so it never overwrites what a `/history` page supplied.
    */
   addMessage: (convId: string, message: Message) => void;
   /**
@@ -123,7 +122,7 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
   addMessage: (convId, message) =>
     set((s) => {
       const held = s.messages[convId] ?? [];
-      if (message.id !== '' && held.some((m) => m.id === message.id)) return s;
+      if (held.some((m) => m.id === message.id)) return s;
       return { messages: { ...s.messages, [convId]: [...held, message] } };
     }),
 
@@ -131,7 +130,7 @@ export const useConversationStore = create<ConversationState>()((set, get) => ({
     set((s) => {
       const served = new Set(messages.map((m) => m.id));
       const kept = (s.messages[convId] ?? []).filter(
-        (m) => !isSupersededByHistory(m) && (m.id === '' || !served.has(m.id)),
+        (m) => !isSupersededByHistory(m) && !served.has(m.id),
       );
       return {
         messages: {
@@ -173,13 +172,10 @@ registerSessionWorkReset(() =>
 /**
  * A row no `/history` page will ever name, which a read of the page therefore ends, as it always has:
  * the composer's own row while its send is pending (the page holds the sent message under its real id,
- * so keeping this one would show every sent message twice), and a typing frame, which stores no message
- * (host fixture `identityWithHistory.exception`). Any other row with no id stays.
+ * so keeping this one would show every sent message twice).
  */
 function isSupersededByHistory(message: Message): boolean {
-  return (
-    message.status === 'sending' || (message.id === '' && message.senderName === 'TypingIndicator')
-  );
+  return message.status === 'sending';
 }
 
 /**
@@ -317,9 +313,11 @@ export function initConversationSSE() {
       text: string;
       timestamp: string;
     };
-    // The side comes from the same table as `/history`'s `direction`; a sender outside it is not a
-    // message any page will name, so it adds no row.
-    const side = event.sender === 'TypingIndicator' ? 'customer' : senderOf(event.sender);
+    // A typing frame stores no message (`messageId` "", host fixture `identityWithHistory.exception`):
+    // it is not a row. The side comes from the same table as `/history`'s `direction`; a sender outside
+    // it is not a message any page will name, so it adds no row either.
+    if (event.sender === 'TypingIndicator') return;
+    const side = senderOf(event.sender);
     if (side === undefined) return;
     // A `System` message is an internal row, as `mapPlatformMessage` makes it from history: both
     // members move together, because the thread chooses a bubble by `type`, not by `sender`.
