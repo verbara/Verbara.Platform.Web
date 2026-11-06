@@ -24,59 +24,25 @@ export type TrendPoint = components['schemas']['TrendPointDto'];
 export type ChannelDistribution = components['schemas']['ChannelDistributionDto'];
 
 // CDR
-export interface CdrRow {
-  sessionId: string;
-  startTime: string;
-  answerTime?: string;
-  endTime: string;
-  contact?: string;
-  channel: string;
-  channelType?: string;
-  queueName?: string;
-  agentName?: string;
-  durationMs: number;
-  talkTimeMs?: number;
-  waitTimeMs?: number;
-  disposition: string;
-  slaMet: boolean;
-  hasQaScore: boolean;
-  qaScore?: number;
-  sentimentLabel?: string;
-  hasRecording: boolean;
-  transferredTo?: string;
-  transferType?: number;
-  hangupSource?: number;
-  wrapUpDurationMs?: number;
-  holdCount: number;
-  ringDurationMs?: number;
-  campaignName?: string;
-  dispositionName?: string;
-  recordingStreamUrl?: string;
-  metadata?: Record<string, string>;
-}
-export interface CdrDetail {
-  cdr: CdrRow;
-  timeline: CdrTimelineEvent[];
-  qaSummary?: CdrQaSummary;
-  calledNumber?: string;
-  linkedSessionId?: string;
-  transferCount: number;
-  recordingName?: string;
-  recordingStreamUrl?: string;
-  hasTranscript: boolean;
-}
-export interface CdrTimelineEvent {
-  event: string;
-  timestamp: string;
-  detail?: string;
-}
-export interface CdrQaSummary {
-  reason?: string;
-  outcome?: string;
-  narrative?: string;
-  qaScore?: number;
-  sentimentLabel?: string;
-}
+//
+// `GET /api/v1/analytics/cdr` and `GET /api/v1/analytics/cdr/{sessionId}` are read as their
+// generated schemas (`PagedDataResponseOfCdrRowDto`, `CdrDetailDto`; design W1 of
+// cdr-list-reads-its-envelope). The generator declares every member required, nullable ones
+// as `null | T`, while the Api omits null members from the wire (see the change's sparse and
+// partial fixtures). Until `openapi-required-follows-omitted-nulls` lands, `AbsentIsNull<T>`
+// makes each nullable member optional, so an absent member reads as `null | undefined` and a
+// consumer cannot assume it is present. Non-nullable members stay required, recursively.
+type AbsentIsNull<T> = T extends readonly (infer E)[]
+  ? AbsentIsNull<E>[]
+  : T extends object
+    ? { [K in keyof T as null extends T[K] ? never : K]: AbsentIsNull<T[K]> } & {
+        [K in keyof T as null extends T[K] ? K : never]?: AbsentIsNull<T[K]> | undefined;
+      }
+    : T;
+
+export type CdrListPage = AbsentIsNull<components['schemas']['PagedDataResponseOfCdrRowDto']>;
+export type CdrRowDto = AbsentIsNull<components['schemas']['CdrRowDto']>;
+export type CdrDetailDto = AbsentIsNull<components['schemas']['CdrDetailDto']>;
 
 // QA
 export interface QaRow {
@@ -153,6 +119,7 @@ export interface IntervalData {
   slaMetCount: number;
 }
 
+// Only the QA list still reads this envelope (analytics-contract-residue owns it).
 interface PagedResult<T> {
   items: T[];
   totalCount: number;
@@ -190,7 +157,7 @@ export function useCdrList(from?: string, to?: string, filters?: CdrFilters, pag
   return useQuery({
     queryKey: ['analytics-cdr', from, to, filters, page],
     queryFn: () =>
-      customFetch<PagedResult<CdrRow>>({
+      customFetch<CdrListPage>({
         url: '/api/v1/analytics/cdr',
         method: 'GET',
         params: {
@@ -210,7 +177,7 @@ export function useCdrDetail(sessionId: string) {
   return useQuery({
     queryKey: ['analytics-cdr-detail', sessionId],
     queryFn: () =>
-      customFetch<CdrDetail>({ url: `/api/v1/analytics/cdr/${sessionId}`, method: 'GET' }),
+      customFetch<CdrDetailDto>({ url: `/api/v1/analytics/cdr/${sessionId}`, method: 'GET' }),
     enabled: !!sessionId,
   });
 }

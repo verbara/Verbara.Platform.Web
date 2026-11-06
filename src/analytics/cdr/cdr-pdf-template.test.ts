@@ -2,11 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { jsPDF } from 'jspdf';
 import { createPdfHelpers } from '@/core/pdf/helpers';
 import { renderCdrPdf } from './cdr-pdf-template';
-import type { CdrDetail, TranscriptSegment } from '@/core/api/hooks/use-analytics';
+import type { CdrDetailDto, TranscriptSegment } from '@/core/api/hooks/use-analytics';
 
 const mockI18n = (k: string) => k;
 
-function makeDetail(overrides: Partial<CdrDetail> = {}): CdrDetail {
+function makeDetail(overrides: Partial<CdrDetailDto> = {}): CdrDetailDto {
   return {
     cdr: {
       sessionId: 's1',
@@ -77,6 +77,24 @@ describe('renderCdrPdf', () => {
     renderCdrPdf({ doc, helpers, detail: makeDetail(), transcript: segments, t: mockI18n });
     const titles = sectionSpy.mock.calls.map((c) => c[0]);
     expect(titles).toContain('analytics.cdr.pdf.transcriptTitle');
+  });
+
+  it('RendersDash_AndNoQaScoreRow_WhenNullableMembersAreNull', () => {
+    const { doc, helpers } = makeHelpers();
+    const tableSpy = vi.spyOn(helpers, 'table');
+    renderCdrPdf({
+      doc,
+      helpers,
+      detail: makeDetail({
+        cdr: { ...makeDetail().cdr, talkTimeMs: null, waitTimeMs: null, qaScore: null },
+      }),
+      t: mockI18n,
+    });
+    const summary = tableSpy.mock.calls[0]?.[0].body as string[][];
+    const cell = (key: string) => summary.find((r) => r[0] === key)?.[1];
+    expect(cell('analytics.cdr.pdf.field.talkTime')).toBe('—');
+    expect(cell('analytics.cdr.pdf.field.waitTime')).toBe('—');
+    expect(cell('analytics.cdr.pdf.field.qaScore')).toBeUndefined();
   });
 
   it('IncludesQaSummarySection_WhenQaSummaryHasContent', () => {

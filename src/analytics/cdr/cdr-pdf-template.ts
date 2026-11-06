@@ -1,19 +1,20 @@
 import type { jsPDF } from 'jspdf';
 import type { PdfHelpers } from '@/core/pdf';
-import type { CdrDetail, TranscriptSegment } from '@/core/api/hooks/use-analytics';
+import type { CdrDetailDto, TranscriptSegment } from '@/core/api/hooks/use-analytics';
 
 interface RenderCdrPdfArgs {
   doc: jsPDF;
   helpers: PdfHelpers;
-  detail: CdrDetail;
+  detail: CdrDetailDto;
   transcript?: TranscriptSegment[];
   t: (key: string) => string;
 }
 
 const dash = '—';
 
-function formatMs(ms?: number): string {
-  if (ms === undefined || ms < 0) return dash;
+// A nullable member the Api omits reads as `undefined`; one it sends as null reads as `null`.
+function formatMs(ms?: number | null): string {
+  if (ms == null || ms < 0) return dash;
   const seconds = Math.floor(ms / 1000);
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -48,9 +49,7 @@ export function renderCdrPdf({ helpers, detail, transcript, t }: RenderCdrPdfArg
           t('analytics.cdr.pdf.field.slaMet'),
           cdr.slaMet ? t('analytics.cdr.pdf.yes') : t('analytics.cdr.pdf.no'),
         ],
-        ...(cdr.qaScore !== undefined
-          ? [[t('analytics.cdr.pdf.field.qaScore'), `${cdr.qaScore}`]]
-          : []),
+        ...(cdr.qaScore != null ? [[t('analytics.cdr.pdf.field.qaScore'), `${cdr.qaScore}`]] : []),
         ...(cdr.sentimentLabel
           ? [[t('analytics.cdr.pdf.field.sentiment'), cdr.sentimentLabel]]
           : []),
