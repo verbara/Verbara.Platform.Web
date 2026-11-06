@@ -3138,7 +3138,13 @@
       "email": "Email",
       "sms": "SMS",
       "whatsapp": "WhatsApp",
-      "webchat": "Web Chat"
+      "webchat": "Web Chat",
+      "messenger": "Messenger",
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "twitter": "Twitter",
+      "video": "Vídeo",
+      "rcs": "RCS"
     },
     "dnc": {
       "label": "Não contatar",
@@ -3146,10 +3152,17 @@
     },
     "bulk": {
       "setDnc": "Marcar Não Contatar",
-      "confirm": "Isso marcará {{count}} contatos como Não Contatar. Esta ação é auditada."
+      "confirm": "Isso marcará {{count}} contatos como Não Contatar. Esta ação é auditada.",
+      "updated_one": "{{count}} contato marcado como Não contatar",
+      "updated_other": "{{count}} contatos marcados como Não contatar"
     },
     "empty": "Nenhum contato encontrado. Tente outro termo de busca.",
-    "save": "Salvar"
+    "save": "Salvar",
+    "states": {
+      "yes": "Sim",
+      "no": "Não",
+      "unrecorded": "Sem registro"
+    }
   },
   "typification": {
     "published": "Publicado",

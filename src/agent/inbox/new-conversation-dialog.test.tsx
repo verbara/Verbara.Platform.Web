@@ -32,6 +32,8 @@ import {
   messengerChannels,
   noAvailableChannels,
   smsThenWebChatChannels,
+  startConsentWithdrawnRefusal,
+  startDoNotContactRefusal,
   webChatOnlyChannels,
   whatsAppOnlyChannels,
 } from '@/tests/utils/contract-doubles';
@@ -418,6 +420,32 @@ describe('NewConversationDialog start (Platform 2.28.0)', () => {
       expect(el.textContent?.length).toBeGreaterThan(0);
       expect(onOpenChange).not.toHaveBeenCalledWith(false);
       expect(screen.queryByTestId('new-conv-open-conversation')).toBeNull();
+    },
+  );
+
+  // `do-not-contact-refusals.v1.json` `start` and `startConsentWithdrawn` (design W6): inline, with
+  // the code's own message, and the dialog stays open. The fixture's status is 409 for both.
+  it.each([
+    ['contact-do-not-contact', startDoNotContactRefusal, 'This contact asked not to be contacted.'],
+    [
+      'contact-consent-withdrawn',
+      startConsentWithdrawnRefusal,
+      'This contact withdrew consent on this channel.',
+    ],
+  ] as const)(
+    'NewConversationDialog_ShouldShowItsOwnMessageInlineAndStayOpen_WhenPlatformRefusesTheStartWith %s',
+    async (code, body, text) => {
+      const onOpenChange = vi.fn();
+      startAnswer = { status: 409, body };
+      await renderDialog(onOpenChange);
+      await pickContactAndType();
+
+      const el = await submitAndAwaitRefusal(code);
+
+      expect(el.textContent).toBe(text);
+      expect(onOpenChange).not.toHaveBeenCalledWith(false);
+      expect(screen.queryByTestId('opened-conversation')).toBeNull();
+      expect(screen.getByTestId('new-conversation-form')).toBeInTheDocument();
     },
   );
 

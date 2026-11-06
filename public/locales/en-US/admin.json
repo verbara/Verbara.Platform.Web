@@ -3138,7 +3138,13 @@
       "email": "Email",
       "sms": "SMS",
       "whatsapp": "WhatsApp",
-      "webchat": "Web Chat"
+      "webchat": "Web Chat",
+      "messenger": "Messenger",
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "twitter": "Twitter",
+      "video": "Video",
+      "rcs": "RCS"
     },
     "dnc": {
       "label": "Do Not Contact",
@@ -3146,10 +3152,17 @@
     },
     "bulk": {
       "setDnc": "Set Do Not Contact",
-      "confirm": "This will mark {{count}} contacts as Do Not Contact. This action is audited."
+      "confirm": "This will mark {{count}} contacts as Do Not Contact. This action is audited.",
+      "updated_one": "{{count}} contact marked as Do Not Contact",
+      "updated_other": "{{count}} contacts marked as Do Not Contact"
     },
     "empty": "No contacts found. Try a different search term.",
-    "save": "Save"
+    "save": "Save",
+    "states": {
+      "yes": "Yes",
+      "no": "No",
+      "unrecorded": "No record"
+    }
   },
   "typification": {
     "published": "Published",

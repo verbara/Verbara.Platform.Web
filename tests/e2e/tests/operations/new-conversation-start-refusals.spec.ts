@@ -213,7 +213,10 @@ test.describe('New conversation start refusals (full stack)', () => {
       await demoApiContext.delete(`${API_BASE}/api/v1/admin/agents/${agentId}`).catch(() => {});
       await demoApiContext.delete(`${API_BASE}/api/v1/admin/users/${userId}`).catch(() => {});
       for (const contactId of [smsContactId, waContactId]) {
-        await demoApiContext.delete(`${API_BASE}/api/v1/contacts/${contactId}`).catch(() => {});
+        const contactDeleted = await demoApiContext.delete(
+          `${API_BASE}/api/v1/contacts/${contactId}`,
+        );
+        expect(contactDeleted.status(), `delete the test contact ${contactId}`).toBe(204);
       }
     }
   });
