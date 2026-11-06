@@ -8,6 +8,7 @@ import { ApiError } from '@/core/api/api-error';
 import * as client from '@/core/api/client';
 import {
   closedContactSummary,
+  contactLevelOne,
   contactSummaryPage,
   historyEmptyPage,
   historyFirstPage,
@@ -100,10 +101,11 @@ function historyRequests() {
   return vi.mocked(client.customFetch).mock.calls.filter(([c]) => c.url === HISTORY_URL);
 }
 
-function renderTab() {
+function renderTab(seed?: (qc: QueryClient) => void) {
   const qc = new QueryClient({
     defaultOptions: { queries: { staleTime: 30_000, retry: false, refetchOnWindowFocus: false } },
   });
+  seed?.(qc);
   render(
     <QueryClientProvider client={qc}>
       <ConversationHistory />
@@ -275,6 +277,36 @@ describe('PastConversationViewer', () => {
 
       expect(screen.getByTestId('history-viewer-loading')).toBeInTheDocument();
       expect(screen.queryByTestId('history-viewer-empty')).not.toBeInTheDocument();
+    });
+
+    it('PastConversationViewer_ShouldLabelOwnRepliesYouAndCustomerMessagesWithTheContactName_WhenTheAgentAndContactAreKnown', async () => {
+      // The tab's contact answers with a name; the signed-in agent is the sender of the reply.
+      vi.mocked(client.customFetch).mockImplementation(async (config) => {
+        if (config.method !== 'GET') throw new Error(`Unexpected write: ${config.url}`);
+        if (config.url === CONTACT_URL) return contactLevelOne;
+        if (config.url === LIST_URL) return resolve(answers.list);
+        if (config.url === RECORD_URL) return resolve(answers.record);
+        if (config.url === HISTORY_URL) return resolve(answers.firstPage);
+        throw new Error(`Unexpected request: ${config.url}`);
+      });
+      renderTab((qc) =>
+        qc.setQueryData(['agent-me'], { agentId: String(historyNewestMessage.senderId) }),
+      );
+      await waitFor(() => rowOf(VIEWED_ID));
+      await waitFor(() =>
+        expect(vi.mocked(client.customFetch).mock.calls.some(([c]) => c.url === CONTACT_URL)).toBe(
+          true,
+        ),
+      );
+      fireEvent.click(rowOf(VIEWED_ID));
+      await screen.findByTestId('history-viewer');
+
+      await waitFor(() => expect(shownMessageIds()).toEqual([SECOND_ID, NEWEST_ID]));
+      // The label is the bubble's first child; the reply's own text starts with "Your", so read the label alone.
+      const labelOf = (index: number) =>
+        screen.getAllByTestId('message-bubble')[index]?.firstElementChild?.textContent;
+      await waitFor(() => expect(labelOf(0)).toBe(contactLevelOne.firstName));
+      expect(labelOf(1)).toBe(enAgent.composer.you);
     });
   });
 
