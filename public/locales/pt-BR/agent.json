@@ -146,6 +146,13 @@
     "save_note": "Salvar nota",
     "delete_note": "Excluir nota",
     "contact_entity_type": "contato",
+    "do_not_contact": {
+      "action": "Não contatar",
+      "confirm_title": "Marcar como não contatar?",
+      "confirm_description": "{{name}} será marcado como não contatar. Chamadas e novas conversas para este contato serão recusadas.",
+      "confirm": "Marcar como não contatar",
+      "status": "Este contato está marcado como não contatar."
+    },
     "knowledge": "Conhecimento",
     "contactEdit": {
       "title": "Editar contato",

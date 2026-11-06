@@ -1,5 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useAuthStore } from '@/core/auth/auth-store';
@@ -14,7 +16,12 @@ import {
   contactLevelOne,
   contactLevelOneWithVoiceAddress,
   contactNotPermittedRefusal,
+  optOutDoNotContactRequest,
+  optOutResponse,
 } from '@/tests/utils/contract-doubles';
+import type { components } from '@/core/api/generated/openapi';
+
+type Schemas = components['schemas'];
 
 /**
  * The card's delete, edit and call against the real `PermissionButton`, auth store and `useContact`, with only
@@ -42,6 +49,18 @@ import { ContactInfo } from './contact-info';
 
 const CONTACT_ID = '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d';
 const CONTACT_URL = `/api/v1/contacts/${CONTACT_ID}`;
+const OPT_OUT_URL = `/api/v1/contacts/${CONTACT_ID}/opt-out`;
+
+/** The verbatim copy of the host's `contact-opt-out.v1.json` (design W11). */
+const optOutFixture = JSON.parse(
+  readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts/contact-opt-out.v1.json'), 'utf-8'),
+) as {
+  refusals: {
+    request: { method: string; path: string; body?: unknown };
+    status: number;
+    body?: Record<string, unknown>;
+  }[];
+};
 
 /** The permissions of the `Agent` role template (Platform `RoleTemplateSeeder.cs`). */
 const AGENT_PERMISSIONS = [
@@ -247,6 +266,174 @@ describe('ContactInfo actions', () => {
     expect(screen.getByTestId('contact-delete-btn')).toBeInTheDocument();
     expect(screen.getByText('Ana')).toBeInTheDocument();
   }, 10_000);
+
+  describe('"Do not contact"', () => {
+    /** The contact as `GET` reads it before the opt-out: the fixture's `response.body` not yet marked. */
+    const beforeOptOut: Schemas['Contact'] = { ...optOutResponse, doNotContact: false };
+    /** A contact with no voice or SMS address, before and after the opt-out. */
+    const noPhoneBefore: Schemas['Contact'] = contactLevelOne;
+    const noPhoneAfter: Schemas['Contact'] = { ...contactLevelOne, doNotContact: true };
+
+    /**
+     * `GET` answers `before` until the opt-out answers, then `after`; the opt-out answers `answer` (an `ApiError` is
+     * thrown). Waits for the card to render the first read.
+     */
+    async function renderOptOutCard(options: {
+      before: Schemas['Contact'];
+      after: Schemas['Contact'];
+      answer: Schemas['Contact'] | ApiError;
+      permissions: string[];
+    }) {
+      let marked = false;
+      useAuthStore.setState({ permissions: options.permissions });
+      vi.mocked(customFetch).mockImplementation(async (config) => {
+        if (config.method === 'GET') return marked ? options.after : options.before;
+        if (config.method === 'POST' && config.url === OPT_OUT_URL) {
+          if (options.answer instanceof ApiError) throw options.answer;
+          marked = true;
+          return options.answer;
+        }
+        return undefined;
+      });
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ContactInfo />
+        </QueryClientProvider>,
+      );
+      await screen.findByTestId('contact-delete-btn');
+    }
+
+    async function confirmDoNotContact() {
+      fireEvent.click(screen.getByTestId('contact-do-not-contact-btn'));
+      const dialog = await screen.findByTestId('contact-do-not-contact-confirm');
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Mark as do not contact' }));
+    }
+
+    beforeEach(() => {
+      vi.mocked(toast.success).mockClear();
+      vi.mocked(toast.error).mockClear();
+    });
+
+    it('ContactInfo_ShouldPostTheFixtureBodyAndShowTheStatusWithCallDisabled_WhenAnAgentConfirms', async () => {
+      await renderOptOutCard({
+        before: beforeOptOut,
+        after: optOutResponse,
+        answer: optOutResponse,
+        permissions: AGENT_PERMISSIONS,
+      });
+      expect(screen.queryByTestId('contact-call-do-not-contact')).not.toBeInTheDocument();
+
+      await confirmDoNotContact();
+
+      await waitFor(() => expect(callsOf('POST')).toHaveLength(1));
+      expect(callsOf('POST')[0]).toEqual({
+        url: optOutFixture.refusals[0]?.request.path,
+        method: 'POST',
+        data: optOutDoNotContactRequest,
+      });
+      expect(optOutDoNotContactRequest).toEqual(optOutFixture.refusals[0]?.request.body);
+      expect(await screen.findByTestId('contact-call-do-not-contact')).toBeInTheDocument();
+      // Call is rendered here (a voice address and a registered softphone), so it must be disabled.
+      expect(screen.getByTestId('contact-call-btn')).toBeDisabled();
+      expect(screen.queryByTestId('contact-do-not-contact-btn')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('contact-do-not-contact-confirm')).not.toBeInTheDocument();
+      expect(toast.success).toHaveBeenCalledWith('Marked as do not contact');
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it('ContactInfo_ShouldShowTheDoNotContactStatus_WhenTheOptOutAnswersWithAnUnregisteredSoftphone', async () => {
+      useVoiceCallStore.setState({ registration: 'unregistered', phase: 'idle' });
+      await renderOptOutCard({
+        before: beforeOptOut,
+        after: optOutResponse,
+        answer: optOutResponse,
+        permissions: AGENT_PERMISSIONS,
+      });
+      expect(screen.queryByTestId('contact-call-btn')).not.toBeInTheDocument();
+
+      await confirmDoNotContact();
+
+      expect(await screen.findByTestId('contact-call-do-not-contact')).toHaveTextContent(
+        'This contact is marked do not contact.',
+      );
+      expect(screen.queryByTestId('contact-do-not-contact-btn')).not.toBeInTheDocument();
+      // Call is not rendered without a registered softphone; when it is not rendered there is nothing to disable.
+      expect(screen.queryByTestId('contact-call-btn')).not.toBeInTheDocument();
+      expect(callsOf('POST')).toHaveLength(1);
+    });
+
+    it('ContactInfo_ShouldShowTheDoNotContactStatus_WhenTheOptOutAnswersForAContactWithNoVoiceOrSmsAddress', async () => {
+      await renderOptOutCard({
+        before: noPhoneBefore,
+        after: noPhoneAfter,
+        answer: noPhoneAfter,
+        permissions: AGENT_PERMISSIONS,
+      });
+      expect(screen.queryByTestId('contact-call-btn')).not.toBeInTheDocument();
+
+      await confirmDoNotContact();
+
+      expect(await screen.findByTestId('contact-call-do-not-contact')).toHaveTextContent(
+        'This contact is marked do not contact.',
+      );
+      expect(screen.queryByTestId('contact-do-not-contact-btn')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('contact-call-btn')).not.toBeInTheDocument();
+      expect(callsOf('POST')).toEqual([
+        { url: OPT_OUT_URL, method: 'POST', data: optOutDoNotContactRequest },
+      ]);
+    });
+
+    it('ContactInfo_ShouldHaveNoWorkingDoNotContact_WhenThePermissionsLackConversationHandle', async () => {
+      await renderOptOutCard({
+        before: beforeOptOut,
+        after: optOutResponse,
+        answer: optOutResponse,
+        permissions: ['contacts:contact:view'],
+      });
+
+      const button = screen.getByTestId('contact-do-not-contact-btn');
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(button);
+
+      expect(screen.queryByTestId('contact-do-not-contact-confirm')).not.toBeInTheDocument();
+      expect(callsOf('POST')).toEqual([]);
+    });
+
+    it('ContactInfo_ShouldToastNotPermittedAndKeepTheConfirmationOpen_WhenPlatformRefusesTheOptOut', async () => {
+      const refusal = optOutFixture.refusals[0];
+      await renderOptOutCard({
+        before: beforeOptOut,
+        after: optOutResponse,
+        answer: new ApiError(refusal?.status ?? 0, refusal?.body ?? null),
+        permissions: AGENT_PERMISSIONS,
+      });
+
+      await confirmDoNotContact();
+
+      await waitFor(() => expect(shownErrorCodes()).toEqual(['not-permitted']));
+      expect(refusal?.status).toBe(403);
+      expect(callsOf('POST')).toHaveLength(1);
+      expect(screen.getByTestId('contact-do-not-contact-confirm')).toBeInTheDocument();
+      expect(screen.queryByTestId('contact-call-do-not-contact')).not.toBeInTheDocument();
+      expect(toast.success).not.toHaveBeenCalled();
+    });
+
+    it('ContactInfo_ShouldOfferNoDoNotContactAndShowTheStatus_WhenTheContactIsMarked', async () => {
+      useVoiceCallStore.setState({ registration: 'unregistered', phase: 'idle' });
+      await renderOptOutCard({
+        before: noPhoneAfter,
+        after: noPhoneAfter,
+        answer: noPhoneAfter,
+        permissions: AGENT_PERMISSIONS,
+      });
+
+      expect(screen.queryByTestId('contact-do-not-contact-btn')).not.toBeInTheDocument();
+      expect(screen.getByTestId('contact-call-do-not-contact')).toBeInTheDocument();
+    });
+  });
 
   it('ContactInfo_ShouldSendNoPreferredChannel_WhenTheFieldHoldsNoChannelTypeName', async () => {
     await renderCard(cardEditResponse, [...AGENT_PERMISSIONS, 'contacts:contact:edit']);

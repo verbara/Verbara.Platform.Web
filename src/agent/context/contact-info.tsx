@@ -1,5 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { User, Phone, Mail, Building2, Globe, MessageSquare, Pencil, Trash2 } from 'lucide-react';
+import {
+  User,
+  Phone,
+  Mail,
+  Building2,
+  Globe,
+  MessageSquare,
+  Pencil,
+  Trash2,
+  Ban,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
@@ -8,10 +18,16 @@ import { Label } from '@/core/ui/label';
 import { TimezoneSelect } from '@/core/ui/timezone-select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
-import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
+import {
+  useContact,
+  useUpdateContact,
+  useDeleteContact,
+  useOptOutContact,
+} from '@/core/api/hooks/use-contacts';
 import { useVoiceDial } from '@/core/api/hooks/use-conversations';
 import { isChannelType } from '@/core/api/channel-types';
 import { toastApiError } from '@/core/api/toast-api-error';
@@ -74,6 +90,7 @@ export function ContactInfo() {
   const conversations = useConversationStore((s) => s.conversations);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [optOutOpen, setOptOutOpen] = useState(false);
   const [editForm, setEditForm] = useState<ContactEditForm>({
     firstName: '',
     lastName: '',
@@ -85,6 +102,7 @@ export function ContactInfo() {
   });
   const updateContact = useUpdateContact();
   const deleteContact = useDeleteContact();
+  const optOutContact = useOptOutContact();
 
   // Click-to-dial (3B.2d): only when the softphone is registered and no call is in progress
   // (single-session). The dial response carries the tracked outbound Conversation id.
@@ -125,6 +143,9 @@ export function ContactInfo() {
   const phone = rawPhone === '—' ? rawPhone : formatPhone(rawPhone);
   const email = contact.addresses.find((a) => a.channel === 'email')?.address ?? '—';
   const doNotContact = contact.doNotContact === true;
+  const entityName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || contact.id;
+  // Call needs a voice/SMS address and a registered softphone; the do-not-contact status does not.
+  const callRendered = rawPhone !== '—' && registration === 'registered';
 
   return (
     <div className="space-y-1 p-4">
@@ -133,6 +154,19 @@ export function ContactInfo() {
           {t('agent:context.contact_heading')}
         </span>
         <div className="flex items-center gap-0.5">
+          {!doNotContact && (
+            <PermissionButton
+              requires="contacts:conversation:handle"
+              variant="ghost"
+              size="sm"
+              className="h-6 px-1.5 text-xs"
+              data-testid="contact-do-not-contact-btn"
+              onClick={() => setOptOutOpen(true)}
+            >
+              <Ban className="mr-1 h-3 w-3" />
+              {t('agent:context.do_not_contact.action')}
+            </PermissionButton>
+          )}
           <PermissionButton
             requires="contacts:contact:edit"
             variant="ghost"
@@ -167,7 +201,7 @@ export function ContactInfo() {
         value={phone}
         copyable={phone !== '—'}
       />
-      {rawPhone !== '—' && registration === 'registered' && (
+      {callRendered && (
         <Button
           data-testid="contact-call-btn"
           variant="outline"
@@ -196,13 +230,13 @@ export function ContactInfo() {
           {t('voice.call_contact', 'Call')}
         </Button>
       )}
-      {doNotContact && rawPhone !== '—' && registration === 'registered' && (
+      {doNotContact && (
         <p
           id={CALL_DO_NOT_CONTACT_NOTE}
           data-testid="contact-call-do-not-contact"
           className="mt-1 text-xs text-slate-500 dark:text-slate-400"
         >
-          {t('voice.call_do_not_contact')}
+          {callRendered ? t('voice.call_do_not_contact') : t('agent:context.do_not_contact.status')}
         </p>
       )}
       <InfoRow
@@ -254,9 +288,26 @@ export function ContactInfo() {
             onSuccess: () => setDeleteOpen(false),
           });
         }}
-        entityName={[contact.firstName, contact.lastName].filter(Boolean).join(' ') || contact.id}
+        entityName={entityName}
         entityType={t('context.contact_entity_type')}
         isPending={deleteContact.isPending}
+      />
+
+      <ConfirmDialog
+        open={optOutOpen}
+        onOpenChange={setOptOutOpen}
+        data-testid="contact-do-not-contact-confirm"
+        title={t('agent:context.do_not_contact.confirm_title')}
+        description={t('agent:context.do_not_contact.confirm_description', { name: entityName })}
+        confirmLabel={t('agent:context.do_not_contact.confirm')}
+        onConfirm={() => {
+          if (optOutContact.isPending) return;
+          // The card only ever sets do-not-contact; it never names channels.
+          optOutContact.mutate(
+            { id: contact.id, doNotContact: true },
+            { onSuccess: () => setOptOutOpen(false) },
+          );
+        }}
       />
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>

@@ -50,6 +50,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   withdrew consent on that channel, the agent sees that reason in their language instead of "Could not place the call"
   or a generic conflict. No call card starts, and the dialog stays open with the message. (#N)
 
+- **An agent can mark a contact "Do not contact" from the contact card.** When a customer asks not to be contacted
+  again, whoever handles the conversation confirms "Do not contact" on the card, without needing the contact edit
+  permission. The card then says the contact is marked do not contact, whether or not the contact has a phone number and
+  whether or not the softphone is connected, and Call, when shown, stays disabled. If the mark could not be saved, the
+  reason shows in the agent's language and the confirmation stays open. (#N)
+
 ### Changed
 
 - **A contact that could not be created, saved or deleted says why, in the user's language.** The message now says

@@ -146,6 +146,13 @@
     "save_note": "Save note",
     "delete_note": "Delete note",
     "contact_entity_type": "contact",
+    "do_not_contact": {
+      "action": "Do not contact",
+      "confirm_title": "Mark as do not contact?",
+      "confirm_description": "{{name}} will be marked as do not contact. Calls and new conversations to this contact will be refused.",
+      "confirm": "Mark as do not contact",
+      "status": "This contact is marked do not contact."
+    },
     "knowledge": "Knowledge",
     "contactEdit": {
       "title": "Edit Contact",

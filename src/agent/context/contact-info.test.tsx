@@ -45,6 +45,7 @@ vi.mock('@/core/api/hooks/use-contacts', () => ({
   useContact: () => ({ data: scene.contact }),
   useUpdateContact: () => ({ mutate: vi.fn(), isPending: false }),
   useDeleteContact: () => ({ mutate: vi.fn(), isPending: false }),
+  useOptOutContact: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/core/i18n/use-format-phone', () => ({
