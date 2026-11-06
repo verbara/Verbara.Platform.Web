@@ -18,6 +18,8 @@ import {
   contactNotPermittedRefusal,
   optOutDoNotContactRequest,
   optOutResponse,
+  tokenPermissionsAdminExample,
+  tokenPermissionsSupervisorExcerpt,
 } from '@/tests/utils/contract-doubles';
 import type { components } from '@/core/api/generated/openapi';
 
@@ -60,6 +62,17 @@ const optOutFixture = JSON.parse(
     status: number;
     body?: Record<string, unknown>;
   }[];
+};
+
+/** The verbatim copy of the host's `token-permissions.v1.json` (design W7). */
+const tokenPermissionsFixture = JSON.parse(
+  readFileSync(
+    resolve(process.cwd(), 'tests/fixtures/contracts/token-permissions.v1.json'),
+    'utf-8',
+  ),
+) as {
+  excerptsByTemplate: Record<string, string[]>;
+  example: { body: { permissions: string[] } };
 };
 
 /** The permissions of the `Agent` role template (Platform `RoleTemplateSeeder.cs`). */
@@ -159,6 +172,29 @@ describe('ContactInfo actions', () => {
     await waitFor(() => expect(callsOf('DELETE')).toHaveLength(1));
     expect(callsOf('DELETE')[0]).toEqual({ url: CONTACT_URL, method: 'DELETE' });
   }, 10_000);
+
+  it('ContactInfo_ShouldEnableEditAndDelete_WhenTheTokenCarriesTheAdminExamplePermissions', async () => {
+    expect(tokenPermissionsAdminExample).toEqual(tokenPermissionsFixture.example.body.permissions);
+    await renderCard(contactLevelOne, tokenPermissionsAdminExample);
+
+    expect(screen.getByTestId('contact-delete-btn')).toHaveAttribute('aria-disabled', 'false');
+    expect(screen.getByRole('button', { name: 'Edit' })).toHaveAttribute('aria-disabled', 'false');
+  });
+
+  it('ContactInfo_ShouldEnableEditAndDisableDelete_WhenTheTokenCarriesTheSupervisorExcerpt', async () => {
+    expect(tokenPermissionsSupervisorExcerpt).toEqual(
+      tokenPermissionsFixture.excerptsByTemplate.supervisor,
+    );
+    await renderCard(contactLevelOne, tokenPermissionsSupervisorExcerpt);
+
+    expect(screen.getByRole('button', { name: 'Edit' })).toHaveAttribute('aria-disabled', 'false');
+    const button = screen.getByTestId('contact-delete-btn');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(button);
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(callsOf('DELETE')).toEqual([]);
+  });
 
   it('ContactInfo_ShouldOpenNoEditDialog_WhenTheRoleLacksThePermission', async () => {
     await renderCard(contactLevelOne, AGENT_PERMISSIONS);

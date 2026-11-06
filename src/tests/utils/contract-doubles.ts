@@ -1054,3 +1054,21 @@ export const startDoNotContactRefusal: Schemas['ConversationStartRefusal'] = {
 export const startConsentWithdrawnRefusal: Schemas['ConversationStartRefusal'] = {
   error: 'contact-consent-withdrawn',
 };
+
+/**
+ * `token-permissions.v1.json` `example.body.permissions`: the `permissions` of an Admin user's token response, as
+ * the console stores it (`auth-store.ts`, a `string[]`; the response is not in the generated schemas).
+ */
+export const tokenPermissionsAdminExample: string[] = [
+  'contacts:conversation:read',
+  'contacts:contact:view',
+  'contacts:contact:edit',
+  'contacts:contact:create',
+  'contacts:contact:delete',
+];
+
+/** `token-permissions.v1.json` `excerptsByTemplate.supervisor`: edit, and no delete. */
+export const tokenPermissionsSupervisorExcerpt: string[] = [
+  'contacts:contact:view',
+  'contacts:contact:edit',
+];
