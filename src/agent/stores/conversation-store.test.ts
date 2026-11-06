@@ -8,6 +8,7 @@ import {
 } from './conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { mapPlatformMessage } from '@/core/api/platform-message';
+import { queryClient } from '@/core/api/query-client';
 import {
   conversationMessageFrame,
   historyFirstPage,
@@ -408,9 +409,37 @@ describe('ConversationStore', () => {
       expect(ids()).toEqual([secondRow.id, NEWEST_ID]);
     });
 
+    it('Handler_ShouldAddAPendingRowAndRefreshTheHistory_WhenTheFrameIsNotASystemMessage', async () => {
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+
+      frame(conversationMessageFrame);
+
+      expect(rows()).toHaveLength(1);
+      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: '', pending: true, sender: 'agent' });
+      await vi.waitFor(() =>
+        expect(invalidate).toHaveBeenCalledWith(
+          expect.objectContaining({ queryKey: ['messages', CONVERSATION_ID, 'history'] }),
+          expect.anything(),
+        ),
+      );
+      invalidate.mockRestore();
+    });
+
+    it('Handler_ShouldKeepTheTextAndRefreshNothing_WhenTheFrameIsASystemMessage', async () => {
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+
+      frame({ ...conversationMessageFrame, sender: 'System', text: 'Coaching' });
+
+      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: 'Coaching', type: 'system' });
+      expect(rows()[0]?.pending).toBeUndefined();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(invalidate).not.toHaveBeenCalled();
+      invalidate.mockRestore();
+    });
+
     it('mergeMessages_ShouldReplaceTheLiveRow_WhenTheHistoryRowFollowsTheFrame', () => {
       frame(conversationMessageFrame);
-      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: 'WhatsApp', sender: 'agent' });
+      expect(rows()[0]).toMatchObject({ id: NEWEST_ID, text: '', pending: true, sender: 'agent' });
 
       rest(firstPage);
 

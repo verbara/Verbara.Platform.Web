@@ -8,6 +8,7 @@ import { registerSessionWorkReset } from '@/core/session/session-work';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { useAgentAiStore } from '@/core/stores/agent-ai-store';
 import { senderOf } from '@/core/api/platform-message';
+import { refreshConversationHistory } from './history-refresh';
 
 export interface Conversation {
   id: string;
@@ -39,6 +40,11 @@ export interface Message {
   /** The stored sender id (`/history` `senderId`): compared, never shown. A live row has none. */
   senderId?: string;
   text: string;
+  /**
+   * A live row whose text is not known yet: the stream's `text` is the channel name for a customer or
+   * agent message, so the row waits for the `/history` read that replaces it by id.
+   */
+  pending?: true;
   timestamp: string;
   status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
   type: 'text' | 'image' | 'file' | 'system';
@@ -320,17 +326,33 @@ export function initConversationSSE() {
     const side = senderOf(event.sender);
     if (side === undefined) return;
     // A `System` message is an internal row, as `mapPlatformMessage` makes it from history: both
-    // members move together, because the thread chooses a bubble by `type`, not by `sender`.
-    const isSystem = side === 'system';
+    // members move together, because the thread chooses a bubble by `type`, not by `sender`. Its `text`
+    // is real (the transfer note, the coaching note).
+    if (side === 'system') {
+      store.addMessage(event.conversationId, {
+        id: event.messageId,
+        conversationId: event.conversationId,
+        sender: side,
+        senderName: event.sender,
+        text: event.text,
+        timestamp: event.timestamp,
+        type: 'system',
+      });
+      return;
+    }
+    // A customer or agent message: the stream's `text` is the channel name, never the message. The row
+    // waits, pending, for the `/history` read that holds the stored text under the same id.
     store.addMessage(event.conversationId, {
       id: event.messageId,
       conversationId: event.conversationId,
       sender: side,
       senderName: event.sender,
-      text: event.text,
+      text: '',
+      pending: true,
       timestamp: event.timestamp,
-      type: isSystem ? 'system' : 'text',
+      type: 'text',
     });
+    refreshConversationHistory(event.conversationId);
   });
 
   onSseEvent('conversation.state_changed', (data) => {

@@ -56,6 +56,7 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
     <div
       data-testid="message-bubble"
       data-message-id={message.id}
+      {...(message.pending ? { 'data-msg-pending': '' } : {})}
       className={cn('flex flex-col', isAgent ? 'items-end' : 'items-start')}
     >
       {showSender && (
@@ -96,7 +97,9 @@ export function MessageBubble({ message, showSender }: MessageBubbleProps) {
           </div>
         )}
 
-        {isEmail ? (
+        {message.pending ? (
+          <span className="italic opacity-70">{t('thread.messagePending')}</span>
+        ) : isEmail ? (
           <div
             className="prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.text) }}
