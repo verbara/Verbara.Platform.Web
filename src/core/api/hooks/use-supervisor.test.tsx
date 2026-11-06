@@ -52,7 +52,8 @@ const sampleMessage: SupervisorMessage = {
   id: 'msg-1',
   conversationId: 'conv-1',
   sender: 'customer',
-  senderName: 'Jane Doe',
+  // The stored `senderId` below is not a label: the monitor labels a customer message by the contact.
+  senderName: '',
   text: 'Help me',
   timestamp: '2026-01-01T00:00:00Z',
   type: 'text',

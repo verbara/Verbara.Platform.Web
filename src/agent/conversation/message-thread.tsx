@@ -8,7 +8,9 @@ import {
   isNotReadable,
   refusalCodeOf,
 } from '@/core/api/conversation-refusals';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMessageHistory } from '@/core/api/hooks/use-conversations';
+import { resolveAgentId } from '@/core/api/agent-id';
 import { Button } from '@/core/ui/button';
 import { Skeleton } from '@/core/ui/skeleton';
 import { VirtualList } from '@/core/ui/virtual-list';
@@ -31,6 +33,9 @@ export function MessageThread({ conversationId }: { conversationId: string }) {
   const { t } = useTranslation(['agent', 'common']);
   const messages = useConversationStore((s) => s.messages[conversationId] ?? NO_MESSAGES);
   const mergeMessages = useConversationStore((s) => s.mergeMessages);
+  const contactName = useConversationStore((s) => s.conversations[conversationId]?.contactName);
+  // The signed-in agent, as the stream reads it (`/agents/me`, loaded by the shell): their replies read "You".
+  const ownAgentId = resolveAgentId(useQueryClient().getQueryData(['agent-me']));
 
   const history = useMessageHistory(conversationId);
   const { messages: served } = history;
@@ -120,7 +125,12 @@ export function MessageThread({ conversationId }: { conversationId: string }) {
               const showSender = !prev || prev.type === 'system' || prev.sender !== msg.sender;
               return (
                 <div className="py-0.5">
-                  <MessageBubble message={msg} showSender={showSender} />
+                  <MessageBubble
+                    message={msg}
+                    showSender={showSender}
+                    ownAgentId={ownAgentId}
+                    contactName={contactName}
+                  />
                 </div>
               );
             }}

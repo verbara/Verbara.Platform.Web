@@ -72,7 +72,9 @@ export function mapPlatformMessage(message: PlatformMessage): Message {
     id: String(message.messageId),
     conversationId: String(message.conversationId),
     sender: SENDER[message.direction] ?? 'customer',
-    senderName: message.senderId ?? '',
+    // Never shown: the label comes from the side (`senderLabel`); the stored id is kept to compare.
+    senderName: '',
+    ...(message.senderId ? { senderId: message.senderId } : {}),
     text,
     timestamp: message.createdAt,
     status: STATUS[message.deliveryStatus],

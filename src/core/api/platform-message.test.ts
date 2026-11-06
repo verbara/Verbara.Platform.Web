@@ -45,7 +45,13 @@ describe('mapPlatformMessage', () => {
       mapPlatformMessage(
         platformMessage({ direction: 'Outbound', senderId: 'agent-7', deliveryStatus: 'Pending' }),
       ),
-    ).toMatchObject({ sender: 'agent', senderName: 'agent-7', status: 'sending', type: 'text' });
+    ).toMatchObject({
+      sender: 'agent',
+      senderName: '',
+      senderId: 'agent-7',
+      status: 'sending',
+      type: 'text',
+    });
     expect(mapPlatformMessage(platformMessage({ direction: 'System' }))).toMatchObject({
       sender: 'system',
       type: 'system',

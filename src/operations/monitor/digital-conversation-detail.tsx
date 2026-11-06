@@ -12,6 +12,7 @@ import {
   type SupervisorConversation,
 } from '@/core/api/hooks/use-supervisor';
 import { useFormatDate } from '@/core/i18n/use-format';
+import { senderLabel } from '@/core/api/sender-label';
 import { ListenControl } from './listen-control';
 import { canListenTo } from './listen-eligibility';
 
@@ -21,6 +22,7 @@ interface DigitalConversationDetailProps {
 
 export function DigitalConversationDetail({ conversation }: DigitalConversationDetailProps) {
   const { t } = useTranslation('operations');
+  const { t: tAgent } = useTranslation('agent');
   const { formatTimeShort } = useFormatDate();
   const { data: messages = [] } = useSupervisorMessages(conversation.id);
   const takeoverMutation = useTakeoverConversation();
@@ -99,7 +101,9 @@ export function DigitalConversationDetail({ conversation }: DigitalConversationD
               <div key={msg.id} className={`flex ${isAgent ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[70%] rounded-lg px-3 py-2 text-sm ${bubbleClass}`}>
                   {!isSystem && (
-                    <p className="text-[10px] font-semibold opacity-70">{msg.senderName}</p>
+                    <p className="text-[10px] font-semibold opacity-70">
+                      {senderLabel(msg, { contactName: conversation.contactName }, tAgent)}
+                    </p>
                   )}
                   <p>{msg.text}</p>
                   <p

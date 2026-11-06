@@ -11,6 +11,7 @@ import { useAgentAlertsStore } from '@/core/stores/agent-alerts-store';
 import { useAgentAiStore, type AgentSuggestion } from '@/core/stores/agent-ai-store';
 import { channelLabel } from '@/core/i18n/channel-label';
 import type { NotificationSeverity } from '@/core/api/hooks/use-notifications';
+import { resolveAgentId } from '@/core/api/agent-id';
 
 type SseEventHandler = (data: unknown) => void;
 
@@ -366,18 +367,7 @@ export function isForCurrentAgent(
   return !!myAgentId && eventAgentId === myAgentId;
 }
 
-/**
- * Resolve the current agent's AgentId from the cached /agents/me payload.
- * GET /agents/me serializes the raw Agent domain object as `agentId` (it does
- * NOT follow the `id` DTO convention the other agent hooks normalize to), so
- * accept either key — otherwise currentAgentId() is undefined and every
- * agent-targeted SSE event (incl. the WebChat offer card) is dropped.
- */
-export function resolveAgentId(
-  cached: { id?: string; agentId?: string } | undefined,
-): string | undefined {
-  return cached?.agentId ?? cached?.id;
-}
+export { resolveAgentId };
 
 export function onSseEvent(type: string, handler: SseEventHandler) {
   if (!handlers[type]) handlers[type] = [];
