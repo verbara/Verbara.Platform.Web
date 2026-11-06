@@ -2,12 +2,16 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStore } from '@/core/auth/auth-store';
+import { toast } from 'sonner';
 import { customFetch } from '@/core/api/client';
+import { ApiError } from '@/core/api/api-error';
+import enCommon from '../../../public/locales/en-US/common.json';
 import {
   consentContactVoiceAndEmailYes,
   consentEmailYesRequest,
   consentSearchVoiceAndEmailYes,
   consentSearchVoiceYes,
+  contactNotPermittedRefusal,
 } from '@/tests/utils/contract-doubles';
 
 /**
@@ -131,5 +135,30 @@ describe('ConsentManagementPage, on the real contact hooks', () => {
       'data-consent',
       'yes',
     );
+  });
+
+  it('saveConsent_ShouldToastNotPermittedAndKeepTheSheetOpen_WhenPlatformRefusesTheSave', async () => {
+    vi.mocked(customFetch).mockImplementation(async (config) => {
+      const { url, method } = config as FetchCall;
+      if (method === 'GET' && url === '/api/v1/contacts') return consentSearchVoiceYes;
+      if (method === 'PUT' && url === CONTACT_URL) {
+        throw new ApiError(403, contactNotPermittedRefusal);
+      }
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    vi.mocked(toast.error).mockClear();
+    renderPage();
+
+    fireEvent.change(screen.getByTestId('consent-search'), { target: { value: 'Ana' } });
+    fireEvent.click(await screen.findByTestId('edit-consent-btn', {}, { timeout: 2000 }));
+    await chooseConsent('Email', 'yes');
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
+    const { container } = render(vi.mocked(toast.error).mock.calls[0]![0] as React.ReactElement);
+    expect(container.querySelector('[data-error-code="not-permitted"]')).not.toBeNull();
+    expect(container).toHaveTextContent(enCommon.errors.contacts.not_permitted);
+    expect(screen.getByTestId('consent-channel-Email')).toHaveAttribute('data-consent', 'yes');
+    expect(callsOf('GET', '/api/v1/contacts')).toHaveLength(1);
   });
 });

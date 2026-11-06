@@ -3138,7 +3138,13 @@
       "email": "Email",
       "sms": "SMS",
       "whatsapp": "WhatsApp",
-      "webchat": "Web Chat"
+      "webchat": "Web Chat",
+      "messenger": "Messenger",
+      "instagram": "Instagram",
+      "telegram": "Telegram",
+      "twitter": "Twitter",
+      "video": "Video",
+      "rcs": "RCS"
     },
     "dnc": {
       "label": "No contactar",
@@ -3149,7 +3155,12 @@
       "confirm": "Esto marcará {{count}} contactos como No Contactar. Esta acción se audita."
     },
     "empty": "No se encontraron contactos. Intente con otro término de búsqueda.",
-    "save": "Guardar"
+    "save": "Guardar",
+    "states": {
+      "yes": "Sí",
+      "no": "No",
+      "unrecorded": "Sin registro"
+    }
   },
   "typification": {
     "published": "Publicado",

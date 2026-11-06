@@ -52,7 +52,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   of repeating the server's text. A saved contact also refreshes every contact search on the page. The contact card's
   edit sends the preferred channel only when it names a known channel. (#N)
 
+- **Saving consent and "Set Do Not Contact" on the consent page need the contact edit permission.** For a user without it
+  both buttons are shown disabled, with a tooltip naming the permission. (#N)
+
 ### Fixed
+
+- **The consent page records and shows consent per channel.** It lists every channel Platform knows, and shows each one
+  as "Yes", "No" or "No record", so a channel nobody asked about is no longer shown as a "No". A channel with an answer
+  offers "Yes" and "No" only. Saving sends only the channels the user changed, so the save is stored and the other
+  channels keep their answers. Before, the page used channel names Platform did not recognize, showed every recorded
+  consent as off and saved nothing. (#N)
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so
   the edit reached no contact and the delete reported a deletion that removed nothing, and it compared address channels
