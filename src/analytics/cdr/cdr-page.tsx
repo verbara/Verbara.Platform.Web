@@ -26,7 +26,7 @@ import { Button } from '@/core/ui/button';
 import { ExportButton } from '@/analytics/shared/export-button';
 import { ContactSearchPanel } from '@/core/ui/contact-search-panel';
 import { CdrDetailDrawer } from './cdr-detail-drawer';
-import { useCdrList, type CdrRow as ApiCdrRow } from '@/core/api/hooks/use-analytics';
+import { useCdrList, type CdrRowDto } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -42,12 +42,11 @@ export interface CdrRow {
   queue: string;
   agent: string;
   duration: string;
+  talkTimeMs: number | null;
   disposition: string;
   slaMet: boolean;
-  recordingUrl: string | null;
   transferTo: string | null;
   hasRecording: boolean;
-  campaignName: string | null;
   // Premium columns
   qaScore: number | null;
   sentimentLabel: string | null;
@@ -168,7 +167,7 @@ export default function CdrPage() {
   const { t } = useTranslation('analytics');
   const { formatDateTime } = useFormatDate();
   const mapApiRowToGridRow = useCallback(
-    (r: ApiCdrRow): CdrRow => {
+    (r: CdrRowDto): CdrRow => {
       const formatDateTimeSafe = (iso: string): string => {
         try {
           return formatDateTime(iso);
@@ -182,16 +181,15 @@ export default function CdrPage() {
         endTime: formatDateTimeSafe(r.endTime),
         answerTime: r.answerTime ? formatDateTimeSafe(r.answerTime) : null,
         contact: r.contact ?? '',
-        channel: r.channelType ?? r.channel,
+        channel: r.channel,
         queue: r.queueName ?? '',
         agent: r.agentName ?? '',
         duration: formatDurationMs(r.durationMs),
-        disposition: r.dispositionName ?? r.disposition,
+        talkTimeMs: r.talkTimeMs ?? null,
+        disposition: r.disposition,
         slaMet: r.slaMet,
-        recordingUrl: r.recordingStreamUrl ?? null,
         transferTo: r.transferredTo ?? null,
         hasRecording: r.hasRecording,
-        campaignName: r.campaignName ?? null,
         qaScore: r.qaScore ?? null,
         sentimentLabel: r.sentimentLabel ?? null,
         ringDurationMs: r.ringDurationMs ?? null,
@@ -218,7 +216,7 @@ export default function CdrPage() {
   const { data, isLoading } = useCdrList(from, to, { queue: queue || undefined }, page);
 
   const rowData = useMemo<CdrRow[]>(
-    () => (data?.items ?? []).map(mapApiRowToGridRow),
+    () => (data?.data ?? []).map(mapApiRowToGridRow),
     [data, mapApiRowToGridRow],
   );
 
@@ -236,6 +234,15 @@ export default function CdrPage() {
       { field: 'queue', headerName: t('cdr.queue'), sortable: true, minWidth: 100 },
       { field: 'agent', headerName: t('cdr.agent'), sortable: true, minWidth: 130 },
       { field: 'duration', headerName: t('cdr.duration'), sortable: true, minWidth: 100 },
+      {
+        field: 'talkTimeMs',
+        headerName: t('cdr.talk_time'),
+        sortable: true,
+        minWidth: 100,
+        // An unanswered call carries no talkTimeMs: its cell stays empty, never 0 or NaN.
+        valueFormatter: ({ value }: { value: number | null }) =>
+          value != null ? formatMinSec(value) : '',
+      },
       {
         field: 'disposition',
         headerName: t('cdr.disposition'),
@@ -301,6 +308,7 @@ export default function CdrPage() {
   );
 
   const defaultColDef = useMemo<ColDef>(() => ({ resizable: true, flex: 1 }), []);
+  const getRowId = useCallback((params: { data: CdrRow }) => params.data.id, []);
 
   const handleRowClicked = useCallback((event: { data: CdrRow | undefined }) => {
     if (event.data) {
@@ -378,6 +386,7 @@ export default function CdrPage() {
         >
           <AgGridReact<CdrRow>
             rowData={rowData}
+            getRowId={getRowId}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             onRowClicked={handleRowClicked}
@@ -402,7 +411,7 @@ export default function CdrPage() {
         <Button
           variant="outline"
           size="sm"
-          disabled={!data?.hasNextPage}
+          disabled={!data?.hasMore}
           onClick={() => setPage((p) => p + 1)}
         >
           Next

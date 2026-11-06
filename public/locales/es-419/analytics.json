@@ -59,6 +59,7 @@
     "qa_score": "Puntuación QA",
     "sentiment": "Sentimiento",
     "ring_duration": "Tiempo de timbre",
+    "talk_time": "Tiempo de conversación",
     "hold_count": "Esperas",
     "acw_duration": "ACW",
     "aria": {

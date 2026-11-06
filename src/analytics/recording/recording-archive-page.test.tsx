@@ -23,6 +23,8 @@ vi.mock('@/analytics/cdr/stereo-waveform-player', () => ({
 }));
 
 import RecordingArchivePage from './recording-archive-page';
+import listFixture from '@/analytics/cdr/__fixtures__/cdr-list-response.v1.json';
+import partialListFixture from '@/analytics/cdr/__fixtures__/cdr-list-response.partial.v1.json';
 
 const mockRecordings = [
   {
@@ -33,7 +35,6 @@ const mockRecordings = [
     queueName: 'Support',
     durationMs: 185000,
     hasRecording: true,
-    recordingStreamUrl: '/api/v1/recordings/ses-001/stream',
     channel: 'voice',
     endTime: '2026-05-01T10:03:05Z',
     disposition: 'answered',
@@ -48,7 +49,6 @@ const mockRecordings = [
     queueName: 'Sales',
     durationMs: 60000,
     hasRecording: true,
-    recordingStreamUrl: '/api/v1/recordings/ses-002/stream',
     channel: 'voice',
     endTime: '2026-05-01T11:01:00Z',
     disposition: 'answered',
@@ -85,7 +85,7 @@ describe('RecordingArchivePage', () => {
 
   it('should_ShowEmptyState_WhenNoRecordings', () => {
     mockUseCdrList.mockReturnValue({
-      data: { items: [], totalCount: 0, page: 1, pageSize: 20, hasNextPage: false },
+      data: { data: [], hasMore: false, page: 1, pageSize: 50 },
       isLoading: false,
     });
     render(<RecordingArchivePage />);
@@ -95,11 +95,10 @@ describe('RecordingArchivePage', () => {
   it('should_ShowEmptyState_WhenAllRowsLackRecording', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: [mockRecordings[2]],
-        totalCount: 1,
+        data: [mockRecordings[2]],
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -110,11 +109,10 @@ describe('RecordingArchivePage', () => {
   it('should_RenderRecordingRows_WhenDataAvailable', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: mockRecordings,
-        totalCount: 3,
+        data: mockRecordings,
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -131,11 +129,10 @@ describe('RecordingArchivePage', () => {
   it('should_ExpandPlayerSection_WhenPlayClicked', async () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: mockRecordings,
-        totalCount: 3,
+        data: mockRecordings,
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -154,11 +151,10 @@ describe('RecordingArchivePage', () => {
   it('should_CollapsePlayer_WhenSamePlayClickedAgain', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: mockRecordings,
-        totalCount: 3,
+        data: mockRecordings,
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -174,11 +170,10 @@ describe('RecordingArchivePage', () => {
   it('should_SwitchPlayer_WhenDifferentPlayClicked', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: mockRecordings,
-        totalCount: 3,
+        data: mockRecordings,
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -195,11 +190,10 @@ describe('RecordingArchivePage', () => {
   it('should_FormatDurationCorrectly_WhenRendered', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: [mockRecordings[0]],
-        totalCount: 1,
+        data: [mockRecordings[0]],
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -214,5 +208,29 @@ describe('RecordingArchivePage', () => {
     expect(screen.getByTestId('filter-bar')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Agent')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Queue')).toBeInTheDocument();
+  });
+
+  // cdr-list-reads-its-envelope B.1: the archive reads the same data/hasMore envelope as the grid.
+  it('ListsOnlyTheRecordedRow_AndEnablesNext_WhenTheListAnswersItsFixture', () => {
+    mockUseCdrList.mockReturnValue({ data: listFixture, isLoading: false });
+    render(<RecordingArchivePage />);
+
+    const played = screen
+      .getAllByTestId(/^play-/)
+      .map((el) => el.getAttribute('data-testid')!.slice('play-'.length));
+    expect(played).toEqual(['c7a1f0e25b6d4c3e9a8f1e2d3c4b5a69']);
+    expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /next/i })).toBeEnabled();
+  });
+
+  it('ShowsPageWithoutATotal_AndDisablesNext_WhenHasMoreIsFalse', () => {
+    mockUseCdrList.mockReturnValue({ data: partialListFixture, isLoading: false });
+    render(<RecordingArchivePage />);
+
+    expect(screen.getByTestId('play-5d2a8c419e074b3fa1c67f80e2d94b15')).toBeInTheDocument();
+    const pageLabel = screen.getByTestId('recording-archive-page-label');
+    expect(pageLabel).toHaveTextContent('Page 1');
+    expect(pageLabel.textContent).not.toMatch(/of/);
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled();
   });
 });

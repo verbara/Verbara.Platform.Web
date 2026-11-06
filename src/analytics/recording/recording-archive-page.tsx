@@ -36,7 +36,7 @@ export default function RecordingArchivePage() {
     page,
   );
 
-  const recordings = data?.items.filter((row) => row.hasRecording) ?? [];
+  const recordings = (data?.data ?? []).filter((row) => row.hasRecording);
 
   function handlePlay(sessionId: string) {
     setExpandedSession((prev) => (prev === sessionId ? null : sessionId));
@@ -140,8 +140,12 @@ export default function RecordingArchivePage() {
       {/* Pagination */}
       {data && (
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            Page {data.page} of {Math.max(1, Math.ceil(data.totalCount / data.pageSize))}
+          {/* The data/hasMore envelope carries no total, so no page count is shown. */}
+          <span
+            className="text-sm text-muted-foreground"
+            data-testid="recording-archive-page-label"
+          >
+            Page {data.page}
           </span>
           <div className="flex gap-2">
             <Button
@@ -155,7 +159,7 @@ export default function RecordingArchivePage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={!data.hasNextPage}
+              disabled={!data.hasMore}
               onClick={() => setPage((p) => p + 1)}
             >
               Next <ChevronRight className="ml-1 h-4 w-4" />
@@ -171,9 +175,9 @@ interface RecordingRowProps {
   readonly row: {
     sessionId: string;
     startTime: string;
-    contact?: string;
-    agentName?: string;
-    queueName?: string;
+    contact?: string | null;
+    agentName?: string | null;
+    queueName?: string | null;
     durationMs: number;
   };
   readonly isExpanded: boolean;

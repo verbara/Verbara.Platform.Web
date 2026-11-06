@@ -59,6 +59,7 @@
     "qa_score": "QA Score",
     "sentiment": "Sentiment",
     "ring_duration": "Ring Duration",
+    "talk_time": "Talk Time",
     "hold_count": "Holds",
     "acw_duration": "ACW",
     "aria": {

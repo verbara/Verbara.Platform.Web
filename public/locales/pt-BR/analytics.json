@@ -59,6 +59,7 @@
     "qa_score": "Pontuacao QA",
     "sentiment": "Sentimento",
     "ring_duration": "Duracao do toque",
+    "talk_time": "Tempo de conversa",
     "hold_count": "Esperas",
     "acw_duration": "ACW",
     "aria": {
