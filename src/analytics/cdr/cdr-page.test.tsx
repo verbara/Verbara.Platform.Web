@@ -92,6 +92,42 @@ describe('CdrPage', () => {
     expect(nextButton()).toBeDisabled();
   });
 
+  // cdr-list-reads-its-envelope B.2 (host B.8b, D17), spec "The console shows a partial record's hold
+  // figures as unknown": the partial fixture's holdCount is 1, so the cell must suppress a number the
+  // Api did send, not merely fill an absent one.
+  it('RendersTheHoldCountAsUnknown_AndTheOtherColumns_WhenTheRowIsPartial', async () => {
+    mockCustomFetch.mockResolvedValue(partialListFixture);
+    const { container } = renderPage();
+
+    await waitFor(() => expect(gridRows(container)).toHaveLength(1));
+    const row = gridRows(container)[0];
+    const holdCell = row.querySelector('[col-id="holdCount"]');
+    expect(holdCell).not.toBeNull();
+    expect(holdCell).toHaveTextContent('cdr.hold_unknown');
+    expect(holdCell!.textContent).not.toMatch(/\d/);
+    expect(holdCell!.querySelector('[data-hold-unknown]')).not.toBeNull();
+
+    // Every other member renders as usual.
+    expect(row.querySelector('[col-id="agent"]')).toHaveTextContent('Lab Agent 1001');
+    expect(row.querySelector('[col-id="talkTimeMs"]')).toHaveTextContent('1:14');
+    expect(row.querySelector('[col-id="channel"]')).toHaveTextContent('voice');
+    expect(row.querySelector('[col-id="qaScore"]')).toHaveTextContent('88/100');
+    expect(row.querySelector('[col-id="wrapUpDurationMs"]')).toHaveTextContent('0:15');
+  });
+
+  it('RendersTheHoldCountAsItsNumber_WhenTheRowIsComplete', async () => {
+    mockCustomFetch.mockResolvedValue(listFixture);
+    const { container } = renderPage();
+
+    await waitFor(() => expect(gridRows(container)).toHaveLength(2));
+    for (const row of gridRows(container)) {
+      const holdCell = row.querySelector('[col-id="holdCount"]');
+      expect(holdCell).not.toBeNull();
+      expect(holdCell!.textContent?.trim()).toBe('0');
+      expect(holdCell!.querySelector('[data-hold-unknown]')).toBeNull();
+    }
+  });
+
   it('RequestsTheListRoute_WithPageAndPageSize', async () => {
     mockCustomFetch.mockResolvedValue(listFixture);
     renderPage();

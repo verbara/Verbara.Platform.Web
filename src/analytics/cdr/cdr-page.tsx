@@ -51,8 +51,10 @@ export interface CdrRow {
   qaScore: number | null;
   sentimentLabel: string | null;
   ringDurationMs: number | null;
+  // Null when the record is partial (host D17): its hold figures are not known.
   holdCount: number | null;
   wrapUpDurationMs: number | null;
+  isPartial: boolean;
 }
 
 // Channel icon cell renderer
@@ -138,13 +140,22 @@ function SentimentCellRenderer({ data }: ICellRendererParams<CdrRow>) {
   );
 }
 
-// Hold count badge cell renderer
+// Hold count cell renderer. A partial record (host D17) renders the localized unknown marker,
+// never the number the Api sent; a complete record renders its number, zero included.
 function HoldCountCellRenderer({ data }: ICellRendererParams<CdrRow>) {
+  const { t } = useTranslation('analytics');
+  if (data?.isPartial) {
+    return (
+      <span className="text-muted-foreground italic" data-hold-unknown="">
+        {t('cdr.hold_unknown')}
+      </span>
+    );
+  }
   const count = data?.holdCount;
-  if (!count) return <span className="text-muted-foreground">—</span>;
+  if (count == null) return <span className="text-muted-foreground">—</span>;
   return (
     <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-      {count} {count === 1 ? 'hold' : 'holds'}
+      {count}
     </span>
   );
 }
@@ -204,8 +215,9 @@ export default function CdrPage() {
         qaScore: r.qaScore ?? null,
         sentimentLabel: r.sentimentLabel ?? null,
         ringDurationMs: r.ringDurationMs ?? null,
-        holdCount: r.holdCount ?? null,
+        holdCount: r.isPartial ? null : (r.holdCount ?? null),
         wrapUpDurationMs: r.wrapUpDurationMs ?? null,
+        isPartial: r.isPartial,
       };
     },
     [formatDateTime],
