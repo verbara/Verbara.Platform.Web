@@ -193,9 +193,10 @@ test.describe('Transfer a conversation with a note (full stack)', () => {
       for (const { userId } of [first, second]) {
         await demoApiContext.delete(`${API_BASE}/api/v1/admin/users/${userId}`).catch(() => {});
       }
-      await demoApiContext
-        .delete(`${API_BASE}/api/v1/contacts/${visitor.contactId}`)
-        .catch(() => {});
+      const contactDeleted = await demoApiContext.delete(
+        `${API_BASE}/api/v1/contacts/${visitor.contactId}`,
+      );
+      expect(contactDeleted.status(), 'delete the test contact').toBe(204);
     }
   });
 });
