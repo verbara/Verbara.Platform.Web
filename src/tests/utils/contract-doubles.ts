@@ -930,3 +930,68 @@ export const voiceScreenPopOutbound: VoiceScreenPopFrameData = {
   metadata: { tenantId: 't-demo-0001', occurredAt: '2026-11-05T09:30:00.0000000+00:00' },
   eventType: 'voice.screenpop',
 };
+
+/**
+ * `contact-channel-consent.v1.json` `update.response.body`, with `channelConsent` as the consent page's
+ * regression opens it: `{ "Voice": true }`, every other channel unanswered.
+ */
+export const consentContactVoiceYes: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  lastName: 'Ruiz',
+  doNotContact: false,
+  addresses: [
+    { channel: 'Voice', address: '+15551234567' },
+    { channel: 'Email', address: 'ana@example.com' },
+  ],
+  customFields: {},
+  channelConsent: { Voice: true },
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  updatedAt: '2026-11-05T09:30:00.000+00:00',
+  fullName: 'Ana Ruiz',
+};
+
+/** The same contact after the save of `consentEmailYesRequest`: Platform merges Email into the stored map. */
+export const consentContactVoiceAndEmailYes: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  lastName: 'Ruiz',
+  doNotContact: false,
+  addresses: [
+    { channel: 'Voice', address: '+15551234567' },
+    { channel: 'Email', address: 'ana@example.com' },
+  ],
+  customFields: {},
+  channelConsent: { Voice: true, Email: true },
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  updatedAt: '2026-11-05T09:31:00.000+00:00',
+  fullName: 'Ana Ruiz',
+};
+
+/** The consent sheet's body after Email is set to "yes" on `consentContactVoiceYes`: only the changed channel. */
+export const consentEmailYesRequest: Schemas['UpdateContactRequest'] = {
+  doNotContact: false,
+  channelConsent: { Email: true },
+};
+
+export const consentSearchVoiceYes: Schemas['PagedResultOfContact'] = {
+  items: [consentContactVoiceYes],
+  totalCount: 1,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};
+
+export const consentSearchVoiceAndEmailYes: Schemas['PagedResultOfContact'] = {
+  items: [consentContactVoiceAndEmailYes],
+  totalCount: 1,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};

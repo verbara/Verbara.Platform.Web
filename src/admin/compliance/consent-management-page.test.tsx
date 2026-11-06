@@ -1,10 +1,15 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useAuthStore } from '@/core/auth/auth-store';
+import { mapPlatformContact } from '@/core/api/platform-conversation';
+import { consentContactVoiceYes, consentEmailYesRequest } from '@/tests/utils/contract-doubles';
 import ConsentManagementPage from './consent-management-page';
+
+const { mutate, mutateAsync } = vi.hoisted(() => ({ mutate: vi.fn(), mutateAsync: vi.fn() }));
 
 vi.mock('@/core/api/hooks/use-contacts', () => ({
   useSearchContacts: vi.fn(() => ({ data: [], isLoading: false })),
-  useUpdateContact: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateContact: () => ({ mutate, mutateAsync, isPending: false }),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -126,5 +131,51 @@ describe('ConsentManagementPage', () => {
     render(<ConsentManagementPage />);
     const editButtons = screen.getAllByTestId('edit-consent-btn');
     expect(editButtons).toHaveLength(2);
+  });
+
+  describe('consent per channel, by the server channel names (W9)', () => {
+    beforeEach(() => {
+      mutate.mockReset();
+      mutateAsync.mockReset();
+      useAuthStore.setState({ permissions: ['contacts:contact:edit'] });
+    });
+
+    /** A press starts on the option, as a real click does: base-ui ignores any other click. */
+    async function chooseConsent(channel: string, state: 'yes' | 'no' | 'unrecorded') {
+      fireEvent.click(screen.getByTestId(`consent-channel-${channel}`));
+      const option = await screen.findByTestId(`consent-channel-${channel}-option-${state}`);
+      fireEvent.pointerDown(option);
+      fireEvent.click(option);
+      await waitFor(() => expect(screen.queryAllByRole('option')).toHaveLength(0));
+    }
+
+    it('saveConsent_ShouldSendOnlyTheChangedChannel_WhenEmailIsSetToYesOnARecordedVoice', async () => {
+      const { useSearchContacts } = await import('@/core/api/hooks/use-contacts');
+      vi.mocked(useSearchContacts).mockReturnValue({
+        data: [mapPlatformContact(consentContactVoiceYes)],
+        isLoading: false,
+      } as unknown as ReturnType<typeof useSearchContacts>);
+
+      render(<ConsentManagementPage />);
+      fireEvent.click(screen.getByTestId('edit-consent-btn'));
+
+      // Soft, so one run against the unfixed page records every way it differs.
+      expect
+        .soft(screen.queryByTestId('consent-channel-Voice'), 'Voice opens as "yes"')
+        .toHaveAttribute('data-consent', 'yes');
+      expect
+        .soft(screen.queryByTestId('consent-channel-Email'), 'Email opens as "no record"')
+        .toHaveAttribute('data-consent', 'unrecorded');
+      const emailControl = screen.queryByTestId('consent-channel-Email');
+      expect.soft(emailControl, 'Email has a consent control').not.toBeNull();
+      if (emailControl) await chooseConsent('Email', 'yes');
+
+      fireEvent.click(screen.getByRole('button', { name: 'consent.save' }));
+
+      expect(mutate).toHaveBeenCalledTimes(1);
+      const { id, ...body } = mutate.mock.calls[0]![0] as { id: string };
+      expect(id).toBe(String(consentContactVoiceYes.contactId));
+      expect(body).toEqual(consentEmailYesRequest);
+    });
   });
 });
