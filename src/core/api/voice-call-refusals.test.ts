@@ -8,6 +8,10 @@ import {
   voiceTransferRefusals,
 } from './voice-call-refusals';
 import { TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
+import {
+  dialConsentWithdrawnRefusal,
+  dialDoNotContactRefusal,
+} from '@/tests/utils/contract-doubles';
 
 /**
  * The click-to-dial and voice-transfer refusal maps (design D1, D3; spec
@@ -133,6 +137,57 @@ describe('voice call refusal texts', () => {
         expect(text).not.toContain('{{trunkId}}');
         expect(text).toContain(String(trunkId));
       }
+    },
+  );
+});
+
+/**
+ * The dial's do-not-contact refusals (host change `contacts-writes-follow-their-permissions`, fixture
+ * `do-not-contact-refusals.v1.json` `dial` and `dialConsentWithdrawn`; design W6). Only the dial knows
+ * them; the transfer keeps its fallback. Bodies are read from the verbatim copy of the fixture.
+ */
+type DncEntry = { status: number; body: Record<string, unknown> };
+const dncFixture = JSON.parse(
+  readFileSync(
+    resolve(process.cwd(), 'tests/fixtures/contracts/do-not-contact-refusals.v1.json'),
+    'utf-8',
+  ),
+) as Record<string, DncEntry>;
+
+describe('voice dial do-not-contact refusals', () => {
+  it('VoiceDialRefusalDoubles_ShouldMatchTheFixture_WhenTheDoublesAreRead', () => {
+    expect(dialDoNotContactRefusal).toEqual(dncFixture.dial!.body);
+    expect(dialConsentWithdrawnRefusal).toEqual(dncFixture.dialConsentWithdrawn!.body);
+  });
+
+  it.each([
+    ['dial', 'contact-do-not-contact', 'common:errors.contacts.do_not_contact'],
+    [
+      'dialConsentWithdrawn',
+      'contact-consent-withdrawn',
+      'common:errors.contacts.consent_withdrawn',
+    ],
+  ] as const)('VoiceDialRefusals_ShouldMapTheFixture %s_ToItsOwnMessage', (name, code, key) => {
+    const refused = dncFixture[name]!;
+    expect(refused.status).toBe(409);
+    expect(describeApiError(new ApiError(refused.status, refused.body), voiceDialRefusals)).toEqual(
+      { code, key },
+    );
+  });
+
+  it.each(['contact-do-not-contact', 'contact-consent-withdrawn'])(
+    'VoiceDialRefusals_ShouldStillMap %s_WhenItComesUnderAnotherStatus',
+    (code) => {
+      const err = new ApiError(500, { accepted: false, error: code, trunkId: null });
+      expect(describeApiError(err, voiceDialRefusals).code).toBe(code);
+    },
+  );
+
+  it.each(['contact-do-not-contact', 'contact-consent-withdrawn'])(
+    'VoiceTransferRefusals_ShouldKeepTheFallback_WhenTheTransferCarries %s',
+    (code) => {
+      const err = new ApiError(409, { accepted: false, error: code, trunkId: null });
+      expect(describeApiError(err, voiceTransferRefusals).code).toBe('voice-transfer-failed');
     },
   );
 });

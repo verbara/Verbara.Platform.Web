@@ -930,3 +930,145 @@ export const voiceScreenPopOutbound: VoiceScreenPopFrameData = {
   metadata: { tenantId: 't-demo-0001', occurredAt: '2026-11-05T09:30:00.0000000+00:00' },
   eventType: 'voice.screenpop',
 };
+
+/**
+ * `contact-channel-consent.v1.json` `update.response.body`, with `channelConsent` as the consent page's
+ * regression opens it: `{ "Voice": true }`, every other channel unanswered.
+ */
+export const consentContactVoiceYes: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  lastName: 'Ruiz',
+  doNotContact: false,
+  addresses: [
+    { channel: 'Voice', address: '+15551234567' },
+    { channel: 'Email', address: 'ana@example.com' },
+  ],
+  customFields: {},
+  channelConsent: { Voice: true },
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  updatedAt: '2026-11-05T09:30:00.000+00:00',
+  fullName: 'Ana Ruiz',
+};
+
+/** The same contact after the save of `consentEmailYesRequest`: Platform merges Email into the stored map. */
+export const consentContactVoiceAndEmailYes: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  lastName: 'Ruiz',
+  doNotContact: false,
+  addresses: [
+    { channel: 'Voice', address: '+15551234567' },
+    { channel: 'Email', address: 'ana@example.com' },
+  ],
+  customFields: {},
+  channelConsent: { Voice: true, Email: true },
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  updatedAt: '2026-11-05T09:31:00.000+00:00',
+  fullName: 'Ana Ruiz',
+};
+
+/** The consent sheet's body after Email is set to "yes" on `consentContactVoiceYes`: only the changed channel. */
+export const consentEmailYesRequest: Schemas['UpdateContactRequest'] = {
+  doNotContact: false,
+  channelConsent: { Email: true },
+};
+
+export const consentSearchVoiceYes: Schemas['PagedResultOfContact'] = {
+  items: [consentContactVoiceYes],
+  totalCount: 1,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};
+
+export const consentSearchVoiceAndEmailYes: Schemas['PagedResultOfContact'] = {
+  items: [consentContactVoiceAndEmailYes],
+  totalCount: 1,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};
+
+/** `contact-opt-out.v1.json` `refusals[0].request.body`: the card's "Do not contact" body (design W11). */
+export const optOutDoNotContactRequest: Schemas['ContactOptOutRequest'] = {
+  doNotContact: true,
+};
+
+/** `contact-opt-out.v1.json` `request.body`: the route's own example, a channel named as `GET` writes it. */
+export const optOutDoNotContactAndSmsRequest: Schemas['ContactOptOutRequest'] = {
+  doNotContact: true,
+  channels: ['Sms'],
+};
+
+/** `contact-opt-out.v1.json` `response.body`: the contact after the opt-out, as `GET` reads it. */
+export const optOutResponse: Schemas['Contact'] = {
+  contactId: '7a1c0e2b5d3f4a6b8c9d0e1f2a3b4c5d',
+  tenantId: 't-demo-0001',
+  firstName: 'Ana',
+  lastName: 'Ruiz',
+  doNotContact: true,
+  addresses: [
+    { channel: 'Voice', address: '+15551234567' },
+    { channel: 'Sms', address: '+15551234567' },
+  ],
+  customFields: {},
+  channelConsent: { Voice: true, Sms: false },
+  createdAt: '2026-11-01T10:00:00.000+00:00',
+  updatedAt: '2026-11-05T09:30:00.000+00:00',
+  updatedBy: 'u-agent-0042',
+  fullName: 'Ana Ruiz',
+};
+
+/** `contact-write-refusals.v1.json` `refusals[*].body`, the body every contact-write refusal carries. */
+export const contactNotPermittedRefusal: Schemas['ErrorResponse'] = {
+  error: 'not-permitted',
+};
+
+/** `do-not-contact-refusals.v1.json` `dial.body`: a call to a contact marked do-not-contact (design W6). */
+export const dialDoNotContactRefusal: Schemas['VoiceDialResponse'] = {
+  accepted: false,
+  error: 'contact-do-not-contact',
+  trunkId: null,
+};
+
+/** `do-not-contact-refusals.v1.json` `dialConsentWithdrawn.body`: Voice consent recorded `false`. */
+export const dialConsentWithdrawnRefusal: Schemas['VoiceDialResponse'] = {
+  accepted: false,
+  error: 'contact-consent-withdrawn',
+  trunkId: null,
+};
+
+/** `do-not-contact-refusals.v1.json` `start.body`: a new conversation with a contact marked do-not-contact. */
+export const startDoNotContactRefusal: Schemas['ConversationStartRefusal'] = {
+  error: 'contact-do-not-contact',
+};
+
+/** `do-not-contact-refusals.v1.json` `startConsentWithdrawn.body`: consent on the channel recorded `false`. */
+export const startConsentWithdrawnRefusal: Schemas['ConversationStartRefusal'] = {
+  error: 'contact-consent-withdrawn',
+};
+
+/**
+ * `token-permissions.v1.json` `example.body.permissions`: the `permissions` of an Admin user's token response, as
+ * the console stores it (`auth-store.ts`, a `string[]`; the response is not in the generated schemas).
+ */
+export const tokenPermissionsAdminExample: string[] = [
+  'contacts:conversation:read',
+  'contacts:contact:view',
+  'contacts:contact:edit',
+  'contacts:contact:create',
+  'contacts:contact:delete',
+];
+
+/** `token-permissions.v1.json` `excerptsByTemplate.supervisor`: edit, and no delete. */
+export const tokenPermissionsSupervisorExcerpt: string[] = [
+  'contacts:contact:view',
+  'contacts:contact:edit',
+];

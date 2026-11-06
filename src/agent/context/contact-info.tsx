@@ -1,18 +1,36 @@
 import { useTranslation } from 'react-i18next';
-import { User, Phone, Mail, Building2, Globe, MessageSquare, Pencil, Trash2 } from 'lucide-react';
+import {
+  User,
+  Phone,
+  Mail,
+  Building2,
+  Globe,
+  MessageSquare,
+  Pencil,
+  Trash2,
+  Ban,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/core/ui/button';
 import { CopyButton } from '@/core/ui/copy-button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import { TimezoneSelect } from '@/core/ui/timezone-select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/ui/dialog';
 import { ConfirmDeleteDialog } from '@/core/ui/confirm-delete-dialog';
+import { ConfirmDialog } from '@/core/ui/confirm-dialog';
 import { PermissionButton } from '@/core/ui/permission-button';
 import { useConversationStore } from '@/agent/stores/conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
-import { useContact, useUpdateContact, useDeleteContact } from '@/core/api/hooks/use-contacts';
+import {
+  useContact,
+  useUpdateContact,
+  useDeleteContact,
+  useOptOutContact,
+} from '@/core/api/hooks/use-contacts';
 import { useVoiceDial } from '@/core/api/hooks/use-conversations';
+import { CHANNEL_TYPES, isChannelType } from '@/core/api/channel-types';
 import { toastApiError } from '@/core/api/toast-api-error';
 import { trunkRefusalValues, voiceDialRefusals } from '@/core/api/voice-call-refusals';
 import { channelLabel } from '@/core/i18n/channel-label';
@@ -56,6 +74,9 @@ const languageLabels: Record<string, string> = {
   pt: 'Português',
 };
 
+/** The picker's "no preference" option; no `ChannelType` name can equal it, and it sends nothing. */
+const NO_CHANNEL = '__none__';
+
 interface ContactEditForm {
   firstName: string;
   lastName: string;
@@ -73,6 +94,7 @@ export function ContactInfo() {
   const conversations = useConversationStore((s) => s.conversations);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [optOutOpen, setOptOutOpen] = useState(false);
   const [editForm, setEditForm] = useState<ContactEditForm>({
     firstName: '',
     lastName: '',
@@ -84,6 +106,7 @@ export function ContactInfo() {
   });
   const updateContact = useUpdateContact();
   const deleteContact = useDeleteContact();
+  const optOutContact = useOptOutContact();
 
   // Click-to-dial (3B.2d): only when the softphone is registered and no call is in progress
   // (single-session). The dial response carries the tracked outbound Conversation id.
@@ -95,6 +118,15 @@ export function ContactInfo() {
   const conversation = selectedId ? conversations[selectedId] : null;
   const contactId = useConversationContactId(conversation);
   const { data: contact } = useContact(contactId);
+
+  // The stored preferred channel when it names no `ChannelType` (written before the names were
+  // enforced, for example): shown as-is in the picker, read-only, and never sent back.
+  const storedUnknownChannel =
+    contact?.preferredChannel && !isChannelType(contact.preferredChannel)
+      ? contact.preferredChannel
+      : null;
+  const channelOptionLabel = (value: string) =>
+    isChannelType(value) ? channelLabel(t, value) : value;
 
   const openEditDialog = () => {
     if (!contact) return;
@@ -124,6 +156,9 @@ export function ContactInfo() {
   const phone = rawPhone === '—' ? rawPhone : formatPhone(rawPhone);
   const email = contact.addresses.find((a) => a.channel === 'email')?.address ?? '—';
   const doNotContact = contact.doNotContact === true;
+  const entityName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || contact.id;
+  // Call needs a voice/SMS address and a registered softphone; the do-not-contact status does not.
+  const callRendered = rawPhone !== '—' && registration === 'registered';
 
   return (
     <div className="space-y-1 p-4">
@@ -132,6 +167,19 @@ export function ContactInfo() {
           {t('agent:context.contact_heading')}
         </span>
         <div className="flex items-center gap-0.5">
+          {!doNotContact && (
+            <PermissionButton
+              requires="contacts:conversation:handle"
+              variant="ghost"
+              size="sm"
+              className="h-6 px-1.5 text-xs"
+              data-testid="contact-do-not-contact-btn"
+              onClick={() => setOptOutOpen(true)}
+            >
+              <Ban className="mr-1 h-3 w-3" />
+              {t('agent:context.do_not_contact.action')}
+            </PermissionButton>
+          )}
           <PermissionButton
             requires="contacts:contact:edit"
             variant="ghost"
@@ -166,7 +214,7 @@ export function ContactInfo() {
         value={phone}
         copyable={phone !== '—'}
       />
-      {rawPhone !== '—' && registration === 'registered' && (
+      {callRendered && (
         <Button
           data-testid="contact-call-btn"
           variant="outline"
@@ -195,13 +243,13 @@ export function ContactInfo() {
           {t('voice.call_contact', 'Call')}
         </Button>
       )}
-      {doNotContact && rawPhone !== '—' && registration === 'registered' && (
+      {doNotContact && (
         <p
           id={CALL_DO_NOT_CONTACT_NOTE}
           data-testid="contact-call-do-not-contact"
           className="mt-1 text-xs text-slate-500 dark:text-slate-400"
         >
-          {t('voice.call_do_not_contact')}
+          {callRendered ? t('voice.call_do_not_contact') : t('agent:context.do_not_contact.status')}
         </p>
       )}
       <InfoRow
@@ -253,9 +301,26 @@ export function ContactInfo() {
             onSuccess: () => setDeleteOpen(false),
           });
         }}
-        entityName={[contact.firstName, contact.lastName].filter(Boolean).join(' ') || contact.id}
+        entityName={entityName}
         entityType={t('context.contact_entity_type')}
         isPending={deleteContact.isPending}
+      />
+
+      <ConfirmDialog
+        open={optOutOpen}
+        onOpenChange={setOptOutOpen}
+        data-testid="contact-do-not-contact-confirm"
+        title={t('agent:context.do_not_contact.confirm_title')}
+        description={t('agent:context.do_not_contact.confirm_description', { name: entityName })}
+        confirmLabel={t('agent:context.do_not_contact.confirm')}
+        onConfirm={() => {
+          if (optOutContact.isPending) return;
+          // The card only ever sets do-not-contact; it never names channels.
+          optOutContact.mutate(
+            { id: contact.id, doNotContact: true },
+            { onSuccess: () => setOptOutOpen(false) },
+          );
+        }}
       />
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -302,11 +367,52 @@ export function ContactInfo() {
               <Label htmlFor="edit-prefChannel">
                 {t('agent:context.contactEdit.preferredChannel')}
               </Label>
-              <Input
-                id="edit-prefChannel"
-                value={editForm.preferredChannel}
-                onChange={(e) => setEditForm((f) => ({ ...f, preferredChannel: e.target.value }))}
-              />
+              <Select
+                value={editForm.preferredChannel === '' ? NO_CHANNEL : editForm.preferredChannel}
+                onValueChange={(v) => {
+                  if (v == null) return;
+                  setEditForm((f) => ({ ...f, preferredChannel: v === NO_CHANNEL ? '' : v }));
+                }}
+              >
+                <SelectTrigger
+                  id="edit-prefChannel"
+                  className="w-full"
+                  data-testid="contact-edit-channel-select"
+                >
+                  <SelectValue>
+                    {(value: string | null) =>
+                      value == null || value === NO_CHANNEL
+                        ? t('agent:context.contactEdit.noPreferredChannel')
+                        : channelOptionLabel(value)
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_CHANNEL} data-testid="contact-edit-channel-option-none">
+                    {t('agent:context.contactEdit.noPreferredChannel')}
+                  </SelectItem>
+                  {storedUnknownChannel != null && (
+                    // A stored value that names no channel shows as it came; it cannot be picked
+                    // again once left, and the save never sends it.
+                    <SelectItem
+                      value={storedUnknownChannel}
+                      disabled
+                      data-testid="contact-edit-channel-option-stored"
+                    >
+                      {storedUnknownChannel}
+                    </SelectItem>
+                  )}
+                  {CHANNEL_TYPES.map((name) => (
+                    <SelectItem
+                      key={name}
+                      value={name}
+                      data-testid={`contact-edit-channel-option-${name}`}
+                    >
+                      {channelLabel(t, name)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-prefLang">
@@ -342,7 +448,10 @@ export function ContactInfo() {
                     lastName: editForm.lastName || undefined,
                     company: editForm.company || undefined,
                     segment: editForm.segment || undefined,
-                    preferredChannel: editForm.preferredChannel || undefined,
+                    // The body takes a `ChannelType` name; an empty or unknown value is not sent.
+                    preferredChannel: isChannelType(editForm.preferredChannel)
+                      ? editForm.preferredChannel
+                      : undefined,
                     preferredLanguage: editForm.preferredLanguage || undefined,
                     timezone: editForm.timezone || undefined,
                   },

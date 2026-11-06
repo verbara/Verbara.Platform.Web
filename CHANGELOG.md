@@ -45,7 +45,44 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that level 1 stays off until the host turns it on, and what comes first, measuring the contact lookup on a large tenant
   included. The snippet on the WebChat page gains a comment line that points to it, in the three languages. (#520)
 
+- **A call or a new conversation refused because the contact does not want to be contacted says so.** When Platform
+  refuses the contact card's Call or the new-conversation dialog because the contact asked not to be contacted, or
+  withdrew consent on that channel, the agent sees that reason in their language instead of "Could not place the call"
+  or a generic conflict. No call card starts, and the dialog stays open with the message.
+
+- **An agent can mark a contact "Do not contact" from the contact card.** When a customer asks not to be contacted
+  again, whoever handles the conversation confirms "Do not contact" on the card, without needing the contact edit
+  permission. The card then says the contact is marked do not contact, whether or not the contact has a phone number and
+  whether or not the softphone is connected, and Call, when shown, stays disabled. If the mark could not be saved, the
+  reason shows in the agent's language and the confirmation stays open.
+
+### Changed
+
+- **A contact that could not be created, saved or deleted says why, in the user's language.** The message now says
+  whether the user lacks the permission, a consent channel was not recognized, or the contact no longer exists, instead
+  of repeating the server's text. A saved contact also refreshes every contact search on the page. The contact card's
+  edit picks the preferred channel from the list of channels, with a "No preference" option that sends none; a
+  stored value that names no known channel is shown as it is and is not sent back.
+
+- **Saving consent and "Set Do Not Contact" on the consent page need the contact edit permission.** For a user without it
+  both buttons are shown disabled, with a tooltip naming the permission.
+
+- **"Set Do Not Contact" on the consent page reports once, after every contact has answered.** It shows one message per
+  kind of failure and one message with the number of contacts updated, instead of one message per contact. The contacts
+  that could not be updated stay selected, so they can be tried again, and the rows show the new status without a
+  reload.
+
 ### Fixed
+
+- **The consent page records and shows consent per channel.** It lists every channel Platform knows, and shows each one
+  as "Yes", "No" or "No record", so a channel nobody asked about is no longer shown as a "No". A channel with an answer
+  offers "Yes" and "No" only. Saving sends only the channels the user changed, so the save is stored and the other
+  channels keep their answers. Before, the page used channel names Platform did not recognize, showed every recorded
+  consent as off and saved nothing. A saved answer now shows in the row and in the reopened sheet without a reload.
+
+- **This console requires the Platform release that carries Verbara.Platform #546.** The consent page, the contact
+  card's "Do not contact" and the localized refusals read that release's contact consent channel names, its
+  `POST /api/v1/contacts/{id}/opt-out` route and its refusal codes, which an earlier Platform does not have.
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so
   the edit reached no contact and the delete reported a deletion that removed nothing, and it compared address channels

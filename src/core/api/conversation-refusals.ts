@@ -1,4 +1,5 @@
 import { isApiError, type ApiErrorEntry, type ApiErrorMap } from './api-error';
+import { CONTACT_CONSENT_WITHDRAWN, CONTACT_DO_NOT_CONTACT } from './contact-write-refusals';
 
 /**
  * The conversation actions whose refusals the console reports (spec `conversation-action-feedback`,
@@ -143,6 +144,10 @@ export const conversationRefusals: ApiErrorMap<ConversationAction> = {
       code: 'start-persist-failed',
       key: 'errors.conversation.start_persist_failed',
     },
+    // A start refused because the contact asked not to be contacted or withdrew consent on the
+    // channel (fixture `do-not-contact-refusals.v1.json` `start`, `startConsentWithdrawn`; design W6).
+    [CONTACT_DO_NOT_CONTACT.code]: CONTACT_DO_NOT_CONTACT,
+    [CONTACT_CONSENT_WITHDRAWN.code]: CONTACT_CONSENT_WITHDRAWN,
     // Close and typify refusals (Platform `close-chat-without-typification-licence`, design D9).
     [TYPIFICATION_REQUIRED]: {
       code: TYPIFICATION_REQUIRED,

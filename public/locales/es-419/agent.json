@@ -146,6 +146,13 @@
     "save_note": "Guardar nota",
     "delete_note": "Eliminar nota",
     "contact_entity_type": "contacto",
+    "do_not_contact": {
+      "action": "No contactar",
+      "confirm_title": "¿Marcar como no contactar?",
+      "confirm_description": "{{name}} quedará marcado como no contactar. Se rechazarán las llamadas y las conversaciones nuevas a este contacto.",
+      "confirm": "Marcar como no contactar",
+      "status": "Este contacto está marcado como no contactar."
+    },
     "knowledge": "Conocimiento",
     "contactEdit": {
       "title": "Editar contacto",
@@ -154,6 +161,7 @@
       "company": "Empresa",
       "segment": "Segmento",
       "preferredChannel": "Canal preferido",
+      "noPreferredChannel": "Sin preferencia",
       "preferredLanguage": "Idioma preferido",
       "timezone": "Zona horaria",
       "update": "Actualizar",

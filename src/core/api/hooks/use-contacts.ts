@@ -4,8 +4,11 @@ import {
   useMutation,
   useQueryClient,
   type InfiniteData,
+  type QueryClient,
 } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import { contactWriteRefusals } from '@/core/api/contact-write-refusals';
+import { toastApiError } from '@/core/api/toast-api-error';
 import { useReadRetry } from '@/core/api/read-retry';
 import type { components } from '@/core/api/generated/openapi';
 import { mapPlatformContact } from '@/core/api/platform-conversation';
@@ -105,6 +108,29 @@ export function useSearchContacts(search: string) {
   });
 }
 
+type PlatformContactBody = components['schemas']['Contact'];
+type UpdateContactRequest = components['schemas']['UpdateContactRequest'];
+type ContactOptOutRequest = components['schemas']['ContactOptOutRequest'];
+
+/**
+ * How a contact write reports its outcome. By default the hook shows its own success toast and, on a
+ * refusal, the localized message of {@link contactWriteRefusals}. `'caller'` turns both off, for a
+ * caller that reports many writes at once (the consent page's "Bulk set DNC", design W5).
+ */
+export interface ContactWriteOptions {
+  report?: 'caller';
+}
+
+/**
+ * Invalidates what a contact write changes: the contact itself and every cached contact search, so
+ * a list that shows the contact reads it again (design W10). The search key starts with
+ * `['contacts', 'search']`, which `['contacts', id]` never prefix-matches.
+ */
+function invalidateContact(qc: QueryClient, id: string) {
+  void qc.invalidateQueries({ queryKey: ['contacts', id] });
+  void qc.invalidateQueries({ queryKey: ['contacts', 'search'] });
+}
+
 export function useCreateContact() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
@@ -119,25 +145,29 @@ export function useCreateContact() {
       qc.invalidateQueries({ queryKey: ['contacts'] });
       toast.success(t('toasts.contacts.created'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, contactWriteRefusals, t),
   });
 }
 
-export function useUpdateContact() {
+/** `PUT /api/v1/contacts/{id}` with the generated `UpdateContactRequest` body (design W3). */
+export function useUpdateContact(options: ContactWriteOptions = {}) {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
+  const reportsItself = options.report !== 'caller';
   return useMutation({
-    mutationFn: ({ id, ...data }: Partial<Omit<Contact, 'identityLevel'>> & { id: string }) =>
-      customFetch<Contact>({
+    mutationFn: ({ id, ...data }: UpdateContactRequest & { id: string }) =>
+      customFetch<PlatformContactBody>({
         url: `/api/v1/contacts/${id}`,
         method: 'PUT',
         data,
       }),
     onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: ['contacts', variables.id] });
-      toast.success(t('toasts.contacts.updated'));
+      invalidateContact(qc, variables.id);
+      if (reportsItself) toast.success(t('toasts.contacts.updated'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (reportsItself) toastApiError(err, contactWriteRefusals, t);
+    },
   });
 }
 
@@ -154,6 +184,29 @@ export function useDeleteContact() {
       qc.invalidateQueries({ queryKey: ['contacts'] });
       toast.success(t('toasts.contacts.deleted'));
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toastApiError(err, contactWriteRefusals, t),
+  });
+}
+
+/**
+ * `POST /api/v1/contacts/{id}/opt-out` (design W11): records that the contact asked not to be
+ * contacted, answered with the contact as `GET` reads it. The route only restricts; it never clears
+ * do-not-contact.
+ */
+export function useOptOutContact() {
+  const qc = useQueryClient();
+  const { t } = useTranslation('common');
+  return useMutation({
+    mutationFn: ({ id, ...data }: ContactOptOutRequest & { id: string }) =>
+      customFetch<PlatformContactBody>({
+        url: `/api/v1/contacts/${id}/opt-out`,
+        method: 'POST',
+        data,
+      }),
+    onSuccess: (_data, variables) => {
+      invalidateContact(qc, variables.id);
+      toast.success(t('toasts.contacts.opted_out'));
+    },
+    onError: (err: Error) => toastApiError(err, contactWriteRefusals, t),
   });
 }

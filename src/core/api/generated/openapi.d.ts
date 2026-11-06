@@ -3769,7 +3769,7 @@ export interface paths {
         };
       };
     };
-    /** @description A WebChat address that starts with `webchat-visitor:` or `webchat-external:` answers 400 `reserved-contact-address`, with the offending addresses in `details`, and nothing is written. `identityLevel` in the body is ignored. */
+    /** @description A WebChat address that starts with `webchat-visitor:` or `webchat-external:` answers 400 `reserved-contact-address`, with the offending addresses in `details`, and nothing is written. `identityLevel` in the body is ignored. `channelConsent` keys are channel names as `GET` writes them (`Voice`, `WhatsApp`, ...), case-sensitive; each named channel takes its value and the others keep theirs. Any other key answers 400 `unknown-consent-channel`, with the offending keys in `details`, and nothing is written. */
     put: {
       parameters: {
         query?: never;
@@ -3803,6 +3803,15 @@ export interface paths {
             'application/json': components['schemas']['ErrorDetailResponse'];
           };
         };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
         /** @description Not Found */
         404: {
           headers: {
@@ -3824,12 +3833,21 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description OK */
-        200: {
+        /** @description No Content */
+        204: {
           headers: {
             [name: string]: unknown;
           };
           content?: never;
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -3957,6 +3975,82 @@ export interface paths {
           content: {
             'application/json': components['schemas']['ErrorDetailResponse'];
           };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/contacts/{id}/opt-out': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Records that the contact asked not to be contacted: `doNotContact: true` marks the contact do-not-contact and each of `channels` is recorded as `false` in `channelConsent`; channels not named keep their value. It never clears do-not-contact and never records `true` (that is `PUT /contacts/{id}`). Requires `contacts:conversation:handle` (403 `not-permitted`, evaluated first). `channels` are channel names as `GET` writes them, case-sensitive; any other value answers 400 `unknown-consent-channel` with the offending values in `details`, and nothing is written. A body that changes nothing, or no body at all, answers 200 and writes nothing. */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['ContactOptOutRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['Contact'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorDetailResponse'];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -18498,6 +18592,15 @@ export interface components {
       /** Format: date-time */
       createdAt: string;
     };
+    /**
+     * @description The body of `POST /contacts/{id}/opt-out`: bool? ContactOptOutRequest.DoNotContact `true` sets the contact's
+     *     do-not-contact, and each of IReadOnlyList&lt;string&gt;? ContactOptOutRequest.Channels (channel names as `GET` writes them) records `false` for
+     *     that channel. Both members are optional; the route never clears do-not-contact and never records `true`.
+     */
+    ContactOptOutRequest: {
+      doNotContact?: null | boolean;
+      channels?: null | string[];
+    };
     Conversation: {
       conversationId: components['schemas']['EntityId'];
       tenantId: components['schemas']['TenantId'];
@@ -21576,6 +21679,9 @@ export interface components {
       customFields?: null | {
         [key: string]: string;
       };
+      channelConsent?: null | {
+        [key: string]: boolean;
+      };
     };
     UpdateDialerSettingsRequest: {
       /** Format: int32 */
@@ -22019,7 +22125,8 @@ export interface components {
     };
     /**
      * @description `CorrelationId` is the tracked outbound Conversation id on success; `Error` a stable code otherwise
-     *     (`voice-unavailable` on 503).
+     *     (`voice-unavailable` on 503; `trunk-not-dialable`, `contact-do-not-contact` and
+     *     `contact-consent-withdrawn` on 409).
      *     `TrunkId` is always written: the resolved trunk's id on 409 `trunk-not-dialable`, null otherwise.
      */
     VoiceDialResponse: {

@@ -246,7 +246,10 @@ test.describe('Monitor takeover and contact search read Platform ids (N16)', () 
         await api.deleteAgentWithUser({ agentId: ids.agentId, userId: ids.userId });
       }
       if (visitor) {
-        await request.delete(`${API_BASE}/api/v1/contacts/${visitor.contactId}`).catch(() => {});
+        const contactDeleted = await request.delete(
+          `${API_BASE}/api/v1/contacts/${visitor.contactId}`,
+        );
+        expect(contactDeleted.status(), 'delete the test contact').toBe(204);
       }
       await request.dispose();
     }
