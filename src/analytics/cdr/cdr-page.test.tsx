@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createWrapper } from '@/test/hook-test-utils';
 import listFixture from './__fixtures__/cdr-list-response.v1.json';
 import partialListFixture from './__fixtures__/cdr-list-response.partial.v1.json';
+import emptyListFixture from './__fixtures__/cdr-list-response.empty.v1.json';
+import { ApiError } from '@/core/api/api-error';
 
 // The hook under the page is the real `useCdrList`; only its transport answers the fixture
 // (cdr-list-reads-its-envelope B.1, spec "The CDR list is read from its data/hasMore envelope").
@@ -75,6 +77,8 @@ describe('CdrPage', () => {
 
     // The row's channel is read from `channel`.
     expect(rows[0].querySelector('[col-id="channel"]')).toHaveTextContent('voice');
+    expect(screen.queryByTestId('cdr-empty-state')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('cdr-error-state')).not.toBeInTheDocument();
 
     expect(nextButton()).toBeEnabled();
   });
@@ -98,5 +102,36 @@ describe('CdrPage', () => {
       method: 'GET',
       params: expect.objectContaining({ page: '1', pageSize: '50' }),
     });
+  });
+
+  // cdr-list-reads-its-envelope B.4, spec "A failed CDR list shows an error, not an empty list":
+  // a failure, a network error and an empty page are three different screens.
+  it('ShowsTheErrorState_AndNotTheEmptyState_WhenTheListAnswers500', async () => {
+    mockCustomFetch.mockRejectedValue(new ApiError(500, { error: 'boom' }));
+    renderPage();
+
+    expect(await screen.findByTestId('cdr-error-state')).toHaveTextContent('cdr.error');
+    expect(screen.queryByTestId('cdr-empty-state')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('cdr-table')).not.toBeInTheDocument();
+  });
+
+  it('ShowsTheErrorState_AndNotTheEmptyState_WhenTheListFailsOnTheNetwork', async () => {
+    mockCustomFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+    renderPage();
+
+    expect(await screen.findByTestId('cdr-error-state')).toHaveTextContent('cdr.error');
+    expect(screen.queryByTestId('cdr-empty-state')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('cdr-table')).not.toBeInTheDocument();
+  });
+
+  it('ShowsTheEmptyState_AndNotTheErrorState_WhenTheListAnswersItsEmptyFixture', async () => {
+    mockCustomFetch.mockResolvedValue(emptyListFixture);
+    renderPage();
+
+    expect(await screen.findByTestId('cdr-empty-state')).toHaveTextContent('cdr.empty');
+    expect(screen.queryByTestId('cdr-error-state')).not.toBeInTheDocument();
+    // The empty state is the grid's no-rows overlay: the grid and its pagination stay.
+    expect(screen.getByTestId('cdr-table')).toContainElement(screen.getByTestId('cdr-empty-state'));
+    expect(nextButton()).toBeDisabled();
   });
 });

@@ -149,6 +149,17 @@ function HoldCountCellRenderer({ data }: ICellRendererParams<CdrRow>) {
   );
 }
 
+// A 200 with an empty `data` page: the grid stays (its header and the pagination remain usable)
+// and its no-rows overlay is the localized empty state, never AG Grid's built-in English text.
+function CdrEmptyOverlay() {
+  const { t } = useTranslation('analytics');
+  return (
+    <span className="text-sm text-muted-foreground" data-testid="cdr-empty-state">
+      {t('cdr.empty')}
+    </span>
+  );
+}
+
 function formatDurationMs(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -213,7 +224,7 @@ export default function CdrPage() {
     setPage(1);
   }, [from, to, queue]);
 
-  const { data, isLoading } = useCdrList(from, to, { queue: queue || undefined }, page);
+  const { data, isLoading, isError } = useCdrList(from, to, { queue: queue || undefined }, page);
 
   const rowData = useMemo<CdrRow[]>(
     () => (data?.data ?? []).map(mapApiRowToGridRow),
@@ -379,7 +390,19 @@ export default function CdrPage() {
         </div>
       )}
 
-      {!isLoading && (
+      {/* Three screens, not one (host D8): the error is read before the data, so a failed request
+          never renders as an empty list; an empty page is the grid's no-rows overlay below. */}
+      {!isLoading && isError && (
+        <div
+          role="alert"
+          className="flex items-center justify-center rounded-lg border border-destructive/40 py-12 text-sm text-destructive"
+          data-testid="cdr-error-state"
+        >
+          {t('cdr.error')}
+        </div>
+      )}
+
+      {!isLoading && !isError && (
         <div
           className="ag-theme-alpine h-[600px] w-full rounded-lg border dark:ag-theme-alpine-dark"
           data-testid="cdr-table"
@@ -392,6 +415,7 @@ export default function CdrPage() {
             onRowClicked={handleRowClicked}
             rowClass="cursor-pointer"
             animateRows={true}
+            noRowsOverlayComponent={CdrEmptyOverlay}
           />
         </div>
       )}
