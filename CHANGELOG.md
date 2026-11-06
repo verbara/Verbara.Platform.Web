@@ -48,13 +48,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **A call or a new conversation refused because the contact does not want to be contacted says so.** When Platform
   refuses the contact card's Call or the new-conversation dialog because the contact asked not to be contacted, or
   withdrew consent on that channel, the agent sees that reason in their language instead of "Could not place the call"
-  or a generic conflict. No call card starts, and the dialog stays open with the message.
+  or a generic conflict. No call card starts, and the dialog stays open with the message. (#523)
 
 - **An agent can mark a contact "Do not contact" from the contact card.** When a customer asks not to be contacted
   again, whoever handles the conversation confirms "Do not contact" on the card, without needing the contact edit
   permission. The card then says the contact is marked do not contact, whether or not the contact has a phone number and
   whether or not the softphone is connected, and Call, when shown, stays disabled. If the mark could not be saved, the
-  reason shows in the agent's language and the confirmation stays open.
+  reason shows in the agent's language and the confirmation stays open. (#523)
 
 ### Changed
 
@@ -62,15 +62,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   whether the user lacks the permission, a consent channel was not recognized, or the contact no longer exists, instead
   of repeating the server's text. A saved contact also refreshes every contact search on the page. The contact card's
   edit picks the preferred channel from the list of channels, with a "No preference" option that sends none; a
-  stored value that names no known channel is shown as it is and is not sent back.
+  stored value that names no known channel is shown as it is and is not sent back. (#523)
 
 - **Saving consent and "Set Do Not Contact" on the consent page need the contact edit permission.** For a user without it
-  both buttons are shown disabled, with a tooltip naming the permission.
+  both buttons are shown disabled, with a tooltip naming the permission. (#523)
 
 - **"Set Do Not Contact" on the consent page reports once, after every contact has answered.** It shows one message per
   kind of failure and one message with the number of contacts updated, instead of one message per contact. The contacts
   that could not be updated stay selected, so they can be tried again, and the rows show the new status without a
-  reload.
+  reload. (#523)
 
 ### Fixed
 
@@ -78,30 +78,30 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   as "Yes", "No" or "No record", so a channel nobody asked about is no longer shown as a "No". A channel with an answer
   offers "Yes" and "No" only. Saving sends only the channels the user changed, so the save is stored and the other
   channels keep their answers. Before, the page used channel names Platform did not recognize, showed every recorded
-  consent as off and saved nothing. A saved answer now shows in the row and in the reopened sheet without a reload.
+  consent as off and saved nothing. A saved answer now shows in the row and in the reopened sheet without a reload. (#523)
 
 - **This console requires the Platform release that carries Verbara.Platform #546.** The consent page, the contact
   card's "Do not contact" and the localized refusals read that release's contact consent channel names, its
-  `POST /api/v1/contacts/{id}/opt-out` route and its refusal codes, which an earlier Platform does not have.
+  `POST /api/v1/contacts/{id}/opt-out` route and its refusal codes, which an earlier Platform does not have. (#523)
 
 - **A message that arrives while the agent has the conversation open shows its own text, on the right side.** The row
   used to show the channel name, such as "WhatsApp", instead of the message, and an agent's reply could appear on the
   customer's side. The row now sits on the side of whoever sent it, shows "Loading message…" in the agent's language
   for the moment it takes to read the stored message, and then shows the text. A message that arrives while that read
-  is still running is read again once it finishes, and a burst of messages leads to one further read, not one each.
+  is still running is read again once it finishes, and a burst of messages leads to one further read, not one each. (#524)
 
 - **The customer typing no longer adds empty messages to the conversation.** A typing notice used to add a blank row
-  each time it arrived; it now adds nothing.
+  each time it arrived; it now adds nothing. (#524)
 
 - **Dismissing one agent-assist suggestion keeps the others.** Suggestions arrived without their id, so dismissing one
   removed all of them, and when the first one timed out the others disappeared with it. Each suggestion now keeps its
-  own id, and dismissing it or letting it time out removes only that one.
+  own id, and dismissing it or letting it time out removes only that one. (#524)
 
 - **Message labels show who sent the message, never an internal id.** A message could be labelled with the sender's
   internal id or with "Outbound" / "Inbound". In the agent workspace a reply now reads "You" when the signed-in agent
   sent it and "Agent" otherwise, both in the open conversation and in a past one opened from the History tab; in the
   supervisor's conversation view every reply reads "Agent". A customer message reads the contact's name, or "Customer"
-  when the contact has none.
+  when the contact has none. (#524)
 
 - **The contact card's call, edit and delete act on the contact it shows.** The card read the contact without its id, so
   the edit reached no contact and the delete reported a deletion that removed nothing, and it compared address channels
