@@ -445,7 +445,6 @@ export default function CdrPage() {
 
       <CdrDetailDrawer
         sessionId={selectedRow?.id ?? null}
-        row={selectedRow}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
       />
