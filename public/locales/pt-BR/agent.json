@@ -185,6 +185,9 @@
     "image_alt": "Imagem",
     "file_fallback": "Arquivo"
   },
+  "thread": {
+    "messagePending": "Carregando mensagem…"
+  },
   "new_conversation": {
     "title": "Nova conversa",
     "contact": "Contato",

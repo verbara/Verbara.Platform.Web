@@ -35,6 +35,8 @@ export interface Message {
   conversationId: string;
   sender: 'agent' | 'customer' | 'system';
   senderName: string;
+  /** The stored sender id (`/history` `senderId`): compared, never shown. A live row has none. */
+  senderId?: string;
   text: string;
   timestamp: string;
   status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';

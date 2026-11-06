@@ -10,6 +10,17 @@ const SENDER: Record<PlatformMessage['direction'], Message['sender']> = {
   System: 'system',
 };
 
+/**
+ * The side of a message, from `/history`'s `direction` or the live `conversation.message` event's `sender`,
+ * which use the same three values. Anything else (a `TypingIndicator` frame, a value Platform does not
+ * send) is not a message the thread shows, so it has no side.
+ */
+export function senderOf(direction: string): Message['sender'] | undefined {
+  return Object.hasOwn(SENDER, direction)
+    ? SENDER[direction as PlatformMessage['direction']]
+    : undefined;
+}
+
 const STATUS: Record<PlatformMessage['deliveryStatus'], NonNullable<Message['status']>> = {
   Pending: 'sending',
   Sent: 'sent',
