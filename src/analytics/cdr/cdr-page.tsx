@@ -5,6 +5,7 @@ import {
   AllCommunityModule,
   type ColDef,
   type ICellRendererParams,
+  type ProcessRowParams,
   ModuleRegistry,
 } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -146,7 +147,11 @@ function HoldCountCellRenderer({ data }: ICellRendererParams<CdrRow>) {
   const { t } = useTranslation('analytics');
   if (data?.isPartial) {
     return (
-      <span className="text-muted-foreground italic" data-hold-unknown="">
+      <span
+        className="text-muted-foreground italic"
+        data-hold-unknown=""
+        data-testid="cdr-hold-unknown"
+      >
         {t('cdr.hold_unknown')}
       </span>
     );
@@ -332,6 +337,18 @@ export default function CdrPage() {
 
   const defaultColDef = useMemo<ColDef>(() => ({ resizable: true, flex: 1 }), []);
   const getRowId = useCallback((params: { data: CdrRow }) => params.data.id, []);
+  // AG Grid's own `row-id` is not a data-* attribute; the E2E and the lab check (spec "A populated
+  // record renders against a real stack") find a record's row by `data-session-id` instead.
+  const processRowPostCreate = useCallback(
+    ({ eRow, ePinnedLeftRow, ePinnedRightRow, node }: ProcessRowParams<CdrRow>) => {
+      const sessionId = node.data?.id;
+      if (!sessionId) return;
+      for (const el of [eRow, ePinnedLeftRow, ePinnedRightRow]) {
+        el?.setAttribute('data-session-id', sessionId);
+      }
+    },
+    [],
+  );
 
   const handleRowClicked = useCallback((event: { data: CdrRow | undefined }) => {
     if (event.data) {
@@ -422,6 +439,7 @@ export default function CdrPage() {
           <AgGridReact<CdrRow>
             rowData={rowData}
             getRowId={getRowId}
+            processRowPostCreate={processRowPostCreate}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             onRowClicked={handleRowClicked}

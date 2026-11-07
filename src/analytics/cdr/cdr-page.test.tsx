@@ -115,6 +115,20 @@ describe('CdrPage', () => {
     expect(row.querySelector('[col-id="wrapUpDurationMs"]')).toHaveTextContent('0:15');
   });
 
+  // cdr-list-reads-its-envelope B.8, spec "A populated record renders against a real stack": the E2E
+  // (and the lab check of C.1) reach a row and its hold marker through data-* attributes only. AG
+  // Grid's own `row-id` is not one, so the row carries the sessionId in `data-session-id`.
+  it('CarriesEachRowsSessionIdInADataAttribute_AndMarksTheUnknownHoldWithATestId', async () => {
+    mockCustomFetch.mockResolvedValue(partialListFixture);
+    const { container } = renderPage();
+
+    await waitFor(() => expect(gridRows(container)).toHaveLength(1));
+    const row = gridRows(container)[0];
+    expect(row).toHaveAttribute('data-session-id', '5d2a8c419e074b3fa1c67f80e2d94b15');
+    const holdCell = row.querySelector('[col-id="holdCount"]');
+    expect(holdCell!.querySelector('[data-testid="cdr-hold-unknown"]')).not.toBeNull();
+  });
+
   it('RendersTheHoldCountAsItsNumber_WhenTheRowIsComplete', async () => {
     mockCustomFetch.mockResolvedValue(listFixture);
     const { container } = renderPage();
