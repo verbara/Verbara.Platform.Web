@@ -74,6 +74,36 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The call records page lists the calls Platform sends.** The page read the list in a shape Platform does not send, so
+  it showed an empty grid for every day. It now shows one row per call, a member Platform did not send stays empty, and
+  "next" stays enabled while there are more calls. The recording archive and the PDF report read the same list. (#N)
+
+- **The call records page says when the list cannot be read.** A failed request, a server error or a lost connection
+  included, shows an error in the user's language instead of an empty grid; a day with no calls still shows the empty
+  text. (#N)
+
+- **The call detail shows what Platform recorded, and says when it cannot be read.** The drawer used to build its fields
+  and a timeline from the grid row. It now shows only the detail Platform sends, plays the recording from the detail, and
+  says "not found" for a call Platform does not have and a different text for any other failure. "Loading detail…" is
+  shown in the user's language. (#N)
+
+- **A partial call record shows its hold count as unknown.** When Platform marks a record partial, its hold count reads
+  as unknown, with a localized label, in the grid and in the detail, instead of a number that may be short. (#N)
+
+- **Recordings play and download only through a signed-in request.** The player fetches the recording itself, with the
+  user's token and tenant, and hands the audio to the waveform, so no player loads the recording link on its own. A
+  format the browser cannot play shows that, with the download beside it. The archive's download is a button that saves
+  the file through the same signed-in request. (#N)
+
+- **A request the server refuses as unauthorized is retried once with a new token.** When the server answered 401 to a
+  token the console still believed valid, the console retried with the same token and failed again. It now refreshes the
+  token once, also when several requests are refused at the same time, and retries with the new one; a second refusal is
+  reported, with no loop. During an impersonation a 401 still ends the impersonation. This applies to every console
+  request. (#N)
+
+- **This console requires the Platform release that carries the `call-records-are-written-once` change.** The call
+  records page reads that release's `isPartial` member and its `/api/v1` recording stream path. (#N)
+
 - **The consent page records and shows consent per channel.** It lists every channel Platform knows, and shows each one
   as "Yes", "No" or "No record", so a channel nobody asked about is no longer shown as a "No". A channel with an answer
   offers "Yes" and "No" only. Saving sends only the channels the user changed, so the save is stored and the other

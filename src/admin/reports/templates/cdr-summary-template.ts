@@ -1,6 +1,6 @@
 import type { jsPDF } from 'jspdf';
 import type { PdfHelpers } from '@/core/pdf';
-import type { CdrRow } from '@/core/api/hooks/use-analytics';
+import type { CdrRowDto } from '@/core/api/hooks/use-analytics';
 
 export interface CdrSummaryKpis {
   totalCalls: number;
@@ -13,7 +13,7 @@ export interface CdrSummaryKpis {
 export interface CdrSummaryData {
   period: { from: string; to: string };
   kpis: CdrSummaryKpis;
-  rows: CdrRow[];
+  rows: CdrRowDto[];
 }
 
 interface Args {
@@ -80,7 +80,7 @@ export function renderCdrSummary({ helpers, data, t }: Args) {
   }
 }
 
-export function summarizeCdrRows(rows: CdrRow[]): CdrSummaryKpis {
+export function summarizeCdrRows(rows: CdrRowDto[]): CdrSummaryKpis {
   const totalCalls = rows.length;
   const totalDurationMs = rows.reduce((acc, r) => acc + r.durationMs, 0);
   const avgDurationMs = totalCalls > 0 ? Math.round(totalDurationMs / totalCalls) : 0;

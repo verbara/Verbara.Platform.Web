@@ -3,7 +3,7 @@ import { jsPDF } from 'jspdf';
 import { createPdfHelpers } from '@/core/pdf/helpers';
 import { renderCdrSummary, summarizeCdrRows, type CdrSummaryData } from './cdr-summary-template';
 import { renderQaSummary, summarizeQaRows, type QaSummaryData } from './qa-summary-template';
-import type { CdrRow, QaRow } from '@/core/api/hooks/use-analytics';
+import type { CdrRowDto, QaRow } from '@/core/api/hooks/use-analytics';
 
 const mockI18n = (k: string) => k;
 
@@ -19,7 +19,7 @@ function makeHelpers() {
   return { doc, helpers };
 }
 
-function cdrRow(overrides: Partial<CdrRow> = {}): CdrRow {
+function cdrRow(overrides: Partial<CdrRowDto> = {}): CdrRowDto {
   return {
     sessionId: 's1',
     startTime: '2026-05-08T10:00:00Z',

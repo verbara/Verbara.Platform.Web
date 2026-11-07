@@ -65,7 +65,7 @@ export function ReportPdfButton({ report }: ReportPdfButtonProps) {
     );
   }
 
-  const rows = cdrPage?.items ?? [];
+  const rows = cdrPage?.data ?? [];
   const data: CdrSummaryData = {
     period: { from, to },
     kpis: summarizeCdrRows(rows),

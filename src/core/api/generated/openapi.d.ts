@@ -18294,6 +18294,7 @@ export interface components {
       metadata: null | {
         [key: string]: string;
       };
+      isPartial: boolean;
     };
     CdrTimelineEventDto: {
       event: string;

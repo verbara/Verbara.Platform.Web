@@ -39,11 +39,14 @@ interface RequestConfig {
 class UnauthorizedError extends Error {
   /** Whether the refused request was sent with an impersonation token (design D3). */
   readonly sentDuringImpersonation: boolean;
+  /** The access token the refused request carried, or `null` for none (design W7). */
+  readonly sentToken: string | null;
 
-  constructor(sentDuringImpersonation: boolean) {
+  constructor(sentDuringImpersonation: boolean, sentToken: string | null) {
     super('Unauthorized');
     this.name = 'UnauthorizedError';
     this.sentDuringImpersonation = sentDuringImpersonation;
+    this.sentToken = sentToken;
   }
 }
 
@@ -60,6 +63,8 @@ function endImpersonationAndReject(): never {
 }
 
 let _refreshPromise: Promise<boolean> | null = null;
+/** Whether the in-flight {@link _refreshPromise} is a forced one (design W7). */
+let _refreshForced = false;
 /** The in-flight {@link probeSession} of this tab, shared by concurrent callers. */
 let _probePromise: Promise<SessionProbeResult> | null = null;
 
@@ -160,6 +165,27 @@ function heldTokenStaysValid(minValidityMs: number | undefined): boolean {
 }
 
 /**
+ * How {@link refreshAccessToken} decides whether the network is needed.
+ *
+ * - `minValidityMs` (design D9) is how long the held token must stay valid for the lock body to skip
+ *   the network. Omitted, the skip is the request pre-flight's own test (`isTokenExpired()`, a 30 s
+ *   buffer). The session manager passes its refresh lead (60 s).
+ * - `force` with `rejectedToken` (change `cdr-list-reads-its-envelope`, design W7) is the recovery of
+ *   a server 401: the server refused `rejectedToken`, so its validity by the console's clock proves
+ *   nothing. Inside the lock the held token is compared with it instead: the same token is re-minted
+ *   over the network; a different one (an earlier forced refresh in this tab already replaced it) is
+ *   kept without a request. Tokens are per-tab, so another tab's re-mint never shows here.
+ */
+export type RefreshOptions =
+  | { readonly force?: false; readonly minValidityMs?: number }
+  | { readonly force: true; readonly rejectedToken: string | null };
+
+/** Whether the token this tab holds is still the one the server rejected. */
+function stillHoldsRejected(rejectedToken: string | null): boolean {
+  return useAuthStore.getState().accessToken === rejectedToken;
+}
+
+/**
  * Refreshes the access token, deduplicated per-tab via `_refreshPromise` and
  * serialized across tabs via the Web Locks API (`'verbara-refresh'`). When
  * `navigator.locks` is unavailable the per-tab dedupe still applies and we fall
@@ -170,13 +196,21 @@ function heldTokenStaysValid(minValidityMs: number | undefined): boolean {
  * when the refresh failed (callers then log out). Exported so the session
  * manager can trigger proactive refreshes.
  *
- * `minValidityMs` (design D9) is how long the held token must stay valid for the lock body to skip
- * the network. Omitted, the skip is the request pre-flight's own test (`isTokenExpired()`, a 30 s
- * buffer). The session manager passes its refresh lead (60 s): it fires at `exp − lead`, when the
- * held token is still valid for the whole lead, so with the 30 s test the proactive refresh found
- * the token "fresh" and never reached the network wherever Web Locks exist (H6).
+ * A number is the `minValidityMs` of {@link RefreshOptions} (the session manager's form). With
+ * `force`, the held-token fast path is replaced by the token comparison of {@link RefreshOptions}.
+ * A forced call that finds an unforced refresh in flight in this tab waits for it, and, if that one
+ * left the rejected token in place (its fast path made no request), issues its own forced call once.
  */
-export async function refreshAccessToken(minValidityMs?: number): Promise<boolean> {
+export function refreshAccessToken(options?: number | RefreshOptions): Promise<boolean> {
+  const opts: RefreshOptions =
+    typeof options === 'number' ? { minValidityMs: options } : (options ?? {});
+  return refreshWith(opts, true);
+}
+
+async function refreshWith(opts: RefreshOptions, mayJoin: boolean): Promise<boolean> {
+  // A call that may not join (a forced re-issue) waits for whatever is in flight, then runs its own.
+  if (!mayJoin) while (_refreshPromise) await _refreshPromise;
+
   // The refresh cookie belongs to the operator's own sign-in: during an impersonation a refresh
   // would install the operator's token next to the impersonated tenant (H17, design D3). Like the
   // session probe, it makes no call then, and reports whether the held impersonation token is still
@@ -184,8 +218,16 @@ export async function refreshAccessToken(minValidityMs?: number): Promise<boolea
   const impersonation = useAuthStore.getState().impersonation;
   if (impersonation?.active) return Date.now() < impersonation.expiresAt;
 
-  if (_refreshPromise) return _refreshPromise;
-
+  if (_refreshPromise && mayJoin) {
+    const inFlightWasForced = _refreshForced;
+    const shared = await _refreshPromise;
+    if (!opts.force || inFlightWasForced || !shared || !stillHoldsRejected(opts.rejectedToken)) {
+      return shared;
+    }
+    // The shared call was unforced and kept the rejected token: one forced call of our own.
+    return refreshWith(opts, false);
+  }
+  _refreshForced = opts.force === true;
   _refreshPromise = (async () => {
     try {
       // Never overlap a session probe in this tab: without Web Locks the two POSTs would present
@@ -193,14 +235,20 @@ export async function refreshAccessToken(minValidityMs?: number): Promise<boolea
       if (_probePromise) await _probePromise;
       if (typeof navigator !== 'undefined' && navigator.locks) {
         return await navigator.locks.request('verbara-refresh', async () => {
+          if (opts.force) {
+            // An earlier forced refresh in this tab already replaced the rejected token.
+            if (!stillHoldsRejected(opts.rejectedToken)) return true;
+            return doRefresh();
+          }
           // Another tab may have refreshed while we waited for the lock.
-          if (heldTokenStaysValid(minValidityMs)) return true;
+          if (heldTokenStaysValid(opts.minValidityMs)) return true;
           return doRefresh();
         });
       }
       return await doRefresh();
     } finally {
       _refreshPromise = null;
+      _refreshForced = false;
     }
   })();
 
@@ -324,7 +372,7 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
   });
 
   if (response.status === 401) {
-    throw new UnauthorizedError(sentDuringImpersonation);
+    throw new UnauthorizedError(sentDuringImpersonation, accessToken);
   }
 
   // Pro v2.4.0-pro + Platform v2.2.0 — LicenseGate middleware returns 402
@@ -404,18 +452,23 @@ async function ensureTokenBeforeRequest(): Promise<void> {
   }
 }
 
-export async function customFetch<T>(config: RequestConfig): Promise<T> {
+/**
+ * Sends a request and, on a server 401, recovers once (design W7): a request sent during an
+ * impersonation ends it and is not replayed (design D3); any other forces a real refresh of the
+ * token the server rejected and sends the request once more. A 401 on that retry reaches the caller.
+ * A failed refresh signs out. Shared by both fetch variants so their 401 semantics cannot drift.
+ */
+async function sendWithUnauthorizedRecovery<R>(send: () => Promise<R>): Promise<R> {
   await ensureTokenBeforeRequest();
 
   try {
-    return await executeRequest<T>(config);
+    return await send();
   } catch (err) {
-    // On 401: try refresh once
     if (err instanceof UnauthorizedError) {
       if (err.sentDuringImpersonation) endImpersonationAndReject();
-      const refreshed = await refreshAccessToken();
+      const refreshed = await refreshAccessToken({ force: true, rejectedToken: err.sentToken });
       if (refreshed) {
-        return executeRequest<T>(config);
+        return send();
       }
 
       useAuthStore.getState().logout();
@@ -426,6 +479,10 @@ export async function customFetch<T>(config: RequestConfig): Promise<T> {
   }
 }
 
+export function customFetch<T>(config: RequestConfig): Promise<T> {
+  return sendWithUnauthorizedRecovery(() => executeRequest<T>(config));
+}
+
 /**
  * Header-aware variant of {@link customFetch}. Returns the parsed body and
  * the raw `Headers` object so callers can inspect response metadata (e.g.
@@ -433,23 +490,6 @@ export async function customFetch<T>(config: RequestConfig): Promise<T> {
  * {@link customFetch}; existing call-sites should keep using `customFetch`
  * unless they need to read response headers.
  */
-export async function customFetchWithHeaders<T>(config: RequestConfig): Promise<FetchResult<T>> {
-  await ensureTokenBeforeRequest();
-
-  try {
-    return await executeRequestRaw<T>(config);
-  } catch (err) {
-    if (err instanceof UnauthorizedError) {
-      if (err.sentDuringImpersonation) endImpersonationAndReject();
-      const refreshed = await refreshAccessToken();
-      if (refreshed) {
-        return executeRequestRaw<T>(config);
-      }
-
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
-    }
-
-    throw err;
-  }
+export function customFetchWithHeaders<T>(config: RequestConfig): Promise<FetchResult<T>> {
+  return sendWithUnauthorizedRecovery(() => executeRequestRaw<T>(config));
 }

@@ -59,6 +59,7 @@
     "qa_score": "Puntuación QA",
     "sentiment": "Sentimiento",
     "ring_duration": "Tiempo de timbre",
+    "talk_time": "Tiempo de conversación",
     "hold_count": "Esperas",
     "acw_duration": "ACW",
     "aria": {
@@ -106,6 +107,14 @@
         "agent": "Agente",
         "caller": "Cliente"
       }
+    },
+    "error": "No se pudieron cargar los registros de llamadas.",
+    "empty": "No hay registros de llamadas para los filtros seleccionados.",
+    "hold_unknown": "Desconocido",
+    "detail": {
+      "loading": "Cargando detalle…",
+      "not_found": "No se encontró este registro de llamada.",
+      "error": "No se pudo cargar el detalle del registro de llamada."
     }
   },
   "qa": {
@@ -304,7 +313,10 @@
       "channelBoth": "Ambos",
       "channelAgent": "Agente",
       "channelCustomer": "Cliente",
-      "stereoTooltip": "Alternar canal de audio: agente (izquierda), cliente (derecha) o ambos"
+      "stereoTooltip": "Alternar canal de audio: agente (izquierda), cliente (derecha) o ambos",
+      "unsupportedFormat": "El formato de esta grabación no se puede reproducir en el navegador. Descárgala para escucharla.",
+      "download": "Descargar grabación",
+      "error": "No se pudo cargar la grabación."
     }
   }
 }

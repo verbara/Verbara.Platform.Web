@@ -1,11 +1,13 @@
 import { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Play, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHeader } from '@/core/ui/page-header';
 import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { useCdrList } from '@/core/api/hooks/use-analytics';
 import { recordingStreamUrl } from '@/core/api/hooks/use-recording';
+import { downloadRecording } from '@/core/api/recording-download';
 
 const StereoWaveformPlayer = lazy(() => import('@/analytics/cdr/stereo-waveform-player'));
 
@@ -36,7 +38,7 @@ export default function RecordingArchivePage() {
     page,
   );
 
-  const recordings = data?.items.filter((row) => row.hasRecording) ?? [];
+  const recordings = (data?.data ?? []).filter((row) => row.hasRecording);
 
   function handlePlay(sessionId: string) {
     setExpandedSession((prev) => (prev === sessionId ? null : sessionId));
@@ -140,8 +142,12 @@ export default function RecordingArchivePage() {
       {/* Pagination */}
       {data && (
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            Page {data.page} of {Math.max(1, Math.ceil(data.totalCount / data.pageSize))}
+          {/* The data/hasMore envelope carries no total, so no page count is shown. */}
+          <span
+            className="text-sm text-muted-foreground"
+            data-testid="recording-archive-page-label"
+          >
+            Page {data.page}
           </span>
           <div className="flex gap-2">
             <Button
@@ -155,7 +161,7 @@ export default function RecordingArchivePage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={!data.hasNextPage}
+              disabled={!data.hasMore}
               onClick={() => setPage((p) => p + 1)}
             >
               Next <ChevronRight className="ml-1 h-4 w-4" />
@@ -171,9 +177,9 @@ interface RecordingRowProps {
   readonly row: {
     sessionId: string;
     startTime: string;
-    contact?: string;
-    agentName?: string;
-    queueName?: string;
+    contact?: string | null;
+    agentName?: string | null;
+    queueName?: string | null;
     durationMs: number;
   };
   readonly isExpanded: boolean;
@@ -183,6 +189,20 @@ interface RecordingRowProps {
 function RecordingRow({ row, isExpanded, onPlay }: RecordingRowProps) {
   const { t } = useTranslation('analytics');
   const streamUrl = recordingStreamUrl(row.sessionId);
+  const [downloading, setDownloading] = useState(false);
+
+  // The download fetches the bytes through the authenticated client and saves the blob: the page
+  // renders no link to the stream URL (design W6, spec `recording-playback`).
+  async function handleDownload() {
+    setDownloading(true);
+    try {
+      await downloadRecording(streamUrl, row.sessionId);
+    } catch {
+      toast.error(t('recording.player.error'));
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <>
@@ -203,12 +223,17 @@ function RecordingRow({ row, isExpanded, onPlay }: RecordingRowProps) {
               <Play className="h-4 w-4" />
               <span className="sr-only">{t('recording.archive.play', 'Play')}</span>
             </Button>
-            <a href={streamUrl} target="_blank" rel="noopener noreferrer" download>
-              <Button variant="ghost" size="sm" data-testid={`download-${row.sessionId}`}>
-                <Download className="h-4 w-4" />
-                <span className="sr-only">{t('recording.archive.download', 'Download')}</span>
-              </Button>
-            </a>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void handleDownload()}
+              disabled={downloading}
+              aria-busy={downloading}
+              data-testid={`download-${row.sessionId}`}
+            >
+              <Download className="h-4 w-4" />
+              <span className="sr-only">{t('recording.archive.download', 'Download')}</span>
+            </Button>
           </div>
         </td>
       </tr>
@@ -222,7 +247,11 @@ function RecordingRow({ row, isExpanded, onPlay }: RecordingRowProps) {
                 </div>
               }
             >
-              <StereoWaveformPlayer src={streamUrl} />
+              <StereoWaveformPlayer
+                src={streamUrl}
+                durationMs={row.durationMs}
+                sessionId={row.sessionId}
+              />
             </Suspense>
           </td>
         </tr>

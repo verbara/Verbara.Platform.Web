@@ -59,6 +59,7 @@
     "qa_score": "QA Score",
     "sentiment": "Sentiment",
     "ring_duration": "Ring Duration",
+    "talk_time": "Talk Time",
     "hold_count": "Holds",
     "acw_duration": "ACW",
     "aria": {
@@ -106,6 +107,14 @@
         "agent": "Agent",
         "caller": "Caller"
       }
+    },
+    "error": "The call records could not be loaded.",
+    "empty": "No call records for the selected filters.",
+    "hold_unknown": "Unknown",
+    "detail": {
+      "loading": "Loading detail…",
+      "not_found": "This call record was not found.",
+      "error": "The call record detail could not be loaded."
     }
   },
   "qa": {
@@ -304,7 +313,10 @@
       "channelBoth": "Both",
       "channelAgent": "Agent",
       "channelCustomer": "Customer",
-      "stereoTooltip": "Toggle audio channel: agent (left), customer (right), or both"
+      "stereoTooltip": "Toggle audio channel: agent (left), customer (right), or both",
+      "unsupportedFormat": "This recording's format cannot be played in the browser. Download it to listen.",
+      "download": "Download recording",
+      "error": "The recording could not be loaded."
     }
   }
 }

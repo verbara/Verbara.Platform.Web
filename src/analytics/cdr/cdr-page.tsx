@@ -5,6 +5,7 @@ import {
   AllCommunityModule,
   type ColDef,
   type ICellRendererParams,
+  type ProcessRowParams,
   ModuleRegistry,
 } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -26,7 +27,7 @@ import { Button } from '@/core/ui/button';
 import { ExportButton } from '@/analytics/shared/export-button';
 import { ContactSearchPanel } from '@/core/ui/contact-search-panel';
 import { CdrDetailDrawer } from './cdr-detail-drawer';
-import { useCdrList, type CdrRow as ApiCdrRow } from '@/core/api/hooks/use-analytics';
+import { useCdrList, type CdrRowDto } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -42,18 +43,19 @@ export interface CdrRow {
   queue: string;
   agent: string;
   duration: string;
+  talkTimeMs: number | null;
   disposition: string;
   slaMet: boolean;
-  recordingUrl: string | null;
   transferTo: string | null;
   hasRecording: boolean;
-  campaignName: string | null;
   // Premium columns
   qaScore: number | null;
   sentimentLabel: string | null;
   ringDurationMs: number | null;
+  // Null when the record is partial (host D17): its hold figures are not known.
   holdCount: number | null;
   wrapUpDurationMs: number | null;
+  isPartial: boolean;
 }
 
 // Channel icon cell renderer
@@ -139,13 +141,37 @@ function SentimentCellRenderer({ data }: ICellRendererParams<CdrRow>) {
   );
 }
 
-// Hold count badge cell renderer
+// Hold count cell renderer. A partial record (host D17) renders the localized unknown marker,
+// never the number the Api sent; a complete record renders its number, zero included.
 function HoldCountCellRenderer({ data }: ICellRendererParams<CdrRow>) {
+  const { t } = useTranslation('analytics');
+  if (data?.isPartial) {
+    return (
+      <span
+        className="text-muted-foreground italic"
+        data-hold-unknown=""
+        data-testid="cdr-hold-unknown"
+      >
+        {t('cdr.hold_unknown')}
+      </span>
+    );
+  }
   const count = data?.holdCount;
-  if (!count) return <span className="text-muted-foreground">—</span>;
+  if (count == null) return <span className="text-muted-foreground">—</span>;
   return (
     <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-      {count} {count === 1 ? 'hold' : 'holds'}
+      {count}
+    </span>
+  );
+}
+
+// A 200 with an empty `data` page: the grid stays (its header and the pagination remain usable)
+// and its no-rows overlay is the localized empty state, never AG Grid's built-in English text.
+function CdrEmptyOverlay() {
+  const { t } = useTranslation('analytics');
+  return (
+    <span className="text-sm text-muted-foreground" data-testid="cdr-empty-state">
+      {t('cdr.empty')}
     </span>
   );
 }
@@ -168,7 +194,7 @@ export default function CdrPage() {
   const { t } = useTranslation('analytics');
   const { formatDateTime } = useFormatDate();
   const mapApiRowToGridRow = useCallback(
-    (r: ApiCdrRow): CdrRow => {
+    (r: CdrRowDto): CdrRow => {
       const formatDateTimeSafe = (iso: string): string => {
         try {
           return formatDateTime(iso);
@@ -182,21 +208,21 @@ export default function CdrPage() {
         endTime: formatDateTimeSafe(r.endTime),
         answerTime: r.answerTime ? formatDateTimeSafe(r.answerTime) : null,
         contact: r.contact ?? '',
-        channel: r.channelType ?? r.channel,
+        channel: r.channel,
         queue: r.queueName ?? '',
         agent: r.agentName ?? '',
         duration: formatDurationMs(r.durationMs),
-        disposition: r.dispositionName ?? r.disposition,
+        talkTimeMs: r.talkTimeMs ?? null,
+        disposition: r.disposition,
         slaMet: r.slaMet,
-        recordingUrl: r.recordingStreamUrl ?? null,
         transferTo: r.transferredTo ?? null,
         hasRecording: r.hasRecording,
-        campaignName: r.campaignName ?? null,
         qaScore: r.qaScore ?? null,
         sentimentLabel: r.sentimentLabel ?? null,
         ringDurationMs: r.ringDurationMs ?? null,
-        holdCount: r.holdCount ?? null,
+        holdCount: r.isPartial ? null : (r.holdCount ?? null),
         wrapUpDurationMs: r.wrapUpDurationMs ?? null,
+        isPartial: r.isPartial,
       };
     },
     [formatDateTime],
@@ -215,10 +241,10 @@ export default function CdrPage() {
     setPage(1);
   }, [from, to, queue]);
 
-  const { data, isLoading } = useCdrList(from, to, { queue: queue || undefined }, page);
+  const { data, isLoading, isError } = useCdrList(from, to, { queue: queue || undefined }, page);
 
   const rowData = useMemo<CdrRow[]>(
-    () => (data?.items ?? []).map(mapApiRowToGridRow),
+    () => (data?.data ?? []).map(mapApiRowToGridRow),
     [data, mapApiRowToGridRow],
   );
 
@@ -236,6 +262,15 @@ export default function CdrPage() {
       { field: 'queue', headerName: t('cdr.queue'), sortable: true, minWidth: 100 },
       { field: 'agent', headerName: t('cdr.agent'), sortable: true, minWidth: 130 },
       { field: 'duration', headerName: t('cdr.duration'), sortable: true, minWidth: 100 },
+      {
+        field: 'talkTimeMs',
+        headerName: t('cdr.talk_time'),
+        sortable: true,
+        minWidth: 100,
+        // An unanswered call carries no talkTimeMs: its cell stays empty, never 0 or NaN.
+        valueFormatter: ({ value }: { value: number | null }) =>
+          value != null ? formatMinSec(value) : '',
+      },
       {
         field: 'disposition',
         headerName: t('cdr.disposition'),
@@ -301,6 +336,19 @@ export default function CdrPage() {
   );
 
   const defaultColDef = useMemo<ColDef>(() => ({ resizable: true, flex: 1 }), []);
+  const getRowId = useCallback((params: { data: CdrRow }) => params.data.id, []);
+  // AG Grid's own `row-id` is not a data-* attribute; the E2E and the lab check (spec "A populated
+  // record renders against a real stack") find a record's row by `data-session-id` instead.
+  const processRowPostCreate = useCallback(
+    ({ eRow, ePinnedLeftRow, ePinnedRightRow, node }: ProcessRowParams<CdrRow>) => {
+      const sessionId = node.data?.id;
+      if (!sessionId) return;
+      for (const el of [eRow, ePinnedLeftRow, ePinnedRightRow]) {
+        el?.setAttribute('data-session-id', sessionId);
+      }
+    },
+    [],
+  );
 
   const handleRowClicked = useCallback((event: { data: CdrRow | undefined }) => {
     if (event.data) {
@@ -371,18 +419,33 @@ export default function CdrPage() {
         </div>
       )}
 
-      {!isLoading && (
+      {/* Three screens, not one (host D8): the error is read before the data, so a failed request
+          never renders as an empty list; an empty page is the grid's no-rows overlay below. */}
+      {!isLoading && isError && (
+        <div
+          role="alert"
+          className="flex items-center justify-center rounded-lg border border-destructive/40 py-12 text-sm text-destructive"
+          data-testid="cdr-error-state"
+        >
+          {t('cdr.error')}
+        </div>
+      )}
+
+      {!isLoading && !isError && (
         <div
           className="ag-theme-alpine h-[600px] w-full rounded-lg border dark:ag-theme-alpine-dark"
           data-testid="cdr-table"
         >
           <AgGridReact<CdrRow>
             rowData={rowData}
+            getRowId={getRowId}
+            processRowPostCreate={processRowPostCreate}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             onRowClicked={handleRowClicked}
             rowClass="cursor-pointer"
             animateRows={true}
+            noRowsOverlayComponent={CdrEmptyOverlay}
           />
         </div>
       )}
@@ -402,7 +465,7 @@ export default function CdrPage() {
         <Button
           variant="outline"
           size="sm"
-          disabled={!data?.hasNextPage}
+          disabled={!data?.hasMore}
           onClick={() => setPage((p) => p + 1)}
         >
           Next
@@ -412,7 +475,6 @@ export default function CdrPage() {
 
       <CdrDetailDrawer
         sessionId={selectedRow?.id ?? null}
-        row={selectedRow}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
       />

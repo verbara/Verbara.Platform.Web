@@ -1,5 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useAuthStore, type ImpersonationState } from '@/core/auth/auth-store';
+import { useTenantStore } from '@/core/tenant/tenant-store';
 
 const mockUseCdrList = vi.fn();
 
@@ -19,10 +21,20 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@/analytics/cdr/stereo-waveform-player', () => ({
-  default: ({ src }: { src: string }) => <div data-testid="waveform-player">{src}</div>,
+  default: (props: { src: string; durationMs: number; sessionId: string }) => (
+    <div
+      data-testid="waveform-player"
+      data-duration-ms={String(props.durationMs)}
+      data-session-id={props.sessionId}
+    >
+      {props.src}
+    </div>
+  ),
 }));
 
 import RecordingArchivePage from './recording-archive-page';
+import listFixture from '@/analytics/cdr/__fixtures__/cdr-list-response.v1.json';
+import partialListFixture from '@/analytics/cdr/__fixtures__/cdr-list-response.partial.v1.json';
 
 const mockRecordings = [
   {
@@ -33,7 +45,6 @@ const mockRecordings = [
     queueName: 'Support',
     durationMs: 185000,
     hasRecording: true,
-    recordingStreamUrl: '/api/v1/recordings/ses-001/stream',
     channel: 'voice',
     endTime: '2026-05-01T10:03:05Z',
     disposition: 'answered',
@@ -48,7 +59,6 @@ const mockRecordings = [
     queueName: 'Sales',
     durationMs: 60000,
     hasRecording: true,
-    recordingStreamUrl: '/api/v1/recordings/ses-002/stream',
     channel: 'voice',
     endTime: '2026-05-01T11:01:00Z',
     disposition: 'answered',
@@ -85,7 +95,7 @@ describe('RecordingArchivePage', () => {
 
   it('should_ShowEmptyState_WhenNoRecordings', () => {
     mockUseCdrList.mockReturnValue({
-      data: { items: [], totalCount: 0, page: 1, pageSize: 20, hasNextPage: false },
+      data: { data: [], hasMore: false, page: 1, pageSize: 50 },
       isLoading: false,
     });
     render(<RecordingArchivePage />);
@@ -95,11 +105,10 @@ describe('RecordingArchivePage', () => {
   it('should_ShowEmptyState_WhenAllRowsLackRecording', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: [mockRecordings[2]],
-        totalCount: 1,
+        data: [mockRecordings[2]],
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -110,11 +119,10 @@ describe('RecordingArchivePage', () => {
   it('should_RenderRecordingRows_WhenDataAvailable', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: mockRecordings,
-        totalCount: 3,
+        data: mockRecordings,
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -131,11 +139,10 @@ describe('RecordingArchivePage', () => {
   it('should_ExpandPlayerSection_WhenPlayClicked', async () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: mockRecordings,
-        totalCount: 3,
+        data: mockRecordings,
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -154,11 +161,10 @@ describe('RecordingArchivePage', () => {
   it('should_CollapsePlayer_WhenSamePlayClickedAgain', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: mockRecordings,
-        totalCount: 3,
+        data: mockRecordings,
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -174,11 +180,10 @@ describe('RecordingArchivePage', () => {
   it('should_SwitchPlayer_WhenDifferentPlayClicked', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: mockRecordings,
-        totalCount: 3,
+        data: mockRecordings,
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -195,11 +200,10 @@ describe('RecordingArchivePage', () => {
   it('should_FormatDurationCorrectly_WhenRendered', () => {
     mockUseCdrList.mockReturnValue({
       data: {
-        items: [mockRecordings[0]],
-        totalCount: 1,
+        data: [mockRecordings[0]],
+        hasMore: false,
         page: 1,
-        pageSize: 20,
-        hasNextPage: false,
+        pageSize: 50,
       },
       isLoading: false,
     });
@@ -214,5 +218,140 @@ describe('RecordingArchivePage', () => {
     expect(screen.getByTestId('filter-bar')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Agent')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Queue')).toBeInTheDocument();
+  });
+
+  // cdr-list-reads-its-envelope B.1: the archive reads the same data/hasMore envelope as the grid.
+  it('ListsOnlyTheRecordedRow_AndEnablesNext_WhenTheListAnswersItsFixture', () => {
+    mockUseCdrList.mockReturnValue({ data: listFixture, isLoading: false });
+    render(<RecordingArchivePage />);
+
+    const played = screen
+      .getAllByTestId(/^play-/)
+      .map((el) => el.getAttribute('data-testid')!.slice('play-'.length));
+    expect(played).toEqual(['c7a1f0e25b6d4c3e9a8f1e2d3c4b5a69']);
+    expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /next/i })).toBeEnabled();
+  });
+
+  it('ShowsPageWithoutATotal_AndDisablesNext_WhenHasMoreIsFalse', () => {
+    mockUseCdrList.mockReturnValue({ data: partialListFixture, isLoading: false });
+    render(<RecordingArchivePage />);
+
+    expect(screen.getByTestId('play-5d2a8c419e074b3fa1c67f80e2d94b15')).toBeInTheDocument();
+    const pageLabel = screen.getByTestId('recording-archive-page-label');
+    expect(pageLabel).toHaveTextContent('Page 1');
+    expect(pageLabel.textContent).not.toMatch(/of/);
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled();
+  });
+
+  // cdr-list-reads-its-envelope B.7 (design W6, spec `recording-playback` "The console downloads a
+  // recording through the authenticated client"): the real request client, with `fetch` stubbed.
+  describe('download', () => {
+    const USER = { id: 'u1', email: 'sup@example.com', displayName: 'Sup', role: 'Supervisor' };
+    let seen: { url: URL; headers: Record<string, string> }[];
+    let clicked: { href: string; download: string }[];
+    const createObjectURL = vi.fn((_blob: Blob) => 'blob:local-1');
+    const revokeObjectURL = vi.fn();
+
+    beforeEach(() => {
+      seen = [];
+      clicked = [];
+      createObjectURL.mockClear();
+      revokeObjectURL.mockClear();
+      useAuthStore.getState().setAuth('token-1', Date.now() + 600_000, USER, 'tenant-1', [], {});
+      useTenantStore.setState({ activeTenantId: null });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (input: string, init?: RequestInit) => {
+          seen.push({
+            url: new URL(input, 'http://localhost'),
+            headers: { ...((init?.headers ?? {}) as Record<string, string>) },
+          });
+          return new Response(new Uint8Array([1, 2, 3]), {
+            status: 200,
+            headers: { 'Content-Type': 'audio/wav' },
+          });
+        }),
+      );
+      // jsdom has no object URLs; the test-only shim records what the download hands them.
+      URL.createObjectURL = createObjectURL;
+      URL.revokeObjectURL = revokeObjectURL;
+      vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+        this: HTMLAnchorElement,
+      ) {
+        clicked.push({ href: this.getAttribute('href') ?? '', download: this.download });
+      });
+      mockUseCdrList.mockReturnValue({
+        data: { data: mockRecordings, hasMore: false, page: 1, pageSize: 50 },
+        isLoading: false,
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+      useAuthStore.setState({ impersonation: null });
+      useAuthStore.getState().logout();
+      useTenantStore.setState({ activeTenantId: null });
+    });
+
+    it('RendersNoLinkToTheStreamUrl_AndKeepsTheDownloadSelectorOnAButton_WhenRowsRender', () => {
+      render(<RecordingArchivePage />);
+
+      const download = screen.getByTestId('download-ses-001');
+      expect(download.tagName).toBe('BUTTON');
+      expect(download.closest('a')).toBeNull();
+      for (const el of Array.from(document.querySelectorAll('[href]'))) {
+        expect(el.getAttribute('href')).not.toContain('/api/v1/recordings/');
+      }
+      expect(seen).toHaveLength(0);
+    });
+
+    it('FetchesOnceWithBothHeaders_AndSavesTheBlob_WhenARowsDownloadIsPressed', async () => {
+      render(<RecordingArchivePage />);
+      fireEvent.click(screen.getByTestId('download-ses-001'));
+
+      await waitFor(() => expect(clicked).toHaveLength(1));
+      expect(seen).toHaveLength(1);
+      expect(seen[0]!.url.pathname).toBe('/api/v1/recordings/ses-001/stream');
+      expect(seen[0]!.url.search).toBe('');
+      expect(seen[0]!.headers.Authorization).toBe('Bearer token-1');
+      expect(seen[0]!.headers['X-Tenant-Id']).toBe('tenant-1');
+      expect(createObjectURL.mock.calls[0]?.[0]?.type).toBe('audio/wav');
+      expect(clicked[0]).toEqual({ href: 'blob:local-1', download: 'ses-001.wav' });
+      expect(revokeObjectURL).toHaveBeenCalledWith('blob:local-1');
+      for (const el of Array.from(document.querySelectorAll('[href]'))) {
+        expect(el.getAttribute('href')).not.toContain('/api/v1/recordings/');
+      }
+    });
+
+    it('SendsTheImpersonatedTenant_WhenADownloadRunsDuringAnImpersonation', async () => {
+      const impersonation: ImpersonationState = {
+        active: true,
+        targetTenantId: 'tenant-9',
+        targetTenantName: 'ACME',
+        originalToken: 'operator-token',
+        originalTokenExpiry: null,
+        originalTenantId: 'tenant-1',
+        expiresAt: Date.now() + 600_000,
+        readOnly: false,
+      };
+      useAuthStore.setState({ impersonation });
+      render(<RecordingArchivePage />);
+      fireEvent.click(screen.getByTestId('download-ses-002'));
+
+      await waitFor(() => expect(seen).toHaveLength(1));
+      expect(seen[0]!.headers['X-Tenant-Id']).toBe('tenant-9');
+    });
+
+    it('HandsThePlayerTheRowsDurationAndSessionId_WhenARowIsPlayed', async () => {
+      render(<RecordingArchivePage />);
+      fireEvent.click(screen.getByTestId('play-ses-001'));
+
+      const player = await screen.findByTestId('waveform-player');
+      expect(player).toHaveAttribute('data-duration-ms', '185000');
+      expect(player).toHaveAttribute('data-session-id', 'ses-001');
+      expect(seen).toHaveLength(0);
+    });
   });
 });
