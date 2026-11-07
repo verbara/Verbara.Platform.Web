@@ -318,16 +318,14 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
                         <Badge variant="outline">{qaSummary.sentimentLabel}</Badge>
                       )}
                     </div>
-                    {sessionId && (
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0"
-                        render={<Link to={`/analytics/qa?sessionId=${sessionId}`} />}
-                      >
-                        {t('cdr.view_full_qa')}
-                      </Button>
-                    )}
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="h-auto p-0"
+                      render={<Link to={`/analytics/qa?sessionId=${sessionId}`} />}
+                    >
+                      {t('cdr.view_full_qa')}
+                    </Button>
                   </div>
                 </>
               )}
