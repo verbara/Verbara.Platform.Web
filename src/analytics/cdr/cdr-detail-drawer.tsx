@@ -118,26 +118,24 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
           <SheetDescription>{apiCdr?.contact ?? ''}</SheetDescription>
         </SheetHeader>
 
-        {sessionId && (
-          <div data-print="hide" className="flex items-center gap-2 px-4 pt-2">
-            <PrintButton contentRef={printRef} documentTitle={`cdr-${sessionId}`} />
-            {detail && (
-              <PdfDownloadButton
-                filename={makeCdrFilename(sessionId)}
-                documentTitle={t('cdr.pdf.documentTitle', { id: sessionId })}
-                onGenerate={async ({ doc, helpers }) => {
-                  renderCdrPdf({
-                    doc,
-                    helpers,
-                    detail,
-                    transcript: transcriptSegments,
-                    t: (key) => t(key.replace(/^analytics\./, '')),
-                  });
-                }}
-              />
-            )}
-          </div>
-        )}
+        <div data-print="hide" className="flex items-center gap-2 px-4 pt-2">
+          <PrintButton contentRef={printRef} documentTitle={`cdr-${sessionId}`} />
+          {detail && (
+            <PdfDownloadButton
+              filename={makeCdrFilename(sessionId)}
+              documentTitle={t('cdr.pdf.documentTitle', { id: sessionId })}
+              onGenerate={async ({ doc, helpers }) => {
+                renderCdrPdf({
+                  doc,
+                  helpers,
+                  detail,
+                  transcript: transcriptSegments,
+                  t: (key) => t(key.replace(/^analytics\./, '')),
+                });
+              }}
+            />
+          )}
+        </div>
 
         <div
           ref={printRef}

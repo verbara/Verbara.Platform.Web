@@ -94,6 +94,30 @@ describe('CdrDetailDrawer', () => {
     suspendPlayer = false;
   });
 
+  // The print/PDF bar renders whenever a session id is given, and nothing renders without one:
+  // the drawer returns early on a missing id, so the bar carries no guard of its own.
+  it('RendersThePrintBar_WhenASessionIdIsGiven', async () => {
+    answerDetail(fullDetail);
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(document.querySelector('[data-print="hide"]')).not.toBeNull());
+  });
+
+  it('RendersNothing_AndRequestsNoDetail_WhenNoSessionIdIsGiven', () => {
+    answerDetail(fullDetail);
+    const Wrapper = createWrapper();
+    render(
+      <Wrapper>
+        <MemoryRouter>
+          <CdrDetailDrawer sessionId={null} open onOpenChange={() => {}} />
+        </MemoryRouter>
+      </Wrapper>,
+    );
+
+    expect(document.querySelector('[data-print="hide"]')).toBeNull();
+    expect(detailRequestUrls()).toEqual([]);
+  });
+
   it('RendersFourTimelineEntries_TheNarrative_AndThePlayer_WhenTheDetailAnswersItsFullFixture', async () => {
     answerDetail(fullDetail);
     renderDrawer(FULL_ID);
