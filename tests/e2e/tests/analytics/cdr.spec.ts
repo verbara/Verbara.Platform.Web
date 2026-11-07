@@ -73,6 +73,14 @@ test.describe('CDR Records', () => {
 });
 
 test.describe('CDR Records — contract fixtures', () => {
+  // AG Grid virtualises columns: a column outside the horizontal viewport has no cell in the DOM.
+  // At the default 1280px the grid's minimum widths (~1,650px) push `holdCount` off-screen, so its
+  // cell — and `cdr-hold-unknown` — would be absent whatever the row says, and the zero-count check
+  // below would pass vacuously. A viewport wide enough for every column renders every cell.
+  test.beforeEach(async ({ demoAdminPage: page }) => {
+    await page.setViewportSize({ width: 2400, height: 900 });
+  });
+
   test('renders one row per element of the list envelope', async ({ demoAdminPage: page }) => {
     await stubList(page, 200, LIST);
     await page.goto('/analytics/cdr');
@@ -83,7 +91,8 @@ test.describe('CDR Records — contract fixtures', () => {
     await expect(rows).toHaveCount(2);
     await expect(rows.nth(0)).toHaveAttribute('data-session-id', FIRST_ID);
     await expect(rows.nth(1)).toHaveAttribute('data-session-id', SECOND_ID);
-    // Complete records: no hold cell is marked unknown.
+    // Complete records: both hold cells render, and neither is marked unknown.
+    await expect(rows.locator('[col-id="holdCount"]')).toHaveCount(2);
     await expect(page.getByTestId('cdr-hold-unknown')).toHaveCount(0);
     await expect(page.getByTestId('cdr-empty-state')).toHaveCount(0);
     await expect(page.getByTestId('cdr-error-state')).toHaveCount(0);
