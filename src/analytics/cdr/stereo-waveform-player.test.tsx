@@ -227,7 +227,12 @@ describe('StereoWaveformPlayer', () => {
     const ws = lastWaveSurfer();
     await waitFor(() => expect(ws.loadBlob).toHaveBeenCalledTimes(1));
     const [blob, channelData, duration] = ws.loadBlob.mock.calls[0] as [Blob, unknown, number];
-    expect(blob).toBeInstanceOf(Blob);
+    // Realm-independent: under Node 22 the fetched body's Blob is undici's, not the test
+    // environment's global, so `toBeInstanceOf(Blob)` depends on the Node version.
+    expect(Object.prototype.toString.call(blob)).toBe('[object Blob]');
+    expect(Array.from(new Uint8Array(await blob.arrayBuffer()))).toEqual([
+      82, 73, 70, 70, 0, 0, 0, 0,
+    ]);
     expect(blob.type).toBe('audio/wav');
     expect(blob.size).toBe(8);
     expect(channelData).toBeUndefined();
