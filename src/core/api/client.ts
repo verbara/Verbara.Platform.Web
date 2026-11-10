@@ -34,6 +34,12 @@ interface RequestConfig {
    * export, whose row hashes an offline verifier recomputes).
    */
   responseType?: 'json' | 'blob';
+  /**
+   * The `RequestInit.cache` mode, sent unchanged on the request and on its single retry after a
+   * 401. Omitted, the browser's default applies. A recording passes `'no-store'` so its bytes are
+   * never served from, or written to, the browser's HTTP cache.
+   */
+  cache?: RequestCache;
 }
 
 class UnauthorizedError extends Error {
@@ -362,6 +368,7 @@ async function executeRequestRaw<T>(config: RequestConfig): Promise<FetchResult<
     method: config.method,
     body: config.data ? JSON.stringify(config.data) : undefined,
     signal: config.signal,
+    ...(config.cache && { cache: config.cache }),
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
