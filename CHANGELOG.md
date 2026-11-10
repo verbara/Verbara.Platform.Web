@@ -95,6 +95,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   format the browser cannot play shows that, with the download beside it. The archive's download is a button that saves
   the file through the same signed-in request. (#N)
 
+- **Recordings are not stored in the browser's HTTP cache.** Playing a recording a second time, or saving it from the
+  recording archive, served the bytes the browser had kept from the first request. Both now read the recording from the
+  server every time and leave nothing in the cache, also on the retry after a refused token. (#N)
+
 - **A request the server refuses as unauthorized is retried once with a new token.** When the server answered 401 to a
   token the console still believed valid, the console retried with the same token and failed again. It now refreshes the
   token once, also when several requests are refused at the same time, and retries with the new one; a second refusal is

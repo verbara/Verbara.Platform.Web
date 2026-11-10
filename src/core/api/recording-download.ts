@@ -5,9 +5,18 @@
 
 import { customFetch } from './client';
 
-/** Fetches a recording's bytes from its stream path, with the client's auth and 401 recovery. */
+/**
+ * Fetches a recording's bytes from its stream path, with the client's auth and 401 recovery. The
+ * request (and its retry after a 401) bypasses the browser's HTTP cache: every play and every save
+ * reads the bytes from the server, and none are kept in the cache (design D19).
+ */
 export function fetchRecording(streamPath: string): Promise<Blob> {
-  return customFetch<Blob>({ url: streamPath, method: 'GET', responseType: 'blob' });
+  return customFetch<Blob>({
+    url: streamPath,
+    method: 'GET',
+    responseType: 'blob',
+    cache: 'no-store',
+  });
 }
 
 const EXTENSION_BY_TYPE: Readonly<Record<string, string>> = {
