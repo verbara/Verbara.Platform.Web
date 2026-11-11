@@ -9,6 +9,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The partner revenue filter includes the last day you pick.** The page sent the "Until" date as midnight of that
+  day, so revenue recorded later that day was left out. It now sends the date itself, which the API (Platform 2.39.1
+  and later) reads as the whole day.
+
 ## [3.30.0-web] - 2026-11-11
 
 The call records page lists and plays the calls Platform records, contacts follow their consent per channel, the History

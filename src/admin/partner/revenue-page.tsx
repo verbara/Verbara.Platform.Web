@@ -109,8 +109,10 @@ export default function PartnerRevenuePage() {
   const { data: details = [] } = usePartnerRevenueDetails(appliedFrom, appliedUntil);
 
   function applyFilter() {
-    setAppliedFrom(from ? new Date(from).toISOString() : undefined);
-    setAppliedUntil(until ? new Date(until).toISOString() : undefined);
+    // Send the dates as picked: the API reads a date-only `until` as the whole day, while a
+    // midnight instant would end the range at 00:00 and drop the last day.
+    setAppliedFrom(from || undefined);
+    setAppliedUntil(until || undefined);
   }
 
   function clearFilter() {
