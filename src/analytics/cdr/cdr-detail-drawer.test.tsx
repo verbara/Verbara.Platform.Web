@@ -12,7 +12,7 @@ import noSourceFixture from '@/core/api/hooks/__fixtures__/qa-availability.v1.js
 // The hook under the drawer is the real `useCdrDetail`; only its transport answers
 // (cdr-list-reads-its-envelope B.5, spec "The CDR detail is read as the Api sends it" and
 // "A failed CDR detail shows an error that tells not-found apart").
-// The QA availability read (qa-scores-are-produced-or-not-shown, design D2) answers through its
+// The QA availability read answers through its
 // own seam: the configured deployment by default, so the QA summary renders; a test that needs
 // another answer sets `availabilityAnswer`.
 const mockCustomFetch = vi.fn();
@@ -135,6 +135,9 @@ describe('CdrDetailDrawer', () => {
     expect(screen.getByTestId('cdr-detail-qa-summary')).toHaveTextContent(
       'The caller asked about an invoice; the agent explained the charge.',
     );
+    expect(
+      within(screen.getByTestId('cdr-detail-qa-summary')).getByText('cdr.view_full_qa'),
+    ).toBeInTheDocument();
     // The stream path is the detail's `recordingStreamUrl`, as sent. The player chunk is lazy (its
     // placeholder carries no source), so the player is awaited.
     const recording = screen.getByTestId('cdr-detail-recording');
@@ -170,6 +173,21 @@ describe('CdrDetailDrawer', () => {
       );
     }
     expect(document.querySelector('[referrerpolicy]')).toBeNull();
+  });
+
+  // The API answers `qaSummary` null for an analysis without a QA score (its QA detail is a 404),
+  // so the drawer offers the full QA result only together with the summary.
+  it('OffersNoFullQaLink_WhenTheDetailHasNoQaSummary', async () => {
+    answerDetail({
+      ...fullDetail,
+      qaSummary: null,
+      cdr: { ...fullDetail.cdr, hasQaScore: false, qaScore: null },
+    });
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(screen.getAllByTestId('cdr-detail-timeline-entry')).toHaveLength(4));
+    expect(screen.queryByTestId('cdr-detail-qa-summary')).not.toBeInTheDocument();
+    expect(screen.queryByText('cdr.view_full_qa')).not.toBeInTheDocument();
   });
 
   it('RendersTwoTimelineEntries_NoQaSummary_AndNoPlayer_WhenTheDetailAnswersItsSparseFixture', async () => {
@@ -265,7 +283,7 @@ describe('CdrDetailDrawer', () => {
   // Spec "The console does not present QA results that cannot exist": the drawer's QA summary
   // follows `available`, even when the record carries one.
   // The Api serves no transcript route, so the drawer never asks for one, even for a detail that
-  // still says `hasTranscript` true (design D7, task 2.6).
+  // still says `hasTranscript` true.
   it('RequestsNoTranscript_WhenTheDetailSaysItHasOne', async () => {
     answerDetail({ ...fullDetail, hasTranscript: true });
     renderDrawer(FULL_ID);
