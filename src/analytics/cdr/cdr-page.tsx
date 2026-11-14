@@ -27,7 +27,7 @@ import { Button } from '@/core/ui/button';
 import { ExportButton } from '@/analytics/shared/export-button';
 import { ContactSearchPanel } from '@/core/ui/contact-search-panel';
 import { CdrDetailDrawer } from './cdr-detail-drawer';
-import { useCdrList, type CdrRowDto } from '@/core/api/hooks/use-analytics';
+import { useCdrList, useQaSurfaces, type CdrRowDto } from '@/core/api/hooks/use-analytics';
 import { useAnalyticsFilterStore } from '@/core/stores/analytics-filter-store';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -241,6 +241,11 @@ export default function CdrPage() {
     setPage(1);
   }, [from, to, queue]);
 
+  // The QA score and sentiment columns exist only where post-call analysis can fill them:
+  // the score column on `available`, the sentiment column where analysis runs in a language
+  // the sentiment analysis supports. Hidden on doubt.
+  const { qa: showQa, sentiment: showSentiment } = useQaSurfaces();
+
   const { data, isLoading, isError } = useCdrList(from, to, { queue: queue || undefined }, page);
 
   const rowData = useMemo<CdrRow[]>(
@@ -294,20 +299,28 @@ export default function CdrPage() {
         cellRenderer: RecordingCellRenderer,
         cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
       },
-      {
-        field: 'qaScore',
-        headerName: t('cdr.qa_score'),
-        sortable: true,
-        minWidth: 100,
-        cellRenderer: QaScoreCellRenderer,
-      },
-      {
-        field: 'sentimentLabel',
-        headerName: t('cdr.sentiment'),
-        sortable: true,
-        minWidth: 110,
-        cellRenderer: SentimentCellRenderer,
-      },
+      ...(showQa
+        ? [
+            {
+              field: 'qaScore',
+              headerName: t('cdr.qa_score'),
+              sortable: true,
+              minWidth: 100,
+              cellRenderer: QaScoreCellRenderer,
+            } satisfies ColDef<CdrRow>,
+          ]
+        : []),
+      ...(showSentiment
+        ? [
+            {
+              field: 'sentimentLabel',
+              headerName: t('cdr.sentiment'),
+              sortable: true,
+              minWidth: 110,
+              cellRenderer: SentimentCellRenderer,
+            } satisfies ColDef<CdrRow>,
+          ]
+        : []),
       {
         field: 'ringDurationMs',
         headerName: t('cdr.ring_duration'),
@@ -332,7 +345,7 @@ export default function CdrPage() {
           value != null ? formatMinSec(value) : '—',
       },
     ],
-    [t],
+    [t, showQa, showSentiment],
   );
 
   const defaultColDef = useMemo<ColDef>(() => ({ resizable: true, flex: 1 }), []);

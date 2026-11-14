@@ -6,13 +6,23 @@ import fullDetail from './__fixtures__/cdr-detail-response.v1.json';
 import sparseDetail from './__fixtures__/cdr-detail-response.sparse.v1.json';
 import partialDetail from './__fixtures__/cdr-detail-response.partial.v1.json';
 import { ApiError } from '@/core/api/api-error';
+import availableFixture from '@/core/api/hooks/__fixtures__/qa-availability.available.v1.json';
+import noSourceFixture from '@/core/api/hooks/__fixtures__/qa-availability.v1.json';
 
 // The hook under the drawer is the real `useCdrDetail`; only its transport answers
 // (cdr-list-reads-its-envelope B.5, spec "The CDR detail is read as the Api sends it" and
 // "A failed CDR detail shows an error that tells not-found apart").
+// The QA availability read answers through its
+// own seam: the configured deployment by default, so the QA summary renders; a test that needs
+// another answer sets `availabilityAnswer`.
 const mockCustomFetch = vi.fn();
+let availabilityAnswer: () => Promise<unknown> = () => Promise.resolve(availableFixture);
 vi.mock('@/core/api/client', () => ({
-  customFetch: (...args: unknown[]) => mockCustomFetch(...args),
+  customFetch: (...args: unknown[]) => {
+    const [config] = args as [{ url: string }];
+    if (config.url === '/api/v1/analytics/qa-availability') return availabilityAnswer();
+    return mockCustomFetch(...args);
+  },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -47,7 +57,6 @@ vi.mock('./stereo-waveform-player', () => ({
     );
   },
 }));
-vi.mock('./synced-transcript', () => ({ SyncedTranscript: () => null }));
 vi.mock('@/core/ui/print-button', () => ({ PrintButton: () => null }));
 vi.mock('@/core/ui/pdf-download-button', () => ({ PdfDownloadButton: () => null }));
 
@@ -58,17 +67,11 @@ const SPARSE_ID = '0b9e4d217c3a4f58b6e192d4a7c0f3e8';
 const PARTIAL_ID = '5d2a8c419e074b3fa1c67f80e2d94b15';
 
 function answerDetail(detail: unknown) {
-  mockCustomFetch.mockImplementation(({ url }: { url: string }) => {
-    if (url.endsWith('/transcript')) return Promise.resolve([]);
-    return Promise.resolve(detail);
-  });
+  mockCustomFetch.mockImplementation(() => Promise.resolve(detail));
 }
 
 function failDetail(error: Error) {
-  mockCustomFetch.mockImplementation(({ url }: { url: string }) => {
-    if (url.endsWith('/transcript')) return Promise.resolve([]);
-    return Promise.reject(error);
-  });
+  mockCustomFetch.mockImplementation(() => Promise.reject(error));
 }
 
 function renderDrawer(sessionId: string) {
@@ -83,15 +86,14 @@ function renderDrawer(sessionId: string) {
 }
 
 function detailRequestUrls(): string[] {
-  return mockCustomFetch.mock.calls
-    .map(([config]) => (config as { url: string }).url)
-    .filter((url) => !url.endsWith('/transcript'));
+  return mockCustomFetch.mock.calls.map(([config]) => (config as { url: string }).url);
 }
 
 describe('CdrDetailDrawer', () => {
   beforeEach(() => {
     mockCustomFetch.mockReset();
     suspendPlayer = false;
+    availabilityAnswer = () => Promise.resolve(availableFixture);
   });
 
   // The print/PDF bar renders whenever a session id is given, and nothing renders without one:
@@ -133,6 +135,9 @@ describe('CdrDetailDrawer', () => {
     expect(screen.getByTestId('cdr-detail-qa-summary')).toHaveTextContent(
       'The caller asked about an invoice; the agent explained the charge.',
     );
+    expect(
+      within(screen.getByTestId('cdr-detail-qa-summary')).getByText('cdr.view_full_qa'),
+    ).toBeInTheDocument();
     // The stream path is the detail's `recordingStreamUrl`, as sent. The player chunk is lazy (its
     // placeholder carries no source), so the player is awaited.
     const recording = screen.getByTestId('cdr-detail-recording');
@@ -168,6 +173,21 @@ describe('CdrDetailDrawer', () => {
       );
     }
     expect(document.querySelector('[referrerpolicy]')).toBeNull();
+  });
+
+  // The API answers `qaSummary` null for an analysis without a QA score (its QA detail is a 404),
+  // so the drawer offers the full QA result only together with the summary.
+  it('OffersNoFullQaLink_WhenTheDetailHasNoQaSummary', async () => {
+    answerDetail({
+      ...fullDetail,
+      qaSummary: null,
+      cdr: { ...fullDetail.cdr, hasQaScore: false, qaScore: null },
+    });
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(screen.getAllByTestId('cdr-detail-timeline-entry')).toHaveLength(4));
+    expect(screen.queryByTestId('cdr-detail-qa-summary')).not.toBeInTheDocument();
+    expect(screen.queryByText('cdr.view_full_qa')).not.toBeInTheDocument();
   });
 
   it('RendersTwoTimelineEntries_NoQaSummary_AndNoPlayer_WhenTheDetailAnswersItsSparseFixture', async () => {
@@ -259,4 +279,35 @@ describe('CdrDetailDrawer', () => {
       expect(detailRequestUrls()).toEqual([`/api/v1/analytics/cdr/${sessionId}`]);
     },
   );
+
+  // Spec "The console does not present QA results that cannot exist": the drawer's QA summary
+  // follows `available`, even when the record carries one.
+  // The Api serves no transcript route, so the drawer never asks for one, even for a detail that
+  // still says `hasTranscript` true.
+  it('RequestsNoTranscript_WhenTheDetailSaysItHasOne', async () => {
+    answerDetail({ ...fullDetail, hasTranscript: true });
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(screen.getAllByTestId('cdr-detail-timeline-entry')).toHaveLength(4));
+    await screen.findByTestId('stereo-player');
+    expect(detailRequestUrls()).toEqual([`/api/v1/analytics/cdr/${FULL_ID}`]);
+  });
+
+  it('RendersNoQaSummary_WhenNoTranscriptSourceIsConfigured', async () => {
+    availabilityAnswer = () => Promise.resolve(noSourceFixture);
+    answerDetail(fullDetail);
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(screen.getAllByTestId('cdr-detail-timeline-entry')).toHaveLength(4));
+    expect(screen.queryByTestId('cdr-detail-qa-summary')).not.toBeInTheDocument();
+  });
+
+  it('RendersNoQaSummary_WhenTheAvailabilityReadFails', async () => {
+    availabilityAnswer = () => Promise.reject(new ApiError(404, null));
+    answerDetail(fullDetail);
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(screen.getAllByTestId('cdr-detail-timeline-entry')).toHaveLength(4));
+    expect(screen.queryByTestId('cdr-detail-qa-summary')).not.toBeInTheDocument();
+  });
 });

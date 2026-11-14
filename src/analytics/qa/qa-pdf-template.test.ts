@@ -81,4 +81,55 @@ describe('renderQaPdf', () => {
     const titles = sectionSpy.mock.calls.map((c) => c[0]);
     expect(titles).not.toContain('analytics.qa.pdf.contextTitle');
   });
+
+  // `qaScore` is already a 0-100 percentage, so
+  // the PDF prints it as one and passes at 70 whatever the scorecard's weights total.
+  function summaryRow(qa: QaDetail, field: string) {
+    const { doc, helpers } = makeHelpers();
+    const tableSpy = vi.spyOn(helpers, 'table');
+    renderQaPdf({ doc, helpers, qa, t: mockI18n });
+    const summary = tableSpy.mock.calls[0]?.[0].body as string[][];
+    return summary.find((r) => r[0] === field)?.[1];
+  }
+
+  it('PrintsThePercentage_AndMarksNotPassed_WhenTheWeightsTotal10', () => {
+    const qa = makeQa({ qaScore: 50, maxPossibleScore: 10 });
+    expect(summaryRow(qa, 'analytics.qa.pdf.field.score')).toBe('50%');
+    expect(summaryRow(qa, 'analytics.qa.pdf.field.result')).toBe('analytics.qa.pdf.failed');
+  });
+
+  it('PrintsThePercentage_AndMarksPassed_WhenTheWeightsTotal100', () => {
+    const qa = makeQa({ qaScore: 87, maxPossibleScore: 100 });
+    expect(summaryRow(qa, 'analytics.qa.pdf.field.score')).toBe('87%');
+    expect(summaryRow(qa, 'analytics.qa.pdf.field.result')).toBe('analytics.qa.pdf.passed');
+  });
+
+  it('PrintsAWholePercentage_WhenTheScoreHasDecimals', () => {
+    const qa = makeQa({ qaScore: 200 / 3, maxPossibleScore: 3 });
+    expect(summaryRow(qa, 'analytics.qa.pdf.field.score')).toBe('67%');
+  });
+
+  it('MarksPassed_WhenTheScoreIsExactlyTheThreshold', () => {
+    const qa = makeQa({ qaScore: 70, maxPossibleScore: 10 });
+    expect(summaryRow(qa, 'analytics.qa.pdf.field.result')).toBe('analytics.qa.pdf.passed');
+    expect(summaryRow(makeQa({ qaScore: 69.9 }), 'analytics.qa.pdf.field.result')).toBe(
+      'analytics.qa.pdf.failed',
+    );
+  });
+
+  // Sentiment is printed only where the console
+  // shows it.
+  it('PrintsTheSentiment_OnlyWhenTheConsoleShowsIt', () => {
+    for (const [showSentiment, expected] of [
+      [true, 'positive'],
+      [false, undefined],
+      [undefined, undefined],
+    ] as const) {
+      const { doc, helpers } = makeHelpers();
+      const tableSpy = vi.spyOn(helpers, 'table');
+      renderQaPdf({ doc, helpers, qa: makeQa(), showSentiment, t: mockI18n });
+      const summary = tableSpy.mock.calls[0]?.[0].body as string[][];
+      expect(summary.find((r) => r[0] === 'analytics.qa.pdf.field.sentiment')?.[1]).toBe(expected);
+    }
+  });
 });
