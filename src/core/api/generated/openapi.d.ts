@@ -8417,6 +8417,15 @@ export interface paths {
             'application/json': components['schemas']['PagedDataResponseOfQaRowDto'];
           };
         };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
       };
     };
     put?: never;
@@ -9603,9 +9612,9 @@ export interface paths {
         };
         cookie?: never;
       };
-      requestBody: {
+      requestBody?: {
         content: {
-          'application/json': components['schemas']['ListenRequest'];
+          'application/json': null | components['schemas']['ListenRequest'];
         };
       };
       responses: {
@@ -9617,6 +9626,13 @@ export interface paths {
           content: {
             'application/json': components['schemas']['ListenEntry'];
           };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
         /** @description Not Found */
         404: {
