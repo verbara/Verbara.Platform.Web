@@ -23,6 +23,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The QA PDF prints the score as a percentage.** The API already sends the QA score as 0-100, but the PDF divided
+  it again by the scorecard's maximum. With weights that do not total 100 it printed "50 / 10" and marked the call
+  passed. It now prints "50%" and marks a call passed at 70% or more, whatever the weights total.
+
+- **The QA page and the QA detail show their loading text.** They asked for a translation key that does not exist and
+  showed the raw key while loading.
+
 - **The call record drawer no longer asks for a transcript.** It requested
   `GET /api/v1/analytics/cdr/{sessionId}/transcript` for analysed calls, a route the API does not serve, so the
   request always failed with 404. The drawer now plays the recording without a transcript panel.

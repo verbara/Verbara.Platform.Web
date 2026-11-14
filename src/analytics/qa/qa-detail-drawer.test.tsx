@@ -6,6 +6,7 @@ import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v
 // qa-scores-are-produced-or-not-shown (design D2; audit round 10, F2): the QA detail shows its
 // sentiment only where the tenant's call language is supported by the sentiment analysis.
 let availabilityBody: unknown = available;
+let detailPending = false;
 const qaDetail = {
   sessionId: 's1',
   analyzedAt: '2026-11-10T02:00:00+00:00',
@@ -29,7 +30,9 @@ vi.mock('@/core/api/client', () => ({
   customFetch: ({ url }: { url: string }) =>
     url === '/api/v1/analytics/qa-availability'
       ? Promise.resolve(availabilityBody)
-      : Promise.resolve(qaDetail),
+      : detailPending
+        ? new Promise(() => {})
+        : Promise.resolve(qaDetail),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -55,6 +58,15 @@ function renderDrawer() {
 describe('QaDetailDrawer', () => {
   beforeEach(() => {
     availabilityBody = available;
+    detailPending = false;
+  });
+
+  it('ShowsTheCommonLoadingText_WhileTheDetailIsPending', async () => {
+    detailPending = true;
+    renderDrawer();
+
+    expect(await screen.findByText('status.loading')).toBeInTheDocument();
+    expect(screen.queryByTestId('qa-topics')).not.toBeInTheDocument();
   });
 
   it('ShowsTheSentimentSection_WhenSentimentIsSupported', async () => {

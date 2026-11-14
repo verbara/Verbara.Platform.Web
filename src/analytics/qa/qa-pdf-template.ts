@@ -12,20 +12,19 @@ interface RenderQaPdfArgs {
 }
 
 const dash = '—';
+const PASS_THRESHOLD = 70;
 
 export function renderQaPdf({ helpers, qa, showSentiment = false, t }: RenderQaPdfArgs) {
   helpers.section(t('analytics.qa.pdf.summaryTitle'), () => {
-    const passed = qa.maxPossibleScore > 0 ? qa.qaScore / qa.maxPossibleScore >= 0.7 : false;
+    // `qaScore` is already a 0-100 percentage, whatever the scorecard's weights total.
+    const passed = qa.qaScore >= PASS_THRESHOLD;
     helpers.table({
       body: [
         [t('analytics.qa.pdf.field.sessionId'), qa.sessionId],
         [t('analytics.qa.pdf.field.analyzedAt'), qa.analyzedAt],
         [t('analytics.qa.pdf.field.agent'), qa.agentName ?? dash],
         [t('analytics.qa.pdf.field.queue'), qa.queueName ?? dash],
-        [
-          t('analytics.qa.pdf.field.score'),
-          `${qa.qaScore}${qa.maxPossibleScore > 0 ? ` / ${qa.maxPossibleScore}` : ''}`,
-        ],
+        [t('analytics.qa.pdf.field.score'), `${qa.qaScore}%`],
         [
           t('analytics.qa.pdf.field.result'),
           passed ? t('analytics.qa.pdf.passed') : t('analytics.qa.pdf.failed'),

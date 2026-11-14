@@ -151,7 +151,7 @@ export default function QaPage() {
           <AnalysisUnavailable reason={surfaces.qaReason} testId="qa-unavailable" />
         ) : (
           <div className="flex items-center justify-center py-12 text-muted-foreground">
-            {t('loading', { ns: 'common' })}
+            {t('status.loading', { ns: 'common' })}
           </div>
         )}
       </div>
@@ -170,7 +170,7 @@ export default function QaPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12 text-muted-foreground">
-          {t('loading', { ns: 'common' })}
+          {t('status.loading', { ns: 'common' })}
         </div>
       ) : (
         <div data-testid="qa-table">

@@ -91,6 +91,20 @@ describe('QaPage', () => {
 
     expect(screen.queryByTestId('qa-unavailable')).not.toBeInTheDocument();
     expect(screen.queryByTestId('qa-table')).not.toBeInTheDocument();
+    expect(screen.getByText('status.loading')).toBeInTheDocument();
+  });
+
+  it('ShowsTheCommonLoadingText_WhileTheListIsPending', async () => {
+    mockCustomFetch.mockImplementation(({ url }: { url: string }) =>
+      url === '/api/v1/analytics/qa-availability'
+        ? Promise.resolve(available)
+        : new Promise(() => {}),
+    );
+    renderPage();
+
+    await waitFor(() => expect(listRequests()).toHaveLength(1));
+    expect(screen.getByText('status.loading')).toBeInTheDocument();
+    expect(screen.queryByTestId('qa-table')).not.toBeInTheDocument();
   });
 
   it('RendersTheFixturesOneRow_AndDisablesNext_WhenTheListAnswersItsFixture', async () => {
