@@ -155,4 +155,22 @@ describe('renderCdrPdf', () => {
     expect(cell('analytics.cdr.pdf.field.qaScore')).toBe('80');
     expect(cell('analytics.cdr.pdf.field.sentiment')).toBeUndefined();
   });
+
+  it('PrintsTheQaScoreAndSentiment_WhenTheConsoleShowsBoth', () => {
+    const { doc, helpers } = makeHelpers();
+    const tableSpy = vi.spyOn(helpers, 'table');
+    renderCdrPdf({
+      doc,
+      helpers,
+      detail: makeDetail({
+        cdr: { ...makeDetail().cdr, qaScore: 80, sentimentLabel: 'Positive' },
+      }),
+      show: { qa: true, sentiment: true },
+      t: mockI18n,
+    });
+    const summary = tableSpy.mock.calls[0]?.[0].body as string[][];
+    const cell = (key: string) => summary.find((r) => r[0] === key)?.[1];
+    expect(cell('analytics.cdr.pdf.field.qaScore')).toBe('80');
+    expect(cell('analytics.cdr.pdf.field.sentiment')).toBe('Positive');
+  });
 });

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createWrapper } from '@/test/hook-test-utils';
@@ -100,6 +100,9 @@ describe('QaPage', () => {
     const table = await screen.findByTestId('qa-table');
     await waitFor(() => expect(within(table).getByText('Agent One')).toBeInTheDocument());
     expect(within(table).getByText('support')).toBeInTheDocument();
+    expect(
+      within(table).getByText('Caller asked about an invoice; the agent confirmed the amount.'),
+    ).toBeInTheDocument();
     expect(within(table).getAllByRole('row')).toHaveLength(2); // header + the one row
     expect(screen.getByTestId('qa-page-next')).toBeDisabled();
     expect(screen.getByTestId('qa-page-previous')).toBeDisabled();
@@ -147,5 +150,33 @@ describe('QaPage', () => {
     expect(screen.getByTestId('qa-sentiment-unsupported')).toHaveTextContent(
       'availability.sentiment_unsupported',
     );
+  });
+
+  it('GoesBackToPageOne_WhenPreviousIsClickedOnPageTwo', async () => {
+    answer(available, { ...listFixture, hasMore: true });
+    renderPage();
+
+    const next = await screen.findByTestId('qa-page-next');
+    await waitFor(() => expect(next).toBeEnabled());
+    fireEvent.click(next);
+    const previous = screen.getByTestId('qa-page-previous');
+    await waitFor(() => expect(previous).toBeEnabled());
+    fireEvent.click(previous);
+
+    await waitFor(() => expect(previous).toBeDisabled());
+  });
+
+  it.each([
+    ['Positive', 'text-green-600'],
+    ['Negative', 'text-red-500'],
+  ])('ColoursTheSentimentLabel %s', async (label, colour) => {
+    answer(available, {
+      ...listFixture,
+      data: [{ ...listFixture.data[0], sentimentLabel: label }],
+    });
+    renderPage();
+
+    const table = await screen.findByTestId('qa-table');
+    await waitFor(() => expect(within(table).getByText(label)).toHaveClass(colour));
   });
 });
