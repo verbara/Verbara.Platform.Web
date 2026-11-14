@@ -6,12 +6,14 @@ interface RenderQaPdfArgs {
   doc: jsPDF;
   helpers: PdfHelpers;
   qa: QaDetail;
+  /** Sentiment is printed only where the console shows it (design D2). Omitted = not shown. */
+  showSentiment?: boolean;
   t: (key: string) => string;
 }
 
 const dash = '—';
 
-export function renderQaPdf({ helpers, qa, t }: RenderQaPdfArgs) {
+export function renderQaPdf({ helpers, qa, showSentiment = false, t }: RenderQaPdfArgs) {
   helpers.section(t('analytics.qa.pdf.summaryTitle'), () => {
     const passed = qa.maxPossibleScore > 0 ? qa.qaScore / qa.maxPossibleScore >= 0.7 : false;
     helpers.table({
@@ -28,7 +30,9 @@ export function renderQaPdf({ helpers, qa, t }: RenderQaPdfArgs) {
           t('analytics.qa.pdf.field.result'),
           passed ? t('analytics.qa.pdf.passed') : t('analytics.qa.pdf.failed'),
         ],
-        ...(qa.sentimentLabel ? [[t('analytics.qa.pdf.field.sentiment'), qa.sentimentLabel]] : []),
+        ...(showSentiment && qa.sentimentLabel
+          ? [[t('analytics.qa.pdf.field.sentiment'), qa.sentimentLabel]]
+          : []),
         ...(qa.primaryTopic ? [[t('analytics.qa.pdf.field.primaryTopic'), qa.primaryTopic]] : []),
       ],
       theme: 'plain',

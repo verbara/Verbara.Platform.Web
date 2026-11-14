@@ -28,7 +28,14 @@ import {
   useComplianceSummary,
   useBotAnalytics,
   useCsatQueueAnalytics,
+  useQaAvailability,
+  qaSurfaces,
+  type QaAvailability,
 } from './use-analytics';
+import noSource from '@/core/api/hooks/__fixtures__/qa-availability.v1.json';
+import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v1.json';
+import notLicensed from '@/core/api/hooks/__fixtures__/qa-availability.not-licensed.v1.json';
+import qaListFixture from '@/core/api/hooks/__fixtures__/qa-list-response.v1.json';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -148,23 +155,8 @@ describe('useCdrDetail', () => {
 
 describe('useQaList', () => {
   it('should fetch QA list', async () => {
-    const mockData = {
-      items: [
-        {
-          sessionId: 's1',
-          analyzedAt: '2026-01-01',
-          qaScore: 85,
-          hasComplianceViolations: false,
-          violationCount: 0,
-          topics: [],
-        },
-      ],
-      totalCount: 1,
-      page: 1,
-      pageSize: 50,
-      hasNextPage: false,
-    };
-    vi.mocked(client.customFetch).mockResolvedValue(mockData);
+    // The list answers the generated `{ data, hasMore, page, pageSize }` envelope.
+    vi.mocked(client.customFetch).mockResolvedValue(qaListFixture);
 
     const { result } = renderHook(
       () => useQaList('2026-01-01', '2026-01-31', { minScore: 70 }, 1),
@@ -172,6 +164,8 @@ describe('useQaList', () => {
     );
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.data).toHaveLength(1);
+    expect(result.current.data?.hasMore).toBe(false);
     expect(client.customFetch).toHaveBeenCalledWith({
       url: '/api/v1/analytics/qa',
       method: 'GET',
@@ -185,6 +179,121 @@ describe('useQaList', () => {
     const { result } = renderHook(() => useQaList(), { wrapper });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it('IssuesNoRequest_WhenDisabled', () => {
+    renderHook(() => useQaList(undefined, undefined, undefined, 1, false), { wrapper });
+
+    expect(client.customFetch).not.toHaveBeenCalled();
+  });
+});
+
+// qa-scores-are-produced-or-not-shown (design D2): the console asks once and hides on doubt.
+describe('useQaAvailability', () => {
+  it('ReadsTheAvailabilityRoute_AndAnswersItsBody', async () => {
+    vi.mocked(client.customFetch).mockResolvedValue(noSource);
+
+    const { result } = renderHook(() => useQaAvailability(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual(noSource);
+    expect(client.customFetch).toHaveBeenCalledWith({
+      url: '/api/v1/analytics/qa-availability',
+      method: 'GET',
+    });
+  });
+
+  it('IsNotRetried_WhenTheReadFails', async () => {
+    vi.mocked(client.customFetch).mockRejectedValue(new Error('404'));
+
+    const { result } = renderHook(() => useQaAvailability(), { wrapper });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(client.customFetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('qaSurfaces', () => {
+  const hidden = { qa: false, speech: false, sentiment: false, sentimentUnsupported: false };
+
+  it('HidesEverySurface_AndNamesNoReason_WhileTheReadHasNotAnswered', () => {
+    expect(qaSurfaces(undefined)).toEqual({ ...hidden, qaReason: null, speechReason: null });
+  });
+
+  it('HidesEverySurface_AndNamesAnUnknownReason_WhenTheReadFailed', () => {
+    expect(qaSurfaces(undefined, true)).toEqual({
+      ...hidden,
+      qaReason: 'unknown',
+      speechReason: 'unknown',
+    });
+  });
+
+  it('HidesEverySurface_AndReadsNotConfigured_WhenNoTranscriptSourceIsConfigured', () => {
+    expect(qaSurfaces(noSource as QaAvailability)).toEqual({
+      ...hidden,
+      qaReason: 'not_configured',
+      speechReason: 'not_configured',
+    });
+  });
+
+  it('ReadsNotConfigured_WhenTheAnalysisIsNotRegistered', () => {
+    const body = { ...noSource, reason: 'analysis_not_registered' } as QaAvailability;
+    expect(qaSurfaces(body).qaReason).toBe('not_configured');
+  });
+
+  it('HidesEverySurface_AndReadsNotLicensed_WhenTheLicenceLacksCallAnalytics', () => {
+    expect(qaSurfaces(notLicensed as QaAvailability)).toEqual({
+      ...hidden,
+      qaReason: 'not_licensed',
+      speechReason: 'not_licensed',
+    });
+  });
+
+  it('ShowsSpeechButNotQa_WhenAnalysisRunsWithoutAScorecard', () => {
+    const body = {
+      ...available,
+      available: false,
+      reason: 'no_scorecard',
+    } as QaAvailability;
+    expect(qaSurfaces(body)).toEqual({
+      qa: false,
+      speech: true,
+      sentiment: true,
+      sentimentUnsupported: false,
+      qaReason: 'no_scorecard',
+      speechReason: null,
+    });
+  });
+
+  it('ShowsEverySurface_WhenTheReadSaysAvailable', () => {
+    expect(qaSurfaces(available as QaAvailability)).toEqual({
+      qa: true,
+      speech: true,
+      sentiment: true,
+      sentimentUnsupported: false,
+      qaReason: null,
+      speechReason: null,
+    });
+  });
+
+  // Audit round 10, F2: sentiment of a language the analysis does not support is hidden and
+  // explained, never shown as neutral.
+  it('HidesSentiment_AndSaysWhy_WhenTheLanguageIsNotSupported', () => {
+    const body = { ...available, sentimentSupported: false } as QaAvailability;
+    const surfaces = qaSurfaces(body);
+    expect(surfaces.qa).toBe(true);
+    expect(surfaces.sentiment).toBe(false);
+    expect(surfaces.sentimentUnsupported).toBe(true);
+  });
+
+  it('HidesSentiment_WithoutAnExplanation_WhenTheMemberIsNull', () => {
+    const body = { ...available, sentimentSupported: null } as QaAvailability;
+    expect(qaSurfaces(body)).toMatchObject({ sentiment: false, sentimentUnsupported: false });
+  });
+
+  it('ReadsUnknown_WhenTheReasonIsNotOneTheConsoleKnows', () => {
+    const body = { ...noSource, reason: 'something_new' } as QaAvailability;
+    expect(qaSurfaces(body).qaReason).toBe('unknown');
   });
 });
 

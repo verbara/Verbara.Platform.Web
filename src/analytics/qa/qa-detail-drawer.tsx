@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Badge } from '@/core/ui/badge';
 import { Separator } from '@/core/ui/separator';
 import { ScoreGauge } from './score-gauge';
-import { useQaDetail } from '@/core/api/hooks/use-analytics';
+import { useQaDetail, useQaSurfaces } from '@/core/api/hooks/use-analytics';
 import type { TurnSentimentInfo, ComplianceViolationInfo } from '@/core/api/hooks/use-analytics';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -131,6 +131,8 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data: detail, isLoading } = useQaDetail(sessionId ?? '');
+  // Sentiment only where the tenant's call language is supported (design D2); hidden on doubt.
+  const { sentiment: showSentiment } = useQaSurfaces();
 
   const sentimentData: SentimentPoint[] = useMemo(() => {
     if (!detail?.sentimentTimeline) return [];
@@ -166,6 +168,7 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
                   doc,
                   helpers,
                   qa: detail,
+                  showSentiment,
                   t: (key) => t(key.replace(/^analytics\./, '')),
                 });
               }}
@@ -309,88 +312,93 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
 
             <Separator />
 
-            {/* Sentiment per-turn timeline */}
-            <section data-testid="qa-sentiment-chart">
-              <h3
-                className="mb-1 text-sm font-medium"
-                title={t(
-                  'qa.sentiment_timeline_tooltip',
-                  'Sentiment evolution per conversation turn',
-                )}
-              >
-                {t('qa.sentiment')}
-              </h3>
-              {detail.sentimentLabel && (
-                <div className="mb-2 flex items-center gap-2 text-sm">
-                  <span
-                    className={
-                      detail.sentimentLabel === 'Positive'
-                        ? 'text-green-600'
-                        : detail.sentimentLabel === 'Negative'
-                          ? 'text-red-500'
-                          : 'text-slate-500'
-                    }
+            {showSentiment && (
+              <>
+                {/* Sentiment per-turn timeline */}
+                <section data-testid="qa-sentiment-chart">
+                  <h3
+                    className="mb-1 text-sm font-medium"
+                    title={t(
+                      'qa.sentiment_timeline_tooltip',
+                      'Sentiment evolution per conversation turn',
+                    )}
                   >
-                    {detail.sentimentLabel}
-                  </span>
-                  {detail.sentimentTrend && (
-                    <span className="text-xs text-muted-foreground">({detail.sentimentTrend})</span>
+                    {t('qa.sentiment')}
+                  </h3>
+                  {detail.sentimentLabel && (
+                    <div className="mb-2 flex items-center gap-2 text-sm">
+                      <span
+                        className={
+                          detail.sentimentLabel === 'Positive'
+                            ? 'text-green-600'
+                            : detail.sentimentLabel === 'Negative'
+                              ? 'text-red-500'
+                              : 'text-slate-500'
+                        }
+                      >
+                        {detail.sentimentLabel}
+                      </span>
+                      {detail.sentimentTrend && (
+                        <span className="text-xs text-muted-foreground">
+                          ({detail.sentimentTrend})
+                        </span>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-              {sentimentData.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  {t('qa.no_sentiment_timeline', 'No per-turn sentiment data available')}
-                </p>
-              ) : (
-                <div
-                  className="h-40 w-full"
-                  data-testid="qa-sentiment-chart-container"
-                  data-points={sentimentData.length}
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={sentimentData}
-                      margin={{ top: 4, right: 8, left: 0, bottom: 4 }}
+                  {sentimentData.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      {t('qa.no_sentiment_timeline', 'No per-turn sentiment data available')}
+                    </p>
+                  ) : (
+                    <div
+                      className="h-40 w-full"
+                      data-testid="qa-sentiment-chart-container"
+                      data-points={sentimentData.length}
                     >
-                      <defs>
-                        <linearGradient id="qaSentimentGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#16a34a" stopOpacity={0.6} />
-                          <stop offset="50%" stopColor="#64748b" stopOpacity={0.2} />
-                          <stop offset="100%" stopColor="#dc2626" stopOpacity={0.6} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
-                      <XAxis dataKey="turn" tick={{ fontSize: 10 }} />
-                      <YAxis domain={[-1, 1]} tick={{ fontSize: 10 }} width={28} />
-                      <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="2 2" />
-                      <Tooltip
-                        formatter={(value, _name, item) => {
-                          const v = typeof value === 'number' ? value : Number(value ?? 0);
-                          const payload = (item as { payload?: SentimentPoint } | undefined)
-                            ?.payload;
-                          return [
-                            `${v.toFixed(2)} (${payload?.label ?? ''})`,
-                            payload?.speaker ?? '',
-                          ];
-                        }}
-                        labelFormatter={(turn) => `Turn ${turn}`}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="score"
-                        stroke={sentimentColor(sentimentAverage(sentimentData))}
-                        strokeWidth={2}
-                        fill="url(#qaSentimentGradient)"
-                        isAnimationActive={false}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </section>
-
-            <Separator />
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={sentimentData}
+                          margin={{ top: 4, right: 8, left: 0, bottom: 4 }}
+                        >
+                          <defs>
+                            <linearGradient id="qaSentimentGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#16a34a" stopOpacity={0.6} />
+                              <stop offset="50%" stopColor="#64748b" stopOpacity={0.2} />
+                              <stop offset="100%" stopColor="#dc2626" stopOpacity={0.6} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
+                          <XAxis dataKey="turn" tick={{ fontSize: 10 }} />
+                          <YAxis domain={[-1, 1]} tick={{ fontSize: 10 }} width={28} />
+                          <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="2 2" />
+                          <Tooltip
+                            formatter={(value, _name, item) => {
+                              const v = typeof value === 'number' ? value : Number(value ?? 0);
+                              const payload = (item as { payload?: SentimentPoint } | undefined)
+                                ?.payload;
+                              return [
+                                `${v.toFixed(2)} (${payload?.label ?? ''})`,
+                                payload?.speaker ?? '',
+                              ];
+                            }}
+                            labelFormatter={(turn) => `Turn ${turn}`}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="score"
+                            stroke={sentimentColor(sentimentAverage(sentimentData))}
+                            strokeWidth={2}
+                            fill="url(#qaSentimentGradient)"
+                            isAnimationActive={false}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </section>
+                <Separator />
+              </>
+            )}
 
             {/* Topics chips */}
             <section data-testid="qa-topics">

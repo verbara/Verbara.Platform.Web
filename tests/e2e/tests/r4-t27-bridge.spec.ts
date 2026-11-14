@@ -1,6 +1,7 @@
 import { test as base, expect } from '@playwright/test';
 import { DEMO_SUPERVISOR } from '../helpers/credentials';
 import { authenticatedPage as authenticate } from '../helpers/auth-session';
+import { availability, stubQaAvailability } from '../helpers/qa-availability';
 
 /**
  * R5.3 Phase C · S4.7 — R4 T27 bridge end-to-end.
@@ -36,6 +37,10 @@ base.describe('R4 T27 bridge (conversation close → call-analytics invalidation
       const { page, token } = await authenticate(browser, DEMO_SUPERVISOR);
 
       try {
+        // The page renders its tabs only while post-call analysis runs (qa-scores-are-produced-
+        // or-not-shown, design D2); the bridge is what this spec measures, so the availability is
+        // stubbed `analysisRunning` true.
+        await stubQaAvailability(page, availability.available());
         await page.goto('/analytics/speech');
         await expect(page.getByTestId('speech-analytics-page')).toBeVisible();
         await page.waitForLoadState('networkidle');

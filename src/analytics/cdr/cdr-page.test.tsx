@@ -5,12 +5,22 @@ import listFixture from './__fixtures__/cdr-list-response.v1.json';
 import partialListFixture from './__fixtures__/cdr-list-response.partial.v1.json';
 import emptyListFixture from './__fixtures__/cdr-list-response.empty.v1.json';
 import { ApiError } from '@/core/api/api-error';
+import noSource from '@/core/api/hooks/__fixtures__/qa-availability.v1.json';
+import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v1.json';
 
 // The hook under the page is the real `useCdrList`; only its transport answers the fixture
 // (cdr-list-reads-its-envelope B.1, spec "The CDR list is read from its data/hasMore envelope").
+// The QA availability read (qa-scores-are-produced-or-not-shown, design D2) answers through its
+// own seam: the configured deployment by default, so the QA columns render; a test that needs
+// another answer sets `availabilityAnswer`.
 const mockCustomFetch = vi.fn();
+let availabilityAnswer: () => Promise<unknown> = () => Promise.resolve(available);
 vi.mock('@/core/api/client', () => ({
-  customFetch: (...args: unknown[]) => mockCustomFetch(...args),
+  customFetch: (...args: unknown[]) => {
+    const [config] = args as [{ url: string }];
+    if (config.url === '/api/v1/analytics/qa-availability') return availabilityAnswer();
+    return mockCustomFetch(...args);
+  },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -48,6 +58,7 @@ function nextButton(): HTMLElement {
 describe('CdrPage', () => {
   beforeEach(() => {
     mockCustomFetch.mockReset();
+    availabilityAnswer = () => Promise.resolve(available);
   });
 
   it('RendersOneRowPerDataElement_AndEnablesNext_WhenTheListAnswersItsFixture', async () => {
@@ -183,5 +194,60 @@ describe('CdrPage', () => {
     // The empty state is the grid's no-rows overlay: the grid and its pagination stay.
     expect(screen.getByTestId('cdr-table')).toContainElement(screen.getByTestId('cdr-empty-state'));
     expect(nextButton()).toBeDisabled();
+  });
+
+  // Spec "The CDR list on an unconfigured deployment": no QA score column, and (audit round 10,
+  // missed P2) no sentiment column either, since nothing can fill them.
+  it('RendersNoQaScoreAndNoSentimentColumn_WhenNoTranscriptSourceIsConfigured', async () => {
+    availabilityAnswer = () => Promise.resolve(noSource);
+    mockCustomFetch.mockResolvedValue(listFixture);
+    const { container } = renderPage();
+
+    await waitFor(() => expect(gridRows(container)).toHaveLength(2));
+    expect(container.querySelector('[col-id="qaScore"]')).toBeNull();
+    expect(container.querySelector('[col-id="sentimentLabel"]')).toBeNull();
+    expect(screen.queryByText('cdr.qa_score')).not.toBeInTheDocument();
+    expect(screen.queryByText('cdr.sentiment')).not.toBeInTheDocument();
+  });
+
+  it('RendersNoQaScoreAndNoSentimentColumn_WhenTheAvailabilityReadFails', async () => {
+    availabilityAnswer = () => Promise.reject(new ApiError(404, null));
+    mockCustomFetch.mockResolvedValue(listFixture);
+    const { container } = renderPage();
+
+    await waitFor(() => expect(gridRows(container)).toHaveLength(2));
+    expect(container.querySelector('[col-id="qaScore"]')).toBeNull();
+    expect(container.querySelector('[col-id="sentimentLabel"]')).toBeNull();
+  });
+
+  // With a source but no scorecard, sentiment exists and QA scores do not.
+  it('RendersTheSentimentColumnButNoQaScoreColumn_WhenAnalysisRunsWithoutAScorecard', async () => {
+    availabilityAnswer = () =>
+      Promise.resolve({ ...available, available: false, reason: 'no_scorecard' });
+    mockCustomFetch.mockResolvedValue(listFixture);
+    const { container } = renderPage();
+
+    await waitFor(() =>
+      expect(container.querySelector('[col-id="sentimentLabel"]')).not.toBeNull(),
+    );
+    expect(container.querySelector('[col-id="qaScore"]')).toBeNull();
+  });
+
+  // Audit round 10, F2: no sentiment column for a language the sentiment analysis does not support.
+  it('RendersTheQaScoreColumnButNoSentimentColumn_WhenTheLanguageIsNotSupported', async () => {
+    availabilityAnswer = () => Promise.resolve({ ...available, sentimentSupported: false });
+    mockCustomFetch.mockResolvedValue(listFixture);
+    const { container } = renderPage();
+
+    await waitFor(() => expect(container.querySelector('[col-id="qaScore"]')).not.toBeNull());
+    expect(container.querySelector('[col-id="sentimentLabel"]')).toBeNull();
+  });
+
+  it('RendersTheQaScoreAndSentimentColumns_WhenTheAvailabilitySaysAvailable', async () => {
+    mockCustomFetch.mockResolvedValue(listFixture);
+    const { container } = renderPage();
+
+    await waitFor(() => expect(container.querySelector('[col-id="qaScore"]')).not.toBeNull());
+    expect(container.querySelector('[col-id="sentimentLabel"]')).not.toBeNull();
   });
 });

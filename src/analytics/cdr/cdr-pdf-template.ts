@@ -7,6 +7,11 @@ interface RenderCdrPdfArgs {
   helpers: PdfHelpers;
   detail: CdrDetailDto;
   transcript?: TranscriptSegment[];
+  /**
+   * Which post-call analysis values the console shows (design D2): the QA score and summary on
+   * `available`, sentiment where the tenant's call language is supported. Omitted = neither.
+   */
+  show?: { qa: boolean; sentiment: boolean };
   t: (key: string) => string;
 }
 
@@ -28,8 +33,11 @@ function formatTime(secondsOrMs: number, asSeconds = true): string {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-export function renderCdrPdf({ helpers, detail, transcript, t }: RenderCdrPdfArgs) {
-  const { cdr, timeline, qaSummary } = detail;
+export function renderCdrPdf({ helpers, detail, transcript, show, t }: RenderCdrPdfArgs) {
+  const { cdr, timeline } = detail;
+  const showQa = show?.qa === true;
+  const showSentiment = show?.sentiment === true;
+  const qaSummary = showQa ? detail.qaSummary : undefined;
 
   helpers.section(t('analytics.cdr.pdf.summaryTitle'), () => {
     helpers.table({
@@ -49,8 +57,10 @@ export function renderCdrPdf({ helpers, detail, transcript, t }: RenderCdrPdfArg
           t('analytics.cdr.pdf.field.slaMet'),
           cdr.slaMet ? t('analytics.cdr.pdf.yes') : t('analytics.cdr.pdf.no'),
         ],
-        ...(cdr.qaScore != null ? [[t('analytics.cdr.pdf.field.qaScore'), `${cdr.qaScore}`]] : []),
-        ...(cdr.sentimentLabel
+        ...(showQa && cdr.qaScore != null
+          ? [[t('analytics.cdr.pdf.field.qaScore'), `${cdr.qaScore}`]]
+          : []),
+        ...(showSentiment && cdr.sentimentLabel
           ? [[t('analytics.cdr.pdf.field.sentiment'), cdr.sentimentLabel]]
           : []),
         ...(cdr.campaignName ? [[t('analytics.cdr.pdf.field.campaign'), cdr.campaignName]] : []),

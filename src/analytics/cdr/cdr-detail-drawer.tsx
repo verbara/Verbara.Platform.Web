@@ -12,7 +12,12 @@ import { renderCdrPdf } from './cdr-pdf-template';
 
 const StereoWaveformPlayer = lazy(() => import('./stereo-waveform-player'));
 import { SyncedTranscript } from './synced-transcript';
-import { useCdrDetail, useTranscript, type CdrDetailDto } from '@/core/api/hooks/use-analytics';
+import {
+  useCdrDetail,
+  useQaSurfaces,
+  useTranscript,
+  type CdrDetailDto,
+} from '@/core/api/hooks/use-analytics';
 import { ApiError } from '@/core/api/api-error';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -77,6 +82,9 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
   const { data: detail, isLoading, isError, error } = useCdrDetail(sessionId ?? '');
   const hasTranscript = detail?.hasTranscript ?? false;
   const { data: transcriptSegments } = useTranscript(sessionId ?? '', hasTranscript);
+  // The QA summary is shown on `available`, its sentiment only where the tenant's call language
+  // is supported (design D2); hidden on doubt.
+  const { qa: showQa, sentiment: showSentiment } = useQaSurfaces();
 
   if (!sessionId) return null;
 
@@ -101,7 +109,7 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
     ? buildTimelineFromEvents(detail.timeline, formatDateTime)
     : [];
 
-  const qaSummary = detail?.qaSummary;
+  const qaSummary = showQa ? detail?.qaSummary : undefined;
 
   // A partial record's hold figures are unknown, never its number (spec "The console shows a
   // partial record's hold figures as unknown", host D17); a complete record shows its count,
@@ -130,6 +138,7 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
                   helpers,
                   detail,
                   transcript: transcriptSegments,
+                  show: { qa: showQa, sentiment: showSentiment },
                   t: (key) => t(key.replace(/^analytics\./, '')),
                 });
               }}
@@ -312,7 +321,7 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
                       {qaSummary.qaScore != null && (
                         <Badge variant="secondary">Score: {qaSummary.qaScore}</Badge>
                       )}
-                      {qaSummary.sentimentLabel && (
+                      {showSentiment && qaSummary.sentimentLabel && (
                         <Badge variant="outline">{qaSummary.sentimentLabel}</Badge>
                       )}
                     </div>

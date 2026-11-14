@@ -6,13 +6,23 @@ import fullDetail from './__fixtures__/cdr-detail-response.v1.json';
 import sparseDetail from './__fixtures__/cdr-detail-response.sparse.v1.json';
 import partialDetail from './__fixtures__/cdr-detail-response.partial.v1.json';
 import { ApiError } from '@/core/api/api-error';
+import availableFixture from '@/core/api/hooks/__fixtures__/qa-availability.available.v1.json';
+import noSourceFixture from '@/core/api/hooks/__fixtures__/qa-availability.v1.json';
 
 // The hook under the drawer is the real `useCdrDetail`; only its transport answers
 // (cdr-list-reads-its-envelope B.5, spec "The CDR detail is read as the Api sends it" and
 // "A failed CDR detail shows an error that tells not-found apart").
+// The QA availability read (qa-scores-are-produced-or-not-shown, design D2) answers through its
+// own seam: the configured deployment by default, so the QA summary renders; a test that needs
+// another answer sets `availabilityAnswer`.
 const mockCustomFetch = vi.fn();
+let availabilityAnswer: () => Promise<unknown> = () => Promise.resolve(availableFixture);
 vi.mock('@/core/api/client', () => ({
-  customFetch: (...args: unknown[]) => mockCustomFetch(...args),
+  customFetch: (...args: unknown[]) => {
+    const [config] = args as [{ url: string }];
+    if (config.url === '/api/v1/analytics/qa-availability') return availabilityAnswer();
+    return mockCustomFetch(...args);
+  },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -92,6 +102,7 @@ describe('CdrDetailDrawer', () => {
   beforeEach(() => {
     mockCustomFetch.mockReset();
     suspendPlayer = false;
+    availabilityAnswer = () => Promise.resolve(availableFixture);
   });
 
   // The print/PDF bar renders whenever a session id is given, and nothing renders without one:
@@ -259,4 +270,24 @@ describe('CdrDetailDrawer', () => {
       expect(detailRequestUrls()).toEqual([`/api/v1/analytics/cdr/${sessionId}`]);
     },
   );
+
+  // Spec "The console does not present QA results that cannot exist": the drawer's QA summary
+  // follows `available`, even when the record carries one.
+  it('RendersNoQaSummary_WhenNoTranscriptSourceIsConfigured', async () => {
+    availabilityAnswer = () => Promise.resolve(noSourceFixture);
+    answerDetail(fullDetail);
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(screen.getAllByTestId('cdr-detail-timeline-entry')).toHaveLength(4));
+    expect(screen.queryByTestId('cdr-detail-qa-summary')).not.toBeInTheDocument();
+  });
+
+  it('RendersNoQaSummary_WhenTheAvailabilityReadFails', async () => {
+    availabilityAnswer = () => Promise.reject(new ApiError(404, null));
+    answerDetail(fullDetail);
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(screen.getAllByTestId('cdr-detail-timeline-entry')).toHaveLength(4));
+    expect(screen.queryByTestId('cdr-detail-qa-summary')).not.toBeInTheDocument();
+  });
 });

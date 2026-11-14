@@ -32,22 +32,42 @@ vi.mock('@/core/api/hooks/use-queues', () => ({
   useQueues: vi.fn(() => ({ data: [] })),
 }));
 
-vi.mock('@/core/api/hooks/use-analytics', () => ({
-  useTopicTrends: vi.fn(),
-  useSentimentTrends: vi.fn(),
-  useComplianceSummary: vi.fn(),
-}));
+vi.mock('@/core/api/hooks/use-analytics', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/core/api/hooks/use-analytics')>();
+  return {
+    qaSurfaces: actual.qaSurfaces,
+    useTopicTrends: vi.fn(),
+    useSentimentTrends: vi.fn(),
+    useComplianceSummary: vi.fn(),
+    useQaSurfaces: vi.fn(),
+  };
+});
 
 import {
   useTopicTrends,
   useSentimentTrends,
   useComplianceSummary,
+  useQaSurfaces,
+  qaSurfaces,
+  type QaAvailability,
 } from '@/core/api/hooks/use-analytics';
+import noSource from '@/core/api/hooks/__fixtures__/qa-availability.v1.json';
+import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v1.json';
+import notLicensed from '@/core/api/hooks/__fixtures__/qa-availability.not-licensed.v1.json';
 import SpeechAnalyticsPage from './speech-analytics-page';
 
 const mockUseTopicTrends = useTopicTrends as ReturnType<typeof vi.fn>;
 const mockUseSentimentTrends = useSentimentTrends as ReturnType<typeof vi.fn>;
 const mockUseComplianceSummary = useComplianceSummary as ReturnType<typeof vi.fn>;
+const mockUseQaSurfaces = useQaSurfaces as ReturnType<typeof vi.fn>;
+
+// The page follows the availability read (qa-scores-are-produced-or-not-shown, design D2).
+function availability(body: unknown) {
+  mockUseQaSurfaces.mockReturnValue({
+    ...qaSurfaces(body as QaAvailability),
+    isLoading: false,
+  });
+}
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -107,6 +127,7 @@ describe('SpeechAnalyticsPage', () => {
     mockUseTopicTrends.mockReturnValue({ data: sampleTopics, isLoading: false });
     mockUseSentimentTrends.mockReturnValue({ data: sampleSentiment, isLoading: false });
     mockUseComplianceSummary.mockReturnValue({ data: sampleCompliance, isLoading: false });
+    availability(available);
   });
 
   it('renders_with_loading_state_when_queries_pending', () => {
@@ -167,5 +188,60 @@ describe('SpeechAnalyticsPage', () => {
     render(<SpeechAnalyticsPage />, { wrapper: makeWrapper() });
 
     expect(screen.getByTestId('empty-state')).toBeDefined();
+  });
+
+  it.each([
+    ['no transcript source', noSource, 'not_configured'],
+    ['no call analytics licence', notLicensed, 'not_licensed'],
+  ])(
+    'NamesTheReason_AndRendersNoTab_AndIssuesNoTabQuery_WhenAnalysisDoesNotRun (%s)',
+    (_name, body, reason) => {
+      availability(body);
+
+      render(<SpeechAnalyticsPage />, { wrapper: makeWrapper() });
+
+      const state = screen.getByTestId('speech-unavailable');
+      expect(state.getAttribute('data-reason')).toBe(reason);
+      expect(state.textContent).toBe(`availability.${reason}`);
+      expect(screen.queryByRole('tab')).toBeNull();
+      expect(screen.queryByTestId('topics-tab')).toBeNull();
+      expect(mockUseTopicTrends).not.toHaveBeenCalled();
+      expect(mockUseSentimentTrends).not.toHaveBeenCalled();
+      expect(mockUseComplianceSummary).not.toHaveBeenCalled();
+    },
+  );
+
+  it('RendersNoTab_AndNoReason_WhileTheAvailabilityIsPending', () => {
+    mockUseQaSurfaces.mockReturnValue({ ...qaSurfaces(undefined), isLoading: true });
+
+    render(<SpeechAnalyticsPage />, { wrapper: makeWrapper() });
+
+    expect(screen.queryByTestId('speech-unavailable')).toBeNull();
+    expect(screen.queryByRole('tab')).toBeNull();
+    expect(mockUseTopicTrends).not.toHaveBeenCalled();
+  });
+
+  it('KeepsTheTabs_WhenAnalysisRunsWithoutAScorecard', () => {
+    availability({ ...available, available: false, reason: 'no_scorecard' });
+
+    render(<SpeechAnalyticsPage />, { wrapper: makeWrapper() });
+
+    expect(screen.getByTestId('topics-tab')).toBeDefined();
+    expect(screen.queryByTestId('speech-unavailable')).toBeNull();
+  });
+
+  // Audit round 10, F2: a tenant whose calls are in a language the sentiment analysis does not
+  // support sees why there is no sentiment, and no sentiment is requested.
+  it('ExplainsTheMissingSentiment_AndIssuesNoSentimentQuery_WhenTheLanguageIsNotSupported', () => {
+    availability({ ...available, sentimentSupported: false });
+
+    render(<SpeechAnalyticsPage />, { wrapper: makeWrapper() });
+    fireEvent.click(screen.getByRole('tab', { name: /sentiment/i }));
+
+    expect(screen.getByTestId('sentiment-unsupported').textContent).toBe(
+      'availability.sentiment_unsupported',
+    );
+    expect(screen.queryByTestId('sentiment-tab')).toBeNull();
+    expect(mockUseSentimentTrends).not.toHaveBeenCalled();
   });
 });

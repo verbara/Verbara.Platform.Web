@@ -9,7 +9,23 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **QA and Speech Analytics appear only where post-call analysis can produce results.** The console reads
+  `GET /api/v1/analytics/qa-availability` (Platform, next release) and, until it answers yes, hides the QA entry of the
+  Analytics sidebar, the QA score column of the call records list, the QA summary of a call record (screen and PDF),
+  and, while no analysis runs, the Speech Analytics entry and the sentiment column of the call records list. Opening
+  `/analytics/qa` or `/analytics/speech` directly states why there are no results: analysis not configured, the
+  licence does not include call analytics, or (QA only) no scorecard configured, in English, Spanish and Portuguese.
+  Where the tenant's calls are transcribed in a language the sentiment analysis does not support, sentiment is not
+  shown and the page says why, instead of listing every call as neutral. Against an older Platform the read is
+  missing, so these surfaces stay hidden.
+
 ### Fixed
+
+- **The QA list shows its rows and pages through them.** The page read a member the API does not send and showed
+  every page empty; it now reads the list's `data` and `hasMore`, pages 50 at a time with Previous and Next, and no
+  longer offers a queue filter the list does not take.
 
 - **The partner revenue filter includes the last day you pick.** The page sent the "Until" date as midnight of that
   day, so revenue recorded later that day was left out. It now sends the date itself, which the API (Platform 2.39.1

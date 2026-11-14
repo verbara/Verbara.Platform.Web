@@ -180,6 +180,11 @@
         "description": "Description",
         "evidence": "Evidence"
       }
+    },
+    "paging": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{page}}"
     }
   },
   "surveys": {
@@ -318,5 +323,12 @@
       "download": "Download recording",
       "error": "The recording could not be loaded."
     }
+  },
+  "availability": {
+    "not_configured": "Post-call analysis is not configured on this deployment, so there are no results to show.",
+    "not_licensed": "The licence does not include call analytics, so there are no results to show.",
+    "no_scorecard": "No QA scorecard is configured for this tenant, so calls are not scored.",
+    "unknown": "Whether post-call analysis runs could not be checked. Try again later.",
+    "sentiment_unsupported": "Sentiment is not shown: this tenant's calls are transcribed in a language the sentiment analysis does not support."
   }
 }

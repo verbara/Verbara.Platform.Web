@@ -106,9 +106,53 @@ describe('renderCdrPdf', () => {
       detail: makeDetail({
         qaSummary: { reason: 'inquiry', outcome: 'resolved', narrative: 'Smooth call' },
       }),
+      show: { qa: true, sentiment: true },
       t: mockI18n,
     });
     const titles = sectionSpy.mock.calls.map((c) => c[0]);
     expect(titles).toContain('analytics.cdr.pdf.qaSummaryTitle');
+  });
+
+  // qa-scores-are-produced-or-not-shown (design D2): the PDF prints what the console shows. With
+  // post-call analysis unavailable, no QA score, sentiment or QA summary is printed even when the
+  // record carries them.
+  it('PrintsNoQaScoreSentimentOrQaSummary_WhenTheConsoleHidesThem', () => {
+    const { doc, helpers } = makeHelpers();
+    const tableSpy = vi.spyOn(helpers, 'table');
+    const sectionSpy = vi.spyOn(helpers, 'section');
+    renderCdrPdf({
+      doc,
+      helpers,
+      detail: makeDetail({
+        cdr: { ...makeDetail().cdr, qaScore: 80, sentimentLabel: 'Positive' },
+        qaSummary: { reason: 'inquiry', outcome: 'resolved', narrative: 'Smooth call' },
+      }),
+      t: mockI18n,
+    });
+    const summary = tableSpy.mock.calls[0]?.[0].body as string[][];
+    const cell = (key: string) => summary.find((r) => r[0] === key)?.[1];
+    expect(cell('analytics.cdr.pdf.field.qaScore')).toBeUndefined();
+    expect(cell('analytics.cdr.pdf.field.sentiment')).toBeUndefined();
+    expect(sectionSpy.mock.calls.map((c) => c[0])).not.toContain(
+      'analytics.cdr.pdf.qaSummaryTitle',
+    );
+  });
+
+  it('PrintsTheQaScoreButNoSentiment_WhenSentimentIsNotSupported', () => {
+    const { doc, helpers } = makeHelpers();
+    const tableSpy = vi.spyOn(helpers, 'table');
+    renderCdrPdf({
+      doc,
+      helpers,
+      detail: makeDetail({
+        cdr: { ...makeDetail().cdr, qaScore: 80, sentimentLabel: 'Positive' },
+      }),
+      show: { qa: true, sentiment: false },
+      t: mockI18n,
+    });
+    const summary = tableSpy.mock.calls[0]?.[0].body as string[][];
+    const cell = (key: string) => summary.find((r) => r[0] === key)?.[1];
+    expect(cell('analytics.cdr.pdf.field.qaScore')).toBe('80');
+    expect(cell('analytics.cdr.pdf.field.sentiment')).toBeUndefined();
   });
 });
