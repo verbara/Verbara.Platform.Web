@@ -459,7 +459,7 @@ export default function SpeechAnalyticsPage() {
   const { t } = useTranslation('analytics');
   const qc = useQueryClient();
   const connectionState = useRealtimeStore((s) => s.connectionState);
-  // The page's results exist only while post-call analysis runs (design D2); until a successful
+  // The page's results exist only while post-call analysis runs; until a successful
   // read says so, no tab and no tab query.
   const surfaces = useQaSurfaces();
 
@@ -513,9 +513,8 @@ export default function SpeechAnalyticsPage() {
             </TabsContent>
 
             <TabsContent value="sentiment" className="mt-4">
-              {surfaces.sentiment ? (
-                <SentimentTrendsTab />
-              ) : (
+              {surfaces.sentiment && <SentimentTrendsTab />}
+              {surfaces.sentimentUnsupported && (
                 <p
                   className="py-16 text-center text-sm text-muted-foreground"
                   data-testid="sentiment-unsupported"

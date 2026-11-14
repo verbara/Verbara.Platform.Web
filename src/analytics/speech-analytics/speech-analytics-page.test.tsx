@@ -61,7 +61,7 @@ const mockUseSentimentTrends = useSentimentTrends as ReturnType<typeof vi.fn>;
 const mockUseComplianceSummary = useComplianceSummary as ReturnType<typeof vi.fn>;
 const mockUseQaSurfaces = useQaSurfaces as ReturnType<typeof vi.fn>;
 
-// The page follows the availability read (qa-scores-are-produced-or-not-shown, design D2).
+// The page follows the availability read.
 function availability(body: unknown) {
   mockUseQaSurfaces.mockReturnValue({
     ...qaSurfaces(body as QaAvailability),
@@ -230,7 +230,7 @@ describe('SpeechAnalyticsPage', () => {
     expect(screen.queryByTestId('speech-unavailable')).toBeNull();
   });
 
-  // Audit round 10, F2: a tenant whose calls are in a language the sentiment analysis does not
+  // A tenant whose calls are in a language the sentiment analysis does not
   // support sees why there is no sentiment, and no sentiment is requested.
   it('ExplainsTheMissingSentiment_AndIssuesNoSentimentQuery_WhenTheLanguageIsNotSupported', () => {
     availability({ ...available, sentimentSupported: false });
@@ -241,6 +241,19 @@ describe('SpeechAnalyticsPage', () => {
     expect(screen.getByTestId('sentiment-unsupported').textContent).toBe(
       'availability.sentiment_unsupported',
     );
+    expect(screen.queryByTestId('sentiment-tab')).toBeNull();
+    expect(mockUseSentimentTrends).not.toHaveBeenCalled();
+  });
+
+  // The explanation needs an explicit `sentimentSupported` false, as on the QA page: while the
+  // read does not say, sentiment stays hidden without claiming the language is unsupported.
+  it('ShowsNoSentimentAndNoExplanation_WhenSentimentSupportIsNotReported', () => {
+    availability({ ...available, sentimentSupported: null });
+
+    render(<SpeechAnalyticsPage />, { wrapper: makeWrapper() });
+    fireEvent.click(screen.getByRole('tab', { name: /sentiment/i }));
+
+    expect(screen.queryByTestId('sentiment-unsupported')).toBeNull();
     expect(screen.queryByTestId('sentiment-tab')).toBeNull();
     expect(mockUseSentimentTrends).not.toHaveBeenCalled();
   });
