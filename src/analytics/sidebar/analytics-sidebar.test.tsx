@@ -79,6 +79,7 @@ describe('AnalyticsSidebar', () => {
     expect(mockCustomFetch).toHaveBeenCalledWith({
       url: '/api/v1/analytics/qa-availability',
       method: 'GET',
+      suppressPaymentRequiredModal: true,
     });
   });
 });

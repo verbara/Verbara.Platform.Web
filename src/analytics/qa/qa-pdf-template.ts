@@ -24,7 +24,7 @@ export function renderQaPdf({ helpers, qa, showSentiment = false, t }: RenderQaP
         [t('analytics.qa.pdf.field.analyzedAt'), qa.analyzedAt],
         [t('analytics.qa.pdf.field.agent'), qa.agentName ?? dash],
         [t('analytics.qa.pdf.field.queue'), qa.queueName ?? dash],
-        [t('analytics.qa.pdf.field.score'), `${qa.qaScore}%`],
+        [t('analytics.qa.pdf.field.score'), `${Math.round(qa.qaScore)}%`],
         [
           t('analytics.qa.pdf.field.result'),
           passed ? t('analytics.qa.pdf.passed') : t('analytics.qa.pdf.failed'),

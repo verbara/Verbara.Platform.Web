@@ -189,7 +189,8 @@ describe('useQaList', () => {
 
 // The console asks once and hides on doubt.
 describe('useQaAvailability', () => {
-  it('ReadsTheAvailabilityRoute_AndAnswersItsBody', async () => {
+  // No upgrade modal: the sidebar reads this on pages a licence without analytics may open.
+  it('ReadsTheAvailabilityRoute_WithoutTheUpgradeModal_AndAnswersItsBody', async () => {
     vi.mocked(client.customFetch).mockResolvedValue(noSource);
 
     const { result } = renderHook(() => useQaAvailability(), { wrapper });
@@ -199,6 +200,7 @@ describe('useQaAvailability', () => {
     expect(client.customFetch).toHaveBeenCalledWith({
       url: '/api/v1/analytics/qa-availability',
       method: 'GET',
+      suppressPaymentRequiredModal: true,
     });
   });
 

@@ -25,7 +25,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **The QA PDF prints the score as a percentage.** The API already sends the QA score as 0-100, but the PDF divided
   it again by the scorecard's maximum. With weights that do not total 100 it printed "50 / 10" and marked the call
-  passed. It now prints "50%" and marks a call passed at 70% or more, whatever the weights total.
+  passed. It now prints the score as a whole percentage ("50%") and marks a call passed at 70% or more,
+  whatever the weights total.
 
 - **The QA page and the QA detail show their loading text.** They asked for a translation key that does not exist and
   showed the raw key while loading.

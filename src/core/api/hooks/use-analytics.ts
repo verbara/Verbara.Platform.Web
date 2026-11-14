@@ -133,6 +133,9 @@ export function useQaAvailability(options?: { refetchOnMount?: boolean }) {
       customFetch<QaAvailability>({
         url: '/api/v1/analytics/qa-availability',
         method: 'GET',
+        // The sidebar reads this on every analytics page, including ones a licence without the
+        // analytics module may open; a 402 here only hides the QA surfaces.
+        suppressPaymentRequiredModal: true,
       }),
     staleTime: QA_AVAILABILITY_STALE_MS,
     retry: false,

@@ -104,6 +104,11 @@ describe('renderQaPdf', () => {
     expect(summaryRow(qa, 'analytics.qa.pdf.field.result')).toBe('analytics.qa.pdf.passed');
   });
 
+  it('PrintsAWholePercentage_WhenTheScoreHasDecimals', () => {
+    const qa = makeQa({ qaScore: 200 / 3, maxPossibleScore: 3 });
+    expect(summaryRow(qa, 'analytics.qa.pdf.field.score')).toBe('67%');
+  });
+
   it('MarksPassed_WhenTheScoreIsExactlyTheThreshold', () => {
     const qa = makeQa({ qaScore: 70, maxPossibleScore: 10 });
     expect(summaryRow(qa, 'analytics.qa.pdf.field.result')).toBe('analytics.qa.pdf.passed');
