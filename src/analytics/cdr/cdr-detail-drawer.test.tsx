@@ -57,7 +57,6 @@ vi.mock('./stereo-waveform-player', () => ({
     );
   },
 }));
-vi.mock('./synced-transcript', () => ({ SyncedTranscript: () => null }));
 vi.mock('@/core/ui/print-button', () => ({ PrintButton: () => null }));
 vi.mock('@/core/ui/pdf-download-button', () => ({ PdfDownloadButton: () => null }));
 
@@ -68,17 +67,11 @@ const SPARSE_ID = '0b9e4d217c3a4f58b6e192d4a7c0f3e8';
 const PARTIAL_ID = '5d2a8c419e074b3fa1c67f80e2d94b15';
 
 function answerDetail(detail: unknown) {
-  mockCustomFetch.mockImplementation(({ url }: { url: string }) => {
-    if (url.endsWith('/transcript')) return Promise.resolve([]);
-    return Promise.resolve(detail);
-  });
+  mockCustomFetch.mockImplementation(() => Promise.resolve(detail));
 }
 
 function failDetail(error: Error) {
-  mockCustomFetch.mockImplementation(({ url }: { url: string }) => {
-    if (url.endsWith('/transcript')) return Promise.resolve([]);
-    return Promise.reject(error);
-  });
+  mockCustomFetch.mockImplementation(() => Promise.reject(error));
 }
 
 function renderDrawer(sessionId: string) {
@@ -93,9 +86,7 @@ function renderDrawer(sessionId: string) {
 }
 
 function detailRequestUrls(): string[] {
-  return mockCustomFetch.mock.calls
-    .map(([config]) => (config as { url: string }).url)
-    .filter((url) => !url.endsWith('/transcript'));
+  return mockCustomFetch.mock.calls.map(([config]) => (config as { url: string }).url);
 }
 
 describe('CdrDetailDrawer', () => {
@@ -273,6 +264,17 @@ describe('CdrDetailDrawer', () => {
 
   // Spec "The console does not present QA results that cannot exist": the drawer's QA summary
   // follows `available`, even when the record carries one.
+  // The Api serves no transcript route, so the drawer never asks for one, even for a detail that
+  // still says `hasTranscript` true (design D7, task 2.6).
+  it('RequestsNoTranscript_WhenTheDetailSaysItHasOne', async () => {
+    answerDetail({ ...fullDetail, hasTranscript: true });
+    renderDrawer(FULL_ID);
+
+    await waitFor(() => expect(screen.getAllByTestId('cdr-detail-timeline-entry')).toHaveLength(4));
+    await screen.findByTestId('stereo-player');
+    expect(detailRequestUrls()).toEqual([`/api/v1/analytics/cdr/${FULL_ID}`]);
+  });
+
   it('RendersNoQaSummary_WhenNoTranscriptSourceIsConfigured', async () => {
     availabilityAnswer = () => Promise.resolve(noSourceFixture);
     answerDetail(fullDetail);

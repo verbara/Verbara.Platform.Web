@@ -295,18 +295,6 @@ export function useQaDetail(sessionId: string) {
   });
 }
 
-export function useTranscript(sessionId: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ['analytics-transcript', sessionId],
-    queryFn: () =>
-      customFetch<TranscriptSegment[]>({
-        url: `/api/v1/analytics/cdr/${sessionId}/transcript`,
-        method: 'GET',
-      }),
-    enabled: !!sessionId && enabled,
-  });
-}
-
 export function useIntervals(from?: string, to?: string, queue?: string) {
   return useQuery({
     queryKey: ['analytics-intervals', from, to, queue],

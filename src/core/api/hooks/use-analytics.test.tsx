@@ -17,7 +17,6 @@ import {
   useCdrDetail,
   useQaList,
   useQaDetail,
-  useTranscript,
   useIntervals,
   useAllLiveStates,
   useLiveState,
@@ -323,33 +322,6 @@ describe('useQaDetail', () => {
 
   it('should be disabled when sessionId is empty', () => {
     const { result } = renderHook(() => useQaDetail(''), { wrapper });
-
-    expect(result.current.fetchStatus).toBe('idle');
-  });
-});
-
-describe('useTranscript', () => {
-  it('should fetch transcript when enabled', async () => {
-    const mockData = [{ startTime: 0, endTime: 5, speaker: 'agent', text: 'Hello' }];
-    vi.mocked(client.customFetch).mockResolvedValue(mockData);
-
-    const { result } = renderHook(() => useTranscript('s1', true), { wrapper });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(client.customFetch).toHaveBeenCalledWith({
-      url: '/api/v1/analytics/cdr/s1/transcript',
-      method: 'GET',
-    });
-  });
-
-  it('should be disabled when enabled is false', () => {
-    const { result } = renderHook(() => useTranscript('s1', false), { wrapper });
-
-    expect(result.current.fetchStatus).toBe('idle');
-  });
-
-  it('should be disabled when sessionId is empty', () => {
-    const { result } = renderHook(() => useTranscript('', true), { wrapper });
 
     expect(result.current.fetchStatus).toBe('idle');
   });

@@ -1,4 +1,4 @@
-import { useRef, useState, Suspense, lazy } from 'react';
+import { useRef, Suspense, lazy } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Phone, PhoneOff, UserCheck, Clock, ArrowRightLeft } from 'lucide-react';
@@ -11,13 +11,7 @@ import { PdfDownloadButton } from '@/core/ui/pdf-download-button';
 import { renderCdrPdf } from './cdr-pdf-template';
 
 const StereoWaveformPlayer = lazy(() => import('./stereo-waveform-player'));
-import { SyncedTranscript } from './synced-transcript';
-import {
-  useCdrDetail,
-  useQaSurfaces,
-  useTranscript,
-  type CdrDetailDto,
-} from '@/core/api/hooks/use-analytics';
+import { useCdrDetail, useQaSurfaces, type CdrDetailDto } from '@/core/api/hooks/use-analytics';
 import { ApiError } from '@/core/api/api-error';
 import { useFormatDate } from '@/core/i18n/use-format';
 
@@ -73,15 +67,12 @@ function buildTimelineFromEvents(
 export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDrawerProps) {
   const { t } = useTranslation('analytics');
   const { formatDateTime } = useFormatDate();
-  const [currentTime, setCurrentTime] = useState(0);
-  const seekRef = useRef<((time: number) => void) | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
   // The drawer renders only what `GET /api/v1/analytics/cdr/{sessionId}` answers: no field and
   // no timeline is built from the grid row (spec "The CDR detail is read as the Api sends it").
   const { data: detail, isLoading, isError, error } = useCdrDetail(sessionId ?? '');
-  const hasTranscript = detail?.hasTranscript ?? false;
-  const { data: transcriptSegments } = useTranscript(sessionId ?? '', hasTranscript);
+  // No transcript is requested: the Api serves no transcript route (design D7).
   // The QA summary is shown on `available`, its sentiment only where the tenant's call language
   // is supported (design D2); hidden on doubt.
   const { qa: showQa, sentiment: showSentiment } = useQaSurfaces();
@@ -137,7 +128,6 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
                   doc,
                   helpers,
                   detail,
-                  transcript: transcriptSegments,
                   show: { qa: showQa, sentiment: showSentiment },
                   t: (key) => t(key.replace(/^analytics\./, '')),
                 });
@@ -359,17 +349,8 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
                         durationMs={apiCdr?.durationMs ?? 0}
                         sessionId={sessionId}
                         recordingName={detail.recordingName}
-                        onTimeUpdate={setCurrentTime}
-                        seekRef={seekRef}
                       />
                     </Suspense>
-                    {hasTranscript && transcriptSegments && transcriptSegments.length > 0 && (
-                      <SyncedTranscript
-                        segments={transcriptSegments}
-                        currentTime={currentTime}
-                        onSeek={(time) => seekRef.current?.(time)}
-                      />
-                    )}
                   </div>
                 </>
               )}

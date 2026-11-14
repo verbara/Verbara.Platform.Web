@@ -23,6 +23,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The call record drawer no longer asks for a transcript.** It requested
+  `GET /api/v1/analytics/cdr/{sessionId}/transcript` for analysed calls, a route the API does not serve, so the
+  request always failed with 404. The drawer now plays the recording without a transcript panel.
+
 - **The QA list shows its rows and pages through them.** The page read a member the API does not send and showed
   every page empty; it now reads the list's `data` and `hasMore`, pages 50 at a time with Previous and Next, and no
   longer offers a queue filter the list does not take.
