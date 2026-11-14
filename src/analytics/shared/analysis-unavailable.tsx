@@ -8,7 +8,7 @@ interface AnalysisUnavailableProps {
 }
 
 /**
- * The state a page renders instead of results that cannot exist (design D2): it names why, in
+ * The state a page renders instead of results that cannot exist: it names why, in
  * the user's locale, and carries the reason in `data-reason` for locale-proof selectors.
  */
 export function AnalysisUnavailable({ reason, testId }: AnalysisUnavailableProps) {

@@ -22,7 +22,7 @@ export default function QaPage() {
   const [page, setPage] = useState(1);
   // The QA list takes no queue, so the queue filter is neither sent nor shown here.
   const { from, to } = useAnalyticsFilterStore();
-  // The availability is refetched on every visit (design D2): a bookmarked page must not trust a
+  // The availability is refetched on every visit: a bookmarked page must not trust a
   // stale answer, while the sidebar keeps the long stale time.
   const surfaces = useQaSurfaces({ refetchOnMount: true });
 
@@ -94,7 +94,7 @@ export default function QaPage() {
           return <Badge variant={fail ? 'destructive' : 'default'}>{fail ? 'Fail' : 'Pass'}</Badge>;
         },
       },
-      // Sentiment is shown only where the tenant's call language is supported (design D2).
+      // Sentiment is shown only where the tenant's call language is supported.
       ...(showSentiment
         ? [
             {

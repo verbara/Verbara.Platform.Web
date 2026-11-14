@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, it, expect, vi } from 'vitest';
 
-// The QA list route takes no queue (`ListQa`), so the QA page offers no queue select (audit round
-// 4); every other analytics page keeps it.
+// The QA list route takes no queue (`ListQa`), so the QA page offers no queue select;
+// every other analytics page keeps it.
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en-US' } }),
 }));

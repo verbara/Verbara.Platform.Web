@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createWrapper } from '@/test/hook-test-utils';
 import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v1.json';
 
-// qa-scores-are-produced-or-not-shown (design D2; audit round 10, F2): the QA detail shows its
+// The QA detail shows its
 // sentiment only where the tenant's call language is supported by the sentiment analysis.
 let availabilityBody: unknown = available;
 let detailPending = false;

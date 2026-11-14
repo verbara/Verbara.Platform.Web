@@ -113,7 +113,7 @@ describe('renderCdrPdf', () => {
     expect(titles).toContain('analytics.cdr.pdf.qaSummaryTitle');
   });
 
-  // qa-scores-are-produced-or-not-shown (design D2): the PDF prints what the console shows. With
+  // The PDF prints what the console shows. With
   // post-call analysis unavailable, no QA score, sentiment or QA summary is printed even when the
   // record carries them.
   it('PrintsNoQaScoreSentimentOrQaSummary_WhenTheConsoleHidesThem', () => {

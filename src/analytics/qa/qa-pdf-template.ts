@@ -6,7 +6,7 @@ interface RenderQaPdfArgs {
   doc: jsPDF;
   helpers: PdfHelpers;
   qa: QaDetail;
-  /** Sentiment is printed only where the console shows it (design D2). Omitted = not shown. */
+  /** Sentiment is printed only where the console shows it. Omitted = not shown. */
   showSentiment?: boolean;
   t: (key: string) => string;
 }

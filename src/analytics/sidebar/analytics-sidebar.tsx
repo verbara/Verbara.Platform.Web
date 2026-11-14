@@ -17,7 +17,7 @@ interface SidebarItem {
   labelKey: string;
   to: string;
   icon: LucideIcon;
-  /** Shown only when the availability read says so (design D2); hidden on doubt. */
+  /** Shown only when the availability read says so; hidden on doubt. */
   needs?: 'qa' | 'speech';
 }
 

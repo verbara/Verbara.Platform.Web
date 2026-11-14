@@ -5,8 +5,7 @@ import { createWrapper } from '@/test/hook-test-utils';
 import noSource from '@/core/api/hooks/__fixtures__/qa-availability.v1.json';
 import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v1.json';
 
-// qa-scores-are-produced-or-not-shown (design D2; spec "The console does not present QA results
-// that cannot exist"): the QA entry follows `available`, the Speech Analytics entry
+// The QA entry follows `available`, the Speech Analytics entry
 // `analysisRunning`, and both stay hidden until a successful read says so.
 const mockCustomFetch = vi.fn();
 vi.mock('@/core/api/client', () => ({

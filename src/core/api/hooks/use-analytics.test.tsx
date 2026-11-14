@@ -187,7 +187,7 @@ describe('useQaList', () => {
   });
 });
 
-// qa-scores-are-produced-or-not-shown (design D2): the console asks once and hides on doubt.
+// The console asks once and hides on doubt.
 describe('useQaAvailability', () => {
   it('ReadsTheAvailabilityRoute_AndAnswersItsBody', async () => {
     vi.mocked(client.customFetch).mockResolvedValue(noSource);
@@ -275,7 +275,7 @@ describe('qaSurfaces', () => {
     });
   });
 
-  // Audit round 10, F2: sentiment of a language the analysis does not support is hidden and
+  // Sentiment of a language the analysis does not support is hidden and
   // explained, never shown as neutral.
   it('HidesSentiment_AndSaysWhy_WhenTheLanguageIsNotSupported', () => {
     const body = { ...available, sentimentSupported: false } as QaAvailability;

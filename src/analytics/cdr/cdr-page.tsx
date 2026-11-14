@@ -241,8 +241,8 @@ export default function CdrPage() {
     setPage(1);
   }, [from, to, queue]);
 
-  // The QA score and sentiment columns exist only where post-call analysis can fill them (design
-  // D2): the score column on `available`, the sentiment column where analysis runs in a language
+  // The QA score and sentiment columns exist only where post-call analysis can fill them:
+  // the score column on `available`, the sentiment column where analysis runs in a language
   // the sentiment analysis supports. Hidden on doubt.
   const { qa: showQa, sentiment: showSentiment } = useQaSurfaces();
 

@@ -10,7 +10,7 @@ import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v
 
 // The hook under the page is the real `useCdrList`; only its transport answers the fixture
 // (cdr-list-reads-its-envelope B.1, spec "The CDR list is read from its data/hasMore envelope").
-// The QA availability read (qa-scores-are-produced-or-not-shown, design D2) answers through its
+// The QA availability read answers through its
 // own seam: the configured deployment by default, so the QA columns render; a test that needs
 // another answer sets `availabilityAnswer`.
 const mockCustomFetch = vi.fn();
@@ -196,8 +196,8 @@ describe('CdrPage', () => {
     expect(nextButton()).toBeDisabled();
   });
 
-  // Spec "The CDR list on an unconfigured deployment": no QA score column, and (audit round 10,
-  // missed P2) no sentiment column either, since nothing can fill them.
+  // On an unconfigured deployment the list has no QA score column and no sentiment column,
+  // since nothing can fill them.
   it('RendersNoQaScoreAndNoSentimentColumn_WhenNoTranscriptSourceIsConfigured', async () => {
     availabilityAnswer = () => Promise.resolve(noSource);
     mockCustomFetch.mockResolvedValue(listFixture);
@@ -233,7 +233,7 @@ describe('CdrPage', () => {
     expect(container.querySelector('[col-id="qaScore"]')).toBeNull();
   });
 
-  // Audit round 10, F2: no sentiment column for a language the sentiment analysis does not support.
+  // No sentiment column for a language the sentiment analysis does not support.
   it('RendersTheQaScoreColumnButNoSentimentColumn_WhenTheLanguageIsNotSupported', async () => {
     availabilityAnswer = () => Promise.resolve({ ...available, sentimentSupported: false });
     mockCustomFetch.mockResolvedValue(listFixture);

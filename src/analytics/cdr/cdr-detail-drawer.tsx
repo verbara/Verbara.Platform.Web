@@ -72,9 +72,9 @@ export function CdrDetailDrawer({ sessionId, open, onOpenChange }: CdrDetailDraw
   // The drawer renders only what `GET /api/v1/analytics/cdr/{sessionId}` answers: no field and
   // no timeline is built from the grid row (spec "The CDR detail is read as the Api sends it").
   const { data: detail, isLoading, isError, error } = useCdrDetail(sessionId ?? '');
-  // No transcript is requested: the Api serves no transcript route (design D7).
+  // No transcript is requested: the Api serves no transcript route.
   // The QA summary is shown on `available`, its sentiment only where the tenant's call language
-  // is supported (design D2); hidden on doubt.
+  // is supported; hidden on doubt.
   const { qa: showQa, sentiment: showSentiment } = useQaSurfaces();
 
   if (!sessionId) return null;

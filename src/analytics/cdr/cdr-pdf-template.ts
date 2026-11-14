@@ -8,7 +8,7 @@ interface RenderCdrPdfArgs {
   detail: CdrDetailDto;
   transcript?: TranscriptSegment[];
   /**
-   * Which post-call analysis values the console shows (design D2): the QA score and summary on
+   * Which post-call analysis values the console shows: the QA score and summary on
    * `available`, sentiment where the tenant's call language is supported. Omitted = neither.
    */
   show?: { qa: boolean; sentiment: boolean };

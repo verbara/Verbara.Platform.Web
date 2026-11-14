@@ -37,8 +37,7 @@ base.describe('R4 T27 bridge (conversation close → call-analytics invalidation
       const { page, token } = await authenticate(browser, DEMO_SUPERVISOR);
 
       try {
-        // The page renders its tabs only while post-call analysis runs (qa-scores-are-produced-
-        // or-not-shown, design D2); the bridge is what this spec measures, so the availability is
+        // The page renders its tabs only while post-call analysis runs; the bridge is what this spec measures, so the availability is
         // stubbed `analysisRunning` true.
         await stubQaAvailability(page, availability.available());
         await page.goto('/analytics/speech');

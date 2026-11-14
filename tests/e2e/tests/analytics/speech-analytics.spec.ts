@@ -4,8 +4,7 @@ import { test, expect } from '../../fixtures/auth.fixture';
 import { availability, stubQaAvailability } from '../../helpers/qa-availability';
 
 /**
- * Speech Analytics follows `analysisRunning` of the availability read (host change
- * qa-scores-are-produced-or-not-shown, design D2). The availability and the three
+ * Speech Analytics follows `analysisRunning` of the availability read. The availability and the three
  * `/api/v1/call-analytics/*` reads are stubbed with `page.route`, so the spec needs the signed-in
  * admin of the dev stack but no analysed call on it. `data-*` selectors only; waits through
  * `expect(...)` polling, never wall-clock waits.

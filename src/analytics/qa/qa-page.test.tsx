@@ -7,9 +7,9 @@ import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v
 import notLicensed from '@/core/api/hooks/__fixtures__/qa-availability.not-licensed.v1.json';
 import listFixture from '@/core/api/hooks/__fixtures__/qa-list-response.v1.json';
 
-// qa-scores-are-produced-or-not-shown (design D2, task 2.2): a direct visit names why QA results
+// A direct visit names why QA results
 // cannot exist instead of an empty table, and the list is read from its `data`/`hasMore` envelope
-// (QA-CONSOLE arm (b) measured the page rendering 0 of 1 row while it read `items`).
+// (the page rendered 0 of 1 row while it read `items`).
 const mockCustomFetch = vi.fn();
 vi.mock('@/core/api/client', () => ({
   customFetch: (...args: unknown[]) => mockCustomFetch(...args),
@@ -151,7 +151,7 @@ describe('QaPage', () => {
     expect(screen.queryByTestId('qa-sentiment-unsupported')).not.toBeInTheDocument();
   });
 
-  // Audit round 10, F2: sentiment of a language the analysis does not support is hidden and the
+  // Sentiment of a language the analysis does not support is hidden and the
   // page says why, never a column of neutral labels.
   it('HidesTheSentimentColumn_AndSaysWhy_WhenTheLanguageIsNotSupported', async () => {
     answer({ ...available, sentimentSupported: false });

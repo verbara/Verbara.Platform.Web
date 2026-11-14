@@ -131,7 +131,7 @@ export function QaDetailDrawer({ sessionId, open, onOpenChange }: QaDetailDrawer
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data: detail, isLoading } = useQaDetail(sessionId ?? '');
-  // Sentiment only where the tenant's call language is supported (design D2); hidden on doubt.
+  // Sentiment only where the tenant's call language is supported; hidden on doubt.
   const { sentiment: showSentiment } = useQaSurfaces();
 
   const sentimentData: SentimentPoint[] = useMemo(() => {

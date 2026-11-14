@@ -82,7 +82,7 @@ describe('renderQaPdf', () => {
     expect(titles).not.toContain('analytics.qa.pdf.contextTitle');
   });
 
-  // qa-scores-are-produced-or-not-shown (design D16): `qaScore` is already a 0-100 percentage, so
+  // `qaScore` is already a 0-100 percentage, so
   // the PDF prints it as one and passes at 70 whatever the scorecard's weights total.
   function summaryRow(qa: QaDetail, field: string) {
     const { doc, helpers } = makeHelpers();
@@ -112,7 +112,7 @@ describe('renderQaPdf', () => {
     );
   });
 
-  // qa-scores-are-produced-or-not-shown (design D2): sentiment is printed only where the console
+  // Sentiment is printed only where the console
   // shows it.
   it('PrintsTheSentiment_OnlyWhenTheConsoleShowsIt', () => {
     for (const [showSentiment, expected] of [

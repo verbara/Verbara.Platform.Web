@@ -52,7 +52,7 @@ export type CdrDetailDto = AbsentIsNull<components['schemas']['CdrDetailDto']>;
 export type QaRow = AbsentIsNull<components['schemas']['QaRowDto']>;
 export type QaListPage = AbsentIsNull<components['schemas']['PagedDataResponseOfQaRowDto']>;
 
-// QA availability (qa-scores-are-produced-or-not-shown, design D1/D2). One read says whether
+// QA availability. One read says whether
 // post-call analysis can produce anything for the caller's tenant. Every member is always
 // written (nulls included), so the generated schema is read as is.
 export type QaAvailability = components['schemas']['QaAvailabilityDto'];
@@ -123,7 +123,7 @@ const QA_AVAILABILITY_STALE_MS = 10 * 60_000;
 
 /**
  * Reads `GET /api/v1/analytics/qa-availability` once, with a long stale time; a page that must
- * not trust a stale answer passes `refetchOnMount` (the QA page does, design D2). Not retried:
+ * not trust a stale answer passes `refetchOnMount` (the QA page does). Not retried:
  * a failed read keeps every surface hidden instead of waiting on retries.
  */
 export function useQaAvailability(options?: { refetchOnMount?: boolean }) {

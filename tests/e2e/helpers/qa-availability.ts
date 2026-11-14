@@ -4,8 +4,8 @@ import { resolve } from 'node:path';
 import type { Page } from '@playwright/test';
 
 /**
- * The QA availability read (`GET /api/v1/analytics/qa-availability`, host change
- * qa-scores-are-produced-or-not-shown) stubbed from the host contract fixtures, which the unit
+ * The QA availability read (`GET /api/v1/analytics/qa-availability`)
+ * stubbed from the host contract fixtures, which the unit
  * tests read too. A spec picks the deployment it needs; the console hides or shows its QA and
  * Speech Analytics surfaces from this one answer.
  */

@@ -2,8 +2,8 @@ import { test, expect } from '../../fixtures/auth.fixture';
 import { availability, qaListFixture, stubQaAvailability } from '../../helpers/qa-availability';
 
 /**
- * QA Evaluations follow the availability read (host change qa-scores-are-produced-or-not-shown,
- * spec "The console does not present QA results that cannot exist"). The availability and the QA
+ * QA Evaluations follow the availability read: the console does not present QA results
+ * that cannot exist. The availability and the QA
  * list are stubbed from the host contract fixtures with `page.route`; assertions use `data-*`
  * selectors only and wait through `expect(...)` polling, never wall-clock waits.
  */
