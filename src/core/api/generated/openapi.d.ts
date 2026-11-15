@@ -8417,6 +8417,15 @@ export interface paths {
             'application/json': components['schemas']['PagedDataResponseOfQaRowDto'];
           };
         };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
       };
     };
     put?: never;
@@ -8460,6 +8469,41 @@ export interface paths {
             [name: string]: unknown;
           };
           content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v{version}/analytics/qa-availability': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['QaAvailabilityDto'];
+          };
         };
       };
     };
@@ -9492,6 +9536,15 @@ export interface paths {
             'application/json': components['schemas']['ActiveSessionDto'][];
           };
         };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
       };
     };
     put?: never;
@@ -9559,9 +9612,9 @@ export interface paths {
         };
         cookie?: never;
       };
-      requestBody: {
+      requestBody?: {
         content: {
-          'application/json': components['schemas']['ListenRequest'];
+          'application/json': null | components['schemas']['ListenRequest'];
         };
       };
       responses: {
@@ -9573,6 +9626,13 @@ export interface paths {
           content: {
             'application/json': components['schemas']['ListenEntry'];
           };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
         /** @description Not Found */
         404: {
@@ -9621,6 +9681,15 @@ export interface paths {
             'application/json': components['schemas']['PagedResultOfConversation'];
           };
         };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
       };
     };
     put?: never;
@@ -9660,6 +9729,22 @@ export interface paths {
           content: {
             'application/json': components['schemas']['Message'][];
           };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -9829,6 +9914,15 @@ export interface paths {
           };
           content: {
             'application/json': components['schemas']['StuckConversationDto'][];
+          };
+        };
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
           };
         };
       };
@@ -20572,6 +20666,39 @@ export interface components {
       };
       /** Format: date-time */
       purgedAt: string;
+    };
+    /**
+     * @description Whether post-call analysis produces results for the caller's tenant. bool QaAvailabilityDto.AnalysisRunning is true when the
+     *     analysis is registered, licensed and has a transcript source; bool QaAvailabilityDto.Available (QA scores) additionally needs a
+     *     scorecard with at least one item for the tenant. string? QaAvailabilityDto.Reason is the first missing piece, null when
+     *     bool QaAvailabilityDto.Available is true. string? QaAvailabilityDto.SpeakerMode, bool? QaAvailabilityDto.TopicsConfigured,
+     *     bool? QaAvailabilityDto.ComplianceConfigured, bool? QaAvailabilityDto.SentimentSupported and QaBacklogDto? QaAvailabilityDto.Backlog are null when
+     *     bool QaAvailabilityDto.AnalysisRunning is false. bool? QaAvailabilityDto.SentimentSupported is false when a queue of the tenant is
+     *     transcribed in a language the sentiment analysis does not support, so the console hides sentiment for that tenant
+     *     instead of showing every call as neutral.
+     */
+    QaAvailabilityDto: {
+      available: boolean;
+      analysisRunning: boolean;
+      reason: null | string;
+      transcriptSource: null | string;
+      speakerMode: null | string;
+      topicsConfigured: null | boolean;
+      complianceConfigured: null | boolean;
+      sentimentSupported: null | boolean;
+      backlog: null | components['schemas']['QaBacklogDto'];
+    };
+    /**
+     * @description The analysis backlog of the caller's tenant since DateTimeOffset QaBacklogDto.Since: calls waiting for analysis, and calls that
+     *     ended without being analysed.
+     */
+    QaBacklogDto: {
+      /** Format: int64 */
+      waiting: number;
+      /** Format: int64 */
+      notAnalysed: number;
+      /** Format: date-time */
+      since: string;
     };
     QaCriterionDto: {
       category: string;

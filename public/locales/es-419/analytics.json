@@ -180,6 +180,11 @@
         "description": "Descripción",
         "evidence": "Evidencia"
       }
+    },
+    "paging": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "page": "Página {{page}}"
     }
   },
   "surveys": {
@@ -318,5 +323,12 @@
       "download": "Descargar grabación",
       "error": "No se pudo cargar la grabación."
     }
+  },
+  "availability": {
+    "not_configured": "El análisis posterior a la llamada no está configurado en esta instalación, así que no hay resultados que mostrar.",
+    "not_licensed": "La licencia no incluye el análisis de llamadas, así que no hay resultados que mostrar.",
+    "no_scorecard": "No hay una ficha de evaluación de QA configurada para este tenant, así que las llamadas no se puntúan.",
+    "unknown": "No se pudo comprobar si el análisis posterior a la llamada está activo. Inténtalo más tarde.",
+    "sentiment_unsupported": "El sentimiento no se muestra: las llamadas de este tenant se transcriben en un idioma que el análisis de sentimiento no admite."
   }
 }

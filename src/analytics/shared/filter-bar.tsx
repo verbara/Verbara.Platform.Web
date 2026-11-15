@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { DateRangePicker, type DateRange } from './date-range-picker';
 import { ExportButton } from './export-button';
@@ -18,6 +19,8 @@ export function FilterBar() {
   const { t } = useTranslation('analytics');
   const { data: queues = [] } = useQueues();
   const { from, to, queue, channel, setFilters } = useAnalyticsFilterStore();
+  // The QA list takes no queue (`GET /api/v1/analytics/qa`), so its page offers no queue filter.
+  const showQueue = !useLocation().pathname.startsWith('/analytics/qa');
 
   const handleDateChange = (range: DateRange) => {
     setFilters({ from: range.from, to: range.to });
@@ -27,18 +30,21 @@ export function FilterBar() {
     <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-6 py-2.5 dark:border-slate-700 dark:bg-slate-800">
       <DateRangePicker value={{ from, to }} onChange={handleDateChange} />
 
-      <select
-        value={queue}
-        onChange={(e) => setFilters({ queue: e.target.value })}
-        className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
-      >
-        <option value="">{t('filters.queue')}</option>
-        {queues.map((q) => (
-          <option key={q.id} value={q.name}>
-            {q.name}
-          </option>
-        ))}
-      </select>
+      {showQueue && (
+        <select
+          value={queue}
+          data-testid="filter-queue"
+          onChange={(e) => setFilters({ queue: e.target.value })}
+          className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+        >
+          <option value="">{t('filters.queue')}</option>
+          {queues.map((q) => (
+            <option key={q.id} value={q.name}>
+              {q.name}
+            </option>
+          ))}
+        </select>
+      )}
 
       <select
         value={channel}

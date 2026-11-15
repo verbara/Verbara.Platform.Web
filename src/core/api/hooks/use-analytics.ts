@@ -45,18 +45,110 @@ export type CdrRowDto = AbsentIsNull<components['schemas']['CdrRowDto']>;
 export type CdrDetailDto = AbsentIsNull<components['schemas']['CdrDetailDto']>;
 
 // QA
-export interface QaRow {
-  sessionId: string;
-  analyzedAt: string;
-  agentName?: string;
-  queueName?: string;
-  qaScore: number;
-  summaryNarrative?: string;
-  hasComplianceViolations: boolean;
-  violationCount: number;
-  sentimentLabel?: string;
-  topics: string[];
+//
+// The QA list row and its envelope are the generated schemas (`QaRowDto`,
+// `PagedDataResponseOfQaRowDto`: `{ data, hasMore, page, pageSize }`), read through
+// `AbsentIsNull` because the Api omits null members from the wire.
+export type QaRow = AbsentIsNull<components['schemas']['QaRowDto']>;
+export type QaListPage = AbsentIsNull<components['schemas']['PagedDataResponseOfQaRowDto']>;
+
+// QA availability. One read says whether
+// post-call analysis can produce anything for the caller's tenant. Every member is always
+// written (nulls included), so the generated schema is read as is.
+export type QaAvailability = components['schemas']['QaAvailabilityDto'];
+
+/** What a missing piece means to a reader: `null` while the read has not succeeded. */
+export type QaUnavailableReason = 'not_configured' | 'not_licensed' | 'no_scorecard' | 'unknown';
+
+/**
+ * The console surfaces that may be shown, derived from one availability read. Hidden on doubt:
+ * until a successful read says so, nothing that depends on post-call analysis is shown.
+ * - `qa`: the QA entry, the CDR QA column, the CDR QA summary (`available`);
+ * - `speech`: the Speech Analytics entry (`analysisRunning`);
+ * - `sentiment`: every sentiment value, only when analysis runs and the tenant's call language is
+ *   one the sentiment analysis supports (`sentimentSupported` true);
+ * - `sentimentUnsupported`: analysis runs but sentiment is not supported for the language, so a
+ *   page explains why it shows no sentiment.
+ */
+export interface QaSurfaces {
+  qa: boolean;
+  speech: boolean;
+  sentiment: boolean;
+  sentimentUnsupported: boolean;
+  /** Why QA results cannot exist, or null when they can or while the read is pending. */
+  qaReason: QaUnavailableReason | null;
+  /** Why speech analysis results cannot exist, or null when they can or while the read is pending. */
+  speechReason: QaUnavailableReason | null;
 }
+
+function readerReason(reason: string | null): QaUnavailableReason {
+  switch (reason) {
+    case 'analysis_not_registered':
+    case 'no_transcript_source':
+      return 'not_configured';
+    case 'not_licensed':
+      return 'not_licensed';
+    case 'no_scorecard':
+      return 'no_scorecard';
+    default:
+      return 'unknown';
+  }
+}
+
+export function qaSurfaces(availability: QaAvailability | undefined, failed = false): QaSurfaces {
+  if (!availability) {
+    const reason = failed ? 'unknown' : null;
+    return {
+      qa: false,
+      speech: false,
+      sentiment: false,
+      sentimentUnsupported: false,
+      qaReason: reason,
+      speechReason: reason,
+    };
+  }
+  const qa = availability.available === true;
+  const speech = availability.analysisRunning === true;
+  return {
+    qa,
+    speech,
+    sentiment: speech && availability.sentimentSupported === true,
+    sentimentUnsupported: speech && availability.sentimentSupported === false,
+    qaReason: qa ? null : readerReason(availability.reason),
+    speechReason: speech ? null : readerReason(availability.reason),
+  };
+}
+
+const QA_AVAILABILITY_STALE_MS = 10 * 60_000;
+
+/**
+ * Reads `GET /api/v1/analytics/qa-availability` once, with a long stale time; a page that must
+ * not trust a stale answer passes `refetchOnMount` (the QA page does). Not retried:
+ * a failed read keeps every surface hidden instead of waiting on retries.
+ */
+export function useQaAvailability(options?: { refetchOnMount?: boolean }) {
+  return useQuery({
+    queryKey: ['analytics-qa-availability'],
+    queryFn: () =>
+      customFetch<QaAvailability>({
+        url: '/api/v1/analytics/qa-availability',
+        method: 'GET',
+        // The sidebar reads this on every analytics page, including ones a licence without the
+        // analytics module may open; a 402 here only hides the QA surfaces.
+        suppressPaymentRequiredModal: true,
+      }),
+    staleTime: QA_AVAILABILITY_STALE_MS,
+    retry: false,
+    ...(options?.refetchOnMount && { refetchOnMount: 'always' as const }),
+  });
+}
+
+/** The surfaces the console may show, from the availability read (see `QaSurfaces`). */
+export function useQaSurfaces(options?: { refetchOnMount?: boolean }) {
+  const query = useQaAvailability(options);
+  return { ...qaSurfaces(query.data, query.isError), isLoading: query.isLoading };
+}
+
 export interface QaDetail {
   sessionId: string;
   analyzedAt: string;
@@ -119,25 +211,15 @@ export interface IntervalData {
   slaMetCount: number;
 }
 
-// Only the QA list still reads this envelope (analytics-contract-residue owns it).
-interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-  hasNextPage: boolean;
-}
-
 // Filters
 export interface CdrFilters {
   queue?: string;
   agent?: string;
   channel?: string;
 }
+// `GET /api/v1/analytics/qa` takes no queue or agent, so neither is a QA filter.
 export interface QaFilters {
   minScore?: number;
-  queue?: string;
-  agent?: string;
 }
 
 export function useDashboard(from?: string, to?: string, queue?: string) {
@@ -182,11 +264,18 @@ export function useCdrDetail(sessionId: string) {
   });
 }
 
-export function useQaList(from?: string, to?: string, filters?: QaFilters, page = 1) {
+export function useQaList(
+  from?: string,
+  to?: string,
+  filters?: QaFilters,
+  page = 1,
+  enabled = true,
+) {
   return useQuery({
     queryKey: ['analytics-qa', from, to, filters, page],
+    enabled,
     queryFn: () =>
-      customFetch<PagedResult<QaRow>>({
+      customFetch<QaListPage>({
         url: '/api/v1/analytics/qa',
         method: 'GET',
         params: {
@@ -206,18 +295,6 @@ export function useQaDetail(sessionId: string) {
     queryFn: () =>
       customFetch<QaDetail>({ url: `/api/v1/analytics/qa/${sessionId}`, method: 'GET' }),
     enabled: !!sessionId,
-  });
-}
-
-export function useTranscript(sessionId: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ['analytics-transcript', sessionId],
-    queryFn: () =>
-      customFetch<TranscriptSegment[]>({
-        url: `/api/v1/analytics/cdr/${sessionId}/transcript`,
-        method: 'GET',
-      }),
-    enabled: !!sessionId && enabled,
   });
 }
 

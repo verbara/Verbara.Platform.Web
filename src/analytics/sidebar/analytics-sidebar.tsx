@@ -11,32 +11,37 @@ import {
   Disc3,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useQaSurfaces } from '@/core/api/hooks/use-analytics';
 
 interface SidebarItem {
   labelKey: string;
   to: string;
   icon: LucideIcon;
+  /** Shown only when the availability read says so; hidden on doubt. */
+  needs?: 'qa' | 'speech';
 }
 
 const items: SidebarItem[] = [
   { labelKey: 'sidebar.dashboard', to: '/analytics/dashboard', icon: ChartColumn },
   { labelKey: 'sidebar.cdr', to: '/analytics/cdr', icon: FileText },
-  { labelKey: 'sidebar.qa', to: '/analytics/qa', icon: ClipboardCheck },
+  { labelKey: 'sidebar.qa', to: '/analytics/qa', icon: ClipboardCheck, needs: 'qa' },
   { labelKey: 'sidebar.surveys', to: '/analytics/surveys', icon: ClipboardList },
   { labelKey: 'sidebar.intervals', to: '/analytics/intervals', icon: Table },
   { labelKey: 'sidebar.agent_intervals', to: '/analytics/agent-intervals', icon: Users },
-  { labelKey: 'sidebar.speech', to: '/analytics/speech', icon: AudioWaveform },
+  { labelKey: 'sidebar.speech', to: '/analytics/speech', icon: AudioWaveform, needs: 'speech' },
   { labelKey: 'sidebar.recordings', to: '/analytics/recordings', icon: Disc3 },
 ];
 
 export function AnalyticsSidebar() {
   const { t } = useTranslation('analytics');
+  const surfaces = useQaSurfaces();
+  const shown = items.filter((item) => !item.needs || surfaces[item.needs]);
 
   return (
     <nav className="flex h-full flex-col gap-1 py-3">
       <p className="px-4 pb-1 text-sm font-medium text-slate-500">{t('sidebar.dashboard')}</p>
       <ul className="space-y-0.5 px-2">
-        {items.map((item) => {
+        {shown.map((item) => {
           const Icon = item.icon;
           return (
             <li key={item.to}>

@@ -26,8 +26,10 @@ import {
   useTopicTrends,
   useSentimentTrends,
   useComplianceSummary,
+  useQaSurfaces,
   type ComplianceRuleSummaryDto,
 } from '@/core/api/hooks/use-analytics';
+import { AnalysisUnavailable } from '@/analytics/shared/analysis-unavailable';
 import type { ConversationStateChangedPayload } from '@/core/api/hooks/use-conversation-state-stream';
 import { useFormatDate } from '@/core/i18n/use-format';
 import { PageSkeleton } from '@/core/ui/page-skeleton';
@@ -457,6 +459,9 @@ export default function SpeechAnalyticsPage() {
   const { t } = useTranslation('analytics');
   const qc = useQueryClient();
   const connectionState = useRealtimeStore((s) => s.connectionState);
+  // The page's results exist only while post-call analysis runs; until a successful
+  // read says so, no tab and no tab query.
+  const surfaces = useQaSurfaces();
 
   // Option B: page-level invalidation on conversation ended
   useEffect(() => {
@@ -483,25 +488,47 @@ export default function SpeechAnalyticsPage() {
           {t('speechAnalytics.title')}
         </h1>
 
-        <Tabs defaultValue="topics">
-          <TabsList>
-            <TabsTrigger value="topics">{t('speechAnalytics.tabs.topics')}</TabsTrigger>
-            <TabsTrigger value="sentiment">{t('speechAnalytics.tabs.sentiment')}</TabsTrigger>
-            <TabsTrigger value="compliance">{t('speechAnalytics.tabs.compliance')}</TabsTrigger>
-          </TabsList>
+        {!surfaces.speech ? (
+          surfaces.speechReason ? (
+            <AnalysisUnavailable reason={surfaces.speechReason} testId="speech-unavailable" />
+          ) : (
+            <PageSkeleton variant="cards" rows={3} />
+          )
+        ) : (
+          <Tabs defaultValue="topics">
+            <TabsList>
+              <TabsTrigger value="topics" data-testid="speech-tab-topics">
+                {t('speechAnalytics.tabs.topics')}
+              </TabsTrigger>
+              <TabsTrigger value="sentiment" data-testid="speech-tab-sentiment">
+                {t('speechAnalytics.tabs.sentiment')}
+              </TabsTrigger>
+              <TabsTrigger value="compliance" data-testid="speech-tab-compliance">
+                {t('speechAnalytics.tabs.compliance')}
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="topics" className="mt-4">
-            <TopicTrendsTab />
-          </TabsContent>
+            <TabsContent value="topics" className="mt-4">
+              <TopicTrendsTab />
+            </TabsContent>
 
-          <TabsContent value="sentiment" className="mt-4">
-            <SentimentTrendsTab />
-          </TabsContent>
+            <TabsContent value="sentiment" className="mt-4">
+              {surfaces.sentiment && <SentimentTrendsTab />}
+              {surfaces.sentimentUnsupported && (
+                <p
+                  className="py-16 text-center text-sm text-muted-foreground"
+                  data-testid="sentiment-unsupported"
+                >
+                  {t('availability.sentiment_unsupported')}
+                </p>
+              )}
+            </TabsContent>
 
-          <TabsContent value="compliance" className="mt-4">
-            <ComplianceOverviewTab />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="compliance" className="mt-4">
+              <ComplianceOverviewTab />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </div>
   );

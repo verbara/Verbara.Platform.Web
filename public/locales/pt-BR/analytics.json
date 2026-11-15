@@ -180,6 +180,11 @@
         "description": "Descrição",
         "evidence": "Evidência"
       }
+    },
+    "paging": {
+      "previous": "Anterior",
+      "next": "Próxima",
+      "page": "Página {{page}}"
     }
   },
   "surveys": {
@@ -318,5 +323,12 @@
       "download": "Baixar gravação",
       "error": "Não foi possível carregar a gravação."
     }
+  },
+  "availability": {
+    "not_configured": "A análise pós-chamada não está configurada nesta instalação, então não há resultados para mostrar.",
+    "not_licensed": "A licença não inclui a análise de chamadas, então não há resultados para mostrar.",
+    "no_scorecard": "Nenhuma ficha de avaliação de QA está configurada para este tenant, então as chamadas não recebem nota.",
+    "unknown": "Não foi possível verificar se a análise pós-chamada está ativa. Tente novamente mais tarde.",
+    "sentiment_unsupported": "O sentimento não é exibido: as chamadas deste tenant são transcritas em um idioma que a análise de sentimento não suporta."
   }
 }

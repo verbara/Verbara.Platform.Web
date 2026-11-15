@@ -1,0 +1,15 @@
+{
+  "available": true,
+  "analysisRunning": true,
+  "reason": null,
+  "transcriptSource": "recording",
+  "speakerMode": "two_track",
+  "topicsConfigured": true,
+  "complianceConfigured": false,
+  "sentimentSupported": true,
+  "backlog": {
+    "waiting": 0,
+    "notAnalysed": 0,
+    "since": "2026-11-10T00:00:00+00:00"
+  }
+}
