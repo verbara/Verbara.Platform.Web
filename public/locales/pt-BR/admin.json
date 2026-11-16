@@ -132,7 +132,8 @@
       },
       "aria": {
         "enableAgentAssist": "Habilitar Agent Assist"
-      }
+      },
+      "provider-not-live": "{{provider}} está salvo, mas não é um provedor ao vivo: retorna o texto somente após o fim da chamada. Escolha Deepgram para habilitar o Agent Assist."
     }
   },
   "users": {

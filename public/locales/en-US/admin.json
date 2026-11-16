@@ -132,7 +132,8 @@
       },
       "aria": {
         "enableAgentAssist": "Enable Agent Assist"
-      }
+      },
+      "provider-not-live": "{{provider}} is stored but is not a live provider: it returns text only after the call ends. Choose Deepgram to enable Agent Assist."
     }
   },
   "users": {
