@@ -1,8 +1,10 @@
-// R5.2 PC.1 — retention admin hooks backing the DryRun toggle + per-target
-// overview + manual run-now flows. Wraps GET/POST/PATCH /management/retention/*.
+// R5.2 PC.1 — retention admin hooks backing the read-only purge-mode notice +
+// per-target overview + manual run-now flows. Wraps GET/POST /management/retention/*.
+// The purge mode is read-only here: it comes from the host key Retention:DryRun
+// (Platform/ADR-0052), so there is no write hook for it.
 //
 // Backend gates: system:retention:view (list/config) + system:retention:manage
-// (run-now/patch) — Platform/ADR-0037.
+// (run-now) — Platform/ADR-0037.
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/core/auth/auth-store';
@@ -108,28 +110,6 @@ export function useRunRetentionNow() {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: retentionKeys.targets() });
-    },
-  });
-}
-
-export function useToggleDryRun() {
-  const accessToken = useAuthStore((s) => s.accessToken);
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (newValue: boolean): Promise<RetentionConfigDto> => {
-      const res = await fetch('/api/v1/management/retention/config', {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ dryRun: newValue }),
-      });
-      if (!res.ok) throw new Error(`Failed to toggle DryRun: ${res.status}`);
-      return (await res.json()) as RetentionConfigDto;
-    },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: retentionKeys.config() });
     },
   });
 }
