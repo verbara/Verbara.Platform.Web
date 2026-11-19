@@ -29,7 +29,6 @@ vi.mock('./use-retention-targets', () => ({
   useRetentionTargets: vi.fn(),
   useRetentionConfig: vi.fn(),
   useRunRetentionNow: vi.fn(),
-  useToggleDryRun: vi.fn(),
 }));
 
 import { asMock } from '@/tests/utils/as-mock';
@@ -37,15 +36,16 @@ import {
   useRetentionTargets,
   useRetentionConfig,
   useRunRetentionNow,
-  useToggleDryRun,
   type RetentionTargetDto,
 } from './use-retention-targets';
 import RetentionAdminPage from './retention-admin-page';
+import enAdmin from '../../../public/locales/en-US/admin.json';
+import esAdmin from '../../../public/locales/es-419/admin.json';
+import ptAdmin from '../../../public/locales/pt-BR/admin.json';
 
 const mockUseTargets = asMock(useRetentionTargets);
 const mockUseConfig = asMock(useRetentionConfig);
 const mockUseRun = asMock(useRunRetentionNow);
-const mockUseToggle = asMock(useToggleDryRun);
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -84,7 +84,6 @@ describe('RetentionAdminPage', () => {
     mockUseTargets.mockReturnValue({ data: [makeTarget()], isLoading: false, error: null });
     mockUseConfig.mockReturnValue({ data: config, isLoading: false });
     mockUseRun.mockReturnValue({ mutate: vi.fn(), isPending: false });
-    mockUseToggle.mockReturnValue({ mutate: vi.fn(), isPending: false });
   });
 
   // The `canManage` check is the guard this page owns. It moved from the
@@ -96,7 +95,6 @@ describe('RetentionAdminPage', () => {
 
     render(<RetentionAdminPage />, { wrapper: makeWrapper() });
 
-    expect(screen.getByTestId('retention-dryrun-toggle')).toBeDefined();
     expect(screen.getByTestId('retention-run-dryrun')).toBeDefined();
     expect(screen.getByTestId('retention-run-purge')).toBeDefined();
   });
@@ -162,5 +160,64 @@ describe('RetentionAdminPage', () => {
 
     fireEvent.click(screen.getByTestId('retention-confirm-purge'));
     expect(mutate).toHaveBeenCalledWith({ dryRun: false }, expect.any(Object));
+  });
+
+  // retention-dry-run-is-configurable (Platform/ADR-0052): the purge mode comes from the
+  // host key Retention:DryRun and only a restart changes it, so the page shows the mode
+  // read-only and offers no toggle.
+  it('OffersNoDryRunToggle_When_ManagePermissionHeld', () => {
+    auth.permissions = ['system:retention:view', 'system:retention:manage'];
+
+    const { container } = render(<RetentionAdminPage />, { wrapper: makeWrapper() });
+
+    expect(container.querySelector('[data-testid="retention-dryrun-toggle"]')).toBeNull();
+    expect(container.querySelector('input[type="checkbox"]')).toBeNull();
+  });
+
+  it('NamesTheConfigKey_When_DryRunTrue', () => {
+    render(<RetentionAdminPage />, { wrapper: makeWrapper() });
+
+    expect(screen.getByTestId('retention-dryrun-banner').textContent).toContain('Retention:DryRun');
+    expect(screen.queryByTestId('retention-live-banner')).toBeNull();
+  });
+
+  it('ShowsLiveModeLine_When_DryRunFalse', () => {
+    mockUseConfig.mockReturnValue({ data: { ...config, dryRun: false }, isLoading: false });
+
+    render(<RetentionAdminPage />, { wrapper: makeWrapper() });
+
+    expect(screen.getByTestId('retention-live-banner')).toBeDefined();
+    expect(screen.queryByTestId('retention-dryrun-banner')).toBeNull();
+  });
+
+  it('DisablesPurgeButKeepsDryRun_When_DryRunTrue', () => {
+    auth.permissions = ['system:retention:manage'];
+
+    render(<RetentionAdminPage />, { wrapper: makeWrapper() });
+
+    const purge = screen.getByTestId('retention-run-purge') as HTMLButtonElement;
+    const dryRun = screen.getByTestId('retention-run-dryrun') as HTMLButtonElement;
+    expect(purge.disabled).toBe(true);
+    expect(purge.title).toContain('Retention:DryRun');
+    expect(dryRun.disabled).toBe(false);
+  });
+
+  it('ExportsNoDryRunToggleHook_When_ToggleRetired', async () => {
+    const actual = await vi.importActual<Record<string, unknown>>('./use-retention-targets');
+
+    expect(actual).not.toHaveProperty('useToggleDryRun');
+  });
+
+  it.each([
+    ['en-US', enAdmin],
+    ['es-419', esAdmin],
+    ['pt-BR', ptAdmin],
+  ])('NamesTheConfigKeyInEveryLocale_When_%s', (_locale, bundle) => {
+    const retention = bundle.retention as Record<string, unknown>;
+
+    expect(retention.dryRunActive).toContain('Retention:DryRun');
+    expect(retention.purgeBlockedByDryRun).toContain('Retention:DryRun');
+    expect(typeof retention.liveModeActive).toBe('string');
+    expect(retention).not.toHaveProperty('dryRunToggle');
   });
 });
