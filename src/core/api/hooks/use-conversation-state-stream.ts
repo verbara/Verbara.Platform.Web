@@ -12,14 +12,18 @@ export interface ConversationStateChangedPayload {
 }
 
 /**
- * Subscribe to real-time conversation state transitions published by the Pro T27
- * conversation bridge and forwarded via `PlatformHub` to the `tenant:{tenantId}`
- * group the current connection auto-joined on login.
+ * Subscribe to real-time conversation state transitions. The
+ * `OnConversationStateChanged` hub method is fed from Platform's own conversation
+ * state event: the Realtime `PushToHubRelay` (`ForwardCoreConversation`) forwards
+ * it via `PlatformHub` to the `tenant:{tenantId}` group the current connection
+ * auto-joined on login.
  *
  * On each event the hook invalidates React Query caches:
  *   - `['conversations']` (list) — always
  *   - `['conversations', conversationId]` (detail) — always
- *   - `['messages', conversationId]` — only on `newState === 'ended'` (final snapshot)
+ *   - `['messages', conversationId]` — only on `newState === 'ended'` (final snapshot).
+ *     Platform's event never carries `ended` (its final states are `Closed`,
+ *     `Abandoned` and the like), so this branch does not fire today.
  *
  * If `conversationId` is supplied, only events matching that id trigger
  * invalidation; otherwise all events for the tenant trigger the list-level
