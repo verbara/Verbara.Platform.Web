@@ -13,9 +13,10 @@ export interface AgentStateChangedPayload {
 }
 
 /**
- * Subscribe to real-time agent state transitions published by the Pro T27
- * agent bridge and forwarded via `PlatformHub` to the `tenant:{tenantId}`
- * group the current connection auto-joined on login.
+ * Subscribe to real-time agent state transitions. The `OnAgentStateChanged`
+ * hub method is fed from Platform's own agent state event: the Realtime
+ * `PushToHubRelay` (`ForwardCoreAgent`) forwards it via `PlatformHub` to the
+ * `tenant:{tenantId}` group the current connection auto-joined on login.
  *
  * On each event the hook invalidates React Query caches:
  *   - `['agents']` — always
@@ -30,15 +31,12 @@ export function useAgentStateStream(agentId?: string): void {
   useEffect(() => {
     if (connectionState !== 'connected') return;
 
-    const unsubscribe = onHubEvent<AgentStateChangedPayload>(
-      'OnAgentStateChanged',
-      (evt) => {
-        if (agentId && evt.agentId !== agentId) return;
+    const unsubscribe = onHubEvent<AgentStateChangedPayload>('OnAgentStateChanged', (evt) => {
+      if (agentId && evt.agentId !== agentId) return;
 
-        void qc.invalidateQueries({ queryKey: ['agents'] });
-        void qc.invalidateQueries({ queryKey: ['supervisor', 'conversations'] });
-      },
-    );
+      void qc.invalidateQueries({ queryKey: ['agents'] });
+      void qc.invalidateQueries({ queryKey: ['supervisor', 'conversations'] });
+    });
 
     return () => unsubscribe();
   }, [agentId, connectionState, qc]);
