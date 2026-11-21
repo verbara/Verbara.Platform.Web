@@ -1,0 +1,45 @@
+{
+  "_comment": "CHANGED validation on an unchanged member set (agent-assist-works-end-to-end, design D5 and D6; owner answers to Open Questions 3 and 7, 2026-11-15). Supersedes agent-assist-feature.v1.json for every consumer. GET and PUT /api/v1/admin/features/agent-assist answer 200 with AgentAssistFeatureDto; PUT takes AgentAssistFeatureUpdateRequest with AgentAssistCredentialsDto; member names unchanged from v1. CHANGED: (1) a PUT with enabled true is accepted only for a LIVE provider, today `deepgram` alone; `whisper`, `azure-whisper` and `google` are refused with 400 naming the reason (their Sdk recognizers transcribe only after the audio stream ends, which on a live call is the hangup); (2) credentials.endpoint, when present, must be an absolute ws:// or wss:// URI, else 400; (3) GET and PUT read and write the shared stored row directly (no cache), so every replica answers the same state. A row stored before this change with a batch provider is still returned by GET as stored; the engine then counts platform_agentassist_recognizer_unavailable_total{reason=provider_not_live} and transcribes nothing. Who may call the route (the Platform tenant only) is set by a separate Platform change that lands before this one, not by this shape. Null rule as v1: ApiJsonContext writes camelCase and leaves null members ABSENT. Every child change's delta spec must cite these field names VERBATIM (verbatim-fixture-citation rule, /xr:propagate).",
+  "liveProviders": ["deepgram"],
+  "refusedProviders": ["whisper", "azure-whisper", "google"],
+  "get": {
+    "status": 200,
+    "body": {
+      "_omittedWhileNull": ["provider", "apiKeyMasked", "endpointMasked", "updatedAt", "updatedBy"],
+      "enabled": true,
+      "provider": "deepgram",
+      "credentialsConfigured": true,
+      "apiKeyMasked": "***",
+      "endpointMasked": "***",
+      "updatedAt": "2026-11-15T18:20:00+00:00",
+      "updatedBy": "0651f84b6f284a1c9b8d658330fa8310"
+    }
+  },
+  "put": {
+    "request": {
+      "enabled": true,
+      "provider": "deepgram",
+      "credentials": { "apiKey": "<secret, never echoed>", "endpoint": "wss://api.deepgram.com" }
+    },
+    "status": 200,
+    "body": "same shape as get.body"
+  },
+  "putRefusedBatchProvider": {
+    "request": { "enabled": true, "provider": "whisper", "credentials": { "apiKey": "<secret>", "endpoint": null } },
+    "status": 400,
+    "body": {
+      "_shape": "ValidationProblem (application/problem+json), as every 400 of this route on main",
+      "errors": {
+        "provider": ["Provider 'whisper' cannot transcribe a live call: its recognizer returns text only after the audio ends. Live providers: deepgram."]
+      }
+    }
+  },
+  "putRefusedEndpoint": {
+    "request": { "enabled": true, "provider": "deepgram", "credentials": { "apiKey": "<secret>", "endpoint": "https://example.test" } },
+    "status": 400,
+    "body": {
+      "errors": { "credentials": ["endpoint must be an absolute ws:// or wss:// URI."] }
+    }
+  },
+  "_webConsumerRule": "The feature page's provider selector offers the live providers only (deepgram), in en-US, es-419 and pt-BR; the Google service-account JSON textarea and the Whisper / Azure Whisper fields are removed. A stored refused provider is shown as stored with a note that it is not live."
+}

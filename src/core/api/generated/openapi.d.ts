@@ -5900,6 +5900,13 @@ export interface paths {
             'application/json': components['schemas']['DispositionCodeDto'][];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     put?: never;
@@ -6045,6 +6052,13 @@ export interface paths {
             'application/json': components['schemas']['CallbackDto'][];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     put?: never;
@@ -6063,8 +6077,24 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': string;
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -17842,11 +17872,13 @@ export interface components {
     ActiveSessionDto: {
       sessionId: string;
       agentId: null | string;
+      agentName: null | string;
       queueName: null | string;
       callerIdNum: null | string;
       /** Format: date-time */
       connectedAt: null | string;
       conversationId: null | string;
+      sentiment: null | string;
     };
     AddCallerIdEntryRequest: {
       phoneNumber: string;
