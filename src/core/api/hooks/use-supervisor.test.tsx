@@ -13,7 +13,8 @@ import {
   useStuckConversations,
   useRetryCallback,
 } from './use-supervisor';
-import type { ActiveSession, SupervisorConversation, SupervisorMessage } from './use-supervisor';
+import type { SupervisorConversation, SupervisorMessage } from './use-supervisor';
+import { activeSessionV2Rows } from '@/core/api/contracts/active-session-v2.contract';
 import * as client from '@/core/api/client';
 
 vi.mock('@/core/api/client', () => ({
@@ -25,15 +26,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
   return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
 }
 
-const sampleSession: ActiveSession = {
-  sessionId: 'sess-1',
-  agentId: 'agent-1',
-  agentName: 'Agent One',
-  queueName: 'Support',
-  callerIdNum: '+1234567890',
-  connectedAt: '2026-01-01T00:00:00Z',
-  sentiment: 'positive',
-};
+const sampleSession = activeSessionV2Rows[0];
 
 const sampleConversation: SupervisorConversation = {
   id: 'conv-1',

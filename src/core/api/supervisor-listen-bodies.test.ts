@@ -59,7 +59,19 @@ const PHONE_REFUSAL: Shape<Schemas['ListenPhoneRefusal']> = {
   error: 'string',
   phoneNumber: 'string|null',
 };
+/** The eight-member v2 row (Platform change `agent-assist-works-end-to-end`, design D13). */
 const ACTIVE_SESSION: Shape<Schemas['ActiveSessionDto']> = {
+  sessionId: 'string',
+  agentId: 'string|null',
+  agentName: 'string|null',
+  queueName: 'string|null',
+  callerIdNum: 'string|null',
+  connectedAt: 'string|null',
+  conversationId: 'string|null',
+  sentiment: 'string|null',
+};
+/** The six-member v1 row, still cited by `supervisor-listen-console`. */
+const ACTIVE_SESSION_V1: Shape<Omit<Schemas['ActiveSessionDto'], 'agentName' | 'sentiment'>> = {
   sessionId: 'string',
   agentId: 'string|null',
   queueName: 'string|null',
@@ -137,11 +149,19 @@ describe('supervisor-silent-listen — verbatim-fixture guard', () => {
     }
   });
 
-  it('ActiveSessionFixture_ShouldMatchGeneratedSchema_WhenCopiedFromHost', () => {
-    const fixture = readJson('active-session.v1.json');
+  it('ActiveSessionV2Fixture_ShouldMatchGeneratedSchema_WhenCopiedFromHost', () => {
+    const fixture = readJson('active-session.v2.json');
     expect(fixture.status).toBe(200);
     const rows = fixture.body as unknown[];
     expect(rows.length).toBeGreaterThan(0);
     rows.forEach((row, i) => expectShape(row, ACTIVE_SESSION, `body[${i}]`));
+  });
+
+  it('ActiveSessionV1Fixture_ShouldKeepItsSixMembers_WhenCopiedFromHost', () => {
+    const fixture = readJson('active-session.v1.json');
+    expect(fixture.status).toBe(200);
+    const rows = fixture.body as unknown[];
+    expect(rows.length).toBeGreaterThan(0);
+    rows.forEach((row, i) => expectShape(row, ACTIVE_SESSION_V1, `v1.body[${i}]`));
   });
 });

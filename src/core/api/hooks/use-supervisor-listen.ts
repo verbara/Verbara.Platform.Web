@@ -9,7 +9,6 @@ import { supervisorListenRefusals } from '@/core/api/supervisor-listen-refusals'
 import { trunkRefusalValues } from '@/core/api/voice-call-refusals';
 import { useListenStore } from '@/core/voice/listen-store';
 import { hangupListenLeg, subscribeListenLegEnded } from '@/core/voice/listen-agent';
-import type { ActiveSession } from './use-supervisor';
 
 /**
  * Silent listen (Platform change `supervisor-silent-listen`; design D4 here). Typed on the generated
@@ -207,12 +206,10 @@ export function useSetListenPhone() {
 // ─── Voice monitor rows ─────────────────────────────────
 
 /**
- * A voice-monitor row as the extended `GET /api/v1/supervisor/sessions/active` answers it: the
- * Agent Assist session plus the generated `ActiveSessionDto.conversationId` (design D3).
+ * A voice-monitor row as `GET /api/v1/supervisor/sessions/active` answers it: the generated
+ * `ActiveSessionDto`, which always writes `conversationId` (null when none resolves).
  */
-export type ListenableSession = ActiveSession & {
-  conversationId?: Schemas['ActiveSessionDto']['conversationId'];
-};
+export type ListenableSession = Schemas['ActiveSessionDto'];
 
 /**
  * The conversation a listen on this row is keyed by: the row's own `conversationId`, never derived
