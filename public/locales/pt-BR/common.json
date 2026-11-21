@@ -285,6 +285,12 @@
       "user_not_found": "Esse usuário não foi encontrado.",
       "listen_phone_failed": "Não foi possível salvar o telefone de escuta. Tente novamente."
     },
+    "supervisor_whisper": {
+      "whisper_text_invalid": "Escreva um sussurro de 1 a 500 caracteres.",
+      "whisper_session_not_found": "Esta chamada não está mais sendo assistida. O sussurro não foi enviado.",
+      "whisper_session_not_bound": "O agente desta chamada ainda não está pronto. Tente novamente em instantes.",
+      "whisper_failed": "Não foi possível enviar o sussurro. Tente novamente."
+    },
     "voice": {
       "trunk_not_dialable": "O tronco {{trunkId}} deste número não tem um endereço para chamar. Peça a um administrador que configure o host do tronco."
     },

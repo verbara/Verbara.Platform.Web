@@ -545,6 +545,26 @@ export const agentAssistSuggestionFrame: AgentAssistFrameData & {
   metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:01.004+00:00' },
 };
 
+/**
+ * A supervisor's whisper as the host publishes it (`supervisor-whisper.v1.json` `event`): the
+ * `agentassist.suggestion` frame of `agentassist-events.v1.json` with `source` `Supervisor`,
+ * `priority` `Critical`, the request text and a new `suggestionId`.
+ */
+export const agentAssistSupervisorWhisperFrame: typeof agentAssistSuggestionFrame = {
+  sessionId: 'as-5c4b3a29',
+  agentId: 'a-9e8d7c6b5a493827',
+  conversationId: '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a',
+  suggestionId: 'sg-whisper-01',
+  text: 'Offer the retention discount now.',
+  priority: 'Critical',
+  source: 'Supervisor',
+  tenantId: 'demo',
+  type: 'agentassist.suggestion',
+  timestamp: '2026-11-03T10:43:05.120+00:00',
+  eventType: 'agentassist.suggestion',
+  metadata: { tenantId: 'demo', occurredAt: '2026-11-03T10:43:05.120+00:00' },
+};
+
 /** `events["agentassist.sentiment"].data`. */
 export const agentAssistSentimentFrame: AgentAssistFrameData & {
   speaker: string;

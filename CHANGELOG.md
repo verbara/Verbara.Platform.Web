@@ -51,6 +51,8 @@ version with Platform v2.40.0 or before it: an older console against v2.40.0 sho
 
 ### Removed
 
+- **The hub whisper path.** The console no longer sends the supervisor's whisper over the realtime hub and no longer
+  listens for a hub whisper message: the whisper goes through the REST route only.
 - **The dry-run toggle on the retention page.** It sent `PATCH /api/v1/management/retention/config`, which never
   changed what the scheduled purge did and which Platform v2.40.0 removes (it answers 405). Deploy this
   version with Platform v2.40.0 or before it: an older console against the new Platform shows a toggle that
@@ -58,6 +60,15 @@ version with Platform v2.40.0 or before it: an older console against v2.40.0 sho
 
 ### Fixed
 
+- **The supervisor's whisper reaches the agent.** From the voice Monitor, the whisper is sent to
+  `POST /api/v1/supervisor/sessions/{sessionId}/whisper` with the call's Agent Assist session, and it shows on the
+  agent's suggestion banner as a "Supervisor" item. A whisper is shown before engine suggestions, never expires on
+  its own and stays until the agent dismisses it; with more than three pending, the banner shows the newest three and
+  a "+N more from the supervisor" line. Engine suggestions keep their 15-second auto-dismiss. The Monitor confirms a
+  sent whisper, keeps the text when it is refused, limits it to 500 characters, and explains a refusal (invalid
+  text, the call is no longer assisted, the agent is not ready yet), in English, Spanish and Portuguese. Needs the
+  Platform release that answers this route with 204 No Content; with an older Platform the Monitor shows the whisper
+  as failed or its text as invalid.
 - **The QA PDF prints the score as a percentage.** The API already sends the QA score as 0-100, but the PDF divided
   it again by the scorecard's maximum. With weights that do not total 100 it printed "50 / 10" and marked the call
   passed. It now prints the score as a whole percentage ("50%") and marks a call passed at 70% or more,

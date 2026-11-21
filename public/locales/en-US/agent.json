@@ -173,7 +173,9 @@
     "dismiss": "Dismiss",
     "acknowledge": "Acknowledge",
     "waiting_transcript": "Waiting for transcript...",
-    "copy_copied": "Copied!"
+    "copy_copied": "Copied!",
+    "source_supervisor": "Supervisor",
+    "more_from_supervisor": "+{{count}} more from the supervisor"
   },
   "canned": {
     "search_placeholder": "Search canned response...",

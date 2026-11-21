@@ -285,6 +285,12 @@
       "user_not_found": "That user was not found.",
       "listen_phone_failed": "Could not save the listen phone. Try again."
     },
+    "supervisor_whisper": {
+      "whisper_text_invalid": "Write a whisper of 1 to 500 characters.",
+      "whisper_session_not_found": "This call is no longer being assisted. The whisper was not sent.",
+      "whisper_session_not_bound": "The agent for this call is not ready yet. Try again in a moment.",
+      "whisper_failed": "The whisper could not be sent. Try again."
+    },
     "voice": {
       "trunk_not_dialable": "Trunk {{trunkId}} for this number has no address to call. Ask an admin to set the trunk's host."
     },

@@ -1,0 +1,34 @@
+{
+  "_comment": "POST /api/v1/supervisor/sessions/{sessionId}/whisper — the supervisor's text whisper (change supervisor-whisper-reaches-the-agent). {sessionId} is the Agent Assist session id the monitor lists (ActiveSessionDto.sessionId). Server record: WhisperRequest(string Text), SupervisorEndpoints.cs:638 (on Platform main 83e434c2).",
+  "request": {
+    "text": "Offer the retention discount now."
+  },
+  "fields": {
+    "text": "string; required; trimmed; empty or above the length bound the host design fixes -> 400"
+  },
+  "responses": {
+    "204": "No Content, no body: the whisper was published to the session's agent as agentassist.suggestion (Source \"Supervisor\", Priority \"Critical\"); see agentassist-events.v1.json for the event shape. Owner answer 2026-11-21 (option A): 204, not an empty 200, because the console's customFetch skips the body only on 204 (Web client.ts:405) and rejects an empty 200 (Web use-auth-admin.test.tsx:372-382, the auth route that moved to 204)",
+    "400": "empty or oversized text",
+    "404": "no live Agent Assist session of the caller's tenant with that id",
+    "409": "the session's agent or conversation is not resolved yet; nothing was published"
+  },
+  "event": {
+    "type": "agentassist.suggestion",
+    "source": "Supervisor",
+    "priority": "Critical",
+    "text": "the request text",
+    "agentId": "the session's bound agent (AgentAssistSessionIdentity), never taken from the request",
+    "conversationId": "the session's bound conversation",
+    "suggestionId": "a new id per whisper (host spec R2); the console keys the banner item, its timer and its dismiss on it (Web use-sse.ts suggestionOf: id = data.suggestionId, since Web #524)",
+    "sessionId": "the Agent Assist session id of the route; present, ignored by the console"
+  },
+  "refusalBodies": {
+    "400": {
+      "error": "whisper-text-invalid"
+    },
+    "409": {
+      "error": "whisper-session-not-bound"
+    },
+    "_note": "404 has no body; a malformed JSON body gets the framework's 400. The console chooses its message by status only (Web design D2)."
+  }
+}

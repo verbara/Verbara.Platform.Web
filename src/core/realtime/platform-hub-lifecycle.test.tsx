@@ -201,7 +201,7 @@ describe('platform-hub lifecycle', () => {
     await hub.startPlatformHub();
     await hub.stopPlatformHub();
 
-    await expect(hub.invokeHub('WhisperToAgentAsync', 'conv-1', 'hold on')).rejects.toBeInstanceOf(
+    await expect(hub.invokeHub('SampleHubMethod', 'conv-1', 'hold on')).rejects.toBeInstanceOf(
       hub.HubNotConnectedError,
     );
     await settle();

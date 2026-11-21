@@ -100,17 +100,17 @@ describe('useSendWhisper', () => {
     vi.clearAllMocks();
   });
 
-  it('should send a whisper message', async () => {
+  it('UseSendWhisper_ShouldPostTheTrimmedTextAsText_WhenSent', async () => {
     vi.mocked(client.customFetch).mockResolvedValue(undefined);
     const { result } = renderHook(() => useSendWhisper(), { wrapper });
     act(() => {
-      result.current.mutate({ sessionId: 'sess-1', message: 'Check pricing' });
+      result.current.mutate({ sessionId: 'sess-1', text: '  hi ' });
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(client.customFetch).toHaveBeenCalledWith({
       url: '/api/v1/supervisor/sessions/sess-1/whisper',
       method: 'POST',
-      data: { message: 'Check pricing' },
+      data: { text: 'hi' },
     });
   });
 
@@ -118,7 +118,7 @@ describe('useSendWhisper', () => {
     vi.mocked(client.customFetch).mockRejectedValue(new Error('Whisper failed'));
     const { result } = renderHook(() => useSendWhisper(), { wrapper });
     act(() => {
-      result.current.mutate({ sessionId: 'sess-1', message: 'Check pricing' });
+      result.current.mutate({ sessionId: 'sess-1', text: 'Check pricing' });
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });

@@ -33,23 +33,15 @@ export interface SupervisionStartedNotification {
   startedAt: string;
 }
 
-export interface WhisperNotification {
-  conversationId: string;
-  text: string;
-  arrivedAt: string;
-}
-
 interface RealtimeState {
   connectionState: SignalRConnectionState;
   agentPresences: Record<string, AgentPresenceSnapshot>;
   observedSupervision: SupervisionStartedNotification | null;
-  lastWhisper: WhisperNotification | null;
 
   setConnectionState: (state: SignalRConnectionState) => void;
   upsertPresence: (snapshot: AgentPresenceSnapshot) => void;
   removePresence: (agentId: string) => void;
   setObservedSupervision: (evt: SupervisionStartedNotification | null) => void;
-  pushWhisper: (evt: WhisperNotification) => void;
   reset: () => void;
 }
 
@@ -57,7 +49,6 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
   connectionState: 'disconnected',
   agentPresences: {},
   observedSupervision: null,
-  lastWhisper: null,
 
   setConnectionState: (state) => set({ connectionState: state }),
 
@@ -76,13 +67,10 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
 
   setObservedSupervision: (evt) => set({ observedSupervision: evt }),
 
-  pushWhisper: (evt) => set({ lastWhisper: evt }),
-
   reset: () =>
     set({
       connectionState: 'disconnected',
       agentPresences: {},
       observedSupervision: null,
-      lastWhisper: null,
     }),
 }));

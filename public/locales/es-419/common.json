@@ -285,6 +285,12 @@
       "user_not_found": "No se encontró ese usuario.",
       "listen_phone_failed": "No se pudo guardar el teléfono de escucha. Inténtalo de nuevo."
     },
+    "supervisor_whisper": {
+      "whisper_text_invalid": "Escribe un susurro de 1 a 500 caracteres.",
+      "whisper_session_not_found": "Esta llamada ya no tiene asistencia. El susurro no se envió.",
+      "whisper_session_not_bound": "El agente de esta llamada aún no está listo. Inténtalo de nuevo en un momento.",
+      "whisper_failed": "No se pudo enviar el susurro. Inténtalo de nuevo."
+    },
     "voice": {
       "trunk_not_dialable": "La troncal {{trunkId}} de este número no tiene una dirección a la cual llamar. Pide a un administrador que configure el host de la troncal."
     },
