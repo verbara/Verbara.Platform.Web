@@ -13,9 +13,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 The console side of Platform v2.40.0. QA and Speech Analytics appear only where post-call analysis can produce
 results, the retention page shows the purge mode read-only, the voice Monitor titles every Agent Assist session, and
-the Agent Assist feature page offers Deepgram only. **Deploy with Platform v2.40.0 or before it:** the retention
-page no longer sends the dry-run toggle that Platform v2.40.0 removes, and the analysis-availability read, the
-Monitor's agent name and sentiment, and the date-only revenue bound come from v2.40.0.
+the Agent Assist feature page offers Deepgram only. **Requires Platform ≥ v2.40.0**: the analysis-availability read,
+the Monitor's agent name and sentiment, the Deepgram-only Agent Assist setting and the date-only revenue bound are
+first released in v2.40.0; against an older Platform the QA and Speech Analytics surfaces stay hidden. Deploy this
+version with Platform v2.40.0 or before it: an older console against v2.40.0 shows a retention toggle that fails.
 
 ### Changed
 
