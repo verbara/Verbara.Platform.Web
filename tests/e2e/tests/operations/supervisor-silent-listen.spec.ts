@@ -26,7 +26,7 @@ type Entry = { status: number; body: Record<string, unknown>; routes?: string[] 
 const readFixture = <T>(name: string): T =>
   JSON.parse(readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8')) as T;
 
-const sessions = readFixture<{ body: Record<string, unknown>[] }>('active-session.v1.json');
+const sessions = readFixture<{ body: Record<string, unknown>[] }>('active-session.v2.json');
 const startFx = readFixture<{ start: Entry; current: Entry }>('supervisor-listen-start.v1.json');
 const stopFx = readFixture<Entry>('supervisor-listen-stop.v1.json');
 const phoneFx = readFixture<{ get: Entry; set: Entry; invalid: Entry }>(
@@ -36,6 +36,7 @@ const refusals = readFixture<Record<string, Entry>>('supervisor-listen-refusals.
 
 const CONV = String(startFx.start.body.conversationId);
 const SESSION = String(sessions.body[0]!.sessionId);
+const UNRESOLVED = String(sessions.body[1]!.sessionId);
 const MONITOR = 'contacts:conversation:monitor';
 const HUB_SUPERVISION = /StartSupervisionAsync|StopSupervisingAsync/;
 
@@ -55,11 +56,7 @@ async function routeListen(page: Page, fake: FakeListen, startAnswer: () => Entr
     json(route, 409, { ...refusals.noSupervisorEndpoint!.body, conversationId: null }),
   );
   await page.route('**/api/v1/supervisor/sessions/active', (route) =>
-    json(
-      route,
-      200,
-      sessions.body.map((s) => ({ ...s, agentName: `Agent ${String(s.sessionId)}` })),
-    ),
+    json(route, 200, sessions.body),
   );
   await page.route('**/api/v1/supervisor/sessions/*/listen', (route) =>
     route.fulfill({ status: 204 }),
@@ -94,6 +91,18 @@ async function openSession(page: Page) {
   await waitForAppReady(page);
   const card = page.locator(`[data-testid="session-card"][data-session-id="${SESSION}"]`);
   await expect(card).toBeVisible();
+  // active-session.v2.json: the resolved row keeps its name, the all-null row shows the fallback
+  // title and no duration (spec voice-monitor-session-list, requirements 2 and 3).
+  await expect(card.getByTestId('session-card-title')).not.toHaveAttribute('data-agent-name');
+  const unresolved = page.locator(`[data-testid="session-card"][data-session-id="${UNRESOLVED}"]`);
+  await expect(unresolved.getByTestId('session-card-title')).toHaveAttribute(
+    'data-agent-name',
+    'unknown',
+  );
+  await expect(unresolved.getByTestId('session-card-duration')).toHaveAttribute(
+    'data-duration',
+    'unknown',
+  );
   await card.click();
   const control = page.getByTestId('listen-control');
   await expect(control).toBeVisible();

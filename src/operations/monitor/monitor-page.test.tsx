@@ -46,7 +46,7 @@ import MonitorPage from './monitor-page';
 type Entry = { status: number; body: Record<string, unknown> };
 const readJson = <T,>(name: string) =>
   JSON.parse(readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8')) as T;
-const sessionsFx = readJson<{ body: Record<string, unknown>[] }>('active-session.v1.json');
+const sessionsFx = readJson<{ body: Record<string, unknown>[] }>('active-session.v2.json');
 const startFx = readJson<{ start: Entry; current: Entry }>('supervisor-listen-start.v1.json');
 const refusals = readJson<Record<string, Entry>>('supervisor-listen-refusals.json');
 
@@ -61,11 +61,7 @@ let startBodies: unknown[];
 let current: Entry;
 
 const server = setupServer(
-  http.get('*/api/v1/supervisor/sessions/active', () =>
-    HttpResponse.json(
-      sessionsFx.body.map((s) => ({ ...s, agentName: `Agent ${String(s.sessionId)}` })),
-    ),
-  ),
+  http.get('*/api/v1/supervisor/sessions/active', () => HttpResponse.json(sessionsFx.body)),
   http.post(
     '*/api/v1/supervisor/sessions/:sessionId/listen',
     () => new HttpResponse(null, { status: 204 }),
@@ -179,6 +175,21 @@ describe('MonitorPage — silent listen', () => {
       fireEvent.click(within(control).getByTestId('listen-start'));
     });
     expect(requests.filter((r) => r.includes('/supervisor/conversations/'))).toEqual([]);
+  });
+
+  it('MonitorPage_ShouldShowTheFallbackTitleOnlyForTheUnresolvedRow_WhenTheListIsTheV2Body', async () => {
+    await renderPage();
+    const cards = await screen.findAllByTestId('session-card');
+    const byId = (id: string) => cards.find((c) => c.getAttribute('data-session-id') === id)!;
+    const resolvedTitle = within(byId(SESSION)).getByTestId('session-card-title');
+    expect(resolvedTitle).not.toHaveAttribute('data-agent-name');
+    expect(resolvedTitle).toHaveTextContent('Ana Gómez');
+    const unresolvedTitle = within(byId(UNTRACKED)).getByTestId('session-card-title');
+    expect(unresolvedTitle).toHaveAttribute('data-agent-name', 'unknown');
+    expect(within(byId(UNTRACKED)).getByTestId('session-card-duration')).toHaveAttribute(
+      'data-duration',
+      'unknown',
+    );
   });
 
   it('MonitorPage_ShouldShowAListenStartedElsewhere_WhenTheMonitorOpens', async () => {
