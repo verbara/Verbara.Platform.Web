@@ -58,7 +58,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a "+N more from the supervisor" line. Engine suggestions keep their 15-second auto-dismiss. The Monitor confirms a
   sent whisper, keeps the text when it is refused, limits it to 500 characters, and explains a refusal (invalid
   text, the call is no longer assisted, the agent is not ready yet), in English, Spanish and Portuguese. Needs the
-  Platform release that answers this route with 204 No Content; an older Platform refuses the whisper.
+  Platform release that answers this route with 204 No Content; with an older Platform the Monitor shows the whisper
+  as failed or its text as invalid.
 - **The QA PDF prints the score as a percentage.** The API already sends the QA score as 0-100, but the PDF divided
   it again by the scorecard's maximum. With weights that do not total 100 it printed "50 / 10" and marked the call
   passed. It now prints the score as a whole percentage ("50%") and marks a call passed at 70% or more,
