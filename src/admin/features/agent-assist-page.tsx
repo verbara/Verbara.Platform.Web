@@ -5,43 +5,32 @@ import { Button } from '@/core/ui/button';
 import { Input } from '@/core/ui/input';
 import { Label } from '@/core/ui/label';
 import { Switch } from '@/core/ui/switch';
-import { Textarea } from '@/core/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/core/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/ui/select';
 import {
   useAgentAssistFeature,
   useUpdateAgentAssistFeature,
+  isLiveAgentAssistProvider,
   type AgentAssistProvider,
   type AgentAssistFeatureUpdate,
+  type LiveAgentAssistProvider,
 } from '@/core/api/hooks/use-agent-assist-feature';
 import { useFormatDate } from '@/core/i18n/use-format';
 
-const PROVIDERS: { value: AgentAssistProvider; labelKey: string }[] = [
+/** The live providers (`agent-assist-feature.v2.json` `liveProviders`): deepgram alone. */
+const PROVIDERS: { value: LiveAgentAssistProvider; labelKey: string }[] = [
   { value: 'deepgram', labelKey: 'admin:features.agent-assist.provider.deepgram' },
-  { value: 'whisper', labelKey: 'admin:features.agent-assist.provider.whisper' },
-  { value: 'azure-whisper', labelKey: 'admin:features.agent-assist.provider.azure-whisper' },
-  { value: 'google', labelKey: 'admin:features.agent-assist.provider.google' },
 ];
 
 interface FormState {
   enabled: boolean;
-  provider: AgentAssistProvider | '';
+  provider: LiveAgentAssistProvider | '';
   apiKey: string;
-  endpoint: string;
-  googleJson: string;
 }
 
 const EMPTY_FORM: FormState = {
   enabled: false,
   provider: '',
   apiKey: '',
-  endpoint: '',
-  googleJson: '',
 };
 
 export default function AgentAssistFeaturePage() {
@@ -53,6 +42,10 @@ export default function AgentAssistFeaturePage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [dirty, setDirty] = useState(false);
 
+  // A row stored before only live providers were accepted: shown with a note, never preselected.
+  const storedNotLive: AgentAssistProvider | null =
+    feature?.provider && !isLiveAgentAssistProvider(feature.provider) ? feature.provider : null;
+
   // Sync server feature into editable local form on (re)load. Legitimate because
   // we need to overwrite both `form` and `dirty` after a successful refetch/save
   // round-trip; credentials are intentionally cleared (server returns masked).
@@ -61,26 +54,18 @@ export default function AgentAssistFeaturePage() {
       /* eslint-disable react-hooks/set-state-in-effect */
       setForm({
         enabled: feature.enabled,
-        provider: feature.provider ?? '',
+        provider: isLiveAgentAssistProvider(feature.provider) ? feature.provider : '',
         apiKey: '',
-        endpoint: '',
-        googleJson: '',
       });
       setDirty(false);
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [feature]);
 
+  // Enabled implies deepgram and an API key (design D3).
   const providerValid = useMemo(() => {
     if (!form.enabled) return true;
-    if (!form.provider) return false;
-    if (form.provider === 'azure-whisper') {
-      return form.apiKey.trim().length > 0 && form.endpoint.trim().length > 0;
-    }
-    if (form.provider === 'google') {
-      return form.googleJson.trim().length > 0;
-    }
-    return form.apiKey.trim().length > 0;
+    return isLiveAgentAssistProvider(form.provider || null) && form.apiKey.trim().length > 0;
   }, [form]);
 
   function patchForm<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -89,13 +74,15 @@ export default function AgentAssistFeaturePage() {
   }
 
   function handleSave() {
-    const body: AgentAssistFeatureUpdate = form.enabled
-      ? {
-          enabled: true,
-          provider: form.provider as AgentAssistProvider,
-          credentials: buildCredentials(form),
-        }
-      : { enabled: false, provider: null, credentials: null };
+    if (form.enabled && !isLiveAgentAssistProvider(form.provider || null)) return;
+    const body: AgentAssistFeatureUpdate =
+      form.enabled && form.provider
+        ? {
+            enabled: true,
+            provider: form.provider,
+            credentials: { apiKey: form.apiKey.trim() },
+          }
+        : { enabled: false, provider: null, credentials: null };
     update.mutate(body, {
       onSuccess: () => setDirty(false),
     });
@@ -141,20 +128,49 @@ export default function AgentAssistFeaturePage() {
               <Label htmlFor="provider">{t('admin:features.agent-assist.provider.label')}</Label>
               <Select
                 value={form.provider || ''}
-                onValueChange={(v) => patchForm('provider', v as AgentAssistProvider)}
+                onValueChange={(v) => {
+                  const next = PROVIDERS.find((p) => p.value === v)?.value;
+                  if (next) patchForm('provider', next);
+                }}
                 disabled={!form.enabled}
               >
-                <SelectTrigger id="provider" className="w-full" data-testid="agent-assist-provider-select">
-                  <SelectValue />
+                <SelectTrigger
+                  id="provider"
+                  className="w-full"
+                  data-testid="agent-assist-provider-select"
+                  data-selected-provider={form.provider || 'none'}
+                >
+                  <SelectValue>
+                    {(value: string | null) => {
+                      const chosen = PROVIDERS.find((p) => p.value === value);
+                      return chosen ? t(chosen.labelKey) : '';
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {PROVIDERS.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>
+                    <SelectItem
+                      key={p.value}
+                      value={p.value}
+                      data-provider={p.value}
+                      data-testid={`agent-assist-provider-option-${p.value}`}
+                    >
                       {t(p.labelKey)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {storedNotLive && (
+                <p
+                  className="text-xs text-amber-700 dark:text-amber-400"
+                  data-testid="agent-assist-provider-not-live"
+                  data-stored-provider={storedNotLive}
+                >
+                  {t('admin:features.agent-assist.provider-not-live', {
+                    provider: t(`admin:features.agent-assist.provider.${storedNotLive}`),
+                  })}
+                </p>
+              )}
               {form.enabled && !form.provider && (
                 <p className="text-xs text-destructive">
                   {t('admin:features.agent-assist.validation.provider-required')}
@@ -162,13 +178,26 @@ export default function AgentAssistFeaturePage() {
               )}
             </div>
 
-            {form.enabled && form.provider && (
-              <CredentialsPanel form={form} patchForm={patchForm} />
+            {form.enabled && form.provider === 'deepgram' && (
+              <div className="space-y-2">
+                <Label htmlFor="api-key">{t('admin:features.agent-assist.api-key')}</Label>
+                <Input
+                  id="api-key"
+                  type="password"
+                  value={form.apiKey}
+                  onChange={(e) => patchForm('apiKey', e.target.value)}
+                  data-testid="agent-assist-apikey-input"
+                />
+              </div>
             )}
 
             {feature?.credentialsConfigured && (
               <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                <span className="font-medium">
+                <span
+                  className="font-medium"
+                  data-testid="agent-assist-updated-by"
+                  data-updated-at={feature.updatedAt ?? undefined}
+                >
                   {t('admin:features.agent-assist.updated-by', {
                     user: feature.updatedBy ?? 'unknown',
                     at: feature.updatedAt ? formatDateTime(feature.updatedAt) : '',
@@ -194,99 +223,6 @@ export default function AgentAssistFeaturePage() {
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function buildCredentials(form: FormState) {
-  if (form.provider === 'google') {
-    return form.googleJson.trim() ? { apiKey: form.googleJson.trim() } : null;
-  }
-  if (form.provider === 'azure-whisper') {
-    return {
-      apiKey: form.apiKey.trim(),
-      endpoint: form.endpoint.trim(),
-    };
-  }
-  return form.apiKey.trim() ? { apiKey: form.apiKey.trim() } : null;
-}
-
-function CredentialsPanel({
-  form,
-  patchForm,
-}: {
-  form: FormState;
-  patchForm: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
-}) {
-  const { t } = useTranslation(['admin']);
-
-  if (form.provider === 'google') {
-    return (
-      <div className="space-y-2">
-        <Label htmlFor="google-json">
-          {t('admin:features.agent-assist.credentials-json')}
-        </Label>
-        <Textarea
-          id="google-json"
-          rows={8}
-          value={form.googleJson}
-          onChange={(e) => patchForm('googleJson', e.target.value)}
-          placeholder='{"type":"service_account",...}'
-          className="font-mono text-xs"
-        />
-      </div>
-    );
-  }
-
-  if (form.provider === 'azure-whisper') {
-    return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="azure-endpoint">{t('admin:features.agent-assist.endpoint')}</Label>
-          <Input
-            id="azure-endpoint"
-            value={form.endpoint}
-            onChange={(e) => patchForm('endpoint', e.target.value)}
-            placeholder="https://eastus.api.cognitive.microsoft.com"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="azure-key">{t('admin:features.agent-assist.api-key')}</Label>
-          <Input
-            id="azure-key"
-            type="password"
-            value={form.apiKey}
-            onChange={(e) => patchForm('apiKey', e.target.value)}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Deepgram + Whisper — single API key + optional base URL for Whisper
-  return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="api-key">{t('admin:features.agent-assist.api-key')}</Label>
-        <Input
-          id="api-key"
-          type="password"
-          value={form.apiKey}
-          onChange={(e) => patchForm('apiKey', e.target.value)}
-          data-testid="agent-assist-apikey-input"
-        />
-      </div>
-      {form.provider === 'whisper' && (
-        <div className="space-y-2">
-          <Label htmlFor="base-url">{t('admin:features.agent-assist.base-url')}</Label>
-          <Input
-            id="base-url"
-            value={form.endpoint}
-            onChange={(e) => patchForm('endpoint', e.target.value)}
-            placeholder="https://api.openai.com"
-          />
-        </div>
-      )}
     </div>
   );
 }

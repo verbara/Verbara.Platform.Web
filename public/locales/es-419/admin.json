@@ -120,9 +120,6 @@
         "google": "Google Cloud Speech-to-Text"
       },
       "api-key": "API key",
-      "endpoint": "Endpoint",
-      "base-url": "URL base (opcional)",
-      "credentials-json": "JSON de la cuenta de servicio",
       "save": "Guardar cambios",
       "updated-by": "Actualizado por {{user}} el {{at}}",
       "warning-credentials-masked": "Las credenciales se almacenan cifradas y nunca se devuelven después de guardar. Pegue nuevos valores para reemplazarlas.",
@@ -132,7 +129,8 @@
       },
       "aria": {
         "enableAgentAssist": "Habilitar Agent Assist"
-      }
+      },
+      "provider-not-live": "{{provider}} está guardado pero no es un proveedor en vivo: devuelve el texto solo cuando termina la llamada. Elija Deepgram para habilitar Agent Assist."
     }
   },
   "users": {

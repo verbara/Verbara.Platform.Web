@@ -4,13 +4,17 @@ import { useAuthStore } from '@/core/auth/auth-store';
 import { refreshAccessToken } from './client';
 
 /**
- * Guards the permission set across a token refresh.
+ * Guards the permission set across a token refresh (design D4 of `agent-assist-works-end-to-end`).
  *
- * `/auth/refresh` serialises `permissions?.ToArray() ?? []`, so an RBAC lookup it could not resolve
- * arrives as an EMPTY ARRAY, not as an absent field — indistinguishable from "this user genuinely
- * has none". The client must read that as "the server did not tell us" and keep what it has;
- * otherwise every refresh strips the permission set the route guards depend on and the user lands
- * on /unauthorized. Observed live: login returns 57 permissions, refresh returns 0.
+ * An omitted `permissions` field means "the server did not say" and keeps the stored list. An
+ * explicit array, the empty one included, is the server's answer and replaces it: Platform applies
+ * the role-default fallback on refresh since `v2.23.0` (#213, `EffectivePermissions`), so `[]` no
+ * longer stands for an unresolvable lookup, and Platform #597 filters `features:agent-assist:manage`
+ * out of the body for any caller outside the Platform tenant. Keeping the stored list on `[]` left
+ * such a session holding Features > Agent Assist until sign-out. Login already stores
+ * `data.permissions ?? []`, so refresh now agrees with login. What the empty list does to the
+ * sidebar and the feature route is in `src/admin/features/agent-assist-gate.test.tsx` (src/core may
+ * not import a feature domain, ADR-0014).
  */
 const A_USER = { id: '1', email: 'a@b.com', displayName: 'Test', role: 'admin' } as const;
 
@@ -36,13 +40,14 @@ describe('refreshAccessToken permission handling', () => {
       .setAuth('old-token', Date.now() - 1000, A_USER, 'tenant-1', ['users:user:view'], {});
   });
 
-  it('should_KeepExistingPermissions_WhenServerReturnsEmptyArray', async () => {
+  it('should_ReplaceStoredPermissions_WhenServerReturnsEmptyArray', async () => {
     server.use(refreshReturning([]));
 
     await expect(refreshAccessToken()).resolves.toBe(true);
 
     expect(useAuthStore.getState().accessToken).toBe('refreshed-token');
-    expect(useAuthStore.getState().permissions).toEqual(['users:user:view']);
+    // An explicit empty list is the server's answer, as it is at login.
+    expect(useAuthStore.getState().permissions).toEqual([]);
   });
 
   it('should_KeepExistingPermissions_WhenServerOmitsTheField', async () => {

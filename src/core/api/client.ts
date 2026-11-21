@@ -119,15 +119,14 @@ function applyRefreshedToken(data: RefreshResponseBody): void {
       new Date(data.expiresAt).getTime(),
       store.user,
       store.tenantId,
-      // An EMPTY array is treated as "the server did not tell us", not as "this user has no
-      // permissions". `?? store.permissions` alone was dead code: /auth/refresh always serialises
-      // `permissions?.ToArray() ?? []`, so an unresolvable RBAC lookup arrives as `[]` rather than
-      // as an absent field — and every refresh wiped the permission set the UI routes on, sending
-      // the user to /unauthorized. Server-side authorization is unaffected either way: the API
-      // resolves permissions per request, so a stale client set can only show an affordance the
-      // API then rejects. Belt to the real fix in the refresh endpoint, which must apply the same
-      // role-default fallback the login path already does.
-      data.permissions?.length ? data.permissions : store.permissions,
+      // An omitted field keeps the stored list; an explicit array, the EMPTY one included, is the
+      // server's answer and replaces it, as login does (`data.permissions ?? []`). Since Platform
+      // v2.23.0 the refresh endpoint applies the same role-default fallback as login
+      // (`EffectivePermissions`), so an unresolvable RBAC lookup reports the role defaults, never
+      // `[]`; `[]` now means the caller holds nothing in this tenant (Platform filters
+      // `features:agent-assist:manage` out for callers outside the Platform tenant). Keeping the
+      // stored list on `[]` would leave such a session showing affordances the API rejects.
+      data.permissions ?? store.permissions,
       store.features,
       data.sessionIdleTimeoutMinutes ?? store.sessionIdleTimeoutMinutes,
     );

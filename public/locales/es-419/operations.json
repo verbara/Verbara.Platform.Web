@@ -77,7 +77,9 @@
       "moved_reason": "Otra ventana de este navegador tomó la conexión de escucha. Las llamadas que escuches en el navegador sonarán allí.",
       "listen_here": "Escuchar aquí"
     },
-    "live_transcript": "Transcripción en vivo"
+    "live_transcript": "Transcripción en vivo",
+    "unknown_agent": "Agente desconocido",
+    "duration_unknown": "Duración desconocida"
   },
   "stuck_work": {
     "title": "Trabajo atascado",

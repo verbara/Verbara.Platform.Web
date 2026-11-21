@@ -8,27 +8,14 @@ import { toast } from 'sonner';
 import { conversationRefusals } from '@/core/api/conversation-refusals';
 import { toastApiError } from '@/core/api/toast-api-error';
 
-/**
- * Kept hand-written (openapi-typed-client-operations): the document's `ActiveSessionDto`
- * omits `agentName` and `sentiment`, both read by `session-card.tsx` — swapping onto it would
- * drop fields the UI consumes. Needs a Platform-side supervisor response DTO carrying those
- * fields (same follow-up class as admin→`openapi-response-adoption`) before it can migrate.
- */
-export interface ActiveSession {
-  sessionId: string;
-  agentId: string;
-  agentName: string;
-  queueName: string;
-  callerIdNum: string;
-  connectedAt: string;
-  sentiment?: string | null;
-}
-
 export function useActiveSessions() {
   return useQuery({
     queryKey: ['supervisor', 'sessions', 'active'],
     queryFn: () =>
-      customFetch<ActiveSession[]>({ url: '/api/v1/supervisor/sessions/active', method: 'GET' }),
+      customFetch<components['schemas']['ActiveSessionDto'][]>({
+        url: '/api/v1/supervisor/sessions/active',
+        method: 'GET',
+      }),
     refetchInterval: 10_000,
   });
 }

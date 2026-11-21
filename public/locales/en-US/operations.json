@@ -77,7 +77,9 @@
       "moved_reason": "Another window of this browser took the listening connection. Calls you listen to in the browser will play there.",
       "listen_here": "Listen here"
     },
-    "live_transcript": "Live transcript"
+    "live_transcript": "Live transcript",
+    "unknown_agent": "Unknown agent",
+    "duration_unknown": "Duration unknown"
   },
   "stuck_work": {
     "title": "Stuck Work",

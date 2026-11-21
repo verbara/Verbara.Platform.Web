@@ -26,6 +26,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   their window. The manual purge button stays disabled in dry-run and its hint names the key; the manual dry run
   stays available. Texts in English, Spanish and Portuguese. The API types are regenerated from Platform's
   current OpenAPI document. (#554)
+- **The voice Monitor shows every Agent Assist session with a readable title and an honest duration.** Platform now
+  lists Agent Assist sessions with the agent's name and the latest caller sentiment (Platform, next release). A
+  session whose agent Platform cannot name shows "Unknown agent" instead of a blank title, and one whose connection
+  time is unknown shows a dash instead of a duration counted from 1970, in English, Spanish and Portuguese. The list
+  reads the generated API type; the API types are regenerated from Platform's current OpenAPI document.
+- **The Agent Assist feature page offers Deepgram only.** Platform accepts only a live streaming provider when Agent
+  Assist is on (Platform, next release), so the provider selector lists Deepgram alone and the Google service-account
+  JSON, Whisper base-URL and Azure Whisper endpoint fields are gone. A setting stored earlier with Whisper, Azure
+  Whisper or Google is shown with a note that it is not live, and turning Agent Assist on requires choosing Deepgram
+  and entering its API key. Texts in English, Spanish and Portuguese.
+- **A refreshed session with no permissions now has none.** When a token refresh answers an empty permission list,
+  the console replaces the stored list instead of keeping it, as sign-in already does; only a refresh that omits the
+  list keeps the stored one.
 
 ### Removed
 
