@@ -59,8 +59,9 @@ base.describe('AgentAssist runtime feature toggle', () => {
 
         await page.getByTestId('agent-assist-apikey-input').fill('dg_e2e_test_key');
 
-        // Save, and wait for Platform's answer before reloading.
+        // Save, and wait for Platform's answer (and the GET the save invalidates) before reloading.
         const saved = page.waitForResponse(isFeatureCall('PUT'));
+        const refetched = page.waitForResponse(isFeatureCall('GET'));
         await page.getByTestId('agent-assist-save-button').click();
         const put = await saved;
         expect(put.status()).toBe(200);
@@ -69,16 +70,17 @@ base.describe('AgentAssist runtime feature toggle', () => {
           provider: 'deepgram',
           credentials: { apiKey: 'dg_e2e_test_key' },
         });
-
-        // Reload: the refetched GET carries the saved state, and the form shows it.
-        const refetched = page.waitForResponse(isFeatureCall('GET'));
-        await page.reload();
         const get = await refetched;
         expect(get.status()).toBe(200);
         const body = (await get.json()) as Record<string, unknown>;
         expect(body.enabled).toBe(true);
         expect(body.provider).toBe('deepgram');
         expect(body.credentialsConfigured).toBe(true);
+
+        // Reload: the stored state comes back from Platform and the form shows it.
+        const reloaded = page.waitForResponse(isFeatureCall('GET'));
+        await page.reload();
+        expect((await reloaded).status()).toBe(200);
         await expect(page.getByTestId('agent-assist-feature-page')).toBeVisible();
         await expect(page.getByTestId('agent-assist-enable-toggle')).toHaveAttribute(
           'aria-checked',
