@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
 import type { components } from '@/core/api/generated/openapi';
@@ -7,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { conversationRefusals } from '@/core/api/conversation-refusals';
 import { toastApiError } from '@/core/api/toast-api-error';
+import { supervisorWhisperRefusals } from '@/core/api/supervisor-whisper-refusals';
 
 export function useActiveSessions() {
   return useQuery({
@@ -20,17 +22,27 @@ export function useActiveSessions() {
   });
 }
 
+/**
+ * The supervisor's text whisper to the session's agent (host change
+ * `supervisor-whisper-reaches-the-agent`; design D1-D3). `sessionId` is the Agent Assist session id
+ * of the monitor row. The host answers 204 No Content, which `customFetch` resolves without reading
+ * a body. A refusal is shown by status through `supervisorWhisperRefusals`, never the server's text.
+ */
 export function useSendWhisper() {
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({ sessionId, message }: { sessionId: string; message: string }) =>
+    mutationFn: ({ sessionId, text }: { sessionId: string; text: string }) =>
       customFetch<void>({
         url: `/api/v1/supervisor/sessions/${sessionId}/whisper`,
         method: 'POST',
-        data: { message },
+        data: { text: text.trim() } satisfies components['schemas']['WhisperRequest'],
       }),
-    onSuccess: () => toast.success(t('toasts.supervisor.whisperSent')),
-    onError: (err: Error) => toast.error(err.message),
+    // `data-toast` is the locale-proof hook the E2E specs wait on.
+    onSuccess: () =>
+      toast.success(
+        createElement('span', { 'data-toast': 'whisper-sent' }, t('toasts.supervisor.whisperSent')),
+      ),
+    onError: (err: Error) => toastApiError(err, supervisorWhisperRefusals, t),
   });
 }
 

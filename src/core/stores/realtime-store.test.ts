@@ -34,7 +34,6 @@ describe('realtime-store', () => {
       expect(after.connectionState).toBe('disconnected');
       expect(after.agentPresences).toEqual({});
       expect(after.observedSupervision).toBeNull();
-      expect(after.lastWhisper).toBeNull();
     },
   );
 });

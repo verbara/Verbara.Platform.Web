@@ -13,6 +13,7 @@ import {
   agentAssistComplianceAlertFrame,
   agentAssistSentimentFrame,
   agentAssistSuggestionFrame,
+  agentAssistSupervisorWhisperFrame,
   agentAssistTranscriptFrame,
 } from '@/tests/utils/contract-doubles';
 
@@ -539,6 +540,35 @@ describe('useSSE agent-assist frames', () => {
     useAgentAiStore.getState().dismissSuggestion(CONVERSATION, 'sg-01');
 
     expect(session()?.suggestions.map((s) => s.id)).toEqual(['sg-02']);
+  });
+
+  it('UseSSE_ShouldStoreTheSupervisorWhisperAsACriticalSuggestion_WhenTheFrameNamesThisAgent', () => {
+    latest().emit('agentassist.suggestion', agentAssistSupervisorWhisperFrame);
+    expect(session()?.suggestions).toEqual([
+      {
+        id: 'sg-whisper-01',
+        text: agentAssistSupervisorWhisperFrame.text,
+        priority: 'Critical',
+        source: 'Supervisor',
+        timestamp: agentAssistSupervisorWhisperFrame.timestamp,
+      },
+    ]);
+  });
+
+  it('UseSSE_ShouldDropTheSupervisorWhisper_WhenTheFrameNamesAnotherAgent', () => {
+    latest().emit('agentassist.suggestion', {
+      ...agentAssistSupervisorWhisperFrame,
+      agentId: 'a-another-agent',
+    });
+    expect(useAgentAiStore.getState().sessions).toEqual({});
+  });
+
+  it('UseSSE_ShouldDropTheSupervisorWhisper_WhenTheConversationIdIsEmpty', () => {
+    latest().emit('agentassist.suggestion', {
+      ...agentAssistSupervisorWhisperFrame,
+      conversationId: '',
+    });
+    expect(useAgentAiStore.getState().sessions).toEqual({});
   });
 
   it('UseSSE_ShouldStoreTheSentimentForItsConversation_WhenTheFrameNamesThisAgent', () => {

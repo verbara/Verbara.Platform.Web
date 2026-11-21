@@ -21,7 +21,6 @@ const storeApi = {
   removePresence: vi.fn(),
   upsertPresence: vi.fn(),
   setObservedSupervision: vi.fn(),
-  pushWhisper: vi.fn(),
 };
 vi.mock('@/core/stores/realtime-store', () => ({
   useRealtimeStore: { getState: () => storeApi },
@@ -97,5 +96,33 @@ describe('platform-hub OnCsatResponseRecorded handler', () => {
 
     expect(invalidateQueries).toHaveBeenCalledOnce();
     expect(invalidateQueries).toHaveBeenCalledWith(AGGREGATE_KEY);
+  });
+});
+
+/**
+ * The hub whisper path is gone (change `supervisor-whisper-reaches-the-agent`, design D1): the whisper
+ * reaches the agent as an `agentassist.suggestion` over SSE, so a hub `OnWhisperReceived` message has
+ * no handler and changes no store state.
+ */
+describe('platform-hub OnWhisperReceived (removed)', () => {
+  beforeEach(() => {
+    for (const fn of Object.values(storeApi)) fn.mockReset();
+    invalidateQueries.mockReset();
+  });
+
+  it('Hub_ShouldChangeNoStoreState_WhenAnOnWhisperReceivedMessageArrives', () => {
+    const { conn, handlers } = makeFakeConnection();
+    registerHandlers(conn);
+
+    // SignalR dispatches a message only to a registered handler; there must be none.
+    expect(handlers.has('OnWhisperReceived')).toBe(false);
+    handlers.get('OnWhisperReceived')?.({
+      conversationId: 'conv-1',
+      text: 'hold on',
+      arrivedAt: '2026-11-21T10:00:00Z',
+    });
+
+    for (const fn of Object.values(storeApi)) expect(fn).not.toHaveBeenCalled();
+    expect(invalidateQueries).not.toHaveBeenCalled();
   });
 });

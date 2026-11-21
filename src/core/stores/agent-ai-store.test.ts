@@ -68,6 +68,35 @@ describe('AgentAiStore (per-conversation)', () => {
     expect(list[0]!.id).toBe('s11'); // newest first
   });
 
+  it('addSuggestion_ShouldKeepTheSupervisorItemAndTenKeyword_WhenTenThenElevenKeywordArrive', () => {
+    const add = useAgentAiStore.getState().addSuggestion;
+    add('conv-A', makeSuggestion({ id: 'sup', source: 'Supervisor', priority: 'Critical' }));
+    for (let i = 0; i < 10; i++)
+      add('conv-A', makeSuggestion({ id: `kw-${i}`, source: 'Keyword' }));
+
+    let list = useAgentAiStore.getState().sessions['conv-A']!.suggestions;
+    expect(list).toHaveLength(11);
+    expect(list.map((s) => s.id)).toContain('sup');
+
+    add('conv-A', makeSuggestion({ id: 'kw-10', source: 'Keyword' }));
+    list = useAgentAiStore.getState().sessions['conv-A']!.suggestions;
+    const keyword = list.filter((s) => s.source === 'Keyword').map((s) => s.id);
+    expect(list.map((s) => s.id)).toContain('sup');
+    expect(keyword).toHaveLength(10);
+    // The oldest Keyword item went; the newest ten stay, newest first.
+    expect(keyword).toEqual(Array.from({ length: 10 }, (_, i) => `kw-${10 - i}`));
+  });
+
+  it('addSuggestion_ShouldStoreAllElevenSupervisorItems_WhenElevenWhispersArrive', () => {
+    const add = useAgentAiStore.getState().addSuggestion;
+    for (let i = 0; i < 11; i++)
+      add('conv-A', makeSuggestion({ id: `sup-${i}`, source: 'Supervisor', priority: 'Critical' }));
+
+    const list = useAgentAiStore.getState().sessions['conv-A']!.suggestions;
+    expect(list).toHaveLength(11);
+    expect(list.every((s) => s.source === 'Supervisor')).toBe(true);
+  });
+
   it('dismissSuggestion_ShouldRemoveOnlyFromTargetConversation', () => {
     const store = useAgentAiStore.getState();
     store.addSuggestion('conv-A', makeSuggestion({ id: 'a1' }));

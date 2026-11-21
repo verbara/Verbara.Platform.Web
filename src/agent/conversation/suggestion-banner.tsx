@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { useAgentAiStore, EMPTY_SESSION } from '@/core/stores/agent-ai-store';
+import { useAgentAiStore, EMPTY_SESSION, SUPERVISOR_SOURCE } from '@/core/stores/agent-ai-store';
 
 const PRIORITY_STYLES: Record<string, string> = {
   Informational: 'border-blue-400 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-500',
@@ -18,7 +18,15 @@ const PRIORITY_BADGE: Record<string, string> = {
 };
 
 const AUTO_DISMISS_MS = 15_000;
+const VISIBLE_SLOTS = 3;
 
+/**
+ * The agent's suggestion banner (design D4/D5 of change `supervisor-whisper-reaches-the-agent`).
+ * A supervisor's whisper (`source` `Supervisor`) is shown before every other item, has no timer and
+ * stays until the agent dismisses it; more than three pending whispers add a "+N more" line. Every
+ * other item keeps today's 15 s auto-dismiss, run on the first three non-`Supervisor` items in store
+ * order whether or not they are visible, so whispers change no other item's timer.
+ */
 export function SuggestionBanner({ conversationId }: { conversationId: string }) {
   const { t } = useTranslation('agent');
   const suggestions = useAgentAiStore(
@@ -26,23 +34,31 @@ export function SuggestionBanner({ conversationId }: { conversationId: string })
   );
   const dismissSuggestion = useAgentAiStore((s) => s.dismissSuggestion);
 
+  const { supervisor, others } = useMemo(
+    () => ({
+      supervisor: suggestions.filter((s) => s.source === SUPERVISOR_SOURCE),
+      others: suggestions.filter((s) => s.source !== SUPERVISOR_SOURCE),
+    }),
+    [suggestions],
+  );
+
   // Track timers by suggestion id
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   useEffect(() => {
-    const visible = suggestions.slice(0, 3);
-    const visibleIds = new Set(visible.map((s) => s.id));
+    const timed = others.slice(0, VISIBLE_SLOTS);
+    const timedIds = new Set(timed.map((s) => s.id));
 
-    // Clear timers for dismissed suggestions
+    // Clear timers for items that left the first three (dismissed, or pushed out by newer ones)
     for (const [id, timer] of timersRef.current.entries()) {
-      if (!visibleIds.has(id)) {
+      if (!timedIds.has(id)) {
         clearTimeout(timer);
         timersRef.current.delete(id);
       }
     }
 
-    // Set timers for new suggestions
-    for (const suggestion of visible) {
+    // Set timers for new items among the first three
+    for (const suggestion of timed) {
       if (!timersRef.current.has(suggestion.id)) {
         const timer = setTimeout(() => {
           dismissSuggestion(conversationId, suggestion.id);
@@ -55,9 +71,10 @@ export function SuggestionBanner({ conversationId }: { conversationId: string })
     return () => {
       // Cleanup on unmount
     };
-  }, [suggestions, dismissSuggestion, conversationId]);
+  }, [others, dismissSuggestion, conversationId]);
 
-  const visible = suggestions.slice(0, 3);
+  const visible = [...supervisor, ...others].slice(0, VISIBLE_SLOTS);
+  const hiddenSupervisorCount = Math.max(0, supervisor.length - VISIBLE_SLOTS);
 
   if (visible.length === 0) return null;
 
@@ -72,6 +89,10 @@ export function SuggestionBanner({ conversationId }: { conversationId: string })
           <div
             key={suggestion.id}
             className={`flex items-start gap-2 rounded-md border-l-4 p-2.5 text-sm shadow-sm ${borderStyle}`}
+            data-testid="suggestion-item"
+            data-suggestion-id={suggestion.id}
+            data-suggestion-source={suggestion.source}
+            data-suggestion-priority={suggestion.priority}
           >
             <div className="flex-1 space-y-0.5">
               <div className="flex flex-wrap items-center gap-1.5">
@@ -81,12 +102,19 @@ export function SuggestionBanner({ conversationId }: { conversationId: string })
                   {t('ai.suggestion')} · {suggestion.priority}
                 </span>
                 {suggestion.source && (
-                  <span className="text-[10px] text-slate-500 dark:text-slate-500">
-                    {suggestion.source}
+                  <span
+                    className="text-[10px] text-slate-500 dark:text-slate-500"
+                    data-testid="suggestion-source-label"
+                  >
+                    {suggestion.source === SUPERVISOR_SOURCE
+                      ? t('ai.source_supervisor')
+                      : suggestion.source}
                   </span>
                 )}
               </div>
-              <p className="text-slate-800 dark:text-slate-100">{suggestion.text}</p>
+              <p className="text-slate-800 dark:text-slate-100" data-testid="suggestion-text">
+                {suggestion.text}
+              </p>
             </div>
             <button
               onClick={() => dismissSuggestion(conversationId, suggestion.id)}
@@ -98,6 +126,15 @@ export function SuggestionBanner({ conversationId }: { conversationId: string })
           </div>
         );
       })}
+      {hiddenSupervisorCount > 0 && (
+        <p
+          className="px-1 text-xs font-medium text-red-700 dark:text-red-300"
+          data-testid="suggestion-hidden-count"
+          data-hidden-supervisor-count={hiddenSupervisorCount}
+        >
+          {t('ai.more_from_supervisor', { count: hiddenSupervisorCount })}
+        </p>
+      )}
     </div>
   );
 }

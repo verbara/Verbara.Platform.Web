@@ -173,7 +173,9 @@
     "dismiss": "Descartar",
     "acknowledge": "Reconocer",
     "waiting_transcript": "Esperando transcripción...",
-    "copy_copied": "¡Copiado!"
+    "copy_copied": "¡Copiado!",
+    "source_supervisor": "Supervisor",
+    "more_from_supervisor": "+{{count}} más del supervisor"
   },
   "canned": {
     "search_placeholder": "Buscar respuesta rápida...",

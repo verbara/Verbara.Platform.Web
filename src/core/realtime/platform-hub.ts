@@ -13,7 +13,6 @@ import {
   type PresenceStateValue,
   type SignalRConnectionState,
   type SupervisionStartedNotification,
-  type WhisperNotification,
 } from '@/core/stores/realtime-store';
 
 const HUB_URL = '/hubs/platform';
@@ -31,12 +30,6 @@ interface SupervisionStartedPayload {
   supervisorId: string;
   mode: string;
   startedAt: string;
-}
-
-interface WhisperReceivedPayload {
-  conversationId: string;
-  text: string;
-  arrivedAt: string;
 }
 
 /**
@@ -248,15 +241,6 @@ export function registerHandlers(conn: HubConnection) {
       startedAt: payload.startedAt,
     };
     useRealtimeStore.getState().setObservedSupervision(notif);
-  });
-
-  on('OnWhisperReceived', (payload: WhisperReceivedPayload) => {
-    const notif: WhisperNotification = {
-      conversationId: payload.conversationId,
-      text: payload.text,
-      arrivedAt: payload.arrivedAt,
-    };
-    useRealtimeStore.getState().pushWhisper(notif);
   });
 
   // csat-completion (D3): a new CSAT response within the supervisor's scope

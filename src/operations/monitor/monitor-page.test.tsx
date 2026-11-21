@@ -35,7 +35,6 @@ vi.mock('@/core/ui/virtual-list', () => ({
     </div>
   ),
 }));
-vi.mock('@/core/realtime', () => ({ useSupervisorActions: () => ({ whisper: vi.fn() }) }));
 vi.mock('@/core/hooks/use-config', () => ({
   getConfig: () => ({ asteriskWssUrl: 'wss://pbx.example:8089/ws' }),
 }));

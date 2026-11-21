@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Send, Headphones } from 'lucide-react';
 import { useAgentAiStore, flattenAiSessions } from '@/core/stores/agent-ai-store';
 import { Button } from '@/core/ui/button';
-import { useSupervisorActions } from '@/core/realtime';
+import { useSendWhisper } from '@/core/api/hooks/use-supervisor';
+import { WHISPER_MAX_LENGTH } from '@/core/api/supervisor-whisper-refusals';
 import { ListenControl } from './listen-control';
 
 interface SessionDetailProps {
@@ -43,9 +44,11 @@ export function SessionDetail({ sessionId, conversationId }: Readonly<SessionDet
     () => flattenAiSessions(sessions),
     [sessions],
   );
-  const { whisper } = useSupervisorActions(sessionId);
+  // The whisper goes through the REST route keyed by the Agent Assist `sessionId` (design D1, D3);
+  // the hook shows the sent toast and the translated refusal.
+  const sendWhisper = useSendWhisper();
   const [whisperText, setWhisperText] = useState('');
-  const [sending, setSending] = useState(false);
+  const sending = sendWhisper.isPending;
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,13 +57,13 @@ export function SessionDetail({ sessionId, conversationId }: Readonly<SessionDet
 
   async function handleSend() {
     const msg = whisperText.trim();
-    if (!msg) return;
-    setSending(true);
+    if (!msg || sending) return;
     try {
-      await whisper(msg);
+      await sendWhisper.mutateAsync({ sessionId, text: msg });
+      // Cleared on success only: a refused whisper keeps its text so a 409 can be retried as is.
       setWhisperText('');
-    } finally {
-      setSending(false);
+    } catch {
+      // The hook's onError already showed the translated refusal.
     }
   }
 
@@ -158,8 +161,11 @@ export function SessionDetail({ sessionId, conversationId }: Readonly<SessionDet
           rows={1}
           placeholder={t('monitor.whisperPlaceholder')}
           value={whisperText}
-          onChange={(e) => setWhisperText(e.target.value)}
+          // The DOM's `maxLength` counts UTF-16 code units, as the host's bound does (design D3); the
+          // slice keeps a programmatic or pasted value within it too.
+          onChange={(e) => setWhisperText(e.target.value.slice(0, WHISPER_MAX_LENGTH))}
           onKeyDown={handleKeyDown}
+          maxLength={WHISPER_MAX_LENGTH}
           data-testid="monitor-whisper-input"
         />
         <Button

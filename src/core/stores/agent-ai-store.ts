@@ -78,6 +78,27 @@ function patchSession(
   return { ...sessions, [conversationId]: patch(current) };
 }
 
+/** The `source` of a supervisor's whisper (host change `supervisor-whisper-reaches-the-agent`). */
+export const SUPERVISOR_SOURCE = 'Supervisor';
+
+/** How many non-`Supervisor` suggestions a conversation keeps. */
+const SUGGESTION_CAP = 10;
+
+/**
+ * Keeps the newest {@link SUGGESTION_CAP} non-`Supervisor` items and every `Supervisor` item, in
+ * order (design D4 Overflow): a whisper leaves only when the agent dismisses it, never because
+ * engine suggestions arrived. The slice stays bounded: whispers come from a human typing into one
+ * live call, and `clearSession` and the session-work reset drop it.
+ */
+function capSuggestions(list: AgentSuggestion[]): AgentSuggestion[] {
+  let others = 0;
+  return list.filter((item) => {
+    if (item.source === SUPERVISOR_SOURCE) return true;
+    others += 1;
+    return others <= SUGGESTION_CAP;
+  });
+}
+
 export const useAgentAiStore = create<AgentAiState>()((set) => ({
   sessions: {},
 
@@ -85,7 +106,7 @@ export const useAgentAiStore = create<AgentAiState>()((set) => ({
     set((state) => ({
       sessions: patchSession(state.sessions, conversationId, (sess) => ({
         ...sess,
-        suggestions: [s, ...sess.suggestions].slice(0, 10),
+        suggestions: capSuggestions([s, ...sess.suggestions]),
       })),
     })),
 
