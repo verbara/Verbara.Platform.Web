@@ -9,42 +9,51 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.31.0-web] - 2026-11-21
+
+The console side of Platform v2.40.0. QA and Speech Analytics appear only where post-call analysis can produce
+results, the retention page shows the purge mode read-only, the voice Monitor titles every Agent Assist session, and
+the Agent Assist feature page offers Deepgram only. **Requires Platform ≥ v2.40.0**: the analysis-availability read,
+the Monitor's agent name and sentiment, the Deepgram-only Agent Assist setting and the date-only revenue bound are
+first released in v2.40.0; against an older Platform the QA and Speech Analytics surfaces stay hidden. Deploy this
+version with Platform v2.40.0 or before it: an older console against v2.40.0 shows a retention toggle that fails.
+
 ### Changed
 
 - **QA and Speech Analytics appear only where post-call analysis can produce results.** The console reads
-  `GET /api/v1/analytics/qa-availability` (Platform, next release) and, until it answers yes, hides the QA entry of the
+  `GET /api/v1/analytics/qa-availability` (Platform v2.40.0) and, until it answers yes, hides the QA entry of the
   Analytics sidebar, the QA score column of the call records list, the QA summary of a call record (screen and PDF),
   and, while no analysis runs, the Speech Analytics entry and the sentiment column of the call records list. Opening
   `/analytics/qa` or `/analytics/speech` directly states why there are no results: analysis not configured, the
   licence does not include call analytics, or (QA only) no scorecard configured, in English, Spanish and Portuguese.
   Where the tenant's calls are transcribed in a language the sentiment analysis does not support, sentiment is not
   shown and the page says why, instead of listing every call as neutral. Against an older Platform the read is
-  missing, so these surfaces stay hidden.
+  missing, so these surfaces stay hidden. (#542)
 - **The retention page shows the purge mode read-only.** The scheduled retention purge now runs in the mode the host
-  key `Retention:DryRun` sets, and only a restart changes it (Platform, next release). The page states the mode:
+  key `Retention:DryRun` sets, and only a restart changes it (Platform v2.40.0). The page states the mode:
   in dry-run it says no rows are deleted and names the key to set; in live mode it says the purge deletes rows past
   their window. The manual purge button stays disabled in dry-run and its hint names the key; the manual dry run
   stays available. Texts in English, Spanish and Portuguese. The API types are regenerated from Platform's
   current OpenAPI document. (#554)
 - **The voice Monitor shows every Agent Assist session with a readable title and an honest duration.** Platform now
-  lists Agent Assist sessions with the agent's name and the latest caller sentiment (Platform, next release). A
+  lists Agent Assist sessions with the agent's name and the latest caller sentiment (Platform v2.40.0). A
   session whose agent Platform cannot name shows "Unknown agent" instead of a blank title, and one whose connection
   time is unknown shows a dash instead of a duration counted from 1970, in English, Spanish and Portuguese. The list
-  reads the generated API type; the API types are regenerated from Platform's current OpenAPI document.
+  reads the generated API type; the API types are regenerated from Platform's current OpenAPI document. (#557)
 - **The Agent Assist feature page offers Deepgram only.** Platform accepts only a live streaming provider when Agent
-  Assist is on (Platform, next release), so the provider selector lists Deepgram alone and the Google service-account
+  Assist is on (Platform v2.40.0), so the provider selector lists Deepgram alone and the Google service-account
   JSON, Whisper base-URL and Azure Whisper endpoint fields are gone. A setting stored earlier with Whisper, Azure
   Whisper or Google is shown with a note that it is not live, and turning Agent Assist on requires choosing Deepgram
-  and entering its API key. Texts in English, Spanish and Portuguese.
+  and entering its API key. Texts in English, Spanish and Portuguese. (#557)
 - **A refreshed session with no permissions now has none.** When a token refresh answers an empty permission list,
   the console replaces the stored list instead of keeping it, as sign-in already does; only a refresh that omits the
-  list keeps the stored one.
+  list keeps the stored one. (#557)
 
 ### Removed
 
 - **The dry-run toggle on the retention page.** It sent `PATCH /api/v1/management/retention/config`, which never
-  changed what the scheduled purge did and which Platform removes in its next release (it answers 405). Deploy this
-  version with that Platform release or before it: an older console against the new Platform shows a toggle that
+  changed what the scheduled purge did and which Platform v2.40.0 removes (it answers 405). Deploy this
+  version with Platform v2.40.0 or before it: an older console against the new Platform shows a toggle that
   fails. (#554)
 
 ### Fixed
@@ -52,22 +61,42 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **The QA PDF prints the score as a percentage.** The API already sends the QA score as 0-100, but the PDF divided
   it again by the scorecard's maximum. With weights that do not total 100 it printed "50 / 10" and marked the call
   passed. It now prints the score as a whole percentage ("50%") and marks a call passed at 70% or more,
-  whatever the weights total.
+  whatever the weights total. (#542)
 
 - **The QA page and the QA detail show their loading text.** They asked for a translation key that does not exist and
-  showed the raw key while loading.
+  showed the raw key while loading. (#542)
 
 - **The call record drawer no longer asks for a transcript.** It requested
   `GET /api/v1/analytics/cdr/{sessionId}/transcript` for analysed calls, a route the API does not serve, so the
-  request always failed with 404. The drawer now plays the recording without a transcript panel.
+  request always failed with 404. The drawer now plays the recording without a transcript panel. (#542)
 
 - **The QA list shows its rows and pages through them.** The page read a member the API does not send and showed
   every page empty; it now reads the list's `data` and `hasMore`, pages 50 at a time with Previous and Next, and no
-  longer offers a queue filter the list does not take.
+  longer offers a queue filter the list does not take. (#542)
 
 - **The partner revenue filter includes the last day you pick.** The page sent the "Until" date as midnight of that
-  day, so revenue recorded later that day was left out. It now sends the date itself, which the API (Platform 2.39.1
-  and later) reads as the whole day.
+  day, so revenue recorded later that day was left out. It now sends the date itself, which the API (Platform 2.40.0
+  and later) reads as the whole day. (#539)
+
+### Documentation
+
+- **The agent and conversation state stream hooks say where their events come from.** Their comments now say the
+  streams carry Platform's own events. Comments only; no behavior changed. (#556)
+- **The retention purge-mode entries above cite their PR.** (#555)
+
+### Dependencies
+
+- **Two transitive packages pinned forward.** `brace-expansion` is pinned through `overrides` to 1.1.22, 2.1.8 and
+  5.0.13 for its three major lines, and `minimatch` 10 resolves to 11.0.8 (#540). `@sentry/vite-plugin` 5.4.1 →
+  11.12.0, so the bundler plugins use a current `glob` (#541). Build tooling only, never in the bundle.
+- **npm pins swept forward — 11 Dependabot merges since `v3.30.0-web`, recorded here as one movement.** Runtime:
+  `@tanstack/react-query` 5.105.3 → 5.107.1 (#543), `i18next` 26.7.1 → 26.7.2 (#547), `lucide-react` 1.66.0 →
+  1.70.0 (#551) and `zustand` 5.0.16 → 5.1.0 (#553). Dev/toolchain only, never in the bundle: `vite` 8.3.6 → 8.3.8
+  with `@vitejs/plugin-react` 6.2.1 → 6.3.0 (#544), `typescript-eslint` 8.72.1 → 8.72.2 (#546), `tailwindcss` and
+  `@tailwindcss/vite` 4.3.4 → 4.3.5 (#548), `@playwright/test` 1.64.1 → 1.65.0 (#549), `globals` 17.13.0 → 17.14.0
+  (#550) and `@sentry/react` 10.76.2 → 10.78.0 (#552); in CI, `github/codeql-action` 4.39.1 → 4.39.3,
+  `docker/login-action` 4.7.0 → 4.8.0 and `sigstore/cosign-installer` 4.1.2 → 4.1.3 (#545). No product source
+  changed with them.
 
 ## [3.30.0-web] - 2026-11-11
 
