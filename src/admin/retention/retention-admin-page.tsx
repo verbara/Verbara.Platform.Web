@@ -1,5 +1,7 @@
-// R5.2 PC.1 — admin retention policy page. DryRun toggle (PlatformAdmin only) +
+// R5.2 PC.1 — admin retention policy page. Read-only purge-mode notice +
 // per-target overview table + manual run-now (dry-run / purge with ConfirmDialog).
+// The scheduled purge mode comes from the host key Retention:DryRun and only a
+// restart changes it, so the page offers no toggle (Platform/ADR-0052).
 //
 // Backend: /api/v1/management/retention/*
 // (system:retention:view | system:retention:manage — Platform/ADR-0037).
@@ -13,7 +15,6 @@ import {
   useRetentionConfig,
   useRetentionTargets,
   useRunRetentionNow,
-  useToggleDryRun,
   type RetentionRunResultDto,
 } from './use-retention-targets';
 
@@ -27,14 +28,9 @@ export default function RetentionAdminPage() {
   const { data: targets, isLoading: targetsLoading, error: targetsError } = useRetentionTargets();
   const { data: config, isLoading: configLoading } = useRetentionConfig();
   const runRetention = useRunRetentionNow();
-  const toggleDryRun = useToggleDryRun();
 
   const [purgeConfirmOpen, setPurgeConfirmOpen] = useState(false);
   const [lastRun, setLastRun] = useState<RetentionRunResultDto | null>(null);
-
-  const onToggleDryRun = (next: boolean) => {
-    toggleDryRun.mutate(next);
-  };
 
   const onDryRun = () => {
     runRetention.mutate({ dryRun: true }, { onSuccess: (result) => setLastRun(result) });
@@ -67,25 +63,20 @@ export default function RetentionAdminPage() {
         >
           {t(
             'admin:retention.dryRunActive',
-            'Currently in DRY-RUN MODE — no rows will be deleted.',
+            'Dry-run mode: the scheduled purge counts expired rows and deletes none. Set Retention:DryRun to false in the host configuration and restart to delete them.',
           )}
         </div>
       )}
 
-      {canManage && config && (
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={config.dryRun}
-              onChange={(e) => onToggleDryRun(e.target.checked)}
-              disabled={toggleDryRun.isPending}
-              data-testid="retention-dryrun-toggle"
-            />
-            <span className="text-sm font-medium">
-              {t('admin:retention.dryRunToggle', 'DryRun mode (count only, no delete)')}
-            </span>
-          </label>
+      {config && !config.dryRun && (
+        <div
+          className="rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700"
+          data-testid="retention-live-banner"
+        >
+          {t(
+            'admin:retention.liveModeActive',
+            'Live mode: the scheduled purge deletes rows past their retention window. Set Retention:DryRun to true in the host configuration and restart to count only.',
+          )}
         </div>
       )}
 
@@ -183,7 +174,10 @@ export default function RetentionAdminPage() {
             disabled={runRetention.isPending || configLoading || (config?.dryRun ?? true)}
             title={
               config?.dryRun
-                ? t('admin:retention.purgeBlockedByDryRun', 'Disable DryRun first')
+                ? t(
+                    'admin:retention.purgeBlockedByDryRun',
+                    'Set Retention:DryRun to false and restart the host to purge',
+                  )
                 : ''
             }
             className="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50"

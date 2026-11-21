@@ -5684,6 +5684,13 @@ export interface paths {
             'application/json': components['schemas']['ContactListDto'][];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     put?: never;
@@ -5702,8 +5709,17 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ContactListDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5739,8 +5755,15 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description OK */
-        200: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5787,6 +5810,13 @@ export interface paths {
             'application/json': components['schemas']['ImportResultDto'];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     delete?: never;
@@ -5819,6 +5849,15 @@ export interface paths {
       responses: {
         /** @description OK */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PagedResultOfCampaignContactDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5879,8 +5918,17 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DispositionCodeDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -5949,8 +5997,15 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description OK */
-        200: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -13368,28 +13423,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          'application/json': components['schemas']['RetentionConfigPatchDto'];
-        };
-      };
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-      };
-    };
+    patch?: never;
     trace?: never;
   };
   '/api/v{version}/management/retention/run-now': {
@@ -18229,6 +18263,63 @@ export interface components {
       id: number;
       name: string;
     };
+    CampaignContactDto: {
+      /** Format: int64 */
+      id: number;
+      /** Format: int64 */
+      contactListId: number;
+      externalId: null | string;
+      firstName: null | string;
+      lastName: null | string;
+      status: components['schemas']['ContactStatus'];
+      successful: boolean;
+      retryEnabled: boolean;
+      /** Format: int32 */
+      attempts: number;
+      /** Format: date-time */
+      lastAttemptAt: null | string;
+      lastPhoneDialed: null | string;
+      /** Format: int32 */
+      lastPhoneIndex: number;
+      lastCallUniqueId: null | string;
+      /** Format: int64 */
+      lastCallAttemptId: null | number;
+      /** Format: int64 */
+      lastDispositionId: null | number;
+      lastComment: null | string;
+      /** Format: int32 */
+      priority: number;
+      isScheduledCallback: boolean;
+      /** Format: date-time */
+      scheduledCallbackAt: null | string;
+      /** Format: date-time */
+      earliestNextAttemptAt: null | string;
+      assignedAgentId: null | string;
+      timezone: null | string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      expiresAt: null | string;
+      metadata: null | {
+        [key: string]: string;
+      };
+      phoneNumbers: components['schemas']['CampaignContactPhoneDto'][];
+    };
+    CampaignContactPhoneDto: {
+      /** Format: int64 */
+      id: number;
+      /** Format: int64 */
+      contactId: number;
+      phoneNumber: string;
+      type: components['schemas']['PhoneType'];
+      /** Format: int32 */
+      priority: number;
+      /** Format: int32 */
+      attempts: number;
+      /** Format: date-time */
+      lastAttemptAt: null | string;
+      status: components['schemas']['ContactPhoneStatus'];
+    };
     CampaignDetailDto: {
       /** Format: int64 */
       id: number;
@@ -18696,6 +18787,34 @@ export interface components {
       doNotContact?: null | boolean;
       channels?: null | string[];
     };
+    /** @enum {unknown} */
+    ContactPhoneStatus:
+      | 'Pending'
+      | 'Attempted'
+      | 'Answered'
+      | 'NoAnswer'
+      | 'Busy'
+      | 'Failed'
+      | 'Invalid'
+      | 'DncMatch'
+      | 'NoRoute';
+    /** @enum {unknown} */
+    ContactStatus:
+      | 'Pending'
+      | 'Dialing'
+      | 'Answered'
+      | 'NoAnswer'
+      | 'Busy'
+      | 'Failed'
+      | 'Machine'
+      | 'Abandoned'
+      | 'Blacklisted'
+      | 'NoPhone'
+      | 'NoRoute'
+      | 'Completed'
+      | 'Expired'
+      | 'DncMatch'
+      | 'MaxAttempts';
     Conversation: {
       conversationId: components['schemas']['EntityId'];
       tenantId: components['schemas']['TenantId'];
@@ -20277,6 +20396,19 @@ export interface components {
       hasNextPage?: boolean;
       hasPreviousPage?: boolean;
     };
+    PagedResultOfCampaignContactDto: {
+      items: components['schemas']['CampaignContactDto'][];
+      /** Format: int32 */
+      totalCount: number;
+      /** Format: int32 */
+      page: number;
+      /** Format: int32 */
+      pageSize: number;
+      /** Format: int32 */
+      totalPages?: number;
+      hasNextPage?: boolean;
+      hasPreviousPage?: boolean;
+    };
     PagedResultOfCampaignSummaryDto: {
       items: components['schemas']['CampaignSummaryDto'][];
       /** Format: int32 */
@@ -20558,6 +20690,8 @@ export interface components {
       category: string;
       permissions: components['schemas']['PermissionDefinition'][];
     };
+    /** @enum {unknown} */
+    PhoneType: 'Unknown' | 'Mobile' | 'Landline' | 'Work' | 'Home';
     /** @description 409 `plan-exceeds-parent`: a tenant plan above its parent tenant's plan. */
     PlanAboveParentRefusal: {
       error: string;
@@ -20936,19 +21070,6 @@ export interface components {
     ResetPasswordRequest: {
       token: string;
       newPassword: string;
-    };
-    /**
-     * @description PATCH body for `/management/retention/config`. Only `DryRun` can be
-     *     flipped at runtime in v1 — window / batch / cron require process restart per
-     *     the underlying `IOptions&lt;RetentionOptions&gt;` snapshot semantics.
-     */
-    RetentionConfigPatchDto: {
-      /**
-       * @description New value for `DryRun`. `null` = leave unchanged.
-       *     Toggling emits an `retention.dryrun_toggled` audit entry with the
-       *     previous + new value in metadata.
-       */
-      dryRun?: null | boolean;
     };
     RetentionPolicyDto: {
       tenantId: string;

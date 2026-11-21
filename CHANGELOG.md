@@ -20,6 +20,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Where the tenant's calls are transcribed in a language the sentiment analysis does not support, sentiment is not
   shown and the page says why, instead of listing every call as neutral. Against an older Platform the read is
   missing, so these surfaces stay hidden.
+- **The retention page shows the purge mode read-only.** The scheduled retention purge now runs in the mode the host
+  key `Retention:DryRun` sets, and only a restart changes it (Platform, next release). The page states the mode:
+  in dry-run it says no rows are deleted and names the key to set; in live mode it says the purge deletes rows past
+  their window. The manual purge button stays disabled in dry-run and its hint names the key; the manual dry run
+  stays available. Texts in English, Spanish and Portuguese. The API types are regenerated from Platform's
+  current OpenAPI document. (#554)
+
+### Removed
+
+- **The dry-run toggle on the retention page.** It sent `PATCH /api/v1/management/retention/config`, which never
+  changed what the scheduled purge did and which Platform removes in its next release (it answers 405). Deploy this
+  version with that Platform release or before it: an older console against the new Platform shows a toggle that
+  fails. (#554)
 
 ### Fixed
 
