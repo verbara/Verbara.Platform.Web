@@ -120,9 +120,6 @@
         "google": "Google Cloud Speech-to-Text"
       },
       "api-key": "API key",
-      "endpoint": "Endpoint",
-      "base-url": "Base URL (optional)",
-      "credentials-json": "Service account JSON",
       "save": "Save changes",
       "updated-by": "Updated by {{user}} at {{at}}",
       "warning-credentials-masked": "Credentials are stored encrypted and never returned after saving. Paste new values to replace.",

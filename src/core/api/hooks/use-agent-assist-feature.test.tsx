@@ -57,8 +57,8 @@ describe('useUpdateAgentAssistFeature', () => {
     vi.mocked(client.customFetch).mockResolvedValue(sampleFeature);
     const update: AgentAssistFeatureUpdate = {
       enabled: true,
-      provider: 'whisper',
-      credentials: { apiKey: 'new-key', endpoint: 'https://new-endpoint' },
+      provider: 'deepgram',
+      credentials: { apiKey: 'new-key', endpoint: 'wss://api.deepgram.com' },
     };
     const { result } = renderHook(() => useUpdateAgentAssistFeature(), { wrapper });
     act(() => {
