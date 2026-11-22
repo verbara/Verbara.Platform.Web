@@ -240,6 +240,19 @@ jobs:
       - name: Run docs-only classifier unit tests (ADR-0016)
         run: bash scripts/tests/test_classify_docs_only.sh
 
+      # The api-types-freshness workflow's two shell steps (source resolution and the
+      # api-types-drift issue), each tested with `gh` stubbed on PATH. Bash + jq, no network.
+      - name: Run Platform OpenAPI source resolver unit tests
+        run: bash scripts/tests/test_resolve_platform_openapi.sh
+
+      - name: Run api-types-drift issue sync unit tests
+        run: bash scripts/tests/test_sync_drift_issue.sh
+
+      # The workflow's steps end to end, with gh, node and npx stubbed: a missing source on a
+      # PR is a warning that passes and is never reported fresh.
+      - name: Run api-types-freshness workflow step tests
+        run: bash scripts/tests/test_api_types_freshness.sh
+
   i18n:
     name: i18n
     needs: gate
