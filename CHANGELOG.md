@@ -9,6 +9,22 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A check that the generated API types still follow Platform `main` (api-types).** A new `api-types-freshness`
+  workflow regenerates `src/core/api/generated/openapi.d.ts` from the OpenAPI document Platform publishes for its
+  current `main` commit and compares it with the committed copy. On a pull request a stale copy turns the check red,
+  names the changed routes and schemas and prints the command that refreshes it; the check is not required, so it
+  never blocks a merge, and a Platform document that cannot be obtained is a warning, never a pass. A daily run keeps
+  one `api-types-drift` issue open while the copy is stale and closes it when the copy is fresh again.
+
+### Changed
+
+- **`npm run generate:api-types` writes the committed form (api-types).** The script formats its output with this
+  repo's prettier configuration, so its output alone is the committed file, and it accepts `--out <path>` to write
+  elsewhere. The committed copy is regenerated from Platform `main`: the supervisor whisper route now declares its
+  `204`, `400`, `404` and `409` responses.
+
 ### Removed
 
 - **The unused cluster state hook.** `useClusterStateStream` is gone: nothing called it, and it listened for a hub
