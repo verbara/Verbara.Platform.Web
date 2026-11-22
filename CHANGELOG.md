@@ -35,6 +35,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The web image no longer answers 502 under sustained load.** On Kubernetes, where the console host routes every
+  path through the web image, its nginx opened a new connection to platform-api or realtime for every `/api/`,
+  `/ws/`, `/hubs/` and `/health` request, and each closed one held one of the container's ephemeral ports for about
+  60 s; under sustained load (more than about 470 new connections per second) the ports ran out and nginx answered 502. Each upstream now keeps a pool of idle connections (`keepalive 64`), every proxied location speaks HTTP/1.1
+  with an empty `Connection` header, and `/ws/` and `/hubs/` send `Connection: upgrade` only on a WebSocket upgrade.
+  `/hubs/` now proxies to an `upstream` block the start-up script writes, whose server is re-resolved by nginx
+  (`resolve`), instead of a per-request variable, so the image still starts where no realtime service exists.
 - **The supervisor's whisper reaches the agent.** From the voice Monitor, the whisper is sent to
   `POST /api/v1/supervisor/sessions/{sessionId}/whisper` with the call's Agent Assist session, and it shows on the
   agent's suggestion banner as a "Supervisor" item. A whisper is shown before engine suggestions, never expires on

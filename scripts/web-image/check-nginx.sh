@@ -31,6 +31,12 @@
 #            own pages (GET /).
 #   W433     the SDK, whose address never changes, is cached for minutes and
 #            revalidated, never for a year as immutable.
+#   KA       the web image reuses its connections to the services: repeated
+#            requests to /api/, /hubs/ negotiate and /health arrive upstream on a
+#            pooled connection (the stub's $connection_requests above 1) with an
+#            empty Connection header, while /ws/ still sends Connection: upgrade
+#            (W429); the image starts and serves the console with no realtime
+#            service on the network.
 #   CFA      the console (/ and a deep console route) and the widget demo page
 #            are framed only by their own origin: CSP frame-ancestors 'self'
 #            and X-Frame-Options SAMEORIGIN.
@@ -52,7 +58,7 @@ K8S_SEARCH=vweb-ns.svc.cluster.local
 FAIL=0
 
 cleanup() {
-  docker rm -f "$STUB" "$WEB" "$WEBK8S" "$GW" >/dev/null 2>&1 || true
+  docker rm -f "$STUB" "$WEB" "$WEBK8S" "$GW" "vweb-nort-$SUFFIX" >/dev/null 2>&1 || true
   docker network rm "$NET" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -165,9 +171,9 @@ wait_http "$WEBK8S" "$PK"
 negk=$(negotiate "$PK")
 echo "N20 (Kubernetes-shaped) POST /hubs/platform/negotiate: $(head -1 <<<"$negk" | tr -d '\r') X-Stub-Upstream=[$(header x-stub-upstream "$negk")]"
 # The stub also answers as `realtime`; check the rendered upstream really is the Kubernetes name.
-k8s_upstream=$(docker exec "$WEBK8S" sh -c 'grep -o "set \$verbara_realtime [^;]*" /var/run/verbara-realtime-upstream.conf' 2>/dev/null || true)
+k8s_upstream=$(docker exec "$WEBK8S" sh -c 'grep -o "server [^;]*" /var/run/verbara-realtime-upstream.conf' 2>/dev/null || true)
 echo "N20 (Kubernetes-shaped) rendered: $k8s_upstream"
-check "N20: Kubernetes default upstream is platform-realtime.<namespace search domain>" "$([ "$k8s_upstream" = "set \$verbara_realtime platform-realtime.$K8S_SEARCH:5030" ] && echo 0 || echo 1)" "$k8s_upstream"
+check "N20: Kubernetes default upstream is platform-realtime.<namespace search domain>" "$([ "$k8s_upstream" = "server platform-realtime.$K8S_SEARCH:5030 resolve" ] && echo 0 || echo 1)" "$k8s_upstream"
 check "N20: negotiate reaches realtime with the Kubernetes default" "$([ "$(header x-stub-upstream "$negk")" = realtime ] && echo 0 || echo 1)" "$(head -1 <<<"$negk" | tr -d '\r')"
 
 # --- W429 -------------------------------------------------------------------
@@ -209,6 +215,35 @@ sdk_cc=$(header cache-control "$sdk_h")
 check "W433: SDK cached briefly and revalidated, not immutable" "$(grep -q 'max-age=300' <<<"$sdk_cc" && grep -q must-revalidate <<<"$sdk_cc" && ! grep -q immutable <<<"$sdk_cc" && echo 0 || echo 1)" "[$sdk_cc]"
 check "W426: the embed's frame-ancestors does not reach /" "$(grep -q 'frame-ancestors \*' <<<"$root_csp" && echo 1 || echo 0)" "[$root_csp]"
 check "W426: the widget's CORP does not reach /" "$([ -z "$(header cross-origin-resource-policy "$root_h")" ] && echo 0 || echo 1)" "[$(header cross-origin-resource-policy "$root_h")]"
+
+# --- KA ---------------------------------------------------------------------
+# Five requests on one client connection, so one nginx worker serves them all
+# (each worker keeps its own pool); without a pool every one of them reaches
+# the stub on a new upstream connection, and $connection_requests stays 1.
+ka_last() { # ka_last <method> <url>: the stub's headers on the last of 5 requests
+  curl -s -D - -X "$1" -H 'Content-Type: text/plain;charset=UTF-8' \
+    -o /dev/null "$2" -o /dev/null "$2" -o /dev/null "$2" -o /dev/null "$2" -o /dev/null "$2" \
+    | awk '/^HTTP\// { buf = "" } { buf = buf $0 "\n" } END { printf "%s", buf }'
+}
+for target in "GET /api/v1/admin/users/stub-user-g8" "POST /hubs/platform/negotiate?negotiateVersion=1" "GET /health"; do
+  ka=$(ka_last ${target%% *} "http://127.0.0.1:$P${target#* }")
+  reqs=$(header x-stub-connection-requests "$ka")
+  conn=$(header x-stub-connection "$ka")
+  echo "KA ${target%%\?*} x5: upstream connection carried $reqs requests, upstream Connection=[$conn]"
+  check "KA: ${target%%\?*} reuses a pooled upstream connection" "$([ "${reqs:-0}" -gt 1 ] && echo 0 || echo 1)" "$reqs requests on the connection"
+  check "KA: ${target%%\?*} sends an empty Connection upstream" "$([ -z "$conn" ] && echo 0 || echo 1)" "[$conn]"
+done
+NOREALTIME=vweb-nort-$SUFFIX
+docker run -d --name "$NOREALTIME" --network "$NET" -e VERBARA_REALTIME_UPSTREAM=vweb-absent-$SUFFIX:5030 \
+  -p 127.0.0.1::80 "$IMAGE" >/dev/null
+PN=$(port_of "$NOREALTIME")
+wait_http "$NOREALTIME" "$PN"
+nort_root=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PN/")
+nort_hub=$(curl -s -o /dev/null -w '%{http_code}' -X POST "http://127.0.0.1:$PN/hubs/platform/negotiate")
+echo "KA no realtime service on the network: running=$(docker inspect -f '{{.State.Running}}' "$NOREALTIME") GET / -> $nort_root, POST /hubs/platform/negotiate -> $nort_hub"
+check "KA: the image starts and serves the console with no realtime service" "$([ "$nort_root" = 200 ] && echo 0 || echo 1)" "GET / -> $nort_root"
+check "KA: /hubs/ answers 502 while the realtime name does not resolve" "$([ "$nort_hub" = 502 ] && echo 0 || echo 1)" "$nort_hub"
+docker rm -f "$NOREALTIME" >/dev/null 2>&1 || true
 
 # --- CFA --------------------------------------------------------------------
 for route in / /admin/users /webchat/demo.html; do
