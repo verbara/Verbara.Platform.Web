@@ -206,6 +206,7 @@ expect_rc 0
 expect_calls "gh issue create" 1
 grep -qF "changed route: POST /api/v{version}/x" "$STUB_DIR/issue-body.md" || fail "issue body lacks the route"
 grep -qF "https://github.com/o/r/actions/runs/55" "$STUB_DIR/issue-body.md" || fail "issue body lacks the run URL"
+grep -qF -- "-n openapi-document-$HEAD_SHA -D" "$STUB_DIR/issue-body.md" || fail "issue body's refresh command lacks the artifact"
 finish_case "$f0"
 
 # --- issue mode, unavailable: opens the issue with the section, never compares ---

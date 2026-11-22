@@ -184,6 +184,47 @@ expect_rc 0
 expect_out "source=$(sha 9)"
 finish_case "$f0"
 
+# --- a non-Markdown file renamed to Markdown: its old path is not Markdown ---
+new_case "non-Markdown file renamed to Markdown"; f0=$fails
+main_is 10 9; commit_fixture 10 9; artifact_fixture 9
+jq -n '{status: "ahead", files: [{filename: "CHANGELOG.md"}, {filename: "src/Endpoint.md", previous_filename: "src/Endpoint.cs", status: "renamed"}]}' \
+  > "$STUB_DIR/compare_$(sha 9)_$(sha 10).json"
+run_resolver --out-dir "$STUB_DIR/dl" "$REPO"
+expect_rc 3
+expect_out "reason=non-Markdown change between $(sha 9) and $(sha 10): src/Endpoint.cs"
+expect_calls "run download" 0
+finish_case "$f0"
+
+# --- a Markdown file renamed to Markdown is still Markdown-only ---
+new_case "Markdown file renamed to Markdown"; f0=$fails
+main_is 10 9; commit_fixture 10 9; artifact_fixture 9
+jq -n '{status: "ahead", files: [{filename: "docs/new.md", previous_filename: "docs/old.md", status: "renamed"}]}' \
+  > "$STUB_DIR/compare_$(sha 9)_$(sha 10).json"
+run_resolver "$REPO"
+expect_rc 0
+expect_out "reused=true"
+finish_case "$f0"
+
+# --- a comparison with no file list is unknown, never empty ---
+new_case "comparison without a files array"; f0=$fails
+main_is 10 9; commit_fixture 10 9; artifact_fixture 9
+echo '{"status":"ahead"}' > "$STUB_DIR/compare_$(sha 9)_$(sha 10).json"
+run_resolver --out-dir "$STUB_DIR/dl" "$REPO"
+expect_rc 3
+expect_out "reason=comparison $(sha 9)...$(sha 10) lists no files"
+expect_calls "run download" 0
+finish_case "$f0"
+
+# --- main is not ahead of the artifact's commit (history rewritten in between) ---
+new_case "comparison diverged"; f0=$fails
+main_is 10 9; commit_fixture 10 9; artifact_fixture 9
+echo '{"status":"diverged","files":[{"filename":"README.md"}]}' > "$STUB_DIR/compare_$(sha 9)_$(sha 10).json"
+run_resolver --out-dir "$STUB_DIR/dl" "$REPO"
+expect_rc 3
+expect_out "reason=$(sha 10) is not ahead of $(sha 9) (status: diverged)"
+expect_calls "run download" 0
+finish_case "$f0"
+
 # --- the download is refused ---
 new_case "download refused"; f0=$fails
 main_is 10 9; artifact_fixture 10; touch "$STUB_DIR/download_refused"

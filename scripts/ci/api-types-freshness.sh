@@ -48,9 +48,10 @@ trap 'rm -rf "$work"' EXIT
 
 value() { sed -n "s/^$1=//p" "$work/resolve.out" | tail -n 1; } # value <key> from the resolver
 
-sync_issue() { # sync_issue <state> [report]
+sync_issue() { # sync_issue <state> [report [extra sync-drift-issue.sh args...]]
   local args=(--state "$1" --commit "$commits")
   [ -z "${2:-}" ] || args+=(--report "$2")
+  args+=("${@:3}")
   [ -z "$run_url" ] || args+=(--run-url "$run_url")
   bash "$ROOT/scripts/ci/sync-drift-issue.sh" "${args[@]}"
 }
@@ -140,7 +141,7 @@ case "$rc" in
       echo '```'
     } >> "$SUMMARY"
     if [ "$mode" = issue ]; then
-      sync_issue stale "$work/report.txt"
+      sync_issue stale "$work/report.txt" --artifact "$artifact"
       exit $?
     fi
     echo "::error title=API types are stale::the committed openapi.d.ts differs from Platform commit $commits; fix: $fix"

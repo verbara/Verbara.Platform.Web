@@ -86,6 +86,14 @@ expect_body "npm run generate:api-types"
 expect_body "$RUN"
 finish_case "$f0"
 
+# --- stale with --artifact: the refresh command names that artifact, not a placeholder ---
+new_case "stale, refresh command names the artifact"; f0=$fails
+run_sync --state stale --commit aaaa111 --report "$STUB_DIR/report.txt" --artifact openapi-document-aaaa111
+expect_rc 0
+expect_body "gh run download -R verbara/Verbara.Platform -n openapi-document-aaaa111 -D /tmp/openapi"
+expect_no_body "openapi-document-<sha>"
+finish_case "$f0"
+
 # --- stale, label exists: no label create ---
 new_case "stale, label already exists"; f0=$fails
 run_sync --state stale --commit aaaa111 --report "$STUB_DIR/report.txt"

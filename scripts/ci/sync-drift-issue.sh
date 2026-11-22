@@ -3,10 +3,11 @@
 # scheduled result (change generated-types-follow-platform-main, design D6).
 #
 # Usage: sync-drift-issue.sh --state stale|fresh|unavailable --commit <platform commit(s)>
-#                            [--report <file>] [--run-url <url>]
+#                            [--report <file>] [--run-url <url>] [--artifact <name>]
 #
 #   stale        open the issue, or update the open one, with the changed routes and schemas
-#                (--report: the checker's output) and the Platform commit
+#                (--report: the checker's output), the Platform commit and the refresh command
+#                for --artifact (the `openapi-document-<sha>` the check compared against)
 #   unavailable  the same issue, with a "Source unavailable" section (--report: the reason), so an
 #                expired or refused source does not go silent
 #   fresh        close the open issue with a comment naming the commit; nothing if none is open
@@ -25,12 +26,14 @@ state=""
 commit=""
 report=""
 run_url=""
+artifact=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --state) state="${2:-}"; shift 2 ;;
     --commit) commit="${2:-}"; shift 2 ;;
     --report) report="${2:-}"; shift 2 ;;
     --run-url) run_url="${2:-}"; shift 2 ;;
+    --artifact) artifact="${2:-}"; shift 2 ;;
     *) echo "unexpected argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -88,7 +91,7 @@ trap 'rm -f "$body"' EXIT
     echo "To refresh the copy, download the artifact and regenerate:"
     echo
     echo '```sh'
-    echo "gh run download -R verbara/Verbara.Platform -n openapi-document-<sha> -D /tmp/openapi"
+    echo "gh run download -R ${PLATFORM_REPO:-verbara/Verbara.Platform} -n ${artifact:-openapi-document-<sha>} -D /tmp/openapi"
     echo "OPENAPI_DOCUMENT_PATH=/tmp/openapi/openapi-document.json npm run generate:api-types"
     echo '```'
   else

@@ -93,10 +93,15 @@ if [ "$source_sha" != "$head_sha" ]; then
     unavailable "cannot compare $source_sha...$head_sha"
   status="$(printf '%s' "$compare" | jq -r '.status')"
   [ "$status" = ahead ] || unavailable "$head_sha is not ahead of $source_sha (status: $status)"
-  count="$(printf '%s' "$compare" | jq '.files | length')"
+  # No `files` array at all is an unknown list, never an empty one.
+  count="$(printf '%s' "$compare" | jq '.files | if type == "array" then length else -1 end')"
+  [ "$count" -ge 0 ] ||
+    unavailable "comparison $source_sha...$head_sha lists no files"
   [ "$count" -lt "$MAX_FILES" ] ||
     unavailable "comparison truncated: $source_sha...$head_sha lists $count files"
-  other="$(printf '%s' "$compare" | jq -r '[.files[].filename | select(endswith(".md") | not)] | first // empty')"
+  # A rename names its old path in `previous_filename`: `Foo.cs` renamed to `Foo.md` removes a
+  # non-Markdown file, so both names must be Markdown.
+  other="$(printf '%s' "$compare" | jq -r '[.files[] | .filename, (.previous_filename // empty) | select(endswith(".md") | not)] | first // empty')"
   [ -z "$other" ] || unavailable "non-Markdown change between $source_sha and $head_sha: $other"
   echo "reused=true"
 else
