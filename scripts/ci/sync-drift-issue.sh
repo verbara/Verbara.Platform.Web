@@ -16,7 +16,8 @@
 #                <!-- check-failed:start --> and <!-- check-failed:end -->) to the open issue, keeping
 #                its body, or open the issue with only that block. --result-file is the driver's
 #                marker (`reached=fresh|stale|unavailable`): without it the block says the copy was
-#                not checked, with it that the run failed after the check, naming the result. There
+#                not checked, with it that the run failed after the check, naming the result (and, for
+#                `unavailable`, that the copy was still not checked). There
 #                is at most one block; the next stale or unavailable run rewrites the whole body and
 #                a fresh one closes the issue, so either clears it.
 #
@@ -104,6 +105,10 @@ if [ "$state" = failed ]; then
       echo "The committed copy was **not checked**: the run failed before it reached a result."
     else
       echo "The run failed after the check (result: $reached). See the run for the step that failed."
+      if [ "$reached" = unavailable ]; then
+        echo
+        echo "The committed copy was **not checked**: no usable Platform document could be obtained."
+      fi
     fi
     echo
     echo "Run: $run_url"

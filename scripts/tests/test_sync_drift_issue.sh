@@ -267,6 +267,17 @@ expect_no_body "not checked"
 expect_body "changed route: POST /api/v{version}/x"
 finish_case "$f0"
 
+new_case "failed after an unavailable result"; f0=$fails
+open_issues "12:2026-11-20T06:30:00Z"
+stale_body
+printf 'reached=unavailable\n' > "$STUB_DIR/result"
+run_sync --state failed --run-url "$RUN2" --result-file "$STUB_DIR/result"
+expect_rc 0
+expect_body "The run failed after the check (result: unavailable)."
+expect_body "The committed copy was **not checked**: no usable Platform document could be obtained."
+expect_body "changed route: POST /api/v{version}/x"
+finish_case "$f0"
+
 new_case "failed, two open issues"; f0=$fails
 open_issues "30:2026-11-21T06:30:00Z" "12:2026-11-20T06:30:00Z"
 stale_body
