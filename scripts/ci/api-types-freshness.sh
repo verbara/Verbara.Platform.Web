@@ -16,6 +16,11 @@
 #   --mode issue  every outcome goes to sync-drift-issue.sh (stale / fresh / unavailable); exit 0
 #                 unless the issue sync fails
 #
+# Once it has a result, before acting on it, it writes `reached=fresh|stale|unavailable` to
+# $RUNNER_TEMP/api-types-result (removed at the start of every run). The workflow's failure step
+# passes that file to sync-drift-issue.sh --state failed, so a run that fails after the check (the
+# issue sync itself, a duplicate issue) is never reported as "not checked".
+#
 # Environment: PLATFORM_REPO (default verbara/Verbara.Platform); GH_TOKEN for gh; GITHUB_STEP_SUMMARY
 # (default: none); RUNNER_TEMP (default: the system temp dir); COMMITTED_TYPES (default: the
 # committed src/core/api/generated/openapi.d.ts); GITHUB_SERVER_URL, GITHUB_REPOSITORY and
@@ -43,7 +48,12 @@ if [ -n "${GITHUB_RUN_ID:-}" ]; then
   run_url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-}/actions/runs/$GITHUB_RUN_ID"
 fi
 
-work="$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/api-types-freshness.XXXXXX")"
+tmp_root="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
+marker="$tmp_root/api-types-result"
+rm -f "$marker"
+reached() { echo "reached=$1" > "$marker"; } # reached <fresh|stale|unavailable>
+
+work="$(mktemp -d "$tmp_root/api-types-freshness.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
 
 value() { sed -n "s/^$1=//p" "$work/resolve.out" | tail -n 1; } # value <key> from the resolver
@@ -72,6 +82,7 @@ if [ "$(value reused)" = true ]; then
 fi
 
 if [ "$rc" -eq 3 ]; then
+  reached unavailable
   reason="$(value reason)"
   printf '%s\n' "$reason" > "$work/reason.txt"
   {
@@ -114,6 +125,7 @@ cat "$work/report.txt"
 fix="gh run download -R $PLATFORM_REPO -n $artifact -D /tmp/openapi && OPENAPI_DOCUMENT_PATH=/tmp/openapi/openapi-document.json npm run generate:api-types"
 case "$rc" in
   0)
+    reached fresh
     {
       echo "## Generated API types: fresh"
       echo
@@ -125,6 +137,7 @@ case "$rc" in
     fi
     exit 0 ;;
   1)
+    reached stale
     {
       echo "## Generated API types are stale"
       echo

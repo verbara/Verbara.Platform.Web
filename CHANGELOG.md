@@ -16,7 +16,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   current `main` commit and compares it with the committed copy. On a pull request a stale copy turns the check red,
   names the changed routes and schemas and prints the command that refreshes it; the check is not required, so it
   never blocks a merge, and a Platform document that cannot be obtained is a warning, never a pass. A daily run keeps
-  one `api-types-drift` issue open while the copy is stale and closes it when the copy is fresh again.
+  one `api-types-drift` issue open while the copy is stale and closes it when the copy is fresh again. A daily run that
+  fails says so in that same issue, with a link to the run and whether the copy was checked.
 
 ### Changed
 

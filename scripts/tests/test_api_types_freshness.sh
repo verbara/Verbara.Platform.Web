@@ -5,7 +5,9 @@
 # generator: it writes a fixture to --out) and `npx` (prettier: a no-op, the fixtures are already
 # formatted); the resolver, the checker and the issue sync are the real scripts. The point of the
 # unavailable cases: on a PR a missing source is a warning that passes, the summary says the copy
-# was NOT checked, and nothing is regenerated or compared. Bash + jq + python3, no network.
+# was NOT checked, and nothing is regenerated or compared. The marker cases: once the driver has a
+# result it writes `reached=<result>` to $RUNNER_TEMP/api-types-result, which the workflow's failure
+# step hands to sync-drift-issue.sh --state failed. Bash + jq + python3, no network.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -76,7 +78,9 @@ case "$1 $2" in
     mkdir -p "$dir"; echo '{"openapi":"3.1.0"}' > "$dir/openapi-document.json" ;;
   "issue list") cat "$STUB_DIR/issues.json" ;;
   "label list") cat "$STUB_DIR/labels.json" ;;
+  "issue view") cat "$STUB_DIR/issue-body.md" ;;
   "issue create")
+    [ -f "$STUB_DIR/create_fails" ] && { echo "HTTP 502: Bad Gateway" >&2; exit 1; }
     while [ $# -gt 0 ]; do [ "$1" = --body-file ] && cp "$2" "$STUB_DIR/issue-body.md"; shift; done
     echo https://github.com/o/r/issues/9 ;;
   "issue edit"|"issue close"|"label create") : ;;
@@ -118,8 +122,18 @@ expect_calls() {
   n="$(grep -cF -- "$1" "$STUB_DIR/calls.log" || true)"
   [ "$n" = "$2" ] || fail "expected $2 call(s) matching '$1', got $n"
 }
+MARKER_NAME=api-types-result
+marker() { cat "$STUB_DIR/runner/$MARKER_NAME" 2> /dev/null || true; }
+expect_marker() { [ "$(marker)" = "$1" ] || fail "expected the result marker '$1', got '$(marker)'"; }
+failure_step() { # the workflow's "Record a failed run" step, against the same stubs
+  set +e
+  PATH="$STUB_DIR/bin:$PATH" STUB_DIR="$STUB_DIR" bash "$SCRIPT_DIR/../ci/sync-drift-issue.sh" --state failed \
+    --run-url https://github.com/o/r/actions/runs/55 --result-file "$STUB_DIR/runner/$MARKER_NAME" > /dev/null 2>&1
+  STEP_RC=$?
+  set -e
+}
 finish_case() {
-  [ -z "$(ls -A "$STUB_DIR/runner")" ] || fail "the temp work dir was left behind"
+  [ -z "$(ls -A "$STUB_DIR/runner" | grep -vxF "$MARKER_NAME")" ] || fail "the temp work dir was left behind"
   [ "$fails" = "$1" ] && pass=$((pass + 1))
   rm -rf "$STUB_DIR"
 }
@@ -216,6 +230,7 @@ expect_rc 0
 expect_calls "gh issue create" 1
 expect_calls "node " 0
 grep -qF "## Source unavailable" "$STUB_DIR/issue-body.md" || fail "issue body lacks the unavailable section"
+expect_marker "reached=unavailable"
 finish_case "$f0"
 
 # --- issue mode, fresh with an open issue: closes it ---
@@ -226,6 +241,37 @@ run_driver --mode issue
 expect_rc 0
 expect_calls "gh issue close 5 --comment" 1
 grep -F "gh issue close 5" "$STUB_DIR/calls.log" | grep -qF "$HEAD_SHA" || fail "close comment lacks the commit"
+expect_marker "reached=fresh"
+finish_case "$f0"
+
+# --- issue mode, the issue sync fails after a stale result: the marker says the check was done ---
+new_case "issue mode, sync fails after a stale result"; f0=$fails
+artifact_for "$HEAD_SHA"
+printf '%s' "$FIXTURE" | sed 's/        200: {/        204: {/' > "$STUB_DIR/regenerated.d.ts"
+touch "$STUB_DIR/create_fails"
+run_driver --mode issue
+[ "$RC" -ne 0 ] || fail "expected a failure when the issue cannot be created (output: $OUT)"
+expect_marker "reached=stale"
+rm -f "$STUB_DIR/create_fails" "$STUB_DIR/issue-body.md"
+failure_step
+[ "$STEP_RC" = 0 ] || fail "the failure step exited $STEP_RC"
+grep -qF "The run failed after the check (result: stale)." "$STUB_DIR/issue-body.md" 2> /dev/null ||
+  fail "the failure step's issue body does not name the result"
+finish_case "$f0"
+
+# --- issue mode, the comparison cannot parse: no result, so no marker (an older one is removed) ---
+new_case "issue mode, comparison fails before a result"; f0=$fails
+artifact_for "$HEAD_SHA"
+printf 'export interface components {}\n' > "$STUB_DIR/regenerated.d.ts"
+echo "reached=fresh" > "$STUB_DIR/runner/$MARKER_NAME"
+run_driver --mode issue
+expect_rc 1
+expect_marker ""
+expect_calls "gh issue" 0
+failure_step
+[ "$STEP_RC" = 0 ] || fail "the failure step exited $STEP_RC"
+grep -qF "The committed copy was **not checked**" "$STUB_DIR/issue-body.md" 2> /dev/null ||
+  fail "the failure step's issue body does not say the copy was not checked"
 finish_case "$f0"
 
 # --- usage ---

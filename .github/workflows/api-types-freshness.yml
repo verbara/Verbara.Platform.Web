@@ -12,7 +12,11 @@ name: API types freshness
 #   required check (operator decision 2026-11-21), so it never blocks a merge. A missing source
 #   is a warning that passes, and the summary says the copy was not checked.
 # - schedule / workflow_dispatch: keeps the single `api-types-drift` issue in step (open or
-#   update when stale or unavailable, close when fresh).
+#   update when stale or unavailable, close when fresh). A run that fails adds a "Daily check
+#   failed" block to that same issue, opening it if none is open, and keeps what it already said;
+#   the block says whether the copy was checked (the driver's result marker) and links the run.
+#   The compare step has its own timeout, shorter than the job's, so a hang is a failure that this
+#   records, not a cancellation that skips it.
 #
 # Not merge_group: the check is advisory, and a queue run must not depend on another repo.
 # Not behind ci.yml's docs-only fast path: a docs-only PR can still carry a stale copy.
@@ -95,8 +99,19 @@ jobs:
         run: npm ci
 
       - name: Compare and sync the api-types-drift issue
+        timeout-minutes: 8
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           PLATFORM_SHA: ${{ inputs.platform-sha }}
         run: bash scripts/ci/api-types-freshness.sh --mode issue ${PLATFORM_SHA:+--platform-sha "$PLATFORM_SHA"}
+
+      - name: Record a failed run in the api-types-drift issue
+        if: ${{ failure() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          bash scripts/ci/sync-drift-issue.sh --state failed
+          --run-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          --result-file "${RUNNER_TEMP}/api-types-result"

@@ -3,7 +3,8 @@
 # generated-types-follow-platform-main, design D6). `gh` is replaced by a stub on PATH that
 # serves the open-issue and label lists from fixtures and logs every call (with the body it
 # was given), so create, update, close and the duplicate case are proved without a live
-# repository. Pure bash + jq, no network.
+# repository. `gh issue view` serves $STUB_DIR/issue_body.md, the open issue's current body, so
+# the failed-run block is proved to keep what the issue already said. Pure bash + jq, no network.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,6 +35,7 @@ case "$1 $2" in
   "issue list") cat "$STUB_DIR/issues.json" ;;
   "label list") cat "$STUB_DIR/labels.json" ;;
   "issue create") echo "https://github.com/o/r/issues/77" ;;
+  "issue view") cat "$STUB_DIR/issue_body.md" ;;
   "issue edit"|"issue close"|"label create") : ;;
   *) echo "stub gh: unexpected call: $*" >&2; exit 99 ;;
 esac
@@ -185,6 +187,124 @@ finish_case "$f0"
 new_case "stale without a report"; f0=$fails
 run_sync --state stale --commit x
 expect_rc 2
+finish_case "$f0"
+
+# --- failed (design D6 "Run failed"): a delimited block, prepended, body kept ---
+START='<!-- check-failed:start -->'
+END='<!-- check-failed:end -->'
+RUN2=https://github.com/o/r/actions/runs/2
+markers() { grep -cF -- "$START" "$STUB_DIR/body.last" 2> /dev/null || true; }
+stale_body() { # the open issue's body: what a stale run wrote
+  run_sync --state stale --commit aaaa111 --report "$STUB_DIR/report.txt" --run-url "$RUN"
+  cp "$STUB_DIR/body.last" "$STUB_DIR/issue_body.md"
+  : > "$STUB_DIR/calls.log"
+}
+
+new_case "failed, no open issue, no result"; f0=$fails
+echo '[{"name":"bug"}]' > "$STUB_DIR/labels.json"
+run_sync --state failed --run-url "$RUN" --result-file "$STUB_DIR/no-such-marker"
+expect_rc 0
+expect_calls "label create api-types-drift" 1
+expect_calls "issue create --title" 1
+expect_calls "--label api-types-drift" 2
+expect_calls "issue view" 0
+expect_body "$START"
+expect_body "$END"
+expect_body "## Daily check failed"
+expect_body "The committed copy was **not checked**: the run failed before it reached a result."
+expect_body "Run: $RUN"
+finish_case "$f0"
+
+new_case "failed over an open stale issue"; f0=$fails
+open_issues "12:2026-11-20T06:30:00Z"
+stale_body
+run_sync --state failed --run-url "$RUN2"
+expect_rc 0
+expect_calls "issue view 12" 1
+expect_calls "issue edit 12 --body-file" 1
+expect_calls "issue create" 0
+expect_body "## Daily check failed"
+expect_body "$RUN2"
+expect_body "changed route: POST /api/v{version}/x"
+expect_body "Platform commit: aaaa111"
+[ "$(head -n 1 "$STUB_DIR/body.last" 2> /dev/null)" = "$START" ] || fail "the block is not prepended"
+finish_case "$f0"
+
+new_case "failed twice"; f0=$fails
+open_issues "12:2026-11-20T06:30:00Z"
+stale_body
+run_sync --state failed --run-url https://github.com/o/r/actions/runs/101
+cp "$STUB_DIR/body.last" "$STUB_DIR/issue_body.md" 2> /dev/null || true
+run_sync --state failed --run-url https://github.com/o/r/actions/runs/102
+expect_rc 0
+[ "$(markers)" = 1 ] || fail "expected one block, got $(markers)"
+expect_body "runs/102"
+expect_no_body "runs/101"
+expect_body "changed route: POST /api/v{version}/x"
+[ "$(grep -c '^$' "$STUB_DIR/body.last" 2> /dev/null)" = "$(grep -c '^$' "$STUB_DIR/issue_body.md" 2> /dev/null)" ] ||
+  fail "blank lines pile up between the block and the body"
+finish_case "$f0"
+
+new_case "failed over a body edited in the browser (CRLF)"; f0=$fails
+open_issues "12:2026-11-20T06:30:00Z"
+stale_body
+run_sync --state failed --run-url https://github.com/o/r/actions/runs/101
+sed 's/$/\r/' "$STUB_DIR/body.last" > "$STUB_DIR/issue_body.md" 2> /dev/null || true
+run_sync --state failed --run-url https://github.com/o/r/actions/runs/102
+expect_rc 0
+[ "$(markers)" = 1 ] || fail "expected one block, got $(markers)"
+expect_no_body "runs/101"
+finish_case "$f0"
+
+new_case "failed after the check reached a result"; f0=$fails
+open_issues "12:2026-11-20T06:30:00Z"
+stale_body
+printf 'reached=stale\n' > "$STUB_DIR/result"
+run_sync --state failed --run-url "$RUN2" --result-file "$STUB_DIR/result"
+expect_rc 0
+expect_body "The run failed after the check (result: stale)."
+expect_no_body "not checked"
+expect_body "changed route: POST /api/v{version}/x"
+finish_case "$f0"
+
+new_case "failed, two open issues"; f0=$fails
+open_issues "30:2026-11-21T06:30:00Z" "12:2026-11-20T06:30:00Z"
+stale_body
+run_sync --state failed --run-url "$RUN2"
+expect_rc 4
+expect_calls "issue view 12" 1
+expect_calls "issue edit 12 --body-file" 1
+expect_calls "issue edit 30" 0
+expect_calls "issue create" 0
+finish_case "$f0"
+
+new_case "stale after failed clears the block"; f0=$fails
+open_issues "12:2026-11-20T06:30:00Z"
+stale_body
+run_sync --state failed --run-url "$RUN2"
+expect_rc 0
+expect_body "$START"
+cp "$STUB_DIR/body.last" "$STUB_DIR/issue_body.md" 2> /dev/null || true
+run_sync --state stale --commit bbbb222 --report "$STUB_DIR/report.txt"
+expect_rc 0
+expect_no_body "$START"
+expect_no_body "Daily check failed"
+expect_body "Platform commit: bbbb222"
+finish_case "$f0"
+
+new_case "failed without a run URL"; f0=$fails
+run_sync --state failed
+expect_rc 2
+expect_calls "issue" 0
+printf '%s\n' "$ERR" | grep -qF -- "--state failed needs --run-url" || fail "stderr does not name --run-url ($ERR)"
+finish_case "$f0"
+
+new_case "failed with an unreadable result"; f0=$fails
+printf 'reached=maybe\n' > "$STUB_DIR/result"
+run_sync --state failed --run-url "$RUN" --result-file "$STUB_DIR/result"
+expect_rc 2
+expect_calls "issue" 0
+printf '%s\n' "$ERR" | grep -qF -- "maybe" || fail "stderr does not name the bad result ($ERR)"
 finish_case "$f0"
 
 echo "sync-drift-issue: $pass passed, $fails failed"
