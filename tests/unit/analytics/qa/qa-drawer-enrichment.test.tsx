@@ -31,6 +31,17 @@ import type { QaDetail } from '@/core/api/hooks/use-analytics';
 const detailMock: { value: QaDetail | undefined } = { value: undefined };
 vi.mock('@/core/api/hooks/use-analytics', () => ({
   useQaDetail: () => ({ data: detailMock.value, isLoading: false }),
+  // The drawer shows sentiment only where the tenant's call language supports it
+  // (1a03c0d2, #542); these cases render the sentiment timeline, so it is supported.
+  useQaSurfaces: () => ({
+    qa: true,
+    speech: true,
+    sentiment: true,
+    sentimentUnsupported: false,
+    qaReason: null,
+    speechReason: null,
+    isLoading: false,
+  }),
 }));
 
 // ─── Mock PdfDownloadButton dependencies (added in Track 5C-export) ─────────

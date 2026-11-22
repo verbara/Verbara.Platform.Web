@@ -43,6 +43,14 @@ const baseSettings = {
     dialplanContextPrefix: null,
     nodeAffinity: null,
     allowedDialingModes: null,
+    outboundCallerId: null,
+    // Tenant-default channel capacity, required by the operational section since
+    // 592656ee (#80); Voice is pinned to 1.
+    maxVoiceDefault: 1,
+    maxChatDefault: 3,
+    maxEmailDefault: 5,
+    maxSmsDefault: 3,
+    maxTotalDefault: 6,
   },
   auth: {
     mfaPolicy: 'Optional',
