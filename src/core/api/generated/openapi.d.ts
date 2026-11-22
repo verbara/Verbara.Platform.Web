@@ -9649,6 +9649,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
+    /**
+     * Sends a supervisor's text whisper to the session's agent
+     * @description The text whisper: delivers the text to the Agent Assist session's bound agent as an agentassist.suggestion with source Supervisor and priority Critical, from any Api replica, and answers 204 No Content. The session is looked up in the caller's tenant only: another tenant's, an ended or an unknown session answers 404. 400 whisper-text-invalid: the text is empty or longer than 500 characters after trimming. 409 whisper-session-not-bound: the session's agent or conversation is not resolved yet; nothing was published. The Realtime hub's WhisperToAgentAsync, StartSupervisionAsync and StopSupervisingAsync stay refused; this route is the only whisper.
+     */
     post: {
       parameters: {
         query?: never;
@@ -9664,12 +9668,37 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description No Content */
+        204: {
           headers: {
             [name: string]: unknown;
           };
           content?: never;
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
