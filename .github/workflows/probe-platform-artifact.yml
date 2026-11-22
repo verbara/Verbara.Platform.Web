@@ -1,0 +1,61 @@
+name: Probe platform artifact (throwaway)
+
+# Throwaway Phase 0 probe for generated-types-follow-platform-main. Never merged.
+on:
+  pull_request:
+
+permissions: {}
+
+env:
+  ART_REPO: verbara/Verbara.Platform
+  ART_RUN: "44957110213"
+  ART_ID: "14728291747"
+  ART_NAME: openapi-document-0092c6db278af043a4b293774014ed6585015aba
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    steps:
+      - name: Download with GITHUB_TOKEN (actions read)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh run download "$ART_RUN" -R "$ART_REPO" -n "$ART_NAME" -D dl
+          rc=$?
+          echo "probe exit status: $rc"
+          find dl -type f -exec sha256sum {} \; 2>/dev/null
+          exit $rc
+
+  control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Download with GITHUB_TOKEN (no permissions)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh run download "$ART_RUN" -R "$ART_REPO" -n "$ART_NAME" -D dl
+          rc=$?
+          echo "control exit status: $rc"
+          find dl -type f -exec sha256sum {} \; 2>/dev/null
+          exit $rc
+
+  diagnostic-no-token:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Download zip with no Authorization header
+        run: |
+          set +e
+          code=$(curl -sS -L -o a.zip -w '%{http_code}' -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/$ART_REPO/actions/artifacts/$ART_ID/zip")
+          rc=$?
+          echo "curl exit status: $rc, HTTP $code"
+          head -c 300 a.zip; echo
+          exit 0
