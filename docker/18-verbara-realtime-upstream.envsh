@@ -1,8 +1,16 @@
 #!/bin/sh
 # Sourced by the nginx image's entrypoint at start-up (it runs scripts in
 # /docker-entrypoint.d/ whenever the command is nginx). Writes the file that
-# nginx.conf's /hubs/ location includes: a `resolver` and $verbara_realtime,
-# the host:port of the SignalR realtime service.
+# nginx.conf includes in its http block: `upstream verbara_realtime`, the
+# host:port of the SignalR realtime service, which /hubs/ proxies to.
+#
+# The upstream keeps a pool of idle connections (`keepalive`, see nginx.conf),
+# and its server carries `resolve` with the container's nameservers as its
+# resolver: nginx then starts even where no realtime service exists and looks
+# the name up again every 10 s, as the per-request variable this file used to
+# set did. `resolve` needs a shared-memory `zone` and nginx 1.27.3 or later
+# (the image's nginx:alpine base). With no nameserver in resolv.conf the server
+# is written without `resolve`, and nginx resolves it once at start-up.
 #
 # VERBARA_REALTIME_UPSTREAM (host:port) overrides the default. nginx's own
 # resolver does not apply resolv.conf's search domains, so a bare Service name
@@ -46,8 +54,16 @@ verbara_resolvers=${verbara_resolvers% }
 
 {
   echo "# Written by 18-verbara-realtime-upstream.envsh at start-up."
-  [ -n "$verbara_resolvers" ] && echo "resolver $verbara_resolvers valid=10s;"
-  echo "set \$verbara_realtime $verbara_upstream;"
+  echo "upstream verbara_realtime {"
+  echo "    zone verbara_realtime 64k;"
+  if [ -n "$verbara_resolvers" ]; then
+    echo "    resolver $verbara_resolvers valid=10s;"
+    echo "    server $verbara_upstream resolve;"
+  else
+    echo "    server $verbara_upstream;"
+  fi
+  echo "    keepalive 64;"
+  echo "}"
 } > "$verbara_out"
 
 echo "18-verbara-realtime-upstream.envsh: /hubs/ upstream $verbara_upstream (resolver: ${verbara_resolvers:-none})"
