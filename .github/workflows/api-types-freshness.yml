@@ -15,8 +15,8 @@ name: API types freshness
 #   update when stale or unavailable, close when fresh). A run that fails adds a "Daily check
 #   failed" block to that same issue, opening it if none is open, and keeps what it already said;
 #   the block says whether the copy was checked (the driver's result marker) and links the run.
-#   The compare step has its own timeout, shorter than the job's, so a hang is a failure that this
-#   records, not a cancellation that skips it.
+#   Every step before it has its own timeout, and together they stay under the job's, so a hang
+#   is a step failure that this records, not a job cancellation that skips it.
 #
 # Not merge_group: the check is advisory, and a queue run must not depend on another repo.
 # Not behind ci.yml's docs-only fast path: a docs-only PR can still carry a stale copy.
@@ -86,20 +86,25 @@ jobs:
       group: api-types-drift-issue
       cancel-in-progress: false
     steps:
+      # Step budget 1 + 1 + 2 + 5 = 9 minutes inside the job's 10, so a hang in any of them fails
+      # that step and the last step still runs. A normal run takes under a minute.
       - name: Checkout
+        timeout-minutes: 1
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        timeout-minutes: 1
         uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
+        timeout-minutes: 2
         run: npm ci
 
       - name: Compare and sync the api-types-drift issue
-        timeout-minutes: 8
+        timeout-minutes: 5
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
