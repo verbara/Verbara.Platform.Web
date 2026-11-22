@@ -62,7 +62,9 @@ import {
   useDrainNode,
   useCancelDrain,
   useForceDrain,
+  clusterNodeActions,
   type ClusterNode,
+  type ClusterNodeState,
   type CreateNodeInput,
   type UpdateNodeInput,
 } from '@/core/api/hooks/use-cluster';
@@ -73,7 +75,7 @@ import { useFormatDate } from '@/core/i18n/use-format';
 // Delegates to the shared StatusBadge primitive (variant="cluster-node")
 // so color + label mapping lives in a single canonical place.
 
-function NodeStateBadge({ state }: Readonly<{ state: string }>) {
+function NodeStateBadge({ state }: Readonly<{ state: ClusterNodeState }>) {
   return <StatusBadge variant="cluster-node" status={state} />;
 }
 
@@ -556,7 +558,7 @@ export default function ClusterPage() {
   const [forceNode, setForceNode] = useState<ClusterNode | undefined>();
   const [detailNode, setDetailNode] = useState<ClusterNode | undefined>();
 
-  const healthyCount = nodes.filter((n) => n.state === 'Healthy').length;
+  const healthyCount = nodes.filter((n) => n.state === 'healthy').length;
   const totalCapacity = nodes.reduce((acc, n) => acc + n.maxCapacity, 0);
   const activeDrains = status?.activeDrains ?? [];
 
@@ -599,15 +601,7 @@ export default function ClusterPage() {
         id: 'actions',
         cell: ({ row }) => {
           const node = row.original;
-          const state = node.state;
-          const canEdit =
-            state === 'Healthy' ||
-            state === 'Degraded' ||
-            state === 'Offline' ||
-            state === 'Unhealthy';
-          const canDrain = state === 'Healthy' || state === 'Degraded';
-          const canCancelDrain = state === 'Draining';
-          const canRemove = state === 'Offline' || state === 'Unhealthy';
+          const { canEdit, canDrain, canCancelDrain, canRemove } = clusterNodeActions(node.state);
 
           // Stop propagation on the actions cell so clicking the kebab menu
           // (or any item inside it) does not bubble up to the row-click

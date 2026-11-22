@@ -5,6 +5,34 @@ import { toast } from 'sonner';
 // ── Types ──
 
 /**
+ * A cluster node's state as Platform sends it: `ManagementClusterEndpoints` maps the Pro
+ * `NodeState` enum with `ToString().ToLowerInvariant()`, so every value is lower case.
+ */
+export type ClusterNodeState =
+  'unknown' | 'healthy' | 'degraded' | 'unhealthy' | 'draining' | 'offline';
+
+/** A drain's state as Platform sends it: the Pro `DrainState` enum, lower-cased the same way. */
+export type ClusterDrainState = 'idle' | 'draining' | 'completing' | 'completed' | 'cancelled';
+
+/** What the cluster page lets an operator do with a node, decided by its state alone. */
+export interface ClusterNodeActions {
+  canEdit: boolean;
+  canDrain: boolean;
+  canCancelDrain: boolean;
+  canRemove: boolean;
+}
+
+export function clusterNodeActions(state: ClusterNodeState): ClusterNodeActions {
+  return {
+    canEdit:
+      state === 'healthy' || state === 'degraded' || state === 'offline' || state === 'unhealthy',
+    canDrain: state === 'healthy' || state === 'degraded',
+    canCancelDrain: state === 'draining',
+    canRemove: state === 'offline' || state === 'unhealthy',
+  };
+}
+
+/**
  * Kept hand-written (openapi-typed-client-operations): read off `useClusterNodes`
  * (GET `/management/cluster/nodes`) and the create/update mutation responses, all of which the
  * document declares with `content?: never` (no response schema). It also carries `amiHostname`
@@ -13,7 +41,7 @@ import { toast } from 'sonner';
  */
 export interface ClusterNode {
   nodeId: string;
-  state: string;
+  state: ClusterNodeState;
   weight: number;
   priorityTier: number;
   maxCapacity: number;
@@ -30,7 +58,7 @@ export interface ClusterNode {
  */
 export interface DrainStatus {
   nodeId: string;
-  state: string;
+  state: ClusterDrainState;
   startedAt: string;
   deadline: string;
   initialCallCount: number;
