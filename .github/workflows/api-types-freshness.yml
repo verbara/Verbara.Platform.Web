@@ -1,0 +1,122 @@
+name: API types freshness
+
+# Is the committed src/core/api/generated/openapi.d.ts still what Platform's current `main`
+# document generates? (change generated-types-follow-platform-main, Platform/ADR-0035)
+#
+# It resolves Platform main's `openapi-document-<sha>` CI artifact (reusing the nearest earlier
+# one across a complete, Markdown-only range), regenerates the types into a temp file with the
+# committed recipe, formats both sides with the same prettier and compares them by declaration
+# block. All steps live in scripts/ci/api-types-freshness.sh, tested in coverage-scripts.
+#
+# - pull_request: a stale copy turns this check red and prints the fix command. It is NOT a
+#   required check (operator decision 2026-11-21), so it never blocks a merge. A missing source
+#   is a warning that passes, and the summary says the copy was not checked.
+# - schedule / workflow_dispatch: keeps the single `api-types-drift` issue in step (open or
+#   update when stale or unavailable, close when fresh). A run that fails adds a "Daily check
+#   failed" block to that same issue, opening it if none is open, and keeps what it already said;
+#   the block says whether the copy was checked (the driver's result marker) and links the run.
+#   Every step before it has its own timeout, and together they stay under the job's, so a hang
+#   is a step failure that this records, not a job cancellation that skips it.
+#
+# Not merge_group: the check is advisory, and a queue run must not depend on another repo.
+# Not behind ci.yml's docs-only fast path: a docs-only PR can still carry a stale copy.
+#
+# Token: the workflow's own GITHUB_TOKEN reads Platform's artifacts because Verbara.Platform is
+# public (Phase 0, 2026-11-22). `actions: read` is kept for least privilege, not because it is
+# what grants access. If Platform turns private the download is refused: the PR check warns and
+# the daily run reports "source unavailable" in the issue.
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+    inputs:
+      platform-sha:
+        description: Platform commit whose document to check against instead of main's head
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  PLATFORM_REPO: verbara/Verbara.Platform
+
+jobs:
+  freshness:
+    name: api-types-freshness
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: api-types-freshness-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compare the committed types with Platform main's document
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ci/api-types-freshness.sh --mode pr
+
+  drift-issue:
+    name: api-types-drift issue
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    # One repository-wide group, never cancelled: two runs on different refs can never both see
+    # "no open issue" and both create one.
+    concurrency:
+      group: api-types-drift-issue
+      cancel-in-progress: false
+    steps:
+      # Step budget 1 + 1 + 2 + 5 = 9 minutes inside the job's 10, so a hang in any of them fails
+      # that step and the last step still runs. A normal run takes under a minute.
+      - name: Checkout
+        timeout-minutes: 1
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        timeout-minutes: 1
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        timeout-minutes: 2
+        run: npm ci
+
+      - name: Compare and sync the api-types-drift issue
+        timeout-minutes: 5
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PLATFORM_SHA: ${{ inputs.platform-sha }}
+        run: bash scripts/ci/api-types-freshness.sh --mode issue ${PLATFORM_SHA:+--platform-sha "$PLATFORM_SHA"}
+
+      - name: Record a failed run in the api-types-drift issue
+        if: ${{ failure() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          bash scripts/ci/sync-drift-issue.sh --state failed
+          --run-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          --result-file "${RUNNER_TEMP}/api-types-result"
