@@ -11,6 +11,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Removed
 
+- **The unused cluster state hook.** `useClusterStateStream` is gone: nothing called it, and it listened for a hub
+  message no server sends. The `/admin/cluster` page keeps refreshing every 10 seconds.
 - **The hub whisper path.** The console no longer sends the supervisor's whisper over the realtime hub and no longer
   listens for a hub whisper message: the whisper goes through the REST route only.
 
