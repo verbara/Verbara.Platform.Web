@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
@@ -23,14 +23,20 @@ export default defineConfig({
         return false;
       }
     },
-    // Unit tests live in two places: co-located under src/** and under tests/unit/**.
-    // The rest of tests/ is Playwright (tests/e2e/**, tests/manuales/**, plus their
-    // fixtures), whose specs call test.describe() and crash the vitest collector
-    // ("did not expect test.describe() to be called here"). So the include names the
-    // two unit-test roots instead of excluding tests/** wholesale, which (since
-    // 583107cf) had silently dropped every tests/unit file from the run.
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'tests/unit/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['**/node_modules/**', 'tests/e2e/**', 'tests/manuales/**', 'tests/fixtures/**'],
+    // Collect with vitest's default include and exclude only what is not a unit test.
+    // tests/e2e/** and tests/manuales/** (plus tests/fixtures/**) are Playwright: their
+    // specs call test.describe() and crash the vitest collector ("did not expect
+    // test.describe() to be called here"). An exclude-only list fails loudly: a new
+    // Playwright folder crashes the run until it is excluded here, whereas an include
+    // list of unit-test roots would drop a new unit-test folder silently -- which is how
+    // the old tests/** exclude (since 583107cf) hid every tests/unit file from the run.
+    exclude: [
+      ...configDefaults.exclude,
+      'dist/**',
+      'tests/e2e/**',
+      'tests/manuales/**',
+      'tests/fixtures/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json', 'json-summary', 'lcov'],
