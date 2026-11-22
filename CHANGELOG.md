@@ -31,7 +31,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   lower case (`healthy`, `draining`, ...), and `/admin/cluster` compared them against capitalised names, so the row
   menu offered no action (Edit, Drain, Cancel drain, Force drain, Remove), the Nodes card counted 0 healthy nodes and
   the node drawer's Drain Status tab never showed progress. The page now reads the lower-case states, and a drain that
-  is idle, completing, completed or cancelled shows its own colour and a translated label instead of the raw word.
+  is idle, completing, completed or cancelled shows a translated label instead of the raw word (completing in blue,
+  completed in green).
 
 ## [3.31.0-web] - 2026-11-21
 
