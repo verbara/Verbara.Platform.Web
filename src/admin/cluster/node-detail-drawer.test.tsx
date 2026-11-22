@@ -19,7 +19,7 @@ import type { ClusterNode, DrainStatus } from '@/core/api/hooks/use-cluster';
 
 const baseNode: ClusterNode = {
   nodeId: 'asterisk-01',
-  state: 'Healthy',
+  state: 'healthy',
   weight: 100,
   priorityTier: 1,
   maxCapacity: 50,
@@ -29,11 +29,11 @@ const baseNode: ClusterNode = {
   amiPort: 5038,
 };
 
-const drainingNode: ClusterNode = { ...baseNode, state: 'Draining' };
+const drainingNode: ClusterNode = { ...baseNode, state: 'draining' };
 
 const drainSnapshot: DrainStatus = {
   nodeId: 'asterisk-01',
-  state: 'Draining',
+  state: 'draining',
   startedAt: '2026-04-20T09:00:00Z',
   deadline: '2026-04-20T10:00:00Z',
   initialCallCount: 10,
@@ -49,12 +49,7 @@ afterEach(() => {
 describe('NodeDetailDrawer', () => {
   it('Tabs_ShouldSwitchToDrainAndHistory_WhenClicked', () => {
     render(
-      <NodeDetailDrawer
-        node={baseNode}
-        activeDrain={undefined}
-        open
-        onOpenChange={vi.fn()}
-      />
+      <NodeDetailDrawer node={baseNode} activeDrain={undefined} open onOpenChange={vi.fn()} />,
     );
 
     // Overview tab renders by default.
@@ -76,7 +71,7 @@ describe('NodeDetailDrawer', () => {
         activeDrain={drainSnapshot}
         open
         onOpenChange={vi.fn()}
-      />
+      />,
     );
     fireEvent.click(screen.getByRole('tab', { name: /drain status/i }));
 
@@ -96,12 +91,7 @@ describe('NodeDetailDrawer', () => {
     it('Link_ShouldNotRender_WhenEnvVarUnset', () => {
       vi.stubEnv('VITE_GRAFANA_URL', '');
       render(
-        <NodeDetailDrawer
-          node={baseNode}
-          activeDrain={undefined}
-          open
-          onOpenChange={vi.fn()}
-        />
+        <NodeDetailDrawer node={baseNode} activeDrain={undefined} open onOpenChange={vi.fn()} />,
       );
       expect(screen.queryByTestId('cluster-node-grafana-link')).toBeNull();
     });
@@ -109,12 +99,7 @@ describe('NodeDetailDrawer', () => {
     it('Link_ShouldRenderWithNodeFilter_WhenEnvVarSet', () => {
       vi.stubEnv('VITE_GRAFANA_URL', 'https://grafana.example.com/d/cluster');
       render(
-        <NodeDetailDrawer
-          node={baseNode}
-          activeDrain={undefined}
-          open
-          onOpenChange={vi.fn()}
-        />
+        <NodeDetailDrawer node={baseNode} activeDrain={undefined} open onOpenChange={vi.fn()} />,
       );
       const link = screen.getByTestId('cluster-node-grafana-link') as HTMLAnchorElement;
       expect(link).toBeInTheDocument();

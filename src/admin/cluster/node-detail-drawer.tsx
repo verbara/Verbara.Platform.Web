@@ -21,10 +21,7 @@ import { DrawerDetail } from '@/core/ui/drawer-detail';
 import { StatCard } from '@/core/ui/stat-card';
 import { StatusBadge } from '@/core/ui/status-badge';
 import { useFormatDate } from '@/core/i18n/use-format';
-import type {
-  ClusterNode,
-  DrainStatus,
-} from '@/core/api/hooks/use-cluster';
+import type { ClusterNode, DrainStatus } from '@/core/api/hooks/use-cluster';
 
 export interface NodeDetailDrawerProps {
   readonly node: ClusterNode | undefined;
@@ -79,11 +76,15 @@ function OverviewTab({ node }: { node: ClusterNode }) {
       {/* Meta grid */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-md border bg-card p-4 text-sm">
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.node-id')}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('admin:cluster-nodes.detail.node-id')}
+          </p>
           <p className="font-mono text-sm">{node.nodeId}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.state')}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('admin:cluster-nodes.detail.state')}
+          </p>
           <StatusBadge variant="cluster-node" status={node.state} />
         </div>
         <div>
@@ -93,11 +94,15 @@ function OverviewTab({ node }: { node: ClusterNode }) {
           <p className="font-mono text-sm">{node.asteriskVersion ?? '—'}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.startup-time')}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('admin:cluster-nodes.detail.startup-time')}
+          </p>
           <p className="text-sm">{formatIso(node.startupTime)}</p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.ami-endpoint')}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('admin:cluster-nodes.detail.ami-endpoint')}
+          </p>
           <p className="font-mono text-sm">
             {node.amiHostname ? `${node.amiHostname}:${node.amiPort ?? '—'}` : '—'}
           </p>
@@ -160,7 +165,7 @@ function DrainTab({
   const { t } = useTranslation(['admin']);
   const formatIso = useFormatIso();
 
-  if (node.state !== 'Draining' || !activeDrain) {
+  if (node.state !== 'draining' || !activeDrain) {
     return (
       <div
         className="rounded-md border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground"
@@ -196,15 +201,21 @@ function DrainTab({
 
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div className="rounded-md border bg-card p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.deadline')}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('admin:cluster-nodes.detail.deadline')}
+          </p>
           <p>{formatIso(activeDrain.deadline)}</p>
         </div>
         <div className="rounded-md border bg-card p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.started')}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('admin:cluster-nodes.detail.started')}
+          </p>
           <p>{formatIso(activeDrain.startedAt)}</p>
         </div>
         <div className="rounded-md border bg-card p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.completed')}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('admin:cluster-nodes.detail.completed')}
+          </p>
           <p>
             {activeDrain.naturallyCompleted}{' '}
             <Badge variant="secondary" className="ml-1 text-[10px]">
@@ -213,7 +224,9 @@ function DrainTab({
           </p>
         </div>
         <div className="rounded-md border bg-card p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">{t('admin:cluster-nodes.detail.force-disconnected')}</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {t('admin:cluster-nodes.detail.force-disconnected')}
+          </p>
           <p>{activeDrain.forceDisconnected}</p>
         </div>
       </div>
@@ -229,12 +242,7 @@ function HistoryTab({ nodeId }: { nodeId: string }) {
 
 // ─── Drawer root ─────────────────────────────────────────────────────────────
 
-export function NodeDetailDrawer({
-  node,
-  activeDrain,
-  open,
-  onOpenChange,
-}: NodeDetailDrawerProps) {
+export function NodeDetailDrawer({ node, activeDrain, open, onOpenChange }: NodeDetailDrawerProps) {
   const { t } = useTranslation(['admin']);
 
   // `node` is undefined between mount and selection. Keep the drawer closed

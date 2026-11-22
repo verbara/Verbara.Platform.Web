@@ -71,7 +71,11 @@
       "unhealthy": "Não saudável",
       "draining": "Drenando",
       "offline": "Offline",
-      "unknown": "Desconhecido"
+      "unknown": "Desconhecido",
+      "idle": "Ocioso",
+      "completing": "Finalizando",
+      "completed": "Concluído",
+      "cancelled": "Cancelado"
     },
     "license": {
       "active": "Ativa",

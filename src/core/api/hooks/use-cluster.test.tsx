@@ -27,7 +27,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 
 const sampleNode: ClusterNode = {
   nodeId: 'node-1',
-  state: 'active',
+  state: 'healthy',
   weight: 100,
   priorityTier: 1,
   maxCapacity: 500,

@@ -71,7 +71,11 @@
       "unhealthy": "Unhealthy",
       "draining": "Draining",
       "offline": "Offline",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "idle": "Idle",
+      "completing": "Completing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
     },
     "license": {
       "active": "Active",

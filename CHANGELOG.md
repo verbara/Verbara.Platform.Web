@@ -25,6 +25,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   text, the call is no longer assisted, the agent is not ready yet), in English, Spanish and Portuguese. Needs the
   Platform release that answers this route with 204 No Content; with an older Platform the Monitor shows the whisper
   as failed or its text as invalid.
+- **The cluster page follows the node states Platform sends.** Platform reports cluster node and drain states in
+  lower case (`healthy`, `draining`, ...), and `/admin/cluster` compared them against capitalised names, so the row
+  menu offered no action (Edit, Drain, Cancel drain, Force drain, Remove), the Nodes card counted 0 healthy nodes and
+  the node drawer's Drain Status tab never showed progress. The page now reads the lower-case states, and a drain that
+  is idle, completing, completed or cancelled shows its own colour and a translated label instead of the raw word.
 
 ## [3.31.0-web] - 2026-11-21
 

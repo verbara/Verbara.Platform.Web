@@ -49,6 +49,8 @@ export type StatusBadgeVariant =
 
 type VariantMap = Record<string, StatusBadgeColor>;
 
+// Node states (Pro `NodeState`) plus the drain-only states (Pro `DrainState`):
+// the cluster page renders a drain's state with this same variant.
 const CLUSTER_NODE_MAP: VariantMap = {
   healthy: 'green',
   degraded: 'amber',
@@ -56,6 +58,10 @@ const CLUSTER_NODE_MAP: VariantMap = {
   draining: 'blue',
   offline: 'gray',
   unknown: 'gray',
+  idle: 'gray',
+  completing: 'blue',
+  completed: 'green',
+  cancelled: 'gray',
 };
 
 const LICENSE_MAP: VariantMap = {
@@ -114,16 +120,13 @@ function buildI18nKey(variant: StatusBadgeVariant, status: string): string {
   return `status.${variant}.${normalizeStatus(status)}`;
 }
 
-function resolveColor(
-  variant: StatusBadgeVariant,
-  status: string
-): StatusBadgeColor {
+function resolveColor(variant: StatusBadgeVariant, status: string): StatusBadgeColor {
   if (variant === 'generic') {
     if (import.meta.env.DEV) {
       // Development-only warning so consumers catch unknown status strings
       // during integration instead of shipping a silent gray badge.
       console.warn(
-        `[StatusBadge] Unknown status "${status}" for variant "generic" — falling back to gray.`
+        `[StatusBadge] Unknown status "${status}" for variant "generic" — falling back to gray.`,
       );
     }
     return 'gray';
@@ -148,9 +151,7 @@ export function StatusBadge({ status, variant, size = 'sm' }: StatusBadgeProps) 
   const label = t(i18nKey, status);
 
   return (
-    <Badge
-      className={cn(COLOR_CLASSES[color], SIZE_CLASSES[size], 'border-transparent')}
-    >
+    <Badge className={cn(COLOR_CLASSES[color], SIZE_CLASSES[size], 'border-transparent')}>
       {label}
     </Badge>
   );
