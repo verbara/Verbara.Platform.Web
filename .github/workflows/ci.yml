@@ -6,7 +6,7 @@ name: CI
 # Jobs (6 in parallel):
 #   - build     blocking - build:all (WebChat widget, then tsc -b && vite build) + widget-in-dist
 #               and agent first-load checks
-#   - test      blocking - vitest run (1431 tests / 180 files)
+#   - test      blocking - vitest run (src/** and tests/unit/**; Playwright folders excluded)
 #   - coverage  blocking - vitest run --coverage (Track 2A ratchet floor)
 #   - i18n      blocking - locale parity check (ADR-0001)
 #   - audit     blocking - npm audit --audit-level=high
