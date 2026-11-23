@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@/core/api/client';
+import type { components } from '@/core/api/generated/openapi';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -8,13 +9,14 @@ export interface HolidayCalendarSummary {
   name: string;
 }
 
-export interface Holiday {
-  id: number;
-  name: string;
-  date: string;
-  allowedStartTime?: string;
-  allowedEndTime?: string;
-}
+/** A holiday as Platform returns it; the window is `allowedStart` / `allowedEnd` (`HH:mm`, or null). */
+export type Holiday = components['schemas']['HolidayDto'];
+
+type AddHolidayRequest = components['schemas']['AddHolidayRequest'];
+
+/** What the console posts to add a holiday; a window bound left out is sent as absent. */
+export type AddHolidayInput = Pick<AddHolidayRequest, 'name' | 'date'> &
+  Partial<Pick<AddHolidayRequest, 'allowedStart' | 'allowedEnd'>>;
 
 export function useHolidayCalendars() {
   return useQuery({
@@ -73,10 +75,7 @@ export function useUpdateCalendar() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({
-      id,
-      ...data
-    }: { id: number } & Partial<Omit<HolidayCalendarSummary, 'id'>>) =>
+    mutationFn: ({ id, ...data }: { id: number } & Partial<Omit<HolidayCalendarSummary, 'id'>>) =>
       customFetch<HolidayCalendarSummary>({
         url: `/api/v1/admin/holiday-calendars/${id}`,
         method: 'PUT',
@@ -109,10 +108,7 @@ export function useAddHoliday() {
   const qc = useQueryClient();
   const { t } = useTranslation('common');
   return useMutation({
-    mutationFn: ({
-      calendarId,
-      ...data
-    }: { calendarId: number } & Partial<Omit<Holiday, 'id'>>) =>
+    mutationFn: ({ calendarId, ...data }: { calendarId: number } & AddHolidayInput) =>
       customFetch<Holiday>({
         url: `/api/v1/admin/holiday-calendars/${calendarId}/holidays`,
         method: 'POST',

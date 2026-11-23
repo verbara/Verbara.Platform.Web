@@ -55,6 +55,11 @@ release on; against an older Platform the Monitor shows a sent whisper as failed
 
 ### Fixed
 
+- **A holiday's allowed dialing window is saved and shown again (console-holiday-window-field-names).** On a holiday
+  calendar's page, the allowed start and end times typed for a holiday were sent under names Platform does not read,
+  so the holiday was stored without its window, and the holidays table showed a dash even for a window Platform
+  held. The page now sends and shows the window under Platform's names, and takes them from the
+  generated API types.
 - **The web image no longer answers 502 under sustained load.** On Kubernetes, where the console host routes every
   path through the web image, its nginx opened a new connection to platform-api or realtime for every `/api/`,
   `/ws/`, `/hubs/` and `/health` request, and each closed one held one of the container's ephemeral ports for about
