@@ -42,6 +42,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with an empty `Connection` header, and `/ws/` and `/hubs/` send `Connection: upgrade` only on a WebSocket upgrade.
   `/hubs/` now proxies to an `upstream` block the start-up script writes, whose server is re-resolved by nginx
   (`resolve`), instead of a per-request variable, so the image still starts where no realtime service exists.
+- **The console reads its runtime configuration again.** The console now loads `/config.json` before it starts, so
+  `asteriskWssUrl` takes effect: the agent's in-browser softphone and the supervisor's in-browser listen start when
+  the deployment sets it. Before, the file was never read and both stayed off in every deployment. A `/config.json`
+  that cannot be loaded never stops the console; it starts with both features off, as before.
 - **The supervisor's whisper reaches the agent.** From the voice Monitor, the whisper is sent to
   `POST /api/v1/supervisor/sessions/{sessionId}/whisper` with the call's Agent Assist session, and it shows on the
   agent's suggestion banner as a "Supervisor" item. A whisper is shown before engine suggestions, never expires on

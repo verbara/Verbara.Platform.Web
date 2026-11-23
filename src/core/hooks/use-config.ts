@@ -16,8 +16,23 @@ let config: AppConfig | null = null;
 export async function loadConfig() {
   if (config) return config;
   const res = await fetch('/config.json');
-  config = await res.json();
-  return config!;
+  if (!res.ok) throw new Error(`/config.json answered ${res.status}`);
+  config = (await res.json()) as AppConfig;
+  return config;
+}
+
+/**
+ * Loads `/config.json` and then renders. A config that cannot be loaded never stops the
+ * console: it still renders, and every `getConfig()` reader falls back to its default
+ * (no softphone, no in-browser listen).
+ */
+export async function bootApp(render: () => void) {
+  try {
+    await loadConfig();
+  } catch (error) {
+    console.warn('Runtime config not loaded; continuing with defaults.', error);
+  }
+  render();
 }
 
 export function getConfig() {
