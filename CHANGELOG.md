@@ -9,6 +9,17 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The web image starts again where resolv.conf lists no nameserver, and its build refuses a too-old nginx.** Since
+  `/hubs/` moved to a pooled upstream, a container whose resolv.conf had no nameserver wrote the realtime server
+  without `resolve`, and nginx stopped at start-up when the name did not resolve. The start-up script now writes a
+  plain server only for an IPv4 address or a name `/etc/hosts` lists (nginx's own resolver never reads `/etc/hosts`,
+  so such a name now also works where a nameserver exists), `resolve` with the nameservers for any other name, and,
+  with no nameserver, a `down` server: the image starts, serves the console and answers 502 on `/hubs/`. The image
+  build fails with a clear message when the `nginx:alpine` base it finds is older than 1.27.3, the first nginx that
+  accepts `server ... resolve` (`docker build` does not pull a base it already has). (#575)
+
 ## [3.32.0-web] - 2026-11-22
 
 The console side of Platform v2.41.0. The supervisor's whisper reaches the agent's suggestion banner, the console
@@ -44,14 +55,6 @@ release on; against an older Platform the Monitor shows a sent whisper as failed
 
 ### Fixed
 
-- **The web image starts again where resolv.conf lists no nameserver, and its build refuses a too-old nginx.** Since
-  `/hubs/` moved to a pooled upstream, a container whose resolv.conf had no nameserver wrote the realtime server
-  without `resolve`, and nginx stopped at start-up when the name did not resolve. The start-up script now writes a
-  plain server only for an IPv4 address or a name `/etc/hosts` lists (nginx's own resolver never reads `/etc/hosts`,
-  so such a name now also works where a nameserver exists), `resolve` with the nameservers for any other name, and,
-  with no nameserver, a `down` server: the image starts, serves the console and answers 502 on `/hubs/`. The image
-  build fails with a clear message when the `nginx:alpine` base it finds is older than 1.27.3, the first nginx that
-  accepts `server ... resolve` (`docker build` does not pull a base it already has).
 - **The web image no longer answers 502 under sustained load.** On Kubernetes, where the console host routes every
   path through the web image, its nginx opened a new connection to platform-api or realtime for every `/api/`,
   `/ws/`, `/hubs/` and `/health` request, and each closed one held one of the container's ephemeral ports for about
