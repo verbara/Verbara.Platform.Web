@@ -17,15 +17,15 @@ import {
 interface AddHolidayForm {
   name: string;
   date: string;
-  allowedStartTime: string;
-  allowedEndTime: string;
+  allowedStart: string;
+  allowedEnd: string;
 }
 
 const DEFAULT_FORM: AddHolidayForm = {
   name: '',
   date: '',
-  allowedStartTime: '',
-  allowedEndTime: '',
+  allowedStart: '',
+  allowedEnd: '',
 };
 
 export default function HolidayCalendarDetailPage() {
@@ -64,8 +64,8 @@ export default function HolidayCalendarDetailPage() {
         calendarId: calendarIdNum,
         name: form.name.trim(),
         date: form.date,
-        allowedStartTime: form.allowedStartTime || undefined,
-        allowedEndTime: form.allowedEndTime || undefined,
+        allowedStart: form.allowedStart || undefined,
+        allowedEnd: form.allowedEnd || undefined,
       },
       { onSuccess: () => setForm(DEFAULT_FORM) },
     );
@@ -115,8 +115,8 @@ export default function HolidayCalendarDetailPage() {
               <Input
                 id="allowedStart"
                 type="time"
-                value={form.allowedStartTime}
-                onChange={(e) => setForm((f) => ({ ...f, allowedStartTime: e.target.value }))}
+                value={form.allowedStart}
+                onChange={(e) => setForm((f) => ({ ...f, allowedStart: e.target.value }))}
               />
             </div>
             <div className="space-y-1.5">
@@ -124,8 +124,8 @@ export default function HolidayCalendarDetailPage() {
               <Input
                 id="allowedEnd"
                 type="time"
-                value={form.allowedEndTime}
-                onChange={(e) => setForm((f) => ({ ...f, allowedEndTime: e.target.value }))}
+                value={form.allowedEnd}
+                onChange={(e) => setForm((f) => ({ ...f, allowedEnd: e.target.value }))}
               />
             </div>
           </div>
@@ -179,8 +179,8 @@ export default function HolidayCalendarDetailPage() {
                   <tr key={h.id} className="border-t hover:bg-muted/30">
                     <td className="px-3 py-2 font-medium">{h.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">{h.date}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{h.allowedStartTime ?? '—'}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{h.allowedEndTime ?? '—'}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{h.allowedStart ?? '—'}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{h.allowedEnd ?? '—'}</td>
                     <td className="px-3 py-2">
                       <Button
                         size="sm"

@@ -31,8 +31,8 @@ const sampleHoliday = {
   id: 10,
   name: 'Independence Day',
   date: '2026-07-04',
-  allowedStartTime: '09:00',
-  allowedEndTime: '17:00',
+  allowedStart: '09:00',
+  allowedEnd: '17:00',
 };
 
 describe('useHolidayCalendars', () => {
