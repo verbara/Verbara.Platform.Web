@@ -9,6 +9,15 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.32.0-web] - 2026-11-22
+
+The console side of Platform v2.41.0. The supervisor's whisper reaches the agent's suggestion banner, the console
+reads its runtime configuration again (so the in-browser softphone and the supervisor's in-browser listen start where
+the deployment sets `asteriskWssUrl`), the web image keeps its upstream connections so it stops answering 502 under
+load, and the cluster page follows the node states Platform sends. A new check reports generated API types that
+Platform `main` has moved past. **Requires Platform ≥ v2.41.0**: the whisper route answers 204 No Content from that
+release on; against an older Platform the Monitor shows a sent whisper as failed or its text as invalid.
+
 ### Added
 
 - **A check that the generated API types still follow Platform `main` (api-types).** A new `api-types-freshness`
@@ -17,21 +26,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   names the changed routes and schemas and prints the command that refreshes it; the check is not required, so it
   never blocks a merge, and a Platform document that cannot be obtained is a warning, never a pass. A daily run keeps
   one `api-types-drift` issue open while the copy is stale and closes it when the copy is fresh again. A daily run that
-  fails says so in that same issue, with a link to the run and whether the copy was checked.
+  fails says so in that same issue, with a link to the run and whether the copy was checked. (#565)
 
 ### Changed
 
 - **`npm run generate:api-types` writes the committed form (api-types).** The script formats its output with this
   repo's prettier configuration, so its output alone is the committed file, and it accepts `--out <path>` to write
   elsewhere. The committed copy is regenerated from Platform `main`: the supervisor whisper route now declares its
-  `204`, `400`, `404` and `409` responses.
+  `204`, `400`, `404` and `409` responses. (#565)
 
 ### Removed
 
 - **The unused cluster state hook.** `useClusterStateStream` is gone: nothing called it, and it listened for a hub
-  message no server sends. The `/admin/cluster` page keeps refreshing every 10 seconds.
+  message no server sends. The `/admin/cluster` page keeps refreshing every 10 seconds. (#561)
 - **The hub whisper path.** The console no longer sends the supervisor's whisper over the realtime hub and no longer
-  listens for a hub whisper message: the whisper goes through the REST route only.
+  listens for a hub whisper message: the whisper goes through the REST route only. (#558)
 
 ### Fixed
 
@@ -41,11 +50,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   60 s; under sustained load (more than about 470 new connections per second) the ports ran out and nginx answered 502. Each upstream now keeps a pool of idle connections (`keepalive 64`), every proxied location speaks HTTP/1.1
   with an empty `Connection` header, and `/ws/` and `/hubs/` send `Connection: upgrade` only on a WebSocket upgrade.
   `/hubs/` now proxies to an `upstream` block the start-up script writes, whose server is re-resolved by nginx
-  (`resolve`), instead of a per-request variable, so the image still starts where no realtime service exists.
+  (`resolve`), instead of a per-request variable, so the image still starts where no realtime service exists. (#570)
 - **The console reads its runtime configuration again.** The console now loads `/config.json` before it starts, so
   `asteriskWssUrl` takes effect: the agent's in-browser softphone and the supervisor's in-browser listen start when
   the deployment sets it. Before, the file was never read and both stayed off in every deployment. A `/config.json`
-  that cannot be loaded never stops the console; it starts with both features off, as before.
+  that cannot be loaded never stops the console; it starts with both features off, as before. (#573)
 - **The supervisor's whisper reaches the agent.** From the voice Monitor, the whisper is sent to
   `POST /api/v1/supervisor/sessions/{sessionId}/whisper` with the call's Agent Assist session, and it shows on the
   agent's suggestion banner as a "Supervisor" item. A whisper is shown before engine suggestions, never expires on
@@ -54,13 +63,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   sent whisper, keeps the text when it is refused, limits it to 500 characters, and explains a refusal (invalid
   text, the call is no longer assisted, the agent is not ready yet), in English, Spanish and Portuguese. Needs the
   Platform release that answers this route with 204 No Content; with an older Platform the Monitor shows the whisper
-  as failed or its text as invalid.
+  as failed or its text as invalid. (#558)
 - **The cluster page follows the node states Platform sends.** Platform reports cluster node and drain states in
   lower case (`healthy`, `draining`, ...), and `/admin/cluster` compared them against capitalised names, so the row
   menu offered no action (Edit, Drain, Cancel drain, Force drain, Remove), the Nodes card counted 0 healthy nodes and
   the node drawer's Drain Status tab never showed progress. The page now reads the lower-case states, and a drain that
   is idle, completing, completed or cancelled shows a translated label instead of the raw word (completing in blue,
-  completed in green).
+  completed in green). (#562)
 
 ## [3.31.0-web] - 2026-11-21
 
