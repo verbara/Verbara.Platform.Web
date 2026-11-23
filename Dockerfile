@@ -13,7 +13,15 @@ COPY . .
 # copies it into dist/ (#429). `npm run build` alone ships an image without the widget.
 RUN npm run build:all
 
+# nginx:alpine (mainline) is left floating like node:22-alpine above: no
+# Dependabot ecosystem bumps a pinned base here, and a frozen major.minor tag
+# would stop receiving the mainline's fixes. The /hubs/ upstream needs nginx
+# 1.27.3 or later (`server ... resolve`), so the build checks that floor and
+# fails with a clear message on an older base instead of shipping an image
+# whose nginx refuses its own configuration.
 FROM nginx:alpine
+RUN --mount=type=bind,source=docker/require-nginx-version.sh,target=/tmp/require-nginx-version.sh \
+    sh /tmp/require-nginx-version.sh 1.27.3
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Writes the /hubs/ upstream and resolver nginx.conf includes, at start-up.

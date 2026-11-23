@@ -37,6 +37,12 @@
 #            empty Connection header, while /ws/ still sends Connection: upgrade
 #            (W429); the image starts and serves the console with no realtime
 #            service on the network.
+#   NS       the image starts whatever resolv.conf holds: with no nameserver
+#            (an empty resolv.conf bind-mounted over Docker's, platform-api in
+#            /etc/hosts) and the default realtime name, it stays up, serves /
+#            and answers 502 on /hubs/; a realtime name /etc/hosts lists
+#            (--add-host) or an IPv4 address reaches the realtime service on a
+#            pooled connection, with and without a nameserver.
 #   CFA      the console (/ and a deep console route) and the widget demo page
 #            are framed only by their own origin: CSP frame-ancestors 'self'
 #            and X-Frame-Options SAMEORIGIN.
@@ -58,8 +64,9 @@ K8S_SEARCH=vweb-ns.svc.cluster.local
 FAIL=0
 
 cleanup() {
-  docker rm -f "$STUB" "$WEB" "$WEBK8S" "$GW" "vweb-nort-$SUFFIX" >/dev/null 2>&1 || true
+  docker rm -f "$STUB" "$WEB" "$WEBK8S" "$GW" "vweb-nort-$SUFFIX" "vweb-ns-$SUFFIX" >/dev/null 2>&1 || true
   docker network rm "$NET" >/dev/null 2>&1 || true
+  [ -n "${NORESOLV_DIR:-}" ] && rm -rf "$NORESOLV_DIR"
 }
 trap cleanup EXIT
 
@@ -244,6 +251,48 @@ echo "KA no realtime service on the network: running=$(docker inspect -f '{{.Sta
 check "KA: the image starts and serves the console with no realtime service" "$([ "$nort_root" = 200 ] && echo 0 || echo 1)" "GET / -> $nort_root"
 check "KA: /hubs/ answers 502 while the realtime name does not resolve" "$([ "$nort_hub" = 502 ] && echo 0 || echo 1)" "$nort_hub"
 docker rm -f "$NOREALTIME" >/dev/null 2>&1 || true
+
+# --- NS ---------------------------------------------------------------------
+# A resolv.conf with no nameserver, bind-mounted over the one Docker writes:
+# nothing can look a name up after start-up, so a plain server whose name does
+# not resolve would stop nginx from starting.
+NORESOLV_DIR=$(mktemp -d)
+printf 'options ndots:1\n' > "$NORESOLV_DIR/resolv.conf"
+chmod 0755 "$NORESOLV_DIR"; chmod 0644 "$NORESOLV_DIR/resolv.conf"
+STUB_IP=$(docker inspect -f "{{(index .NetworkSettings.Networks \"$NET\").IPAddress}}" "$STUB")
+NSWEB=vweb-ns-$SUFFIX
+ns_case() { # ns_case <label> <expect: 502|realtime> <docker run args...>
+  local label=$1 expect=$2; shift 2
+  docker rm -f "$NSWEB" >/dev/null 2>&1 || true
+  docker run -d --name "$NSWEB" --network "$NET" -p 127.0.0.1::80 "$@" "$IMAGE" >/dev/null
+  local pn; pn=$(port_of "$NSWEB")
+  wait_http "$NSWEB" "$pn"
+  local running root hub rendered
+  running=$(docker inspect -f '{{.State.Running}}' "$NSWEB" 2>/dev/null || echo missing)
+  root=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$pn/" || true)
+  hub=$(ka_last POST "http://127.0.0.1:$pn/hubs/platform/negotiate?negotiateVersion=1" || true)
+  rendered=$(docker exec "$NSWEB" sh -c 'grep -o "server [^;]*" /var/run/verbara-realtime-upstream.conf' 2>/dev/null || true)
+  echo "NS $label: running=$running rendered=[$rendered] GET / -> $root, POST /hubs/platform/negotiate x5 -> $(head -1 <<<"$hub" | tr -d '\r') X-Stub-Upstream=[$(header x-stub-upstream "$hub")] connection carried $(header x-stub-connection-requests "$hub") requests"
+  check "NS: $label: the container stays up and serves the console" "$([ "$running" = true ] && [ "$root" = 200 ] && echo 0 || echo 1)" "running=$running GET / -> $root"
+  if [ "$expect" = 502 ]; then
+    check "NS: $label: /hubs/ answers 502" "$(grep -q ' 502' <<<"$(head -1 <<<"$hub")" && echo 0 || echo 1)" "$(head -1 <<<"$hub" | tr -d '\r')"
+  else
+    check "NS: $label: /hubs/ reaches realtime" "$([ "$(header x-stub-upstream "$hub")" = realtime ] && echo 0 || echo 1)" "$(head -1 <<<"$hub" | tr -d '\r')"
+    check "NS: $label: /hubs/ reuses a pooled connection" "$([ "$(header x-stub-connection-requests "$hub")" -gt 1 ] 2>/dev/null && echo 0 || echo 1)" "$(header x-stub-connection-requests "$hub") requests"
+  fi
+  docker rm -f "$NSWEB" >/dev/null 2>&1 || true
+}
+# platform-api stays resolvable through /etc/hosts: its upstream is a plain
+# server, looked up once at start-up, and this block is about realtime only.
+NOR=(-v "$NORESOLV_DIR/resolv.conf:/etc/resolv.conf:ro" --add-host "platform-api:$STUB_IP")
+ns_case "no nameserver, default realtime name" 502 "${NOR[@]}"
+ns_case "no nameserver, Kubernetes-shaped" 502 "${NOR[@]}" -e KUBERNETES_SERVICE_HOST=10.96.0.1 --read-only \
+  --tmpfs /var/cache/nginx:uid=101,gid=101 --tmpfs /var/run:uid=101,gid=101 --user 101:101 --cap-drop ALL
+ns_case "no nameserver, name in /etc/hosts" realtime "${NOR[@]}" --add-host "vweb-rt-hosts:$STUB_IP" \
+  -e VERBARA_REALTIME_UPSTREAM=vweb-rt-hosts:5030
+ns_case "no nameserver, IPv4 address" realtime "${NOR[@]}" -e "VERBARA_REALTIME_UPSTREAM=$STUB_IP:5030"
+ns_case "nameserver, name only in /etc/hosts" realtime --add-host "vweb-rt-hosts:$STUB_IP" \
+  -e VERBARA_REALTIME_UPSTREAM=vweb-rt-hosts:5030
 
 # --- CFA --------------------------------------------------------------------
 for route in / /admin/users /webchat/demo.html; do
