@@ -9,6 +9,12 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The webchat demo page points at the `demo` tenant.** `public/webchat/demo.html` and the webchat e2e mocks
+  (`csat-panel.spec.ts`, `embed.spec.ts`) used the tenant id `demo-tenant`, which no Platform script creates;
+  Platform's `demo-reset.sh` creates `demo`, so the demo widget now opens a session against a tenant that exists.
+
 ### Fixed
 
 - **The web image starts again where resolv.conf lists no nameserver, and its build refuses a too-old nginx.** Since
