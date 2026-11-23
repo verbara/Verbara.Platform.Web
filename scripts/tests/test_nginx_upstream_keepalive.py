@@ -15,8 +15,13 @@ only when all of these hold:
 
 Reads nginx.conf with the file docker/18-verbara-realtime-upstream.envsh writes at
 start-up spliced in where nginx.conf includes it (the envsh runs under `sh`, on a
-copy whose two fixed paths point into a temp dir). The container side of the same
+copy whose three fixed paths point into a temp dir). The container side of the same
 property is the KA block of scripts/web-image/check-nginx.sh. Stdlib unittest only.
+
+The same rendering also guards that the image starts without a realtime service
+whatever resolv.conf holds (StartupLookupTests; the NS block of check-nginx.sh is
+its container side), and that the image build refuses an nginx older than the
+1.27.3 that `server ... resolve` needs (NginxVersionFloorTests).
 """
 import os
 import shutil
@@ -30,6 +35,11 @@ _CONF = os.path.join(_ROOT, "nginx.conf")
 _ENVSH = os.path.join(_ROOT, "docker", "18-verbara-realtime-upstream.envsh")
 _INCLUDE = "/var/run/verbara-realtime-upstream.conf"
 _RESOLV = "/etc/resolv.conf"
+_HOSTS = "/etc/hosts"
+_DOCKERFILE = os.path.join(_ROOT, "Dockerfile")
+_REQUIRE = os.path.join(_ROOT, "docker", "require-nginx-version.sh")
+_NGINX_FLOOR = (1, 27, 3)
+_DEFAULT_HOSTS = "127.0.0.1\tlocalhost\n::1\tlocalhost ip6-localhost\n172.18.0.5\tweb-0\n"
 
 
 class Directive:
@@ -149,20 +159,23 @@ def scan(text):
     return violations
 
 
-def render_envsh(resolv_conf, env=None):
+def render_envsh(resolv_conf, env=None, hosts=_DEFAULT_HOSTS):
     """Runs the envsh on a copy whose fixed paths point into a temp dir; returns (rc, written, stderr)."""
     tmp = tempfile.mkdtemp()
     try:
         resolv = os.path.join(tmp, "resolv.conf")
+        hosts_path = os.path.join(tmp, "hosts")
         out = os.path.join(tmp, "upstream.conf")
         with open(resolv, "w") as f:
             f.write(resolv_conf)
+        with open(hosts_path, "w") as f:
+            f.write(hosts)
         with open(_ENVSH) as f:
             script = f.read()
-        assert _INCLUDE in script and _RESOLV in script, "the envsh's fixed paths moved"
+        assert _INCLUDE in script and _RESOLV in script and _HOSTS in script, "the envsh's fixed paths moved"
         copy = os.path.join(tmp, "envsh.sh")
         with open(copy, "w") as f:
-            f.write(script.replace(_INCLUDE, out).replace(_RESOLV, resolv))
+            f.write(script.replace(_INCLUDE, out).replace(_RESOLV, resolv).replace(_HOSTS, hosts_path))
         e = {"PATH": os.environ.get("PATH", "/usr/bin:/bin")}
         e.update(env or {})
         # The entrypoint sources it (`return` on bad input), so source it here too.
@@ -176,8 +189,8 @@ def render_envsh(resolv_conf, env=None):
         shutil.rmtree(tmp)
 
 
-def shipped_config(resolv_conf="nameserver 10.96.0.10\n", env=None):
-    rc, written, err = render_envsh(resolv_conf, env)
+def shipped_config(resolv_conf="nameserver 10.96.0.10\n", env=None, hosts=_DEFAULT_HOSTS):
+    rc, written, err = render_envsh(resolv_conf, env, hosts)
     assert rc == 0, err
     with open(_CONF) as f:
         conf = f.read()
@@ -205,6 +218,8 @@ class ShippedConfigTests(unittest.TestCase):
              {"KUBERNETES_SERVICE_HOST": "10.96.0.1"}),
             ("ipv6 resolver", "nameserver fd00::a\n", {}),
             ("no nameserver", "", {}),
+            ("no nameserver, name in /etc/hosts", "", {"VERBARA_REALTIME_UPSTREAM": "rt-hosts:5030"}),
+            ("ip literal", "", {"VERBARA_REALTIME_UPSTREAM": "10.1.2.3:5030"}),
         ]:
             with self.subTest(label):
                 self.assertEqual(scan(shipped_config(resolv, env)), [])
@@ -290,6 +305,162 @@ class ScanTests(unittest.TestCase):
         # Mutation check against the real files, not only the fixture.
         conf = shipped_config().replace("keepalive 64;", "")
         self.assertEqual(len([x for x in scan(conf) if "keepalive" in x]), 2)
+
+
+def _is_ipv4(host):
+    parts = host.split(".")
+    return len(parts) == 4 and all(p.isdigit() for p in parts)
+
+
+def _hosts_names(hosts):
+    names = set()
+    for line in hosts.splitlines():
+        fields = line.split("#", 1)[0].split()
+        names.update(n.lower() for n in fields[1:])
+    return names
+
+
+def startup_lookups(written, hosts):
+    """Names nginx must look up through DNS at start-up, where a missing name stops it.
+
+    A server with `resolve` is looked up by nginx's resolver after start-up, a `down`
+    server is never contacted, and an IPv4 address or a name /etc/hosts lists needs no
+    DNS. Any other server name fails the start when it does not resolve.
+    """
+    listed = _hosts_names(hosts)
+    out = []
+    for up in (d for d in walk(parse(written)) if d.name == "upstream"):
+        resolver = any(c.name == "resolver" for c in up.children)
+        for srv in (c for c in up.children if c.name == "server"):
+            host = srv.args[0].rsplit(":", 1)[0]
+            if "down" in srv.args[1:] or _is_ipv4(host) or host.lower() in listed:
+                continue
+            if "resolve" in srv.args[1:] and resolver:
+                continue
+            out.append(host)
+    return out
+
+
+def _server(written):
+    up = next(d for d in walk(parse(written)) if d.name == "upstream")
+    return next(c.args for c in up.children if c.name == "server")
+
+
+class StartupLookupTests(unittest.TestCase):
+    """The image starts with no realtime service, whatever resolv.conf holds."""
+
+    def test_no_rendering_needs_a_start_up_lookup_that_can_fail(self):
+        hosts_rt = _DEFAULT_HOSTS + "172.18.0.9\trt-hosts rt-hosts.local\n"
+        for label, resolv, env, hosts in [
+            ("compose", "nameserver 127.0.0.11\n", {}, _DEFAULT_HOSTS),
+            ("kubernetes", "search ns.svc.cluster.local\nnameserver 10.96.0.10\n",
+             {"KUBERNETES_SERVICE_HOST": "10.96.0.1"}, _DEFAULT_HOSTS),
+            ("no nameserver", "", {}, _DEFAULT_HOSTS),
+            ("no nameserver, only options", "options ndots:0\nsearch example.test\n", {}, _DEFAULT_HOSTS),
+            ("no nameserver, kubernetes", "search ns.svc.cluster.local\n",
+             {"KUBERNETES_SERVICE_HOST": "10.96.0.1"}, _DEFAULT_HOSTS),
+            ("no nameserver, name in /etc/hosts", "", {"VERBARA_REALTIME_UPSTREAM": "rt-hosts:5030"}, hosts_rt),
+            ("no nameserver, ip literal", "", {"VERBARA_REALTIME_UPSTREAM": "10.1.2.3:5030"}, _DEFAULT_HOSTS),
+        ]:
+            with self.subTest(label):
+                rc, written, err = render_envsh(resolv, env, hosts)
+                self.assertEqual(rc, 0, err)
+                self.assertEqual(startup_lookups(written, hosts), [], written)
+
+    def test_no_nameserver_writes_a_down_server_and_keeps_the_pool(self):
+        rc, written, err = render_envsh("", {})
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(_server(written), ["127.0.0.1:5030", "down"])
+        self.assertIn("resolv.conf has no nameserver", err)
+        self.assertEqual(scan(shipped_config("", {})), [])
+
+    def test_a_name_in_etc_hosts_is_a_plain_server_even_with_a_nameserver(self):
+        # nginx's resolver never reads /etc/hosts: `resolve` would leave the name unresolved.
+        hosts = _DEFAULT_HOSTS + "172.18.0.9 other  RT-Hosts # an alias\n"
+        for resolv in ("nameserver 127.0.0.11\n", ""):
+            with self.subTest(resolv=resolv):
+                rc, written, err = render_envsh(resolv, {"VERBARA_REALTIME_UPSTREAM": "rt-hosts:5030"}, hosts)
+                self.assertEqual(rc, 0, err)
+                self.assertEqual(_server(written), ["rt-hosts:5030"])
+
+    def test_a_name_only_in_a_hosts_comment_is_not_listed(self):
+        hosts = _DEFAULT_HOSTS + "# 172.18.0.9 rt-hosts\n"
+        rc, written, err = render_envsh("", {"VERBARA_REALTIME_UPSTREAM": "rt-hosts:5030"}, hosts)
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(_server(written), ["127.0.0.1:5030", "down"])
+
+    def test_an_ip_literal_is_a_plain_server(self):
+        rc, written, err = render_envsh("nameserver 127.0.0.11\n", {"VERBARA_REALTIME_UPSTREAM": "10.1.2.3:5030"})
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(_server(written), ["10.1.2.3:5030"])
+
+    def test_startup_lookups_flags_a_plain_name_with_no_nameserver(self):
+        # Liveness: the property this suite guards is the one PR #570's envsh broke.
+        written = "upstream verbara_realtime { zone z 64k; server realtime:5030; keepalive 64; }"
+        self.assertEqual(startup_lookups(written, _DEFAULT_HOSTS), ["realtime"])
+        written = "upstream verbara_realtime { zone z 64k; server realtime:5030 resolve; keepalive 64; }"
+        self.assertEqual(startup_lookups(written, _DEFAULT_HOSTS), ["realtime"])
+
+
+def _final_stage(dockerfile):
+    lines = dockerfile.splitlines()
+    start = max(i for i, l in enumerate(lines) if l.upper().startswith("FROM "))
+    return lines[start], "\n".join(lines[start + 1:]).replace("\\\n", " ")
+
+
+def run_require(version_output, minimum="1.27.3"):
+    """Runs require-nginx-version.sh with a fake `nginx -v` that prints version_output."""
+    tmp = tempfile.mkdtemp()
+    try:
+        fake = os.path.join(tmp, "nginx")
+        with open(fake, "w") as f:
+            f.write("#!/bin/sh\nprintf '%s\\n' \"$FAKE_NGINX_V\" >&2\n")
+        os.chmod(fake, 0o755)
+        env = {"PATH": tmp + os.pathsep + os.environ.get("PATH", "/usr/bin:/bin"), "FAKE_NGINX_V": version_output}
+        p = subprocess.run(["sh", _REQUIRE, minimum], env=env, capture_output=True, text=True)
+        return p.returncode, p.stdout + p.stderr
+    finally:
+        shutil.rmtree(tmp)
+
+
+class NginxVersionFloorTests(unittest.TestCase):
+    """The image build refuses an nginx too old for `server ... resolve`."""
+
+    def test_the_final_stage_checks_the_floor_before_copying_the_config(self):
+        with open(_DOCKERFILE) as f:
+            base, body = _final_stage(f.read())
+        self.assertTrue(base.split()[1].startswith("nginx:"), base)
+        calls = [l.split("sh /tmp/require-nginx-version.sh", 1)[1].split() for l in body.splitlines()
+                 if l.startswith("RUN ") and "sh /tmp/require-nginx-version.sh" in l]
+        self.assertEqual(len(calls), 1, body)
+        floor = tuple(int(x) for x in calls[0][0].split("."))
+        self.assertGreaterEqual(floor, _NGINX_FLOOR)
+        self.assertLess(body.index("require-nginx-version.sh"), body.index("COPY nginx.conf"))
+
+    def test_the_envsh_still_needs_the_floor(self):
+        # If `resolve` ever leaves the envsh, the floor may go with it; until then it stays.
+        with open(_ENVSH) as f:
+            self.assertIn("resolve;", f.read())
+
+    def test_require_accepts_the_floor_and_later(self):
+        for v in ("nginx version: nginx/1.27.3", "nginx version: nginx/1.27.10",
+                  "nginx version: nginx/1.28.0", "nginx version: nginx/1.31.7", "nginx version: nginx/2.0.0"):
+            with self.subTest(v):
+                rc, out = run_require(v)
+                self.assertEqual(rc, 0, out)
+
+    def test_require_refuses_an_older_or_unreadable_nginx(self):
+        for v in ("nginx version: nginx/1.27.2", "nginx version: nginx/1.26.3", "nginx version: nginx/1.9.15",
+                  "nginx version: nginx/0.99.99", "nginx: command not found", ""):
+            with self.subTest(v):
+                rc, out = run_require(v)
+                self.assertNotEqual(rc, 0, out)
+                self.assertIn("require-nginx-version.sh:", out)
+
+    def test_require_names_the_version_it_found_and_the_one_it_needs(self):
+        rc, out = run_require("nginx version: nginx/1.27.2")
+        self.assertIn("nginx 1.27.2", out)
+        self.assertIn("1.27.3 or later", out)
 
 
 if __name__ == "__main__":

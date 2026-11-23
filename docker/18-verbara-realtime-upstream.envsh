@@ -5,12 +5,24 @@
 # host:port of the SignalR realtime service, which /hubs/ proxies to.
 #
 # The upstream keeps a pool of idle connections (`keepalive`, see nginx.conf),
-# and its server carries `resolve` with the container's nameservers as its
-# resolver: nginx then starts even where no realtime service exists and looks
-# the name up again every 10 s, as the per-request variable this file used to
-# set did. `resolve` needs a shared-memory `zone` and nginx 1.27.3 or later
-# (the image's nginx:alpine base). With no nameserver in resolv.conf the server
-# is written without `resolve`, and nginx resolves it once at start-up.
+# and the image must start whether or not the realtime service exists. How
+# the server is written depends on how its name can be looked up:
+#
+#   - an IPv4 address, or a name /etc/hosts lists: a plain server. nginx
+#     reads it once at start-up (the system lookup reads /etc/hosts), and it
+#     cannot change while the container runs. nginx's own resolver never
+#     reads /etc/hosts, so `resolve` would leave such a name unresolved.
+#   - any other name, with a nameserver in resolv.conf: the server carries
+#     `resolve`, with those nameservers as its resolver. nginx starts even
+#     where no realtime service exists, looks the name up again every 10 s,
+#     and /hubs/ answers 502 until it resolves. `resolve` needs a shared-memory
+#     `zone` and nginx 1.27.3 or later (the Dockerfile fails the build on an
+#     older base).
+#   - any other name, with no nameserver: nothing could look it up after
+#     start-up, and a plain server whose name does not resolve stops nginx
+#     from starting. The server is written `down`, so nginx starts and /hubs/
+#     answers 502 until the container is restarted with a nameserver or with
+#     the name in /etc/hosts.
 #
 # VERBARA_REALTIME_UPSTREAM (host:port) overrides the default. nginx's own
 # resolver does not apply resolv.conf's search domains, so a bare Service name
@@ -52,19 +64,35 @@ fi
 verbara_resolvers=$(awk 'BEGIN { ORS = " " } $1 == "nameserver" { if ($2 ~ ":") print "[" $2 "]"; else print $2 }' /etc/resolv.conf)
 verbara_resolvers=${verbara_resolvers% }
 
+if echo "$verbara_host" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' ||
+  awk -v h="$verbara_host" '
+    { sub(/#.*/, "") }
+    { for (i = 2; i <= NF; i++) if (tolower($i) == tolower(h)) found = 1 }
+    END { exit !found }' /etc/hosts 2>/dev/null; then
+  verbara_lookup=static
+elif [ -n "$verbara_resolvers" ]; then
+  verbara_lookup=resolve
+else
+  verbara_lookup=unresolvable
+  echo "18-verbara-realtime-upstream.envsh: $verbara_host is not in /etc/hosts and resolv.conf has no nameserver; /hubs/ answers 502" >&2
+fi
+
 {
   echo "# Written by 18-verbara-realtime-upstream.envsh at start-up."
   echo "upstream verbara_realtime {"
   echo "    zone verbara_realtime 64k;"
-  if [ -n "$verbara_resolvers" ]; then
+  if [ "$verbara_lookup" = static ]; then
+    echo "    server $verbara_upstream;"
+  elif [ "$verbara_lookup" = resolve ]; then
     echo "    resolver $verbara_resolvers valid=10s;"
     echo "    server $verbara_upstream resolve;"
   else
-    echo "    server $verbara_upstream;"
+    echo "    # $verbara_host has no address in /etc/hosts and resolv.conf has no nameserver."
+    echo "    server 127.0.0.1:$verbara_port down;"
   fi
   echo "    keepalive 64;"
   echo "}"
 } > "$verbara_out"
 
-echo "18-verbara-realtime-upstream.envsh: /hubs/ upstream $verbara_upstream (resolver: ${verbara_resolvers:-none})"
-unset verbara_out verbara_upstream verbara_search verbara_resolvers verbara_host verbara_port verbara_bad
+echo "18-verbara-realtime-upstream.envsh: /hubs/ upstream $verbara_upstream (lookup: $verbara_lookup, resolver: ${verbara_resolvers:-none})"
+unset verbara_out verbara_upstream verbara_search verbara_resolvers verbara_host verbara_port verbara_bad verbara_lookup
