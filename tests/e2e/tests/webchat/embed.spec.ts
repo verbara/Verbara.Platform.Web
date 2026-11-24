@@ -33,7 +33,7 @@ const HOST_HTML = `<!doctype html>
 
 const VISITOR = { name: 'Jane', email: 'jane@example.com' };
 const BASE_PAYLOAD = {
-  tenantId: 'demo-tenant',
+  tenantId: 'demo',
   apiBase: '/api/v1',
   visitorId: 'visitor-e2e-frame',
   pageContext: { url: 'https://example.com', title: 'Demo', referrer: '' },

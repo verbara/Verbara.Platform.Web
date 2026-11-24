@@ -90,7 +90,7 @@ test.describe('WebChat embed — CSAT rating panel submit flow', () => {
           source: 'verbara-webchat-host',
           type: 'init-config',
           payload: {
-            tenantId: 'demo-tenant',
+            tenantId: 'demo',
             apiBase: '/api/v1',
             visitorId: 'visitor-e2e',
             visitor: { name: 'Jane', email: 'jane@example.com' },
