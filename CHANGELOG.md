@@ -19,6 +19,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `unit-test-types-baseline.json`, which can only shrink: a new error fails the job, and so does an entry whose error
   was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code changed.
 
+### Fixed
+
+- **The API route check no longer depends on how the generated types are formatted (route-check-reads-paths-not-indentation).**
+  `scripts/check-api-routes.py` read the routes of `src/core/api/generated/openapi.d.ts` at one fixed indentation,
+  so a copy committed in another layout gave 0 documented routes and failed `lint` with every call reported as
+  undeclared. It now reads the `paths` interface token by token, so any layout of the same types gives the same
+  routes, and a copy from which no route can be read fails with that reason instead.
+
 ## [3.32.1-web] - 2026-11-25
 
 A patch on v3.32.0-web: a holiday's dialing window is saved again, the web image starts where resolv.conf lists no
