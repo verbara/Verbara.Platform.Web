@@ -14,7 +14,9 @@ gates:
     status: present
     impl: >-
       .github/workflows/ci.yml `build` job runs `npm run build` (tsc -b && vite build) and `test`
-      job runs `vitest run`; both blocking + required on main. TS strict via tsconfig.app.json.
+      job runs `vitest run`; both blocking + required on main. TS strict via tsconfig.app.json; the unit
+      test files via tsconfig.test.json, checked by the `lint` job against a shrink-only baseline
+      (scripts/check-test-types.py, unit-test-types-baseline.json).
 
   - id: G2
     class: warnings-as-errors+banned-deps

@@ -1,0 +1,210 @@
+{
+  "_comment": "Type errors in the unit test files that existed when tsconfig.test.json landed (#572). Checked by scripts/check-test-types.py (npm run lint:test-types): it runs tsc -p tsconfig.test.json and counts errors per (file, TS code). This list can only SHRINK: a (file, code) with more errors than listed fails as new, one with fewer fails as stale until its count is lowered (or the entry deleted at 0). Never add an entry for a new error; fix the test, keeping its intent (no `any`, no @ts-expect-error over a real mismatch). When it is empty, reference tsconfig.test.json from tsconfig.json so tsc -b checks the tests, and retire the check. min_checked_test_files is a liveness floor (359 test files on 2026-11-25); test_roots and not_unit_test_dirs mirror what vitest.config.ts collects, and every test file found there must be in tsc's file list.",
+  "tsconfig": "tsconfig.test.json",
+  "min_checked_test_files": 350,
+  "test_roots": ["src", "tests"],
+  "not_unit_test_dirs": ["tests/e2e", "tests/manuales", "tests/fixtures"],
+  "errors": {
+    "src/admin/agents/agent-form.test.tsx": {
+      "TS2532": 2
+    },
+    "src/admin/billing/rate-card-form.test.tsx": {
+      "TS2532": 2
+    },
+    "src/admin/channels/channel-config-form.test.tsx": {
+      "TS18048": 4,
+      "TS2345": 2,
+      "TS2532": 8
+    },
+    "src/admin/channels/channel-test-button.test.tsx": {
+      "TS18048": 1
+    },
+    "src/admin/compliance/consent-management-page.test.tsx": {
+      "TS2352": 3
+    },
+    "src/admin/did-routes/did-route-form.test.tsx": {
+      "TS2532": 1
+    },
+    "src/admin/features/agent-assist-page.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/license/license-page.test.tsx": {
+      "TS2488": 1
+    },
+    "src/admin/license/peak-day-tenants.test.ts": {
+      "TS2559": 1
+    },
+    "src/admin/partner/customers-page.test.tsx": {
+      "TS2532": 2
+    },
+    "src/admin/partner/partner-channel-hooks.test.tsx": {
+      "TS18048": 1,
+      "TS2345": 2,
+      "TS2532": 1
+    },
+    "src/admin/partner/partner-rate-card-form.test.tsx": {
+      "TS2532": 2
+    },
+    "src/admin/realtime/profile-form.test.tsx": {
+      "TS2532": 1
+    },
+    "src/admin/reason-hints/reason-hint-form.test.tsx": {
+      "TS2532": 1
+    },
+    "src/admin/reports/report-pdf-button.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/reports/templates/templates.test.ts": {
+      "TS2322": 1
+    },
+    "src/admin/tenants/sso-tab.test.tsx": {
+      "TS2740": 1
+    },
+    "src/admin/tenants/tenant-settings-form.test.tsx": {
+      "TS2532": 3
+    },
+    "src/admin/tenants/tenants-page.test.tsx": {
+      "TS2532": 4
+    },
+    "src/admin/trunks/trunk-form.test.tsx": {
+      "TS2532": 5
+    },
+    "src/admin/trunks/trunk-wizard.test.tsx": {
+      "TS2345": 2,
+      "TS2532": 3
+    },
+    "src/admin/typification/llm/llm-config-form.test.tsx": {
+      "TS2532": 5,
+      "TS2739": 1
+    },
+    "src/admin/webchat/identity-secret.test.ts": {
+      "TS2345": 1
+    },
+    "src/agent/context/contact-info-actions.test.tsx": {
+      "TS2820": 3
+    },
+    "src/agent/context/conversation-history.test.tsx": {
+      "TS2345": 1
+    },
+    "src/agent/context/identity-level-history.test.tsx": {
+      "TS2322": 1
+    },
+    "src/agent/context/identity-level-placements.test.tsx": {
+      "TS2345": 13
+    },
+    "src/agent/conversation/suggestion-banner.test.tsx": {
+      "TS1484": 1
+    },
+    "src/agent/stores/conversation-store.test.ts": {
+      "TS1484": 2
+    },
+    "src/analytics/cdr/cdr-page.test.tsx": {
+      "TS18048": 7,
+      "TS2532": 7
+    },
+    "src/analytics/cdr/cdr-pdf-template.test.ts": {
+      "TS2322": 1
+    },
+    "src/analytics/qa/qa-page.test.tsx": {
+      "TS2532": 2
+    },
+    "src/core/api/api-error.test.ts": {
+      "TS18048": 1,
+      "TS2345": 1
+    },
+    "src/core/api/client.test.ts": {
+      "TS2345": 1
+    },
+    "src/core/api/hooks/use-campaigns.test.tsx": {
+      "TS2345": 1
+    },
+    "src/core/api/hooks/use-channels.test.tsx": {
+      "TS18048": 1,
+      "TS2339": 1
+    },
+    "src/core/api/hooks/use-supervisor-listen.test.tsx": {
+      "TS18048": 7,
+      "TS2339": 1
+    },
+    "src/core/api/hooks/use-typification-llm.test.tsx": {
+      "TS2741": 1
+    },
+    "src/core/api/partner-channel-refusals.test.tsx": {
+      "TS18048": 4
+    },
+    "src/core/auth/forgot-password-page.test.tsx": {
+      "TS2339": 1,
+      "TS2493": 1
+    },
+    "src/core/auth/login-page.test.tsx": {
+      "TS2339": 5,
+      "TS2493": 3
+    },
+    "src/core/auth/reset-password-page.test.tsx": {
+      "TS2339": 4,
+      "TS2493": 3
+    },
+    "src/core/stores/agent-ai-store.test.ts": {
+      "TS1484": 5
+    },
+    "src/core/ui/area-error-boundary.test.tsx": {
+      "TS7006": 1
+    },
+    "src/core/voice/listen-agent.test.ts": {
+      "TS1294": 1
+    },
+    "src/core/voice/softphone-manager.test.ts": {
+      "TS2722": 3
+    },
+    "src/operations/monitor/listen-control.test.tsx": {
+      "TS18048": 3
+    },
+    "src/operations/monitor/monitor-page.test.tsx": {
+      "TS2322": 1
+    },
+    "src/operations/monitor/session-card.test.tsx": {
+      "TS2345": 8
+    },
+    "src/operations/monitor/stuck-work-tab.test.tsx": {
+      "TS2532": 1
+    },
+    "src/shell/agent-alert-badge.test.tsx": {
+      "TS1294": 1
+    },
+    "src/webchat/embed/app.test.tsx": {
+      "TS1294": 1
+    },
+    "src/webchat/embed/csat-panel.test.tsx": {
+      "TS2532": 2
+    },
+    "src/webchat/embed/integration.test.tsx": {
+      "TS1294": 1,
+      "TS2493": 1,
+      "TS6133": 1
+    },
+    "src/webchat/embed/notifications.test.ts": {
+      "TS2322": 1
+    },
+    "src/webchat/embed/transport/session-api.ts": {
+      "TS1294": 2
+    },
+    "src/webchat/embed/widget-frame.test.tsx": {
+      "TS1294": 1
+    },
+    "src/webchat/sdk/api.test.ts": {
+      "TS2367": 1
+    },
+    "tests/unit/admin/partner/revenue-chart.test.tsx": {
+      "TS2532": 1
+    },
+    "tests/unit/admin/partner/revenue-csv.test.tsx": {
+      "TS2532": 1
+    },
+    "tests/unit/admin/tenants/tenant-settings-form.test.tsx": {
+      "TS2532": 1
+    },
+    "tests/unit/analytics/qa/qa-drawer-enrichment.test.tsx": {
+      "TS2532": 3
+    }
+  }
+}

@@ -15,6 +15,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`csat-panel.spec.ts`, `embed.spec.ts`) used the tenant id `demo-tenant`, which no Platform script creates;
   Platform's `demo-reset.sh` creates `demo`, so the demo widget now opens a session against a tenant that exists.
 
+- **CI type-checks the unit test files.** vitest runs tests without checking their types, and no TypeScript project
+  covered them, so a test could call a function with the wrong arguments, or mock a hook in a shape the code no
+  longer has, and still pass. `tsconfig.test.json` now covers every test file vitest collects (`src/**/*.test.*`,
+  `src/test`, `tests/unit`), and CI's `lint` job runs `npm run lint:test-types`
+  (`scripts/check-test-types.py`). The 179 type errors already in 62 files are frozen per file and error code in
+  `unit-test-types-baseline.json`, which can only shrink: a new error fails the job, and so does an entry whose error
+  was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code changed.
+
 ### Fixed
 
 - **A holiday's allowed dialing window is saved and shown again (console-holiday-window-field-names).** On a holiday
