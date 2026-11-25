@@ -307,6 +307,12 @@ class CheckApiRoutesTests(unittest.TestCase):
         """Every declaration on one line: no newline or indentation left to key on."""
         return " ".join(line.strip() for line in text.splitlines()) + "\n"
 
+    @staticmethod
+    def _no_semicolons(text):
+        """No `;` after a member, prettier's `semi: false` style: TypeScript then ends a
+        member at the line break, and so must the reader."""
+        return "\n".join(line.rstrip(";") for line in text.splitlines()) + "\n"
+
     def _assert_same_routes(self, text):
         self._types(text)
         self._call("'/api/v1/admin/routes'", "POST")
@@ -327,6 +333,9 @@ class CheckApiRoutesTests(unittest.TestCase):
 
     def test_check_ShouldReadSameRoutes_WhenTypesAreOnOneLine(self):
         self._assert_same_routes(self._one_line(_OPENAPI))
+
+    def test_check_ShouldReadSameRoutes_WhenTypesHaveNoSemicolons(self):
+        self._assert_same_routes(self._no_semicolons(_OPENAPI))
 
     def test_check_ShouldFail_WhenTypesDeclareNoPaths(self):
         self._types("export interface paths {}\nexport interface components {}\n")

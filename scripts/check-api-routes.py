@@ -429,7 +429,8 @@ def _members(src, mask, start, end):
             yield key, optional, (v, close)
             i = close + 1
             continue
-        # Any other value runs to the `;` or `,` that ends the member, outside brackets.
+        # Any other value runs to the `;` or `,` that ends the member, outside brackets,
+        # or to a line break that ends it as TypeScript does when members carry no `;`.
         k, angle = v, 0
         while k < end:
             c = src[k]
@@ -443,9 +444,35 @@ def _members(src, mask, start, end):
                     angle -= 1
                 elif c in ";," and angle <= 0:
                     break
+                elif c == "\n" and angle <= 0 and _ends_member(src, mask, v, k, end):
+                    break
             k += 1
         yield key, optional, src[v:k].strip()
         i = k
+
+
+# A type continues past a line break after one of these, or before one of the next set.
+_CONTINUES_AFTER = ("|", "&", ":", "?", "=>", ".")
+_CONTINUES_AFTER_WORDS = ("keyof", "typeof", "readonly", "unique", "infer", "extends", "is", "new")
+_CONTINUES_BEFORE = ("|", "&", "?", ":", "=>", ".")
+
+
+def _ends_member(src, mask, v, k, end):
+    """True when the line break at src[k] ends the member value that starts at v: the value
+    has begun, does not end on an operator, and the next token does not continue it."""
+    last = k - 1
+    while last >= v and (mask[last] == 0 or src[last].isspace()):
+        last -= 1
+    if last < v:
+        return False
+    if mask[last] == 1:
+        if any(src.startswith(op, last - len(op) + 1) for op in _CONTINUES_AFTER):
+            return False
+        word = re.search(r"[A-Za-z_$][\w$]*$", src[v:last + 1])
+        if word and word.group(0) in _CONTINUES_AFTER_WORDS:
+            return False
+    nxt = _skip_ws(src, mask, k)
+    return nxt >= end or not any(src.startswith(op, nxt) for op in _CONTINUES_BEFORE)
 
 
 def load_spec(text):
@@ -454,7 +481,7 @@ def load_spec(text):
     The interface is read as TypeScript tokens: its members are the paths, and a path's
     members `get`, `post`, ... are its methods. A method is declared when it is required
     and its type is not `never` (`get: {`, not `get?: never`). Whitespace, line breaks,
-    quote style and comments do not change the result (#567)."""
+    quote style, comments and `;`-less members do not change the result (#567)."""
     mask = code_mask(text)
     m = next((m for m in _PATHS_RE.finditer(text) if mask[m.start()] == 1), None)
     if m is None:
