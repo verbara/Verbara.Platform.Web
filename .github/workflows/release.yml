@@ -66,7 +66,9 @@ jobs:
   # validates commits that reach `main` through a PR or the merge queue, so a tag off
   # `main` would ship a signed image no CI run checked. This job refuses such a tag
   # before anything is built; `release` needs it. Logic and its tests:
-  # scripts/ci/check-tag-on-main.sh, scripts/tests/test_check_tag_on_main.sh.
+  # scripts/ci/check-tag-on-main.sh, scripts/tests/test_check_tag_on_main.sh; this
+  # wiring (the check step, and every other job needing this one) is tested by
+  # scripts/tests/test_release_tag_on_main_wiring.py.
   tag-on-main:
     name: Tag commit is on main
     runs-on: ubuntu-24.04

@@ -231,6 +231,8 @@ jobs:
       - name: Install diff-cover (pinned)
         run: pip install --disable-pip-version-check diff_cover==10.3.0
 
+      # Also runs test_release_tag_on_main_wiring.py: release.yml still runs the tag-on-main
+      # check as a whole step, and every other release job needs it.
       - name: Run coverage-script unit tests
         run: python3 -m unittest discover scripts/tests
 
