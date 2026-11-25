@@ -11,7 +11,7 @@ name: CI
 #   - i18n      blocking - locale parity check (ADR-0001)
 #   - audit     blocking - npm audit --audit-level=high
 #   - lint      blocking - eslint (0 errors enforced since Track 3A), generated-types
-#               ratchet, console API routes vs the OpenAPI document
+#               ratchet, console API routes vs the OpenAPI document, unit-test type baseline
 #
 # Branch protection on main requires: build, test, coverage, i18n, audit, lint
 
@@ -362,3 +362,12 @@ jobs:
 
       - name: Console API routes exist in the OpenAPI document
         run: npm run lint:api-routes
+
+      # Unit test files are type-checked (#572): vitest strips types without checking them
+      # and tsconfig.app.json excludes the tests, so tsconfig.test.json covers them. The
+      # errors that existed when it landed are frozen in unit-test-types-baseline.json, which
+      # only shrinks: a new error fails, and so does an entry that no longer errors. Every
+      # test file vitest collects must be in tsc's file list. Its unit tests run in the
+      # coverage-scripts job's `unittest discover scripts/tests`.
+      - name: Unit test files type-check (shrink-only baseline)
+        run: npm run lint:test-types
