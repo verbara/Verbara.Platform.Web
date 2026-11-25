@@ -159,7 +159,10 @@ by opaque id (e.g. ADR-0006) where relevant.
 
 ## Versioning
 
-Track-end versioning (ADR-0005): patches inside a track ship without git tags; only the final patch of a track receives a tag (`v1.X.Y-web`) and a GitHub release. Releases summarize the whole track narrative.
+Every version is a cut from `main`. Changes accumulate under `[Unreleased]` in [`CHANGELOG.md`](CHANGELOG.md), and
+the maintainer decides when each version is cut. A cut is a `v<version>-web` tag on a commit of `main`: the release
+workflow builds the multi-arch image, pushes it to `ghcr.io/verbara/platform/web`, signs it with cosign and creates the
+GitHub release. It refuses a tag whose commit is not on `main`, so every released version has a tag and a signed image.
 
 ## Contributing
 
