@@ -8176,12 +8176,23 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': components['schemas']['OutboundRouteDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
+          };
         };
       };
     };
@@ -8249,6 +8260,15 @@ export interface paths {
           };
           content: {
             'application/json': components['schemas']['OutboundRouteDto'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['ErrorResponse'];
           };
         };
         /** @description Not Found */
@@ -10640,6 +10660,13 @@ export interface paths {
             'application/json': components['schemas']['AgentSkillDto'][];
           };
         };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     put?: never;
@@ -10658,8 +10685,17 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['AgentSkillDto'];
+          };
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
@@ -10695,8 +10731,15 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description OK */
-        200: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Not Found */
+        404: {
           headers: {
             [name: string]: unknown;
           };
