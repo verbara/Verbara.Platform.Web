@@ -9,11 +9,20 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.32.1-web] - 2026-11-25
+
+A patch on v3.32.0-web: a holiday's dialing window is saved again, the web image starts where resolv.conf lists no
+nameserver, the webchat demo opens against the `demo` tenant, the generated API types follow Platform v2.41.3,
+and ten dependency updates. Same Platform floor as v3.32.0-web (≥ v2.41.0).
+
 ### Changed
 
 - **The webchat demo page points at the `demo` tenant.** `public/webchat/demo.html` and the webchat e2e mocks
   (`csat-panel.spec.ts`, `embed.spec.ts`) used the tenant id `demo-tenant`, which no Platform script creates;
-  Platform's `demo-reset.sh` creates `demo`, so the demo widget now opens a session against a tenant that exists.
+  Platform's `demo-reset.sh` creates `demo`, so the demo widget now opens a session against a tenant that exists. (#589)
+- **The generated API types follow Platform v2.41.3.** `openapi.d.ts` is regenerated from Platform `c5bc189e`: adding
+  an agent skill or an outbound route answers 201 Created with the new record, removing a skill answers 204, and the
+  400 and 404 answers of those routes are declared. (#591)
 
 - **CI type-checks the unit test files.** vitest runs tests without checking their types, and no TypeScript project
   covered them, so a test could call a function with the wrong arguments, or mock a hook in a shape the code no
@@ -38,6 +47,14 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with no nameserver, a `down` server: the image starts, serves the console and answers 502 on `/hubs/`. The image
   build fails with a clear message when the `nginx:alpine` base it finds is older than 1.27.3, the first nginx that
   accepts `server ... resolve` (`docker build` does not pull a base it already has). (#575)
+
+### Dependencies
+
+- **npm pins swept forward — 10 Dependabot merges since `v3.32.0-web`, recorded here as one movement.** Runtime:
+  `react-router` 8.5.2 (#578), `@tanstack/react-query` 5.107.2 (#579), `i18next-browser-languagedetector` 8.3.1
+  (#581), `tailwind-merge` 3.7.1 (#582), `react-hook-form` 7.92.0 (#583), `@xyflow/react` 12.12.1 (#586). Development:
+  `eslint` 10.15.0 and `eslint-plugin-react-refresh` 0.5.8 (#580), `@playwright/test` 1.65.1 (#584), `prettier`
+  3.10.1 (#585), `otpauth` 9.6.0 (#587; its lock refresh also moves `markdown-it`, `shell-quote` and `brace-expansion`).
 
 ## [3.32.0-web] - 2026-11-22
 
