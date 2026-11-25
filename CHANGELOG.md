@@ -9,6 +9,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **CI type-checks the unit test files.** vitest runs tests without checking their types, and no TypeScript project
+  covered them, so a test could call a function with the wrong arguments, or mock a hook in a shape the code no
+  longer has, and still pass. `tsconfig.test.json` now covers every test file vitest collects (`src/**/*.test.*`,
+  `src/test`, `tests/unit`), and CI's `lint` job runs `npm run lint:test-types`
+  (`scripts/check-test-types.py`). The 179 type errors already in 62 files are frozen per file and error code in
+  `unit-test-types-baseline.json`, which can only shrink: a new error fails the job, and so does an entry whose error
+  was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code changed.
+
 ## [3.32.1-web] - 2026-11-25
 
 A patch on v3.32.0-web: a holiday's dialing window is saved again, the web image starts where resolv.conf lists no
@@ -23,14 +33,6 @@ and ten dependency updates. Same Platform floor as v3.32.0-web (≥ v2.41.0).
 - **The generated API types follow Platform v2.41.3.** `openapi.d.ts` is regenerated from Platform `c5bc189e`: adding
   an agent skill or an outbound route answers 201 Created with the new record, removing a skill answers 204, and the
   400 and 404 answers of those routes are declared. (#591)
-
-- **CI type-checks the unit test files.** vitest runs tests without checking their types, and no TypeScript project
-  covered them, so a test could call a function with the wrong arguments, or mock a hook in a shape the code no
-  longer has, and still pass. `tsconfig.test.json` now covers every test file vitest collects (`src/**/*.test.*`,
-  `src/test`, `tests/unit`), and CI's `lint` job runs `npm run lint:test-types`
-  (`scripts/check-test-types.py`). The 179 type errors already in 62 files are frozen per file and error code in
-  `unit-test-types-baseline.json`, which can only shrink: a new error fails the job, and so does an entry whose error
-  was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code changed.
 
 ### Fixed
 
