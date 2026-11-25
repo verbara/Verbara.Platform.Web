@@ -17,7 +17,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `src/test`, `tests/unit`), and CI's `lint` job runs `npm run lint:test-types`
   (`scripts/check-test-types.py`). The 179 type errors already in 62 files are frozen per file and error code in
   `unit-test-types-baseline.json`, which can only shrink: a new error fails the job, and so does an entry whose error
-  was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code changed.
+  was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code
+  changed. (#594)
 
 ### Fixed
 
@@ -25,7 +26,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `scripts/check-api-routes.py` read the routes of `src/core/api/generated/openapi.d.ts` at one fixed indentation,
   so a copy committed in another layout gave 0 documented routes and failed `lint` with every call reported as
   undeclared. It now reads the `paths` interface token by token, so any layout of the same types gives the same
-  routes, and a copy from which no route can be read fails with that reason instead.
+  routes, and a copy from which no route can be read fails with that reason instead. (#593)
 
 ## [3.32.1-web] - 2026-11-25
 
