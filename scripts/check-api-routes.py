@@ -45,6 +45,9 @@ Two violations:
   no-path          the normalised path matches no path in the document;
   method-mismatch  it matches, but none of the matching paths declares that method
                    (a method is declared by `get: {`, not by `get?: never`).
+The document's paths are read from the `paths` interface as TypeScript tokens, never by
+line or indentation, so a reformatted openapi.d.ts yields the same routes (#567). A
+document from which no path can be read fails the check outright.
 Each is tolerated only when its exact (method, path, file) is in
 console-api-routes-baseline.json, which can only SHRINK: an entry that no longer
 occurs (the call was fixed, removed or moved) fails as stale, so the floor ratchets
@@ -390,27 +393,81 @@ def render(path):
 
 # ------------------------------------------------------------------ OpenAPI paths
 
-_PATH_KEY_RE = re.compile(r"^  '(/[^']*)': \{$")
-_METHOD_RE = re.compile(r"^    (" + "|".join(HTTP_METHODS) + r"): ")
+_PATHS_RE = re.compile(r"\bexport\s+interface\s+paths\s*\{")
+_IDENT_RE = re.compile(r"[A-Za-z_$][\w$]*")
+
+
+def _members(src, mask, start, end):
+    """Members of the type literal src[start] == '{' .. src[end] == '}', read token by token
+    (never by line or indentation). Yields (key, optional, value) where value is the
+    (open, close) span of a `{ ... }` value, or the stripped text of any other value."""
+    i = start + 1
+    while True:
+        i = _skip_ws(src, mask, i)
+        if i >= end:
+            return
+        if src[i] in ";,":
+            i += 1
+            continue
+        parts, j = _read_literal(src, mask, i)
+        if parts is not None:
+            key = "".join(text for _, text in parts)
+        else:
+            m = _IDENT_RE.match(src, i)
+            if not m or mask[i] != 1:
+                raise ValueError(f"unexpected {src[i:i + 20]!r} in the OpenAPI `paths` interface")
+            key, j = m.group(0), m.end()
+        j = _skip_ws(src, mask, j)
+        optional = src.startswith("?", j)
+        if optional:
+            j = _skip_ws(src, mask, j + 1)
+        if j >= end or src[j] != ":":
+            raise ValueError(f"member {key!r} of the OpenAPI `paths` interface has no type")
+        v = _skip_ws(src, mask, j + 1)
+        if v < end and src[v] == "{":
+            close = _matching_close(src, mask, v)
+            yield key, optional, (v, close)
+            i = close + 1
+            continue
+        # Any other value runs to the `;` or `,` that ends the member, outside brackets.
+        k, angle = v, 0
+        while k < end:
+            c = src[k]
+            if mask[k] == 1:
+                if c in "([{":
+                    k = _matching_close(src, mask, k) + 1
+                    continue
+                if c == "<":
+                    angle += 1
+                elif c == ">" and src[k - 1] != "=":
+                    angle -= 1
+                elif c in ";," and angle <= 0:
+                    break
+            k += 1
+        yield key, optional, src[v:k].strip()
+        i = k
 
 
 def load_spec(text):
-    """{path: set(METHODS)} from the `paths` interface of openapi.d.ts."""
-    start = text.find("export interface paths {")
-    if start < 0:
+    """{path: set(METHODS)} from the `paths` interface of openapi.d.ts.
+
+    The interface is read as TypeScript tokens: its members are the paths, and a path's
+    members `get`, `post`, ... are its methods. A method is declared when it is required
+    and its type is not `never` (`get: {`, not `get?: never`). Whitespace, line breaks,
+    quote style and comments do not change the result (#567)."""
+    mask = code_mask(text)
+    m = next((m for m in _PATHS_RE.finditer(text) if mask[m.start()] == 1), None)
+    if m is None:
         raise ValueError("no `export interface paths` in the OpenAPI types")
+    open_ = m.end() - 1
     spec = {}
-    current = None
-    for line in text[start:].splitlines()[1:]:
-        if line == "}":
-            break
-        m = _PATH_KEY_RE.match(line)
-        if m:
-            current = spec.setdefault(m.group(1), set())
+    for path, _, value in _members(text, mask, open_, _matching_close(text, mask, open_)):
+        methods = spec.setdefault(path, set())
+        if not isinstance(value, tuple):
             continue
-        m = _METHOD_RE.match(line)
-        if m and current is not None:
-            current.add(m.group(1).upper())
+        for key, optional, body in _members(text, mask, value[0], value[1]):
+            if key in HTTP_METHODS and not optional and body != "never":
+                methods.add(key.upper())
     return spec
 
 
@@ -473,7 +530,15 @@ def fail(msg):
 def main(argv):
     root = argv[1] if len(argv) > 1 else os.getcwd()
     with open(os.path.join(root, OPENAPI_FILE), encoding="utf-8") as handle:
-        spec = load_spec(handle.read())
+        try:
+            spec = load_spec(handle.read())
+        except ValueError as err:
+            fail(f"cannot read the routes of {OPENAPI_FILE}: {err}")
+            return 1
+    if not spec:
+        fail(f"{OPENAPI_FILE} declares no path: the types are empty or the `paths` interface "
+             "was not read, and every call would be reported as undeclared.")
+        return 1
     with open(os.path.join(root, BASELINE_FILE), encoding="utf-8") as handle:
         baseline_doc = json.load(handle)
     baseline = {(e["method"], e["path"], e["file"]): e for e in baseline_doc["entries"]}

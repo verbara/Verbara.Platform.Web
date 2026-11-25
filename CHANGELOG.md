@@ -17,6 +17,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The API route check no longer depends on how the generated types are formatted (route-check-reads-paths-not-indentation).**
+  `scripts/check-api-routes.py` read the routes of `src/core/api/generated/openapi.d.ts` at one fixed indentation,
+  so a copy committed in another layout gave 0 documented routes and failed `lint` with every call reported as
+  undeclared. It now reads the `paths` interface token by token, so any layout of the same types gives the same
+  routes, and a copy from which no route can be read fails with that reason instead.
 - **A holiday's allowed dialing window is saved and shown again (console-holiday-window-field-names).** On a holiday
   calendar's page, the allowed start and end times typed for a holiday were sent under names Platform does not read,
   so the holiday was stored without its window, and the holidays table showed a dash even for a window Platform
