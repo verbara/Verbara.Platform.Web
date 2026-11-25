@@ -285,5 +285,62 @@ class CheckApiRoutesTests(unittest.TestCase):
         self.assertIn("API routes: 0 call(s) checked", result.stdout)
 
 
+    # #567: the declared routes must not depend on how openapi.d.ts is formatted. The same
+    # `paths` interface in another layout (a commit that skipped the pre-commit formatter, a
+    # generator or prettier change) must yield the same routes and methods.
+    def _types(self, text):
+        with open(os.path.join(self._root, "src", "core", "api", "generated", "openapi.d.ts"),
+                  "w", encoding="utf-8") as handle:
+            handle.write(text)
+
+    @staticmethod
+    def _reindented(text):
+        """Four-space indentation and double quotes, the raw generator's own style."""
+        out = []
+        for line in text.splitlines():
+            body = line.lstrip(" ")
+            out.append(" " * (2 * (len(line) - len(body))) + body.replace("'", '"'))
+        return "\n".join(out) + "\n"
+
+    @staticmethod
+    def _one_line(text):
+        """Every declaration on one line: no newline or indentation left to key on."""
+        return " ".join(line.strip() for line in text.splitlines()) + "\n"
+
+    @staticmethod
+    def _no_semicolons(text):
+        """No `;` after a member, prettier's `semi: false` style: TypeScript then ends a
+        member at the line break, and so must the reader."""
+        return "\n".join(line.rstrip(";") for line in text.splitlines()) + "\n"
+
+    def _assert_same_routes(self, text):
+        self._types(text)
+        self._call("'/api/v1/admin/routes'", "POST")
+        self._call("`/api/v1/admin/routes/${id}`", "PUT", rel="core/api/hooks/use-id.ts")
+        self._call("'/api/v1/analytics/current-interval'", "GET", rel="core/api/hooks/use-ci.ts")
+        result = self._run()
+        self._assert_pass(result)
+        self.assertIn("3 call(s) checked against 6 documented path(s)", result.stdout)
+        # `put?: never` stays undeclared, and the schemas' `get: string` is never a route.
+        self._call("'/api/v1/admin/routes/reorder'", "PUT", rel="core/api/hooks/use-re.ts")
+        self._assert_fail(self._run(), "method-mismatch: PUT /api/v1/admin/routes/reorder")
+
+    def test_check_ShouldReadSameRoutes_WhenTypesArePrettierFormatted(self):
+        self._assert_same_routes(_OPENAPI)
+
+    def test_check_ShouldReadSameRoutes_WhenTypesAreReindented(self):
+        self._assert_same_routes(self._reindented(_OPENAPI))
+
+    def test_check_ShouldReadSameRoutes_WhenTypesAreOnOneLine(self):
+        self._assert_same_routes(self._one_line(_OPENAPI))
+
+    def test_check_ShouldReadSameRoutes_WhenTypesHaveNoSemicolons(self):
+        self._assert_same_routes(self._no_semicolons(_OPENAPI))
+
+    def test_check_ShouldFail_WhenTypesDeclareNoPaths(self):
+        self._types("export interface paths {}\nexport interface components {}\n")
+        self._baseline([])
+        self._assert_fail(self._run(), "declares no path")
+
 if __name__ == "__main__":
     unittest.main()
