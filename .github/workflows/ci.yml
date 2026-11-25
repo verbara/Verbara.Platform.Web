@@ -240,6 +240,11 @@ jobs:
       - name: Run docs-only classifier unit tests (ADR-0016)
         run: bash scripts/tests/test_classify_docs_only.sh
 
+      # release.yml's tag-on-main guard: a tag whose commit is off main, unknown, or
+      # undecidable (shallow clone, missing main ref) must refuse. Pure bash + git.
+      - name: Run release tag-on-main guard unit tests
+        run: bash scripts/tests/test_check_tag_on_main.sh
+
       # The api-types-freshness workflow's two shell steps (source resolution and the
       # api-types-drift issue), each tested with `gh` stubbed on PATH. Bash + jq, no network.
       - name: Run Platform OpenAPI source resolver unit tests
