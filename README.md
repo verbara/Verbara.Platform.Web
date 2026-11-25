@@ -160,9 +160,11 @@ by opaque id (e.g. ADR-0006) where relevant.
 ## Versioning
 
 Every version is a cut from `main`. Changes accumulate under `[Unreleased]` in [`CHANGELOG.md`](CHANGELOG.md), and
-the maintainer decides when each version is cut. A cut is a `v<version>-web` tag on a commit of `main`: the release
-workflow builds the multi-arch image, pushes it to `ghcr.io/verbara/platform/web`, signs it with cosign and creates the
-GitHub release. It refuses a tag whose commit is not on `main`, so every released version has a tag and a signed image.
+the maintainer decides when each version is cut. A cut is a `v<version>-web` tag on a commit of `main`, and pushing
+the tag is what releases it: the release workflow builds the multi-arch image, pushes it to
+`ghcr.io/verbara/platform/web`, signs it with cosign and creates the GitHub release, so every released version has a
+tag and a signed image. Before it builds anything, the workflow refuses a tag whose commit is not on `main`, which
+stops a tag pushed off `main` by mistake.
 
 ## Contributing
 

@@ -24,9 +24,10 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   on any commit, while CI only checks commits that reach `main` through a PR or the merge queue. A new `tag-on-main`
   job now runs first and the build job needs it: `scripts/ci/check-tag-on-main.sh` fails unless the tagged commit is
   `main`'s tip or one of its ancestors, and it also fails on an unknown commit, a missing `main` ref or a shallow
-  clone. Its tests (`scripts/tests/test_check_tag_on_main.sh`) run in CI's `coverage-scripts` job. The README's
-  versioning section still described patches shipping untagged; it now says every version is a signed, tagged cut
-  from `main`.
+  clone. Its tests (`scripts/tests/test_check_tag_on_main.sh`) run in CI's `coverage-scripts` job, and so does
+  `scripts/tests/test_release_tag_on_main_wiring.py`, which fails if the job stops running the check as a whole step
+  or the build job stops needing it. The README's versioning section still described patches shipping untagged; it
+  now says every version is a signed, tagged cut from `main`.
 
 ### Fixed
 
