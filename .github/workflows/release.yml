@@ -50,8 +50,9 @@ name: Release
 
 permissions:
   # `contents: write` (not `read`) so the final step can create the GitHub Release
-  # object for the tag. Single-job workflow, so a job-level override would scope
-  # nothing — the same job builds, pushes, signs and releases.
+  # object for the tag. The same `release` job builds, pushes, signs and releases, so
+  # a job-level override there would scope nothing; the `tag-on-main` guard job sets
+  # its own `contents: read`.
   contents: write
   packages: write
   id-token: write
@@ -61,8 +62,36 @@ env:
   IMAGE_NAME: verbara/platform/web
 
 jobs:
+  # A `v*` tag on ANY commit would otherwise build, push and sign an image. CI only
+  # validates commits that reach `main` through a PR or the merge queue, so a tag off
+  # `main` would ship a signed image no CI run checked. This job refuses such a tag
+  # before anything is built; `release` needs it. Logic and its tests:
+  # scripts/ci/check-tag-on-main.sh, scripts/tests/test_check_tag_on_main.sh; this
+  # wiring (the check step, and every other job needing this one) is tested by
+  # scripts/tests/test_release_tag_on_main_wiring.py.
+  tag-on-main:
+    name: Tag commit is on main
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout source (full history)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # ancestry needs the whole history
+
+      - name: Fetch main
+        # Refresh origin/main explicitly, so the check reads main as it is now and
+        # never a ref the checkout did not create.
+        run: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: Refuse a tag whose commit is not on main
+        run: bash scripts/ci/check-tag-on-main.sh "$GITHUB_SHA" origin/main
+
   release:
     name: Build, push, and sign Web image
+    needs: tag-on-main
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout source
