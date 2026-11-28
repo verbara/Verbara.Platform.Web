@@ -1,5 +1,6 @@
-// Compile-time check of the SDK's published types: `tsc -b` compiles this file, and it compiles neither `src/webchat`
-// nor any test on their own. A site compiled with TypeScript `strict` signs in, signs out and says nothing with these.
+// Compile-time check of the SDK's published types from a host site's side: `tsc -b` compiles this file. It also checks
+// `src/webchat` itself (tsconfig.webchat.json), but not as a caller would use it, and no test file runs under `tsc -b`.
+// A site compiled with TypeScript `strict` signs in, signs out and says nothing with these.
 import type { WebChatApi } from '@/webchat/sdk/api';
 
 export function initIdentityTokenStates(api: WebChatApi): void {

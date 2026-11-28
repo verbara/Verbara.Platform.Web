@@ -185,9 +185,6 @@
     "src/webchat/embed/notifications.test.ts": {
       "TS2322": 1
     },
-    "src/webchat/embed/transport/session-api.ts": {
-      "TS1294": 2
-    },
     "src/webchat/embed/widget-frame.test.tsx": {
       "TS1294": 1
     },

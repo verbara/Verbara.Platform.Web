@@ -20,6 +20,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code
   changed. (#594)
 
+- **CI type-checks the WebChat widget's sources.** `src/webchat` (the SDK script host pages load and the embedded
+  chat frame) was in no TypeScript project: the console's `tsconfig.app.json` excludes it, and Vite builds the
+  widget without checking types, so a type error there reached the bundle unnoticed. `tsconfig.json` now references
+  `tsconfig.webchat.json`, so `tsc -b` — run by `npm run build` and CI's `build` job — checks it with the console's
+  settings. The two errors it already had (a constructor written with parameter properties, which the
+  `erasableSyntaxOnly` setting forbids) are fixed; the widget bundles build byte for byte as before. (#596)
+
 - **A release tag must point at a commit on `main`.** `release.yml` built, pushed and signed an image for a `v*` tag
   on any commit, while CI only checks commits that reach `main` through a PR or the merge queue. A new `tag-on-main`
   job now runs first and the build job needs it: `scripts/ci/check-tag-on-main.sh` fails unless the tagged commit is

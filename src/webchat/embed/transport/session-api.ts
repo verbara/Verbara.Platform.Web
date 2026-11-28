@@ -65,11 +65,13 @@ export async function createSession(input: CreateSessionInput): Promise<CreateSe
 
 /** A refused session create. Platform answers 429 with `Retry-After` when the tenant+address limit is spent. */
 export class CreateSessionError extends Error {
-  constructor(
-    readonly status: number,
-    readonly retryAfterMs: number | undefined,
-  ) {
+  readonly status: number;
+  readonly retryAfterMs: number | undefined;
+
+  constructor(status: number, retryAfterMs: number | undefined) {
     super(`createSession failed with ${status}`);
+    this.status = status;
+    this.retryAfterMs = retryAfterMs;
     this.name = 'CreateSessionError';
   }
 }
