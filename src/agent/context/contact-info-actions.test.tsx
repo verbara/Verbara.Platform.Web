@@ -143,7 +143,7 @@ describe('ContactInfo actions', () => {
     vi.mocked(customFetch).mockReset();
     useAuthStore.setState({ permissions: [] });
     useConversationStore.setState({ selectedId: null, conversations: {} });
-    useVoiceCallStore.setState({ registration: 'unregistered', phase: 'idle' });
+    useVoiceCallStore.setState({ registration: 'offline', phase: 'idle' });
   });
 
   it('ContactInfo_ShouldHaveNoWorkingDelete_WhenTheRoleLacksThePermission', async () => {
@@ -381,7 +381,7 @@ describe('ContactInfo actions', () => {
     });
 
     it('ContactInfo_ShouldShowTheDoNotContactStatus_WhenTheOptOutAnswersWithAnUnregisteredSoftphone', async () => {
-      useVoiceCallStore.setState({ registration: 'unregistered', phase: 'idle' });
+      useVoiceCallStore.setState({ registration: 'offline', phase: 'idle' });
       await renderOptOutCard({
         before: beforeOptOut,
         after: optOutResponse,
@@ -458,7 +458,7 @@ describe('ContactInfo actions', () => {
     });
 
     it('ContactInfo_ShouldOfferNoDoNotContactAndShowTheStatus_WhenTheContactIsMarked', async () => {
-      useVoiceCallStore.setState({ registration: 'unregistered', phase: 'idle' });
+      useVoiceCallStore.setState({ registration: 'offline', phase: 'idle' });
       await renderOptOutCard({
         before: noPhoneAfter,
         after: noPhoneAfter,

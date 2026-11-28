@@ -5,9 +5,6 @@
   "test_roots": ["src", "tests"],
   "not_unit_test_dirs": ["tests/e2e", "tests/manuales", "tests/fixtures"],
   "errors": {
-    "src/agent/context/contact-info-actions.test.tsx": {
-      "TS2820": 3
-    },
     "src/agent/context/conversation-history.test.tsx": {
       "TS2345": 1
     },
