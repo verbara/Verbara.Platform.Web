@@ -64,7 +64,7 @@ interface FakeAnswer {
 }
 
 let answers: Record<string, FakeAnswer | 'network-error'>;
-const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
+const fetchMock = vi.fn<typeof fetch>(async (input) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
   const answer = answers[url];
   if (answer === undefined) throw new Error(`unexpected fetch ${url}`);

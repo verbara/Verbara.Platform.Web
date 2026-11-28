@@ -12,6 +12,7 @@ import { resolve } from 'node:path';
 import { ApiError } from '@/core/api/api-error';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useListenStore } from '@/core/voice/listen-store';
+import { defined } from '@/test/defined';
 import enOperations from '../../../public/locales/en-US/operations.json';
 
 const {
@@ -56,6 +57,7 @@ const startFx = readJson<{ start: { body: Record<string, unknown> } }>(
 const refusals = readJson<Record<string, { status: number; body: Record<string, unknown> }>>(
   'supervisor-listen-refusals.json',
 );
+const refusal = (code: string) => defined(refusals[code], `${code} refusal`);
 
 const CONV = '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a';
 const OTHER = '9a8b7c6d5e4f40312a1b2c3d4e5f6071';
@@ -206,7 +208,7 @@ describe('ListenControl', () => {
   it('ListenControl_ShouldStayIdle_WhenTheStartIsRefused', async () => {
     startState.current = {
       isPending: false,
-      error: new ApiError(409, refusals.noVoiceCall.body),
+      error: new ApiError(409, refusal('noVoiceCall').body),
     };
     await renderControl(CONV);
     expect(screen.getByTestId('listen-control')).toHaveAttribute('data-listen-state', 'idle');
@@ -252,13 +254,13 @@ describe('ListenControl', () => {
   it('ListenControl_ShouldOfferToStopTheRunningListen_WhenTheStartAnswersAlreadyListening', async () => {
     startState.current = {
       isPending: false,
-      error: new ApiError(409, refusals.alreadyListening.body),
+      error: new ApiError(409, refusal('alreadyListening').body),
     };
     await renderControl(CONV);
     const action = screen.getByTestId('listen-stop-existing');
     expect(action).toHaveAttribute('data-error-code', 'already-listening');
     fireEvent.click(action);
-    expect(stopMutate).toHaveBeenCalledWith(refusals.alreadyListening.body.conversationId);
+    expect(stopMutate).toHaveBeenCalledWith(refusal('alreadyListening').body.conversationId);
   });
 
   it('ListenControl_ShouldShowTheMovedStateWithListenHere_WhenAnotherWindowTookTheRegistration', async () => {

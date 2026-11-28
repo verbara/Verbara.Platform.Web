@@ -58,7 +58,7 @@ const mockCredits: AiCreditsResponse = {
 
 describe('isLlmConfigEmpty', () => {
   it('isLlmConfigEmpty_ShouldReturnTrue_WhenConfiguredFalse', () => {
-    const empty: LlmConfigEmpty = { configured: false };
+    const empty: LlmConfigEmpty = { configured: false, platformLlmAvailable: false };
     expect(isLlmConfigEmpty(empty)).toBe(true);
   });
 

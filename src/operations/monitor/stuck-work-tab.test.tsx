@@ -60,6 +60,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 import { StuckWorkTab } from './stuck-work-tab';
+import { nthCall } from '@/test/defined';
 
 function makeStuck(overrides: Partial<StuckConversation> = {}): StuckConversation {
   return {
@@ -175,7 +176,7 @@ describe('StuckWorkTab', () => {
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     );
     // The onSuccess drops the stuck list so the closed row vanishes immediately.
-    closeMutate.mock.calls[0][1].onSuccess();
+    nthCall(closeMutate)[1].onSuccess();
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['supervisor', 'stuck'] });
   });
 

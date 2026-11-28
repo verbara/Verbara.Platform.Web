@@ -5,69 +5,6 @@
   "test_roots": ["src", "tests"],
   "not_unit_test_dirs": ["tests/e2e", "tests/manuales", "tests/fixtures"],
   "errors": {
-    "src/core/api/api-error.test.ts": {
-      "TS18048": 1,
-      "TS2345": 1
-    },
-    "src/core/api/client.test.ts": {
-      "TS2345": 1
-    },
-    "src/core/api/hooks/use-campaigns.test.tsx": {
-      "TS2345": 1
-    },
-    "src/core/api/hooks/use-channels.test.tsx": {
-      "TS18048": 1,
-      "TS2339": 1
-    },
-    "src/core/api/hooks/use-supervisor-listen.test.tsx": {
-      "TS18048": 7,
-      "TS2339": 1
-    },
-    "src/core/api/hooks/use-typification-llm.test.tsx": {
-      "TS2741": 1
-    },
-    "src/core/api/partner-channel-refusals.test.tsx": {
-      "TS18048": 4
-    },
-    "src/core/auth/forgot-password-page.test.tsx": {
-      "TS2339": 1,
-      "TS2493": 1
-    },
-    "src/core/auth/login-page.test.tsx": {
-      "TS2339": 5,
-      "TS2493": 3
-    },
-    "src/core/auth/reset-password-page.test.tsx": {
-      "TS2339": 4,
-      "TS2493": 3
-    },
-    "src/core/stores/agent-ai-store.test.ts": {
-      "TS1484": 5
-    },
-    "src/core/ui/area-error-boundary.test.tsx": {
-      "TS7006": 1
-    },
-    "src/core/voice/listen-agent.test.ts": {
-      "TS1294": 1
-    },
-    "src/core/voice/softphone-manager.test.ts": {
-      "TS2722": 3
-    },
-    "src/operations/monitor/listen-control.test.tsx": {
-      "TS18048": 3
-    },
-    "src/operations/monitor/monitor-page.test.tsx": {
-      "TS2322": 1
-    },
-    "src/operations/monitor/session-card.test.tsx": {
-      "TS2345": 8
-    },
-    "src/operations/monitor/stuck-work-tab.test.tsx": {
-      "TS2532": 1
-    },
-    "src/shell/agent-alert-badge.test.tsx": {
-      "TS1294": 1
-    },
     "src/webchat/embed/app.test.tsx": {
       "TS1294": 1
     },

@@ -8,6 +8,7 @@ import {
   machineCodeOf,
   type ApiErrorMap,
 } from './api-error';
+import { defined } from '@/test/defined';
 
 describe('machineCodeOf', () => {
   it.each(['not-owner', 'not-offered-to-you', 'target-queue-not-found', 'user-changed'])(
@@ -111,10 +112,14 @@ describe('ApiError facts (partner-channel-pilot-fixes, design D3)', () => {
       ...contract('dunning-partner-customer-409.json'),
       facts: { tenantId: 'pc1', partnerTenantId: 'p1' },
     },
-    { name: 'invalidCurrency', ...currency.invalidCurrency, facts: { currency: 'banana' } },
+    {
+      name: 'invalidCurrency',
+      ...defined(currency.invalidCurrency, 'invalidCurrency refusal'),
+      facts: { currency: 'banana' },
+    },
     {
       name: 'currencyMismatch',
-      ...currency.currencyMismatch,
+      ...defined(currency.currencyMismatch, 'currencyMismatch refusal'),
       facts: { partnerCurrency: 'PEN', hostCurrency: 'USD' },
     },
   ];

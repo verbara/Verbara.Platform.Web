@@ -11,6 +11,7 @@ import {
   toastPartnerChannelRefusal,
 } from './partner-channel-refusals';
 import { TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
+import { defined } from '@/test/defined';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -25,6 +26,8 @@ const contract = (name: string) =>
 const plan = contract('plan-above-parent-409.json');
 const dunning = contract('dunning-partner-customer-409.json');
 const currency = contract('rate-card-currency-refusals.json');
+const currencyMismatch = defined(currency.currencyMismatch, 'currencyMismatch refusal');
+const invalidCurrency = defined(currency.invalidCurrency, 'invalidCurrency refusal');
 
 function lastToast(): { code: string | undefined; text: string } {
   const arg = vi.mocked(toast.error).mock.calls.at(-1)?.[0];
@@ -59,7 +62,7 @@ describe('toastPartnerChannelRefusal', () => {
   it.each(TEST_LOCALES)('should name both currencies of a mismatch in %s', async (lng) => {
     const i18n = await createLocaleI18n(lng);
     toastPartnerChannelRefusal(
-      new ApiError(currency.currencyMismatch.status, currency.currencyMismatch.body),
+      new ApiError(currencyMismatch.status, currencyMismatch.body),
       ['currency-invalid', 'currency-mismatch'],
       i18n.t as TFunction,
     );
@@ -74,7 +77,7 @@ describe('toastPartnerChannelRefusal', () => {
   it.each(TEST_LOCALES)('should name the invalid currency in %s', async (lng) => {
     const i18n = await createLocaleI18n(lng);
     toastPartnerChannelRefusal(
-      new ApiError(currency.invalidCurrency.status, currency.invalidCurrency.body),
+      new ApiError(invalidCurrency.status, invalidCurrency.body),
       ['currency-invalid'],
       i18n.t as TFunction,
     );

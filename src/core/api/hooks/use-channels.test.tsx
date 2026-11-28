@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import * as client from '@/core/api/client';
 import { ApiError, entriesOf } from '@/core/api/api-error';
 import { TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
+import { defined } from '@/test/defined';
 import {
   serverManagedPreviousSecretRefusal,
   serverManagedReplacedAtRefusal,
@@ -156,7 +157,8 @@ describe('useUpdateChannel', () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe('Validation failed');
+    // The hook types its error as unknown (onError takes any refusal), so read the message by shape.
+    expect(result.current.error).toMatchObject({ message: 'Validation failed' });
   });
 });
 
@@ -204,6 +206,9 @@ describe('CHANNEL_UPDATE_ERRORS identity codes', () => {
     [serverManagedReplacedAtRefusal, 'admin:channels.errors.server_managed_credential_key'],
   ])('CHANNEL_UPDATE_ERRORS_ShouldMapTheCodeToItsKey_WhenPlatformRefuses %j', (refusal, key) => {
     const { code } = new ApiError(400, refusal);
-    expect(CHANNEL_UPDATE_ERRORS.codes[code!]).toEqual({ code, key });
+    expect(defined(CHANNEL_UPDATE_ERRORS.codes, 'CHANNEL_UPDATE_ERRORS.codes')[code!]).toEqual({
+      code,
+      key,
+    });
   });
 });
