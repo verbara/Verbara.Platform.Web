@@ -4,29 +4,5 @@
   "min_checked_test_files": 350,
   "test_roots": ["src", "tests"],
   "not_unit_test_dirs": ["tests/e2e", "tests/manuales", "tests/fixtures"],
-  "errors": {
-    "src/webchat/embed/app.test.tsx": {
-      "TS1294": 1
-    },
-    "src/webchat/embed/csat-panel.test.tsx": {
-      "TS2532": 2
-    },
-    "src/webchat/embed/integration.test.tsx": {
-      "TS1294": 1,
-      "TS2493": 1,
-      "TS6133": 1
-    },
-    "src/webchat/embed/notifications.test.ts": {
-      "TS2322": 1
-    },
-    "src/webchat/embed/transport/session-api.ts": {
-      "TS1294": 2
-    },
-    "src/webchat/embed/widget-frame.test.tsx": {
-      "TS1294": 1
-    },
-    "src/webchat/sdk/api.test.ts": {
-      "TS2367": 1
-    }
-  }
+  "errors": {}
 }

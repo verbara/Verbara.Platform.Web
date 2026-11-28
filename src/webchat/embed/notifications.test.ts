@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   loadSoundPreference,
   setSoundEnabled,
@@ -33,18 +33,19 @@ describe('favicon badge', () => {
   beforeEach(() => {
     document.head.innerHTML = '<link rel="icon" href="https://x/old.png">';
     // Provide a minimal canvas stub so getContext('2d') doesn't return null
-    HTMLCanvasElement.prototype.getContext = function () {
-      return {
-        fillStyle: '',
-        font: '',
-        textAlign: '',
-        textBaseline: '',
-        beginPath: () => {},
-        arc: () => {},
-        fill: () => {},
-        fillText: () => {},
-      } as unknown as CanvasRenderingContext2D;
-    };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(
+      () =>
+        ({
+          fillStyle: '',
+          font: '',
+          textAlign: '',
+          textBaseline: '',
+          beginPath: () => {},
+          arc: () => {},
+          fill: () => {},
+          fillText: () => {},
+        }) as unknown as CanvasRenderingContext2D,
+    );
     HTMLCanvasElement.prototype.toDataURL = function () {
       return fakeDataUrl;
     };
