@@ -60,6 +60,7 @@ vi.mock('@/core/observability/sentry', () => ({ addSentryBreadcrumb: vi.fn() }))
 
 // ─── Component under test (must import after mocks) ─────────────────────────
 import { QaDetailDrawer } from '@/analytics/qa/qa-detail-drawer';
+import { defined } from '@/test/defined';
 
 function makeDetail(overrides: Partial<QaDetail> = {}): QaDetail {
   return {
@@ -140,13 +141,13 @@ describe('QaDetailDrawer enrichment (S4.6)', () => {
     const severities = within(section).getAllByTestId('qa-violation-severity');
     // Critical → red
     expect(severities[0]).toHaveAttribute('data-severity', 'critical');
-    expect(severities[0].className).toMatch(/red/);
+    expect(defined(severities[0], 'severity 0').className).toMatch(/red/);
     // Warning → amber
     expect(severities[1]).toHaveAttribute('data-severity', 'warning');
-    expect(severities[1].className).toMatch(/amber/);
+    expect(defined(severities[1], 'severity 1').className).toMatch(/amber/);
     // Info → gray/slate
     expect(severities[2]).toHaveAttribute('data-severity', 'info');
-    expect(severities[2].className).toMatch(/slate/);
+    expect(defined(severities[2], 'severity 2').className).toMatch(/slate/);
   });
 
   it('SentimentTimeline_ShouldRenderRechartsAreaChart_WhenTimelinePresent', () => {

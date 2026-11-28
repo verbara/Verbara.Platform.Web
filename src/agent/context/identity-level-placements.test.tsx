@@ -65,6 +65,9 @@ vi.mock('@/agent/conversation/wrap-up-dialog', () => ({ WrapUpDialog: () => null
 
 type WireContact = components['schemas']['Contact'];
 
+/** The contact's id as the console reads it: the wire `EntityId` is a string (see platform-conversation.ts). */
+const idOf = (contact: WireContact): string => String(contact.contactId);
+
 const CONVERSATION_ID = 'conv-1';
 const RECORD_URL = `/api/v1/conversations/${CONVERSATION_ID}`;
 const contactUrl = (id: string | undefined) => `/api/v1/contacts/${id}`;
@@ -159,8 +162,8 @@ describe('the identity mark on the card and in the header', () => {
 
   describe.each(PLACEMENTS)('%s', (_name, placement) => {
     it('Placement_ShouldShowTheUnverifiedMarkFromTheLocale_WhenTheLevelIsUnverified', async () => {
-      serve({ [contactUrl(contactLevelOne.contactId)]: contactLevelOne });
-      select(contactLevelOne.contactId);
+      serve({ [contactUrl(idOf(contactLevelOne))]: contactLevelOne });
+      select(idOf(contactLevelOne));
       renderPlacement(placement);
 
       const mark = await waitFor(() => {
@@ -175,8 +178,8 @@ describe('the identity mark on the card and in the header', () => {
     });
 
     it('Placement_ShouldShowTheVerifiedBadgeFromTheLocale_WhenTheLevelIsVerified', async () => {
-      serve({ [contactUrl(contactLevelTwo.contactId)]: contactLevelTwo });
-      select(contactLevelTwo.contactId);
+      serve({ [contactUrl(idOf(contactLevelTwo))]: contactLevelTwo });
+      select(idOf(contactLevelTwo));
       renderPlacement(placement);
 
       const mark = await waitFor(() => {
@@ -196,18 +199,18 @@ describe('the identity mark on the card and in the header', () => {
       ['absent with a reserved address', reservedAddressNoLevel],
       ['outside the three values', unknownLevel],
     ])('Placement_ShouldShowNoMark_WhenTheLevelIs %s', async (_level, contact) => {
-      serve({ [contactUrl(contact.contactId)]: contact });
-      select(contact.contactId);
+      serve({ [contactUrl(idOf(contact))]: contact });
+      select(idOf(contact));
       const qc = renderPlacement(placement);
 
-      await readSettled(qc, contact.contactId);
+      await readSettled(qc, idOf(contact));
 
       expect(qc.getQueryState(['contacts', contact.contactId])?.status).toBe('success');
       expect(marks()).toHaveLength(0);
     });
 
     it('Placement_ShouldReadNothing_OnAFreshOffer_ThenMarkTheContact_WhenTheOfferIsAccepted', async () => {
-      const contactRequest = contactUrl(contactLevelOne.contactId);
+      const contactRequest = contactUrl(idOf(contactLevelOne));
       serve({
         [RECORD_URL]: { ...terminalConversation, contactId: contactLevelOne.contactId },
         [contactRequest]: contactLevelOne,
@@ -243,10 +246,10 @@ describe('the identity mark on the card and in the header', () => {
             answer = resolve as (body: WireContact) => void;
           }),
       );
-      select(contactLevelOne.contactId);
+      select(idOf(contactLevelOne));
       renderPlacement(header);
 
-      await waitFor(() => expect(requestedUrls()).toContain(contactUrl(contactLevelOne.contactId)));
+      await waitFor(() => expect(requestedUrls()).toContain(contactUrl(idOf(contactLevelOne))));
       expect(screen.getByTestId('conversation-channel-badge')).toBeInTheDocument();
       expect(marks()).toHaveLength(0);
 
@@ -256,11 +259,11 @@ describe('the identity mark on the card and in the header', () => {
     });
 
     it('Header_ShouldShowNoMark_WhenTheReadFailed', async () => {
-      serve({ [contactUrl(contactLevelOne.contactId)]: new ApiError(500, null) });
-      select(contactLevelOne.contactId);
+      serve({ [contactUrl(idOf(contactLevelOne))]: new ApiError(500, null) });
+      select(idOf(contactLevelOne));
       const qc = renderPlacement(header);
 
-      await readSettled(qc, contactLevelOne.contactId);
+      await readSettled(qc, idOf(contactLevelOne));
 
       expect(qc.getQueryState(['contacts', contactLevelOne.contactId])?.status).toBe('error');
       expect(marks()).toHaveLength(0);

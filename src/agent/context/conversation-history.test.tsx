@@ -171,15 +171,14 @@ describe('ConversationHistory', () => {
   });
 
   describe('channel names', () => {
+    // A channel is any string on the wire here: the list must also show one the contract does not
+    // name yet ('Pigeon'), so these rows widen `channel` instead of using `pageOf`.
     function renderChannels(...channels: string[]) {
+      const items: (Omit<Summary, 'channel'> & { channel: string })[] = channels.map(
+        (channel, i) => ({ ...closedContactSummary, id: `h-${i}`, channel }),
+      );
       serve({
-        [LIST_URL]: pageOf(
-          ...channels.map((channel, i) => ({
-            ...closedContactSummary,
-            id: `h-${i}`,
-            channel,
-          })),
-        ),
+        [LIST_URL]: { ...contactSummaryPage, items },
       } as Record<string, Answer>);
       selectConversation();
       renderTab();

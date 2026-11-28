@@ -5,31 +5,6 @@
   "test_roots": ["src", "tests"],
   "not_unit_test_dirs": ["tests/e2e", "tests/manuales", "tests/fixtures"],
   "errors": {
-    "src/agent/context/conversation-history.test.tsx": {
-      "TS2345": 1
-    },
-    "src/agent/context/identity-level-history.test.tsx": {
-      "TS2322": 1
-    },
-    "src/agent/context/identity-level-placements.test.tsx": {
-      "TS2345": 13
-    },
-    "src/agent/conversation/suggestion-banner.test.tsx": {
-      "TS1484": 1
-    },
-    "src/agent/stores/conversation-store.test.ts": {
-      "TS1484": 2
-    },
-    "src/analytics/cdr/cdr-page.test.tsx": {
-      "TS18048": 7,
-      "TS2532": 7
-    },
-    "src/analytics/cdr/cdr-pdf-template.test.ts": {
-      "TS2322": 1
-    },
-    "src/analytics/qa/qa-page.test.tsx": {
-      "TS2532": 2
-    },
     "src/core/api/api-error.test.ts": {
       "TS18048": 1,
       "TS2345": 1
@@ -115,9 +90,6 @@
     },
     "src/webchat/sdk/api.test.ts": {
       "TS2367": 1
-    },
-    "tests/unit/analytics/qa/qa-drawer-enrichment.test.tsx": {
-      "TS2532": 3
     }
   }
 }

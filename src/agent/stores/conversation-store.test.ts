@@ -3,8 +3,8 @@ import {
   initConversationSSE,
   mapServerConversationState,
   applyVoiceScreenPop,
-  Conversation,
-  Message,
+  type Conversation,
+  type Message,
 } from './conversation-store';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
 import { mapPlatformMessage } from '@/core/api/platform-message';

@@ -23,6 +23,7 @@ function makeDetail(overrides: Partial<CdrDetailDto> = {}): CdrDetailDto {
       qaScore: 92,
       hasRecording: false,
       holdCount: 0,
+      isPartial: false,
     },
     timeline: [
       { timestamp: '10:00:01', event: 'queued' },
