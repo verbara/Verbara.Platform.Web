@@ -51,6 +51,7 @@ import {
   type LicensedAgentPeaks,
 } from '@/core/api/hooks/use-system';
 import LicensePage from './license-page';
+import { nthCall } from '@/test/defined';
 
 const mockUseLicense = asMock(useSystemLicense);
 const mockUseUpdate = asMock(useUpdateLicense);
@@ -239,7 +240,7 @@ describe('LicensePage', () => {
     fireEvent.click(confirmBtn);
 
     expect(mutate).toHaveBeenCalledTimes(1);
-    const [payload] = mutate.mock.calls[0];
+    const [payload] = nthCall(mutate);
     expect(payload).toEqual({ licenseKey: 'new-license-key' });
   });
 

@@ -5,7 +5,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { mapPlatformContact } from '@/core/api/platform-conversation';
 import { consentContactVoiceYes, consentEmailYesRequest } from '@/tests/utils/contract-doubles';
+import type { UseQueryResult } from '@tanstack/react-query';
+import type { Contact } from '@/core/api/hooks/use-contacts';
 import ConsentManagementPage from './consent-management-page';
+
+/**
+ * The `useSearchContacts` result the page reads: its `data` (typed, so a row in a shape the page no
+ * longer has fails to compile). The page reads no other member, so the rest of the query result is
+ * left out.
+ */
+function searchAnswers(data: Contact[]): UseQueryResult<Contact[]> {
+  return { data, isLoading: false } as unknown as UseQueryResult<Contact[]>;
+}
 
 /** The verbatim copy of the host fixture (`contact-channel-consent.v1.json`). */
 const consentFixture = JSON.parse(
@@ -109,10 +120,7 @@ describe('ConsentManagementPage', () => {
 
   it('shows empty state with no search results', async () => {
     const { useSearchContacts } = await import('@/core/api/hooks/use-contacts');
-    vi.mocked(useSearchContacts).mockReturnValue({
-      data: [],
-      isLoading: false,
-    } as ReturnType<typeof useSearchContacts>);
+    vi.mocked(useSearchContacts).mockReturnValue(searchAnswers([]));
 
     render(<ConsentManagementPage />);
     // Without a search of >= 2 chars, no empty message shown
@@ -121,8 +129,8 @@ describe('ConsentManagementPage', () => {
 
   it('renders contacts with consent badges when search returns results', async () => {
     const { useSearchContacts } = await import('@/core/api/hooks/use-contacts');
-    vi.mocked(useSearchContacts).mockReturnValue({
-      data: [
+    vi.mocked(useSearchContacts).mockReturnValue(
+      searchAnswers([
         {
           id: '1',
           firstName: 'John',
@@ -133,9 +141,8 @@ describe('ConsentManagementPage', () => {
           doNotContact: false,
           channelConsent: { Voice: true, Email: true, Sms: false, WhatsApp: false, WebChat: true },
         },
-      ],
-      isLoading: false,
-    } as ReturnType<typeof useSearchContacts>);
+      ]),
+    );
 
     render(<ConsentManagementPage />);
     expect(screen.getByText('John Doe')).toBeInTheDocument();
@@ -145,8 +152,8 @@ describe('ConsentManagementPage', () => {
 
   it('shows edit button per row', async () => {
     const { useSearchContacts } = await import('@/core/api/hooks/use-contacts');
-    vi.mocked(useSearchContacts).mockReturnValue({
-      data: [
+    vi.mocked(useSearchContacts).mockReturnValue(
+      searchAnswers([
         {
           id: '1',
           firstName: 'Jane',
@@ -163,9 +170,8 @@ describe('ConsentManagementPage', () => {
           createdAt: '2025-01-01',
           channelConsent: {},
         },
-      ],
-      isLoading: false,
-    } as ReturnType<typeof useSearchContacts>);
+      ]),
+    );
 
     render(<ConsentManagementPage />);
     const editButtons = screen.getAllByTestId('edit-consent-btn');
@@ -190,10 +196,9 @@ describe('ConsentManagementPage', () => {
 
     it('saveConsent_ShouldSendOnlyTheChangedChannel_WhenEmailIsSetToYesOnARecordedVoice', async () => {
       const { useSearchContacts } = await import('@/core/api/hooks/use-contacts');
-      vi.mocked(useSearchContacts).mockReturnValue({
-        data: [mapPlatformContact(consentContactVoiceYes)],
-        isLoading: false,
-      } as unknown as ReturnType<typeof useSearchContacts>);
+      vi.mocked(useSearchContacts).mockReturnValue(
+        searchAnswers([mapPlatformContact(consentContactVoiceYes)]),
+      );
 
       render(<ConsentManagementPage />);
       fireEvent.click(screen.getByTestId('edit-consent-btn'));
@@ -220,10 +225,11 @@ describe('ConsentManagementPage', () => {
     /** The contact the search answers, with `channelConsent` as given; the rest from the fixture double. */
     async function showContact(channelConsent: Record<string, boolean>, doNotContact = false) {
       const { useSearchContacts } = await import('@/core/api/hooks/use-contacts');
-      vi.mocked(useSearchContacts).mockReturnValue({
-        data: [mapPlatformContact({ ...consentContactVoiceYes, channelConsent, doNotContact })],
-        isLoading: false,
-      } as unknown as ReturnType<typeof useSearchContacts>);
+      vi.mocked(useSearchContacts).mockReturnValue(
+        searchAnswers([
+          mapPlatformContact({ ...consentContactVoiceYes, channelConsent, doNotContact }),
+        ]),
+      );
       render(<ConsentManagementPage />);
     }
 

@@ -15,6 +15,7 @@ vi.mock('@/core/api/hooks/use-billing', () => ({
 }));
 
 import { RateCardForm } from './rate-card-form';
+import { nthCall } from '@/test/defined';
 
 function fillAndSubmit(currency: string) {
   fireEvent.change(screen.getByTestId('rate-card-name'), { target: { value: 'Base' } });
@@ -49,7 +50,7 @@ describe('RateCardForm — ISO 4217 currency (P2)', () => {
     fillAndSubmit(' usd ');
 
     await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
-    expect(createMutate.mock.calls[0][0]).toMatchObject({ currency: 'USD' });
+    expect(nthCall(createMutate)[0]).toMatchObject({ currency: 'USD' });
   });
 
   it('RateCardForm_ShouldStayOpen_WhenTheWriteIsRefused', async () => {
@@ -59,7 +60,7 @@ describe('RateCardForm — ISO 4217 currency (P2)', () => {
     fillAndSubmit('PEN');
 
     await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
-    const options = createMutate.mock.calls[0][1] as { onSuccess?: () => void } | undefined;
+    const options = nthCall(createMutate)[1] as { onSuccess?: () => void } | undefined;
     expect(onOpenChange).not.toHaveBeenCalled();
     expect(screen.getByTestId('rate-card-submit')).toBeInTheDocument();
 

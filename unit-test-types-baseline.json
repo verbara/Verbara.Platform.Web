@@ -5,81 +5,6 @@
   "test_roots": ["src", "tests"],
   "not_unit_test_dirs": ["tests/e2e", "tests/manuales", "tests/fixtures"],
   "errors": {
-    "src/admin/agents/agent-form.test.tsx": {
-      "TS2532": 2
-    },
-    "src/admin/billing/rate-card-form.test.tsx": {
-      "TS2532": 2
-    },
-    "src/admin/channels/channel-config-form.test.tsx": {
-      "TS18048": 4,
-      "TS2345": 2,
-      "TS2532": 8
-    },
-    "src/admin/channels/channel-test-button.test.tsx": {
-      "TS18048": 1
-    },
-    "src/admin/compliance/consent-management-page.test.tsx": {
-      "TS2352": 3
-    },
-    "src/admin/did-routes/did-route-form.test.tsx": {
-      "TS2532": 1
-    },
-    "src/admin/features/agent-assist-page.test.tsx": {
-      "TS2345": 1
-    },
-    "src/admin/license/license-page.test.tsx": {
-      "TS2488": 1
-    },
-    "src/admin/license/peak-day-tenants.test.ts": {
-      "TS2559": 1
-    },
-    "src/admin/partner/customers-page.test.tsx": {
-      "TS2532": 2
-    },
-    "src/admin/partner/partner-channel-hooks.test.tsx": {
-      "TS18048": 1,
-      "TS2345": 2,
-      "TS2532": 1
-    },
-    "src/admin/partner/partner-rate-card-form.test.tsx": {
-      "TS2532": 2
-    },
-    "src/admin/realtime/profile-form.test.tsx": {
-      "TS2532": 1
-    },
-    "src/admin/reason-hints/reason-hint-form.test.tsx": {
-      "TS2532": 1
-    },
-    "src/admin/reports/report-pdf-button.test.tsx": {
-      "TS2322": 2
-    },
-    "src/admin/reports/templates/templates.test.ts": {
-      "TS2322": 1
-    },
-    "src/admin/tenants/sso-tab.test.tsx": {
-      "TS2740": 1
-    },
-    "src/admin/tenants/tenant-settings-form.test.tsx": {
-      "TS2532": 3
-    },
-    "src/admin/tenants/tenants-page.test.tsx": {
-      "TS2532": 4
-    },
-    "src/admin/trunks/trunk-form.test.tsx": {
-      "TS2532": 5
-    },
-    "src/admin/trunks/trunk-wizard.test.tsx": {
-      "TS2345": 2,
-      "TS2532": 3
-    },
-    "src/admin/typification/llm/llm-config-form.test.tsx": {
-      "TS2532": 5,
-      "TS2739": 1
-    },
-    "src/admin/webchat/identity-secret.test.ts": {
-      "TS2345": 1
-    },
     "src/agent/context/contact-info-actions.test.tsx": {
       "TS2820": 3
     },
@@ -193,15 +118,6 @@
     },
     "src/webchat/sdk/api.test.ts": {
       "TS2367": 1
-    },
-    "tests/unit/admin/partner/revenue-chart.test.tsx": {
-      "TS2532": 1
-    },
-    "tests/unit/admin/partner/revenue-csv.test.tsx": {
-      "TS2532": 1
-    },
-    "tests/unit/admin/tenants/tenant-settings-form.test.tsx": {
-      "TS2532": 1
     },
     "tests/unit/analytics/qa/qa-drawer-enrichment.test.tsx": {
       "TS2532": 3

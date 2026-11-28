@@ -64,6 +64,7 @@ vi.mock('@/core/api/hooks/use-partner', async (importOriginal) => {
 });
 
 import PartnerRevenuePage from '@/admin/partner/revenue-page';
+import { nthCall } from '@/test/defined';
 
 function renderPage() {
   return render(
@@ -108,7 +109,7 @@ describe('PartnerRevenuePage CSV export', () => {
 
     // Blob URL was created and an anchor click was triggered.
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
-    const blobArg = createObjectURLSpy.mock.calls[0][0] as Blob;
+    const blobArg = nthCall(createObjectURLSpy)[0] as Blob;
     expect(blobArg).toBeInstanceOf(Blob);
     expect(blobArg.type).toMatch(/text\/csv/);
     expect(clickSpy).toHaveBeenCalledTimes(1);

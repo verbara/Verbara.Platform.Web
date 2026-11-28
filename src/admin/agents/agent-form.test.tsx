@@ -44,6 +44,7 @@ beforeEach(() => {
   directory.agents = [];
 });
 import { generateSipPassword } from './sip-password';
+import { nthCall } from '@/test/defined';
 
 describe('generateSipPassword', () => {
   it('generateSipPassword_ShouldReturn16AlphanumericChars', () => {
@@ -83,7 +84,7 @@ describe('AgentForm SIP credentials', () => {
     fireEvent.submit(screen.getByTestId('agent-form'));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
-    const arg = onSubmit.mock.calls[0][0] as { extension?: string; sipPassword?: string };
+    const arg = nthCall(onSubmit)[0] as { extension?: string; sipPassword?: string };
     expect(arg.extension).toBe('1001');
     expect(arg.sipPassword).toMatch(/^[A-Za-z0-9]{16}$/);
   });
@@ -134,7 +135,7 @@ describe('AgentForm channel capacity (W6)', () => {
     fireEvent.submit(screen.getByTestId('agent-form'));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
-    const arg = onSubmit.mock.calls[0][0] as { capacity?: CapacityGroup };
+    const arg = nthCall(onSubmit)[0] as { capacity?: CapacityGroup };
     expect(arg.capacity?.maxChat).toBe(4);
     // Untouched fields stay null = inherit the tenant default.
     expect(arg.capacity?.maxEmail).toBeNull();

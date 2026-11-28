@@ -7,6 +7,7 @@ import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import * as client from '@/core/api/client';
 import { ApiError } from '@/core/api/api-error';
+import { defined } from '@/test/defined';
 import {
   useCreatePartnerCustomer,
   useUpdateCustomerSettings,
@@ -62,6 +63,7 @@ const contract = (name: string) =>
     readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts', name), 'utf-8'),
   ) as Record<string, unknown>;
 const currency = contract('rate-card-currency-refusals.json') as Record<string, Refusal>;
+const invalidCurrency = defined(currency.invalidCurrency, 'invalidCurrency refusal');
 const planCeiling = contract('plan-above-parent-409.json') as unknown as Refusal;
 
 function lastErrorToast(): { code: string | null; text: string } {
@@ -105,12 +107,12 @@ describe('currency refusals (P2)', () => {
   it.each(writers)(
     '%s_ShouldToastCurrencyInvalidWithTheCode_WhenTheHostRefusesTheCurrency',
     async (_name, useHook, vars) => {
-      const shown = await runRejected(useHook as never, vars, currency.invalidCurrency);
+      const shown = await runRejected(useHook as never, vars, invalidCurrency);
 
       expect(shown.code).toBe('currency-invalid');
       expect(shown.text).toContain('common:errors.partner_channel.currency_invalid');
       expect(shown.text).toContain('banana');
-      expect(shown.text).not.toBe(currency.invalidCurrency.body.error);
+      expect(shown.text).not.toBe(invalidCurrency.body.error);
       expect(toast.success).not.toHaveBeenCalled();
     },
   );
@@ -121,15 +123,16 @@ describe('currency refusals (P2)', () => {
   ] as const)(
     'UseGeneratePartnerInvoice_ShouldToastTheCodedRefusal_WhenTheHostAnswers %s',
     async (fixtureKey, code, named) => {
+      const refusal = defined(currency[fixtureKey], fixtureKey);
       const shown = await runRejected(
         (() => useGeneratePartnerInvoice('pc1')) as never,
         { from: '2026-09-01', to: '2026-09-30' },
-        currency[fixtureKey],
+        refusal,
       );
 
       expect(shown.code).toBe(code);
       for (const value of named) expect(shown.text).toContain(value);
-      expect(shown.text).not.toBe(currency[fixtureKey].body.error);
+      expect(shown.text).not.toBe(refusal.body.error);
       expect(toast.success).not.toHaveBeenCalled();
     },
   );

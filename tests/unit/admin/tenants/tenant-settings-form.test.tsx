@@ -31,6 +31,7 @@ vi.mock('@/admin/tenants/use-tenant-settings', () => ({
 }));
 
 import { TenantSettingsForm } from '@/admin/tenants/tenant-settings-form';
+import { nthCall } from '@/test/defined';
 
 const baseSettings = {
   tenantId: 'demo',
@@ -136,7 +137,7 @@ describe('TenantSettingsForm', () => {
     await waitFor(() => {
       expect(mutateAsync).toHaveBeenCalledTimes(1);
     });
-    expect(mutateAsync.mock.calls[0][0]).toMatchObject({
+    expect(nthCall(mutateAsync)[0]).toMatchObject({
       operational: expect.objectContaining({ maxConcurrentChannels: 75 }),
     });
   });

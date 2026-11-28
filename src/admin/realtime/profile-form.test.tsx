@@ -28,6 +28,7 @@ vi.mock('@/core/api/hooks/use-voice-codecs', () => ({
 
 import { ProfileForm } from './profile-form';
 import type { EndpointProfile } from '@/core/api/hooks/use-endpoint-profiles';
+import { nthCall } from '@/test/defined';
 
 const existingProfile: EndpointProfile = {
   id: 42,
@@ -83,7 +84,7 @@ describe('ProfileForm fields', () => {
     fireEvent.submit(form);
 
     await waitFor(() => expect(createMutate).toHaveBeenCalled());
-    const arg = createMutate.mock.calls[0][0] as Record<string, unknown>;
+    const arg = nthCall(createMutate)[0] as Record<string, unknown>;
     expect(arg.codecs).toBe('ulaw,alaw,g722');
   });
 });

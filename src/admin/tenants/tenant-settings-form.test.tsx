@@ -43,6 +43,7 @@ import { resolve } from 'node:path';
 import { toast } from 'sonner';
 import { ApiError } from '@/core/api/api-error';
 import { TenantSettingsForm } from './tenant-settings-form';
+import { nthCall } from '@/test/defined';
 
 describe('TenantSettingsForm — outbound caller ID (3B.2d.1)', () => {
   afterEach(() => mutateAsyncMock.mockReset());
@@ -60,7 +61,7 @@ describe('TenantSettingsForm — outbound caller ID (3B.2d.1)', () => {
     });
     fireEvent.click(screen.getByTestId('tenant-settings-submit'));
     await waitFor(() => expect(mutateAsyncMock).toHaveBeenCalled());
-    expect(mutateAsyncMock.mock.calls[0][0].operational.outboundCallerId).toBe('+15559998888');
+    expect(nthCall(mutateAsyncMock)[0].operational.outboundCallerId).toBe('+15559998888');
   });
 
   it('TenantSettingsForm_ShouldSubmitNullOutboundCallerId_WhenCleared', async () => {
@@ -69,7 +70,7 @@ describe('TenantSettingsForm — outbound caller ID (3B.2d.1)', () => {
     fireEvent.change(screen.getByTestId('field-outboundCallerId'), { target: { value: '' } });
     fireEvent.click(screen.getByTestId('tenant-settings-submit'));
     await waitFor(() => expect(mutateAsyncMock).toHaveBeenCalled());
-    expect(mutateAsyncMock.mock.calls[0][0].operational.outboundCallerId).toBeNull();
+    expect(nthCall(mutateAsyncMock)[0].operational.outboundCallerId).toBeNull();
   });
 });
 
@@ -98,7 +99,7 @@ describe('TenantSettingsForm — capacity defaults (W6)', () => {
     fireEvent.change(screen.getByTestId('field-maxChatDefault'), { target: { value: '4' } });
     fireEvent.click(screen.getByTestId('tenant-settings-submit'));
     await waitFor(() => expect(mutateAsyncMock).toHaveBeenCalled());
-    const op = mutateAsyncMock.mock.calls[0][0].operational;
+    const op = nthCall(mutateAsyncMock)[0].operational;
     expect(op.maxChatDefault).toBe(4);
     expect(op.maxEmailDefault).toBe(5);
     expect(op.maxSmsDefault).toBe(3);

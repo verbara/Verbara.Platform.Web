@@ -97,6 +97,7 @@ vi.mock('@/core/api/hooks/use-partner', async (importOriginal) => {
 });
 
 import PartnerRevenuePage from '@/admin/partner/revenue-page';
+import { nthCall } from '@/test/defined';
 
 function renderPage() {
   return render(
@@ -125,7 +126,7 @@ describe('PartnerRevenuePage trend chart + drill-down', () => {
     fireEvent.click(screen.getByTestId('revenue-row-cust-alpha'));
 
     expect(navigateMock).toHaveBeenCalledTimes(1);
-    const target = navigateMock.mock.calls[0][0] as string;
+    const target = nthCall(navigateMock)[0] as string;
     expect(target).toMatch(/^\/admin\/partner\/customers\/cust-alpha/);
     // No filter applied yet → no query params.
     expect(target).not.toContain('from=');

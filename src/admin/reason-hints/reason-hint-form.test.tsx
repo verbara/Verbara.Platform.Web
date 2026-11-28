@@ -23,6 +23,7 @@ vi.mock('react-i18next', () => ({
 import { ReasonHintForm } from './reason-hint-form';
 import { parseCodes, codesToText } from './reason-hint-codes';
 import type { ReasonHint } from '@/core/api/hooks/use-reason-hints';
+import { nthCall } from '@/test/defined';
 
 describe('ReasonHintForm helpers', () => {
   it('parseCodes_ShouldTrimAndDropBlanks_WhenGivenCommaList', () => {
@@ -82,7 +83,7 @@ describe('ReasonHintForm fields', () => {
     fireEvent.submit(screen.getByTestId('reason-hint-form-submit').closest('form')!);
 
     await waitFor(() => expect(createMutate).toHaveBeenCalled());
-    const arg = createMutate.mock.calls[0][0] as Record<string, unknown>;
+    const arg = nthCall(createMutate)[0] as Record<string, unknown>;
     expect(arg.scope).toBe('Did');
     expect(arg.scopeRef).toBe('+541143218765');
     expect(arg.reasonPath).toBe('["CITAS","REPROG"]');

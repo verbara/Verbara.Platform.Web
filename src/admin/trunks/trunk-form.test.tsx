@@ -28,6 +28,7 @@ vi.mock('@/core/api/hooks/use-voice-codecs', () => ({
 
 import { TrunkForm } from './trunk-form';
 import type { TrunkSummary } from '@/core/api/hooks/use-trunks';
+import { nthCall } from '@/test/defined';
 
 const existingTrunk: TrunkSummary = {
   id: 7,
@@ -121,7 +122,7 @@ describe('TrunkForm fields', () => {
     fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
 
     await waitFor(() => expect(createMutate).toHaveBeenCalled());
-    const arg = createMutate.mock.calls[0][0] as Record<string, unknown>;
+    const arg = nthCall(createMutate)[0] as Record<string, unknown>;
     expect(arg.matchHost).toBe('198.51.100.0/24');
     expect(arg.authUsername).toBe('sip-user');
     expect(arg.authPassword).toBe('s3cr3t-pass');
@@ -203,7 +204,7 @@ describe('TrunkForm fields', () => {
     fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalled());
-    const arg = updateMutate.mock.calls[0][0] as Record<string, unknown>;
+    const arg = nthCall(updateMutate)[0] as Record<string, unknown>;
     expect(arg.displayName).toBe('Renamed Trunk');
     expect(arg.registrationUri).toBe('sip:reg@carrier.example.com');
   });
@@ -246,7 +247,7 @@ describe('TrunkForm fields', () => {
     fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalled());
-    const arg = updateMutate.mock.calls[0][0] as Record<string, unknown>;
+    const arg = nthCall(updateMutate)[0] as Record<string, unknown>;
     expect(arg.id).toBe(7);
     expect(arg.displayName).toBe('Renamed Trunk');
     expect('authPassword' in arg).toBe(false);
@@ -264,7 +265,7 @@ describe('TrunkForm fields', () => {
     fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalled());
-    const arg = updateMutate.mock.calls[0][0] as Record<string, unknown>;
+    const arg = nthCall(updateMutate)[0] as Record<string, unknown>;
     expect(arg.authPassword).toBe('rotated-secret');
   });
 
@@ -278,7 +279,7 @@ describe('TrunkForm fields', () => {
     fireEvent.click(screen.getByTestId('trunk-form-codecs-add-alaw'));
     fireEvent.submit(screen.getByTestId('trunk-form-submit').closest('form')!);
     await waitFor(() => expect(createMutate).toHaveBeenCalled());
-    const arg = createMutate.mock.calls[0][0] as Record<string, unknown>;
+    const arg = nthCall(createMutate)[0] as Record<string, unknown>;
     expect(arg.codecs).toBe('alaw');
   });
 
