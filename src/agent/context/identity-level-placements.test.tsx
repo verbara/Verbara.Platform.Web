@@ -65,7 +65,7 @@ vi.mock('@/agent/conversation/wrap-up-dialog', () => ({ WrapUpDialog: () => null
 
 type WireContact = components['schemas']['Contact'];
 
-/** The contact's id as the console reads it: the wire `EntityId` is a string (see platform-conversation.ts). */
+/** The contact's id as the console reads it: the wire `EntityId` is untyped (`unknown`), so it is read with String() (see platform-conversation.ts). */
 const idOf = (contact: WireContact): string => String(contact.contactId);
 
 const CONVERSATION_ID = 'conv-1';

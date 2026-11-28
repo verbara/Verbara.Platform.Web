@@ -42,7 +42,7 @@ vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
 
 const SELECTED_ID = 'conv-1';
 const VIEWED_ID = closedContactSummary.id;
-// The wire `EntityId` is a string; the console reads it with String() (see platform-conversation.ts).
+// The wire `EntityId` is untyped (`unknown`); the console reads it with String() (see platform-conversation.ts).
 const CONTACT_ID = String(contactLevelOne.contactId);
 const CONTACT_URL = `/api/v1/contacts/${CONTACT_ID}`;
 const LIST_URL = `${CONTACT_URL}/conversations`;
