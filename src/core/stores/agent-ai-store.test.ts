@@ -3,11 +3,11 @@ import {
   flattenAiSessions,
   sessionHasData,
   EMPTY_SESSION,
-  AgentSuggestion,
-  SentimentReading,
-  ComplianceAlert,
-  TranscriptSegment,
-  AgentAiSession,
+  type AgentSuggestion,
+  type SentimentReading,
+  type ComplianceAlert,
+  type TranscriptSegment,
+  type AgentAiSession,
 } from './agent-ai-store';
 
 const makeSuggestion = (overrides: Partial<AgentSuggestion> = {}): AgentSuggestion => ({

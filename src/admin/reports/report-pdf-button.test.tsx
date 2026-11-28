@@ -22,6 +22,7 @@ const listEnvelope: CdrListPage = {
       hasQaScore: true,
       hasRecording: true,
       holdCount: 0,
+      isPartial: false,
     },
     {
       sessionId: '0b9e4d217c3a4f58b6e192d4a7c0f3e8',
@@ -34,6 +35,7 @@ const listEnvelope: CdrListPage = {
       hasQaScore: false,
       hasRecording: false,
       holdCount: 0,
+      isPartial: false,
     },
   ],
   hasMore: true,

@@ -49,6 +49,11 @@ import {
   autoAnswerCall,
 } from './softphone-manager';
 import { useVoiceCallStore } from '@/core/stores/voice-call-store';
+import { defined } from '@/test/defined';
+
+/** Fires the SimpleUser delegate callback the manager installed under `name`. */
+const fireDelegate = (name: string) =>
+  defined(lastInstance.current.delegate[name], `delegate.${name}`)();
 
 const baseConfig = {
   wssUrl: 'wss://pbx.lab:8089/ws',
@@ -100,7 +105,7 @@ describe('softphone-manager', () => {
 
   it('onCallReceived_ShouldSetStoreToRinging', async () => {
     await startSoftphone(baseConfig);
-    lastInstance.current.delegate.onCallReceived();
+    fireDelegate('onCallReceived');
     expect(useVoiceCallStore.getState().phase).toBe('ringing');
     expect(useVoiceCallStore.getState().direction).toBe('inbound');
   });
@@ -112,7 +117,7 @@ describe('softphone-manager', () => {
     useVoiceCallStore
       .getState()
       .startOutbound({ number: '+15551234567', correlationId: 'conv-out' });
-    lastInstance.current.delegate.onCallReceived();
+    fireDelegate('onCallReceived');
     const s = useVoiceCallStore.getState();
     expect(s.direction).toBe('outbound');
     expect(s.pendingDial).toEqual({ number: '+15551234567', correlationId: 'conv-out' });
@@ -121,7 +126,7 @@ describe('softphone-manager', () => {
 
   it('onRegistered_ShouldSetStoreRegistered', async () => {
     await startSoftphone(baseConfig);
-    lastInstance.current.delegate.onRegistered();
+    fireDelegate('onRegistered');
     expect(useVoiceCallStore.getState().registration).toBe('registered');
   });
 

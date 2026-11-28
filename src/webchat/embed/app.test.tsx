@@ -239,7 +239,9 @@ describe('App — the identity token', () => {
       onclose = null;
       onerror = null;
       closed = false;
-      constructor(readonly url: string) {
+      readonly url: string;
+      constructor(url: string) {
+        this.url = url;
         sockets.push(this);
       }
       send() {}

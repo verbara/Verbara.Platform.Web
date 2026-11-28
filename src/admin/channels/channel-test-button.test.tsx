@@ -6,6 +6,7 @@ import * as client from '@/core/api/client';
 import type { ChannelTestResult } from '@/core/api/hooks/use-channels';
 import { TEST_LOCALES, createLocaleI18n } from '@/test/locale-i18n';
 import { channelFields } from './channel-fields';
+import { defined } from '@/test/defined';
 
 vi.mock('@/core/api/client', () => ({ customFetch: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -128,7 +129,10 @@ const FORM_KEYS = [
   'admin:channels.legacy.help',
   'admin:channels.webhook.label',
   'admin:channels.webhook.help',
-  ...channelFields.whatsapp.flatMap((f) => [f.labelKey!, f.helpKey!]),
+  ...defined(channelFields.whatsapp, 'channelFields.whatsapp').flatMap((f) => [
+    f.labelKey!,
+    f.helpKey!,
+  ]),
 ];
 
 describe.each(TEST_LOCALES)('channel form strings in %s', (lng) => {

@@ -8,6 +8,7 @@ import { resolve } from 'node:path';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useListenStore } from '@/core/voice/listen-store';
+import { defined } from '@/test/defined';
 
 /**
  * The silent-listen hooks (design D4; spec `supervisor-listen-console`), against MSW handlers that
@@ -50,6 +51,7 @@ const phoneFx = readJson<{ get: Entry; set: Entry; invalid: Entry }>(
 const refusals = readJson<Record<string, Entry & { routes?: string[] }>>(
   'supervisor-listen-refusals.json',
 );
+const refusal = (code: string) => defined(refusals[code], `${code} refusal`);
 
 const CONV = '4f1d2b8c9a0e4d7f8c6b5a4e3d2c1b0a';
 const USER = '7d2c9e4b1a5f4c3e8b6d0f1a2c3e4b5d';
@@ -176,7 +178,7 @@ describe('useStartListen', () => {
   );
 
   it('UseStartListen_ShouldNameTheTrunk_WhenTheRouteRefusesTrunkNotDialable', async () => {
-    const entry = refusals.trunkNotDialable;
+    const entry = refusal('trunkNotDialable');
     server.use(
       http.post(`*/api/v1/supervisor/conversations/${CONV}/listen`, () =>
         HttpResponse.json(entry.body, { status: entry.status }),
@@ -226,7 +228,7 @@ describe('useCurrentListen', () => {
 
   it('UseCurrentListen_ShouldGoIdleWithoutAnError_WhenTheRouteAnswers404ListenNotFound', async () => {
     useListenStore.getState().setActiveListen(startFx.current.body as never);
-    const notFound = refusals.listenNotFound;
+    const notFound = refusal('listenNotFound');
     server.use(
       http.get('*/api/v1/supervisor/listen', () =>
         HttpResponse.json(notFound.body, { status: notFound.status }),
@@ -301,7 +303,7 @@ describe('useStopListen', () => {
     server.use(
       http.post(`*/api/v1/supervisor/conversations/${CONV}/listen/stop`, () =>
         HttpResponse.json(
-          { ...refusals.listenNotFound.body, conversationId: CONV },
+          { ...refusal('listenNotFound').body, conversationId: CONV },
           { status: 404 },
         ),
       ),
@@ -320,7 +322,7 @@ describe('useStopListen', () => {
     useListenStore.getState().setActiveListen(startFx.start.body as never);
     server.use(
       http.post(`*/api/v1/supervisor/conversations/${CONV}/listen/stop`, () =>
-        HttpResponse.json(refusals.notLeader.body, { status: refusals.notLeader.status }),
+        HttpResponse.json(refusal('notLeader').body, { status: refusal('notLeader').status }),
       ),
     );
     const { wrapper } = makeWrapper();
@@ -405,7 +407,7 @@ describe('conversationIdOfSession', () => {
   });
 
   it('ConversationIdOfSession_ShouldBeNull_WhenAnOlderPlatformOmitsTheField', () => {
-    const { conversationId: _omitted, ...older } = sessions[0];
+    const { conversationId: _omitted, ...older } = defined(sessions[0], 'first session');
     expect(conversationIdOfSession(older as never)).toBeNull();
   });
 });

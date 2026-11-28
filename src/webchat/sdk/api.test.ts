@@ -102,7 +102,8 @@ describe('WebChatApi', () => {
         { source: 'verbara-webchat-host', type: 'close', payload: undefined },
         EMBED,
       );
-      expect(post.mock.calls.every(([, origin]) => origin === EMBED)).toBe(true);
+      // The spy takes the options overload's type; the bridge passes a target origin string.
+      expect(post.mock.calls.every(([, origin]) => String(origin) === EMBED)).toBe(true);
     });
 
     it('Bridge_ShouldAcceptReadyOnlyFromTheEmbedOrigin', () => {

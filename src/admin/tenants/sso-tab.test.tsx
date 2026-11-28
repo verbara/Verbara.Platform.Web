@@ -99,6 +99,12 @@ function makeSettings(overrides?: Partial<TenantSettingsDto>): TenantSettingsDto
       dialplanContextPrefix: null,
       nodeAffinity: null,
       allowedDialingModes: null,
+      outboundCallerId: null,
+      maxVoiceDefault: 1,
+      maxChatDefault: 3,
+      maxEmailDefault: 5,
+      maxSmsDefault: 3,
+      maxTotalDefault: 8,
     },
     quotas: {
       maxMonthlyVoiceMinutes: null,

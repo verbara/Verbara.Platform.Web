@@ -35,6 +35,7 @@ vi.mock('./cdr-detail-drawer', () => ({ CdrDetailDrawer: () => null }));
 vi.mock('@/core/ui/contact-search-panel', () => ({ ContactSearchPanel: () => null }));
 
 import CdrPage from './cdr-page';
+import { defined, nthCall } from '@/test/defined';
 
 function renderPage() {
   const Wrapper = createWrapper();
@@ -71,14 +72,16 @@ describe('CdrPage', () => {
       'c7a1f0e25b6d4c3e9a8f1e2d3c4b5a69',
       '0b9e4d217c3a4f58b6e192d4a7c0f3e8',
     ]);
+    const first = defined(rows[0], 'first row');
+    const second = defined(rows[1], 'second row');
 
     // The first row carries its agent and talk time.
-    expect(rows[0].querySelector('[col-id="agent"]')).toHaveTextContent('Lab Agent 1001');
-    expect(rows[0].querySelector('[col-id="talkTimeMs"]')).toHaveTextContent('1:14');
+    expect(first.querySelector('[col-id="agent"]')).toHaveTextContent('Lab Agent 1001');
+    expect(first.querySelector('[col-id="talkTimeMs"]')).toHaveTextContent('1:14');
 
     // The unanswered call has no agentName and no talkTimeMs: both cells render empty.
-    const agentCell = rows[1].querySelector('[col-id="agent"]');
-    const talkCell = rows[1].querySelector('[col-id="talkTimeMs"]');
+    const agentCell = second.querySelector('[col-id="agent"]');
+    const talkCell = second.querySelector('[col-id="talkTimeMs"]');
     expect(agentCell).not.toBeNull();
     expect(talkCell).not.toBeNull();
     for (const cell of [agentCell, talkCell]) {
@@ -87,7 +90,7 @@ describe('CdrPage', () => {
     }
 
     // The row's channel is read from `channel`.
-    expect(rows[0].querySelector('[col-id="channel"]')).toHaveTextContent('voice');
+    expect(first.querySelector('[col-id="channel"]')).toHaveTextContent('voice');
     expect(screen.queryByTestId('cdr-empty-state')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cdr-error-state')).not.toBeInTheDocument();
 
@@ -99,7 +102,9 @@ describe('CdrPage', () => {
     const { container } = renderPage();
 
     await waitFor(() => expect(gridRows(container)).toHaveLength(1));
-    expect(gridRows(container)[0].getAttribute('row-id')).toBe('5d2a8c419e074b3fa1c67f80e2d94b15');
+    expect(defined(gridRows(container)[0], 'first row').getAttribute('row-id')).toBe(
+      '5d2a8c419e074b3fa1c67f80e2d94b15',
+    );
     expect(nextButton()).toBeDisabled();
   });
 
@@ -111,7 +116,7 @@ describe('CdrPage', () => {
     const { container } = renderPage();
 
     await waitFor(() => expect(gridRows(container)).toHaveLength(1));
-    const row = gridRows(container)[0];
+    const row = defined(gridRows(container)[0], 'first row');
     const holdCell = row.querySelector('[col-id="holdCount"]');
     expect(holdCell).not.toBeNull();
     expect(holdCell).toHaveTextContent('cdr.hold_unknown');
@@ -134,7 +139,7 @@ describe('CdrPage', () => {
     const { container } = renderPage();
 
     await waitFor(() => expect(gridRows(container)).toHaveLength(1));
-    const row = gridRows(container)[0];
+    const row = defined(gridRows(container)[0], 'first row');
     expect(row).toHaveAttribute('data-session-id', '5d2a8c419e074b3fa1c67f80e2d94b15');
     const holdCell = row.querySelector('[col-id="holdCount"]');
     expect(holdCell!.querySelector('[data-testid="cdr-hold-unknown"]')).not.toBeNull();
@@ -158,7 +163,7 @@ describe('CdrPage', () => {
     renderPage();
 
     await waitFor(() => expect(mockCustomFetch).toHaveBeenCalled());
-    expect(mockCustomFetch.mock.calls[0][0]).toMatchObject({
+    expect(nthCall(mockCustomFetch)[0]).toMatchObject({
       url: '/api/v1/analytics/cdr',
       method: 'GET',
       params: expect.objectContaining({ page: '1', pageSize: '50' }),

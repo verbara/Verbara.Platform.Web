@@ -28,7 +28,7 @@ const COMMON: Record<Locale, typeof enCommon> = {
 const FORGOT_URL = '/api/v1/auth/forgot-password';
 
 let forgotStatus: number | 'network-error';
-const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
+const fetchMock = vi.fn<typeof fetch>(async (input) => {
   const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
   if (new URL(raw, 'http://localhost').pathname === FORGOT_URL) {
     if (forgotStatus === 'network-error') throw new TypeError('Failed to fetch');

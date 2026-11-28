@@ -5,6 +5,7 @@ import i18n from 'i18next';
 import type { ReactNode } from 'react';
 import { CsatPanel } from './csat-panel';
 import type { CsatEmbedContext } from './chat-widget';
+import { nthCall } from '@/test/defined';
 
 // The panel posts through the embed transport; mock it so these are pure
 // component tests (the transport's own wire-shape contract lives in
@@ -97,7 +98,7 @@ describe('CsatPanel', () => {
         }),
       }),
     );
-    const body = captureMock.mock.calls[0][0] as { body: { capturedAt: string } };
+    const body = nthCall(captureMock)[0] as { body: { capturedAt: string } };
     expect(body.body.capturedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/); // ISO-8601 stamp
   });
 
@@ -107,7 +108,7 @@ describe('CsatPanel', () => {
     fireEvent.click(screen.getByTestId('webchat-csat-star-5'));
     fireEvent.click(screen.getByTestId('webchat-csat-submit'));
     await waitFor(() => expect(captureMock).toHaveBeenCalledOnce());
-    const body = captureMock.mock.calls[0][0] as { body: { comment: string | null } };
+    const body = nthCall(captureMock)[0] as { body: { comment: string | null } };
     expect(body.body.comment).toBeNull();
   });
 

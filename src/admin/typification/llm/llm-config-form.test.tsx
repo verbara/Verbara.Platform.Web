@@ -38,6 +38,7 @@ vi.mock('react-i18next', () => ({
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 import { LlmConfigForm } from './llm-config-form';
+import { defined, nthCall } from '@/test/defined';
 
 const configuredOpenAi: TenantLlmConfig = {
   providerType: 'OpenAiCompatible',
@@ -47,13 +48,16 @@ const configuredOpenAi: TenantLlmConfig = {
   keySet: true,
   keyLast4: 'cdef',
   updatedAt: '2026-06-21T00:00:00Z',
+  // BYO is what the form assumes when the read carries no source.
+  aiSource: 'Byo',
+  platformLlmAvailable: true,
 };
 
 describe('llm-provider-fields helpers', () => {
   it('llmProviderFields_ShouldRequireBaseUrl_ForOpenAiCompatible', () => {
     const fields = llmProviderFields.OpenAiCompatible;
     expect(fields.map((f) => f.key)).toEqual(['baseUrl']);
-    expect(fields[0].required).toBe(true);
+    expect(defined(fields[0], 'first field').required).toBe(true);
   });
 
   it('llmProviderFields_ShouldRequireDeploymentAndVersion_ForAzure', () => {
@@ -130,7 +134,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
     render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
     fireEvent.submit(screen.getByTestId('llm-config-form'));
     await waitFor(() => expect(upsertMutate).toHaveBeenCalled());
-    const payload = upsertMutate.mock.calls[0][0] as { apiKey: string | null };
+    const payload = nthCall(upsertMutate)[0] as { apiKey: string | null };
     expect(payload.apiKey).toBeNull();
   });
 
@@ -141,7 +145,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
     });
     fireEvent.submit(screen.getByTestId('llm-config-form'));
     await waitFor(() => expect(upsertMutate).toHaveBeenCalled());
-    const payload = upsertMutate.mock.calls[0][0] as { apiKey: string | null };
+    const payload = nthCall(upsertMutate)[0] as { apiKey: string | null };
     expect(payload.apiKey).toBe('sk-new-rotated-key');
   });
 
@@ -194,7 +198,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
     });
     fireEvent.submit(screen.getByTestId('llm-config-form'));
     await waitFor(() => expect(upsertMutate).toHaveBeenCalled());
-    const payload = upsertMutate.mock.calls[0][0] as {
+    const payload = nthCall(upsertMutate)[0] as {
       providerType: string;
       settings: Record<string, string>;
     };
@@ -254,7 +258,7 @@ describe('LlmConfigForm masked key + conditional fields', () => {
     render(<LlmConfigForm config={configuredOpenAi} platformLlmAvailable={true} />);
     fireEvent.submit(screen.getByTestId('llm-config-form'));
     await waitFor(() => expect(upsertMutate).toHaveBeenCalled());
-    const payload = upsertMutate.mock.calls[0][0] as { aiSource: string };
+    const payload = nthCall(upsertMutate)[0] as { aiSource: string };
     expect(payload.aiSource).toBe('Byo');
   });
 });

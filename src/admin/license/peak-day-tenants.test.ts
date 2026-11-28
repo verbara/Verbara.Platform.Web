@@ -7,6 +7,7 @@ import {
   partnerSubtotals,
   peakDayTenants,
   tenantChannel,
+  type LicensedTenantDay,
 } from './peak-day-tenants';
 
 const fixture = (): LicensedAgentPeaks =>
@@ -41,7 +42,9 @@ describe('tenantChannel (design D9)', () => {
 
   it('should mark a row from an older host, without parentTenantId, as unknown', () => {
     const peaks = fixture();
-    const { parentTenantId: _omitted, ...row } = peakDayTenants(peaks)![0]!;
+    const { parentTenantId: _omitted, ...rest } = peakDayTenants(peaks)![0]!;
+    // Typed as the row it is (a tenant-day whose parentTenantId an older host left out).
+    const row: LicensedTenantDay = rest;
     expect(tenantChannel(row, [])).toEqual({ kind: 'unknown' });
   });
 });

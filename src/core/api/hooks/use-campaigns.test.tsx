@@ -28,6 +28,7 @@ import {
   DISPOSITION_CATEGORIES,
   normalizeDispositionCategory,
   type CampaignMetrics,
+  type CreateCampaignBody,
   type CreateDispositionCodeBody,
   type UpdateDispositionCodeBody,
   type ContactList,
@@ -253,17 +254,32 @@ describe('use-campaigns', () => {
   });
 
   describe('useCreateCampaign', () => {
+    // The members a create body always carries (CreateCampaignBody).
+    const createBody: CreateCampaignBody = {
+      name: 'New Campaign',
+      mode: 'predictive',
+      targetQueueName: 'sales',
+      timezone: 'UTC',
+      schedule: [{ day: 'Monday', enabled: true, start: '09:00', end: '17:00' }],
+      holidays: [],
+      maxConcurrentCalls: 10,
+      dncEnabled: true,
+      maxAttemptsPerContact: 3,
+      retryIntervalMinutes: 30,
+      timeBetweenAttemptsMinutes: 60,
+    };
+
     it('should call correct endpoint when mutating', async () => {
       vi.mocked(client.customFetch).mockResolvedValue(campaignDetail);
       const { result } = renderHook(() => useCreateCampaign(), { wrapper });
       act(() => {
-        result.current.mutate({ name: 'New Campaign', mode: 'predictive' });
+        result.current.mutate(createBody);
       });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(client.customFetch).toHaveBeenCalledWith({
         url: '/api/v1/admin/campaigns',
         method: 'POST',
-        data: { name: 'New Campaign', mode: 'predictive' },
+        data: createBody,
       });
     });
   });

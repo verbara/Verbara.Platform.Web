@@ -35,7 +35,9 @@ class FakeWebSocket {
   onclose: ((e: CloseEvent) => void) | null = null;
   onerror: ((e: Event) => void) | null = null;
   sent: string[] = [];
-  constructor(readonly url: string) {
+  readonly url: string;
+  constructor(url: string) {
+    this.url = url;
     FakeWebSocket.last = this;
     FakeWebSocket.all.push(this);
   }
@@ -147,7 +149,7 @@ describe('Integration — full visitor flow', () => {
         { id: 'c1', text: 'cached reply', from: 'agent', timestamp: '2026-10-16T10:00:00Z' },
       ]),
     );
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const fetchMock = vi.fn<typeof fetch>(async (_input, init) => {
       if ((init?.method ?? 'GET') === 'GET') {
         return new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
@@ -960,7 +962,7 @@ describe('Session start and resume (#426)', () => {
 // frame, whatever apiBase the host page passes, and the socket Platform names by path opens on that origin too.
 describe('Integration — embedded on a site of another domain', () => {
   it('CreatesTheSessionAndOpensTheSocket_OnTheEmbedOrigin', async () => {
-    const fetchMock = vi.fn(
+    const fetchMock = vi.fn<typeof fetch>(
       async () =>
         new Response(JSON.stringify({ sessionId: 's1', wsUrl: '/ws/webchat/s1' }), {
           status: 200,

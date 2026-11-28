@@ -17,6 +17,7 @@ import { resolve } from 'node:path';
 import type { ReactNode } from 'react';
 import { useAuthStore } from '@/core/auth/auth-store';
 import { useListenStore } from '@/core/voice/listen-store';
+import { defined } from '@/test/defined';
 import enOperations from '../../../public/locales/en-US/operations.json';
 import enCommon from '../../../public/locales/en-US/common.json';
 
@@ -85,7 +86,7 @@ afterAll(() => server.close());
 beforeEach(() => {
   requests = [];
   startBodies = [];
-  current = refusals.listenNotFound;
+  current = defined(refusals.listenNotFound, 'listenNotFound refusal');
   server.events.removeAllListeners();
   server.events.on('request:start', ({ request }) => {
     requests.push(`${request.method} ${new URL(request.url).pathname}`);

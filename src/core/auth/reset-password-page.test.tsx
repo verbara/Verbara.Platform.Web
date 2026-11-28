@@ -25,7 +25,7 @@ interface FakeAnswer {
 }
 
 let resetAnswer: FakeAnswer;
-const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
+const fetchMock = vi.fn<typeof fetch>(async (input) => {
   const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
   const pathname = new URL(raw, 'http://localhost').pathname;
   if (pathname === RESET_URL) {

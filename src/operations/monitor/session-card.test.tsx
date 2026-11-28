@@ -14,13 +14,15 @@ import { resolve } from 'node:path';
 import type { components } from '@/core/api/generated/openapi';
 import enOperations from '../../../public/locales/en-US/operations.json';
 import { SessionCard } from './session-card';
+import { defined } from '@/test/defined';
 
 type Row = components['schemas']['ActiveSessionDto'];
 
 const fixture = JSON.parse(
   readFileSync(resolve(process.cwd(), 'tests/fixtures/contracts/active-session.v2.json'), 'utf-8'),
 ) as { body: Row[] };
-const [resolvedRow, unresolvedRow] = fixture.body;
+const resolvedRow = defined(fixture.body[0], 'the resolved row');
+const unresolvedRow = defined(fixture.body[1], 'the unresolved row');
 const AGENT_ID = '0651f84b6f284a1c9b8d658330fa8310';
 
 let i18n: I18n;

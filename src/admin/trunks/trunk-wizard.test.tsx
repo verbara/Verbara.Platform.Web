@@ -65,6 +65,7 @@ vi.mock('@/core/api/hooks/use-voice-codecs', () => ({
 }));
 
 import TrunkWizard from './trunk-wizard';
+import { defined, nthCall } from '@/test/defined';
 
 function renderWizard() {
   return render(
@@ -180,7 +181,9 @@ describe('TrunkWizard', () => {
     fireEvent.click(screen.getByTestId('trunk-wizard-next'));
     await screen.findByTestId('trunk-wizard-connection-step');
 
-    fireEvent.change(screen.getByTestId('trunk-wizard-name'), { target: { value: 'voipms-trunk' } });
+    fireEvent.change(screen.getByTestId('trunk-wizard-name'), {
+      target: { value: 'voipms-trunk' },
+    });
     fireEvent.change(screen.getByTestId('trunk-wizard-authUsername'), {
       target: { value: 'acct100' },
     });
@@ -251,28 +254,28 @@ describe('TrunkWizard', () => {
 
     // Trunk created first with the ip-acl matchHost.
     expect(createTrunkAsync).toHaveBeenCalledTimes(1);
-    const trunkArg = createTrunkAsync.mock.calls[0][0] as Record<string, unknown>;
+    const trunkArg = nthCall(createTrunkAsync)[0] as Record<string, unknown>;
     expect(trunkArg.name).toBe('twilio-trunk');
     expect(trunkArg.matchHost).toBe('54.172.60.0/30');
     expect(trunkArg.type).toBe('PJSIP');
 
     // Route created with the returned trunk id + next priority (10+10=20).
     expect(createRouteAsync).toHaveBeenCalledTimes(1);
-    const routeArg = createRouteAsync.mock.calls[0][0] as Record<string, unknown>;
+    const routeArg = nthCall(createRouteAsync)[0] as Record<string, unknown>;
     expect(routeArg.trunkId).toBe(42);
     expect(routeArg.priority).toBe(20);
 
     // DID created with the selected queue.
-    const didArg = createDidAsync.mock.calls[0][0] as Record<string, unknown>;
+    const didArg = nthCall(createDidAsync)[0] as Record<string, unknown>;
     expect(didArg.did).toBe('+13105551234');
     expect(didArg.queueId).toBe('queue-support');
 
     // Ordering: trunk before route before DID.
     expect(createTrunkAsync.mock.invocationCallOrder[0]).toBeLessThan(
-      createRouteAsync.mock.invocationCallOrder[0],
+      defined(createRouteAsync.mock.invocationCallOrder[0], 'createRouteAsync call order'),
     );
     expect(createRouteAsync.mock.invocationCallOrder[0]).toBeLessThan(
-      createDidAsync.mock.invocationCallOrder[0],
+      defined(createDidAsync.mock.invocationCallOrder[0], 'createDidAsync call order'),
     );
 
     expect(navigateMock).toHaveBeenCalledWith('/admin/trunks');

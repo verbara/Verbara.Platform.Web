@@ -43,7 +43,9 @@ class FakeEventSource {
   onerror: ((e: Event) => void) | null = null;
   private readonly listeners = new Map<string, ((e: MessageEvent) => void)[]>();
 
-  constructor(readonly url: string) {
+  readonly url: string;
+  constructor(url: string) {
+    this.url = url;
     FakeEventSource.instances.push(this);
   }
 

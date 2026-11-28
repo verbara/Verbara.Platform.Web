@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterAll, afterEach, beforeEach } from 'vitest';
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, type JsonBodyType } from 'msw';
 import { server } from '@/test/msw-server';
 import { customFetch, customFetchWithHeaders } from './client';
 import { ApiError } from './api-error';
@@ -193,7 +193,7 @@ describe('customFetch', () => {
 });
 
 describe('customFetch refusals as ApiError (design D1)', () => {
-  async function refusal(status: number, body: unknown): Promise<unknown> {
+  async function refusal(status: number, body: JsonBodyType): Promise<unknown> {
     server.use(http.post('/api/v1/refused', () => HttpResponse.json(body, { status })));
     return customFetch({ url: '/api/v1/refused', method: 'POST', data: {} }).catch(
       (e: unknown) => e,

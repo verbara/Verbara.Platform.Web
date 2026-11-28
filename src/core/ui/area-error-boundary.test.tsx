@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi, beforeAll, afterAll } from 'vitest';
+import { describe, expect, it, vi, beforeAll, afterAll, type MockInstance } from 'vitest';
 import { AreaErrorBoundary } from './area-error-boundary';
 
 // Stub the i18n module — `i18n.t()` is called directly (boundaries are class
@@ -31,7 +31,7 @@ function Bomb({ shouldThrow = true }: { shouldThrow?: boolean }) {
 describe('AreaErrorBoundary', () => {
   // React logs caught errors via console.error — silence during these tests
   // to keep the test output readable. Verified via spy that the log fired.
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let consoleErrorSpy: MockInstance<typeof console.error>;
 
   beforeAll(() => {
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -76,9 +76,7 @@ describe('AreaErrorBoundary', () => {
     );
     expect(screen.getByTestId('area-error-boundary-agent')).toBeInTheDocument();
     // "Agent Workspace" comes from the area_names table, not the raw "agent"
-    expect(
-      screen.getByText(/The Agent Workspace module failed to load/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/The Agent Workspace module failed to load/)).toBeInTheDocument();
   });
 
   it('Falls_Back_To_RawAreaName_When_TranslationMissing', () => {
@@ -88,9 +86,7 @@ describe('AreaErrorBoundary', () => {
       </AreaErrorBoundary>,
     );
     // No mapping for "custom-area" → defaultValue is the raw areaName
-    expect(
-      screen.getByText(/The custom-area module failed to load/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/The custom-area module failed to load/)).toBeInTheDocument();
   });
 
   it('TryAgainButton_ResetsErrorState', () => {
@@ -121,8 +117,8 @@ describe('AreaErrorBoundary', () => {
       </AreaErrorBoundary>,
     );
     // componentDidCatch logs `Area error [admin]: ...`
-    const adminCalls = consoleErrorSpy.mock.calls.filter((args) =>
-      typeof args[0] === 'string' && args[0].startsWith('Area error [admin]:'),
+    const adminCalls = consoleErrorSpy.mock.calls.filter(
+      (args) => typeof args[0] === 'string' && args[0].startsWith('Area error [admin]:'),
     );
     expect(adminCalls.length).toBeGreaterThan(0);
   });

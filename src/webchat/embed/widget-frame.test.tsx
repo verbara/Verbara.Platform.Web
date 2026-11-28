@@ -33,7 +33,10 @@ class FakeWebSocket {
   onmessage: ((e: MessageEvent) => void) | null = null;
   onclose: ((e: CloseEvent) => void) | null = null;
   onerror: ((e: Event) => void) | null = null;
-  constructor(readonly url: string) {}
+  readonly url: string;
+  constructor(url: string) {
+    this.url = url;
+  }
   send() {}
   close() {
     this.readyState = 3;

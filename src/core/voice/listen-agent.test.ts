@@ -192,7 +192,9 @@ class FakeChannel {
   static queue: { from: FakeChannel; to: FakeChannel; data: unknown }[] = [];
   onmessage: ((e: { data: unknown }) => void) | null = null;
   closed = false;
-  constructor(readonly name: string) {
+  readonly name: string;
+  constructor(name: string) {
+    this.name = name;
     FakeChannel.all.push(this);
   }
   postMessage(data: unknown) {

@@ -31,6 +31,7 @@ function cdrRow(overrides: Partial<CdrRowDto> = {}): CdrRowDto {
     hasQaScore: false,
     hasRecording: false,
     holdCount: 0,
+    isPartial: false,
     ...overrides,
   };
 }

@@ -60,6 +60,7 @@ import { useTenantStore } from '@/core/tenant/tenant-store';
 import { queryClient as appQueryClient } from '@/core/api/query-client';
 import { useAgentAlertsStore } from '@/core/stores/agent-alerts-store';
 import TenantsPage from './tenants-page';
+import { nthCall } from '@/test/defined';
 
 function openCreateSheet() {
   const queryClient = new QueryClient({
@@ -131,8 +132,8 @@ describe('TenantsPage create sheet — parent selector by type (P4, design D8)',
     fireEvent.click(screen.getByTestId('tenants-form-submit'));
 
     await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
-    expect(createMutate.mock.calls[0][0]).toMatchObject({ type: 'Partner' });
-    expect(createMutate.mock.calls[0][0].parentTenantId).toBeUndefined();
+    expect(nthCall(createMutate)[0]).toMatchObject({ type: 'Partner' });
+    expect(nthCall(createMutate)[0].parentTenantId).toBeUndefined();
   });
 
   it('ParentSelector_ShouldKeepThePlatformParent_WhenTheTypeSwitchesToPartner', async () => {
@@ -145,7 +146,7 @@ describe('TenantsPage create sheet — parent selector by type (P4, design D8)',
     fireEvent.click(screen.getByTestId('tenants-form-submit'));
 
     await waitFor(() => expect(createMutate).toHaveBeenCalledTimes(1));
-    expect(createMutate.mock.calls[0][0]).toMatchObject({
+    expect(nthCall(createMutate)[0]).toMatchObject({
       type: 'Partner',
       parentTenantId: 'platform',
     });
@@ -179,7 +180,7 @@ describe('TenantsPage create sheet — host refusal (P2, plan-exceeds-parent)', 
     fireEvent.click(screen.getByTestId('tenants-form-submit'));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
-    const shown = asMock(toast.error).mock.calls[0][0] as ReactElement<{
+    const shown = nthCall(asMock(toast.error))[0] as ReactElement<{
       'data-error-code': string;
       children: string;
     }>;

@@ -18,6 +18,7 @@ vi.mock('@/core/api/hooks/use-partner', () => ({
 }));
 
 import PartnerCustomersPage from './customers-page';
+import { nthCall } from '@/test/defined';
 
 function renderPage() {
   return render(
@@ -42,7 +43,7 @@ async function choosePlan(plan: string) {
 }
 
 function sentBody(call = 0): Record<string, unknown> {
-  return createMutate.mock.calls[call][0] as Record<string, unknown>;
+  return nthCall(createMutate, call)[0] as Record<string, unknown>;
 }
 
 describe('PartnerCustomersPage — plan at birth (P3, design D7)', () => {
@@ -73,7 +74,7 @@ describe('PartnerCustomersPage — plan at birth (P3, design D7)', () => {
     fillCreateForm();
     await choosePlan('Pro');
     fireEvent.click(screen.getByTestId('customer-submit'));
-    const options = createMutate.mock.calls[0][1] as { onSuccess: () => void };
+    const options = nthCall(createMutate)[1] as { onSuccess: () => void };
     options.onSuccess();
 
     fillCreateForm();

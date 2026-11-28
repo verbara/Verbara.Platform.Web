@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createWrapper } from '@/test/hook-test-utils';
+import { defined } from '@/test/defined';
 import noSource from '@/core/api/hooks/__fixtures__/qa-availability.v1.json';
 import available from '@/core/api/hooks/__fixtures__/qa-availability.available.v1.json';
 import notLicensed from '@/core/api/hooks/__fixtures__/qa-availability.not-licensed.v1.json';
@@ -120,10 +121,10 @@ describe('QaPage', () => {
     expect(within(table).getAllByRole('row')).toHaveLength(2); // header + the one row
     expect(screen.getByTestId('qa-page-next')).toBeDisabled();
     expect(screen.getByTestId('qa-page-previous')).toBeDisabled();
-    expect(listRequests()[0][0]).toMatchObject({
+    expect(defined(listRequests()[0], 'first list request')[0]).toMatchObject({
       params: expect.objectContaining({ page: '1', pageSize: '50' }),
     });
-    expect(listRequests()[0][0].params).not.toHaveProperty('queue');
+    expect(defined(listRequests()[0], 'first list request')[0].params).not.toHaveProperty('queue');
   });
 
   it('EnablesNext_AndRequestsPageTwo_WhenTheListSaysHasMore', async () => {

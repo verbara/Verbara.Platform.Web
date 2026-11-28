@@ -37,6 +37,9 @@ vi.mock('react-i18next', () => ({
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 import { ChannelConfigForm } from './channel-config-form';
+import { defined, nthCall } from '@/test/defined';
+
+const whatsappFields = defined(channelFields.whatsapp, 'channelFields.whatsapp');
 
 /**
  * Platform's declared WhatsApp credential schema (channel-credential-config, 2.28.0), in the order
@@ -78,11 +81,11 @@ const save = () => fireEvent.click(screen.getByRole('button', { name: 'admin:cha
 
 describe('channelFields', () => {
   it('channelFields_ShouldUsePlatformCanonicalKeys_WhenChannelIsWhatsApp', () => {
-    expect(channelFields.whatsapp.map((f) => f.key)).toEqual(WHATSAPP_CANONICAL_KEYS);
+    expect(whatsappFields.map((f) => f.key)).toEqual(WHATSAPP_CANONICAL_KEYS);
   });
 
   it('channelFields_ShouldMaskEverySecretPlatformDeclares_WhenChannelIsWhatsApp', () => {
-    const typeOf = (key: string) => channelFields.whatsapp.find((f) => f.key === key)?.type;
+    const typeOf = (key: string) => whatsappFields.find((f) => f.key === key)?.type;
     expect(typeOf('AccessToken')).toBe('password');
     expect(typeOf('AppSecret')).toBe('password');
     expect(typeOf('WebhookVerifyToken')).toBe('password');
@@ -90,7 +93,7 @@ describe('channelFields', () => {
   });
 
   it('channelFields_ShouldLocalizeLabelAndHelp_WhenChannelIsWhatsApp', () => {
-    for (const f of channelFields.whatsapp) {
+    for (const f of whatsappFields) {
       expect(f.labelKey).toMatch(/^admin:channels\.whatsapp\./);
       expect(f.helpKey).toMatch(/^admin:channels\.whatsapp\./);
     }
@@ -116,7 +119,7 @@ describe('buildCredentialUpdate', () => {
   it('buildCredentialUpdate_ShouldOmitBlanksAndSendNullForRemovals', () => {
     expect(
       buildCredentialUpdate(
-        channelFields.whatsapp,
+        whatsappFields,
         { AccessToken: '  ', PhoneNumberId: ' 123 ', WabaId: '' },
         ['WabaId', 'ApiToken'],
       ),
@@ -128,10 +131,7 @@ describe('buildCredentialUpdate', () => {
       { key: 'ApiToken', isSet: true },
       { key: 'PhoneNumber', isSet: true },
     ]);
-    expect(legacyKeysOf(channelFields.whatsapp, config.credentials)).toEqual([
-      'ApiToken',
-      'PhoneNumber',
-    ]);
+    expect(legacyKeysOf(whatsappFields, config.credentials)).toEqual(['ApiToken', 'PhoneNumber']);
   });
 
   it('webhookUrlFor_ShouldNameTheTenantAndChannel_OnlyForWebhookChannels', () => {
@@ -175,7 +175,7 @@ describe('ChannelConfigForm', () => {
     save();
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0]).toEqual({
+    expect(nthCall(updateMutate)[0]).toEqual({
       channelId: 'whatsapp',
       isActive: true,
       credentials: { PhoneNumberId: '1098765' },
@@ -192,7 +192,7 @@ describe('ChannelConfigForm', () => {
     save();
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0].credentials).toEqual({
+    expect(nthCall(updateMutate)[0].credentials).toEqual({
       AccessToken: 'value-of-AccessToken',
       PhoneNumberId: 'value-of-PhoneNumberId',
       AppSecret: 'value-of-AppSecret',
@@ -228,7 +228,7 @@ describe('ChannelConfigForm', () => {
     save();
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0].credentials).toEqual({ WabaId: null });
+    expect(nthCall(updateMutate)[0].credentials).toEqual({ WabaId: null });
   });
 
   it('legacy_ShouldListOldKeysAsSetAndRemoveThem_WhenTheAdminCleansUp', async () => {
@@ -248,7 +248,7 @@ describe('ChannelConfigForm', () => {
     save();
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0].credentials).toEqual({ ApiToken: null });
+    expect(nthCall(updateMutate)[0].credentials).toEqual({ ApiToken: null });
   });
 
   it('remove_ShouldBeUndoable_BeforeSaving', async () => {
@@ -262,7 +262,7 @@ describe('ChannelConfigForm', () => {
     save();
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0].credentials).toEqual({});
+    expect(nthCall(updateMutate)[0].credentials).toEqual({});
   });
 
   it('remove_ShouldNameItsKeyInTheAccessibleName_WhenSeveralKeysCanBeRemoved', () => {
@@ -271,7 +271,7 @@ describe('ChannelConfigForm', () => {
 
     const button = (key: string) =>
       document.querySelector<HTMLElement>(`[data-credential-remove="${key}"]`)!;
-    const wabaLabel = channelFields.whatsapp.find((f) => f.key === 'WabaId')!.labelKey!;
+    const wabaLabel = whatsappFields.find((f) => f.key === 'WabaId')!.labelKey!;
     expect(button('WabaId')).toHaveAccessibleName(
       `admin:channels.credential.removeKey[${wabaLabel}]`,
     );
@@ -314,7 +314,7 @@ describe('ChannelConfigForm', () => {
     save();
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0].credentials).toEqual({
+    expect(nthCall(updateMutate)[0].credentials).toEqual({
       WidgetKey: null,
       AllowedOrigins: null,
     });
@@ -342,7 +342,7 @@ describe('ChannelConfigForm', () => {
     save();
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0].credentials).toEqual({ defaultQueueId: 'q-1' });
+    expect(nthCall(updateMutate)[0].credentials).toEqual({ defaultQueueId: 'q-1' });
   });
 
   it('legacy_ShouldStillListAnOldKey_WhenItSitsBesideTheIdentityKeys', () => {
@@ -372,7 +372,7 @@ describe('ChannelConfigForm', () => {
     save();
 
     await waitFor(() => expect(updateMutate).toHaveBeenCalledTimes(1));
-    expect(updateMutate.mock.calls[0][0].credentials).toEqual({});
+    expect(nthCall(updateMutate)[0].credentials).toEqual({});
   });
 
   it('render_ShouldShowTheTenantWebhookUrl_WhenChannelIsWhatsApp', () => {

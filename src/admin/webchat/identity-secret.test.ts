@@ -22,12 +22,10 @@ describe('generateIdentitySecret', () => {
   });
 
   it('generateIdentitySecret_ShouldUseTheUrlSafeAlphabetWithNoPadding_WhenTheBytesMapToPlusAndSlash', () => {
-    const random = vi
-      .spyOn(crypto, 'getRandomValues')
-      .mockImplementation(<T extends ArrayBufferView | null>(bytes: T) => {
-        (bytes as unknown as Uint8Array).fill(0xff);
-        return bytes;
-      });
+    const random = vi.spyOn(crypto, 'getRandomValues').mockImplementation((bytes) => {
+      (bytes as unknown as Uint8Array).fill(0xff);
+      return bytes;
+    });
     const value = generateIdentitySecret();
     random.mockRestore();
 

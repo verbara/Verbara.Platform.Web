@@ -7,7 +7,7 @@
  */
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, type JsonBodyType } from 'msw';
 import { setupServer } from 'msw/node';
 import { I18nextProvider } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -41,7 +41,7 @@ const labels = enAdmin.features['agent-assist'].provider;
 
 let current: Record<string, unknown>;
 let putBodies: unknown[];
-let putAnswer: { status: number; body: unknown } | null;
+let putAnswer: { status: number; body: JsonBodyType } | null;
 
 const server = setupServer(
   http.get('*/api/v1/admin/features/agent-assist', () => HttpResponse.json(current)),

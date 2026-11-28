@@ -32,6 +32,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 import { DidRouteForm } from './did-route-form';
+import { nthCall } from '@/test/defined';
 
 describe('DidRouteForm fields', () => {
   beforeEach(() => {
@@ -90,7 +91,7 @@ describe('DidRouteForm fields', () => {
     fireEvent.submit(screen.getByTestId('did-route-form-submit').closest('form')!);
 
     await waitFor(() => expect(createMutate).toHaveBeenCalled());
-    const arg = createMutate.mock.calls[0][0] as Record<string, unknown>;
+    const arg = nthCall(createMutate)[0] as Record<string, unknown>;
     expect(arg.did).toBe('+541143218765');
     expect(arg.queueId).toBe('queue-support');
     expect(arg.isActive).toBe(true);
