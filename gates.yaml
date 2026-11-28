@@ -14,9 +14,9 @@ gates:
     status: present
     impl: >-
       .github/workflows/ci.yml `build` job runs `npm run build` (tsc -b && vite build) and `test`
-      job runs `vitest run`; both blocking + required on main. TS strict via tsconfig.app.json; the unit
-      test files via tsconfig.test.json, referenced from tsconfig.json so the same `tsc -b` checks
-      them.
+      job runs `vitest run`; both blocking + required on main. TS strict via tsconfig.app.json and, for
+      the WebChat widget sources, tsconfig.webchat.json; the unit test files via tsconfig.test.json; all
+      three referenced from tsconfig.json so the same `tsc -b` checks them.
 
   - id: G2
     class: warnings-as-errors+banned-deps

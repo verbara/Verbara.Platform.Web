@@ -20,6 +20,13 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code
   changed. (#594)
 
+- **CI type-checks the WebChat widget's sources.** `src/webchat` (the SDK script host pages load and the embedded
+  chat frame) was in no TypeScript project: the console's `tsconfig.app.json` excludes it, and Vite builds the
+  widget without checking types, so a type error there reached the bundle unnoticed. `tsconfig.json` now references
+  `tsconfig.webchat.json`, so `tsc -b` — run by `npm run build` and CI's `build` job — checks it with the console's
+  settings. The two errors it already had (a constructor written with parameter properties, which the
+  `erasableSyntaxOnly` setting forbids) are fixed; the widget bundles build byte for byte as before. (#596)
+
 - **`tsc -b` type-checks the unit test files.** The 179 type errors of #594 are fixed, so `tsconfig.json` now
   references `tsconfig.test.json` and the `build` job's `tsc -b` checks every test file vitest collects, `tests/**`
   outside the Playwright folders included; a type error in a test fails the build like one in the console.
