@@ -1,8 +1,0 @@
-{
-  "_comment": "Type errors in the unit test files that existed when tsconfig.test.json landed (#572). Checked by scripts/check-test-types.py (npm run lint:test-types): it runs tsc -p tsconfig.test.json and counts errors per (file, TS code). This list can only SHRINK: a (file, code) with more errors than listed fails as new, one with fewer fails as stale until its count is lowered (or the entry deleted at 0). Never add an entry for a new error; fix the test, keeping its intent (no `any`, no @ts-expect-error over a real mismatch). When it is empty, reference tsconfig.test.json from tsconfig.json so tsc -b checks the tests, and retire the check. min_checked_test_files is a liveness floor (359 test files on 2026-11-25); test_roots and not_unit_test_dirs mirror what vitest.config.ts collects, and every test file found there must be in tsc's file list.",
-  "tsconfig": "tsconfig.test.json",
-  "min_checked_test_files": 350,
-  "test_roots": ["src", "tests"],
-  "not_unit_test_dirs": ["tests/e2e", "tests/manuales", "tests/fixtures"],
-  "errors": {}
-}

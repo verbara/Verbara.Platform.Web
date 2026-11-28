@@ -4,14 +4,15 @@ name: CI
 # Runs on every PR + the merge queue (merge_group).
 #
 # Jobs (6 in parallel):
-#   - build     blocking - build:all (WebChat widget, then tsc -b && vite build) + widget-in-dist
-#               and agent first-load checks
+#   - build     blocking - build:all (WebChat widget, then tsc -b && vite build; tsc -b type-checks
+#               the console, the configs and the unit test files) + widget-in-dist and agent
+#               first-load checks
 #   - test      blocking - vitest run (src/** and tests/unit/**; Playwright folders excluded)
 #   - coverage  blocking - vitest run --coverage (Track 2A ratchet floor)
 #   - i18n      blocking - locale parity check (ADR-0001)
 #   - audit     blocking - npm audit --audit-level=high
 #   - lint      blocking - eslint (0 errors enforced since Track 3A), generated-types
-#               ratchet, console API routes vs the OpenAPI document, unit-test type baseline
+#               ratchet, console API routes vs the OpenAPI document
 #
 # Branch protection on main requires: build, test, coverage, i18n, audit, lint
 
@@ -77,6 +78,9 @@ jobs:
 
       # The same build the Dockerfile runs: the WebChat widget into public/webchat/, then
       # the console (tsc -b && vite build), whose public/ copy carries the widget into dist/.
+      # tsc -b also type-checks every unit test file vitest collects (tsconfig.test.json,
+      # #595): vitest strips types without checking them. It emits nothing, so no test
+      # file reaches dist/.
       - name: Build (widget + typecheck + production build)
         run: npm run build:all
 
@@ -369,12 +373,3 @@ jobs:
 
       - name: Console API routes exist in the OpenAPI document
         run: npm run lint:api-routes
-
-      # Unit test files are type-checked (#572): vitest strips types without checking them
-      # and tsconfig.app.json excludes the tests, so tsconfig.test.json covers them. The
-      # errors that existed when it landed are frozen in unit-test-types-baseline.json, which
-      # only shrinks: a new error fails, and so does an entry that no longer errors. Every
-      # test file vitest collects must be in tsc's file list. Its unit tests run in the
-      # coverage-scripts job's `unittest discover scripts/tests`.
-      - name: Unit test files type-check (shrink-only baseline)
-        run: npm run lint:test-types

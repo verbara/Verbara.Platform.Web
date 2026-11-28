@@ -20,6 +20,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   was fixed until its count is lowered. Once it is empty, `tsc -b` takes the tests over. No product code
   changed. (#594)
 
+- **`tsc -b` type-checks the unit test files.** The 179 type errors of #594 are fixed, so `tsconfig.json` now
+  references `tsconfig.test.json` and the `build` job's `tsc -b` checks every test file vitest collects, `tests/**`
+  outside the Playwright folders included; a type error in a test fails the build like one in the console.
+  `scripts/check-test-types.py`, its tests, `npm run lint:test-types`, its `lint` step and
+  `unit-test-types-baseline.json` are gone. The fixes keep each test's assertions: a value the checker cannot prove
+  present is read through `src/test/defined.ts` (`defined()`, `nthCall()`), which fails the test with what was
+  missing; fixtures gain the members the current types require; and the contact card tests mock an `offline`
+  softphone, a state the voice store has, where they had `'unregistered'`, which it does not. The test project emits
+  nothing, so `dist/` is unchanged. (#595, #597)
+
 - **A release tag must point at a commit on `main`.** `release.yml` built, pushed and signed an image for a `v*` tag
   on any commit, while CI only checks commits that reach `main` through a PR or the merge queue. A new `tag-on-main`
   job now runs first and the build job needs it: `scripts/ci/check-tag-on-main.sh` fails unless the tagged commit is

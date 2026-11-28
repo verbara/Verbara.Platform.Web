@@ -4,13 +4,19 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
     "types": ["vite/client", "node", "vitest/globals", "@testing-library/jest-dom/vitest"]
   },
+  /* Every file vitest collects (vitest.config.ts: its default include, minus the Playwright
+     folders), so `tsc -b` type-checks each unit test; plus the shared test helpers. */
   "include": [
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
     "src/**/*.spec.ts",
     "src/**/*.spec.tsx",
     "src/test",
-    "tests/unit"
+    "tests/unit",
+    "tests/**/*.test.ts",
+    "tests/**/*.test.tsx",
+    "tests/**/*.spec.ts",
+    "tests/**/*.spec.tsx"
   ],
-  "exclude": []
+  "exclude": ["tests/e2e", "tests/manuales", "tests/fixtures"]
 }
